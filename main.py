@@ -222,16 +222,15 @@ def analyze_mental_health_prediction(prediction_result):
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level for mental health model"""
+    """Map crisis score to response level (optimized thresholds)"""
     
-    # FIXED: Thresholds appropriate for suicide/depression detection
-    # These are more conservative since mental health detection requires different sensitivity
-    if crisis_score >= 0.8:
-        return 'high'      # Very confident prediction
-    elif crisis_score >= 0.6:
-        return 'medium'    # Moderately confident
-    elif crisis_score >= 0.3:
-        return 'low'       # Some indication
+    # Optimized thresholds based on test data analysis
+    if crisis_score >= 0.900:
+        return 'high'      # High confidence prediction
+    elif crisis_score >= 0.550:
+        return 'medium'    # Medium confidence
+    elif crisis_score >= 0.100:
+        return 'low'       # Low confidence
     else:
         return 'none'      # No significant risk detected
 
