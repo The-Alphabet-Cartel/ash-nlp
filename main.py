@@ -6,30 +6,25 @@ Designed to run on separate AI rig hardware
 """
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from transformers import pipeline
 import logging
 import time
 import os
 import uvicorn
 from typing import Optional
+from contextlib import asynccontextmanager
 
-# Configure logging
+# Configure logging with UTF-8 encoding
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('nlp_service.log'),
+        logging.FileHandler('nlp_service.log', encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
-
-app = FastAPI(
-    title="Ash NLP Service (Standalone)", 
-    version="2.0",
-    description="Mental Health Crisis Detection Service for Ash Bot"
-)
 
 # Global model storage
 nlp_model = None
@@ -40,6 +35,8 @@ class MessageRequest(BaseModel):
     channel_id: Optional[str] = "unknown"
 
 class CrisisResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    
     needs_response: bool
     crisis_level: str  # 'none', 'low', 'medium', 'high'
     confidence_score: float
@@ -49,6 +46,8 @@ class CrisisResponse(BaseModel):
     model_info: str
 
 class HealthResponse(BaseModel):
+    model_config = ConfigDict(protected_namespaces=())
+    
     status: str
     model_loaded: bool
     uptime_seconds: float
@@ -57,41 +56,55 @@ class HealthResponse(BaseModel):
 # Service startup time
 startup_time = time.time()
 
-@app.on_event("startup")
 async def load_model():
     """Load the Mental Health RoBERTa model on startup"""
     global nlp_model
     
-    logger.info("🤖 Loading Mental Health RoBERTa model...")
-    logger.info(f"🖥️ Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
+    logger.info("Loading Mental Health RoBERTa model...")
+    logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
         # Use the model that gave you 78.6% accuracy
         # Update this to the exact model ID that worked best
         model_id = "martin-ha/toxic-comment-model"  
         
-        logger.info(f"📦 Loading model: {model_id}")
+        logger.info(f"Loading model: {model_id}")
         
         nlp_model = pipeline(
             "text-classification",
             model=model_id,
             device=-1,  # Force CPU inference (RTX 3050 has limited VRAM)
-            return_all_scores=True
+            top_k=None  # Updated parameter instead of return_all_scores
         )
         
-        logger.info("✅ Mental Health RoBERTa model loaded successfully!")
+        logger.info("Mental Health RoBERTa model loaded successfully!")
         
         # Test inference to verify everything works
         test_result = nlp_model("I feel sad today")
-        logger.info(f"🧪 Model test successful: {len(test_result[0])} categories detected")
+        logger.info(f"Model test successful: {len(test_result)} categories detected")
         
         # Log model info
-        logger.info(f"📊 Model ready for crisis detection with 78.6% accuracy")
+        logger.info("Model ready for crisis detection with 78.6% accuracy")
         
     except Exception as e:
-        logger.error(f"❌ Failed to load NLP model: {e}")
+        logger.error(f"Failed to load NLP model: {e}")
         nlp_model = None
         raise
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await load_model()
+    yield
+    # Shutdown (if needed)
+    pass
+
+app = FastAPI(
+    title="Ash NLP Service (Standalone)", 
+    version="2.0",
+    description="Mental Health Crisis Detection Service for Ash Bot",
+    lifespan=lifespan
+)
 
 def analyze_mental_health_prediction(prediction_result):
     """Convert model prediction to crisis assessment (tuned for 78.6% accuracy)"""
@@ -109,7 +122,7 @@ def analyze_mental_health_prediction(prediction_result):
     max_crisis_score = 0.0
     detected_categories = []
     
-    for prediction in prediction_result[0]:
+    for prediction in prediction_result:
         label = prediction['label'].lower()
         score = prediction['score']
         
@@ -243,8 +256,8 @@ async def root():
 
 if __name__ == "__main__":
     # Standalone service configuration
-    logger.info("🚀 Starting Ash NLP Service (Standalone)")
-    logger.info("🖥️ Optimized for Ryzen 7 7700x + RTX 3050 + 64GB RAM")
+    logger.info("Starting Ash NLP Service (Standalone)")
+    logger.info("Optimized for Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     uvicorn.run(
         "main:app",
