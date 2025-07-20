@@ -108,7 +108,7 @@ class NLPTester:
             'categories': categories,
             'correct': correct,
             'response_time_ms': response_time,
-            'processing_time_ms': processing_time,
+            'processing_time_ms': processing_time,  # Ensure this field is always present
             'test_category': test_case.category,
             'description': test_case.description
         }
@@ -213,15 +213,23 @@ class NLPTester:
         
         # Save CSV for analysis
         with open(TEST_DATA_FILE, 'w', newline='', encoding='utf-8') as f:
+            # Include all possible fields from the detailed log
             fieldnames = ['timestamp', 'message', 'expected', 'predicted', 'confidence', 
-                         'categories', 'correct', 'response_time_ms', 'test_category', 'description']
+                         'categories', 'correct', 'response_time_ms', 'processing_time_ms',
+                         'test_category', 'description']
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             
             for entry in self.detailed_log:
-                # Convert categories list to string for CSV
+                # Convert categories list to string for CSV and ensure all fields are present
                 entry_copy = entry.copy()
-                entry_copy['categories'] = '; '.join(entry['categories'])
+                entry_copy['categories'] = '; '.join(entry.get('categories', []))
+                
+                # Ensure all required fields exist with defaults
+                for field in fieldnames:
+                    if field not in entry_copy:
+                        entry_copy[field] = 0 if 'time_ms' in field else ''
+                
                 writer.writerow(entry_copy)
         
         print(f"\n💾 Results saved to:")
