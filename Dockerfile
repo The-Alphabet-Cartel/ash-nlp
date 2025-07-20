@@ -21,7 +21,7 @@ USER nlpuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8001/health')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:8081/health')" || exit 1
 
 # Expose port
 EXPOSE 8081
