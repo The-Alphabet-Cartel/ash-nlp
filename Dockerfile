@@ -6,6 +6,7 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -19,12 +20,12 @@ COPY . .
 RUN useradd -m -u 1001 nlpuser && chown -R nlpuser:nlpuser /app
 USER nlpuser
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8081/health')" || exit 1
-
 # Expose port
 EXPOSE 8081
 
-# Start the service
-CMD ["python", "main.py"]
+# Health check - give more time for model loading and use curl
+HEALTHCHECK --interval=60s --timeout=30s --start-period=300s --retries=3 \
+    CMD curl -f http://localhost:8081/health || exit 1
+
+# Start the service with explicit host binding
+CMD ["python", "-u", "main.py"]
