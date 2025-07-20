@@ -66,7 +66,7 @@ async def load_model():
     try:
         # Use the model that gave you 78.6% accuracy
         # Update this to the exact model ID that worked best
-        model_id = "martin-ha/toxic-comment-model"  
+        model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"  
         
         logger.info(f"Loading model: {model_id}")
         
