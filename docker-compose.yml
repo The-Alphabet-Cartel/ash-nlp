@@ -1,0 +1,24 @@
+services:
+  ash-nlp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ash-nlp
+    restart: unless-stopped
+    networks:
+      - ash-network
+    ports:
+      - "8081:8081"
+    # Resource limits for your hardware
+    deploy:
+      resources:
+        limits:
+          memory: 8G      # Enough for the ML model
+          cpus: '4'       # Half your Ryzen cores
+        reservations:
+          memory: 2G
+          cpus: '1'
+
+networks:
+  ash-network:
+    driver: bridge
