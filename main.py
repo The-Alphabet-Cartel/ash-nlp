@@ -271,7 +271,7 @@ if __name__ == "__main__":
         uvicorn.run(
             "main:app",
             host="0.0.0.0",        # Listen on all interfaces
-            port=8081,             # Standard port
+            port=8881,             # Standard port
             log_level="info",
             reload=False,
             workers=1              # Single worker for model memory efficiency
