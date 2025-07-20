@@ -60,15 +60,18 @@ async def load_model():
     """Load the Mental Health RoBERTa model on startup"""
     global nlp_model
     
+    logger.info("=" * 50)
+    logger.info("STARTING MODEL LOADING PROCESS")
+    logger.info("=" * 50)
     logger.info("Loading Mental Health RoBERTa model...")
     logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
         # Use the model that gave you 78.6% accuracy
-        # Update this to the exact model ID that worked best
         model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"  
         
         logger.info(f"Loading model: {model_id}")
+        logger.info("This may take several minutes for first-time download...")
         
         nlp_model = pipeline(
             "text-classification",
@@ -77,27 +80,31 @@ async def load_model():
             top_k=None  # Updated parameter instead of return_all_scores
         )
         
-        logger.info("Mental Health RoBERTa model loaded successfully!")
+        logger.info("✅ Mental Health RoBERTa model loaded successfully!")
         
         # Test inference to verify everything works
         test_result = nlp_model("I feel sad today")
-        logger.info(f"Model test successful: {len(test_result)} categories detected")
+        logger.info(f"✅ Model test successful: {len(test_result)} categories detected")
         
         # Log model info
-        logger.info("Model ready for crisis detection with 78.6% accuracy")
+        logger.info("✅ Model ready for crisis detection with 78.6% accuracy")
+        logger.info("=" * 50)
         
     except Exception as e:
-        logger.error(f"Failed to load NLP model: {e}")
+        logger.error(f"❌ Failed to load NLP model: {e}")
+        logger.exception("Full traceback:")
         nlp_model = None
         raise
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
+    logger.info("🚀 FastAPI app starting up...")
     await load_model()
+    logger.info("✅ FastAPI app startup complete!")
     yield
     # Shutdown (if needed)
-    pass
+    logger.info("🛑 FastAPI app shutting down...")
 
 app = FastAPI(
     title="Ash NLP Service (Standalone)", 
@@ -256,14 +263,20 @@ async def root():
 
 if __name__ == "__main__":
     # Standalone service configuration
-    logger.info("Starting Ash NLP Service (Standalone)")
-    logger.info("Optimized for Ryzen 7 7700x + RTX 3050 + 64GB RAM")
+    logger.info("🚀 Starting Ash NLP Service (Standalone)")
+    logger.info("💻 Optimized for Ryzen 7 7700x + RTX 3050 + 64GB RAM")
+    logger.info("🌐 Starting server on 0.0.0.0:8081")
     
-    uvicorn.run(
-        "main:app",
-        host="0.0.0.0",        # Listen on all interfaces
-        port=8081,             # Standard port
-        log_level="info",
-        reload=False,
-        workers=1              # Single worker for model memory efficiency
-    )
+    try:
+        uvicorn.run(
+            "main:app",
+            host="0.0.0.0",        # Listen on all interfaces
+            port=8081,             # Standard port
+            log_level="info",
+            reload=False,
+            workers=1              # Single worker for model memory efficiency
+        )
+    except Exception as e:
+        logger.error(f"❌ Failed to start server: {e}")
+        logger.exception("Full traceback:")
+        raise
