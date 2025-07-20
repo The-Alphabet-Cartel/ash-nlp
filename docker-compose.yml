@@ -1,12 +1,8 @@
 services:
   ash-nlp:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
     container_name: ash-nlp
     restart: unless-stopped
-    networks:
-      - ash-network
     ports:
       - 8081:8081
     # Resource limits for your hardware
@@ -18,7 +14,3 @@ services:
         reservations:
           memory: 2G
           cpus: '1'
-
-networks:
-  ash-network:
-    driver: bridge
