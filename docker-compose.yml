@@ -8,7 +8,7 @@ services:
     networks:
       - ash-network
     ports:
-      - 8081:8001
+      - 8081:8081
     # Resource limits for your hardware
     deploy:
       resources:
