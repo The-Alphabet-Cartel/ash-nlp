@@ -24,7 +24,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8001/health')" || exit 1
 
 # Expose port
-EXPOSE 8001
+EXPOSE 8081
 
 # Start the service
 CMD ["python", "main.py"]
