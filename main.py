@@ -84,8 +84,18 @@ async def load_model():
         
         # Test inference to verify everything works
         test_result = nlp_model("I feel sad today")
-        logger.info(f"✅ Model test successful: {len(test_result)} predictions")
-        logger.info(f"Available labels: {[pred['label'] for pred in test_result]}")
+        logger.info(f"✅ Model test successful")
+        logger.info(f"Test result type: {type(test_result)}")
+        logger.info(f"Test result content: {test_result}")
+        
+        # Handle different possible output formats
+        if isinstance(test_result, list) and len(test_result) > 0:
+            if isinstance(test_result[0], dict):
+                logger.info(f"Available labels: {[pred.get('label', 'unknown') for pred in test_result]}")
+            else:
+                logger.info(f"Test result structure: {test_result}")
+        else:
+            logger.info(f"Unexpected result format: {test_result}")
         
         # Log model info
         logger.info("✅ Model ready for crisis detection")
@@ -117,43 +127,74 @@ app = FastAPI(
 def analyze_mental_health_prediction(prediction_result):
     """Convert model prediction to crisis assessment for suicide/depression model"""
     
-    # FIXED: Crisis indicators for suicide/depression detection model
-    # This model typically outputs labels like: LABEL_0 (no suicide/depression) and LABEL_1 (suicide/depression)
-    # Or it might use more descriptive labels - we'll handle both cases
-    
     max_crisis_score = 0.0
     detected_categories = []
     
-    for prediction in prediction_result:
-        label = prediction['label'].lower()
-        score = prediction['score']
+    # Handle different output formats
+    if not prediction_result:
+        return max_crisis_score, detected_categories
+    
+    # Log the raw prediction for debugging
+    logger.debug(f"Raw prediction result: {prediction_result}")
+    
+    # Handle different possible prediction formats
+    predictions_to_process = []
+    
+    if isinstance(prediction_result, list):
+        predictions_to_process = prediction_result
+    elif isinstance(prediction_result, dict):
+        # Single prediction as dict
+        predictions_to_process = [prediction_result]
+    else:
+        logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
+        return max_crisis_score, detected_categories
+    
+    for prediction in predictions_to_process:
+        # Safely extract label and score
+        if not isinstance(prediction, dict):
+            logger.warning(f"Unexpected prediction item: {prediction}")
+            continue
+            
+        label = str(prediction.get('label', '')).lower()
+        score = float(prediction.get('score', 0.0))
         
         # Check for crisis indicators based on actual model labels
         is_crisis_indicator = False
         category_name = "unknown"
         
         # Handle different possible label formats from the suicide/depression model
-        if "1" in label or "positive" in label:
-            # LABEL_1 or similar typically indicates positive detection
+        if "1" in label or "positive" in label or "suicide" in label or "depression" in label:
+            # LABEL_1, positive, or direct suicide/depression labels indicate risk
             is_crisis_indicator = True
             category_name = "suicide_depression_risk"
-        elif "suicide" in label or "depression" in label:
-            # Direct label names
-            is_crisis_indicator = True
-            category_name = label
-        elif "risk" in label or "crisis" in label:
+        elif "risk" in label or "crisis" in label or "harmful" in label:
             # Risk-based labels
             is_crisis_indicator = True
             category_name = label
+        elif "0" in label or "negative" in label or "safe" in label:
+            # LABEL_0, negative, or safe labels indicate no risk
+            is_crisis_indicator = False
+            category_name = "no_risk"
+        else:
+            # Unknown label format - log for debugging
+            logger.info(f"Unknown label format: '{label}' with score {score}")
+            category_name = label
+            # For unknown labels, use a conservative approach
+            if score > 0.5:  # Only high-confidence unknown labels
+                is_crisis_indicator = True
         
-        # Only consider scores above threshold for crisis detection
+        # Store all predictions for analysis (not just crisis indicators)
+        detected_categories.append({
+            'category': category_name,
+            'raw_score': score,
+            'confidence': score,
+            'original_label': prediction.get('label', 'unknown'),
+            'is_crisis': is_crisis_indicator
+        })
+        
+        # Update max crisis score
         if is_crisis_indicator and score > 0.1:  # Lower threshold for mental health
             max_crisis_score = max(max_crisis_score, score)
-            detected_categories.append({
-                'category': category_name,
-                'raw_score': score,
-                'confidence': score
-            })
     
     return max_crisis_score, detected_categories
 
