@@ -13,7 +13,9 @@ services:
     networks:
       - ash-network
     ports:
-      - 8081:8081
+      - 8881:8881
+    environment:
+      - PYTHONUNBUFFERED=1
     # Resource limits for your hardware
     deploy:
       resources:
