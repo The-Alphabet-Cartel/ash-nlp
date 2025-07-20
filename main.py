@@ -88,12 +88,20 @@ async def load_model():
         logger.info(f"Test result type: {type(test_result)}")
         logger.info(f"Test result content: {test_result}")
         
-        # Handle different possible output formats
+        # Extract the actual predictions from nested structure
         if isinstance(test_result, list) and len(test_result) > 0:
-            if isinstance(test_result[0], dict):
-                logger.info(f"Available labels: {[pred.get('label', 'unknown') for pred in test_result]}")
+            if isinstance(test_result[0], list):
+                # Nested list format: [[{'label': 'LABEL_0', 'score': 0.6}, {'label': 'LABEL_1', 'score': 0.4}]]
+                predictions = test_result[0]
+                logger.info(f"✅ Found nested list format with {len(predictions)} labels")
+                logger.info(f"Available labels: {[pred['label'] for pred in predictions]}")
+            elif isinstance(test_result[0], dict):
+                # Direct list format: [{'label': 'LABEL_0', 'score': 0.6}, {'label': 'LABEL_1', 'score': 0.4}]
+                predictions = test_result
+                logger.info(f"✅ Found direct list format with {len(predictions)} labels")
+                logger.info(f"Available labels: {[pred['label'] for pred in predictions]}")
             else:
-                logger.info(f"Test result structure: {test_result}")
+                logger.info(f"Unexpected nested structure: {test_result}")
         else:
             logger.info(f"Unexpected result format: {test_result}")
         
@@ -137,11 +145,19 @@ def analyze_mental_health_prediction(prediction_result):
     # Log the raw prediction for debugging
     logger.debug(f"Raw prediction result: {prediction_result}")
     
-    # Handle different possible prediction formats
+    # Handle the nested list format: [[{'label': 'LABEL_0', 'score': 0.6}, {'label': 'LABEL_1', 'score': 0.4}]]
     predictions_to_process = []
     
     if isinstance(prediction_result, list):
-        predictions_to_process = prediction_result
+        if len(prediction_result) > 0 and isinstance(prediction_result[0], list):
+            # Nested list format - extract the inner list
+            predictions_to_process = prediction_result[0]
+        elif len(prediction_result) > 0 and isinstance(prediction_result[0], dict):
+            # Direct list format
+            predictions_to_process = prediction_result
+        else:
+            logger.warning(f"Unexpected list format: {prediction_result}")
+            return max_crisis_score, detected_categories
     elif isinstance(prediction_result, dict):
         # Single prediction as dict
         predictions_to_process = [prediction_result]
@@ -162,17 +178,21 @@ def analyze_mental_health_prediction(prediction_result):
         is_crisis_indicator = False
         category_name = "unknown"
         
-        # Handle different possible label formats from the suicide/depression model
-        if "1" in label or "positive" in label or "suicide" in label or "depression" in label:
-            # LABEL_1, positive, or direct suicide/depression labels indicate risk
+        # Handle the specific labels from this model: LABEL_0 (no risk) and LABEL_1 (risk)
+        if label == "label_1":
+            # LABEL_1 indicates suicide/depression risk detected
             is_crisis_indicator = True
             category_name = "suicide_depression_risk"
-        elif "risk" in label or "crisis" in label or "harmful" in label:
-            # Risk-based labels
+        elif label == "label_0":
+            # LABEL_0 indicates no risk detected
+            is_crisis_indicator = False
+            category_name = "no_risk"
+        elif "1" in label or "positive" in label or "suicide" in label or "depression" in label:
+            # Fallback for other positive indicators
             is_crisis_indicator = True
-            category_name = label
+            category_name = "suicide_depression_risk"
         elif "0" in label or "negative" in label or "safe" in label:
-            # LABEL_0, negative, or safe labels indicate no risk
+            # Fallback for other negative indicators
             is_crisis_indicator = False
             category_name = "no_risk"
         else:
@@ -183,7 +203,7 @@ def analyze_mental_health_prediction(prediction_result):
             if score > 0.5:  # Only high-confidence unknown labels
                 is_crisis_indicator = True
         
-        # Store all predictions for analysis (not just crisis indicators)
+        # Store all predictions for analysis
         detected_categories.append({
             'category': category_name,
             'raw_score': score,
@@ -192,9 +212,12 @@ def analyze_mental_health_prediction(prediction_result):
             'is_crisis': is_crisis_indicator
         })
         
-        # Update max crisis score
+        # Update max crisis score - for LABEL_1 predictions only
         if is_crisis_indicator and score > 0.1:  # Lower threshold for mental health
             max_crisis_score = max(max_crisis_score, score)
+    
+    # Log the analysis results for debugging
+    logger.debug(f"Crisis score: {max_crisis_score}, Categories: {[cat['category'] for cat in detected_categories]}")
     
     return max_crisis_score, detected_categories
 
