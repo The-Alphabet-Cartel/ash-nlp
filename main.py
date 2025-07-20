@@ -67,8 +67,8 @@ async def load_model():
     logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
-        # Use the model that gave you 78.6% accuracy
-        model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"  
+        # FIXED: Use consistent model ID
+        model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"
         
         logger.info(f"Loading model: {model_id}")
         logger.info("This may take several minutes for first-time download...")
@@ -77,17 +77,18 @@ async def load_model():
             "text-classification",
             model=model_id,
             device=-1,  # Force CPU inference (RTX 3050 has limited VRAM)
-            top_k=None  # Updated parameter instead of return_all_scores
+            top_k=None  # Return all scores for analysis
         )
         
         logger.info("✅ Mental Health RoBERTa model loaded successfully!")
         
         # Test inference to verify everything works
         test_result = nlp_model("I feel sad today")
-        logger.info(f"✅ Model test successful: {len(test_result)} categories detected")
+        logger.info(f"✅ Model test successful: {len(test_result)} predictions")
+        logger.info(f"Available labels: {[pred['label'] for pred in test_result]}")
         
         # Log model info
-        logger.info("✅ Model ready for crisis detection with 78.6% accuracy")
+        logger.info("✅ Model ready for crisis detection")
         logger.info("=" * 50)
         
     except Exception as e:
@@ -114,17 +115,11 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """Convert model prediction to crisis assessment (tuned for 78.6% accuracy)"""
+    """Convert model prediction to crisis assessment for suicide/depression model"""
     
-    # Crisis indicators based on your testing results
-    crisis_indicators = {
-        'toxic': 0.9,        # Strong crisis indicator
-        'severe_toxic': 1.0,  # Very strong indicator
-        'threat': 0.8,       # Threatening language
-        'insult': 0.4,       # Self-directed insults
-        'identity_hate': 0.6, # Identity-based distress
-        'obscene': 0.3       # Sometimes indicates distress
-    }
+    # FIXED: Crisis indicators for suicide/depression detection model
+    # This model typically outputs labels like: LABEL_0 (no suicide/depression) and LABEL_1 (suicide/depression)
+    # Or it might use more descriptive labels - we'll handle both cases
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -133,31 +128,48 @@ def analyze_mental_health_prediction(prediction_result):
         label = prediction['label'].lower()
         score = prediction['score']
         
-        # Check if this is a crisis indicator
-        for crisis_type, weight in crisis_indicators.items():
-            if crisis_type in label and score > 0.2:  # Lower threshold for detection
-                weighted_score = score * weight
-                max_crisis_score = max(max_crisis_score, weighted_score)
-                detected_categories.append({
-                    'category': crisis_type,
-                    'raw_score': score,
-                    'weighted_score': weighted_score
-                })
+        # Check for crisis indicators based on actual model labels
+        is_crisis_indicator = False
+        category_name = "unknown"
+        
+        # Handle different possible label formats from the suicide/depression model
+        if "1" in label or "positive" in label:
+            # LABEL_1 or similar typically indicates positive detection
+            is_crisis_indicator = True
+            category_name = "suicide_depression_risk"
+        elif "suicide" in label or "depression" in label:
+            # Direct label names
+            is_crisis_indicator = True
+            category_name = label
+        elif "risk" in label or "crisis" in label:
+            # Risk-based labels
+            is_crisis_indicator = True
+            category_name = label
+        
+        # Only consider scores above threshold for crisis detection
+        if is_crisis_indicator and score > 0.1:  # Lower threshold for mental health
+            max_crisis_score = max(max_crisis_score, score)
+            detected_categories.append({
+                'category': category_name,
+                'raw_score': score,
+                'confidence': score
+            })
     
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (calibrated for 78.6% accuracy)"""
+    """Map crisis score to response level for mental health model"""
     
-    # These thresholds gave you the best accuracy in testing
-    if crisis_score >= 0.75:
-        return 'high'
-    elif crisis_score >= 0.55:
-        return 'medium'
-    elif crisis_score >= 0.25:
-        return 'low'
+    # FIXED: Thresholds appropriate for suicide/depression detection
+    # These are more conservative since mental health detection requires different sensitivity
+    if crisis_score >= 0.8:
+        return 'high'      # Very confident prediction
+    elif crisis_score >= 0.6:
+        return 'medium'    # Moderately confident
+    elif crisis_score >= 0.3:
+        return 'low'       # Some indication
     else:
-        return 'none'
+        return 'none'      # No significant risk detected
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
@@ -193,9 +205,9 @@ async def analyze_message(request: MessageRequest):
             crisis_level=crisis_level,
             confidence_score=crisis_score,
             detected_categories=[cat['category'] for cat in categories],
-            method='mental_health_roberta_78.6_accuracy',
+            method='suicide_depression_roberta',  # FIXED: Accurate method name
             processing_time_ms=processing_time,
-            model_info="martin-ha/toxic-comment-model"
+            model_info="mrm8488/distilroberta-base-finetuned-suicide-depression"  # FIXED: Consistent model info
         )
         
     except Exception as e:
@@ -234,8 +246,8 @@ async def get_stats():
         "uptime_hours": uptime / 3600,
         "model_info": {
             "type": "Mental Health Crisis Detection",
-            "accuracy": "78.6%",
-            "model_id": "martin-ha/toxic-comment-model",
+            "model_id": "mrm8488/distilroberta-base-finetuned-suicide-depression",  # FIXED: Consistent
+            "method": "suicide_depression_roberta",
             "inference_device": "CPU (Ryzen 7 7700x)",
             "hardware": "RTX 3050 + 64GB RAM"
         },
@@ -254,6 +266,7 @@ async def root():
         "service": "Ash NLP Crisis Detection Service",
         "version": "2.0",
         "status": "running",
+        "model": "mrm8488/distilroberta-base-finetuned-suicide-depression",  # FIXED: Show actual model
         "endpoints": {
             "analyze": "POST /analyze - Analyze message for crisis",
             "health": "GET /health - Health check",
@@ -265,7 +278,8 @@ if __name__ == "__main__":
     # Standalone service configuration
     logger.info("🚀 Starting Ash NLP Service (Standalone)")
     logger.info("💻 Optimized for Ryzen 7 7700x + RTX 3050 + 64GB RAM")
-    logger.info("🌐 Starting server on 0.0.0.0:8081")
+    logger.info("🔍 Using suicide/depression detection model")
+    logger.info("🌐 Starting server on 0.0.0.0:8881")
     
     try:
         uvicorn.run(
