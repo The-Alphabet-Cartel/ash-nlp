@@ -186,30 +186,30 @@ def analyze_mental_health_prediction(prediction_result):
             'is_crisis': 'depression' in label and 'not' not in label
         })
     
-    # IMPROVED SCORING LOGIC:
-    # Consider both the winning category AND the severity scores
+    # AGGRESSIVE HIGH CRISIS DETECTION - Safety First!
+    # Any severe depression score should trigger high alert
     
-    # If severe depression has any significant score, prioritize it
-    if severe_score > 0.05:  # Lower threshold for severe detection
-        max_crisis_score = 0.8 + (severe_score * 0.2)  # Base 0.8 + boost
-        reason = f"severe_depression_detected ({severe_score:.3f})"
+    # If severe depression has ANY score, prioritize it heavily
+    if severe_score > 0.01:  # Even tiny severe scores are critical
+        max_crisis_score = 0.85 + (severe_score * 0.15)  # Start at 0.85, boost to 1.0
+        reason = f"severe_depression_detected ({severe_score:.3f}) - HIGH PRIORITY"
     
-    # If moderate depression has significant score
-    elif moderate_score > 0.15:  # Lower threshold for moderate
-        max_crisis_score = 0.5 + (moderate_score * 0.4)  # Base 0.5 + higher boost  
+    # If moderate depression has high score, boost significantly
+    elif moderate_score > 0.25:  # Lower threshold for moderate
+        max_crisis_score = 0.6 + (moderate_score * 0.4)  # Aggressive boost for moderate
         reason = f"moderate_depression_detected ({moderate_score:.3f})"
     
-    # If not depression clearly dominates (>80%)
-    elif not_depression_score > 0.8:
+    # If not depression clearly dominates (>85%)
+    elif not_depression_score > 0.85:
         max_crisis_score = 0.0
         reason = f"no_depression_detected ({not_depression_score:.3f})"
     
-    # Mixed signals - use proportional scoring
+    # Mixed signals - use weighted scoring favoring crisis detection
     else:
-        # Calculate a weighted score based on all components
-        weighted_score = (severe_score * 0.9) + (moderate_score * 0.6) + (not_depression_score * -0.1)
+        # Heavily weight any crisis indicators for safety
+        weighted_score = (severe_score * 1.0) + (moderate_score * 0.7) + (not_depression_score * -0.2)
         max_crisis_score = max(0.0, weighted_score)
-        reason = f"mixed_depression_signals (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
+        reason = f"mixed_signals_favoring_crisis (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
     
     # Cap the score at 1.0
     max_crisis_score = min(max_crisis_score, 1.0)
@@ -219,11 +219,12 @@ def analyze_mental_health_prediction(prediction_result):
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (optimized thresholds)"""
+    """Map crisis score to response level (SAFETY-FIRST for HIGH detection)"""
     
-    # Optimized thresholds based on test data analysis
-    if crisis_score >= 0.650:
-        return 'high'      # High confidence prediction
+    # AGGRESSIVE thresholds prioritizing HIGH crisis detection
+    # Better false positives than missed suicide threats!
+    if crisis_score >= 0.60:  # Lowered from 0.65 for safety
+        return 'high'      # Any significant crisis indicator → HIGH
     elif crisis_score >= 0.450:
         return 'medium'    # Medium confidence
     elif crisis_score >= 0.100:
