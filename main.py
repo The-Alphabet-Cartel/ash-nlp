@@ -133,12 +133,11 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """Analyze depression severity from DepRoBERTa model (CORRECTED FOR ACTUAL LABELS)"""
+    """Analyze depression severity - PURE ML, NO KEYWORDS"""
     
     max_crisis_score = 0.0
     detected_categories = []
     
-    # Handle different output formats
     if not prediction_result:
         return max_crisis_score, detected_categories
     
@@ -159,7 +158,7 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Extract scores using the ACTUAL model labels
+    # Extract the three depression scores
     not_depression_score = 0.0
     moderate_score = 0.0
     severe_score = 0.0
@@ -171,7 +170,6 @@ def analyze_mental_health_prediction(prediction_result):
         label = str(prediction.get('label', '')).lower().strip()
         score = float(prediction.get('score', 0.0))
         
-        # Map using the actual model labels
         if label == 'not depression':
             not_depression_score = score
         elif label == 'moderate':
@@ -187,64 +185,65 @@ def analyze_mental_health_prediction(prediction_result):
             'is_crisis': label in ['moderate', 'severe']
         })
     
-    # Log the raw scores for debugging
-    logger.info(f"Depression scores - Not: {not_depression_score:.4f}, Moderate: {moderate_score:.4f}, Severe: {severe_score:.4f}")
+    logger.info(f"Raw ML scores - Not: {not_depression_score:.4f}, Moderate: {moderate_score:.4f}, Severe: {severe_score:.4f}")
     
-    # CRISIS SCORING BASED ON ACTUAL MODEL BEHAVIOR
-    if severe_score > 0.15:  # Very rare - only extreme cases
-        max_crisis_score = 0.80 + (severe_score * 0.20)  # 0.80-1.00 range
-        reason = f"strong_severe_depression ({severe_score:.3f})"
-        
-    elif severe_score > 0.05 and moderate_score > 0.3:
-        # HIGH crisis for moderate severe + strong moderate
-        combined_signal = severe_score + (moderate_score * 0.8)
-        max_crisis_score = 0.60 + (combined_signal * 0.40)  # 0.60-1.00 range
-        reason = f"severe_and_moderate ({severe_score:.3f}, {moderate_score:.3f})"
-        
-    elif moderate_score > 0.6:
-        # HIGH crisis for very strong moderate depression
-        max_crisis_score = 0.50 + (moderate_score * 0.40)  # 0.50-0.90 range
-        reason = f"very_strong_moderate ({moderate_score:.3f})"
-        
-    elif moderate_score > 0.4:
-        # MEDIUM crisis for strong moderate depression
-        max_crisis_score = 0.25 + (moderate_score * 0.35)  # 0.25-0.60 range
-        reason = f"strong_moderate ({moderate_score:.3f})"
-        
-    elif moderate_score > 0.2:
-        # MEDIUM crisis for moderate depression signals
-        max_crisis_score = 0.15 + (moderate_score * 0.25)  # 0.15-0.40 range
-        reason = f"moderate_depression ({moderate_score:.3f})"
-        
+    # PURE MATHEMATICAL SCORING - NO CONTENT ANALYSIS
+    # Trust the ML model's probability distribution
+    
+    # Calculate depression strength as weighted combination
+    depression_strength = (moderate_score * 0.6) + (severe_score * 1.0)
+    
+    # Calculate confidence margin (how decisive is the model?)
+    max_score = max(not_depression_score, moderate_score, severe_score)
+    second_max = sorted([not_depression_score, moderate_score, severe_score])[-2]
+    confidence_margin = max_score - second_max
+    
+    # Base score from depression strength
+    base_score = depression_strength
+    
+    # Confidence boost: decisive predictions get higher scores
+    confidence_boost = confidence_margin * 0.3
+    
+    # Calculate final score
+    max_crisis_score = base_score + confidence_boost
+    
+    # Apply model-specific calibrations based on observed behavior
+    if severe_score > 0.1:  # Severe depression detected
+        max_crisis_score = max(max_crisis_score, 0.7)  # Ensure high classification
+        reason = f"severe_detected (severe={severe_score:.3f})"
+    elif moderate_score > 0.5 and not_depression_score < 0.4:
+        # Strong moderate signal with low not-depression confidence
+        max_crisis_score = max(max_crisis_score, 0.5)  # Ensure at least medium
+        reason = f"strong_moderate (mod={moderate_score:.3f}, not={not_depression_score:.3f})"
     elif not_depression_score > 0.85:
-        # Very confident it's not depression
-        max_crisis_score = 0.0
+        # Very confident not depression
+        max_crisis_score = min(max_crisis_score, 0.1)  # Cap at low
         reason = f"confident_not_depression ({not_depression_score:.3f})"
-        
     else:
-        # LOW crisis for weak signals
-        depression_signal = moderate_score + (severe_score * 2.0)  # Weight severe more
-        max_crisis_score = min(depression_signal * 0.4, 0.25)  # Cap at 0.25 for unclear cases
-        reason = f"weak_depression_signal ({depression_signal:.3f})"
+        reason = f"weighted_scoring (dep_strength={depression_strength:.3f}, conf_boost={confidence_boost:.3f})"
     
-    # Cap the score at 1.0
+    # Final cap
     max_crisis_score = min(max_crisis_score, 1.0)
     
-    logger.info(f"Depression analysis: {reason} -> crisis score: {max_crisis_score:.3f}")
+    logger.info(f"ML analysis: {reason} -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
+
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (TUNED FOR DEPRESSION MODEL)"""
+    """Map crisis score to response level - OPTIMIZED FOR YOUR TARGET"""
     
-    if crisis_score >= 0.50:   # HIGH: Strong depression signals (like "want to die")
+    # Your targets: 90% HIGH detection, 70% overall accuracy
+    # Need to find the sweet spot thresholds
+    
+    if crisis_score >= 0.50:   # HIGH threshold
         return 'high'      
-    elif crisis_score >= 0.20:  # MEDIUM: Moderate depression signals  
+    elif crisis_score >= 0.25:  # MEDIUM threshold  
         return 'medium'    
-    elif crisis_score >= 0.05:  # LOW: Mild depression indicators
+    elif crisis_score >= 0.08:  # LOW threshold
         return 'low'       
     else:
-        return 'none'      # No significant depression detected
+        return 'none'
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
