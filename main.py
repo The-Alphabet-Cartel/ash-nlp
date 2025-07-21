@@ -257,49 +257,16 @@ async def analyze_message(request: MessageRequest):
         
         # Analyze for crisis indicators
         crisis_score, categories = analyze_mental_health_prediction(prediction)
+        logger.info(f"🔧 DEBUG: After analysis function: crisis_score = {crisis_score:.4f}")
         
-        # CONTENT-AWARE REFINEMENT: Distinguish positive vs negative extreme language
-        if crisis_score > 0:
-            message_lower = request.message.lower()
-            
-            # Check if high LABEL_1 score is actually positive language (not crisis)
-            positive_indicators = [
-                'thank', 'love', 'great', 'awesome', 'happy', 'excited', 
-                'wonderful', 'amazing', 'good', 'help', 'appreciate',
-                'pizza', 'food', 'movie', 'fun', 'enjoy'
-            ]
-            
-            # Crisis language indicators
-            crisis_indicators = [
-                'kill', 'die', 'suicide', 'hurt', 'harm', 'depressed', 
-                'sad', 'hopeless', 'worthless', 'hate myself', 'end it',
-                'can\'t go on', 'pointless', 'empty', 'lost', 'give up'
-            ]
-            
-            has_positive = any(word in message_lower for word in positive_indicators)
-            has_crisis = any(word in message_lower for word in crisis_indicators)
-            
-            if has_positive and not has_crisis:
-                # High score but positive content → no crisis
-                final_crisis_score = 0.0
-                reason = "positive_language_detected"
-            elif has_crisis:
-                # Crisis language confirmed → keep score
-                final_crisis_score = crisis_score
-                reason = "crisis_language_confirmed"
-            else:
-                # Unclear → use moderate score
-                final_crisis_score = crisis_score * 0.6
-                reason = "unclear_sentiment"
-                
-            logger.debug(f"Content refinement: '{message_lower[:30]}...' -> {reason}, score: {crisis_score:.3f} -> {final_crisis_score:.3f}")
-        else:
-            final_crisis_score = crisis_score
-            reason = "no_crisis_detected"
+        # Trust the NLP model's assessment
+        final_crisis_score = crisis_score
+        reason = "nlp_assessment"
         
         # Map to crisis level
         crisis_level = map_score_to_crisis_level(final_crisis_score)
-        
+        logger.info(f"🔧 DEBUG: After threshold mapping: crisis_level = {crisis_level}")
+
         # Calculate processing time
         processing_time = (time.time() - start_time) * 1000
         
