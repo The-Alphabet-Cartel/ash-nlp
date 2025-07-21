@@ -67,8 +67,8 @@ async def load_model():
     logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
-        # FIXED: Use a properly trained suicidality detection model
-        model_id = "sentinet/suicidality"
+        # Test with original model to check if labels are switched
+        model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"
         
         logger.info(f"Loading model: {model_id}")
         logger.info("This may take several minutes for first-time download...")
@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """Convert model prediction to crisis assessment for suicidality detection model"""
+    """Test both label interpretations for suicide/depression model"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -142,38 +142,29 @@ def analyze_mental_health_prediction(prediction_result):
     if not prediction_result:
         return max_crisis_score, detected_categories
     
-    # Log the raw prediction for debugging
-    logger.debug(f"Raw prediction result: {prediction_result}")
-    
-    # Handle the nested list format from the pipeline
+    # Extract predictions
     predictions_to_process = []
     
     if isinstance(prediction_result, list):
         if len(prediction_result) > 0 and isinstance(prediction_result[0], list):
-            # Nested list format - extract the inner list
             predictions_to_process = prediction_result[0]
         elif len(prediction_result) > 0 and isinstance(prediction_result[0], dict):
-            # Direct list format
             predictions_to_process = prediction_result
         else:
             logger.warning(f"Unexpected list format: {prediction_result}")
             return max_crisis_score, detected_categories
     elif isinstance(prediction_result, dict):
-        # Single prediction as dict
         predictions_to_process = [prediction_result]
     else:
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Extract LABEL_0 and LABEL_1 scores for intelligent analysis
+    # Extract scores
     label_0_score = 0.0
     label_1_score = 0.0
     
-    # Process predictions from the suicidality model
     for prediction in predictions_to_process:
-        # Safely extract label and score
         if not isinstance(prediction, dict):
-            logger.warning(f"Unexpected prediction item: {prediction}")
             continue
             
         label = str(prediction.get('label', '')).lower()
@@ -184,53 +175,53 @@ def analyze_mental_health_prediction(prediction_result):
         elif label == "label_1":
             label_1_score = score
         
-        # Store all predictions for analysis
         detected_categories.append({
-            'category': 'no_risk' if label == 'label_0' else 'suicidality_risk',
+            'category': 'label_0' if label == 'label_0' else 'label_1',
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': label == 'label_1'
+            'is_crisis': False  # We'll determine this below
         })
     
-    # INTELLIGENT ANALYSIS: Consider relative confidence between labels
-    # Only use LABEL_1 score if it's significantly higher than LABEL_0
+    # TEST BOTH INTERPRETATIONS
     
-    if label_1_score > label_0_score:
-        # LABEL_1 wins - potential suicidality detected
-        confidence_margin = label_1_score - label_0_score
-        
-        # Use LABEL_1 score but boost it based on confidence margin
-        max_crisis_score = label_1_score + (confidence_margin * 0.1)  # Small boost for clear wins
-        max_crisis_score = min(max_crisis_score, 1.0)  # Cap at 1.0
-    else:
-        # LABEL_0 wins - no suicidality detected
-        # Even if LABEL_1 has some score, LABEL_0 is more confident, so no crisis
-        max_crisis_score = 0.0
+    # INTERPRETATION 1: LABEL_1 = crisis (original assumption)
+    interpretation_1_score = label_1_score if label_1_score > label_0_score else 0.0
     
-    # Additional safety checks
-    if label_1_score < 0.3:  # If LABEL_1 is below 30%, very unlikely to be suicidal
-        max_crisis_score = 0.0
+    # INTERPRETATION 2: LABEL_0 = crisis (switched labels theory) 
+    interpretation_2_score = label_0_score if label_0_score > label_1_score else 0.0
     
-    if label_0_score > 0.8:  # If LABEL_0 is above 80%, very confident it's not suicidal
-        max_crisis_score = 0.0
+    # For now, let's log both and manually choose which makes sense
+    logger.info(f"LABEL_0: {label_0_score:.3f}, LABEL_1: {label_1_score:.3f}")
+    logger.info(f"Interpretation 1 (LABEL_1=crisis): {interpretation_1_score:.3f}")
+    logger.info(f"Interpretation 2 (LABEL_0=crisis): {interpretation_2_score:.3f}")
     
-    # Log the analysis results for debugging
-    logger.debug(f"LABEL_0: {label_0_score:.3f}, LABEL_1: {label_1_score:.3f}, Final crisis score: {max_crisis_score:.3f}")
+    # Let's try INTERPRETATION 2 (LABEL_0 = crisis) since our diagnostics suggested this
+    max_crisis_score = interpretation_2_score
+    
+    # Update categories to reflect which label won
+    for cat in detected_categories:
+        if cat['original_label'] == 'LABEL_0' and interpretation_2_score > 0:
+            cat['is_crisis'] = True
+            cat['category'] = 'crisis_detected'
+        elif cat['original_label'] == 'LABEL_1' and interpretation_2_score == 0:
+            cat['is_crisis'] = False
+            cat['category'] = 'no_crisis'
+    
+    logger.debug(f"Final crisis score (LABEL_0=crisis interpretation): {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (optimized thresholds)"""
+    """Map crisis score to response level (testing switched labels)"""
     
-    # Optimized thresholds based on test data analysis
-    # Note: This model tends to give binary scores (0.0 or 1.0)
-    if crisis_score >= 0.200:
-        return 'high'      # High confidence prediction
-    elif crisis_score >= 0.150:
-        return 'medium'    # Medium confidence
-    elif crisis_score >= 0.100:
-        return 'low'       # Low confidence
+    # Simple thresholds for testing the switched labels theory
+    if crisis_score >= 0.8:
+        return 'high'      # Very confident crisis detection
+    elif crisis_score >= 0.6:
+        return 'medium'    # Moderately confident
+    elif crisis_score >= 0.3:
+        return 'low'       # Some indication
     else:
         return 'none'      # No significant risk detected
 
@@ -250,7 +241,7 @@ async def analyze_message(request: MessageRequest):
         # Run ML inference
         prediction = nlp_model(request.message)
         
-        # Analyze for crisis indicators
+        # Analyze for crisis indicators (testing switched labels theory)
         crisis_score, categories = analyze_mental_health_prediction(prediction)
         
         # Map to crisis level
@@ -268,9 +259,9 @@ async def analyze_message(request: MessageRequest):
             crisis_level=crisis_level,
             confidence_score=crisis_score,
             detected_categories=[cat['category'] for cat in categories],
-            method='suicidality_detection_electra',  # FIXED: Accurate method name
+            method='suicide_depression_roberta_switched_labels',
             processing_time_ms=processing_time,
-            model_info="sentinet/suicidality"  # FIXED: Consistent model info
+            model_info="mrm8488/distilroberta-base-finetuned-suicide-depression"
         )
         
     except Exception as e:
