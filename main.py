@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """Test both label interpretations for suicide/depression model"""
+    """Analyze using correct label interpretation for this model"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -176,39 +176,49 @@ def analyze_mental_health_prediction(prediction_result):
             label_1_score = score
         
         detected_categories.append({
-            'category': 'label_0' if label == 'label_0' else 'label_1',
+            'category': 'negative_sentiment' if label == 'label_0' else 'positive_or_extreme',
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
             'is_crisis': False  # We'll determine this below
         })
     
-    # TEST BOTH INTERPRETATIONS
+    # CORRECTED INTERPRETATION based on diagnostic evidence:
+    # This model appears to be sentiment-based, not suicide-specific:
+    # LABEL_0 = negative sentiment (sad, depressed, etc.)
+    # LABEL_1 = positive sentiment OR extreme negative (toxic/harmful)
     
-    # INTERPRETATION 1: LABEL_1 = crisis (original assumption)
-    interpretation_1_score = label_1_score if label_1_score > label_0_score else 0.0
+    # Crisis indicators:
+    # 1. High LABEL_0 = depression/sadness → medium crisis
+    # 2. High LABEL_1 = could be positive (no crisis) OR extreme negative (high crisis)
     
-    # INTERPRETATION 2: LABEL_0 = crisis (switched labels theory) 
-    interpretation_2_score = label_0_score if label_0_score > label_1_score else 0.0
+    if label_0_score > label_1_score:
+        # Negative sentiment dominates → some level of crisis
+        max_crisis_score = label_0_score
+        logger.debug(f"Negative sentiment detected: {label_0_score:.3f}")
+        
+        # Update categories
+        for cat in detected_categories:
+            if cat['original_label'] == 'LABEL_0':
+                cat['is_crisis'] = True
+                cat['category'] = 'negative_sentiment_crisis'
+                
+    elif label_1_score > 0.9:
+        # Very high LABEL_1 could be extreme negative (like "kill myself")
+        max_crisis_score = label_1_score
+        logger.debug(f"Extreme language detected: {label_1_score:.3f}")
+        
+        # Update categories
+        for cat in detected_categories:
+            if cat['original_label'] == 'LABEL_1':
+                cat['is_crisis'] = True
+                cat['category'] = 'extreme_language_crisis'
+    else:
+        # Moderate LABEL_1 is probably positive sentiment → no crisis
+        max_crisis_score = 0.0
+        logger.debug(f"Positive sentiment detected: {label_1_score:.3f}")
     
-    # For now, let's log both and manually choose which makes sense
-    logger.info(f"LABEL_0: {label_0_score:.3f}, LABEL_1: {label_1_score:.3f}")
-    logger.info(f"Interpretation 1 (LABEL_1=crisis): {interpretation_1_score:.3f}")
-    logger.info(f"Interpretation 2 (LABEL_0=crisis): {interpretation_2_score:.3f}")
-    
-    # Let's try INTERPRETATION 2 (LABEL_0 = crisis) since our diagnostics suggested this
-    max_crisis_score = interpretation_2_score
-    
-    # Update categories to reflect which label won
-    for cat in detected_categories:
-        if cat['original_label'] == 'LABEL_0' and interpretation_2_score > 0:
-            cat['is_crisis'] = True
-            cat['category'] = 'crisis_detected'
-        elif cat['original_label'] == 'LABEL_1' and interpretation_2_score == 0:
-            cat['is_crisis'] = False
-            cat['category'] = 'no_crisis'
-    
-    logger.debug(f"Final crisis score (LABEL_0=crisis interpretation): {max_crisis_score:.3f}")
+    logger.debug(f"Final crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
