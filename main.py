@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """IMPROVED scoring mathematics to boost HIGH crisis detection"""
+    """BALANCED scoring mathematics - boost HIGH without over-amplifying others"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -187,76 +187,92 @@ def analyze_mental_health_prediction(prediction_result):
     
     logger.info(f"Raw ML scores - Not: {not_depression_score:.4f}, Moderate: {moderate_score:.4f}, Severe: {severe_score:.4f}")
     
-    # ENHANCED SCORING MATHEMATICS
-    # The key insight: we need to AMPLIFY depression signals more aggressively
+    # BALANCED SCORING - Target specific score ranges for each level
+    # HIGH: 0.70-1.00, MEDIUM: 0.40-0.69, LOW: 0.15-0.39, NONE: 0.00-0.14
     
-    # Calculate total depression evidence
+    # Calculate base depression signal
     total_depression = moderate_score + severe_score
     
-    # Calculate how decisive the model is (confidence in top prediction)
-    all_scores = [not_depression_score, moderate_score, severe_score]
-    max_prediction = max(all_scores)
-    prediction_strength = max_prediction - (1.0 - max_prediction) / 2  # Boost strong predictions
-    
-    # AGGRESSIVE CRISIS AMPLIFICATION
-    if severe_score > 0.03:  # Any severe signal gets major boost
-        # Severe depression pathway - ensure HIGH classification
-        base_score = 0.60  # Start high
-        severe_boost = severe_score * 8.0  # Amplify severe signals dramatically
-        moderate_boost = moderate_score * 2.0  # Moderate provides additional evidence
+    # TIER 1: Strong severe signals → HIGH (0.70-1.00)
+    if severe_score > 0.05:
+        # HIGH crisis pathway
+        base_score = 0.70  # Ensure HIGH classification
+        severe_boost = severe_score * 4.0  # Moderate amplification
+        moderate_support = moderate_score * 0.5  # Moderate provides support
         
-        max_crisis_score = base_score + severe_boost + moderate_boost
-        reason = f"severe_amplified (severe={severe_score:.3f}*8 + moderate={moderate_score:.3f}*2)"
+        max_crisis_score = base_score + severe_boost + moderate_support
+        reason = f"strong_severe (base=0.70 + severe={severe_score:.3f}*4 + mod_support={moderate_score:.3f}*0.5)"
         
-    elif moderate_score > 0.30:  # Strong moderate signal
-        # Moderate depression pathway - ensure at least MEDIUM, often HIGH
-        base_score = 0.35  # Start at medium level
-        moderate_boost = moderate_score * 3.0  # Amplify moderate signals
+    # TIER 2: Very strong moderate signals → HIGH (0.70-1.00)  
+    elif moderate_score > 0.60:
+        # HIGH crisis pathway for very strong moderate
+        base_score = 0.70
+        moderate_boost = (moderate_score - 0.60) * 2.0  # Only boost the excess above 0.60
         
-        # Extra boost if not_depression is low (model is uncertain about "not depression")
-        uncertainty_boost = max(0, 0.7 - not_depression_score) * 0.5
+        max_crisis_score = base_score + moderate_boost
+        reason = f"very_strong_moderate (base=0.70 + excess={moderate_score-0.60:.3f}*2)"
         
-        max_crisis_score = base_score + moderate_boost + uncertainty_boost
-        reason = f"moderate_amplified (moderate={moderate_score:.3f}*3 + uncertainty_boost={uncertainty_boost:.3f})"
+    # TIER 3: Strong moderate signals → MEDIUM (0.40-0.69)
+    elif moderate_score > 0.35:
+        # MEDIUM crisis pathway
+        base_score = 0.40
+        moderate_boost = (moderate_score - 0.35) * 1.0  # Linear scaling above 0.35
+        severe_support = severe_score * 2.0  # Severe provides support
         
-    elif total_depression > 0.20:  # Any meaningful depression signal
-        # Weak depression pathway - ensure at least LOW
+        max_crisis_score = base_score + moderate_boost + severe_support
+        reason = f"strong_moderate (base=0.40 + mod_excess={moderate_score-0.35:.3f} + severe_support={severe_score:.3f}*2)"
+        
+    # TIER 4: Moderate depression signals → LOW/MEDIUM (0.15-0.40)
+    elif moderate_score > 0.20:
+        # LOW to MEDIUM crisis pathway
         base_score = 0.15
-        depression_boost = total_depression * 2.0
+        moderate_boost = moderate_score * 0.6  # Conservative boost
+        severe_support = severe_score * 3.0  # Any severe signal helps
         
-        max_crisis_score = base_score + depression_boost
-        reason = f"weak_depression_amplified (total_dep={total_depression:.3f}*2)"
+        max_crisis_score = base_score + moderate_boost + severe_support
+        reason = f"moderate_depression (base=0.15 + moderate={moderate_score:.3f}*0.6 + severe_support={severe_score:.3f}*3)"
         
-    elif not_depression_score > 0.85:  # Very confident not depression
+    # TIER 5: Very confident not depression → NONE (0.00)
+    elif not_depression_score > 0.85:
         max_crisis_score = 0.0
         reason = f"confident_not_depression ({not_depression_score:.3f})"
         
-    else:  # Very unclear signals
-        # Use conservative scoring for unclear cases
-        max_crisis_score = total_depression * 0.8
-        reason = f"unclear_signals (total_dep={total_depression:.3f}*0.8)"
+    # TIER 6: Weak signals → LOW (0.05-0.20)
+    elif total_depression > 0.10:
+        base_score = 0.05
+        depression_boost = total_depression * 0.5  # Conservative scaling
+        
+        max_crisis_score = base_score + depression_boost
+        reason = f"weak_depression (base=0.05 + total_dep={total_depression:.3f}*0.5)"
+        
+    # TIER 7: No significant signal → NONE (0.00)
+    else:
+        max_crisis_score = 0.0
+        reason = f"no_significant_signal (total_dep={total_depression:.3f})"
     
-    # Apply final bounds
+    # Apply bounds
     max_crisis_score = min(max_crisis_score, 1.0)
     max_crisis_score = max(max_crisis_score, 0.0)
     
-    logger.info(f"Enhanced scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
+    logger.info(f"Balanced scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
 
 def map_score_to_crisis_level(crisis_score):
-    """Updated thresholds for enhanced scoring"""
+    """Balanced thresholds matching the scoring tiers"""
     
-    # With amplified scoring, we can use higher thresholds
-    if crisis_score >= 0.65:   # HIGH: Should catch amplified severe signals
+    # Designed to match the scoring tiers:
+    # HIGH: 0.70+, MEDIUM: 0.40-0.69, LOW: 0.15-0.39, NONE: 0.00-0.14
+    
+    if crisis_score >= 0.70:   # HIGH: Strong severe or very strong moderate
         return 'high'      
-    elif crisis_score >= 0.30:  # MEDIUM: Should catch amplified moderate signals
+    elif crisis_score >= 0.40:  # MEDIUM: Strong moderate signals
         return 'medium'    
-    elif crisis_score >= 0.10:  # LOW: Should catch weak depression signals
+    elif crisis_score >= 0.15:  # LOW: Moderate depression signals
         return 'low'       
     else:
-        return 'none'
+        return 'none'      # No significant depression
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
