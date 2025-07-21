@@ -165,59 +165,51 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
+    # Extract LABEL_0 and LABEL_1 scores
+    label_0_score = 0.0
+    label_1_score = 0.0
+    
     for prediction in predictions_to_process:
-        # Safely extract label and score
         if not isinstance(prediction, dict):
-            logger.warning(f"Unexpected prediction item: {prediction}")
             continue
             
         label = str(prediction.get('label', '')).lower()
         score = float(prediction.get('score', 0.0))
         
-        # Check for crisis indicators based on actual model labels
-        is_crisis_indicator = False
-        category_name = "unknown"
-        
-        # Handle the specific labels from this model: LABEL_0 (no risk) and LABEL_1 (risk)
-        if label == "label_1":
-            # LABEL_1 indicates suicide/depression risk detected
-            is_crisis_indicator = True
-            category_name = "suicide_depression_risk"
-        elif label == "label_0":
-            # LABEL_0 indicates no risk detected
-            is_crisis_indicator = False
-            category_name = "no_risk"
-        elif "1" in label or "positive" in label or "suicide" in label or "depression" in label:
-            # Fallback for other positive indicators
-            is_crisis_indicator = True
-            category_name = "suicide_depression_risk"
-        elif "0" in label or "negative" in label or "safe" in label:
-            # Fallback for other negative indicators
-            is_crisis_indicator = False
-            category_name = "no_risk"
-        else:
-            # Unknown label format - log for debugging
-            logger.info(f"Unknown label format: '{label}' with score {score}")
-            category_name = label
-            # For unknown labels, use a conservative approach
-            if score > 0.5:  # Only high-confidence unknown labels
-                is_crisis_indicator = True
+        if label == "label_0":
+            label_0_score = score
+        elif label == "label_1":
+            label_1_score = score
         
         # Store all predictions for analysis
         detected_categories.append({
-            'category': category_name,
+            'category': 'no_risk' if label == 'label_0' else 'suicide_depression_risk',
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': is_crisis_indicator
+            'is_crisis': label == 'label_1'
         })
+    
+    # IMPROVED LOGIC: Use relative confidence between labels
+    # Only trigger crisis detection if LABEL_1 is significantly more confident than LABEL_0
+    if label_1_score > label_0_score:
+        # LABEL_1 is more confident - potential crisis
+        # Use the difference as additional confidence boost
+        confidence_margin = label_1_score - label_0_score
         
-        # Update max crisis score - for LABEL_1 predictions only
-        if is_crisis_indicator and score > 0.1:  # Lower threshold for mental health
-            max_crisis_score = max(max_crisis_score, score)
+        # Boost the crisis score based on how much more confident LABEL_1 is
+        max_crisis_score = label_1_score + (confidence_margin * 0.2)  # Small boost for clear wins
+        max_crisis_score = min(max_crisis_score, 1.0)  # Cap at 1.0
+    else:
+        # LABEL_0 is more confident - likely no crisis
+        max_crisis_score = label_1_score * 0.5  # Reduce crisis score significantly
+    
+    # Additional safety: very low LABEL_1 scores should result in no crisis
+    if label_1_score < 0.2:  # If LABEL_1 is below 20%, it's very unlikely to be a crisis
+        max_crisis_score = 0.0
     
     # Log the analysis results for debugging
-    logger.debug(f"Crisis score: {max_crisis_score}, Categories: {[cat['category'] for cat in detected_categories]}")
+    logger.debug(f"LABEL_0: {label_0_score:.3f}, LABEL_1: {label_1_score:.3f}, Final crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
