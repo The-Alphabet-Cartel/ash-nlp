@@ -230,12 +230,12 @@ def analyze_mental_health_prediction(prediction_result):
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (BALANCED - Safety First but Nuanced)"""
+    """Map crisis score to response level (SAFETY-FIRST - Catch all HIGH cases)"""
     
-    # Balanced thresholds - protect HIGH detection while allowing other levels
-    if crisis_score >= 0.75:
-        return 'high'      # Genuine severe cases only
-    elif crisis_score >= 0.45:
+    # Lower HIGH threshold to catch edge cases like "nobody would miss me"
+    if crisis_score >= 0.47:  # Lowered from 0.75 to catch scores around 0.47-0.48
+        return 'high'      # Any significant crisis signal → HIGH
+    elif crisis_score >= 0.30:
         return 'medium'    # Clear moderate depression
     elif crisis_score >= 0.15:
         return 'low'       # Mild indicators
