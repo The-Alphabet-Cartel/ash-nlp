@@ -67,8 +67,8 @@ async def load_model():
     logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
-        # FIXED: Use consistent model ID
-        model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"
+        # FIXED: Use a properly trained suicidality detection model
+        model_id = "sentinet/suicidality"
         
         logger.info(f"Loading model: {model_id}")
         logger.info("This may take several minutes for first-time download...")
@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """Convert model prediction to crisis assessment for suicide/depression model"""
+    """Convert model prediction to crisis assessment for suicidality detection model"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -145,7 +145,7 @@ def analyze_mental_health_prediction(prediction_result):
     # Log the raw prediction for debugging
     logger.debug(f"Raw prediction result: {prediction_result}")
     
-    # Handle the nested list format: [[{'label': 'LABEL_0', 'score': 0.6}, {'label': 'LABEL_1', 'score': 0.4}]]
+    # Handle the nested list format from the pipeline
     predictions_to_process = []
     
     if isinstance(prediction_result, list):
@@ -165,51 +165,46 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Extract LABEL_0 and LABEL_1 scores
-    label_0_score = 0.0
-    label_1_score = 0.0
-    
+    # Process predictions from the suicidality model
     for prediction in predictions_to_process:
+        # Safely extract label and score
         if not isinstance(prediction, dict):
+            logger.warning(f"Unexpected prediction item: {prediction}")
             continue
             
         label = str(prediction.get('label', '')).lower()
         score = float(prediction.get('score', 0.0))
         
-        if label == "label_0":
-            label_0_score = score
-        elif label == "label_1":
-            label_1_score = score
+        # For sentinet/suicidality model:
+        # LABEL_0: non-suicidal
+        # LABEL_1: suicidal
+        is_crisis_indicator = False
+        category_name = "unknown"
+        
+        if label == "label_1":
+            # LABEL_1 indicates suicidality detected
+            is_crisis_indicator = True
+            category_name = "suicidality_risk"
+            max_crisis_score = max(max_crisis_score, score)
+        elif label == "label_0":
+            # LABEL_0 indicates no suicidality
+            is_crisis_indicator = False
+            category_name = "no_risk"
+        else:
+            logger.info(f"Unknown label format: '{label}' with score {score}")
+            category_name = label
         
         # Store all predictions for analysis
         detected_categories.append({
-            'category': 'no_risk' if label == 'label_0' else 'suicide_depression_risk',
+            'category': category_name,
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': label == 'label_1'
+            'is_crisis': is_crisis_indicator
         })
     
-    # IMPROVED LOGIC: Use relative confidence between labels
-    # Only trigger crisis detection if LABEL_1 is significantly more confident than LABEL_0
-    if label_1_score > label_0_score:
-        # LABEL_1 is more confident - potential crisis
-        # Use the difference as additional confidence boost
-        confidence_margin = label_1_score - label_0_score
-        
-        # Boost the crisis score based on how much more confident LABEL_1 is
-        max_crisis_score = label_1_score + (confidence_margin * 0.2)  # Small boost for clear wins
-        max_crisis_score = min(max_crisis_score, 1.0)  # Cap at 1.0
-    else:
-        # LABEL_0 is more confident - likely no crisis
-        max_crisis_score = label_1_score * 0.5  # Reduce crisis score significantly
-    
-    # Additional safety: very low LABEL_1 scores should result in no crisis
-    if label_1_score < 0.2:  # If LABEL_1 is below 20%, it's very unlikely to be a crisis
-        max_crisis_score = 0.0
-    
     # Log the analysis results for debugging
-    logger.debug(f"LABEL_0: {label_0_score:.3f}, LABEL_1: {label_1_score:.3f}, Final crisis score: {max_crisis_score:.3f}")
+    logger.debug(f"Crisis score: {max_crisis_score}, Categories: {[cat['category'] for cat in detected_categories]}")
     
     return max_crisis_score, detected_categories
 
@@ -260,9 +255,9 @@ async def analyze_message(request: MessageRequest):
             crisis_level=crisis_level,
             confidence_score=crisis_score,
             detected_categories=[cat['category'] for cat in categories],
-            method='suicide_depression_roberta',  # FIXED: Accurate method name
+            method='suicidality_detection_electra',  # FIXED: Accurate method name
             processing_time_ms=processing_time,
-            model_info="mrm8488/distilroberta-base-finetuned-suicide-depression"  # FIXED: Consistent model info
+            model_info="sentinet/suicidality"  # FIXED: Consistent model info
         )
         
     except Exception as e:
@@ -300,9 +295,10 @@ async def get_stats():
         "uptime_seconds": uptime,
         "uptime_hours": uptime / 3600,
         "model_info": {
-            "type": "Mental Health Crisis Detection",
-            "model_id": "mrm8488/distilroberta-base-finetuned-suicide-depression",  # FIXED: Consistent
-            "method": "suicide_depression_roberta",
+            "type": "Suicidality Detection",
+            "model_id": "sentinet/suicidality",  # FIXED: Consistent
+            "method": "suicidality_detection_electra",
+            "accuracy": "93.9%",
             "inference_device": "CPU (Ryzen 7 7700x)",
             "hardware": "RTX 3050 + 64GB RAM"
         },
@@ -321,7 +317,7 @@ async def root():
         "service": "Ash NLP Crisis Detection Service",
         "version": "2.0",
         "status": "running",
-        "model": "mrm8488/distilroberta-base-finetuned-suicide-depression",  # FIXED: Show actual model
+        "model": "sentinet/suicidality",  # FIXED: Show actual model
         "endpoints": {
             "analyze": "POST /analyze - Analyze message for crisis",
             "health": "GET /health - Health check",
@@ -333,7 +329,7 @@ if __name__ == "__main__":
     # Standalone service configuration
     logger.info("🚀 Starting Ash NLP Service (Standalone)")
     logger.info("💻 Optimized for Ryzen 7 7700x + RTX 3050 + 64GB RAM")
-    logger.info("🔍 Using suicide/depression detection model")
+    logger.info("🔍 Using professional suicidality detection model (93.9% accuracy)")
     logger.info("🌐 Starting server on 0.0.0.0:8881")
     
     try:
