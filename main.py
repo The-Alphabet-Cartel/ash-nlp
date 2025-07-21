@@ -207,7 +207,7 @@ def analyze_sentiment_context(sentiment_result) -> Dict[str, float]:
     return sentiment_scores
 
 def enhanced_depression_analysis(depression_result, sentiment_scores: Dict, context: Dict) -> Tuple[float, List[str]]:
-    """Enhanced depression model analysis with calibrated scoring for better MEDIUM/LOW distinction"""
+    """Enhanced depression model analysis with SAFETY-FIRST recalibration"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -256,81 +256,101 @@ def enhanced_depression_analysis(depression_result, sentiment_scores: Dict, cont
             'is_crisis': label in ['moderate', 'severe']
         })
     
-    # Calculate base depression score with recalibrated thresholds
+    # Calculate base depression score - SAFETY FIRST approach
     total_depression = moderate_score + severe_score
     
-    # RECALIBRATED SCORING to fix MEDIUM/LOW confusion
-    if severe_score > 0.05:  # Slightly raised threshold for severe
-        base_score = 0.65 + (severe_score * 6.0)  # Reduced amplification
+    # SAFETY-FIRST SCORING: Err on side of caution for potential crises
+    if severe_score > 0.02:  # Any severe signal is HIGH
+        base_score = 0.70 + (severe_score * 6.0)  # Ensure HIGH threshold
         reason = f"severe_detected ({severe_score:.3f})"
         
-    elif moderate_score > 0.70:  # Much higher threshold for strong moderate
-        base_score = 0.55 + (moderate_score * 0.6)  # Reduced score
+    elif moderate_score > 0.60:  # Strong moderate is HIGH
+        base_score = 0.65 + (moderate_score * 0.4)  # Ensure HIGH
         reason = f"strong_moderate ({moderate_score:.3f})"
         
-    elif moderate_score > 0.45:  # Moderate signal -> should be MEDIUM range
-        base_score = 0.35 + (moderate_score * 0.5)  # Calibrated for MEDIUM
+    elif moderate_score > 0.35:  # Moderate signal - likely HIGH or high MEDIUM
+        base_score = 0.50 + (moderate_score * 0.6)  # Borderline HIGH
         reason = f"moderate_signal ({moderate_score:.3f})"
         
-    elif moderate_score > 0.25:  # Mild moderate -> LOW range
-        base_score = 0.15 + (moderate_score * 0.4)  # Calibrated for LOW
+    elif moderate_score > 0.20:  # Mild moderate - MEDIUM range
+        base_score = 0.25 + (moderate_score * 0.8)  # MEDIUM range
         reason = f"mild_moderate ({moderate_score:.3f})"
         
-    elif total_depression > 0.15:  # Any depression signal -> LOW range
-        base_score = 0.10 + (total_depression * 0.6)  # Reduced multiplier
+    elif total_depression > 0.15:  # Any depression signal - LOW to MEDIUM
+        base_score = 0.12 + (total_depression * 0.8)  # LOW range
         reason = f"mild_depression ({total_depression:.3f})"
         
-    elif not_depression_score > 0.90:  # Lower threshold for confident not depression
-        base_score = 0.05  # Small residual instead of 0.0
+    elif not_depression_score > 0.90:  # Very confident not depression
+        base_score = 0.05  # Small residual
         reason = f"confident_not_depression ({not_depression_score:.3f})"
         
     else:  # Weak signals
-        base_score = total_depression * 0.5  # Much reduced
+        base_score = total_depression * 0.6
         reason = f"weak_signals ({total_depression:.3f})"
     
-    # SPECIAL CASE: Boost for burden ideation patterns that model often misses
+    # CRITICAL PATTERN DETECTION: Patterns that MUST be HIGH
     message_lower = context.get('message_lower', '')
+    
+    # Burden ideation patterns (often missed by model)
     burden_patterns = [
         'better off without me', 'everyone would be better without me',
         'better off if i was gone', 'better off if i wasn\'t here',
         'nobody would miss me', 'wouldn\'t be missed'
     ]
     
-    for pattern in burden_patterns:
-        if pattern in message_lower:
-            base_score = max(base_score, 0.65)  # Ensure HIGH threshold
-            reason += f" + burden_ideation_boost"
+    # Hopelessness patterns that should be HIGH
+    hopelessness_patterns = [
+        'everything feels pointless', 'life feels pointless',
+        'i hate my life', 'hate my life',
+        'wish i could disappear', 'want to disappear'
+    ]
+    
+    # Struggle patterns that should be HIGH
+    struggle_patterns = [
+        'really struggling', 'struggling so much',
+        'can\'t take it anymore', 'can\'t go on'
+    ]
+    
+    critical_pattern_found = False
+    
+    for pattern_list, pattern_name in [
+        (burden_patterns, "burden_ideation"),
+        (hopelessness_patterns, "severe_hopelessness"),
+        (struggle_patterns, "severe_struggle")
+    ]:
+        for pattern in pattern_list:
+            if pattern in message_lower:
+                base_score = max(base_score, 0.70)  # Force HIGH threshold
+                reason += f" + {pattern_name}_boost"
+                critical_pattern_found = True
+                break
+        if critical_pattern_found:
             break
     
-    # Context-based adjustments (more conservative)
+    # Context-based adjustments (more conservative for safety)
     context_adjustment = 0.0
     adjustment_reasons = []
     
-    # Positive context reduction (stronger)
-    if context['has_humor_context'] and base_score < 0.40:
-        context_adjustment -= 0.20  # Stronger reduction
+    # Only reduce scores for clearly positive contexts
+    if context['has_humor_context'] and base_score < 0.35:  # Don't reduce HIGH scores
+        context_adjustment -= 0.15
         adjustment_reasons.append("humor_context")
     
-    if context['has_work_context'] and base_score < 0.30:
-        context_adjustment -= 0.12
+    if context['has_work_context'] and base_score < 0.25:  # Don't reduce MEDIUM+ scores
+        context_adjustment -= 0.10
         adjustment_reasons.append("work_success_context")
     
-    # Sentiment integration (more conservative)
+    # Sentiment integration (conservative)
     negative_sentiment = sentiment_scores.get('negative', 0.0)
     positive_sentiment = sentiment_scores.get('positive', 0.0)
     
-    if negative_sentiment > 0.85 and base_score > 0.15:  # Higher threshold
-        context_adjustment += 0.08  # Smaller boost
+    if negative_sentiment > 0.80 and base_score > 0.15:
+        context_adjustment += 0.05  # Small boost for negative sentiment
         adjustment_reasons.append("high_negative_sentiment")
     
-    if positive_sentiment > 0.75 and base_score < 0.25:  # Higher threshold
-        context_adjustment -= 0.15  # Stronger reduction for positive
+    if positive_sentiment > 0.80 and base_score < 0.20:  # Only reduce low scores
+        context_adjustment -= 0.10
         adjustment_reasons.append("high_positive_sentiment")
-    
-    # Question mark adjustment (smaller)
-    if context['question_mark'] and base_score > 0.25:
-        context_adjustment += 0.03  # Smaller boost
-        adjustment_reasons.append("help_seeking_question")
     
     # Apply adjustments
     max_crisis_score = base_score + context_adjustment
@@ -339,7 +359,7 @@ def enhanced_depression_analysis(depression_result, sentiment_scores: Dict, cont
     if adjustment_reasons:
         logger.info(f"Context adjustments: {adjustment_reasons} -> {base_score:.3f} → {max_crisis_score:.3f}")
     
-    logger.info(f"Depression analysis: {reason} -> final score: {max_crisis_score:.3f}")
+    logger.info(f"SAFETY-FIRST analysis: {reason} -> final score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
@@ -408,14 +428,14 @@ def advanced_idiom_detection(message: str, context: Dict, base_score: float) -> 
     return base_score
 
 def enhanced_crisis_level_mapping(crisis_score: float) -> str:
-    """Recalibrated crisis level mapping to fix MEDIUM/LOW confusion"""
+    """SAFETY-FIRST crisis level mapping - prioritizes catching HIGH cases"""
     
-    # RECALIBRATED thresholds based on test results
-    if crisis_score >= 0.58:    # HIGH: Raised to reduce false HIGH classifications
+    # SAFETY-FIRST thresholds: Better to over-classify than miss a crisis
+    if crisis_score >= 0.50:    # HIGH: Lowered back for safety
         return 'high'      
-    elif crisis_score >= 0.28:  # MEDIUM: Narrower range for better precision
+    elif crisis_score >= 0.22:  # MEDIUM: Reasonable range
         return 'medium'    
-    elif crisis_score >= 0.12:  # LOW: Maintained threshold
+    elif crisis_score >= 0.12:  # LOW: Maintained
         return 'low'       
     else:
         return 'none'            # NONE: 0.00-0.11
