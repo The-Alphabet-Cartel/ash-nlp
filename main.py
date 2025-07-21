@@ -165,6 +165,10 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
+    # Extract LABEL_0 and LABEL_1 scores for intelligent analysis
+    label_0_score = 0.0
+    label_1_score = 0.0
+    
     # Process predictions from the suicidality model
     for prediction in predictions_to_process:
         # Safely extract label and score
@@ -175,36 +179,44 @@ def analyze_mental_health_prediction(prediction_result):
         label = str(prediction.get('label', '')).lower()
         score = float(prediction.get('score', 0.0))
         
-        # For sentinet/suicidality model:
-        # LABEL_0: non-suicidal
-        # LABEL_1: suicidal
-        is_crisis_indicator = False
-        category_name = "unknown"
-        
-        if label == "label_1":
-            # LABEL_1 indicates suicidality detected
-            is_crisis_indicator = True
-            category_name = "suicidality_risk"
-            max_crisis_score = max(max_crisis_score, score)
-        elif label == "label_0":
-            # LABEL_0 indicates no suicidality
-            is_crisis_indicator = False
-            category_name = "no_risk"
-        else:
-            logger.info(f"Unknown label format: '{label}' with score {score}")
-            category_name = label
+        if label == "label_0":
+            label_0_score = score
+        elif label == "label_1":
+            label_1_score = score
         
         # Store all predictions for analysis
         detected_categories.append({
-            'category': category_name,
+            'category': 'no_risk' if label == 'label_0' else 'suicidality_risk',
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': is_crisis_indicator
+            'is_crisis': label == 'label_1'
         })
     
+    # INTELLIGENT ANALYSIS: Consider relative confidence between labels
+    # Only use LABEL_1 score if it's significantly higher than LABEL_0
+    
+    if label_1_score > label_0_score:
+        # LABEL_1 wins - potential suicidality detected
+        confidence_margin = label_1_score - label_0_score
+        
+        # Use LABEL_1 score but boost it based on confidence margin
+        max_crisis_score = label_1_score + (confidence_margin * 0.1)  # Small boost for clear wins
+        max_crisis_score = min(max_crisis_score, 1.0)  # Cap at 1.0
+    else:
+        # LABEL_0 wins - no suicidality detected
+        # Even if LABEL_1 has some score, LABEL_0 is more confident, so no crisis
+        max_crisis_score = 0.0
+    
+    # Additional safety checks
+    if label_1_score < 0.3:  # If LABEL_1 is below 30%, very unlikely to be suicidal
+        max_crisis_score = 0.0
+    
+    if label_0_score > 0.8:  # If LABEL_0 is above 80%, very confident it's not suicidal
+        max_crisis_score = 0.0
+    
     # Log the analysis results for debugging
-    logger.debug(f"Crisis score: {max_crisis_score}, Categories: {[cat['category'] for cat in detected_categories]}")
+    logger.debug(f"LABEL_0: {label_0_score:.3f}, LABEL_1: {label_1_score:.3f}, Final crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
