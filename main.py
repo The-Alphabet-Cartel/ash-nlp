@@ -250,7 +250,7 @@ def map_score_to_crisis_level(crisis_score):
         return 'high'      
     elif crisis_score >= 0.20:  # MEDIUM: Keep same (working well)
         return 'medium'    
-    elif crisis_score >= 0.12:  # LOW: RAISED from 0.05 to 0.12
+    elif crisis_score >= 0.15:  # LOW: RAISED from 0.05 to 0.12
         return 'low'       
     else:
         return 'none'      # Expanded NONE range: 0.00-0.11
