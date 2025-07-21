@@ -452,6 +452,10 @@ async def analyze_message(request: MessageRequest):
         adjusted_score = advanced_idiom_detection(request.message, context, depression_score)
         reasoning_steps.append(f"Context-adjusted: {adjusted_score:.3f}")
         
+        # Step 6: Final score
+        final_score = adjusted_score
+        reasoning_steps.append(f"Final score: {final_score:.3f}")
+        
         # Step 7: Map to crisis level
         crisis_level = enhanced_crisis_level_mapping(final_score)
         
