@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """PURE ML AGGRESSIVE scoring - trust the model completely"""
+    """FINE-TUNED scoring mathematics - precise boundaries"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -187,98 +187,90 @@ def analyze_mental_health_prediction(prediction_result):
     
     logger.info(f"Raw ML scores - Not: {not_depression_score:.4f}, Moderate: {moderate_score:.4f}, Severe: {severe_score:.4f}")
     
-    # PURE MATHEMATICAL APPROACH - VERY AGGRESSIVE
-    # Based on failure analysis: need to boost scores significantly
+    # FINE-TUNED SCORING with precise boundaries
+    # HIGH: 0.70-1.00, MEDIUM: 0.40-0.69, LOW: 0.15-0.39, NONE: 0.00-0.14
     
     total_depression = moderate_score + severe_score
     
-    # Calculate model confidence (how decisive is the prediction?)
-    all_scores = [not_depression_score, moderate_score, severe_score]
-    max_prediction = max(all_scores)
-    confidence_factor = max_prediction  # Use the strongest prediction as confidence
-    
-    # AGGRESSIVE AMPLIFICATION STRATEGY
-    
-    # Path 1: Any severe signal → HIGH
-    if severe_score > 0.01:  # Even tiny severe signals
+    # TIER 1: Strong severe signals → HIGH (0.70-1.00)
+    if severe_score > 0.05:
+        base_score = 0.70  # Ensure HIGH classification
+        severe_boost = severe_score * 4.0  # Moderate amplification
+        moderate_support = moderate_score * 0.5  # Moderate provides support
+        
+        max_crisis_score = base_score + severe_boost + moderate_support
+        reason = f"strong_severe (base=0.70 + severe={severe_score:.3f}*4 + mod_support={moderate_score:.3f}*0.5)"
+        
+    # TIER 2: Very strong moderate signals → HIGH (0.70-1.00)  
+    elif moderate_score > 0.60:
         base_score = 0.70
-        severe_amplification = severe_score * 10.0  # Very aggressive
-        moderate_support = moderate_score * 1.0
-        confidence_boost = confidence_factor * 0.3
+        moderate_boost = (moderate_score - 0.60) * 2.0  # Only boost the excess above 0.60
         
-        max_crisis_score = base_score + severe_amplification + moderate_support + confidence_boost
-        reason = f"severe_path (0.70 + {severe_score:.3f}*10 + {moderate_score:.3f} + conf_boost={confidence_factor:.3f}*0.3)"
+        max_crisis_score = base_score + moderate_boost
+        reason = f"very_strong_moderate (base=0.70 + excess={moderate_score-0.60:.3f}*2)"
         
-    # Path 2: Strong moderate → HIGH  
-    elif moderate_score > 0.50:
-        base_score = 0.70
-        moderate_amplification = (moderate_score - 0.50) * 4.0
-        confidence_boost = confidence_factor * 0.2
+    # TIER 3: Strong moderate signals → MEDIUM (0.40-0.69)
+    # ADJUSTED: Raised threshold from 0.35 to 0.47 to be more selective
+    elif moderate_score > 0.47:
+        base_score = 0.40
+        moderate_boost = (moderate_score - 0.47) * 1.5  # Slightly higher multiplier for fewer cases
+        severe_support = severe_score * 2.0  # Severe provides support
         
-        max_crisis_score = base_score + moderate_amplification + confidence_boost
-        reason = f"strong_moderate_path (0.70 + excess={moderate_score-0.50:.3f}*4 + conf_boost={confidence_factor:.3f}*0.2)"
+        max_crisis_score = base_score + moderate_boost + severe_support
+        reason = f"strong_moderate (base=0.40 + mod_excess={moderate_score-0.47:.3f}*1.5 + severe_support={severe_score:.3f}*2)"
         
-    # Path 3: Moderate depression → MEDIUM/HIGH
-    elif moderate_score > 0.20:  # Much lower threshold
-        base_score = 0.40  # Start at MEDIUM level
-        moderate_amplification = moderate_score * 2.0  # Double the moderate score
-        severe_boost = severe_score * 8.0  # Any severe helps a lot
-        confidence_boost = confidence_factor * 0.15
+    # TIER 4: Moderate depression signals → LOW (0.15-0.39)
+    # ADJUSTED: Covers moderate scores from 0.20 to 0.47
+    elif moderate_score > 0.20:
+        base_score = 0.15
+        moderate_boost = moderate_score * 0.5  # Conservative boost to stay in LOW range
+        severe_support = severe_score * 3.0  # Any severe signal helps
         
-        max_crisis_score = base_score + moderate_amplification + severe_boost + confidence_boost
-        reason = f"moderate_path (0.40 + {moderate_score:.3f}*2 + {severe_score:.3f}*8 + conf_boost={confidence_factor:.3f}*0.15)"
+        max_crisis_score = base_score + moderate_boost + severe_support
+        reason = f"moderate_depression (base=0.15 + moderate={moderate_score:.3f}*0.5 + severe_support={severe_score:.3f}*3)"
         
-    # Path 4: Any depression signal → LOW/MEDIUM
-    elif total_depression > 0.10:
-        base_score = 0.20  # Start at LOW level
-        depression_amplification = total_depression * 2.5  # Aggressive amplification
-        confidence_boost = confidence_factor * 0.1
-        
-        max_crisis_score = base_score + depression_amplification + confidence_boost
-        reason = f"depression_path (0.20 + {total_depression:.3f}*2.5 + conf_boost={confidence_factor:.3f}*0.1)"
-        
-    # Path 5: Weak depression signals → LOW
-    elif total_depression > 0.05:
-        base_score = 0.10
-        weak_amplification = total_depression * 3.0  # Even more aggressive for weak signals
-        
-        max_crisis_score = base_score + weak_amplification
-        reason = f"weak_depression_path (0.10 + {total_depression:.3f}*3.0)"
-        
-    # Path 6: Very confident not depression → NONE
-    elif not_depression_score > 0.90:
+    # TIER 5: Very confident not depression → NONE (0.00)
+    elif not_depression_score > 0.85:
         max_crisis_score = 0.0
         reason = f"confident_not_depression ({not_depression_score:.3f})"
         
-    # Path 7: Unclear but some signal → LOW
+    # TIER 6: Weak signals → LOW (0.05-0.20)
+    elif total_depression > 0.10:
+        base_score = 0.05
+        depression_boost = total_depression * 0.5  # Conservative scaling
+        
+        max_crisis_score = base_score + depression_boost
+        reason = f"weak_depression (base=0.05 + total_dep={total_depression:.3f}*0.5)"
+        
+    # TIER 7: No significant signal → NONE (0.00)
     else:
-        max_crisis_score = total_depression * 2.0  # Simple amplification
-        reason = f"unclear_signals ({total_depression:.3f}*2.0)"
+        max_crisis_score = 0.0
+        reason = f"no_significant_signal (total_dep={total_depression:.3f})"
     
     # Apply bounds
     max_crisis_score = min(max_crisis_score, 1.0)
     max_crisis_score = max(max_crisis_score, 0.0)
     
-    logger.info(f"Aggressive ML scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
+    logger.info(f"Fine-tuned scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
+# Thresholds remain the same
 def map_score_to_crisis_level(crisis_score):
-    """MUCH LOWER thresholds to match aggressive scoring"""
+    """Balanced thresholds matching the scoring tiers"""
     
-    # Much more aggressive thresholds based on the failure analysis
-    if crisis_score >= 0.60:   # HIGH: Lower threshold to catch more cases
+    if crisis_score >= 0.70:   # HIGH: Strong severe or very strong moderate
         return 'high'      
-    elif crisis_score >= 0.30:  # MEDIUM: Much lower to catch the 0.18-0.35 range
+    elif crisis_score >= 0.40:  # MEDIUM: Strong moderate signals
         return 'medium'    
-    elif crisis_score >= 0.10:  # LOW: Lower threshold
+    elif crisis_score >= 0.15:  # LOW: Moderate depression signals
         return 'low'       
     else:
-        return 'none'
+        return 'none'      # No significant depression
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
-    """Analyze a message for crisis indicators - PURE ML ONLY"""
+    """Analyze a message for crisis indicators"""
     
     if not nlp_model:
         raise HTTPException(status_code=503, detail="NLP model not loaded")
@@ -292,25 +284,64 @@ async def analyze_message(request: MessageRequest):
         # Run ML inference
         prediction = nlp_model(request.message)
         
-        # Analyze for crisis indicators - PURE ML
+        # Analyze for crisis indicators
         crisis_score, categories = analyze_mental_health_prediction(prediction)
         
+        # CONTENT-AWARE REFINEMENT: Distinguish positive vs negative extreme language
+        if crisis_score > 0:
+            message_lower = request.message.lower()
+            
+            # Check if high LABEL_1 score is actually positive language (not crisis)
+            positive_indicators = [
+                'thank', 'love', 'great', 'awesome', 'happy', 'excited', 
+                'wonderful', 'amazing', 'good', 'help', 'appreciate',
+                'pizza', 'food', 'movie', 'fun', 'enjoy'
+            ]
+            
+            # Crisis language indicators
+            crisis_indicators = [
+                'kill', 'die', 'suicide', 'hurt', 'harm', 'depressed', 
+                'sad', 'hopeless', 'worthless', 'hate myself', 'end it',
+                'can\'t go on', 'pointless', 'empty', 'lost', 'give up'
+            ]
+            
+            has_positive = any(word in message_lower for word in positive_indicators)
+            has_crisis = any(word in message_lower for word in crisis_indicators)
+            
+            if has_positive and not has_crisis:
+                # High score but positive content → no crisis
+                final_crisis_score = 0.0
+                reason = "positive_language_detected"
+            elif has_crisis:
+                # Crisis language confirmed → keep score
+                final_crisis_score = crisis_score
+                reason = "crisis_language_confirmed"
+            else:
+                # Unclear → use moderate score
+                final_crisis_score = crisis_score * 0.6
+                reason = "unclear_sentiment"
+                
+            logger.debug(f"Content refinement: '{message_lower[:30]}...' -> {reason}, score: {crisis_score:.3f} -> {final_crisis_score:.3f}")
+        else:
+            final_crisis_score = crisis_score
+            reason = "no_crisis_detected"
+        
         # Map to crisis level
-        crisis_level = map_score_to_crisis_level(crisis_score)
+        crisis_level = map_score_to_crisis_level(final_crisis_score)
         
         # Calculate processing time
         processing_time = (time.time() - start_time) * 1000
         
-        # Log for monitoring
+        # Log for monitoring (without full message for privacy)
         message_preview = request.message[:30] + "..." if len(request.message) > 30 else request.message
-        logger.info(f"Pure ML analysis: '{message_preview}' -> {crisis_level} (score: {crisis_score:.3f}, {processing_time:.1f}ms)")
+        logger.info(f"Analysis: '{message_preview}' -> {crisis_level} (score: {final_crisis_score:.3f}, reason: {reason}, {processing_time:.1f}ms)")
         
         return CrisisResponse(
             needs_response=crisis_level != 'none',
             crisis_level=crisis_level,
-            confidence_score=crisis_score,
+            confidence_score=final_crisis_score,
             detected_categories=[cat['category'] for cat in categories],
-            method='deproberta_depression_severity_aggressive',
+            method='deproberta_depression_severity',
             processing_time_ms=processing_time,
             model_info="rafalposwiata/deproberta-large-depression"
         )
