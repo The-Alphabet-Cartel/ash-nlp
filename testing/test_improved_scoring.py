@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Test the balanced scoring logic
+Test the fine-tuned scoring logic
 """
 
-def test_balanced_scoring():
-    """Test balanced scoring against known cases"""
+def test_fine_tuned_scoring():
+    """Test fine-tuned scoring with adjusted MEDIUM threshold"""
     
-    print("🧪 TESTING BALANCED SCORING LOGIC")
-    print("Target: HIGH=0.70+, MEDIUM=0.40-0.69, LOW=0.15-0.39, NONE=0.00-0.14")
+    print("🧪 TESTING FINE-TUNED SCORING LOGIC")
+    print("Adjustment: MEDIUM threshold raised from 0.35 to 0.47")
     print("=" * 60)
     
     test_cases = [
@@ -69,7 +69,7 @@ def test_balanced_scoring():
         
         print(f"ML Scores: not={not_depression:.3f}, moderate={moderate:.3f}, severe={severe:.3f}")
         
-        # Apply balanced scoring logic
+        # Apply fine-tuned scoring logic
         total_depression = moderate + severe
         
         # TIER 1: Strong severe signals → HIGH (0.70-1.00)
@@ -88,20 +88,21 @@ def test_balanced_scoring():
             logic = f"very_strong_moderate (0.70 + excess={moderate-0.60:.3f}*2)"
             
         # TIER 3: Strong moderate signals → MEDIUM (0.40-0.69)
-        elif moderate > 0.35:
+        # ADJUSTED: threshold raised to 0.47
+        elif moderate > 0.47:
             base_score = 0.40
-            moderate_boost = (moderate - 0.35) * 1.0
+            moderate_boost = (moderate - 0.47) * 1.5
             severe_support = severe * 2.0
             crisis_score = base_score + moderate_boost + severe_support
-            logic = f"strong_moderate (0.40 + excess={moderate-0.35:.3f} + {severe:.3f}*2)"
+            logic = f"strong_moderate (0.40 + excess={moderate-0.47:.3f}*1.5 + {severe:.3f}*2)"
             
-        # TIER 4: Moderate depression signals → LOW/MEDIUM (0.15-0.40)
+        # TIER 4: Moderate depression signals → LOW (0.15-0.39)
         elif moderate > 0.20:
             base_score = 0.15
-            moderate_boost = moderate * 0.6
+            moderate_boost = moderate * 0.5
             severe_support = severe * 3.0
             crisis_score = base_score + moderate_boost + severe_support
-            logic = f"moderate_depression (0.15 + {moderate:.3f}*0.6 + {severe:.3f}*3)"
+            logic = f"moderate_depression (0.15 + {moderate:.3f}*0.5 + {severe:.3f}*3)"
             
         # TIER 5: Very confident not depression → NONE (0.00)
         elif not_depression > 0.85:
@@ -123,7 +124,7 @@ def test_balanced_scoring():
         # Apply bounds
         crisis_score = min(max(crisis_score, 0.0), 1.0)
         
-        # Map to level using balanced thresholds
+        # Map to level using thresholds
         if crisis_score >= 0.70:
             predicted_level = "high"
         elif crisis_score >= 0.40:
@@ -146,12 +147,10 @@ def test_balanced_scoring():
         
         print("-" * 50)
     
-    print(f"\n💡 BALANCED APPROACH:")
-    print(f"• Severe signals (>0.05): 0.70 base + 4x boost → HIGH")
-    print(f"• Very strong moderate (>0.60): 0.70 base + 2x excess → HIGH") 
-    print(f"• Strong moderate (>0.35): 0.40 base + 1x excess → MEDIUM")
-    print(f"• Moderate signals (>0.20): 0.15 base + 0.6x boost → LOW/MEDIUM")
-    print(f"• Clear score ranges: HIGH≥0.70, MEDIUM≥0.40, LOW≥0.15")
+    print(f"\n💡 FINE-TUNED CHANGES:")
+    print(f"• MEDIUM threshold: 0.35 → 0.47 (more selective)")
+    print(f"• This should move 'I feel sad sometimes' from MEDIUM to LOW")
+    print(f"• 'Life feels hopeless' (0.484 moderate) should still be MEDIUM")
 
 if __name__ == "__main__":
-    test_balanced_scoring()
+    test_fine_tuned_scoring()
