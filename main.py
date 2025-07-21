@@ -193,19 +193,22 @@ def analyze_mental_health_prediction(prediction_result):
     logger.info(f"Raw scores - Severe: {severe_score:.4f}, Moderate: {moderate_score:.4f}, Not Depression: {not_depression_score:.4f}")
     
     # If severe depression has ANY score, prioritize it heavily
-    if severe_score > 0.01:  # Even tiny severe scores are critical
+    if severe_score > 0.005:  # Even tinier severe scores are critical (was 0.01)
         max_crisis_score = 0.85 + (severe_score * 0.15)  # Start at 0.85, boost to 1.0
         reason = f"severe_depression_detected ({severe_score:.3f}) - HIGH PRIORITY"
+        logger.info(f"LOGIC: Severe path triggered - score: {max_crisis_score:.4f}")
     
-    # If moderate depression has high score, boost significantly
-    elif moderate_score > 0.25:  # Lower threshold for moderate
+    # If moderate depression has significant score
+    elif moderate_score > 0.20:  # Lowered from 0.25 for safety
         max_crisis_score = 0.6 + (moderate_score * 0.4)  # Aggressive boost for moderate
         reason = f"moderate_depression_detected ({moderate_score:.3f})"
+        logger.info(f"LOGIC: Moderate path triggered - score: {max_crisis_score:.4f}")
     
     # If not depression clearly dominates (>85%)
     elif not_depression_score > 0.85:
         max_crisis_score = 0.0
         reason = f"no_depression_detected ({not_depression_score:.3f})"
+        logger.info(f"LOGIC: No depression path triggered")
     
     # Mixed signals - use weighted scoring favoring crisis detection
     else:
@@ -213,6 +216,7 @@ def analyze_mental_health_prediction(prediction_result):
         weighted_score = (severe_score * 1.0) + (moderate_score * 0.7) + (not_depression_score * -0.2)
         max_crisis_score = max(0.0, weighted_score)
         reason = f"mixed_signals_favoring_crisis (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
+        logger.info(f"LOGIC: Mixed signals path triggered - weighted: {weighted_score:.4f}, final: {max_crisis_score:.4f}")
     
     # Cap the score at 1.0
     max_crisis_score = min(max_crisis_score, 1.0)
