@@ -241,17 +241,19 @@ def apply_targeted_fixes(message, crisis_score, categories):
     return crisis_score
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (proven thresholds)"""
+    """ADJUSTED thresholds to fix false positive rate"""
     
-    # These thresholds achieved 91.7% HIGH detection
-    if crisis_score >= 0.45:   # HIGH: Strong depression signals
+    # The problem: LOW threshold of 0.05 is too sensitive
+    # Normal messages scoring 0.05-0.12 are getting flagged as LOW
+    
+    if crisis_score >= 0.45:   # HIGH: Keep same (perfect performance)
         return 'high'      
-    elif crisis_score >= 0.20:  # MEDIUM: Moderate depression signals
+    elif crisis_score >= 0.20:  # MEDIUM: Keep same (working well)
         return 'medium'    
-    elif crisis_score >= 0.05:  # LOW: Mild depression indicators
+    elif crisis_score >= 0.12:  # LOW: RAISED from 0.05 to 0.12
         return 'low'       
     else:
-        return 'none'      # No significant depression detected
+        return 'none'      # Expanded NONE range: 0.00-0.11
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
