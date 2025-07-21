@@ -118,7 +118,7 @@ async def load_model():
         raise
 
 def analyze_mental_health_prediction(prediction_result):
-    """Analyze MentalRoBERTa output for crisis detection"""
+    """Analyze MentalRoBERTa output - CORRECTED for actual label behavior"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -143,15 +143,12 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Log the raw output to understand the model's label scheme
-    logger.info(f"MentalRoBERTa raw predictions: {predictions_to_process}")
+    # MentalRoBERTa outputs:
+    # LABEL_0: Non-mental health / Normal (higher = more normal)
+    # LABEL_1: Mental health concern (higher = more concerning)
     
-    # MentalRoBERTa is likely binary classification:
-    # We need to determine what the actual labels are from the test output
-    # Common patterns: LABEL_0/LABEL_1 or specific mental health labels
-    
+    normal_score = 0.0
     mental_health_score = 0.0
-    non_mental_health_score = 0.0
     
     for prediction in predictions_to_process:
         if not isinstance(prediction, dict):
@@ -160,55 +157,63 @@ def analyze_mental_health_prediction(prediction_result):
         label = str(prediction.get('label', '')).upper()
         score = float(prediction.get('score', 0.0))
         
-        # We'll adapt this based on the actual output format
-        # For now, assuming binary LABEL_0/LABEL_1
-        if label == 'LABEL_1':  # Assuming this is mental health positive
+        if label == 'LABEL_0':  # Normal/non-mental health
+            normal_score = score
+        elif label == 'LABEL_1':  # Mental health concern
             mental_health_score = score
-        elif label == 'LABEL_0':  # Assuming this is mental health negative
-            non_mental_health_score = score
         
         detected_categories.append({
             'category': label,
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': label == 'LABEL_1'  # Adjust based on actual labels
+            'is_crisis': label == 'LABEL_1'
         })
     
-    logger.info(f"Mental health scores - Positive: {mental_health_score:.4f}, Negative: {non_mental_health_score:.4f}")
+    logger.info(f"MentalRoBERTa scores - Normal: {normal_score:.4f}, Mental Health Concern: {mental_health_score:.4f}")
     
-    # AGGRESSIVE SCORING for mental health detection
-    # MentalRoBERTa should be much more accurate than the depression model
+    # CORRECTED SCORING LOGIC
+    # Focus on how confident the model is in mental health concern (LABEL_1)
+    # and how much it beats the normal score (LABEL_0)
     
-    if mental_health_score > 0.8:
-        # Very high confidence mental health concern → HIGH
-        max_crisis_score = 0.80 + (mental_health_score * 0.20)  # 0.80-1.00 range
-        reason = f"very_high_mental_health_signal ({mental_health_score:.3f})"
+    # Calculate confidence margin
+    confidence_margin = mental_health_score - normal_score
+    
+    # High confidence mental health concern
+    if mental_health_score > 0.8 and confidence_margin > 0.2:
+        # Very confident mental health concern → HIGH
+        max_crisis_score = 0.75 + (mental_health_score * 0.25)  # 0.75-1.00 range
+        reason = f"high_confidence_mental_health (score={mental_health_score:.3f}, margin={confidence_margin:.3f})"
         
-    elif mental_health_score > 0.6:
-        # High confidence mental health concern → HIGH
-        max_crisis_score = 0.65 + (mental_health_score * 0.25)  # 0.65-0.90 range
-        reason = f"high_mental_health_signal ({mental_health_score:.3f})"
+    elif mental_health_score > 0.7 and confidence_margin > 0.1:
+        # Strong mental health concern → HIGH
+        max_crisis_score = 0.65 + (mental_health_score * 0.25)  # 0.65-0.925 range
+        reason = f"strong_mental_health (score={mental_health_score:.3f}, margin={confidence_margin:.3f})"
+        
+    elif mental_health_score > 0.6 and confidence_margin > 0.05:
+        # Moderate mental health concern → MEDIUM
+        max_crisis_score = 0.45 + (mental_health_score * 0.25)  # 0.45-0.70 range
+        reason = f"moderate_mental_health (score={mental_health_score:.3f}, margin={confidence_margin:.3f})"
+        
+    elif mental_health_score > 0.5 and confidence_margin > 0.0:
+        # Slight mental health concern → MEDIUM
+        max_crisis_score = 0.30 + (mental_health_score * 0.30)  # 0.30-0.60 range
+        reason = f"slight_mental_health (score={mental_health_score:.3f}, margin={confidence_margin:.3f})"
         
     elif mental_health_score > 0.4:
-        # Medium confidence mental health concern → MEDIUM
-        max_crisis_score = 0.40 + (mental_health_score * 0.40)  # 0.40-0.70 range
-        reason = f"medium_mental_health_signal ({mental_health_score:.3f})"
+        # Weak mental health signal → LOW
+        max_crisis_score = 0.15 + (mental_health_score * 0.25)  # 0.15-0.40 range
+        reason = f"weak_mental_health (score={mental_health_score:.3f}, margin={confidence_margin:.3f})"
         
-    elif mental_health_score > 0.25:
-        # Low-medium confidence → MEDIUM
-        max_crisis_score = 0.30 + (mental_health_score * 0.30)  # 0.30-0.55 range
-        reason = f"low_medium_mental_health_signal ({mental_health_score:.3f})"
-        
-    elif mental_health_score > 0.15:
-        # Low confidence → LOW
-        max_crisis_score = 0.15 + (mental_health_score * 0.50)  # 0.15-0.40 range
-        reason = f"low_mental_health_signal ({mental_health_score:.3f})"
+    elif normal_score > 0.7:
+        # Confident normal/no concern → NONE
+        max_crisis_score = 0.0
+        reason = f"confident_normal (normal_score={normal_score:.3f})"
         
     else:
-        # Very low signal → NONE/LOW
-        max_crisis_score = mental_health_score * 1.0  # Direct scaling for weak signals
-        reason = f"minimal_mental_health_signal ({mental_health_score:.3f})"
+        # Very unclear or low signals → NONE/LOW
+        max_crisis_score = mental_health_score * 0.3  # Scale down uncertain cases
+        reason = f"unclear_signals (mental={mental_health_score:.3f}, normal={normal_score:.3f})"
     
     # Apply bounds
     max_crisis_score = min(max_crisis_score, 1.0)
@@ -219,17 +224,17 @@ def analyze_mental_health_prediction(prediction_result):
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (optimized for MentalRoBERTa)"""
+    """Map crisis score to response level (calibrated for MentalRoBERTa)"""
     
-    # Thresholds optimized for mental health detection
-    if crisis_score >= 0.60:   # HIGH: Strong mental health signals
+    # Adjusted thresholds based on the corrected scoring
+    if crisis_score >= 0.60:   # HIGH: Strong mental health concern
         return 'high'      
-    elif crisis_score >= 0.30:  # MEDIUM: Moderate mental health signals
+    elif crisis_score >= 0.30:  # MEDIUM: Moderate mental health concern
         return 'medium'    
-    elif crisis_score >= 0.12:  # LOW: Mild mental health indicators
+    elif crisis_score >= 0.10:  # LOW: Mild mental health indicators
         return 'low'       
     else:
-        return 'none'      # No significant mental health concern detected
+        return 'none'      # No significant concern detected
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
