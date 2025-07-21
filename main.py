@@ -159,9 +159,10 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Find the highest confidence prediction
-    best_prediction = None
-    highest_score = 0.0
+    # Extract scores for each category
+    severe_score = 0.0
+    moderate_score = 0.0
+    not_depression_score = 0.0
     
     for prediction in predictions_to_process:
         if not isinstance(prediction, dict):
@@ -170,52 +171,64 @@ def analyze_mental_health_prediction(prediction_result):
         label = str(prediction.get('label', '')).lower()
         score = float(prediction.get('score', 0.0))
         
-        if score > highest_score:
-            highest_score = score
-            best_prediction = prediction
+        if 'severe' in label:
+            severe_score = score
+        elif 'moderate' in label:
+            moderate_score = score
+        elif 'not' in label:
+            not_depression_score = score
         
         detected_categories.append({
             'category': label,
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': 'depression' in label and label != 'not depression'
+            'is_crisis': 'depression' in label and 'not' not in label
         })
     
-    # Map depression severity to crisis score
-    if best_prediction:
-        label = str(best_prediction.get('label', '')).lower()
-        score = float(best_prediction.get('score', 0.0))
-        
-        # Map DepRoBERTa labels to crisis scores
-        if 'severe' in label:
-            max_crisis_score = score  # Keep full confidence for severe (maps to HIGH)
-        elif 'moderate' in label:
-            max_crisis_score = score * 0.7  # Moderate confidence (maps to MEDIUM)
-        elif 'not' in label or 'no' in label:
-            max_crisis_score = 0.0  # No depression detected
-        else:
-            # Unknown label, use conservative approach
-            max_crisis_score = score * 0.5
-        
-        logger.debug(f"Depression assessment: {label} (conf: {score:.3f}) -> crisis score: {max_crisis_score:.3f}")
+    # IMPROVED SCORING LOGIC:
+    # Consider both the winning category AND the severity scores
+    
+    # If severe depression has any significant score, prioritize it
+    if severe_score > 0.1:  # Even small severe scores are concerning
+        max_crisis_score = 0.8 + (severe_score * 0.2)  # Base 0.8 + boost
+        reason = f"severe_depression_detected ({severe_score:.3f})"
+    
+    # If moderate depression wins or has high score
+    elif moderate_score > not_depression_score or moderate_score > 0.3:
+        max_crisis_score = 0.5 + (moderate_score * 0.3)  # Base 0.5 + boost  
+        reason = f"moderate_depression_detected ({moderate_score:.3f})"
+    
+    # If not depression clearly wins
+    elif not_depression_score > 0.7:
+        max_crisis_score = 0.0
+        reason = f"no_depression_detected ({not_depression_score:.3f})"
+    
+    # Edge case: unclear results
+    else:
+        max_crisis_score = max(moderate_score, severe_score) * 0.5
+        reason = f"unclear_depression_signal"
+    
+    # Cap the score at 1.0
+    max_crisis_score = min(max_crisis_score, 1.0)
+    
+    logger.debug(f"Depression analysis: {reason} -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (DepRoBERTa depression model)"""
+    """Map crisis score to response level (DepRoBERTa with improved scoring)"""
     
-    # Thresholds for depression severity assessment
-    # Severe depression → HIGH crisis
-    # Moderate depression → MEDIUM crisis  
-    # Mild indicators → LOW crisis
-    # No depression → NONE
+    # Adjusted thresholds for new scoring logic:
+    # Severe depression starts at 0.8
+    # Moderate depression starts at 0.5  
+    # Mild indicators start at 0.2
     
-    if crisis_score >= 0.7:
-        return 'high'      # Severe depression detected
-    elif crisis_score >= 0.4:
-        return 'medium'    # Moderate depression detected
-    elif crisis_score >= 0.2:
+    if crisis_score >= 0.75:
+        return 'high'      # Severe depression or high moderate
+    elif crisis_score >= 0.45:
+        return 'medium'    # Moderate depression
+    elif crisis_score >= 0.15:
         return 'low'       # Mild depression indicators
     else:
         return 'none'      # No depression detected
