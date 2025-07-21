@@ -192,29 +192,33 @@ def analyze_mental_health_prediction(prediction_result):
     # Log the input scores for debugging
     logger.info(f"Raw scores - Severe: {severe_score:.4f}, Moderate: {moderate_score:.4f}, Not Depression: {not_depression_score:.4f}")
     
-    # If severe depression has meaningful score, prioritize it
-    if severe_score > 0.02:  # Raised threshold for severe (was 0.005)
-        max_crisis_score = 0.80 + (severe_score * 0.20)  # Start at 0.80, boost to 1.0
+    # HIGH PRIORITY: Severe depression OR significant moderate with any severe signal
+    if severe_score > 0.02:  # Clear severe depression
+        max_crisis_score = 0.80 + (severe_score * 0.20)
         reason = f"severe_depression_detected ({severe_score:.3f}) - HIGH PRIORITY"
-        logger.info(f"LOGIC: Severe path triggered - score: {max_crisis_score:.4f}")
+        logger.info(f"LOGIC: Strong severe path triggered - score: {max_crisis_score:.4f}")
     
-    # If moderate depression is clearly dominant AND significant
-    elif moderate_score > not_depression_score and moderate_score > 0.40:  # Must beat no-depression AND be significant
-        max_crisis_score = 0.45 + (moderate_score * 0.35)  # More conservative for moderate
+    elif severe_score > 0.005 and moderate_score > 0.30:  # Small severe + moderate = concerning
+        max_crisis_score = 0.75 + (severe_score * 0.15) + (moderate_score * 0.10)
+        reason = f"severe+moderate_detected (s:{severe_score:.3f}, m:{moderate_score:.3f}) - HIGH PRIORITY"
+        logger.info(f"LOGIC: Severe+moderate path triggered - score: {max_crisis_score:.4f}")
+    
+    # MEDIUM: Strong moderate depression (beats not-depression clearly)
+    elif moderate_score > not_depression_score and moderate_score > 0.40:
+        max_crisis_score = 0.45 + (moderate_score * 0.25)
         reason = f"moderate_depression_detected ({moderate_score:.3f})"
         logger.info(f"LOGIC: Moderate path triggered - score: {max_crisis_score:.4f}")
     
-    # If not depression clearly dominates (>80%)
+    # NONE: Clear no depression
     elif not_depression_score > 0.80:
         max_crisis_score = 0.0
         reason = f"no_depression_detected ({not_depression_score:.3f})"
         logger.info(f"LOGIC: No depression path triggered")
     
-    # Mixed signals or mild depression - conservative scoring
+    # LOW/MIXED: Everything else gets conservative scoring
     else:
-        # More conservative weighting
-        weighted_score = (severe_score * 0.8) + (moderate_score * 0.4) + (not_depression_score * -0.05)
-        max_crisis_score = max(0.0, min(weighted_score, 0.6))  # Cap at 0.6 for mixed signals
+        weighted_score = (severe_score * 0.6) + (moderate_score * 0.3) + (not_depression_score * -0.02)
+        max_crisis_score = max(0.0, min(weighted_score, 0.5))  # Cap at 0.5 for mixed signals
         reason = f"mixed_signals_conservative (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
         logger.info(f"LOGIC: Mixed signals path triggered - weighted: {weighted_score:.4f}, final: {max_crisis_score:.4f}")
     
