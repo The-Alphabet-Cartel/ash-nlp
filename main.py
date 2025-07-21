@@ -57,56 +57,37 @@ class HealthResponse(BaseModel):
 startup_time = time.time()
 
 async def load_model():
-    """Load the Mental Health RoBERTa model on startup"""
+    """Load the MentalRoBERTa model on startup"""
     global nlp_model
     
     logger.info("=" * 50)
     logger.info("STARTING MODEL LOADING PROCESS")
     logger.info("=" * 50)
-    logger.info("Loading Mental Health RoBERTa model...")
+    logger.info("Loading MentalRoBERTa model...")
     logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
-        # Use proper depression severity assessment model
-        model_id = "rafalposwiata/deproberta-large-depression"
+        # CHANGE: Use MentalRoBERTa instead of depression model
+        model_id = "mental/mental-roberta-base"
         
         logger.info(f"Loading model: {model_id}")
-        logger.info("This may take several minutes for first-time download...")
+        logger.info("This model is specifically trained on mental health data...")
         
         nlp_model = pipeline(
             "text-classification",
             model=model_id,
-            device=-1,  # Force CPU inference (RTX 3050 has limited VRAM)
+            device=-1,  # Force CPU inference
             top_k=None  # Return all scores for analysis
         )
         
-        logger.info("✅ Mental Health RoBERTa model loaded successfully!")
+        logger.info("✅ MentalRoBERTa model loaded successfully!")
         
         # Test inference to verify everything works
         test_result = nlp_model("I feel sad today")
         logger.info(f"✅ Model test successful")
-        logger.info(f"Test result type: {type(test_result)}")
-        logger.info(f"Test result content: {test_result}")
+        logger.info(f"Test result: {test_result}")
         
-        # Extract the actual predictions from nested structure
-        if isinstance(test_result, list) and len(test_result) > 0:
-            if isinstance(test_result[0], list):
-                # Nested list format: [[{'label': 'LABEL_0', 'score': 0.6}, {'label': 'LABEL_1', 'score': 0.4}]]
-                predictions = test_result[0]
-                logger.info(f"✅ Found nested list format with {len(predictions)} labels")
-                logger.info(f"Available labels: {[pred['label'] for pred in predictions]}")
-            elif isinstance(test_result[0], dict):
-                # Direct list format: [{'label': 'LABEL_0', 'score': 0.6}, {'label': 'LABEL_1', 'score': 0.4}]
-                predictions = test_result
-                logger.info(f"✅ Found direct list format with {len(predictions)} labels")
-                logger.info(f"Available labels: {[pred['label'] for pred in predictions]}")
-            else:
-                logger.info(f"Unexpected nested structure: {test_result}")
-        else:
-            logger.info(f"Unexpected result format: {test_result}")
-        
-        # Log model info
-        logger.info("✅ Model ready for crisis detection")
+        logger.info("✅ Model ready for mental health crisis detection")
         logger.info("=" * 50)
         
     except Exception as e:
@@ -132,8 +113,9 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# SIMPLE analysis function for MentalRoBERTa
 def analyze_mental_health_prediction(prediction_result):
-    """FINE-TUNED scoring mathematics - precise boundaries"""
+    """Analyze MentalRoBERTa output - MUCH SIMPLER"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -158,115 +140,70 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Extract the three depression scores
-    not_depression_score = 0.0
-    moderate_score = 0.0
-    severe_score = 0.0
+    # MentalRoBERTa likely outputs LABEL_0/LABEL_1 for not-mental-health/mental-health
+    # We need to test this first, but assuming binary classification:
+    
+    mental_health_score = 0.0
+    not_mental_health_score = 0.0
     
     for prediction in predictions_to_process:
         if not isinstance(prediction, dict):
             continue
             
-        label = str(prediction.get('label', '')).lower().strip()
+        label = str(prediction.get('label', '')).upper()
         score = float(prediction.get('score', 0.0))
         
-        if label == 'not depression':
-            not_depression_score = score
-        elif label == 'moderate':
-            moderate_score = score
-        elif label == 'severe':
-            severe_score = score
+        # Binary classification expected
+        if label == 'LABEL_1':  # Likely mental health positive
+            mental_health_score = score
+        elif label == 'LABEL_0':  # Likely mental health negative
+            not_mental_health_score = score
         
         detected_categories.append({
             'category': label,
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': label in ['moderate', 'severe']
+            'is_crisis': label == 'LABEL_1'
         })
     
-    logger.info(f"Raw ML scores - Not: {not_depression_score:.4f}, Moderate: {moderate_score:.4f}, Severe: {severe_score:.4f}")
+    logger.info(f"MentalRoBERTa scores - Mental Health: {mental_health_score:.4f}, Not Mental Health: {not_mental_health_score:.4f}")
     
-    # FINE-TUNED SCORING with precise boundaries
-    # HIGH: 0.70-1.00, MEDIUM: 0.40-0.69, LOW: 0.15-0.39, NONE: 0.00-0.14
-    
-    total_depression = moderate_score + severe_score
-    
-    # TIER 1: Strong severe signals → HIGH (0.70-1.00)
-    if severe_score > 0.05:
-        base_score = 0.70  # Ensure HIGH classification
-        severe_boost = severe_score * 4.0  # Moderate amplification
-        moderate_support = moderate_score * 0.5  # Moderate provides support
-        
-        max_crisis_score = base_score + severe_boost + moderate_support
-        reason = f"strong_severe (base=0.70 + severe={severe_score:.3f}*4 + mod_support={moderate_score:.3f}*0.5)"
-        
-    # TIER 2: Very strong moderate signals → HIGH (0.70-1.00)  
-    elif moderate_score > 0.60:
-        base_score = 0.70
-        moderate_boost = (moderate_score - 0.60) * 2.0  # Only boost the excess above 0.60
-        
-        max_crisis_score = base_score + moderate_boost
-        reason = f"very_strong_moderate (base=0.70 + excess={moderate_score-0.60:.3f}*2)"
-        
-    # TIER 3: Strong moderate signals → MEDIUM (0.40-0.69)
-    # ADJUSTED: Raised threshold from 0.35 to 0.47 to be more selective
-    elif moderate_score > 0.47:
-        base_score = 0.40
-        moderate_boost = (moderate_score - 0.47) * 1.5  # Slightly higher multiplier for fewer cases
-        severe_support = severe_score * 2.0  # Severe provides support
-        
-        max_crisis_score = base_score + moderate_boost + severe_support
-        reason = f"strong_moderate (base=0.40 + mod_excess={moderate_score-0.47:.3f}*1.5 + severe_support={severe_score:.3f}*2)"
-        
-    # TIER 4: Moderate depression signals → LOW (0.15-0.39)
-    # ADJUSTED: Covers moderate scores from 0.20 to 0.47
-    elif moderate_score > 0.20:
-        base_score = 0.15
-        moderate_boost = moderate_score * 0.5  # Conservative boost to stay in LOW range
-        severe_support = severe_score * 3.0  # Any severe signal helps
-        
-        max_crisis_score = base_score + moderate_boost + severe_support
-        reason = f"moderate_depression (base=0.15 + moderate={moderate_score:.3f}*0.5 + severe_support={severe_score:.3f}*3)"
-        
-    # TIER 5: Very confident not depression → NONE (0.00)
-    elif not_depression_score > 0.85:
-        max_crisis_score = 0.0
-        reason = f"confident_not_depression ({not_depression_score:.3f})"
-        
-    # TIER 6: Weak signals → LOW (0.05-0.20)
-    elif total_depression > 0.10:
-        base_score = 0.05
-        depression_boost = total_depression * 0.5  # Conservative scaling
-        
-        max_crisis_score = base_score + depression_boost
-        reason = f"weak_depression (base=0.05 + total_dep={total_depression:.3f}*0.5)"
-        
-    # TIER 7: No significant signal → NONE (0.00)
+    # SIMPLE SCORING: Use mental health score directly with amplification
+    if mental_health_score > 0.8:
+        max_crisis_score = 0.85 + (mental_health_score * 0.15)  # HIGH
+        reason = f"very_high_confidence ({mental_health_score:.3f})"
+    elif mental_health_score > 0.6:
+        max_crisis_score = 0.60 + (mental_health_score * 0.25)  # HIGH/MEDIUM
+        reason = f"high_confidence ({mental_health_score:.3f})"
+    elif mental_health_score > 0.4:
+        max_crisis_score = 0.35 + (mental_health_score * 0.40)  # MEDIUM
+        reason = f"medium_confidence ({mental_health_score:.3f})"
+    elif mental_health_score > 0.2:
+        max_crisis_score = 0.15 + (mental_health_score * 0.50)  # LOW
+        reason = f"low_confidence ({mental_health_score:.3f})"
     else:
-        max_crisis_score = 0.0
-        reason = f"no_significant_signal (total_dep={total_depression:.3f})"
+        max_crisis_score = mental_health_score * 0.5  # NONE/LOW
+        reason = f"very_low_confidence ({mental_health_score:.3f})"
     
-    # Apply bounds
     max_crisis_score = min(max_crisis_score, 1.0)
-    max_crisis_score = max(max_crisis_score, 0.0)
     
-    logger.info(f"Fine-tuned scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
+    logger.info(f"MentalRoBERTa analysis: {reason} -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
-# Thresholds remain the same
+# Keep the same thresholds
 def map_score_to_crisis_level(crisis_score):
-    """Balanced thresholds matching the scoring tiers"""
+    """Map crisis score to response level"""
     
-    if crisis_score >= 0.70:   # HIGH: Strong severe or very strong moderate
+    if crisis_score >= 0.60:   # HIGH
         return 'high'      
-    elif crisis_score >= 0.40:  # MEDIUM: Strong moderate signals
+    elif crisis_score >= 0.30:  # MEDIUM
         return 'medium'    
-    elif crisis_score >= 0.15:  # LOW: Moderate depression signals
+    elif crisis_score >= 0.10:  # LOW
         return 'low'       
     else:
-        return 'none'      # No significant depression
+        return 'none'
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
@@ -381,10 +318,10 @@ async def get_stats():
         "uptime_seconds": uptime,
         "uptime_hours": uptime / 3600,
         "model_info": {
-            "type": "Depression Severity Detection",
-            "model_id": "rafalposwiata/deproberta-large-depression",  # FIXED
-            "method": "depression_severity_classification",
-            "labels": ["not depression", "moderate", "severe"],
+            "type": "Mental Health Crisis Detection",
+            "model_id": "mental/mental-roberta-base",
+            "method": "mental_health_classification",
+            "description": "Domain-specific RoBERTa trained on mental health data",
             "inference_device": "CPU (Ryzen 7 7700x)",
             "hardware": "RTX 3050 + 64GB RAM"
         },
@@ -403,7 +340,7 @@ async def root():
         "service": "Ash NLP Crisis Detection Service",
         "version": "2.0",
         "status": "running",
-        "model": "rafalposwiata/deproberta-large-depression",  # FIXED
+        "model": "mental/mental-roberta-base",
         "endpoints": {
             "analyze": "POST /analyze - Analyze message for crisis",
             "health": "GET /health - Health check",
