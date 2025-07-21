@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """BALANCED scoring mathematics - boost HIGH without over-amplifying others"""
+    """FINE-TUNED scoring mathematics - precise boundaries"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -187,15 +187,13 @@ def analyze_mental_health_prediction(prediction_result):
     
     logger.info(f"Raw ML scores - Not: {not_depression_score:.4f}, Moderate: {moderate_score:.4f}, Severe: {severe_score:.4f}")
     
-    # BALANCED SCORING - Target specific score ranges for each level
+    # FINE-TUNED SCORING with precise boundaries
     # HIGH: 0.70-1.00, MEDIUM: 0.40-0.69, LOW: 0.15-0.39, NONE: 0.00-0.14
     
-    # Calculate base depression signal
     total_depression = moderate_score + severe_score
     
     # TIER 1: Strong severe signals → HIGH (0.70-1.00)
     if severe_score > 0.05:
-        # HIGH crisis pathway
         base_score = 0.70  # Ensure HIGH classification
         severe_boost = severe_score * 4.0  # Moderate amplification
         moderate_support = moderate_score * 0.5  # Moderate provides support
@@ -205,7 +203,6 @@ def analyze_mental_health_prediction(prediction_result):
         
     # TIER 2: Very strong moderate signals → HIGH (0.70-1.00)  
     elif moderate_score > 0.60:
-        # HIGH crisis pathway for very strong moderate
         base_score = 0.70
         moderate_boost = (moderate_score - 0.60) * 2.0  # Only boost the excess above 0.60
         
@@ -213,24 +210,24 @@ def analyze_mental_health_prediction(prediction_result):
         reason = f"very_strong_moderate (base=0.70 + excess={moderate_score-0.60:.3f}*2)"
         
     # TIER 3: Strong moderate signals → MEDIUM (0.40-0.69)
-    elif moderate_score > 0.35:
-        # MEDIUM crisis pathway
+    # ADJUSTED: Raised threshold from 0.35 to 0.47 to be more selective
+    elif moderate_score > 0.47:
         base_score = 0.40
-        moderate_boost = (moderate_score - 0.35) * 1.0  # Linear scaling above 0.35
+        moderate_boost = (moderate_score - 0.47) * 1.5  # Slightly higher multiplier for fewer cases
         severe_support = severe_score * 2.0  # Severe provides support
         
         max_crisis_score = base_score + moderate_boost + severe_support
-        reason = f"strong_moderate (base=0.40 + mod_excess={moderate_score-0.35:.3f} + severe_support={severe_score:.3f}*2)"
+        reason = f"strong_moderate (base=0.40 + mod_excess={moderate_score-0.47:.3f}*1.5 + severe_support={severe_score:.3f}*2)"
         
-    # TIER 4: Moderate depression signals → LOW/MEDIUM (0.15-0.40)
+    # TIER 4: Moderate depression signals → LOW (0.15-0.39)
+    # ADJUSTED: Covers moderate scores from 0.20 to 0.47
     elif moderate_score > 0.20:
-        # LOW to MEDIUM crisis pathway
         base_score = 0.15
-        moderate_boost = moderate_score * 0.6  # Conservative boost
+        moderate_boost = moderate_score * 0.5  # Conservative boost to stay in LOW range
         severe_support = severe_score * 3.0  # Any severe signal helps
         
         max_crisis_score = base_score + moderate_boost + severe_support
-        reason = f"moderate_depression (base=0.15 + moderate={moderate_score:.3f}*0.6 + severe_support={severe_score:.3f}*3)"
+        reason = f"moderate_depression (base=0.15 + moderate={moderate_score:.3f}*0.5 + severe_support={severe_score:.3f}*3)"
         
     # TIER 5: Very confident not depression → NONE (0.00)
     elif not_depression_score > 0.85:
@@ -254,16 +251,14 @@ def analyze_mental_health_prediction(prediction_result):
     max_crisis_score = min(max_crisis_score, 1.0)
     max_crisis_score = max(max_crisis_score, 0.0)
     
-    logger.info(f"Balanced scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
+    logger.info(f"Fine-tuned scoring: {reason} -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
 
+# Thresholds remain the same
 def map_score_to_crisis_level(crisis_score):
     """Balanced thresholds matching the scoring tiers"""
-    
-    # Designed to match the scoring tiers:
-    # HIGH: 0.70+, MEDIUM: 0.40-0.69, LOW: 0.15-0.39, NONE: 0.00-0.14
     
     if crisis_score >= 0.70:   # HIGH: Strong severe or very strong moderate
         return 'high'      
@@ -273,7 +268,6 @@ def map_score_to_crisis_level(crisis_score):
         return 'low'       
     else:
         return 'none'      # No significant depression
-
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
     """Analyze a message for crisis indicators"""
