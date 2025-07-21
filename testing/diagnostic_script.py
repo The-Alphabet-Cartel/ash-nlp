@@ -13,8 +13,8 @@ def test_model_directly():
     print("🔬 DEEP DIAGNOSTIC: Direct Model Testing")
     print("=" * 60)
     
-    # Load the same model as the service - test original model with switched labels theory
-    model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"
+    # Load the DepRoBERTa depression severity model
+    model_id = "rafalposwiata/deproberta-large-depression"
     
     print(f"Loading model: {model_id}")
     nlp_model = pipeline(
