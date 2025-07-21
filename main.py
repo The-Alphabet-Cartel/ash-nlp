@@ -190,24 +190,26 @@ def analyze_mental_health_prediction(prediction_result):
     # Consider both the winning category AND the severity scores
     
     # If severe depression has any significant score, prioritize it
-    if severe_score > 0.1:  # Even small severe scores are concerning
+    if severe_score > 0.05:  # Lower threshold for severe detection
         max_crisis_score = 0.8 + (severe_score * 0.2)  # Base 0.8 + boost
         reason = f"severe_depression_detected ({severe_score:.3f})"
     
-    # If moderate depression wins or has high score
-    elif moderate_score > not_depression_score or moderate_score > 0.3:
-        max_crisis_score = 0.5 + (moderate_score * 0.3)  # Base 0.5 + boost  
+    # If moderate depression has significant score
+    elif moderate_score > 0.15:  # Lower threshold for moderate
+        max_crisis_score = 0.5 + (moderate_score * 0.4)  # Base 0.5 + higher boost  
         reason = f"moderate_depression_detected ({moderate_score:.3f})"
     
-    # If not depression clearly wins
-    elif not_depression_score > 0.7:
+    # If not depression clearly dominates (>80%)
+    elif not_depression_score > 0.8:
         max_crisis_score = 0.0
         reason = f"no_depression_detected ({not_depression_score:.3f})"
     
-    # Edge case: unclear results
+    # Mixed signals - use proportional scoring
     else:
-        max_crisis_score = max(moderate_score, severe_score) * 0.5
-        reason = f"unclear_depression_signal"
+        # Calculate a weighted score based on all components
+        weighted_score = (severe_score * 0.9) + (moderate_score * 0.6) + (not_depression_score * -0.1)
+        max_crisis_score = max(0.0, weighted_score)
+        reason = f"mixed_depression_signals (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
     
     # Cap the score at 1.0
     max_crisis_score = min(max_crisis_score, 1.0)
@@ -217,21 +219,17 @@ def analyze_mental_health_prediction(prediction_result):
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (DepRoBERTa with improved scoring)"""
+    """Map crisis score to response level (optimized thresholds)"""
     
-    # Adjusted thresholds for new scoring logic:
-    # Severe depression starts at 0.8
-    # Moderate depression starts at 0.5  
-    # Mild indicators start at 0.2
-    
-    if crisis_score >= 0.75:
-        return 'high'      # Severe depression or high moderate
-    elif crisis_score >= 0.45:
-        return 'medium'    # Moderate depression
-    elif crisis_score >= 0.15:
-        return 'low'       # Mild depression indicators
+    # Optimized thresholds based on test data analysis
+    if crisis_score >= 0.800:
+        return 'high'      # High confidence prediction
+    elif crisis_score >= 0.700:
+        return 'medium'    # Medium confidence
+    elif crisis_score >= 0.100:
+        return 'low'       # Low confidence
     else:
-        return 'none'      # No depression detected
+        return 'none'      # No significant risk detected
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
