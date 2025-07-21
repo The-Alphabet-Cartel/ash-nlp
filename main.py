@@ -189,6 +189,9 @@ def analyze_mental_health_prediction(prediction_result):
     # AGGRESSIVE HIGH CRISIS DETECTION - Safety First!
     # Any severe depression score should trigger high alert
     
+    # Log the input scores for debugging
+    logger.info(f"Raw scores - Severe: {severe_score:.4f}, Moderate: {moderate_score:.4f}, Not Depression: {not_depression_score:.4f}")
+    
     # If severe depression has ANY score, prioritize it heavily
     if severe_score > 0.01:  # Even tiny severe scores are critical
         max_crisis_score = 0.85 + (severe_score * 0.15)  # Start at 0.85, boost to 1.0
