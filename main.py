@@ -67,8 +67,8 @@ async def load_model():
     logger.info("Hardware: Ryzen 7 7700x + RTX 3050 + 64GB RAM")
     
     try:
-        # Test with original model to check if labels are switched
-        model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"
+        # Use proper depression severity assessment model
+        model_id = "rafalposwiata/deproberta-large-depression"
         
         logger.info(f"Loading model: {model_id}")
         logger.info("This may take several minutes for first-time download...")
@@ -133,7 +133,7 @@ app = FastAPI(
 )
 
 def analyze_mental_health_prediction(prediction_result):
-    """Analyze using correct label interpretation for this model"""
+    """Analyze depression severity from DepRoBERTa model"""
     
     max_crisis_score = 0.0
     detected_categories = []
@@ -159,9 +159,9 @@ def analyze_mental_health_prediction(prediction_result):
         logger.warning(f"Unexpected prediction format: {type(prediction_result)}")
         return max_crisis_score, detected_categories
     
-    # Extract scores
-    label_0_score = 0.0
-    label_1_score = 0.0
+    # Find the highest confidence prediction
+    best_prediction = None
+    highest_score = 0.0
     
     for prediction in predictions_to_process:
         if not isinstance(prediction, dict):
@@ -170,70 +170,55 @@ def analyze_mental_health_prediction(prediction_result):
         label = str(prediction.get('label', '')).lower()
         score = float(prediction.get('score', 0.0))
         
-        if label == "label_0":
-            label_0_score = score
-        elif label == "label_1":
-            label_1_score = score
+        if score > highest_score:
+            highest_score = score
+            best_prediction = prediction
         
         detected_categories.append({
-            'category': 'negative_sentiment' if label == 'label_0' else 'positive_or_extreme',
+            'category': label,
             'raw_score': score,
             'confidence': score,
             'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': False  # We'll determine this below
+            'is_crisis': 'depression' in label and label != 'not depression'
         })
     
-    # CORRECTED INTERPRETATION based on diagnostic evidence:
-    # This model appears to be sentiment-based, not suicide-specific:
-    # LABEL_0 = negative sentiment (sad, depressed, etc.)
-    # LABEL_1 = positive sentiment OR extreme negative (toxic/harmful)
-    
-    # Crisis indicators:
-    # 1. High LABEL_0 = depression/sadness → medium crisis
-    # 2. High LABEL_1 = could be positive (no crisis) OR extreme negative (high crisis)
-    
-    if label_0_score > label_1_score:
-        # Negative sentiment dominates → some level of crisis
-        max_crisis_score = label_0_score
-        logger.debug(f"Negative sentiment detected: {label_0_score:.3f}")
+    # Map depression severity to crisis score
+    if best_prediction:
+        label = str(best_prediction.get('label', '')).lower()
+        score = float(best_prediction.get('score', 0.0))
         
-        # Update categories
-        for cat in detected_categories:
-            if cat['original_label'] == 'LABEL_0':
-                cat['is_crisis'] = True
-                cat['category'] = 'negative_sentiment_crisis'
-                
-    elif label_1_score > 0.9:
-        # Very high LABEL_1 could be extreme negative (like "kill myself")
-        max_crisis_score = label_1_score
-        logger.debug(f"Extreme language detected: {label_1_score:.3f}")
+        # Map DepRoBERTa labels to crisis scores
+        if 'severe' in label:
+            max_crisis_score = score  # Keep full confidence for severe (maps to HIGH)
+        elif 'moderate' in label:
+            max_crisis_score = score * 0.7  # Moderate confidence (maps to MEDIUM)
+        elif 'not' in label or 'no' in label:
+            max_crisis_score = 0.0  # No depression detected
+        else:
+            # Unknown label, use conservative approach
+            max_crisis_score = score * 0.5
         
-        # Update categories
-        for cat in detected_categories:
-            if cat['original_label'] == 'LABEL_1':
-                cat['is_crisis'] = True
-                cat['category'] = 'extreme_language_crisis'
-    else:
-        # Moderate LABEL_1 is probably positive sentiment → no crisis
-        max_crisis_score = 0.0
-        logger.debug(f"Positive sentiment detected: {label_1_score:.3f}")
-    
-    logger.debug(f"Final crisis score: {max_crisis_score:.3f}")
+        logger.debug(f"Depression assessment: {label} (conf: {score:.3f}) -> crisis score: {max_crisis_score:.3f}")
     
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (testing switched labels)"""
+    """Map crisis score to response level (DepRoBERTa depression model)"""
     
-    # Simple thresholds for testing the switched labels theory
-    if crisis_score >= 0.8:
-        return 'high'      # Very confident crisis detection
-    elif crisis_score >= 0.6:
-        return 'medium'    # Moderately confident
-    elif crisis_score >= 0.3:
-        return 'low'       # Some indication
+    # Thresholds for depression severity assessment
+    # Severe depression → HIGH crisis
+    # Moderate depression → MEDIUM crisis  
+    # Mild indicators → LOW crisis
+    # No depression → NONE
+    
+    if crisis_score >= 0.7:
+        return 'high'      # Severe depression detected
+    elif crisis_score >= 0.4:
+        return 'medium'    # Moderate depression detected
+    elif crisis_score >= 0.2:
+        return 'low'       # Mild depression indicators
     else:
-        return 'none'      # No significant risk detected
+        return 'none'      # No depression detected
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
@@ -251,27 +236,66 @@ async def analyze_message(request: MessageRequest):
         # Run ML inference
         prediction = nlp_model(request.message)
         
-        # Analyze for crisis indicators (testing switched labels theory)
+        # Analyze for crisis indicators
         crisis_score, categories = analyze_mental_health_prediction(prediction)
         
+        # CONTENT-AWARE REFINEMENT: Distinguish positive vs negative extreme language
+        if crisis_score > 0:
+            message_lower = request.message.lower()
+            
+            # Check if high LABEL_1 score is actually positive language (not crisis)
+            positive_indicators = [
+                'thank', 'love', 'great', 'awesome', 'happy', 'excited', 
+                'wonderful', 'amazing', 'good', 'help', 'appreciate',
+                'pizza', 'food', 'movie', 'fun', 'enjoy'
+            ]
+            
+            # Crisis language indicators
+            crisis_indicators = [
+                'kill', 'die', 'suicide', 'hurt', 'harm', 'depressed', 
+                'sad', 'hopeless', 'worthless', 'hate myself', 'end it',
+                'can\'t go on', 'pointless', 'empty', 'lost', 'give up'
+            ]
+            
+            has_positive = any(word in message_lower for word in positive_indicators)
+            has_crisis = any(word in message_lower for word in crisis_indicators)
+            
+            if has_positive and not has_crisis:
+                # High score but positive content → no crisis
+                final_crisis_score = 0.0
+                reason = "positive_language_detected"
+            elif has_crisis:
+                # Crisis language confirmed → keep score
+                final_crisis_score = crisis_score
+                reason = "crisis_language_confirmed"
+            else:
+                # Unclear → use moderate score
+                final_crisis_score = crisis_score * 0.6
+                reason = "unclear_sentiment"
+                
+            logger.debug(f"Content refinement: '{message_lower[:30]}...' -> {reason}, score: {crisis_score:.3f} -> {final_crisis_score:.3f}")
+        else:
+            final_crisis_score = crisis_score
+            reason = "no_crisis_detected"
+        
         # Map to crisis level
-        crisis_level = map_score_to_crisis_level(crisis_score)
+        crisis_level = map_score_to_crisis_level(final_crisis_score)
         
         # Calculate processing time
         processing_time = (time.time() - start_time) * 1000
         
         # Log for monitoring (without full message for privacy)
         message_preview = request.message[:30] + "..." if len(request.message) > 30 else request.message
-        logger.info(f"Analysis: '{message_preview}' -> {crisis_level} (score: {crisis_score:.3f}, {processing_time:.1f}ms)")
+        logger.info(f"Analysis: '{message_preview}' -> {crisis_level} (score: {final_crisis_score:.3f}, reason: {reason}, {processing_time:.1f}ms)")
         
         return CrisisResponse(
             needs_response=crisis_level != 'none',
             crisis_level=crisis_level,
-            confidence_score=crisis_score,
+            confidence_score=final_crisis_score,
             detected_categories=[cat['category'] for cat in categories],
-            method='suicide_depression_roberta_switched_labels',
+            method='deproberta_depression_severity',
             processing_time_ms=processing_time,
-            model_info="mrm8488/distilroberta-base-finetuned-suicide-depression"
+            model_info="rafalposwiata/deproberta-large-depression"
         )
         
     except Exception as e:
