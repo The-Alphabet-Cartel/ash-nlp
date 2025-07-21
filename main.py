@@ -186,36 +186,36 @@ def analyze_mental_health_prediction(prediction_result):
             'is_crisis': 'depression' in label and 'not' not in label
         })
     
-    # AGGRESSIVE HIGH CRISIS DETECTION - Safety First!
-    # Any severe depression score should trigger high alert
+    # BALANCED CRISIS DETECTION - Safety First but Nuanced
+    # Prioritize HIGH detection while avoiding too many false positives
     
     # Log the input scores for debugging
     logger.info(f"Raw scores - Severe: {severe_score:.4f}, Moderate: {moderate_score:.4f}, Not Depression: {not_depression_score:.4f}")
     
-    # If severe depression has ANY score, prioritize it heavily
-    if severe_score > 0.005:  # Even tinier severe scores are critical (was 0.01)
-        max_crisis_score = 0.85 + (severe_score * 0.15)  # Start at 0.85, boost to 1.0
+    # If severe depression has meaningful score, prioritize it
+    if severe_score > 0.02:  # Raised threshold for severe (was 0.005)
+        max_crisis_score = 0.80 + (severe_score * 0.20)  # Start at 0.80, boost to 1.0
         reason = f"severe_depression_detected ({severe_score:.3f}) - HIGH PRIORITY"
         logger.info(f"LOGIC: Severe path triggered - score: {max_crisis_score:.4f}")
     
-    # If moderate depression has significant score
-    elif moderate_score > 0.20:  # Lowered from 0.25 for safety
-        max_crisis_score = 0.6 + (moderate_score * 0.4)  # Aggressive boost for moderate
+    # If moderate depression is clearly dominant AND significant
+    elif moderate_score > not_depression_score and moderate_score > 0.40:  # Must beat no-depression AND be significant
+        max_crisis_score = 0.45 + (moderate_score * 0.35)  # More conservative for moderate
         reason = f"moderate_depression_detected ({moderate_score:.3f})"
         logger.info(f"LOGIC: Moderate path triggered - score: {max_crisis_score:.4f}")
     
-    # If not depression clearly dominates (>85%)
-    elif not_depression_score > 0.85:
+    # If not depression clearly dominates (>80%)
+    elif not_depression_score > 0.80:
         max_crisis_score = 0.0
         reason = f"no_depression_detected ({not_depression_score:.3f})"
         logger.info(f"LOGIC: No depression path triggered")
     
-    # Mixed signals - use weighted scoring favoring crisis detection
+    # Mixed signals or mild depression - conservative scoring
     else:
-        # Heavily weight any crisis indicators for safety
-        weighted_score = (severe_score * 1.0) + (moderate_score * 0.7) + (not_depression_score * -0.2)
-        max_crisis_score = max(0.0, weighted_score)
-        reason = f"mixed_signals_favoring_crisis (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
+        # More conservative weighting
+        weighted_score = (severe_score * 0.8) + (moderate_score * 0.4) + (not_depression_score * -0.05)
+        max_crisis_score = max(0.0, min(weighted_score, 0.6))  # Cap at 0.6 for mixed signals
+        reason = f"mixed_signals_conservative (severe:{severe_score:.2f}, mod:{moderate_score:.2f}, none:{not_depression_score:.2f})"
         logger.info(f"LOGIC: Mixed signals path triggered - weighted: {weighted_score:.4f}, final: {max_crisis_score:.4f}")
     
     # Cap the score at 1.0
@@ -226,16 +226,15 @@ def analyze_mental_health_prediction(prediction_result):
     return max_crisis_score, detected_categories
 
 def map_score_to_crisis_level(crisis_score):
-    """Map crisis score to response level (SAFETY-FIRST for HIGH detection)"""
+    """Map crisis score to response level (BALANCED - Safety First but Nuanced)"""
     
-    # AGGRESSIVE thresholds prioritizing HIGH crisis detection
-    # Better false positives than missed suicide threats!
-    if crisis_score >= 0.60:  # Lowered from 0.65 for safety
-        return 'high'      # Any significant crisis indicator → HIGH
-    elif crisis_score >= 0.450:
-        return 'medium'    # Medium confidence
-    elif crisis_score >= 0.100:
-        return 'low'       # Low confidence
+    # Balanced thresholds - protect HIGH detection while allowing other levels
+    if crisis_score >= 0.75:
+        return 'high'      # Genuine severe cases only
+    elif crisis_score >= 0.45:
+        return 'medium'    # Clear moderate depression
+    elif crisis_score >= 0.15:
+        return 'low'       # Mild indicators
     else:
         return 'none'      # No significant risk detected
 
@@ -257,16 +256,49 @@ async def analyze_message(request: MessageRequest):
         
         # Analyze for crisis indicators
         crisis_score, categories = analyze_mental_health_prediction(prediction)
-        logger.info(f"🔧 DEBUG: After analysis function: crisis_score = {crisis_score:.4f}")
         
-        # Trust the NLP model's assessment
-        final_crisis_score = crisis_score
-        reason = "nlp_assessment"
+        # CONTENT-AWARE REFINEMENT: Distinguish positive vs negative extreme language
+        if crisis_score > 0:
+            message_lower = request.message.lower()
+            
+            # Check if high LABEL_1 score is actually positive language (not crisis)
+            positive_indicators = [
+                'thank', 'love', 'great', 'awesome', 'happy', 'excited', 
+                'wonderful', 'amazing', 'good', 'help', 'appreciate',
+                'pizza', 'food', 'movie', 'fun', 'enjoy'
+            ]
+            
+            # Crisis language indicators
+            crisis_indicators = [
+                'kill', 'die', 'suicide', 'hurt', 'harm', 'depressed', 
+                'sad', 'hopeless', 'worthless', 'hate myself', 'end it',
+                'can\'t go on', 'pointless', 'empty', 'lost', 'give up'
+            ]
+            
+            has_positive = any(word in message_lower for word in positive_indicators)
+            has_crisis = any(word in message_lower for word in crisis_indicators)
+            
+            if has_positive and not has_crisis:
+                # High score but positive content → no crisis
+                final_crisis_score = 0.0
+                reason = "positive_language_detected"
+            elif has_crisis:
+                # Crisis language confirmed → keep score
+                final_crisis_score = crisis_score
+                reason = "crisis_language_confirmed"
+            else:
+                # Unclear → use moderate score
+                final_crisis_score = crisis_score * 0.6
+                reason = "unclear_sentiment"
+                
+            logger.debug(f"Content refinement: '{message_lower[:30]}...' -> {reason}, score: {crisis_score:.3f} -> {final_crisis_score:.3f}")
+        else:
+            final_crisis_score = crisis_score
+            reason = "no_crisis_detected"
         
         # Map to crisis level
         crisis_level = map_score_to_crisis_level(final_crisis_score)
-        logger.info(f"🔧 DEBUG: After threshold mapping: crisis_level = {crisis_level}")
-
+        
         # Calculate processing time
         processing_time = (time.time() - start_time) * 1000
         
