@@ -224,9 +224,10 @@ def map_score_to_crisis_level(crisis_score):
     """Map crisis score to response level (optimized thresholds)"""
     
     # Optimized thresholds based on test data analysis
-    if crisis_score >= 0.900:
+    # Note: This model tends to give binary scores (0.0 or 1.0)
+    if crisis_score >= 0.200:
         return 'high'      # High confidence prediction
-    elif crisis_score >= 0.550:
+    elif crisis_score >= 0.150:
         return 'medium'    # Medium confidence
     elif crisis_score >= 0.100:
         return 'low'       # Low confidence
