@@ -14,7 +14,7 @@ def test_model_directly():
     print("=" * 60)
     
     # Load the same model as the service
-    model_id = "mrm8488/distilroberta-base-finetuned-suicide-depression"
+    model_id = "sentinet/suicidality"
     
     print(f"Loading model: {model_id}")
     nlp_model = pipeline(
