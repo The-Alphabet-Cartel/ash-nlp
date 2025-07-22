@@ -15,7 +15,7 @@ load_dotenv()
 async def test_nlp_server():
     """Test the NLP server endpoints for keyword discovery"""
     
-    nlp_host = os.getenv('NLP_SERVICE_HOST', '192.168.1.100')
+    nlp_host = os.getenv('NLP_SERVICE_HOST', 'localhost')
     nlp_port = os.getenv('NLP_SERVICE_PORT', '8881')
     nlp_url = f"http://{nlp_host}:{nlp_port}"
     
