@@ -5,7 +5,7 @@ Handles community-specific crisis pattern recognition
 
 import re
 from typing import List, Dict
-from config.settings import LGBTQIA_PATTERNS, CRISIS_CONTEXTS
+from config.nlp_settings import LGBTQIA_PATTERNS, CRISIS_CONTEXTS
 
 def extract_community_patterns(message: str) -> List[Dict]:
     """Extract LGBTQIA+ community-specific patterns"""

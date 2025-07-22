@@ -9,7 +9,7 @@ import re
 from typing import Dict, List, Tuple, Any
 from utils.context_helpers import extract_context_signals, analyze_sentiment_context
 from utils.scoring_helpers import enhanced_depression_analysis, advanced_idiom_detection, enhanced_crisis_level_mapping
-from config.settings import CRISIS_THRESHOLDS
+from config.nlp_settings import CRISIS_THRESHOLDS
 
 logger = logging.getLogger(__name__)
 

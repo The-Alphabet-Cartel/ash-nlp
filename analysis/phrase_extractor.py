@@ -8,7 +8,7 @@ import time
 from typing import Dict, List
 from utils.community_patterns import extract_community_patterns, extract_crisis_context_phrases
 from utils.scoring_helpers import extract_depression_score, score_phrases_with_models, filter_and_rank_phrases
-from config.settings import DEFAULT_PARAMS
+from config.nlp_settings import DEFAULT_PARAMS
 
 logger = logging.getLogger(__name__)
 
