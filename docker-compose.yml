@@ -16,7 +16,10 @@ services:
       - 8881:8881
     environment:
       - PYTHONUNBUFFERED=1
-
+      - LEARNING_DATA_PATH=${LEARNING_DATA_PATH}
+      - LEARNING_RATE=${LEARNING_RATE}
+      - MIN_CONFIDENCE_ADJUSTMENT=${MIN_CONFIDENCE_ADJUSTMENT}
+      - MAX_CONFIDENCE_ADJUSTMENT=${MAX_CONFIDENCE_ADJUSTMENT}
     # Resource limits for your hardware
     deploy:
       resources:
