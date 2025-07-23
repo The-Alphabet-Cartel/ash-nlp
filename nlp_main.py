@@ -197,18 +197,8 @@ async def initialize_components_with_config():
         # Initialize enhanced model manager with configuration
         logger.info("🔧 Initializing Enhanced ModelManager...")
         
-        # Create model configuration from environment variables
-        model_config = {
-            'depression_model': config['DEPRESSION_MODEL'],
-            'sentiment_model': config['SENTIMENT_MODEL'],
-            'cache_dir': config['MODEL_CACHE_DIR'],
-            'device': config['DEVICE'],
-            'precision': config['MODEL_PRECISION'],
-            'max_batch_size': config['MAX_BATCH_SIZE'],
-            'huggingface_token': config['HUGGINGFACE_HUB_TOKEN'],
-        }
-        
-        model_manager = ModelManager(model_config)
+        # Initialize enhanced model manager (it will load config from environment automatically)
+        model_manager = ModelManager()  # No config needed - loads from environment
         
         # Load models with the enhanced method
         logger.info("📦 Loading ML models with environment configuration...")
