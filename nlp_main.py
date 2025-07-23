@@ -303,12 +303,21 @@ if config['ENABLE_CORS']:
 # Add enhanced learning endpoints after app creation
 @app.on_event("startup")
 async def setup_enhanced_learning_endpoints():
-    if ENHANCED_LEARNING_AVAILABLE and enhanced_learning_manager:
-        try:
-            add_enhanced_learning_endpoints(app, enhanced_learning_manager)
-            logger.info("🧠 Enhanced learning endpoints added to FastAPI app")
-        except Exception as e:
-            logger.warning(f"⚠️ Could not add enhanced learning endpoints: {e}")
+    logger.info("🔧 Setting up enhanced learning endpoints...")
+    if ENHANCED_LEARNING_AVAILABLE:
+        logger.info("✅ Enhanced learning available, checking manager...")
+        if enhanced_learning_manager:
+            logger.info("✅ Enhanced learning manager exists, adding endpoints...")
+            try:
+                add_enhanced_learning_endpoints(app, enhanced_learning_manager)
+                logger.info("🧠 Enhanced learning endpoints added to FastAPI app (false positives + negatives)")
+            except Exception as e:
+                logger.error(f"❌ Failed to add enhanced learning endpoints: {e}")
+                logger.exception("Full traceback:")
+        else:
+            logger.warning("⚠️ Enhanced learning manager is None")
+    else:
+        logger.warning("⚠️ Enhanced learning not available")
 
 # Basic analyze endpoint - works with just ModelManager
 @app.post("/analyze", response_model=CrisisResponse)
