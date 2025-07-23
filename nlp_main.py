@@ -310,8 +310,8 @@ async def analyze_message(request: MessageRequest):
     try:
         # Use CrisisAnalyzer if available, otherwise use ModelManager directly
         if crisis_analyzer:
-            # Use the full crisis analyzer
-            result = await crisis_analyzer.analyze_crisis(
+            # Use the full crisis analyzer (correct method name)
+            result = await crisis_analyzer.analyze_message(
                 request.message, 
                 request.user_id, 
                 request.channel_id
