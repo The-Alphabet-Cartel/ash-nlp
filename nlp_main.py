@@ -21,32 +21,42 @@ from models.pydantic_models import (
 try:
     from analysis.crisis_analyzer import CrisisAnalyzer
     CRISIS_ANALYZER_AVAILABLE = True
-except ImportError:
+    logger.info("✅ CrisisAnalyzer import successful")
+except ImportError as e:
     CRISIS_ANALYZER_AVAILABLE = False
+    logger.warning(f"⚠️ CrisisAnalyzer import failed: {e}")
 
 try:
     from analysis.phrase_extractor import PhraseExtractor
     PHRASE_EXTRACTOR_AVAILABLE = True
-except ImportError:
+    logger.info("✅ PhraseExtractor import successful")
+except ImportError as e:
     PHRASE_EXTRACTOR_AVAILABLE = False
+    logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
 try:
     from analysis.pattern_learner import PatternLearner
     PATTERN_LEARNER_AVAILABLE = True
-except ImportError:
+    logger.info("✅ PatternLearner import successful")
+except ImportError as e:
     PATTERN_LEARNER_AVAILABLE = False
+    logger.warning(f"⚠️ PatternLearner import failed: {e}")
 
 try:
     from analysis.semantic_analyzer import SemanticAnalyzer
     SEMANTIC_ANALYZER_AVAILABLE = True
-except ImportError:
+    logger.info("✅ SemanticAnalyzer import successful")
+except ImportError as e:
     SEMANTIC_ANALYZER_AVAILABLE = False
+    logger.warning(f"⚠️ SemanticAnalyzer import failed: {e}")
 
 try:
     from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
     ENHANCED_LEARNING_AVAILABLE = True
-except ImportError:
+    logger.info("✅ EnhancedLearningManager import successful")
+except ImportError as e:
     ENHANCED_LEARNING_AVAILABLE = False
+    logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
 
 # Environment variable configuration with defaults
 def get_env_config():
@@ -234,12 +244,17 @@ async def initialize_components_with_config():
         if PHRASE_EXTRACTOR_AVAILABLE:
             try:
                 phrase_extractor = PhraseExtractor(model_manager)
-                logger.info("✅ Phrase extractor initialized")
+                logger.info("✅ Advanced phrase extractor initialized")
+            except ImportError as e:
+                logger.warning(f"⚠️ Import error in PhraseExtractor: {e}")
+                phrase_extractor = None
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
+                logger.exception("Full initialization error:")
                 phrase_extractor = None
         else:
             logger.info("ℹ️ PhraseExtractor not available")
+            phrase_extractor = None
         
         if PATTERN_LEARNER_AVAILABLE:
             try:
@@ -383,18 +398,23 @@ async def analyze_message(request: MessageRequest):
 async def extract_phrases_endpoint(request: PhraseExtractionRequest):
     """Extract crisis phrases from message"""
     
+    if not model_manager or not model_manager.models_loaded():
+        raise HTTPException(status_code=503, detail="Models not loaded")
+    
     if not phrase_extractor:
         raise HTTPException(status_code=503, detail="Phrase extraction not available")
     
     try:
-        result = await phrase_extractor.extract_crisis_phrases(
+        result = await phrase_extractor.extract_phrases(
             request.message,
             request.user_id,
-            request.channel_id
+            request.channel_id,
+            request.parameters
         )
         return result
     except Exception as e:
         logger.error(f"Error in phrase extraction: {e}")
+        logger.exception("Full traceback:")
         raise HTTPException(status_code=500, detail=f"Phrase extraction failed: {str(e)}")
 
 @app.post("/learn_patterns")
