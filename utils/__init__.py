@@ -4,10 +4,9 @@ Helper functions and utilities for context analysis, scoring, and community patt
 """
 
 # Learning utilities
-from .learning_endpoints import (
-    LearningManager,
-    add_learning_endpoints,
-    enhance_analyze_endpoint_with_learning
+from .enhanced learning_endpoints import (
+    EnhancedLearningManager,
+    add_enhanced_learning_endpoints
 )
 
 # Context analysis utilities
@@ -150,8 +149,8 @@ def validate_model_result(result) -> bool:
 
 __all__ = [
     # Learning utilities
-    'LearningManager',
-    'add_learning_endpoints',
+    'EnhancedLearningManager',
+    'add_enhanced_learning_endpoints',
 
     # Context analysis
     "extract_context_signals",
