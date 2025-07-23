@@ -22,6 +22,7 @@ from analysis.phrase_extractor import PhraseExtractor
 from analysis.pattern_learner import PatternLearner
 from analysis.semantic_analyzer import SemanticAnalyzer
 from config.nlp_settings import SERVER_CONFIG
+from utils.learning_endpoints import LearningManager, add_learning_endpoints
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +41,7 @@ crisis_analyzer = None
 phrase_extractor = None
 pattern_learner = None
 semantic_analyzer = None
+learning_manager = None
 startup_time = time.time()
 
 @asynccontextmanager
@@ -53,21 +55,26 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Enhanced FastAPI app shutting down...")
 
 async def initialize_components():
-    """Initialize all NLP components"""
-    global model_manager, crisis_analyzer, phrase_extractor, pattern_learner, semantic_analyzer
+    global model_manager, crisis_analyzer, phrase_extractor, pattern_learner, semantic_analyzer, learning_manager
     
     try:
         # Initialize model manager and load models
         model_manager = ModelManager()
         await model_manager.load_models()
         
-        # Initialize analyzers with the loaded models
-        crisis_analyzer = CrisisAnalyzer(model_manager)
+        # Initialize learning manager first
+        learning_manager = LearningManager(model_manager)
+        
+        # Initialize analyzers with the loaded models AND learning manager
+        crisis_analyzer = CrisisAnalyzer(model_manager, learning_manager)  # Pass learning_manager
         phrase_extractor = PhraseExtractor(model_manager)
         pattern_learner = PatternLearner(model_manager)
         semantic_analyzer = SemanticAnalyzer(model_manager)
         
-        logger.info("✅ All components initialized successfully")
+        # Add learning endpoints to the app
+        add_learning_endpoints(app, learning_manager)
+        
+        logger.info("✅ All components initialized successfully including learning system")
         
     except Exception as e:
         logger.error(f"❌ Failed to initialize components: {e}")
@@ -79,6 +86,13 @@ app = FastAPI(
     description="Modular Multi-model Mental Health Crisis Detection with Keyword Discovery",
     lifespan=lifespan
 )
+
+# Initialize learning endpoints after app creation
+@app.on_event("startup")
+async def setup_learning_endpoints():
+    if learning_manager:
+        add_learning_endpoints(app, learning_manager)
+        logger.info("🧠 Learning endpoints added to FastAPI app")
 
 # EXISTING ENDPOINT - Keep your original crisis analysis
 @app.post("/analyze", response_model=CrisisResponse)
