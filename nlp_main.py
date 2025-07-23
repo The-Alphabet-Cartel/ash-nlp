@@ -301,7 +301,7 @@ if config['ENABLE_CORS']:
     logger.info("🌐 CORS middleware enabled")
 
 # Add enhanced learning endpoints after app creation
-@app.on_event("startup")
+#@app.on_event("startup")
 async def setup_enhanced_learning_endpoints():
     logger.info("🔧 Setting up enhanced learning endpoints...")
     if ENHANCED_LEARNING_AVAILABLE:
@@ -318,6 +318,7 @@ async def setup_enhanced_learning_endpoints():
             logger.warning("⚠️ Enhanced learning manager is None")
     else:
         logger.warning("⚠️ Enhanced learning not available")
+
 
 # Basic analyze endpoint - works with just ModelManager
 @app.post("/analyze", response_model=CrisisResponse)
