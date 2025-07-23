@@ -22,6 +22,14 @@ class FalseNegativeRequest(BaseModel):
     context: str
     severity_score: int
 
+class FalsePositiveRequest(BaseModel):
+    """Request model for false positive analysis"""
+    message: str
+    detected_level: str
+    correct_level: str
+    context: Dict = {}
+    severity_score: int = 5
+
 class LearningRecordRequest(BaseModel):
     """Request model for learning record updates"""
     learning_record_id: str
@@ -531,7 +539,7 @@ def add_enhanced_learning_endpoints(app, learning_manager):
             raise HTTPException(status_code=500, detail=f"False negative analysis failed: {str(e)}")
     
     @app.post("/analyze_false_positive")
-    async def analyze_false_positive(request):
+    async def analyze_false_positive(request: FalsePositiveRequest):
         """Enhanced false positive analysis"""
         
         if not request.message.strip():
