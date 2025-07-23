@@ -4,7 +4,7 @@ Helper functions and utilities for context analysis, scoring, and community patt
 """
 
 # Learning utilities
-from .enhanced learning_endpoints import (
+from .enhanced_learning_endpoints import (
     EnhancedLearningManager,
     add_enhanced_learning_endpoints
 )
