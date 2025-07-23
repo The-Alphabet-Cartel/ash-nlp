@@ -121,15 +121,21 @@ class EnhancedModelManager:
             logger.info("ℹ️ No Hugging Face token provided (some models may be inaccessible)")
     
     def _get_model_kwargs(self) -> Dict[str, Any]:
-        """Get common model loading arguments"""
+        """Get common model loading arguments for pipeline creation"""
         return {
             'device': self.device,
             'torch_dtype': self._get_torch_dtype(),
+            # Note: Only include parameters that are valid for pipeline()
+            # Other parameters like cache_dir, trust_remote_code are handled separately
+        }
+    
+    def _get_model_loading_kwargs(self) -> Dict[str, Any]:
+        """Get arguments for model/tokenizer loading (not for pipeline)"""
+        return {
+            'cache_dir': self.config['cache_dir'],
             'use_fast': self.config['use_fast_tokenizer'],
             'trust_remote_code': self.config['trust_remote_code'],
             'revision': self.config['model_revision'],
-            'cache_dir': self.config['cache_dir'],
-            # Note: local_files_only removed as it causes issues with tokenizer
         }
     
     def _get_torch_dtype(self):
@@ -160,8 +166,9 @@ class EnhancedModelManager:
         logger.info(f"   Max Batch Size: {self.config['max_batch_size']}")
         
         try:
-            # Get common model loading arguments
+            # Get model loading arguments
             model_kwargs = self._get_model_kwargs()
+            loading_kwargs = self._get_model_loading_kwargs()
             
             # Load Depression Detection Model
             logger.info("🧠 Loading Depression Detection model...")
@@ -171,8 +178,7 @@ class EnhancedModelManager:
             try:
                 dep_config = AutoConfig.from_pretrained(
                     self.config['depression_model'],
-                    cache_dir=self.config['cache_dir'],
-                    trust_remote_code=self.config['trust_remote_code']
+                    **loading_kwargs
                 )
                 logger.info(f"   Architecture: {dep_config.model_type}")
                 logger.info(f"   Labels: {getattr(dep_config, 'id2label', 'Not specified')}")
@@ -195,8 +201,7 @@ class EnhancedModelManager:
             try:
                 sent_config = AutoConfig.from_pretrained(
                     self.config['sentiment_model'],
-                    cache_dir=self.config['cache_dir'],
-                    trust_remote_code=self.config['trust_remote_code']
+                    **loading_kwargs
                 )
                 logger.info(f"   Architecture: {sent_config.model_type}")
                 logger.info(f"   Labels: {getattr(sent_config, 'id2label', 'Not specified')}")
