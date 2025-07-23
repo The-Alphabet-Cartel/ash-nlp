@@ -273,7 +273,25 @@ async def initialize_components_with_config():
                 semantic_analyzer = None
         else:
             logger.info("ℹ️ SemanticAnalyzer not available")
-        
+
+        # Initialize enhanced learning manager if available
+        if ENHANCED_LEARNING_AVAILABLE and config['ENABLE_LEARNING_SYSTEM']:
+            try:
+                enhanced_learning_manager = EnhancedLearningManager(model_manager)
+                logger.info("✅ Enhanced learning system initialized")
+                
+                # ADD THIS: Register endpoints immediately after manager creation
+                logger.info("🔧 Adding enhanced learning endpoints...")
+                add_enhanced_learning_endpoints(app, enhanced_learning_manager)
+                logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize Enhanced Learning Manager: {e}")
+                logger.exception("Full traceback:")
+                enhanced_learning_manager = None
+        else:
+            logger.info("ℹ️ Enhanced Learning Manager not available")
+
         logger.info("✅ All available components initialized with environment configuration")
         
     except Exception as e:
