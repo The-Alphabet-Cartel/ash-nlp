@@ -15,20 +15,58 @@ services:
     ports:
       - 8881:8881
     environment:
-      - PYTHONUNBUFFERED=1
-      - LEARNING_DATA_PATH=${LEARNING_DATA_PATH}
-      - LEARNING_RATE=${LEARNING_RATE}
-      - MIN_CONFIDENCE_ADJUSTMENT=${MIN_CONFIDENCE_ADJUSTMENT}
-      - MAX_CONFIDENCE_ADJUSTMENT=${MAX_CONFIDENCE_ADJUSTMENT}
-    # Resource limits for your hardware
+      # Core Python configuration
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
+      
+      # Hugging Face configuration
+      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN}
+      
+      # Learning system configuration
+      - ENABLE_LEARNING_SYSTEM=${ENABLE_LEARNING_SYSTEM:-true}
+      - LEARNING_RATE=${LEARNING_RATE:-0.1}
+      - MAX_LEARNING_ADJUSTMENTS_PER_DAY=${MAX_LEARNING_ADJUSTMENTS_PER_DAY:-50}
+      - LEARNING_PERSISTENCE_FILE=${LEARNING_PERSISTENCE_FILE:-./learning_data/adjustments.json}
+      - MIN_CONFIDENCE_ADJUSTMENT=${MIN_CONFIDENCE_ADJUSTMENT:-0.05}
+      - MAX_CONFIDENCE_ADJUSTMENT=${MAX_CONFIDENCE_ADJUSTMENT:-0.30}
+      
+      # Model configuration
+      - DEPRESSION_MODEL=${DEPRESSION_MODEL:-rafalposwiata/deproberta-large-depression}
+      - SENTIMENT_MODEL=${SENTIMENT_MODEL:-cardiffnlp/twitter-roberta-base-sentiment-latest}
+      - MODEL_CACHE_DIR=${MODEL_CACHE_DIR:-./models/cache}
+      - DEVICE=${DEVICE:-auto}
+      
+      # Performance tuning
+      - MAX_BATCH_SIZE=${MAX_BATCH_SIZE:-32}
+      - INFERENCE_THREADS=${INFERENCE_THREADS:-4}
+      - MODEL_PRECISION=${MODEL_PRECISION:-float16}
+      
+      # Logging configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FILE=${LOG_FILE:-nlp_service.log}
+      
+      # Server configuration
+      - NLP_SERVICE_HOST=${NLP_SERVICE_HOST:-0.0.0.0}
+      - NLP_SERVICE_PORT=${NLP_SERVICE_PORT:-8881}
+    
+    volumes:
+      # Persist model cache and learning data
+      - ./models/cache:/app/models/cache
+      - ./learning_data:/app/learning_data
+      - ./logs:/app/logs
+    
+    # Resource limits optimized for your RTX 3050 + Ryzen 7700x
     deploy:
       resources:
         limits:
-          memory: 8G      # Enough for the ML model
+          memory: 8G      # Enough for ML models
           cpus: '4'       # Half your Ryzen cores
         reservations:
           memory: 2G
           cpus: '1'
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+              count: all
 
 networks:
   ash-network:
