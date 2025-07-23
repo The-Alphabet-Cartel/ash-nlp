@@ -222,7 +222,7 @@ class NLPServiceTester:
         
         if result.success and result.response_data:
             # Check for expected learning statistics fields
-            expected_fields = ["total_statistics", "recent_activity", "configuration", "system_info"]
+            expected_fields = ["learning_system_status", "total_false_positives_processed", "total_false_negatives_processed", "total_adjustments_made"]
             missing_fields = [field for field in expected_fields 
                             if field not in result.response_data]
             if missing_fields:
