@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Enhanced NLP Service for Ash Bot - Environment Variable Integration
-Fixed to work with existing ModelManager architecture
+Fixed to work with existing ModelManager architecture and proper import diagnostics
 """
 
 from fastapi import FastAPI, HTTPException
@@ -12,51 +12,11 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+# Import existing components
 from models.pydantic_models import (
     MessageRequest, CrisisResponse, HealthResponse,
     PhraseExtractionRequest, PatternLearningRequest, SemanticAnalysisRequest
 )
-
-# Try to import optional components (they may not exist yet)
-try:
-    from analysis.crisis_analyzer import CrisisAnalyzer
-    CRISIS_ANALYZER_AVAILABLE = True
-    logger.info("✅ CrisisAnalyzer import successful")
-except ImportError as e:
-    CRISIS_ANALYZER_AVAILABLE = False
-    logger.warning(f"⚠️ CrisisAnalyzer import failed: {e}")
-
-try:
-    from analysis.phrase_extractor import PhraseExtractor
-    PHRASE_EXTRACTOR_AVAILABLE = True
-    logger.info("✅ PhraseExtractor import successful")
-except ImportError as e:
-    PHRASE_EXTRACTOR_AVAILABLE = False
-    logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
-
-try:
-    from analysis.pattern_learner import PatternLearner
-    PATTERN_LEARNER_AVAILABLE = True
-    logger.info("✅ PatternLearner import successful")
-except ImportError as e:
-    PATTERN_LEARNER_AVAILABLE = False
-    logger.warning(f"⚠️ PatternLearner import failed: {e}")
-
-try:
-    from analysis.semantic_analyzer import SemanticAnalyzer
-    SEMANTIC_ANALYZER_AVAILABLE = True
-    logger.info("✅ SemanticAnalyzer import successful")
-except ImportError as e:
-    SEMANTIC_ANALYZER_AVAILABLE = False
-    logger.warning(f"⚠️ SemanticAnalyzer import failed: {e}")
-
-try:
-    from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
-    ENHANCED_LEARNING_AVAILABLE = True
-    logger.info("✅ EnhancedLearningManager import successful")
-except ImportError as e:
-    ENHANCED_LEARNING_AVAILABLE = False
-    logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
 
 # Environment variable configuration with defaults
 def get_env_config():
@@ -153,18 +113,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Import ModelManager with backward compatibility (after logger is defined)
-try:
-    from models.ml_models import EnhancedModelManager as ModelManager
-    logger.info("✅ Using Enhanced ModelManager")
-except ImportError:
-    try:
-        from models.ml_models import ModelManager
-        logger.info("⚠️ Using basic ModelManager (enhanced features not available)")
-    except ImportError:
-        logger.error("❌ Could not import ModelManager")
-        raise
-
 # Set Hugging Face token if provided
 if config['HUGGINGFACE_HUB_TOKEN']:
     os.environ['HUGGINGFACE_HUB_TOKEN'] = config['HUGGINGFACE_HUB_TOKEN']
@@ -180,6 +128,59 @@ if enable_debug:
             display_value = value
         logger.info(f"{key}: {display_value}")
     logger.info("=== End Configuration ===")
+
+# Import ModelManager with backward compatibility (after logger is defined)
+try:
+    from models.ml_models import EnhancedModelManager as ModelManager
+    logger.info("✅ Using Enhanced ModelManager")
+except ImportError:
+    try:
+        from models.ml_models import ModelManager
+        logger.info("⚠️ Using basic ModelManager (enhanced features not available)")
+    except ImportError:
+        logger.error("❌ Could not import ModelManager")
+        raise
+
+# Try to import optional components with diagnostic logging
+try:
+    from analysis.crisis_analyzer import CrisisAnalyzer
+    CRISIS_ANALYZER_AVAILABLE = True
+    logger.info("✅ CrisisAnalyzer import successful")
+except ImportError as e:
+    CRISIS_ANALYZER_AVAILABLE = False
+    logger.warning(f"⚠️ CrisisAnalyzer import failed: {e}")
+
+try:
+    from analysis.phrase_extractor import PhraseExtractor
+    PHRASE_EXTRACTOR_AVAILABLE = True
+    logger.info("✅ PhraseExtractor import successful")
+except ImportError as e:
+    PHRASE_EXTRACTOR_AVAILABLE = False
+    logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
+
+try:
+    from analysis.pattern_learner import PatternLearner
+    PATTERN_LEARNER_AVAILABLE = True
+    logger.info("✅ PatternLearner import successful")
+except ImportError as e:
+    PATTERN_LEARNER_AVAILABLE = False
+    logger.warning(f"⚠️ PatternLearner import failed: {e}")
+
+try:
+    from analysis.semantic_analyzer import SemanticAnalyzer
+    SEMANTIC_ANALYZER_AVAILABLE = True
+    logger.info("✅ SemanticAnalyzer import successful")
+except ImportError as e:
+    SEMANTIC_ANALYZER_AVAILABLE = False
+    logger.warning(f"⚠️ SemanticAnalyzer import failed: {e}")
+
+try:
+    from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    ENHANCED_LEARNING_AVAILABLE = True
+    logger.info("✅ EnhancedLearningManager import successful")
+except ImportError as e:
+    ENHANCED_LEARNING_AVAILABLE = False
+    logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
 
 # Global components
 model_manager = None
@@ -204,9 +205,6 @@ async def initialize_components_with_config():
     global model_manager, crisis_analyzer, phrase_extractor, pattern_learner, semantic_analyzer, enhanced_learning_manager
     
     try:
-        # Initialize enhanced model manager with configuration
-        logger.info("🔧 Initializing Enhanced ModelManager...")
-        
         # Initialize enhanced model manager (it will load config from environment automatically)
         model_manager = ModelManager()  # No config needed - loads from environment
         
@@ -315,7 +313,7 @@ async def setup_enhanced_learning_endpoints():
 # Basic analyze endpoint - works with just ModelManager
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
-    """Basic message analysis using ModelManager directly if other analyzers aren't available"""
+    """Message analysis using available analyzers"""
     
     if not model_manager or not model_manager.models_loaded():
         raise HTTPException(status_code=503, detail="Models not loaded")
