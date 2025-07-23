@@ -17,18 +17,6 @@ from models.pydantic_models import (
     PhraseExtractionRequest, PatternLearningRequest, SemanticAnalysisRequest
 )
 
-# Import existing components - with backward compatibility
-try:
-    from models.ml_models import EnhancedModelManager as ModelManager
-    logger.info("✅ Using Enhanced ModelManager")
-except ImportError:
-    try:
-        from models.ml_models import ModelManager
-        logger.info("⚠️ Using basic ModelManager (enhanced features not available)")
-    except ImportError:
-        logger.error("❌ Could not import ModelManager")
-        raise
-
 # Try to import optional components (they may not exist yet)
 try:
     from analysis.crisis_analyzer import CrisisAnalyzer
@@ -154,6 +142,18 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Import ModelManager with backward compatibility (after logger is defined)
+try:
+    from models.ml_models import EnhancedModelManager as ModelManager
+    logger.info("✅ Using Enhanced ModelManager")
+except ImportError:
+    try:
+        from models.ml_models import ModelManager
+        logger.info("⚠️ Using basic ModelManager (enhanced features not available)")
+    except ImportError:
+        logger.error("❌ Could not import ModelManager")
+        raise
 
 # Set Hugging Face token if provided
 if config['HUGGINGFACE_HUB_TOKEN']:
