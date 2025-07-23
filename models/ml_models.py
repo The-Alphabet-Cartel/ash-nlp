@@ -128,8 +128,8 @@ class EnhancedModelManager:
             'use_fast': self.config['use_fast_tokenizer'],
             'trust_remote_code': self.config['trust_remote_code'],
             'revision': self.config['model_revision'],
-            'local_files_only': self.config['local_files_only'],
             'cache_dir': self.config['cache_dir'],
+            # Note: local_files_only removed as it causes issues with tokenizer
         }
     
     def _get_torch_dtype(self):
@@ -172,7 +172,6 @@ class EnhancedModelManager:
                 dep_config = AutoConfig.from_pretrained(
                     self.config['depression_model'],
                     cache_dir=self.config['cache_dir'],
-                    local_files_only=self.config['local_files_only'],
                     trust_remote_code=self.config['trust_remote_code']
                 )
                 logger.info(f"   Architecture: {dep_config.model_type}")
@@ -197,7 +196,6 @@ class EnhancedModelManager:
                 sent_config = AutoConfig.from_pretrained(
                     self.config['sentiment_model'],
                     cache_dir=self.config['cache_dir'],
-                    local_files_only=self.config['local_files_only'],
                     trust_remote_code=self.config['trust_remote_code']
                 )
                 logger.info(f"   Architecture: {sent_config.model_type}")
