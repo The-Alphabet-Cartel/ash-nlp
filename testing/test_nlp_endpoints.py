@@ -238,24 +238,27 @@ class NLPServiceTester:
         return result
     
     def test_false_positive_learning(self) -> TestResult:
-        """Test /analyze_false_positive endpoint (optional)"""
+        """Test /analyze_false_positive endpoint"""
         data = {
             "message": "That movie killed me with laughter",
             "detected_level": "high",
             "correct_level": "none",
             "context": {"humor": True},
-            "severity_score": 0.1
+            "severity_score": 7  # Use integer instead of float
         }
         
         result = self.make_request("POST", "/analyze_false_positive", data)
         result.name = "False Positive Learning"
         
-        # This endpoint may not be available or may have validation issues
+        # This endpoint may not be available
         if result.status_code == 503:
             result.error_message = "Feature not available (expected)"
         elif result.status_code == 422:
-            result.error_message = "Validation error (expected - endpoint requires specific format)"
-            result.success = True  # This is actually expected for this test
+            result.error_message = f"Validation error: {result.response_data.get('detail', 'Unknown validation error')}"
+            result.success = False  # Don't hide 422 errors!
+        elif result.status_code == 404:
+            result.error_message = "Endpoint not found - enhanced learning endpoints not properly added"
+            result.success = False
         
         self.results.append(result)
         return result
