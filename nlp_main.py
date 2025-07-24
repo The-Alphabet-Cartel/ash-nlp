@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Enhanced NLP Service for Ash Bot - Environment Variable Integration
-Fixed to work with existing ModelManager architecture and proper import diagnostics
 """
 
 from fastapi import FastAPI, HTTPException
