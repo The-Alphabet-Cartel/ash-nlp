@@ -263,31 +263,31 @@ class NLPServiceTester:
         self.results.append(result)
         return result
 
-def test_false_negative_learning(self) -> TestResult:
-    """Test /analyze_false_negative endpoint"""
-    data = {
-        "message": "I don't want to be here anymore and nothing matters",
-        "should_detect_level": "high",
-        "actually_detected": "none", 
-        "context": {"subtle_crisis": True, "indirect_language": True},
-        "severity_score": 9
-    }
-    
-    result = self.make_request("POST", "/analyze_false_negative", data)
-    result.name = "False Negative Learning"
-    
-    # This endpoint may not be available
-    if result.status_code == 503:
-        result.error_message = "Feature not available (expected)"
-    elif result.status_code == 422:
-        result.error_message = f"Validation error: {result.response_data.get('detail', 'Unknown validation error')}"
-        result.success = False
-    elif result.status_code == 404:
-        result.error_message = "Endpoint not found - enhanced learning endpoints not properly added"
-        result.success = False
-    
-    self.results.append(result)
-    return result
+    def test_false_negative_learning(self) -> TestResult:
+        """Test /analyze_false_negative endpoint"""
+        data = {
+            "message": "I don't want to be here anymore and nothing matters",
+            "should_detect_level": "high",
+            "actually_detected": "none", 
+            "context": {"subtle_crisis": True, "indirect_language": True},
+            "severity_score": 9
+        }
+        
+        result = self.make_request("POST", "/analyze_false_negative", data)
+        result.name = "False Negative Learning"
+        
+        # This endpoint may not be available
+        if result.status_code == 503:
+            result.error_message = "Feature not available (expected)"
+        elif result.status_code == 422:
+            result.error_message = f"Validation error: {result.response_data.get('detail', 'Unknown validation error')}"
+            result.success = False
+        elif result.status_code == 404:
+            result.error_message = "Endpoint not found - enhanced learning endpoints not properly added"
+            result.success = False
+        
+        self.results.append(result)
+        return result
 
     def run_all_tests(self) -> Dict[str, Any]:
         """Run comprehensive test suite"""
