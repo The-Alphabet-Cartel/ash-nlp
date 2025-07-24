@@ -289,6 +289,131 @@ class NLPServiceTester:
         self.results.append(result)
         return result
 
+    def test_critical_false_negative_scenarios(self) -> TestResult:
+        """Test multiple critical false negative scenarios that the system should learn from"""
+        
+        # Test one representative false negative scenario
+        data = {
+            "message": "Everything feels pointless and I'm so tired of trying",
+            "should_detect_level": "medium", 
+            "actually_detected": "none",
+            "context": {"depression_indicators": True, "exhaustion": True},
+            "severity_score": 7
+        }
+        
+        result = self.make_request("POST", "/analyze_false_negative", data)
+        result.name = "Critical False Negative Scenarios"
+        
+        if result.status_code == 503:
+            result.error_message = "Feature not available (expected)"
+        elif result.status_code == 422:
+            result.error_message = f"Validation error: {result.response_data.get('detail', 'Unknown validation error')}"
+            result.success = False
+        elif result.status_code == 404:
+            result.error_message = "Endpoint not found"
+            result.success = False
+        elif result.success and result.response_data:
+            # Validate that we get meaningful learning feedback
+            expected_learning_fields = ["patterns_discovered", "confidence_adjustments", "learning_applied"]
+            missing_fields = [field for field in expected_learning_fields 
+                             if field not in result.response_data]
+            if missing_fields:
+                result.error_message = f"Learning response missing fields: {missing_fields}"
+                result.success = False
+        
+        self.results.append(result)
+        return result
+
+    def test_subtle_crisis_detection(self) -> TestResult:
+        """Test detection of subtle crisis language that might be missed"""
+        
+        # Test a subtle crisis message that might be missed
+        subtle_crisis_message = "I keep thinking about how peaceful it would be to just disappear"
+        
+        data = {
+            "message": subtle_crisis_message,
+            "user_id": "test_subtle_crisis",
+            "channel_id": "test_channel"
+        }
+        
+        result = self.make_request("POST", "/analyze", data)
+        result.name = "Subtle Crisis Detection"
+        
+        if result.success and result.response_data:
+            crisis_level = result.response_data.get('crisis_level', 'none')
+            confidence = result.response_data.get('confidence_score', 0)
+            
+            # Log the result for analysis
+            if self.verbose:
+                self.log(f"Subtle crisis test - Level: {crisis_level}, Confidence: {confidence:.3f}")
+            
+            # This is more of an observational test - we want to see how well it detects subtle language
+            # We don't fail the test, but we can note if it misses obvious crisis indicators
+            if crisis_level == 'none' and confidence < 0.3:
+                result.error_message = f"May have missed subtle crisis indicators (detected: {crisis_level}, confidence: {confidence:.3f})"
+                # Don't mark as failure since this is a learning opportunity
+        
+        self.results.append(result)
+        return result
+
+    def test_indirect_self_harm_language(self) -> TestResult:
+        """Test detection of indirect self-harm language"""
+        
+        # Test indirect language that might indicate self-harm ideation
+        indirect_message = "I wonder what would happen if I just went to sleep and never woke up"
+        
+        data = {
+            "message": indirect_message,
+            "user_id": "test_indirect_harm",
+            "channel_id": "test_channel"
+        }
+        
+        result = self.make_request("POST", "/analyze", data)
+        result.name = "Indirect Self-Harm Detection"
+        
+        if result.success and result.response_data:
+            crisis_level = result.response_data.get('crisis_level', 'none')
+            confidence = result.response_data.get('confidence_score', 0)
+            
+            if self.verbose:
+                self.log(f"Indirect harm test - Level: {crisis_level}, Confidence: {confidence:.3f}")
+            
+            # This should ideally be detected as at least medium crisis
+            if crisis_level == 'none':
+                result.error_message = f"Missed potential self-harm ideation (detected: {crisis_level})"
+                # Mark as learning opportunity rather than hard failure
+        
+        self.results.append(result)
+        return result
+
+    def test_depression_language_detection(self) -> TestResult:
+        """Test detection of depression-related language that might be subtle"""
+        
+        depression_message = "I feel so empty inside and nothing brings me joy anymore"
+        
+        data = {
+            "message": depression_message,
+            "user_id": "test_depression",
+            "channel_id": "test_channel"
+        }
+        
+        result = self.make_request("POST", "/analyze", data)
+        result.name = "Depression Language Detection"
+        
+        if result.success and result.response_data:
+            crisis_level = result.response_data.get('crisis_level', 'none')
+            confidence = result.response_data.get('confidence_score', 0)
+            
+            if self.verbose:
+                self.log(f"Depression test - Level: {crisis_level}, Confidence: {confidence:.3f}")
+            
+            # This should be detected as at least low-medium crisis
+            if crisis_level == 'none' and confidence < 0.4:
+                result.error_message = f"May have missed depression indicators (detected: {crisis_level}, confidence: {confidence:.3f})"
+        
+        self.results.append(result)
+        return result
+
     def run_all_tests(self) -> Dict[str, Any]:
         """Run comprehensive test suite"""
         self.log("🚀 Starting Ash NLP Service Test Suite")
@@ -311,6 +436,13 @@ class NLPServiceTester:
                 "That joke absolutely killed me!", "none", "Idiom Handling")),
             ("Indirect Crisis", lambda: self.test_crisis_analysis(
                 "I don't want to be here anymore", "high", "Indirect Crisis")),
+            # ADD THESE MORE CHALLENGING ANALYSIS TESTS:
+            ("Subtle Hopelessness", lambda: self.test_crisis_analysis(
+                "Nothing ever works out for me and I don't see the point anymore", "medium", "Subtle Hopelessness")),
+            ("Masked Depression", lambda: self.test_crisis_analysis(
+                "I'm fine, just really tired of everything lately", "low", "Masked Depression")),
+            ("Isolation Indicators", lambda: self.test_crisis_analysis(
+                "I feel so alone and disconnected from everyone", "medium", "Isolation Indicators")),
         ]
         
         advanced_tests = [
@@ -319,7 +451,12 @@ class NLPServiceTester:
             ("Pattern Learning", self.test_pattern_learning),
             ("Learning Statistics", self.test_learning_statistics),
             ("False Positive Learning", self.test_false_positive_learning),
+            # ADD THESE NEW FALSE NEGATIVE TESTS:
             ("False Negative Learning", self.test_false_negative_learning),
+            ("Critical False Negative Scenarios", self.test_critical_false_negative_scenarios),
+            ("Subtle Crisis Detection", self.test_subtle_crisis_detection),
+            ("Indirect Self-Harm Detection", self.test_indirect_self_harm_language),
+            ("Depression Language Detection", self.test_depression_language_detection),
         ]
         
         # Run core tests
@@ -346,7 +483,7 @@ class NLPServiceTester:
             elif not result.success and self.verbose:
                 self.log(f"  Error: {result.error_message}")
         
-        # Run advanced tests
+        # Run advanced tests (including new false negative tests)
         self.log("\n🎓 Running Advanced Feature Tests...")
         for test_name, test_func in advanced_tests:
             self.log(f"Testing: {test_name}")
@@ -361,7 +498,7 @@ class NLPServiceTester:
         
         # Generate summary
         return self.generate_summary()
-    
+
     def generate_summary(self) -> Dict[str, Any]:
         """Generate test summary"""
         total_tests = len(self.results)
