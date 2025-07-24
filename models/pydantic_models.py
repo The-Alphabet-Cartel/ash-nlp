@@ -4,7 +4,7 @@ All request/response models in one place for easy management
 """
 
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Dict, List, Union
+from typing import Optional, Dict, List, Union, Any
 
 # LEARNING REQUEST MODELS
 class FalsePositiveAnalysisRequest(BaseModel):
@@ -33,8 +33,8 @@ class LearningUpdateRequest(BaseModel):
     
     learning_record_id: str
     record_type: str  # 'false_positive' or 'false_negative'
-    message_data: Dict
-    correction_data: Dict
+    message_data: Dict[str, Any]
+    correction_data: Dict[str, Any]
     context_data: Optional[Dict[str, Any]] = {}
     timestamp: str
 
