@@ -75,16 +75,10 @@ __all__ = [
     
     # Request Models
     "MessageRequest",
-    "PhraseExtractionRequest", 
-    "PatternLearningRequest",
-    "SemanticAnalysisRequest",
     
     # Response Models
     "CrisisResponse",
     "HealthResponse",
-    "PhraseExtractionResponse",
-    "PatternLearningResponse", 
-    "SemanticAnalysisResponse",
     
     # Data Structures
     "PhraseCandidate",
