@@ -14,8 +14,18 @@ from pathlib import Path
 
 # Import existing components
 from models.pydantic_models import (
+    # Core models
     MessageRequest, CrisisResponse, HealthResponse,
-    PhraseExtractionRequest, PatternLearningRequest, SemanticAnalysisRequest
+    
+    # Feature models  
+    PhraseExtractionRequest, PatternLearningRequest, SemanticAnalysisRequest,
+    
+    # Learning models (now centralized)
+    FalsePositiveAnalysisRequest, FalseNegativeAnalysisRequest, LearningUpdateRequest,
+    
+    # Learning response models (if you want to use them for type hints)
+    FalsePositiveAnalysisResponse, FalseNegativeAnalysisResponse, 
+    LearningUpdateResponse, LearningStatisticsResponse
 )
 
 # Environment variable configuration with defaults
