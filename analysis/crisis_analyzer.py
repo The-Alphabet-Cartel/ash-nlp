@@ -1,5 +1,6 @@
 """
 Updated Crisis Analyzer - Pass message parameter to enhanced_depression_analysis
+This file needs to be updated to work with the false positive reduction fix
 """
 
 import logging
@@ -22,6 +23,7 @@ class CrisisAnalyzer:
     async def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict:
         """
         Enhanced message analysis with multi-model approach
+        This is your existing /analyze endpoint logic - UPDATED for false positive reduction
         """
         
         start_time = time.time()
@@ -41,7 +43,7 @@ class CrisisAnalyzer:
             reasoning_steps.append(f"Sentiment: {sentiment_scores}")
             
             # Step 4: Enhanced depression model analysis
-            # Pass message parameter for false positive reduction
+            # CRITICAL CHANGE: Pass message parameter for false positive reduction
             depression_score, depression_categories = enhanced_depression_analysis(
                 depression_result, sentiment_scores, context, message=message  # <-- ADDED message parameter
             )
