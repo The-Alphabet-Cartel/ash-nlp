@@ -319,6 +319,7 @@ class NLPServiceTester:
             ("Pattern Learning", self.test_pattern_learning),
             ("Learning Statistics", self.test_learning_statistics),
             ("False Positive Learning", self.test_false_positive_learning),
+            ("False Negative Learning", self.test_false_negative_learning),
         ]
         
         # Run core tests
