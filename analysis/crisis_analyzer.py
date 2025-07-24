@@ -109,14 +109,14 @@ class CrisisAnalyzer:
                 'reasoning': f"Analysis failed: {str(e)}"
             }
 
-    def analyze_with_context(self, message: str, context: Dict, message: str = None) -> Tuple[float, List[Dict]]:
+    def analyze_with_context(self, message: str, context: Dict, message_text: str = None) -> Tuple[float, List[Dict]]:
         """
         Compatibility method for direct scoring calls
         This method may be called by other parts of the system
         """
         try:
-            # Use the message parameter if provided, otherwise use the first message parameter
-            text_to_analyze = message if message else message
+            # Use the message_text parameter if provided, otherwise use the first message parameter
+            text_to_analyze = message_text if message_text else message
             
             # Run the models
             depression_result = self.model_manager.analyze_with_depression_model(text_to_analyze)
