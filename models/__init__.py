@@ -12,9 +12,6 @@ from .pydantic_models import (
     MessageRequest,
     CrisisResponse,
     HealthResponse,
-    
-    # Data structures
-    PhraseCandidate
 )
 
 # Model configuration and metadata
@@ -79,9 +76,6 @@ __all__ = [
     # Response Models
     "CrisisResponse",
     "HealthResponse",
-    
-    # Data Structures
-    "PhraseCandidate",
     
     # Metadata
     "MODEL_INFO",
