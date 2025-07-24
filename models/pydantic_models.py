@@ -6,7 +6,70 @@ All request/response models in one place for easy management
 from pydantic import BaseModel, ConfigDict
 from typing import Optional, Dict, List
 
-# EXISTING MODELS - Keep your original models
+class FalsePositiveAnalysisRequest(BaseModel):
+    """Request model for false positive analysis"""
+    model_config = ConfigDict(protected_namespaces=())
+    
+    message: str
+    detected_level: str  # The level that was incorrectly detected
+    correct_level: str   # The correct level that should have been detected
+    context: Optional[Dict] = {}
+    severity_score: Optional[int] = 1
+
+class FalseNegativeAnalysisRequest(BaseModel):
+    """Request model for false negative analysis"""
+    model_config = ConfigDict(protected_namespaces=())
+    
+    message: str
+    should_detect_level: str  # The level that should have been detected
+    actually_detected: str    # What was actually detected (usually 'none')
+    context: Optional[Dict] = {}
+    severity_score: Optional[int] = 1
+
+class LearningUpdateRequest(BaseModel):
+    """Request model for learning model updates"""
+    model_config = ConfigDict(protected_namespaces=())
+    
+    learning_record_id: str
+    record_type: str  # 'false_positive' or 'false_negative'
+    message_data: Dict
+    correction_data: Dict
+    context_data: Optional[Dict] = {}
+    timestamp: str
+
+# RESPONSE MODELS for learning endpoints
+class LearningAnalysisResponse(BaseModel):
+    """Response model for learning analysis"""
+    model_config = ConfigDict(protected_namespaces=())
+    
+    status: str
+    patterns_discovered: int
+    confidence_adjustments: int
+    learning_applied: bool
+    processing_time_ms: float
+    analysis_details: Optional[Dict] = {}
+
+class LearningUpdateResponse(BaseModel):
+    """Response model for learning updates"""
+    model_config = ConfigDict(protected_namespaces=())
+    
+    status: str
+    model_updated: bool
+    adjustments_applied: int
+    processing_time_ms: float
+    update_details: Optional[Dict] = {}
+
+class LearningStatisticsResponse(BaseModel):
+    """Response model for learning statistics"""
+    model_config = ConfigDict(protected_namespaces=())
+    
+    total_false_positives: int
+    total_false_negatives: int
+    false_positives_by_level: Dict[str, int]
+    false_negatives_by_level: Dict[str, int]
+    detection_improvements: int
+    last_analysis: Optional[str] = None
+    learning_effectiveness: Optional[Dict] = {}
 
 class MessageRequest(BaseModel):
     message: str
@@ -32,8 +95,6 @@ class HealthResponse(BaseModel):
     model_loaded: bool
     uptime_seconds: float
     hardware_info: dict
-
-# NEW MODELS for keyword discovery
 
 class PhraseExtractionRequest(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
@@ -66,8 +127,6 @@ class PhraseCandidate(BaseModel):
     confidence: float
     reasoning: str
     metadata: Dict = {}
-
-# Response models for new endpoints
 
 class PhraseExtractionResponse(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
