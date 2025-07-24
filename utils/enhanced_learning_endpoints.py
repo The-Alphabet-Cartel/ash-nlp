@@ -1,6 +1,5 @@
 """
 Enhanced Learning Endpoints for NLP Server
-ADD these endpoints to your ash-nlp/utils/learning_endpoints.py
 """
 
 import logging

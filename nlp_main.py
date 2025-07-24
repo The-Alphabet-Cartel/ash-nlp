@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 Enhanced NLP Service for Ash Bot - Environment Variable Integration
-Fixed to work with existing ModelManager architecture and proper import diagnostics
 """
 
 from fastapi import FastAPI, HTTPException
@@ -344,7 +343,6 @@ if ENHANCED_LEARNING_AVAILABLE:
 else:
     logger.warning("⚠️ Enhanced learning not available")
 
-# Basic analyze endpoint - works with just ModelManager
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
     """Message analysis using available analyzers"""
@@ -376,23 +374,28 @@ async def analyze_message(request: MessageRequest):
                 # Get the highest confidence result
                 top_result = max(depression_result, key=lambda x: x['score'])
                 
-                # Simple threshold mapping
-                if top_result['label'] == 'severe' and top_result['score'] > config['HIGH_CRISIS_THRESHOLD']:
+                # ADD FALSE POSITIVE REDUCTION HERE:
+                from utils.scoring_helpers import apply_false_positive_reduction
+                original_score = top_result['score']
+                adjusted_score = apply_false_positive_reduction(request.message, original_score)
+                
+                # Simple threshold mapping with adjusted score
+                if top_result['label'] == 'severe' and adjusted_score > config['HIGH_CRISIS_THRESHOLD']:
                     crisis_level = 'high'
                     needs_response = True
-                elif top_result['label'] in ['moderate', 'severe'] and top_result['score'] > config['MEDIUM_CRISIS_THRESHOLD']:
+                elif top_result['label'] in ['moderate', 'severe'] and adjusted_score > config['MEDIUM_CRISIS_THRESHOLD']:
                     crisis_level = 'medium'
                     needs_response = True
-                elif top_result['score'] > config['LOW_CRISIS_THRESHOLD']:
+                elif adjusted_score > config['LOW_CRISIS_THRESHOLD']:
                     crisis_level = 'low'
                     needs_response = True
                 else:
                     crisis_level = 'none'
                     needs_response = False
                 
-                confidence_score = top_result['score']
+                confidence_score = adjusted_score
                 detected_categories = [top_result['label']]
-                reasoning = f"Depression model: {top_result['label']} ({confidence_score:.3f})"
+                reasoning = f"Basic model: {top_result['label']} (original: {original_score:.3f}, adjusted: {adjusted_score:.3f})"
                 
                 if sentiment_result:
                     sentiment_top = max(sentiment_result, key=lambda x: x['score'])
@@ -412,15 +415,18 @@ async def analyze_message(request: MessageRequest):
                 'crisis_level': crisis_level,
                 'confidence_score': confidence_score,
                 'detected_categories': detected_categories,
-                'method': 'basic_model_manager_fallback',
+                'method': 'basic_model_manager_with_false_positive_reduction',
                 'processing_time_ms': processing_time,
-                'model_info': 'depression+sentiment(basic)',
+                'model_info': 'depression+sentiment(basic)+false_positive_reduction',
                 'reasoning': reasoning
             }
         
-        logger.info(f"Analysis complete: {result['crisis_level']} confidence={result['confidence_score']:.3f} time={result['processing_time_ms']:.1f}ms")
-        return CrisisResponse(**result)
-        
+        # Return the result (either from CrisisAnalyzer or fallback)
+        if isinstance(result, dict):
+            return CrisisResponse(**result)
+        else:
+            return result  # Already a CrisisResponse object
+            
     except Exception as e:
         logger.error(f"Error in message analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

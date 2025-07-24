@@ -43,11 +43,11 @@ SERVER_CONFIG = {
     }
 }
 
-# Crisis level mapping thresholds
+# Crisis level mapping thresholds - UPDATED FOR COMPREHENSIVE BALANCE
 CRISIS_THRESHOLDS = {
-    "high": 0.50,
-    "medium": 0.22,
-    "low": 0.12
+    "high": 0.55,    # Reduced from 0.50 - matches new systematic approach
+    "medium": 0.28,  # Reduced from 0.22 - more selective for medium alerts
+    "low": 0.16      # Reduced from 0.12 - avoids very mild expressions
 }
 
 # Context patterns for detection
