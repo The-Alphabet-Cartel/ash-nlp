@@ -4,7 +4,7 @@ All request/response models in one place for easy management
 """
 
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Union
 
 class FalsePositiveAnalysisRequest(BaseModel):
     """Request model for false positive analysis"""
@@ -14,7 +14,7 @@ class FalsePositiveAnalysisRequest(BaseModel):
     detected_level: str  # The level that was incorrectly detected
     correct_level: str   # The correct level that should have been detected
     context: Optional[Dict] = {}
-    severity_score: Optional[int] = 1
+    severity_score: Optional[Union[int, float]] = 1  # Accept both int and float
 
 class FalseNegativeAnalysisRequest(BaseModel):
     """Request model for false negative analysis"""
@@ -24,7 +24,7 @@ class FalseNegativeAnalysisRequest(BaseModel):
     should_detect_level: str  # The level that should have been detected
     actually_detected: str    # What was actually detected (usually 'none')
     context: Optional[Dict] = {}
-    severity_score: Optional[int] = 1
+    severity_score: Optional[Union[int, float]] = 1  # Accept both int and float
 
 class LearningUpdateRequest(BaseModel):
     """Request model for learning model updates"""
