@@ -14,7 +14,7 @@ class FalsePositiveAnalysisRequest(BaseModel):
     message: str
     detected_level: str         # The level that was incorrectly detected
     correct_level: str          # The correct level that should have been detected
-    context: Optional[Dict] = {}
+    context: Optional[Dict[str, Any]] = {}
     severity_score: Optional[Union[int, float]] = 1  # How bad this over-detection was (1-10)
 
 class FalseNegativeAnalysisRequest(BaseModel):
@@ -24,7 +24,7 @@ class FalseNegativeAnalysisRequest(BaseModel):
     message: str
     should_detect_level: str    # The crisis level that should have been detected
     actually_detected: str      # What was actually detected (usually 'none' or lower level)
-    context: Optional[Dict] = {}
+    context: Optional[Dict[str, Any]] = {}
     severity_score: Optional[Union[int, float]] = 1  # How critical this miss was (1-10)
 
 class LearningUpdateRequest(BaseModel):
@@ -35,7 +35,7 @@ class LearningUpdateRequest(BaseModel):
     record_type: str  # 'false_positive' or 'false_negative'
     message_data: Dict
     correction_data: Dict
-    context_data: Optional[Dict] = {}
+    context_data: Optional[Dict[str, Any]] = {}
     timestamp: str
 
 # LEARNING RESPONSE MODELS
