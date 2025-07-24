@@ -1,34 +1,101 @@
 services:
   ash-nlp:
-    # For production: pull from GitHub Container Registry
     image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
-
-    # For local development: build locally
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
+    # Uncomment for local development:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
 
     container_name: ash-nlp
     restart: unless-stopped
     networks:
       - ash-network
     ports:
-      - 8881:8881
+      - "${NLP_SERVICE_PORT:-8881}:${NLP_SERVICE_PORT:-8881}"
+    
+    # Load environment variables from .env file
+    env_file:
+      - .env
+    
     environment:
-      - PYTHONUNBUFFERED=1
-      - LEARNING_DATA_PATH=${LEARNING_DATA_PATH}
-      - LEARNING_RATE=${LEARNING_RATE}
-      - MIN_CONFIDENCE_ADJUSTMENT=${MIN_CONFIDENCE_ADJUSTMENT}
-      - MAX_CONFIDENCE_ADJUSTMENT=${MAX_CONFIDENCE_ADJUSTMENT}
-    # Resource limits for your hardware
+      # Core Python settings
+      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
+      
+      # Hugging Face Configuration
+      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN}
+      - HUGGINGFACE_CACHE_DIR=${HUGGINGFACE_CACHE_DIR:-./models/cache}
+      
+      # Learning System Configuration
+      - ENABLE_LEARNING_SYSTEM=${ENABLE_LEARNING_SYSTEM:-true}
+      - LEARNING_RATE=${LEARNING_RATE:-0.1}
+      - MAX_LEARNING_ADJUSTMENTS_PER_DAY=${MAX_LEARNING_ADJUSTMENTS_PER_DAY:-50}
+      - LEARNING_PERSISTENCE_FILE=${LEARNING_PERSISTENCE_FILE:-./learning_data/adjustments.json}
+      - MIN_CONFIDENCE_ADJUSTMENT=${MIN_CONFIDENCE_ADJUSTMENT:-0.05}
+      - MAX_CONFIDENCE_ADJUSTMENT=${MAX_CONFIDENCE_ADJUSTMENT:-0.30}
+      
+      # Model Configuration
+      - DEPRESSION_MODEL=${DEPRESSION_MODEL:-rafalposwiata/deproberta-large-depression}
+      - SENTIMENT_MODEL=${SENTIMENT_MODEL:-cardiffnlp/twitter-roberta-base-sentiment-latest}
+      - MODEL_CACHE_DIR=${MODEL_CACHE_DIR:-./models/cache}
+      
+      # Hardware Configuration - Optimized for your RTX 3050
+      - DEVICE=${DEVICE:-auto}
+      - MODEL_PRECISION=${MODEL_PRECISION:-float16}
+      
+      # Performance Tuning - Tuned for your Ryzen 7 7700x
+      - MAX_BATCH_SIZE=${MAX_BATCH_SIZE:-32}
+      - INFERENCE_THREADS=${INFERENCE_THREADS:-4}
+      - MAX_CONCURRENT_REQUESTS=${MAX_CONCURRENT_REQUESTS:-10}
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-30}
+      
+      # Server Configuration
+      - NLP_SERVICE_HOST=${NLP_SERVICE_HOST:-0.0.0.0}
+      - NLP_SERVICE_PORT=${NLP_SERVICE_PORT:-8881}
+      - UVICORN_WORKERS=${UVICORN_WORKERS:-1}
+      - RELOAD_ON_CHANGES=${RELOAD_ON_CHANGES:-false}
+      
+      # Logging Configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FILE=${LOG_FILE:-nlp_service.log}
+      - ENABLE_DEBUG_LOGGING=${ENABLE_DEBUG_LOGGING:-false}
+      
+      # Storage Paths
+      - DATA_DIR=${DATA_DIR:-./data}
+      - MODELS_DIR=${MODELS_DIR:-./models/cache}
+      - LOGS_DIR=${LOGS_DIR:-./logs}
+      - LEARNING_DATA_DIR=${LEARNING_DATA_DIR:-./learning_data}
+      
+      # Crisis Detection Thresholds
+      - HIGH_CRISIS_THRESHOLD=${HIGH_CRISIS_THRESHOLD:-0.7}
+      - MEDIUM_CRISIS_THRESHOLD=${MEDIUM_CRISIS_THRESHOLD:-0.4}
+      - LOW_CRISIS_THRESHOLD=${LOW_CRISIS_THRESHOLD:-0.2}
+      
+      # Rate Limiting
+      - MAX_REQUESTS_PER_MINUTE=${MAX_REQUESTS_PER_MINUTE:-60}
+      - MAX_REQUESTS_PER_HOUR=${MAX_REQUESTS_PER_HOUR:-1000}
+      
+      # Security
+      - ALLOWED_IPS=${ALLOWED_IPS:-10.20.30.0/24,127.0.0.1,::1}
+      - ENABLE_CORS=${ENABLE_CORS:-true}
+    
+    volumes:
+      - ./data:/app/data
+      - ./models/cache:/app/models/cache
+      - ./logs:/app/logs
+      - ./learning_data:/app/learning_data
+    
     deploy:
       resources:
         limits:
-          memory: 8G      # Enough for the ML model
-          cpus: '4'       # Half your Ryzen cores
+          memory: 8G      # Sufficient for your RTX 3050 setup
+          cpus: '4'       # Half your Ryzen 7 7700x cores
         reservations:
           memory: 2G
           cpus: '1'
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
 networks:
   ash-network:

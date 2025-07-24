@@ -1,7 +1,16 @@
-fastapi==0.104.1
-uvicorn==0.24.0
-transformers==4.35.2
-torch==2.1.0
-pydantic==2.5.0
-requests==2.31.0
-numpy<2.0
+# Existing dependencies
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+transformers>=4.35.0
+torch>=2.1.0
+tokenizers>=0.15.0
+numpy>=1.24.0
+pydantic>=2.5.0
+aiohttp>=3.9.0
+
+# Additional dependencies for enhanced configuration
+python-dotenv>=1.0.0
+pathlib2>=2.3.7  # For enhanced path handling
+psutil==5.9.6    # For system resource monitoring
+accelerate==0.24.1
+requests>=2.31.0

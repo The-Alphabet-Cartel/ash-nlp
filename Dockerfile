@@ -1,4 +1,4 @@
-# Dockerfile for NLP Service
+# Enhanced Dockerfile for Ash NLP Service
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -19,7 +19,21 @@ COPY . .
 
 # Create non-root user (same UID as main bot)
 RUN useradd -m -u 1001 nlpuser && chown -R nlpuser:nlpuser /app
+
+# Create directories for data, models, logs, and learning data
+RUN mkdir -p /app/data /app/models/cache /app/logs /app/learning_data && \
+    chown -R nlpuser:nlpuser /app/data /app/models /app/logs /app/learning_data
+
 USER nlpuser
+
+# Set default environment variables (can be overridden by docker-compose or .env)
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=INFO
+ENV NLP_SERVICE_HOST=0.0.0.0
+ENV NLP_SERVICE_PORT=8881
+ENV DEVICE=auto
+ENV MODEL_PRECISION=float16
+ENV ENABLE_LEARNING_SYSTEM=true
 
 # Expose port
 EXPOSE 8881

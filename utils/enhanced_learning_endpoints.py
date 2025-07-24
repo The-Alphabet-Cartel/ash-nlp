@@ -10,26 +10,15 @@ import time
 from datetime import datetime, timezone
 from typing import Dict, List, Any
 from fastapi import HTTPException
-from pydantic import BaseModel
+
+# IMPORT centralized models instead of defining locally
+from models.pydantic_models import (
+    FalsePositiveAnalysisRequest, 
+    FalseNegativeAnalysisRequest, 
+    LearningUpdateRequest
+)
 
 logger = logging.getLogger(__name__)
-
-class FalseNegativeRequest(BaseModel):
-    """Request model for false negative analysis"""
-    message: str
-    should_detect_level: str
-    actually_detected: str
-    context: str
-    severity_score: int
-
-class LearningRecordRequest(BaseModel):
-    """Request model for learning record updates"""
-    learning_record_id: str
-    record_type: str  # 'false_positive' or 'false_negative'
-    message_data: Dict
-    correction_data: Dict
-    context_data: str
-    timestamp: str
 
 class EnhancedLearningManager:
     """Enhanced learning manager that handles both false positives and false negatives"""
@@ -110,7 +99,7 @@ class EnhancedLearningManager:
             logger.error(f"Error applying learning adjustments: {e}")
             return base_score
     
-    async def analyze_false_negative(self, request: FalseNegativeRequest) -> Dict:
+    async def analyze_false_negative(self, request: FalseNegativeAnalysisRequest) -> Dict:
         """NEW: Analyze false negative (missed crisis) and update learning"""
         try:
             patterns_discovered = 0
@@ -516,7 +505,7 @@ def add_enhanced_learning_endpoints(app, learning_manager):
     """Add enhanced learning endpoints to FastAPI app"""
     
     @app.post("/analyze_false_negative")
-    async def analyze_false_negative(request: FalseNegativeRequest):
+    async def analyze_false_negative(request: FalseNegativeAnalysisRequest):  # Updated to use centralized model
         """NEW: Analyze false negative (missed crisis) and learn from it"""
         
         if not request.message.strip():
@@ -531,7 +520,7 @@ def add_enhanced_learning_endpoints(app, learning_manager):
             raise HTTPException(status_code=500, detail=f"False negative analysis failed: {str(e)}")
     
     @app.post("/analyze_false_positive")
-    async def analyze_false_positive(request):
+    async def analyze_false_positive(request: FalsePositiveAnalysisRequest):  # Updated to use centralized model
         """Enhanced false positive analysis"""
         
         if not request.message.strip():
@@ -546,14 +535,14 @@ def add_enhanced_learning_endpoints(app, learning_manager):
             raise HTTPException(status_code=500, detail=f"False positive analysis failed: {str(e)}")
     
     @app.post("/update_learning_model")
-    async def update_learning_model(request: LearningRecordRequest):
+    async def update_learning_model(request: LearningUpdateRequest):  # Updated to use centralized model
         """Enhanced learning model update for both false positives and negatives"""
         
         try:
             # Process the learning record based on type
             if request.record_type == 'false_negative':
-                # Create a false negative request
-                fn_request = FalseNegativeRequest(
+                # Create a false negative request using centralized model
+                fn_request = FalseNegativeAnalysisRequest(
                     message=request.message_data['content'],
                     should_detect_level=request.correction_data['should_detect_level'],
                     actually_detected=request.correction_data['actually_detected'],
@@ -563,21 +552,13 @@ def add_enhanced_learning_endpoints(app, learning_manager):
                 result = await learning_manager.analyze_false_negative(fn_request)
             
             elif request.record_type == 'false_positive':
-                # Handle false positive (existing logic enhanced)
-                class FPRequest:
-                    def __init__(self, msg, det, cor, ctx, sev):
-                        self.message = msg
-                        self.detected_level = det
-                        self.correct_level = cor
-                        self.context = ctx
-                        self.severity_score = sev
-                
-                fp_request = FPRequest(
-                    request.message_data['content'],
-                    request.correction_data['detected_level'],
-                    request.correction_data['correct_level'],
-                    request.context_data,
-                    request.correction_data['severity_score']
+                # Create a false positive request using centralized model
+                fp_request = FalsePositiveAnalysisRequest(
+                    message=request.message_data['content'],
+                    detected_level=request.correction_data['detected_level'],
+                    correct_level=request.correction_data['correct_level'],
+                    context=request.context_data,
+                    severity_score=request.correction_data['severity_score']
                 )
                 result = await learning_manager.analyze_false_positive(fp_request)
             
