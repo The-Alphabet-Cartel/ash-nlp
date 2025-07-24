@@ -17,9 +17,6 @@ from models.pydantic_models import (
     # Core models
     MessageRequest, CrisisResponse, HealthResponse,
     
-    # Feature models  
-    PhraseExtractionRequest, PatternLearningRequest, SemanticAnalysisRequest,
-    
     # Learning models (now centralized)
     FalsePositiveAnalysisRequest, FalseNegativeAnalysisRequest, LearningUpdateRequest,
     
@@ -427,66 +424,6 @@ async def analyze_message(request: MessageRequest):
     except Exception as e:
         logger.error(f"Error in message analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
-
-# Optional endpoints that only work if components are available
-@app.post("/extract_phrases")
-async def extract_phrases_endpoint(request: PhraseExtractionRequest):
-    """Extract crisis phrases from message"""
-    
-    if not model_manager or not model_manager.models_loaded():
-        raise HTTPException(status_code=503, detail="Models not loaded")
-    
-    if not phrase_extractor:
-        raise HTTPException(status_code=503, detail="Phrase extraction not available")
-    
-    try:
-        result = await phrase_extractor.extract_phrases(
-            request.message,
-            request.user_id,
-            request.channel_id,
-            request.parameters
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error in phrase extraction: {e}")
-        logger.exception("Full traceback:")
-        raise HTTPException(status_code=500, detail=f"Phrase extraction failed: {str(e)}")
-
-@app.post("/learn_patterns")
-async def learn_patterns_endpoint(request: PatternLearningRequest):
-    """Learn patterns from message history"""
-    
-    if not pattern_learner:
-        raise HTTPException(status_code=503, detail="Pattern learning not available")
-    
-    try:
-        result = await pattern_learner.learn_patterns(
-            request.messages,
-            request.analysis_type,
-            request.time_window_days
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error in pattern learning: {e}")
-        raise HTTPException(status_code=500, detail=f"Pattern learning failed: {str(e)}")
-
-@app.post("/semantic_analysis")
-async def semantic_analysis_endpoint(request: SemanticAnalysisRequest):
-    """Perform semantic analysis for crisis detection"""
-    
-    if not semantic_analyzer:
-        raise HTTPException(status_code=503, detail="Semantic analysis not available")
-    
-    try:
-        result = await semantic_analyzer.analyze_semantic_context(
-            request.message,
-            request.community_vocabulary,
-            request.context_hints
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Error in semantic analysis: {e}")
-        raise HTTPException(status_code=500, detail=f"Semantic analysis failed: {str(e)}")
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
