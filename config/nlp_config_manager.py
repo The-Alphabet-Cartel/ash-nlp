@@ -111,8 +111,8 @@ class NLPConfigManager:
             secret_file_suffix='claude_api_key'
         )
         
-        self._config['HUGGINGFACE_HUB_TOKEN'] = self._get_config_value(
-            'HUGGINGFACE_HUB_TOKEN',
+        self._config['HUGGINGFACE_TOKEN'] = self._get_config_value(
+            'HUGGINGFACE_TOKEN',
             secret_file_suffix='huggingface_token'
         )
         
@@ -221,7 +221,7 @@ class NLPConfigManager:
         # Log configuration summary
         using_secrets = bool(
             os.getenv('CLAUDE_API_KEY_FILE') or 
-            os.getenv('HUGGINGFACE_HUB_TOKEN_FILE') or
+            os.getenv('HUGGINGFACE_TOKEN_FILE') or
             Path("./secrets/claude_api_key").exists() or
             Path("./secrets/huggingface_token").exists()
         )
@@ -240,7 +240,7 @@ class NLPConfigManager:
         if not self._config['CLAUDE_API_KEY'] and self._config['ENABLE_LEARNING_SYSTEM']:
             logger.warning("⚠️ Claude API key not found - learning system may be limited")
         
-        if not self._config['HUGGINGFACE_HUB_TOKEN']:
+        if not self._config['HUGGINGFACE_TOKEN']:
             logger.warning("⚠️ HuggingFace token not found - model downloads may be limited")
     
     def get(self, key: str, default: Any = None) -> Any:
@@ -295,7 +295,7 @@ class NLPConfigManager:
         if self._config.get('CLAUDE_API_KEY'):
             base_config['capabilities']['claude_integration'] = "Available with secrets"
         
-        if self._config.get('HUGGINGFACE_HUB_TOKEN'):
+        if self._config.get('HUGGINGFACE_TOKEN'):
             base_config['capabilities']['model_downloads'] = "Enhanced with HF token"
         
         return base_config
@@ -304,7 +304,7 @@ class NLPConfigManager:
         """Get all configuration (excluding sensitive values)"""
         safe_config = self._config.copy()
         # Mask sensitive values
-        sensitive_keys = ['CLAUDE_API_KEY', 'HUGGINGFACE_HUB_TOKEN', 'OPENAI_API_KEY']
+        sensitive_keys = ['HUGGINGFACE_TOKEN']
         for key in sensitive_keys:
             if key in safe_config and safe_config[key]:
                 safe_config[key] = f"{safe_config[key][:10]}..."
