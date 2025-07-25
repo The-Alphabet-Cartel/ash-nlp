@@ -18,11 +18,13 @@ services:
       - .env
     
     environment:
+      # Point to secret files
+      - HUGGINGFACE_TOKEN=/run/secrets/huggingface_token
+
       # Core Python settings
       - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
       
       # Hugging Face Configuration
-      - HUGGINGFACE_HUB_TOKEN=${HUGGINGFACE_HUB_TOKEN}
       - HUGGINGFACE_CACHE_DIR=${HUGGINGFACE_CACHE_DIR:-./models/cache}
       
       # Learning System Configuration
@@ -83,6 +85,7 @@ services:
       - ./models/cache:/app/models/cache
       - ./logs:/app/logs
       - ./learning_data:/app/learning_data
+      - ./secrets:/run/secrets:ro
     
     deploy:
       resources:
