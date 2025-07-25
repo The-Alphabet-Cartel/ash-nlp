@@ -35,7 +35,7 @@ class EnvConfigManager:
         # Define configuration with defaults and types
         config_schema = {
             # Hugging Face Configuration
-            'HUGGINGFACE_HUB_TOKEN': {'type': str, 'default': None, 'required': False},
+            'HUGGINGFACE_TOKEN': {'type': str, 'default': None, 'required': False},
             'HUGGINGFACE_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
             # Learning System
@@ -174,7 +174,7 @@ class EnvConfigManager:
     
     def print_config(self):
         """Print configuration for debugging (hiding sensitive values)"""
-        sensitive_keys = ['HUGGINGFACE_HUB_TOKEN']
+        sensitive_keys = ['HUGGINGFACE_TOKEN']
         
         logger.info("=== NLP Service Configuration ===")
         for key, value in sorted(self.config.items()):
