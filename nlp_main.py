@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Enhanced NLP Service for Ash Bot - Environment Variable Integration
+Enhanced NLP Service for Ash Bot - With Secrets Support
 """
 
 from fastapi import FastAPI, HTTPException
@@ -24,81 +24,12 @@ from models.pydantic_models import (
     LearningUpdateResponse, LearningStatisticsResponse
 )
 
-# Environment variable configuration with defaults
-def get_env_config():
-    """Get configuration from environment variables with proper defaults"""
-    
-    # Create directories if they don't exist
-    directories = [
-        os.getenv('DATA_DIR', './data'),
-        os.getenv('MODELS_DIR', './models'),
-        os.getenv('LOGS_DIR', './logs'),
-        os.getenv('LEARNING_DATA_DIR', './learning_data'),
-        os.path.dirname(os.getenv('MODEL_CACHE_DIR', './models/cache')),
-        os.path.dirname(os.getenv('LEARNING_PERSISTENCE_FILE', './learning_data/adjustments.json')),
-    ]
-    
-    for directory in directories:
-        if directory and directory != '.':
-            Path(directory).mkdir(parents=True, exist_ok=True)
-    
-    config = {
-        # Hugging Face Configuration
-        'HUGGINGFACE_HUB_TOKEN': os.getenv('HUGGINGFACE_HUB_TOKEN'),
-        'HUGGINGFACE_CACHE_DIR': os.getenv('HUGGINGFACE_CACHE_DIR', './models/cache'),
-        
-        # Learning System Configuration
-        'ENABLE_LEARNING_SYSTEM': os.getenv('ENABLE_LEARNING_SYSTEM', 'true').lower() in ('true', '1', 'yes'),
-        'LEARNING_RATE': float(os.getenv('LEARNING_RATE', '0.1')),
-        'MAX_LEARNING_ADJUSTMENTS_PER_DAY': int(os.getenv('MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50')),
-        'LEARNING_PERSISTENCE_FILE': os.getenv('LEARNING_PERSISTENCE_FILE', './learning_data/adjustments.json'),
-        'MIN_CONFIDENCE_ADJUSTMENT': float(os.getenv('MIN_CONFIDENCE_ADJUSTMENT', '0.05')),
-        'MAX_CONFIDENCE_ADJUSTMENT': float(os.getenv('MAX_CONFIDENCE_ADJUSTMENT', '0.30')),
-        
-        # Model Configuration
-        'DEPRESSION_MODEL': os.getenv('DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'),
-        'SENTIMENT_MODEL': os.getenv('SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
-        'MODEL_CACHE_DIR': os.getenv('MODEL_CACHE_DIR', './models/cache'),
-        
-        # Hardware Configuration
-        'DEVICE': os.getenv('DEVICE', 'auto'),
-        'MODEL_PRECISION': os.getenv('MODEL_PRECISION', 'float16'),
-        
-        # Performance Tuning
-        'MAX_BATCH_SIZE': int(os.getenv('MAX_BATCH_SIZE', '32')),
-        'INFERENCE_THREADS': int(os.getenv('INFERENCE_THREADS', '4')),
-        'MAX_CONCURRENT_REQUESTS': int(os.getenv('MAX_CONCURRENT_REQUESTS', '10')),
-        'REQUEST_TIMEOUT': int(os.getenv('REQUEST_TIMEOUT', '30')),
-        
-        # Server Configuration
-        'NLP_SERVICE_HOST': os.getenv('NLP_SERVICE_HOST', '0.0.0.0'),
-        'NLP_SERVICE_PORT': int(os.getenv('NLP_SERVICE_PORT', '8881')),
-        'UVICORN_WORKERS': int(os.getenv('UVICORN_WORKERS', '1')),
-        'RELOAD_ON_CHANGES': os.getenv('RELOAD_ON_CHANGES', 'false').lower() in ('true', '1', 'yes'),
-        
-        # Logging Configuration
-        'LOG_LEVEL': os.getenv('LOG_LEVEL', 'INFO').upper(),
-        'LOG_FILE': os.getenv('LOG_FILE', 'nlp_service.log'),
-        'ENABLE_DEBUG_LOGGING': os.getenv('ENABLE_DEBUG_LOGGING', 'false').lower() in ('true', '1', 'yes'),
-        
-        # Crisis Detection Thresholds
-        'HIGH_CRISIS_THRESHOLD': float(os.getenv('HIGH_CRISIS_THRESHOLD', '0.7')),
-        'MEDIUM_CRISIS_THRESHOLD': float(os.getenv('MEDIUM_CRISIS_THRESHOLD', '0.4')),
-        'LOW_CRISIS_THRESHOLD': float(os.getenv('LOW_CRISIS_THRESHOLD', '0.2')),
-        
-        # Rate Limiting
-        'MAX_REQUESTS_PER_MINUTE': int(os.getenv('MAX_REQUESTS_PER_MINUTE', '60')),
-        'MAX_REQUESTS_PER_HOUR': int(os.getenv('MAX_REQUESTS_PER_HOUR', '1000')),
-        
-        # Security
-        'ALLOWED_IPS': os.getenv('ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),
-        'ENABLE_CORS': os.getenv('ENABLE_CORS', 'true').lower() in ('true', '1', 'yes'),
-    }
-    
-    return config
+# Import enhanced configuration with secrets support
+from config import get_nlp_config, get_env_config, get_api_keys_status
 
-# Get configuration
-config = get_env_config()
+# Initialize configuration manager with secrets support
+config_manager = get_nlp_config()
+config = get_env_config()  # Backward compatibility - returns dict
 
 # Configure logging using environment variables
 log_level = config['LOG_LEVEL']
@@ -119,20 +50,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Set Hugging Face token if provided
-if config['HUGGINGFACE_HUB_TOKEN']:
+# Set Hugging Face token if provided (now from secrets or environment)
+hf_token = config_manager.get('HUGGINGFACE_HUB_TOKEN')
+if hf_token:
+    os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token
+    logger.info("🔑 Hugging Face token configured from secrets")
+elif config['HUGGINGFACE_HUB_TOKEN']:
     os.environ['HUGGINGFACE_HUB_TOKEN'] = config['HUGGINGFACE_HUB_TOKEN']
-    logger.info("🔑 Hugging Face token configured")
+    logger.info("🔑 Hugging Face token configured from environment")
+
+# Log secrets status on startup
+api_keys_status = get_api_keys_status()
+logger.info("🔐 API Keys Status:")
+for key, available in api_keys_status.items():
+    status = "✅ Available" if available else "❌ Not found"
+    logger.info(f"   {key}: {status}")
 
 # Print configuration on startup if debug enabled
 if enable_debug:
-    logger.info("=== NLP Service Configuration ===")
-    for key, value in sorted(config.items()):
-        if 'TOKEN' in key and value:
-            display_value = f"{str(value)[:8]}..."
-        else:
-            display_value = value
-        logger.info(f"{key}: {display_value}")
+    logger.info("=== NLP Service Configuration (with Secrets Support) ===")
+    safe_config = config_manager.get_all_safe()
+    for key, value in sorted(safe_config.items()):
+        logger.info(f"{key}: {value}")
     logger.info("=== End Configuration ===")
 
 # Import ModelManager with backward compatibility (after logger is defined)
@@ -200,7 +139,7 @@ startup_time = time.time()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("🚀 Enhanced FastAPI app starting with environment configuration...")
+    logger.info("🚀 Enhanced FastAPI app starting with secrets-aware configuration...")
     await initialize_components_with_config()
     logger.info("✅ Enhanced FastAPI app startup complete!")
     yield
@@ -211,19 +150,32 @@ async def initialize_components_with_config():
     global model_manager, crisis_analyzer, phrase_extractor, pattern_learner, semantic_analyzer, enhanced_learning_manager
     
     try:
-        # Initialize enhanced model manager (it will load config from environment automatically)
-        model_manager = ModelManager()  # No config needed - loads from environment
+        # Initialize enhanced model manager (pass config manager for secrets support)
+        try:
+            # Try to pass config manager if ModelManager supports it
+            model_manager = ModelManager(config_manager)
+            logger.info("✅ ModelManager initialized with secrets-aware config")
+        except TypeError:
+            # Fallback: ModelManager doesn't support config parameter yet
+            model_manager = ModelManager()
+            logger.info("✅ ModelManager initialized (using environment variables)")
         
         # Load models with the enhanced method
-        logger.info("📦 Loading ML models with environment configuration...")
+        logger.info("📦 Loading ML models with secrets-aware configuration...")
         await model_manager.load_models()
         logger.info("✅ Enhanced ModelManager initialized and models loaded")
         
         # Initialize enhanced learning manager if available
         if ENHANCED_LEARNING_AVAILABLE and config['ENABLE_LEARNING_SYSTEM']:
             try:
-                enhanced_learning_manager = EnhancedLearningManager(model_manager)
-                logger.info("✅ Enhanced learning system initialized")
+                # Try to pass config manager if EnhancedLearningManager supports it
+                try:
+                    enhanced_learning_manager = EnhancedLearningManager(model_manager, config_manager)
+                    logger.info("✅ Enhanced learning system initialized with secrets support")
+                except TypeError:
+                    # Fallback: EnhancedLearningManager doesn't support config parameter yet
+                    enhanced_learning_manager = EnhancedLearningManager(model_manager)
+                    logger.info("✅ Enhanced learning system initialized (using environment variables)")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize Enhanced Learning Manager: {e}")
                 enhanced_learning_manager = None
@@ -237,8 +189,14 @@ async def initialize_components_with_config():
         # Initialize analyzers (only if available)
         if CRISIS_ANALYZER_AVAILABLE:
             try:
-                crisis_analyzer = CrisisAnalyzer(model_manager, enhanced_learning_manager)
-                logger.info("✅ Crisis analyzer initialized")
+                # Try to pass config manager if CrisisAnalyzer supports it
+                try:
+                    crisis_analyzer = CrisisAnalyzer(model_manager, enhanced_learning_manager, config_manager)
+                    logger.info("✅ Crisis analyzer initialized with secrets support")
+                except TypeError:
+                    # Fallback: CrisisAnalyzer doesn't support config parameter yet
+                    crisis_analyzer = CrisisAnalyzer(model_manager, enhanced_learning_manager)
+                    logger.info("✅ Crisis analyzer initialized (using environment variables)")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
                 crisis_analyzer = None
@@ -247,8 +205,14 @@ async def initialize_components_with_config():
         
         if PHRASE_EXTRACTOR_AVAILABLE:
             try:
-                phrase_extractor = PhraseExtractor(model_manager)
-                logger.info("✅ Advanced phrase extractor initialized")
+                # Try to pass config manager if PhraseExtractor supports it
+                try:
+                    phrase_extractor = PhraseExtractor(model_manager, config_manager)
+                    logger.info("✅ Advanced phrase extractor initialized with secrets support")
+                except TypeError:
+                    # Fallback: PhraseExtractor doesn't support config parameter yet
+                    phrase_extractor = PhraseExtractor(model_manager)
+                    logger.info("✅ Advanced phrase extractor initialized (using environment variables)")
             except ImportError as e:
                 logger.warning(f"⚠️ Import error in PhraseExtractor: {e}")
                 phrase_extractor = None
@@ -262,8 +226,14 @@ async def initialize_components_with_config():
         
         if PATTERN_LEARNER_AVAILABLE:
             try:
-                pattern_learner = PatternLearner(model_manager)
-                logger.info("✅ Pattern learner initialized")
+                # Try to pass config manager if PatternLearner supports it
+                try:
+                    pattern_learner = PatternLearner(model_manager, config_manager)
+                    logger.info("✅ Pattern learner initialized with secrets support")
+                except TypeError:
+                    # Fallback: PatternLearner doesn't support config parameter yet
+                    pattern_learner = PatternLearner(model_manager)
+                    logger.info("✅ Pattern learner initialized (using environment variables)")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize PatternLearner: {e}")
                 pattern_learner = None
@@ -272,43 +242,41 @@ async def initialize_components_with_config():
         
         if SEMANTIC_ANALYZER_AVAILABLE:
             try:
-                semantic_analyzer = SemanticAnalyzer(model_manager)
-                logger.info("✅ Semantic analyzer initialized")
+                # Try to pass config manager if SemanticAnalyzer supports it
+                try:
+                    semantic_analyzer = SemanticAnalyzer(model_manager, config_manager)
+                    logger.info("✅ Semantic analyzer initialized with secrets support")
+                except TypeError:
+                    # Fallback: SemanticAnalyzer doesn't support config parameter yet
+                    semantic_analyzer = SemanticAnalyzer(model_manager)
+                    logger.info("✅ Semantic analyzer initialized (using environment variables)")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize SemanticAnalyzer: {e}")
                 semantic_analyzer = None
         else:
             logger.info("ℹ️ SemanticAnalyzer not available")
 
-        # Initialize enhanced learning manager if available
-        if ENHANCED_LEARNING_AVAILABLE and config['ENABLE_LEARNING_SYSTEM']:
+        # Add enhanced learning endpoints if manager is available
+        if enhanced_learning_manager:
             try:
-                enhanced_learning_manager = EnhancedLearningManager(model_manager)
-                logger.info("✅ Enhanced learning system initialized")
-                
-                # ADD THIS: Register endpoints immediately after manager creation
                 logger.info("🔧 Adding enhanced learning endpoints...")
                 add_enhanced_learning_endpoints(app, enhanced_learning_manager)
                 logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
-                
             except Exception as e:
-                logger.warning(f"⚠️ Could not initialize Enhanced Learning Manager: {e}")
+                logger.error(f"❌ Failed to add enhanced learning endpoints: {e}")
                 logger.exception("Full traceback:")
-                enhanced_learning_manager = None
-        else:
-            logger.info("ℹ️ Enhanced Learning Manager not available")
 
-        logger.info("✅ All available components initialized with environment configuration")
+        logger.info("✅ All available components initialized with secrets-aware configuration")
         
     except Exception as e:
         logger.error(f"❌ Failed to initialize components: {e}")
         raise
 
-# Create FastAPI app with config
+# Create FastAPI app with enhanced config
 app = FastAPI(
-    title="Enhanced Ash NLP Service with Environment Configuration", 
-    version="4.3",
-    description="Multi-model Mental Health Crisis Detection with Full Environment Variable Support",
+    title="Enhanced Ash NLP Service with Secrets Support", 
+    version="4.4",
+    description="Multi-model Mental Health Crisis Detection with Secure Configuration Management",
     lifespan=lifespan
 )
 
@@ -323,25 +291,6 @@ if config['ENABLE_CORS']:
         allow_headers=["*"],
     )
     logger.info("🌐 CORS middleware enabled")
-
-# Add enhanced learning endpoints after app creation
-#@app.on_event("startup")
-#async def setup_enhanced_learning_endpoints():
-logger.info("🔧 Setting up enhanced learning endpoints...")
-if ENHANCED_LEARNING_AVAILABLE:
-    logger.info("✅ Enhanced learning available, checking manager...")
-    if enhanced_learning_manager:
-        logger.info("✅ Enhanced learning manager exists, adding endpoints...")
-        try:
-            add_enhanced_learning_endpoints(app, enhanced_learning_manager)
-            logger.info("🧠 Enhanced learning endpoints added to FastAPI app (false positives + negatives)")
-        except Exception as e:
-            logger.error(f"❌ Failed to add enhanced learning endpoints: {e}")
-            logger.exception("Full traceback:")
-    else:
-        logger.warning("⚠️ Enhanced learning manager is None")
-else:
-    logger.warning("⚠️ Enhanced learning not available")
 
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
@@ -434,7 +383,7 @@ async def analyze_message(request: MessageRequest):
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check with component status"""
+    """Health check with component status and secrets info"""
     
     uptime = time.time() - startup_time
     models_loaded = model_manager and model_manager.models_loaded()
@@ -449,6 +398,9 @@ async def health_check():
         "enhanced_learning": enhanced_learning_manager is not None
     }
     
+    # Get API keys status
+    api_keys_status = get_api_keys_status()
+    
     status = "healthy" if models_loaded else "unhealthy"
     
     return HealthResponse(
@@ -461,32 +413,37 @@ async def health_check():
             "max_batch_size": config['MAX_BATCH_SIZE'],
             "inference_threads": config['INFERENCE_THREADS'],
             "components_available": components_status,
-            "learning_system": "enabled" if enhanced_learning_manager else "disabled"
+            "learning_system": "enabled" if enhanced_learning_manager else "disabled",
+            "secrets_status": api_keys_status,
+            "using_secrets": any(api_keys_status.values())
         }
     )
 
 # Stats endpoint
 @app.get("/stats")
 async def get_stats():
-    """Get service statistics with configuration info"""
+    """Get service statistics with configuration and secrets info"""
     
     uptime = time.time() - startup_time
+    api_keys_status = get_api_keys_status()
     
     stats = {
-        "service": "Enhanced Ash NLP Service with Environment Configuration",
-        "version": "4.3",
+        "service": "Enhanced Ash NLP Service with Secrets Support",
+        "version": "4.4",
         "uptime_seconds": uptime,
         "models_loaded": model_manager.get_model_status() if model_manager else {},
         "configuration": {
             "learning_enabled": config['ENABLE_LEARNING_SYSTEM'],
             "device": config['DEVICE'],
             "precision": config['MODEL_PRECISION'],
+            "using_secrets": any(api_keys_status.values()),
             "thresholds": {
                 "high": config['HIGH_CRISIS_THRESHOLD'],
                 "medium": config['MEDIUM_CRISIS_THRESHOLD'],
                 "low": config['LOW_CRISIS_THRESHOLD']
             }
         },
+        "secrets_status": api_keys_status,
         "components_available": {
             "model_manager": model_manager is not None,
             "crisis_analyzer": CRISIS_ANALYZER_AVAILABLE and crisis_analyzer is not None,
@@ -506,11 +463,11 @@ async def get_stats():
     return stats
 
 if __name__ == "__main__":
-    logger.info("🚀 Starting Enhanced Ash NLP Service v4.3 (Full Environment Support)")
-    logger.info("🔧 Configuration loaded from environment variables")
-    logger.info("🧠 Advanced capabilities with environment-driven configuration")
+    logger.info("🚀 Starting Enhanced Ash NLP Service v4.4 (Secrets Support)")
+    logger.info("🔧 Configuration loaded with secrets-aware management")
+    logger.info("🧠 Advanced capabilities with secure configuration")
     
-    # Get server configuration from environment
+    # Get server configuration from enhanced config
     host = config['NLP_SERVICE_HOST']
     port = config['NLP_SERVICE_PORT']
     workers = config['UVICORN_WORKERS']
