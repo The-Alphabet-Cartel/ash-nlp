@@ -1,10 +1,10 @@
 services:
   ash-nlp:
-    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
+#    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
     # Uncomment for local development:
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+    build:
+      context: .
+      dockerfile: Dockerfile
 
     container_name: ash-nlp
     restart: unless-stopped
