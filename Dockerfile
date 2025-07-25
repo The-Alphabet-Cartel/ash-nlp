@@ -1,38 +1,66 @@
-# Enhanced Dockerfile for Ash NLP Service
-FROM python:3.11-slim
+# Multi-stage Dockerfile for Ash NLP Service - Production Ready
+# Build stage
+FROM python:3.11-slim as builder
 
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install build dependencies for GPU libraries and ML packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
-    curl \
+    g++ \
+    build-essential \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
 
 # Copy requirements first for better caching
 COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies in virtual environment
+# Optimized for RTX 3050 and PyTorch/Transformers
+RUN pip install --no-cache-dir --upgrade pip wheel setuptools && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Production stage
+FROM python:3.11-slim as production
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set working directory
+WORKDIR /app
+
+# Create non-root user for security (matching main bot UID)
+RUN useradd -m -u 1001 nlpuser
+
+# Create necessary directories with proper ownership
+RUN mkdir -p /app/data /app/models/cache /app/logs /app/learning_data && \
+    chown -R nlpuser:nlpuser /app
 
 # Copy service code
-COPY . .
+COPY --chown=nlpuser:nlpuser . .
 
-# Create non-root user (same UID as main bot)
-RUN useradd -m -u 1001 nlpuser && chown -R nlpuser:nlpuser /app
-
-# Create directories for data, models, logs, and learning data
-RUN mkdir -p /app/data /app/models/cache /app/logs /app/learning_data && \
-    chown -R nlpuser:nlpuser /app/data /app/models /app/logs /app/learning_data
-
+# Switch to non-root user
 USER nlpuser
 
-# Set default environment variables (can be overridden by docker-compose or .env)
+# Set default environment variables optimized for your hardware
 ## Core Python settings
 ENV PYTHONUNBUFFERED=1
 
 ## Hugging Face Configuration
 ENV HUGGINGFACE_HUB_TOKEN=
-ENV HUGGINGFACE_CACHE_DIR=/models/cache
+ENV HUGGINGFACE_CACHE_DIR=./models/cache
 
 ## Learning System Configuration
 ENV ENABLE_LEARNING_SYSTEM=true
@@ -47,14 +75,14 @@ ENV DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
 ENV SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
 ENV MODEL_CACHE_DIR=./models/cache
 
-## Hardware Configuration
+## Hardware Configuration - Optimized for RTX 3050
 ENV DEVICE=auto
 ENV MODEL_PRECISION=float16
 
-## Performance Tuning
+## Performance Tuning - Tuned for Ryzen 7 7700x + 64GB RAM
 ENV MAX_BATCH_SIZE=32
-ENV INFERENCE_THREADS=4
-ENV MAX_CONCURRENT_REQUESTS=10
+ENV INFERENCE_THREADS=8
+ENV MAX_CONCURRENT_REQUESTS=12
 ENV REQUEST_TIMEOUT=30
 
 ## Server Configuration
@@ -95,9 +123,9 @@ ENV ENABLE_CORS=true
 # Expose port
 EXPOSE 8881
 
-# Health check - give more time for model loading and use curl
+# Health check - optimized for model loading time
 HEALTHCHECK --interval=60s --timeout=30s --start-period=300s --retries=3 \
     CMD curl -f http://localhost:8881/health || exit 1
 
-# Start the service with explicit host binding
+# Start the service
 CMD ["python", "nlp_main.py"]
