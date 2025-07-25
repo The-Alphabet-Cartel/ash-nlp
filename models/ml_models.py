@@ -247,20 +247,53 @@ class EnhancedModelManager:
             # Test depression model
             dep_result = self.analyze_with_depression_model(test_message)
             if dep_result:
-                top_dep = max(dep_result, key=lambda x: x['score'])
-                logger.info(f"   Depression: {top_dep['label']} ({top_dep['score']:.3f})")
+                # Handle different result formats - extract predictions
+                predictions_to_process = []
+                if isinstance(dep_result, list):
+                    if len(dep_result) > 0 and isinstance(dep_result[0], list):
+                        # Nested list format [[{...}, {...}]]
+                        predictions_to_process = dep_result[0]
+                    elif len(dep_result) > 0 and isinstance(dep_result[0], dict):
+                        # Flat list format [{...}, {...}]
+                        predictions_to_process = dep_result
+                elif isinstance(dep_result, dict):
+                    # Single result format {...}
+                    predictions_to_process = [dep_result]
+                
+                if predictions_to_process:
+                    top_dep = max(predictions_to_process, key=lambda x: x.get('score', 0))
+                    logger.info(f"   Depression: {top_dep.get('label', 'unknown')} ({top_dep.get('score', 0):.3f})")
+                else:
+                    logger.warning("   Depression: No valid predictions found")
             
             # Test sentiment model
             sent_result = self.analyze_with_sentiment_model(test_message)
             if sent_result:
-                top_sent = max(sent_result, key=lambda x: x['score'])
-                logger.info(f"   Sentiment: {top_sent['label']} ({top_sent['score']:.3f})")
+                # Handle different result formats - extract predictions
+                predictions_to_process = []
+                if isinstance(sent_result, list):
+                    if len(sent_result) > 0 and isinstance(sent_result[0], list):
+                        # Nested list format [[{...}, {...}]]
+                        predictions_to_process = sent_result[0]
+                    elif len(sent_result) > 0 and isinstance(sent_result[0], dict):
+                        # Flat list format [{...}, {...}]
+                        predictions_to_process = sent_result
+                elif isinstance(sent_result, dict):
+                    # Single result format {...}
+                    predictions_to_process = [sent_result]
+                
+                if predictions_to_process:
+                    top_sent = max(predictions_to_process, key=lambda x: x.get('score', 0))
+                    logger.info(f"   Sentiment: {top_sent.get('label', 'unknown')} ({top_sent.get('score', 0):.3f})")
+                else:
+                    logger.warning("   Sentiment: No valid predictions found")
             
             logger.info("✅ Model testing completed successfully")
             
         except Exception as e:
             logger.warning(f"⚠️ Model testing failed: {e}")
-    
+            logger.exception("Full model testing traceback:")
+
     def models_loaded(self) -> bool:
         """Check if all models are loaded"""
         return (self._models_loaded and 
