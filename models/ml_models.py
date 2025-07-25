@@ -57,7 +57,7 @@ class EnhancedModelManager:
                 'device': os.getenv('DEVICE', 'auto'),
                 'precision': os.getenv('MODEL_PRECISION', 'float16'),
                 'max_batch_size': int(os.getenv('MAX_BATCH_SIZE', '32')),
-                'huggingface_token': os.getenv('HUGGINGFACE_HUB_TOKEN'),
+                'huggingface_token': os.getenv('HUGGINGFACE_TOKEN'),
                 'use_fast_tokenizer': os.getenv('USE_FAST_TOKENIZER', 'true').lower() in ('true', '1', 'yes'),
                 'trust_remote_code': os.getenv('TRUST_REMOTE_CODE', 'false').lower() in ('true', '1', 'yes'),
                 'model_revision': os.getenv('MODEL_REVISION', 'main'),
@@ -115,7 +115,7 @@ class EnhancedModelManager:
     def _setup_huggingface_auth(self):
         """Set up Hugging Face authentication if token is provided"""
         if self.config['huggingface_token']:
-            os.environ['HUGGINGFACE_HUB_TOKEN'] = self.config['huggingface_token']
+            os.environ['HUGGINGFACE_TOKEN'] = self.config['huggingface_token']
             logger.info("🔑 Hugging Face authentication configured")
         else:
             logger.info("ℹ️ No Hugging Face token provided (some models may be inaccessible)")
