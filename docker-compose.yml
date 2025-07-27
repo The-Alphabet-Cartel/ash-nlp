@@ -12,11 +12,6 @@ services:
       - ash-network
     ports:
       - "${NLP_SERVICE_PORT:-8881}:${NLP_SERVICE_PORT:-8881}"
-    
-    # Load environment variables from .env file
-    env_file:
-      - .env
-    
     environment:
       # Point to secret files
       - HUGGINGFACE_TOKEN=/run/secrets/huggingface_token
@@ -79,14 +74,12 @@ services:
       # Security
       - ALLOWED_IPS=${ALLOWED_IPS:-10.20.30.0/24,127.0.0.1,::1}
       - ENABLE_CORS=${ENABLE_CORS:-true}
-    
     volumes:
       - ./data:/app/data
       - ./models/cache:/app/models/cache
       - ./logs:/app/logs
       - ./learning_data:/app/learning_data
       - ./secrets:/run/secrets:ro
-    
     deploy:
       resources:
         limits:
