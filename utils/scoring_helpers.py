@@ -6,7 +6,7 @@ Includes critical self-harm protection and moderate concern boosting
 
 import logging
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 from config.nlp_settings import (
     CRISIS_THRESHOLDS, BURDEN_PATTERNS, HOPELESSNESS_PATTERNS, 
     STRUGGLE_PATTERNS, ENHANCED_IDIOM_PATTERNS
@@ -377,6 +377,93 @@ def determine_crisis_level_from_context(phrase_data: Dict, confidence: float) ->
     
     # Default mapping with balanced thresholds
     return map_confidence_to_crisis_level(confidence)
+
+async def score_phrases_with_models(model_manager, phrases: List[str], original_message: str) -> List[Dict]:
+    """
+    Score extracted phrases using the ML models
+    
+    Args:
+        model_manager: The model manager instance with depression and sentiment models
+        phrases: List of phrases to score
+        original_message: The original message for context
+    
+    Returns:
+        List of scored phrases compatible with existing filter_and_rank_phrases function
+    """
+    if not phrases:
+        return []
+    
+    scored_phrases = []
+    
+    try:
+        for phrase in phrases:
+            if not phrase or len(phrase.strip()) < 2:
+                continue
+            
+            phrase_clean = phrase.strip()
+            
+            try:
+                # Run the phrase through depression model
+                depression_result = model_manager.analyze_with_depression_model(phrase_clean)
+                depression_score = extract_depression_score(depression_result)
+                
+                # Run through sentiment model for additional context
+                sentiment_result = model_manager.analyze_with_sentiment_model(phrase_clean)
+                
+                # Calculate combined confidence score
+                confidence = depression_score
+                
+                # Add sentiment context if available
+                if sentiment_result and isinstance(sentiment_result, list) and len(sentiment_result) > 0:
+                    for sent_pred in sentiment_result[0] if isinstance(sentiment_result[0], list) else sentiment_result:
+                        if isinstance(sent_pred, dict):
+                            label = sent_pred.get('label', '').lower()
+                            score = sent_pred.get('score', 0.0)
+                            
+                            # Boost negative sentiment phrases
+                            if label in ['negative', 'sadness', 'anger', 'fear']:
+                                confidence += score * 0.15  # Small boost for negative sentiment
+                            elif label in ['positive', 'joy', 'optimism']:
+                                confidence *= 0.9  # Slight reduction for positive sentiment
+                
+                # Clamp confidence to [0, 1]
+                confidence = max(0.0, min(1.0, confidence))
+                
+                # Create phrase data compatible with existing filter_and_rank_phrases function
+                scored_phrase = {
+                    'text': phrase_clean,
+                    'confidence': confidence,
+                    'depression_score': depression_score,
+                    'sentiment_result': sentiment_result,
+                    'source': 'model_scoring',
+                    'context_type': 'general',
+                    'crisis_boost': 'medium' if confidence > 0.5 else 'low'
+                }
+                
+                scored_phrases.append(scored_phrase)
+                
+                logger.debug(f"Scored phrase: '{phrase_clean}' -> confidence: {confidence:.3f}")
+                
+            except Exception as e:
+                logger.warning(f"Error scoring phrase '{phrase_clean}': {e}")
+                # Add phrase with minimal score to avoid losing it
+                scored_phrases.append({
+                    'text': phrase_clean,
+                    'confidence': 0.0,
+                    'depression_score': 0.0,
+                    'sentiment_result': None,
+                    'source': 'model_scoring',
+                    'context_type': 'general',
+                    'crisis_boost': 'low',
+                    'error': str(e)
+                })
+    
+    except Exception as e:
+        logger.error(f"Error in score_phrases_with_models: {e}")
+        return []
+    
+    logger.info(f"Scored {len(scored_phrases)} phrases from {len(phrases)} input phrases")
+    return scored_phrases
 
 def filter_and_rank_phrases(phrases: List[Dict], params: Dict) -> List[Dict]:
     """Filter and rank phrases by relevance and confidence"""
