@@ -51,12 +51,12 @@ class EnhancedModelManager:
         else:
             # Load from environment variables with defaults
             return {
-                'depression_model': os.getenv('DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'),
-                'sentiment_model': os.getenv('SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
-                'cache_dir': os.getenv('MODEL_CACHE_DIR', './models/cache'),
-                'device': os.getenv('DEVICE', 'auto'),
-                'precision': os.getenv('MODEL_PRECISION', 'float16'),
-                'max_batch_size': int(os.getenv('MAX_BATCH_SIZE', '32')),
+                'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'),
+                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'),
+                'device': os.getenv('NLP_DEVICE', 'auto'),
+                'precision': os.getenv('NLP_MODEL_PRECISION', 'float16'),
+                'max_batch_size': int(os.getenv('NLP_MAX_BATCH_SIZE', '32')),
                 'huggingface_token': os.getenv('HUGGINGFACE_TOKEN'),
                 'use_fast_tokenizer': os.getenv('USE_FAST_TOKENIZER', 'true').lower() in ('true', '1', 'yes'),
                 'trust_remote_code': os.getenv('TRUST_REMOTE_CODE', 'false').lower() in ('true', '1', 'yes'),

@@ -15,7 +15,7 @@ from typing import List, Dict
 # Configuration
 NLP_SERVICE_URL = "http://localhost:8881"
 TEST_DATA_FILE = "final_realistic_test_results.csv"
-DETAILED_LOG_FILE = "final_realistic_test_log.txt"
+DETAILED_NLP_LOG_FILE = "final_realistic_test_log.txt"
 
 @dataclass
 class TestCase:
@@ -363,7 +363,7 @@ class RealisticNLPTester:
     def save_results(self, summary: Dict):
         """Save test results to files"""
         # Save detailed log
-        with open(DETAILED_LOG_FILE, 'w', encoding='utf-8') as f:
+        with open(DETAILED_NLP_LOG_FILE, 'w', encoding='utf-8') as f:
             f.write("REALISTIC TEST LOG - Depression Model Performance\n")
             f.write(f"Generated: {datetime.now().isoformat()}\n")
             f.write("Focus: HIGH crisis detection + NONE false positive avoidance\n")
@@ -397,7 +397,7 @@ class RealisticNLPTester:
                 writer.writerow(entry_copy)
         
         print(f"\n💾 Results saved to:")
-        print(f"  📄 Detailed log: {DETAILED_LOG_FILE}")
+        print(f"  📄 Detailed log: {DETAILED_NLP_LOG_FILE}")
         print(f"  📊 CSV data: {TEST_DATA_FILE}")
 
 def main():

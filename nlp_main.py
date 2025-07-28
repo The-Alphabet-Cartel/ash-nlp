@@ -32,12 +32,12 @@ config_manager = get_nlp_config()
 config = get_env_config()  # Backward compatibility - returns dict
 
 # Configure logging using environment variables
-log_level = config['LOG_LEVEL']
-log_file = config['LOG_FILE']
-enable_debug = config['ENABLE_DEBUG_LOGGING']
+log_level = config['GLOBAL_LOG_LEVEL']
+log_file = config['NLP_LOG_FILE']
+enable_debug = config['GLOBAL_ENABLE_DEBUG_LOGGING']
 
-# Set PYTHONUNBUFFERED for Docker
-os.environ['PYTHONUNBUFFERED'] = '1'
+# Set GLOBAL_PYTHONUNBUFFERED for Docker
+os.environ['GLOBAL_PYTHONUNBUFFERED'] = '1'
 
 # Configure logging
 logging.basicConfig(
@@ -166,7 +166,7 @@ async def initialize_components_with_config():
         logger.info("✅ Enhanced ModelManager initialized and models loaded")
         
         # Initialize enhanced learning manager if available
-        if ENHANCED_LEARNING_AVAILABLE and config['ENABLE_LEARNING_SYSTEM']:
+        if ENHANCED_LEARNING_AVAILABLE and config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
             try:
                 # Try to pass config manager if EnhancedLearningManager supports it
                 try:
@@ -281,7 +281,7 @@ app = FastAPI(
 )
 
 # Configure CORS if enabled
-if config['ENABLE_CORS']:
+if config['GLOBAL_ENABLE_CORS']:
     from fastapi.middleware.cors import CORSMiddleware
     app.add_middleware(
         CORSMiddleware,
@@ -329,13 +329,13 @@ async def analyze_message(request: MessageRequest):
                 adjusted_score = apply_false_positive_reduction(request.message, original_score)
                 
                 # Simple threshold mapping with adjusted score
-                if top_result['label'] == 'severe' and adjusted_score > config['HIGH_CRISIS_THRESHOLD']:
+                if top_result['label'] == 'severe' and adjusted_score > config['NLP_HIGH_CRISIS_THRESHOLD']:
                     crisis_level = 'high'
                     needs_response = True
-                elif top_result['label'] in ['moderate', 'severe'] and adjusted_score > config['MEDIUM_CRISIS_THRESHOLD']:
+                elif top_result['label'] in ['moderate', 'severe'] and adjusted_score > config['NLP_MEDIUM_CRISIS_THRESHOLD']:
                     crisis_level = 'medium'
                     needs_response = True
-                elif adjusted_score > config['LOW_CRISIS_THRESHOLD']:
+                elif adjusted_score > config['NLP_LOW_CRISIS_THRESHOLD']:
                     crisis_level = 'low'
                     needs_response = True
                 else:
@@ -408,10 +408,10 @@ async def health_check():
         model_loaded=models_loaded,
         uptime_seconds=uptime,
         hardware_info={
-            "device": config['DEVICE'],
-            "precision": config['MODEL_PRECISION'],
-            "max_batch_size": config['MAX_BATCH_SIZE'],
-            "inference_threads": config['INFERENCE_THREADS'],
+            "device": config['NLP_DEVICE'],
+            "precision": config['NLP_MODEL_PRECISION'],
+            "max_batch_size": config['NLP_MAX_BATCH_SIZE'],
+            "inference_threads": config['NLP_INFERENCE_THREADS'],
             "components_available": components_status,
             "learning_system": "enabled" if enhanced_learning_manager else "disabled",
             "secrets_status": api_keys_status,
@@ -433,14 +433,14 @@ async def get_stats():
         "uptime_seconds": uptime,
         "models_loaded": model_manager.get_model_status() if model_manager else {},
         "configuration": {
-            "learning_enabled": config['ENABLE_LEARNING_SYSTEM'],
-            "device": config['DEVICE'],
-            "precision": config['MODEL_PRECISION'],
+            "learning_enabled": config['GLOBAL_ENABLE_LEARNING_SYSTEM'],
+            "device": config['NLP_DEVICE'],
+            "precision": config['NLP_MODEL_PRECISION'],
             "using_secrets": any(api_keys_status.values()),
             "thresholds": {
-                "high": config['HIGH_CRISIS_THRESHOLD'],
-                "medium": config['MEDIUM_CRISIS_THRESHOLD'],
-                "low": config['LOW_CRISIS_THRESHOLD']
+                "high": config['NLP_HIGH_CRISIS_THRESHOLD'],
+                "medium": config['NLP_MEDIUM_CRISIS_THRESHOLD'],
+                "low": config['NLP_LOW_CRISIS_THRESHOLD']
             }
         },
         "secrets_status": api_keys_status,
@@ -453,10 +453,10 @@ async def get_stats():
             "enhanced_learning": ENHANCED_LEARNING_AVAILABLE and enhanced_learning_manager is not None
         },
         "hardware_config": {
-            "max_batch_size": config['MAX_BATCH_SIZE'],
-            "inference_threads": config['INFERENCE_THREADS'],
-            "max_concurrent_requests": config['MAX_CONCURRENT_REQUESTS'],
-            "request_timeout": config['REQUEST_TIMEOUT']
+            "max_batch_size": config['NLP_MAX_BATCH_SIZE'],
+            "inference_threads": config['NLP_INFERENCE_THREADS'],
+            "max_concurrent_requests": config['NLP_MAX_CONCURRENT_REQUESTS'],
+            "request_timeout": config['NLP_REQUEST_TIMEOUT']
         }
     }
     
@@ -470,8 +470,8 @@ if __name__ == "__main__":
     # Get server configuration from enhanced config
     host = config['NLP_SERVICE_HOST']
     port = config['NLP_SERVICE_PORT']
-    workers = config['UVICORN_WORKERS']
-    reload = config['RELOAD_ON_CHANGES']
+    workers = config['NLP_UVICORN_WORKERS']
+    reload = config['NLP_RELOAD_ON_CHANGES']
     
     logger.info(f"🌐 Starting server on {host}:{port} with {workers} workers")
     

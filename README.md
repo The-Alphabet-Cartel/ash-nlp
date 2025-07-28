@@ -79,21 +79,21 @@ curl http://10.20.30.253:8881/health
 # Server Configuration
 NLP_SERVICE_HOST=0.0.0.0
 NLP_SERVICE_PORT=8881
-DEVICE=auto
+NLP_DEVICE=auto
 
 # AI Models
-DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
-SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
-MODEL_CACHE_DIR=./models
+NLP_DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
+NLP_SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
+NLP_MODEL_CACHE_DIR=./models
 
 # Learning System
-ENABLE_LEARNING_SYSTEM=true
-LEARNING_RATE=0.1
-MAX_LEARNING_ADJUSTMENTS_PER_DAY=50
+GLOBAL_ENABLE_LEARNING_SYSTEM=true
+NLP_LEARNING_RATE=0.1
+NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY=50
 
 # Performance Optimization
-MAX_BATCH_SIZE=32
-INFERENCE_THREADS=4
+NLP_MAX_BATCH_SIZE=32
+NLP_INFERENCE_THREADS=4
 GPU_MEMORY_FRACTION=0.8
 
 # Integration

@@ -122,101 +122,101 @@ class NLPConfigManager:
         )
         
         # Hugging Face Configuration
-        self._config['HUGGINGFACE_CACHE_DIR'] = self._get_config_value(
-            'HUGGINGFACE_CACHE_DIR', './models/cache'
+        self._config['NLP_HUGGINGFACE_CACHE_DIR'] = self._get_config_value(
+            'NLP_HUGGINGFACE_CACHE_DIR', './models/cache'
         )
         
         # Learning System Configuration
-        self._config['ENABLE_LEARNING_SYSTEM'] = self._get_config_value(
-            'ENABLE_LEARNING_SYSTEM', 'true'
+        self._config['GLOBAL_ENABLE_LEARNING_SYSTEM'] = self._get_config_value(
+            'GLOBAL_ENABLE_LEARNING_SYSTEM', 'true'
         ).lower() in ('true', '1', 'yes')
         
-        self._config['LEARNING_RATE'] = float(self._get_config_value(
-            'LEARNING_RATE', '0.1'
+        self._config['NLP_LEARNING_RATE'] = float(self._get_config_value(
+            'NLP_LEARNING_RATE', '0.1'
         ))
         
-        self._config['MAX_LEARNING_ADJUSTMENTS_PER_DAY'] = int(self._get_config_value(
-            'MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'
+        self._config['NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY'] = int(self._get_config_value(
+            'NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'
         ))
         
-        self._config['LEARNING_PERSISTENCE_FILE'] = self._get_config_value(
-            'LEARNING_PERSISTENCE_FILE', './learning_data/adjustments.json'
+        self._config['NLP_LEARNING_PERSISTENCE_FILE'] = self._get_config_value(
+            'NLP_LEARNING_PERSISTENCE_FILE', './learning_data/adjustments.json'
         )
         
-        self._config['MIN_CONFIDENCE_ADJUSTMENT'] = float(self._get_config_value(
-            'MIN_CONFIDENCE_ADJUSTMENT', '0.05'
+        self._config['NLP_MIN_CONFIDENCE_ADJUSTMENT'] = float(self._get_config_value(
+            'NLP_MIN_CONFIDENCE_ADJUSTMENT', '0.05'
         ))
         
-        self._config['MAX_CONFIDENCE_ADJUSTMENT'] = float(self._get_config_value(
-            'MAX_CONFIDENCE_ADJUSTMENT', '0.30'
+        self._config['NLP_MAX_CONFIDENCE_ADJUSTMENT'] = float(self._get_config_value(
+            'NLP_MAX_CONFIDENCE_ADJUSTMENT', '0.30'
         ))
         
         # Model Configuration
-        self._config['DEPRESSION_MODEL'] = self._get_config_value(
-            'DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'
+        self._config['NLP_DEPRESSION_MODEL'] = self._get_config_value(
+            'NLP_DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'
         )
         
-        self._config['SENTIMENT_MODEL'] = self._get_config_value(
-            'SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'
+        self._config['NLP_SENTIMENT_MODEL'] = self._get_config_value(
+            'NLP_SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'
         )
         
-        self._config['MODEL_CACHE_DIR'] = self._get_config_value(
-            'MODEL_CACHE_DIR', './models/cache'
+        self._config['NLP_MODEL_CACHE_DIR'] = self._get_config_value(
+            'NLP_MODEL_CACHE_DIR', './models/cache'
         )
         
         # Hardware Configuration (optimized for RTX 3050 + Ryzen 7 7700x)
-        self._config['DEVICE'] = self._get_config_value('DEVICE', 'auto')
-        self._config['MODEL_PRECISION'] = self._get_config_value('MODEL_PRECISION', 'float16')
+        self._config['NLP_DEVICE'] = self._get_config_value('NLP_DEVICE', 'auto')
+        self._config['NLP_MODEL_PRECISION'] = self._get_config_value('NLP_MODEL_PRECISION', 'float16')
         
         # Performance Tuning (use SERVER_CONFIG hardware info as basis)
         hardware_info = SERVER_CONFIG.get('hardware_info', {})
         cpu_cores = 8 if 'Ryzen 7 7700x' in hardware_info.get('cpu', '') else 4
         
-        self._config['MAX_BATCH_SIZE'] = int(self._get_config_value('MAX_BATCH_SIZE', '32'))
-        self._config['INFERENCE_THREADS'] = int(self._get_config_value('INFERENCE_THREADS', str(cpu_cores)))
-        self._config['MAX_CONCURRENT_REQUESTS'] = int(self._get_config_value('MAX_CONCURRENT_REQUESTS', '12'))
-        self._config['REQUEST_TIMEOUT'] = int(self._get_config_value('REQUEST_TIMEOUT', '30'))
+        self._config['NLP_MAX_BATCH_SIZE'] = int(self._get_config_value('NLP_MAX_BATCH_SIZE', '32'))
+        self._config['NLP_INFERENCE_THREADS'] = int(self._get_config_value('NLP_INFERENCE_THREADS', str(cpu_cores)))
+        self._config['NLP_MAX_CONCURRENT_REQUESTS'] = int(self._get_config_value('NLP_MAX_CONCURRENT_REQUESTS', '12'))
+        self._config['NLP_REQUEST_TIMEOUT'] = int(self._get_config_value('NLP_REQUEST_TIMEOUT', '30'))
         
         # Server Configuration
         self._config['NLP_SERVICE_HOST'] = self._get_config_value('NLP_SERVICE_HOST', '0.0.0.0')
         self._config['NLP_SERVICE_PORT'] = int(self._get_config_value('NLP_SERVICE_PORT', '8881'))
-        self._config['UVICORN_WORKERS'] = int(self._get_config_value('UVICORN_WORKERS', '1'))
-        self._config['RELOAD_ON_CHANGES'] = self._get_config_value('RELOAD_ON_CHANGES', 'false').lower() in ('true', '1', 'yes')
+        self._config['NLP_UVICORN_WORKERS'] = int(self._get_config_value('NLP_UVICORN_WORKERS', '1'))
+        self._config['NLP_RELOAD_ON_CHANGES'] = self._get_config_value('NLP_RELOAD_ON_CHANGES', 'false').lower() in ('true', '1', 'yes')
         
         # Logging Configuration
-        self._config['LOG_LEVEL'] = self._get_config_value('LOG_LEVEL', 'INFO').upper()
-        self._config['LOG_FILE'] = self._get_config_value('LOG_FILE', 'nlp_service.log')
-        self._config['ENABLE_DEBUG_LOGGING'] = self._get_config_value('ENABLE_DEBUG_LOGGING', 'false').lower() in ('true', '1', 'yes')
+        self._config['GLOBAL_LOG_LEVEL'] = self._get_config_value('GLOBAL_LOG_LEVEL', 'INFO').upper()
+        self._config['NLP_LOG_FILE'] = self._get_config_value('NLP_LOG_FILE', 'nlp_service.log')
+        self._config['GLOBAL_ENABLE_DEBUG_LOGGING'] = self._get_config_value('GLOBAL_ENABLE_DEBUG_LOGGING', 'false').lower() in ('true', '1', 'yes')
         
         # Storage Paths
-        self._config['DATA_DIR'] = self._get_config_value('DATA_DIR', './data')
-        self._config['MODELS_DIR'] = self._get_config_value('MODELS_DIR', './models/cache')
-        self._config['LOGS_DIR'] = self._get_config_value('LOGS_DIR', './logs')
-        self._config['LEARNING_DATA_DIR'] = self._get_config_value('LEARNING_DATA_DIR', './learning_data')
+        self._config['NLP_DATA_DIR'] = self._get_config_value('NLP_DATA_DIR', './data')
+        self._config['NLP_MODELS_DIR'] = self._get_config_value('NLP_MODELS_DIR', './models/cache')
+        self._config['NLP_LOGS_DIR'] = self._get_config_value('NLP_LOGS_DIR', './logs')
+        self._config['NLP_LEARNING_DATA_DIR'] = self._get_config_value('NLP_LEARNING_DATA_DIR', './learning_data')
         
         # Crisis Detection Thresholds (use existing nlp_settings as defaults)
-        self._config['HIGH_CRISIS_THRESHOLD'] = float(self._get_config_value(
-            'HIGH_CRISIS_THRESHOLD', str(CRISIS_THRESHOLDS.get('high', 0.55))
+        self._config['NLP_HIGH_CRISIS_THRESHOLD'] = float(self._get_config_value(
+            'NLP_HIGH_CRISIS_THRESHOLD', str(CRISIS_THRESHOLDS.get('high', 0.55))
         ))
-        self._config['MEDIUM_CRISIS_THRESHOLD'] = float(self._get_config_value(
-            'MEDIUM_CRISIS_THRESHOLD', str(CRISIS_THRESHOLDS.get('medium', 0.28))
+        self._config['NLP_MEDIUM_CRISIS_THRESHOLD'] = float(self._get_config_value(
+            'NLP_MEDIUM_CRISIS_THRESHOLD', str(CRISIS_THRESHOLDS.get('medium', 0.28))
         ))
-        self._config['LOW_CRISIS_THRESHOLD'] = float(self._get_config_value(
-            'LOW_CRISIS_THRESHOLD', str(CRISIS_THRESHOLDS.get('low', 0.16))
+        self._config['NLP_LOW_CRISIS_THRESHOLD'] = float(self._get_config_value(
+            'NLP_LOW_CRISIS_THRESHOLD', str(CRISIS_THRESHOLDS.get('low', 0.16))
         ))
         
         # Rate Limiting
-        self._config['MAX_REQUESTS_PER_MINUTE'] = int(self._get_config_value('MAX_REQUESTS_PER_MINUTE', '60'))
-        self._config['MAX_REQUESTS_PER_HOUR'] = int(self._get_config_value('MAX_REQUESTS_PER_HOUR', '1000'))
+        self._config['NLP_MAX_REQUESTS_PER_MINUTE'] = int(self._get_config_value('NLP_MAX_REQUESTS_PER_MINUTE', '60'))
+        self._config['NLP_MAX_REQUESTS_PER_HOUR'] = int(self._get_config_value('NLP_MAX_REQUESTS_PER_HOUR', '1000'))
         
         # Security
-        self._config['ALLOWED_IPS'] = self._get_config_value('ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1')
-        self._config['ENABLE_CORS'] = self._get_config_value('ENABLE_CORS', 'true').lower() in ('true', '1', 'yes')
+        self._config['GLOBAL_ALLOWED_IPS'] = self._get_config_value('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1')
+        self._config['GLOBAL_ENABLE_CORS'] = self._get_config_value('GLOBAL_ENABLE_CORS', 'true').lower() in ('true', '1', 'yes')
         
         # Health Check Configuration
-        self._config['HEALTH_CHECK_INTERVAL'] = int(self._get_config_value('HEALTH_CHECK_INTERVAL', '60'))
-        self._config['HEALTH_CHECK_TIMEOUT'] = int(self._get_config_value('HEALTH_CHECK_TIMEOUT', '30'))
-        self._config['HEALTH_CHECK_START_PERIOD'] = int(self._get_config_value('HEALTH_CHECK_START_PERIOD', '300'))
+        self._config['NLP_HEALTH_CHECK_INTERVAL'] = int(self._get_config_value('NLP_HEALTH_CHECK_INTERVAL', '60'))
+        self._config['NLP_HEALTH_CHECK_INTERVAL'] = int(self._get_config_value('NLP_HEALTH_CHECK_INTERVAL', '30'))
+        self._config['NLP_HEALTH_CHECK_START_PERIOD'] = int(self._get_config_value('NLP_HEALTH_CHECK_START_PERIOD', '300'))
         
         # Log configuration summary
         using_secrets = bool(
@@ -228,16 +228,16 @@ class NLPConfigManager:
         
         logger.info("📊 NLP Server Configuration Summary:")
         logger.info(f"   🔐 Using secrets: {using_secrets}")
-        logger.info(f"   🖥️ Device: {self._config['DEVICE']}")
-        logger.info(f"   🧠 Model precision: {self._config['MODEL_PRECISION']}")
-        logger.info(f"   ⚡ Max batch size: {self._config['MAX_BATCH_SIZE']}")
-        logger.info(f"   🧵 Inference threads: {self._config['INFERENCE_THREADS']}")
+        logger.info(f"   🖥️ Device: {self._config['NLP_DEVICE']}")
+        logger.info(f"   🧠 Model precision: {self._config['NLP_MODEL_PRECISION']}")
+        logger.info(f"   ⚡ Max batch size: {self._config['NLP_MAX_BATCH_SIZE']}")
+        logger.info(f"   🧵 Inference threads: {self._config['NLP_INFERENCE_THREADS']}")
         logger.info(f"   🌐 Server: {self._config['NLP_SERVICE_HOST']}:{self._config['NLP_SERVICE_PORT']}")
-        logger.info(f"   📚 Learning system: {self._config['ENABLE_LEARNING_SYSTEM']}")
-        logger.info(f"   📝 Log level: {self._config['LOG_LEVEL']}")
+        logger.info(f"   📚 Learning system: {self._config['GLOBAL_ENABLE_LEARNING_SYSTEM']}")
+        logger.info(f"   📝 Log level: {self._config['GLOBAL_LOG_LEVEL']}")
         
         # Validate critical settings
-        if not self._config['CLAUDE_API_KEY'] and self._config['ENABLE_LEARNING_SYSTEM']:
+        if not self._config['CLAUDE_API_KEY'] and self._config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
             logger.warning("⚠️ Claude API key not found - learning system may be limited")
         
         if not self._config['HUGGINGFACE_TOKEN']:
@@ -275,9 +275,9 @@ class NLPConfigManager:
     def get_crisis_thresholds(self) -> Dict[str, float]:
         """Get crisis thresholds in the format expected by existing code"""
         return {
-            'high': self._config['HIGH_CRISIS_THRESHOLD'],
-            'medium': self._config['MEDIUM_CRISIS_THRESHOLD'], 
-            'low': self._config['LOW_CRISIS_THRESHOLD']
+            'high': self._config['NLP_HIGH_CRISIS_THRESHOLD'],
+            'medium': self._config['NLP_MEDIUM_CRISIS_THRESHOLD'], 
+            'low': self._config['NLP_LOW_CRISIS_THRESHOLD']
         }
     
     def get_server_config(self) -> Dict[str, Any]:
@@ -286,9 +286,9 @@ class NLPConfigManager:
         
         # Update with current configuration
         base_config['hardware_info'].update({
-            'inference_threads': self._config['INFERENCE_THREADS'],
-            'max_batch_size': self._config['MAX_BATCH_SIZE'],
-            'max_concurrent_requests': self._config['MAX_CONCURRENT_REQUESTS']
+            'inference_threads': self._config['NLP_INFERENCE_THREADS'],
+            'max_batch_size': self._config['NLP_MAX_BATCH_SIZE'],
+            'max_concurrent_requests': self._config['NLP_MAX_CONCURRENT_REQUESTS']
         })
         
         # Update capabilities based on available API keys

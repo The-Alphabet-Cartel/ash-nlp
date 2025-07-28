@@ -203,8 +203,8 @@ Get-WmiObject -Class Win32_OperatingSystem | Select-Object TotalVisibleMemorySiz
 ```powershell
 # Update .env with memory optimization
 # GPU_MEMORY_FRACTION=0.6  # Reduce from 0.8
-# MAX_BATCH_SIZE=16        # Reduce from 32
-# INFERENCE_THREADS=4      # Reduce from 6
+# NLP_MAX_BATCH_SIZE=16        # Reduce from 32
+# NLP_INFERENCE_THREADS=4      # Reduce from 6
 
 # Restart container with new settings
 cd C:\Deployments\ash-nlp
@@ -315,7 +315,7 @@ if ($memoryUsage -gt 85) {
     docker-compose restart ash-nlp
     
     # Consider reducing batch size
-    # Update .env: MAX_BATCH_SIZE=8
+    # Update .env: NLP_MAX_BATCH_SIZE=8
 }
 ```
 
@@ -518,7 +518,7 @@ nvidia-smi
 # GPU_MEMORY_FRACTION=0.9  # Increase if memory available
 
 # If GPU utilization high, reduce batch size
-# MAX_BATCH_SIZE=16  # Reduce from 32
+# NLP_MAX_BATCH_SIZE=16  # Reduce from 32
 
 # Restart container
 docker-compose restart ash-nlp
@@ -528,7 +528,7 @@ docker-compose restart ash-nlp
 ```powershell
 # Reduce inference threads if CPU maxed
 # Update .env:
-# INFERENCE_THREADS=4  # Reduce from 6
+# NLP_INFERENCE_THREADS=4  # Reduce from 6
 
 # Optimize container CPU allocation
 # Update docker-compose.yml:
@@ -595,7 +595,7 @@ docker-compose up -d
 ```powershell
 # Reduce model precision if available
 # Update .env:
-# MODEL_PRECISION=float16  # Reduce from float32 (if supported)
+# NLP_MODEL_PRECISION=float16  # Reduce from float32 (if supported)
 
 # Reduce cache size
 # MODEL_CACHE_SIZE=2GB  # Reduce cache

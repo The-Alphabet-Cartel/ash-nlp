@@ -36,61 +36,61 @@ class EnvConfigManager:
         config_schema = {
             # Hugging Face Configuration
             'HUGGINGFACE_TOKEN': {'type': str, 'default': None, 'required': False},
-            'HUGGINGFACE_CACHE_DIR': {'type': str, 'default': './models/cache'},
+            'NLP_HUGGINGFACE_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
             # Learning System
-            'ENABLE_LEARNING_SYSTEM': {'type': bool, 'default': True},
-            'LEARNING_RATE': {'type': float, 'default': 0.1, 'min': 0.01, 'max': 1.0},
-            'MAX_LEARNING_ADJUSTMENTS_PER_DAY': {'type': int, 'default': 50, 'min': 1},
-            'LEARNING_PERSISTENCE_FILE': {'type': str, 'default': './learning_data/adjustments.json'},
-            'MIN_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.05, 'min': 0.01, 'max': 0.5},
-            'MAX_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.30, 'min': 0.1, 'max': 1.0},
+            'GLOBAL_ENABLE_LEARNING_SYSTEM': {'type': bool, 'default': True},
+            'NLP_LEARNING_RATE': {'type': float, 'default': 0.1, 'min': 0.01, 'max': 1.0},
+            'NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY': {'type': int, 'default': 50, 'min': 1},
+            'NLP_LEARNING_PERSISTENCE_FILE': {'type': str, 'default': './learning_data/adjustments.json'},
+            'NLP_MIN_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.05, 'min': 0.01, 'max': 0.5},
+            'NLP_MAX_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.30, 'min': 0.1, 'max': 1.0},
             
             # Model Configuration
-            'DEPRESSION_MODEL': {'type': str, 'default': 'rafalposwiata/deproberta-large-depression'},
-            'SENTIMENT_MODEL': {'type': str, 'default': 'cardiffnlp/twitter-roberta-base-sentiment-latest'},
-            'MODEL_CACHE_DIR': {'type': str, 'default': './models/cache'},
+            'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'rafalposwiata/deproberta-large-depression'},
+            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'cardiffnlp/twitter-roberta-base-sentiment-latest'},
+            'NLP_MODEL_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
             # Hardware Configuration
-            'DEVICE': {'type': str, 'default': 'auto', 'choices': ['auto', 'cpu', 'cuda']},
-            'MODEL_PRECISION': {'type': str, 'default': 'float16', 'choices': ['float32', 'float16', 'bfloat16']},
+            'NLP_DEVICE': {'type': str, 'default': 'auto', 'choices': ['auto', 'cpu', 'cuda']},
+            'NLP_MODEL_PRECISION': {'type': str, 'default': 'float16', 'choices': ['float32', 'float16', 'bfloat16']},
             
             # Performance Tuning
-            'MAX_BATCH_SIZE': {'type': int, 'default': 32, 'min': 1, 'max': 128},
-            'INFERENCE_THREADS': {'type': int, 'default': 4, 'min': 1, 'max': 16},
-            'MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 10, 'min': 1, 'max': 100},
-            'REQUEST_TIMEOUT': {'type': int, 'default': 30, 'min': 5, 'max': 300},
+            'NLP_MAX_BATCH_SIZE': {'type': int, 'default': 32, 'min': 1, 'max': 128},
+            'NLP_INFERENCE_THREADS': {'type': int, 'default': 4, 'min': 1, 'max': 16},
+            'NLP_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 10, 'min': 1, 'max': 100},
+            'NLP_REQUEST_TIMEOUT': {'type': int, 'default': 30, 'min': 5, 'max': 300},
             
             # Server Configuration
             'NLP_SERVICE_HOST': {'type': str, 'default': '0.0.0.0'},
             'NLP_SERVICE_PORT': {'type': int, 'default': 8881, 'min': 1024, 'max': 65535},
-            'UVICORN_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
-            'RELOAD_ON_CHANGES': {'type': bool, 'default': False},
+            'NLP_UVICORN_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
+            'NLP_RELOAD_ON_CHANGES': {'type': bool, 'default': False},
             
             # Logging Configuration
-            'LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR']},
-            'LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
-            'PYTHONUNBUFFERED': {'type': str, 'default': '1'},
-            'ENABLE_DEBUG_LOGGING': {'type': bool, 'default': False},
+            'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR']},
+            'NLP_LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
+            'GLOBAL_PYTHONUNBUFFERED': {'type': str, 'default': '1'},
+            'GLOBAL_ENABLE_DEBUG_LOGGING': {'type': bool, 'default': False},
             
             # Storage Paths
-            'DATA_DIR': {'type': str, 'default': './data'},
-            'MODELS_DIR': {'type': str, 'default': './models'},
-            'LOGS_DIR': {'type': str, 'default': './logs'},
-            'LEARNING_DATA_DIR': {'type': str, 'default': './learning_data'},
+            'NLP_DATA_DIR': {'type': str, 'default': './data'},
+            'NLP_MODELS_DIR': {'type': str, 'default': './models'},
+            'NLP_LOGS_DIR': {'type': str, 'default': './logs'},
+            'NLP_LEARNING_DATA_DIR': {'type': str, 'default': './learning_data'},
             
             # Crisis Detection Thresholds
-            'HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.7, 'min': 0.1, 'max': 1.0},
-            'MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.4, 'min': 0.1, 'max': 1.0},
-            'LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.2, 'min': 0.1, 'max': 1.0},
+            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.7, 'min': 0.1, 'max': 1.0},
+            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.4, 'min': 0.1, 'max': 1.0},
+            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.2, 'min': 0.1, 'max': 1.0},
             
             # Rate Limiting
-            'MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 60, 'min': 1},
-            'MAX_REQUESTS_PER_HOUR': {'type': int, 'default': 1000, 'min': 1},
+            'NLP_MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 60, 'min': 1},
+            'NLP_MAX_REQUESTS_PER_HOUR': {'type': int, 'default': 1000, 'min': 1},
             
             # Security
-            'ALLOWED_IPS': {'type': str, 'default': '10.20.30.0/24,127.0.0.1,::1'},
-            'ENABLE_CORS': {'type': bool, 'default': True},
+            'GLOBAL_ALLOWED_IPS': {'type': str, 'default': '10.20.30.0/24,127.0.0.1,::1'},
+            'GLOBAL_ENABLE_CORS': {'type': bool, 'default': True},
         }
         
         # Process each configuration item
@@ -136,27 +136,27 @@ class EnvConfigManager:
     def validate_config(self):
         """Validate configuration consistency"""
         # Validate threshold ordering
-        if self.config['HIGH_CRISIS_THRESHOLD'] <= self.config['MEDIUM_CRISIS_THRESHOLD']:
-            raise ValueError("HIGH_CRISIS_THRESHOLD must be > MEDIUM_CRISIS_THRESHOLD")
+        if self.config['NLP_HIGH_CRISIS_THRESHOLD'] <= self.config['NLP_MEDIUM_CRISIS_THRESHOLD']:
+            raise ValueError("NLP_HIGH_CRISIS_THRESHOLD must be > NLP_MEDIUM_CRISIS_THRESHOLD")
         
-        if self.config['MEDIUM_CRISIS_THRESHOLD'] <= self.config['LOW_CRISIS_THRESHOLD']:
-            raise ValueError("MEDIUM_CRISIS_THRESHOLD must be > LOW_CRISIS_THRESHOLD")
+        if self.config['NLP_MEDIUM_CRISIS_THRESHOLD'] <= self.config['NLP_LOW_CRISIS_THRESHOLD']:
+            raise ValueError("NLP_MEDIUM_CRISIS_THRESHOLD must be > NLP_LOW_CRISIS_THRESHOLD")
         
         # Validate learning system settings
-        if self.config['MIN_CONFIDENCE_ADJUSTMENT'] >= self.config['MAX_CONFIDENCE_ADJUSTMENT']:
-            raise ValueError("MIN_CONFIDENCE_ADJUSTMENT must be < MAX_CONFIDENCE_ADJUSTMENT")
+        if self.config['NLP_MIN_CONFIDENCE_ADJUSTMENT'] >= self.config['NLP_MAX_CONFIDENCE_ADJUSTMENT']:
+            raise ValueError("NLP_MIN_CONFIDENCE_ADJUSTMENT must be < NLP_MAX_CONFIDENCE_ADJUSTMENT")
         
         logger.info("Configuration validation passed")
     
     def create_directories(self):
         """Create necessary directories"""
         directories = [
-            self.config['DATA_DIR'],
-            self.config['MODELS_DIR'],
-            self.config['LOGS_DIR'],
-            self.config['LEARNING_DATA_DIR'],
-            os.path.dirname(self.config['MODEL_CACHE_DIR']),
-            os.path.dirname(self.config['LEARNING_PERSISTENCE_FILE']),
+            self.config['NLP_DATA_DIR'],
+            self.config['NLP_MODELS_DIR'],
+            self.config['NLP_LOGS_DIR'],
+            self.config['NLP_LEARNING_DATA_DIR'],
+            os.path.dirname(self.config['NLP_MODEL_CACHE_DIR']),
+            os.path.dirname(self.config['NLP_LEARNING_PERSISTENCE_FILE']),
         ]
         
         for directory in directories:

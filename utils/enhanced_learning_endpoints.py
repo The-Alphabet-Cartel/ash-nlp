@@ -25,9 +25,9 @@ class EnhancedLearningManager:
     def __init__(self, model_manager):
         self.model_manager = model_manager
         self.learning_data_path = os.getenv('LEARNING_DATA_PATH', './data/enhanced_learning_adjustments.json')
-        self.learning_rate = float(os.getenv('LEARNING_RATE', '0.1'))
-        self.min_adjustment = float(os.getenv('MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
-        self.max_adjustment = float(os.getenv('MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
+        self.learning_rate = float(os.getenv('NLP_LEARNING_RATE', '0.1'))
+        self.min_adjustment = float(os.getenv('NLP_MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
+        self.max_adjustment = float(os.getenv('NLP_MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
         
         # Initialize learning data
         self._initialize_enhanced_learning_data()

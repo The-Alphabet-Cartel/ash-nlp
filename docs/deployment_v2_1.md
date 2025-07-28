@@ -97,24 +97,24 @@ notepad .env
 # Server Configuration
 NLP_SERVICE_HOST=0.0.0.0
 NLP_SERVICE_PORT=8881
-PYTHONUNBUFFERED=1
+GLOBAL_PYTHONUNBUFFERED=1
 
 # Hardware Optimization
-DEVICE=auto  # Auto-detect RTX 3050
+NLP_DEVICE=auto  # Auto-detect RTX 3050
 GPU_MEMORY_FRACTION=0.8
-INFERENCE_THREADS=6  # Optimized for Ryzen 7 7700X
-MAX_BATCH_SIZE=32
+NLP_INFERENCE_THREADS=6  # Optimized for Ryzen 7 7700X
+NLP_MAX_BATCH_SIZE=32
 
 # AI Models
-DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
-SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
-MODEL_CACHE_DIR=./models/cache
+NLP_DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
+NLP_SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
+NLP_MODEL_CACHE_DIR=./models/cache
 
 # Learning System
-ENABLE_LEARNING_SYSTEM=true
-LEARNING_RATE=0.1
-MAX_LEARNING_ADJUSTMENTS_PER_DAY=50
-LEARNING_PERSISTENCE_FILE=./learning_data/adjustments.json
+GLOBAL_ENABLE_LEARNING_SYSTEM=true
+NLP_LEARNING_RATE=0.1
+NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY=50
+NLP_LEARNING_PERSISTENCE_FILE=./learning_data/adjustments.json
 
 # Integration Settings
 ENABLE_ANALYTICS_EXPORT=true
@@ -122,7 +122,7 @@ ANALYTICS_WEBHOOK_URL=http://10.20.30.253:8883/webhook/nlp_metrics
 
 # Performance Monitoring
 ENABLE_PERFORMANCE_LOGGING=true
-LOG_LEVEL=INFO
+GLOBAL_LOG_LEVEL=INFO
 LOG_ROTATION_SIZE=100MB
 LOG_RETENTION_DAYS=30
 
@@ -154,11 +154,11 @@ services:
     
     environment:
       # Load all environment variables from .env file
-      - PYTHONUNBUFFERED=${PYTHONUNBUFFERED:-1}
+      - GLOBAL_PYTHONUNBUFFERED=${GLOBAL_PYTHONUNBUFFERED:-1}
       - NLP_SERVICE_HOST=${NLP_SERVICE_HOST:-0.0.0.0}
       - NLP_SERVICE_PORT=${NLP_SERVICE_PORT:-8881}
-      - DEVICE=${DEVICE:-auto}
-      - ENABLE_LEARNING_SYSTEM=${ENABLE_LEARNING_SYSTEM:-true}
+      - NLP_DEVICE=${NLP_DEVICE:-auto}
+      - GLOBAL_ENABLE_LEARNING_SYSTEM=${GLOBAL_ENABLE_LEARNING_SYSTEM:-true}
       - GPU_MEMORY_FRACTION=${GPU_MEMORY_FRACTION:-0.8}
     
     volumes:
