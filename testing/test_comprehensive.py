@@ -10,7 +10,7 @@ import time
 from typing import Dict, List
 
 # Configuration
-NLP_SERVER_URL = "http://10.20.30.16:8881"
+NLP_SERVER_URL = "http://10.20.30.253:8881"
 
 # TIER 1: Previously problematic false positives (should be MEDIUM or lower)
 TIER1_FALSE_POSITIVE_TESTS = [

@@ -176,7 +176,7 @@ All crisis response team members should have dashboard accounts. Contact admin i
 
 ### System Architecture
 
-**NLP Server (10.20.30.16:8881):**
+**NLP Server (10.20.30.253:8881):**
 - Windows 11 server with NVIDIA RTX 3050
 - Processes ~1000 messages per minute
 - Maintains 99.5% uptime

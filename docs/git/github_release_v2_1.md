@@ -60,15 +60,15 @@ python -m pytest tests/ -v
 
 # 2. Integration testing with ash-thrash
 # Run from testing server (10.20.30.253)
-curl http://10.20.30.16:8884/test_nlp_integration
+curl http://10.20.30.253:8884/test_nlp_integration
 
 # 3. Performance validation
 # Verify GPU utilization and response times
 nvidia-smi
-Measure-Command { Invoke-RestMethod -Uri "http://10.20.30.16:8881/analyze" -Method POST -Body $testPayload }
+Measure-Command { Invoke-RestMethod -Uri "http://10.20.30.253:8881/analyze" -Method POST -Body $testPayload }
 
 # 4. Learning system validation
-curl http://10.20.30.16:8881/learning_statistics
+curl http://10.20.30.253:8881/learning_statistics
 
 # 5. Full ecosystem testing
 # Test integration with ash-bot, ash-dash, and ash-thrash
@@ -173,7 +173,7 @@ Copy-Item "docker-compose.yml" "$releaseDir/"
 1. Extract this package to C:\Deployments\ash-nlp
 2. Copy .env.template to .env and configure
 3. Run: docker-compose up -d
-4. Verify: curl http://10.20.30.16:8881/health
+4. Verify: curl http://10.20.30.253:8881/health
 
 ## Documentation
 - README.md - Complete overview
@@ -268,7 +268,7 @@ docker-compose down
 docker-compose up -d
 
 # 4. Verify deployment
-curl http://10.20.30.16:8881/health
+curl http://10.20.30.253:8881/health
 ```
 
 **Breaking Changes:** None - fully backward compatible
@@ -321,7 +321,7 @@ curl http://10.20.30.16:8881/health
 
 **Production Deployment:**
 ```powershell
-# Deploy to production server (10.20.30.16)
+# Deploy to production server (10.20.30.253)
 Set-Location C:\Deployments\ash-nlp
 
 # Update production environment
@@ -331,7 +331,7 @@ docker-compose up -d
 
 # Verify deployment health
 Start-Sleep 60
-$health = Invoke-RestMethod -Uri "http://10.20.30.16:8881/health"
+$health = Invoke-RestMethod -Uri "http://10.20.30.253:8881/health"
 Write-Host "Production deployment status: $($health.status)"
 ```
 

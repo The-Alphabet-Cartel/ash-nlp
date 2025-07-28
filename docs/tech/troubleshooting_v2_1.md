@@ -1,6 +1,6 @@
 # Ash NLP Server - Troubleshooting Guide v2.1
 
-**Problem Diagnosis and Resolution for Windows 11 AI Server (10.20.30.16)**
+**Problem Diagnosis and Resolution for Windows 11 AI Server (10.20.30.253)**
 
 Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosystem](https://github.com/the-alphabet-cartel/ash)
 
@@ -14,7 +14,7 @@ Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosyste
 - **Emergency Escalation**: Crisis response team lead via Discord DM
 
 ### Server Information
-- **Server IP**: 10.20.30.16
+- **Server IP**: 10.20.30.253
 - **API Port**: 8881
 - **OS**: Windows 11 Pro
 - **Hardware**: Ryzen 7 7700X, 64GB RAM, RTX 3050 8GB
@@ -23,7 +23,7 @@ Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosyste
 ### Quick Health Check
 ```powershell
 # Basic health check
-curl http://10.20.30.16:8881/health
+curl http://10.20.30.253:8881/health
 
 # Container status
 docker ps --filter "name=ash_nlp_server"
@@ -72,7 +72,7 @@ docker-compose logs -f ash-nlp
 
 # Wait for startup (models loading can take 2-3 minutes)
 Start-Sleep 180
-curl http://10.20.30.16:8881/health
+curl http://10.20.30.253:8881/health
 ```
 
 **2. Docker Daemon Issues:**
@@ -257,14 +257,14 @@ $testPayload = @{
 
 # Test analysis
 try {
-    $response = Invoke-RestMethod -Uri "http://10.20.30.16:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json" -TimeoutSec 30
+    $response = Invoke-RestMethod -Uri "http://10.20.30.253:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json" -TimeoutSec 30
     Write-Host "Analysis successful: $($response.risk_level)"
 } catch {
     Write-Host "Analysis failed: $($_.Exception.Message)"
 }
 
 # Check model status
-Invoke-RestMethod -Uri "http://10.20.30.16:8881/model_status"
+Invoke-RestMethod -Uri "http://10.20.30.253:8881/model_status"
 
 # Check container logs for errors
 docker logs ash_nlp_server --tail 100 | Select-String "ERROR\|CRITICAL\|Exception"
@@ -275,7 +275,7 @@ docker logs ash_nlp_server --tail 100 | Select-String "ERROR\|CRITICAL\|Exceptio
 **1. Model Loading Issues:**
 ```powershell
 # Check if models are properly loaded
-curl http://10.20.30.16:8881/model_status
+curl http://10.20.30.253:8881/model_status
 
 # If models not loaded, restart container
 docker-compose restart ash-nlp
@@ -329,7 +329,7 @@ if ($memoryUsage -gt 85) {
 **Diagnosis:**
 ```powershell
 # Check learning system status
-curl http://10.20.30.16:8881/learning_statistics
+curl http://10.20.30.253:8881/learning_statistics
 
 # Check learning data directory
 Get-ChildItem C:\Deployments\ash-nlp\learning_data\ -Recurse
@@ -342,7 +342,7 @@ $feedback = @{
 } | ConvertTo-Json
 
 try {
-    Invoke-RestMethod -Uri "http://10.20.30.16:8881/learning_feedback" -Method POST -Body $feedback -ContentType "application/json"
+    Invoke-RestMethod -Uri "http://10.20.30.253:8881/learning_feedback" -Method POST -Body $feedback -ContentType "application/json"
     Write-Host "Feedback test successful"
 } catch {
     Write-Host "Feedback test failed: $($_.Exception.Message)"
@@ -392,7 +392,7 @@ Remove-Item C:\Deployments\ash-nlp\learning_data\* -Recurse -Force
 docker-compose restart ash-nlp
 
 # Verify reset
-curl http://10.20.30.16:8881/learning_statistics
+curl http://10.20.30.253:8881/learning_statistics
 ```
 
 ### Integration Failures
@@ -405,10 +405,10 @@ curl http://10.20.30.16:8881/learning_statistics
 **Diagnosis:**
 ```powershell
 # Test network connectivity from bot server (10.20.30.253)
-Test-NetConnection -ComputerName 10.20.30.16 -Port 8881
+Test-NetConnection -ComputerName 10.20.30.253 -Port 8881
 
 # Test from local machine
-curl http://10.20.30.16:8881/health
+curl http://10.20.30.253:8881/health
 
 # Check firewall settings
 Get-NetFirewallRule -DisplayName "*Ash*" | Format-Table
@@ -430,7 +430,7 @@ if (-not $rule) {
 }
 
 # Test connectivity
-Test-NetConnection -ComputerName 10.20.30.16 -Port 8881
+Test-NetConnection -ComputerName 10.20.30.253 -Port 8881
 
 # If still failing, check Windows Defender
 # Temporarily disable Windows Defender firewall for testing
@@ -494,7 +494,7 @@ $testPayload = @{
 for ($i = 1; $i -le 10; $i++) {
     $requestStart = Get-Date
     try {
-        Invoke-RestMethod -Uri "http://10.20.30.16:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json"
+        Invoke-RestMethod -Uri "http://10.20.30.253:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json"
         $requestTime = (Get-Date) - $requestStart
         Write-Host "Request $i: $($requestTime.TotalMilliseconds)ms"
     } catch {
@@ -675,7 +675,7 @@ curl http://10.20.30.253:8883/health
 **3. Analytics Export Issues:**
 ```powershell
 # Test analytics export endpoint
-curl http://10.20.30.16:8881/analytics_export
+curl http://10.20.30.253:8881/analytics_export
 
 # Check analytics directory permissions
 icacls C:\Deployments\ash-nlp\analytics
@@ -704,7 +704,7 @@ Write-Host "Timestamp: $(Get-Date)" -ForegroundColor Gray
 # 1. Basic connectivity
 Write-Host "`n1. Testing Basic Connectivity..." -ForegroundColor Yellow
 try {
-    $health = Invoke-RestMethod -Uri "http://10.20.30.16:8881/health" -TimeoutSec 10
+    $health = Invoke-RestMethod -Uri "http://10.20.30.253:8881/health" -TimeoutSec 10
     Write-Host "✅ API Health: $($health.status)" -ForegroundColor Green
     
     if ($Detailed) {
@@ -756,7 +756,7 @@ try {
 # 4. Model status
 Write-Host "`n4. Checking Model Status..." -ForegroundColor Yellow
 try {
-    $models = Invoke-RestMethod -Uri "http://10.20.30.16:8881/model_status" -TimeoutSec 10
+    $models = Invoke-RestMethod -Uri "http://10.20.30.253:8881/model_status" -TimeoutSec 10
     $allLoaded = ($models.models.depression_model.status -eq "loaded") -and ($models.models.sentiment_model.status -eq "loaded")
     
     if ($allLoaded) {
@@ -790,7 +790,7 @@ $testPayload = @{
 
 try {
     $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-    $result = Invoke-RestMethod -Uri "http://10.20.30.16:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json"
+    $result = Invoke-RestMethod -Uri "http://10.20.30.253:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json"
     $stopwatch.Stop()
     
     $responseTime = $stopwatch.ElapsedMilliseconds
@@ -864,7 +864,7 @@ for ($i = 0; $i -lt ($Duration / $Interval); $i++) {
     
     try {
         $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-        $response = Invoke-RestMethod -Uri "http://10.20.30.16:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json" -TimeoutSec 10
+        $response = Invoke-RestMethod -Uri "http://10.20.30.253:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json" -TimeoutSec 10
         $stopwatch.Stop()
         $responseTime = $stopwatch.ElapsedMilliseconds
         $success = $true
@@ -1004,7 +1004,7 @@ Start-Sleep 120
 
 # 5. Test recovery
 try {
-    $health = Invoke-RestMethod -Uri "http://10.20.30.16:8881/health"
+    $health = Invoke-RestMethod -Uri "http://10.20.30.253:8881/health"
     Write-Host "Recovery successful: $($health.status)" -ForegroundColor Green
 } catch {
     Write-Host "Recovery failed - escalating immediately" -ForegroundColor Red

@@ -11,7 +11,7 @@ Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosyste
 The Ash NLP Server provides a comprehensive REST API for real-time crisis detection, machine learning feedback, and system monitoring. The API is designed for high-performance integration with Discord bots, analytics dashboards, and testing suites.
 
 ### Base Configuration
-- **Base URL**: `http://10.20.30.16:8881`
+- **Base URL**: `http://10.20.30.253:8881`
 - **API Version**: v2.1
 - **Content-Type**: `application/json`
 - **Authentication**: Not required (internal network only)
@@ -623,7 +623,7 @@ import aiohttp
 import asyncio
 
 class AshNLPClient:
-    def __init__(self, base_url="http://10.20.30.16:8881"):
+    def __init__(self, base_url="http://10.20.30.253:8881"):
         self.base_url = base_url
         self.session = None
     
@@ -689,7 +689,7 @@ async def handle_message(message):
 
 ```javascript
 class AshNLPDashboard {
-    constructor(baseUrl = 'http://10.20.30.16:8881') {
+    constructor(baseUrl = 'http://10.20.30.253:8881') {
         this.baseUrl = baseUrl;
     }
     
@@ -743,7 +743,7 @@ setInterval(async () => {
 #!/bin/bash
 # Comprehensive NLP testing script
 
-BASE_URL="http://10.20.30.16:8881"
+BASE_URL="http://10.20.30.253:8881"
 
 # Health check
 echo "Testing NLP server health..."

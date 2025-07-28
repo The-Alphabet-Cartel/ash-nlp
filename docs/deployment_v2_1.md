@@ -1,6 +1,6 @@
 # Ash NLP Server - Deployment Guide v2.1
 
-**Production Deployment for Windows 11 AI Server (10.20.30.16)**
+**Production Deployment for Windows 11 AI Server (10.20.30.253)**
 
 Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosystem](https://github.com/the-alphabet-cartel/ash)
 
@@ -8,10 +8,10 @@ Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosyste
 
 ## 🎯 Deployment Overview
 
-This guide covers production deployment of the Ash NLP Server on the dedicated Windows 11 AI server (10.20.30.16) with NVIDIA RTX 3050 GPU acceleration.
+This guide covers production deployment of the Ash NLP Server on the dedicated Windows 11 AI server (10.20.30.253) with NVIDIA RTX 3050 GPU acceleration.
 
 ### Server Specifications
-- **Server IP**: 10.20.30.16
+- **Server IP**: 10.20.30.253
 - **Operating System**: Windows 11 Pro
 - **CPU**: AMD Ryzen 7 7700X
 - **RAM**: 64GB DDR5
@@ -257,7 +257,7 @@ docker-compose logs -f ash-nlp
 **Verify Deployment:**
 ```powershell
 # Health check
-Invoke-RestMethod -Uri "http://10.20.30.16:8881/health" -Method GET
+Invoke-RestMethod -Uri "http://10.20.30.253:8881/health" -Method GET
 
 # Check GPU utilization
 nvidia-smi
@@ -269,7 +269,7 @@ $testPayload = @{
     channel_id = "test_channel"
 } | ConvertTo-Json
 
-Invoke-RestMethod -Uri "http://10.20.30.16:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json"
+Invoke-RestMethod -Uri "http://10.20.30.253:8881/analyze" -Method POST -Body $testPayload -ContentType "application/json"
 ```
 
 ### 2. Performance Optimization
@@ -301,10 +301,10 @@ Get-WmiObject -Class Win32_OperatingSystem | Select-Object TotalVisibleMemorySiz
 ```powershell
 # From Ash bot server (10.20.30.253), test connectivity
 # This should be run on the bot server
-curl http://10.20.30.16:8881/health
+curl http://10.20.30.253:8881/health
 
 # Test analysis from bot server
-curl -X POST http://10.20.30.16:8881/analyze \
+curl -X POST http://10.20.30.253:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "test integration", "user_id": "bot_test", "channel_id": "integration_test"}'
 ```
@@ -322,8 +322,8 @@ docker-compose logs ash-nlp | Select-String "analytics"
 ```powershell
 # Verify testing suite can reach NLP server
 # This should be run from the testing server
-curl http://10.20.30.16:8881/health
-curl http://10.20.30.16:8881/model_status
+curl http://10.20.30.253:8881/health
+curl http://10.20.30.253:8881/model_status
 ```
 
 ## 📊 Monitoring & Maintenance
@@ -344,7 +344,7 @@ while ($true) {
     
     # API health check
     try {
-        $health = Invoke-RestMethod -Uri "http://10.20.30.16:8881/health" -TimeoutSec 5
+        $health = Invoke-RestMethod -Uri "http://10.20.30.253:8881/health" -TimeoutSec 5
         Write-Host "API Status: $($health.status)"
     } catch {
         Write-Host "API Status: ERROR - $($_.Exception.Message)" -ForegroundColor Red
@@ -364,7 +364,7 @@ while ($true) {
 **Learning System Monitoring:**
 ```powershell
 # Check learning system status
-$learningStats = Invoke-RestMethod -Uri "http://10.20.30.16:8881/learning_statistics"
+$learningStats = Invoke-RestMethod -Uri "http://10.20.30.253:8881/learning_statistics"
 $learningStats | ConvertTo-Json -Depth 3
 
 # Monitor learning adjustments
@@ -425,7 +425,7 @@ docker-compose up -d ash-nlp
 
 # 5. Verify deployment
 Start-Sleep 30
-$health = Invoke-RestMethod -Uri "http://10.20.30.16:8881/health"
+$health = Invoke-RestMethod -Uri "http://10.20.30.253:8881/health"
 if ($health.status -eq "healthy") {
     Write-Host "Update successful!" -ForegroundColor Green
 } else {
@@ -434,7 +434,7 @@ if ($health.status -eq "healthy") {
 }
 
 # 6. Test integration
-curl http://10.20.30.16:8881/analyze -X POST -H "Content-Type: application/json" -d '{"message": "post-update test"}'
+curl http://10.20.30.253:8881/analyze -X POST -H "Content-Type: application/json" -d '{"message": "post-update test"}'
 ```
 
 ## 🚨 Troubleshooting
@@ -463,7 +463,7 @@ Get-WmiObject -Class Win32_OperatingSystem | Select-Object FreePhysicalMemory
 docker ps --filter "name=ash_nlp_server"
 
 # Check network connectivity
-Test-NetConnection -ComputerName 10.20.30.16 -Port 8881
+Test-NetConnection -ComputerName 10.20.30.253 -Port 8881
 
 # Check firewall rules
 Get-NetFirewallRule -DisplayName "Ash NLP Server"
@@ -499,7 +499,7 @@ docker-compose up -d
 
 # 5. Verify recovery
 Start-Sleep 60
-Invoke-RestMethod -Uri "http://10.20.30.16:8881/health"
+Invoke-RestMethod -Uri "http://10.20.30.253:8881/health"
 ```
 
 ## 📞 Support

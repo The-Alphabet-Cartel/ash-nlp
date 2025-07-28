@@ -1176,7 +1176,7 @@ class CommunityLanguageTracker:
 **Diagnosis:**
 ```bash
 # Check learning system configuration
-curl http://10.20.30.16:8881/learning_statistics
+curl http://10.20.30.253:8881/learning_statistics
 
 # Check environment variables
 echo $ENABLE_LEARNING_SYSTEM
@@ -1201,7 +1201,7 @@ chmod 755 learning_data
 docker-compose restart ash-nlp
 
 # 4. Verify activation
-curl http://10.20.30.16:8881/learning_statistics
+curl http://10.20.30.253:8881/learning_statistics
 ```
 
 #### False Positive/Negative Reports Not Being Processed
@@ -1216,7 +1216,7 @@ curl http://10.20.30.16:8881/learning_statistics
 # Test false positive reporting
 import requests
 
-response = requests.post('http://10.20.30.16:8881/analyze_false_positive', json={
+response = requests.post('http://10.20.30.253:8881/analyze_false_positive', json={
     'message': 'test message',
     'detected_level': 'high',
     'correct_level': 'none',
@@ -1237,7 +1237,7 @@ print(response.json())
 # REQUIRE_FEEDBACK_VALIDATION=false  # Temporarily disable
 
 # 3. Check daily limits
-curl http://10.20.30.16:8881/learning_statistics | jq '.daily_limit'
+curl http://10.20.30.253:8881/learning_statistics | jq '.daily_limit'
 
 # 4. Review logs for processing errors
 docker-compose logs ash-nlp | grep -i "feedback\|learning"
@@ -1264,7 +1264,7 @@ LEARNING_RATE=0.05  # Decrease from 0.1
 **2. Analyze Pattern Effectiveness:**
 ```python
 # Get pattern effectiveness report
-response = requests.get('http://10.20.30.16:8881/learning_effectiveness_report?period=7days')
+response = requests.get('http://10.20.30.253:8881/learning_effectiveness_report?period=7days')
 report = response.json()
 
 # Check for ineffective patterns
@@ -1325,7 +1325,7 @@ ANALYTICS_UPDATE_INTERVAL=600  # 10 minutes instead of 5
 PARALLEL_PATTERN_MATCHING=true
 
 # 5. Monitor performance improvement
-curl http://10.20.30.16:8881/performance_metrics
+curl http://10.20.30.253:8881/performance_metrics
 ```
 
 #### High CPU Usage During Learning
@@ -1336,7 +1336,7 @@ curl http://10.20.30.16:8881/performance_metrics
 docker stats ash_nlp_server --no-stream
 
 # Check learning activity frequency
-curl http://10.20.30.16:8881/learning_statistics | jq '.recent_learning'
+curl http://10.20.30.253:8881/learning_statistics | jq '.recent_learning'
 ```
 
 **Solutions:**
@@ -1556,7 +1556,7 @@ PATTERN_CLEANUP_INTERVAL=3600  # More frequent cleanup
 - **GitHub Issues** - [Bug reports and feature requests](https://github.com/the-alphabet-cartel/ash-nlp/issues)
 - **Discord Support** - [The Alphabet Cartel Server](https://discord.gg/alphabetcartel) #tech-support
 - **Documentation** - Complete guides in `/docs` directory
-- **API Documentation** - Interactive docs at `http://10.20.30.16:8881/docs`
+- **API Documentation** - Interactive docs at `http://10.20.30.253:8881/docs`
 
 **Crisis Response Team Support:**
 - **Team Guide** - [Crisis Response procedures](team_guide.md)

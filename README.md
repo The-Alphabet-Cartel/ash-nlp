@@ -22,7 +22,7 @@ The Ash NLP Server provides sophisticated natural language processing capabiliti
 ## 🏗️ Architecture
 
 ### Server Specifications
-- **Primary Server**: Windows 11 (10.20.30.16)
+- **Primary Server**: Windows 11 (10.20.30.253)
 - **CPU**: AMD Ryzen 7 7700X
 - **RAM**: 64GB DDR5
 - **GPU**: NVIDIA RTX 3050 (8GB VRAM)
@@ -40,7 +40,7 @@ The Ash NLP Server provides sophisticated natural language processing capabiliti
 - Windows 11 Pro with Docker Desktop
 - NVIDIA RTX 3050 with latest drivers (535+)
 - Git for Windows
-- Network access to 10.20.30.16:8881
+- Network access to 10.20.30.253:8881
 
 ### Installation
 
@@ -69,7 +69,7 @@ mkdir models, learning_data, logs, data, analytics
 docker-compose up -d
 
 # Verify deployment
-curl http://10.20.30.16:8881/health
+curl http://10.20.30.253:8881/health
 ```
 
 ### Environment Configuration
@@ -209,7 +209,7 @@ The NLP server integrates seamlessly with the [Ash Discord Bot](https://github.c
 ```python
 # Bot configuration for NLP integration
 NLP_CONFIG = {
-    "base_url": "http://10.20.30.16:8881",
+    "base_url": "http://10.20.30.253:8881",
     "timeout": 30,
     "retry_attempts": 3,
     "fallback_enabled": True
@@ -312,7 +312,7 @@ For changes affecting multiple components, coordinate with the [main ash reposit
 This repository contains **ONLY the NLP processing server**. For the complete crisis detection system including Discord bot, dashboard, and testing suite, see the [main Ash repository](https://github.com/the-alphabet-cartel/ash).
 
 ### Production Deployment
-The NLP server runs on dedicated Windows 11 hardware (10.20.30.16) optimized for AI workloads. All production deployments should follow the comprehensive [deployment guide](docs/deployment_v2_1.md).
+The NLP server runs on dedicated Windows 11 hardware (10.20.30.253) optimized for AI workloads. All production deployments should follow the comprehensive [deployment guide](docs/deployment_v2_1.md).
 
 ### Privacy & Security
 - **No message storage**: Messages are analyzed in real-time and immediately discarded

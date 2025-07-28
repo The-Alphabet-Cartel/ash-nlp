@@ -614,5 +614,5 @@ if __name__ == "__main__":
     main()
 
 """
-curl -X POST "http://10.20.30.16:8881/analyze_false_positive" -H "Content-Type: application/json" -d '{"message": "That movie killed me with laughter", "detected_level": "high", "correct_level": "none", "context": {"humor": true}, "severity_score": 7}'
+curl -X POST "http://10.20.30.253:8881/analyze_false_positive" -H "Content-Type: application/json" -d '{"message": "That movie killed me with laughter", "detected_level": "high", "correct_level": "none", "context": {"humor": true}, "severity_score": 7}'
 """
