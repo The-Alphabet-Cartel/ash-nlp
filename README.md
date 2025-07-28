@@ -1,330 +1,284 @@
-# Ash-NLP - Natural Language Processing Server
+# Ash NLP Server
 
-**Part of the Ash Ecosystem** | **Main Repository:** https://github.com/the-alphabet-cartel/ash
+**Advanced Crisis Detection & Community Support NLP Processing Engine**
 
-This repository contains **only the NLP processing server component** of the Ash crisis detection system. For the complete ecosystem including Discord bot, dashboard, and testing suite, see the [main Ash repository](https://github.com/the-alphabet-cartel/ash).
+Part of The Alphabet Cartel's [Ash Crisis Detection & Community Support Ecosystem](https://github.com/the-alphabet-cartel/ash)
 
-**Discord Community:** https://discord.gg/alphabetcartel  
-**Website:** http://alphabetcartel.org  
-**Organization:** https://github.com/the-alphabet-cartel
+---
 
-## 🧠 About Ash-NLP
+## 🌟 Overview
 
-Ash-NLP is the machine learning brain of The Alphabet Cartel's crisis detection system. It provides advanced natural language processing capabilities to analyze Discord messages for crisis indicators, working in conjunction with the Discord bot's keyword-based detection to create a comprehensive hybrid approach.
+The Ash NLP Server provides sophisticated natural language processing capabilities for real-time crisis detection in Discord communities. This server analyzes messages for signs of mental health crises, self-harm indicators, and community support needs using advanced machine learning models and adaptive learning systems.
 
-### 🏗️ Architecture Position
+### Key Features
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Discord Bot   │◄──►│   NLP Server    │◄──►│   Dashboard     │
-│   (ash-bot)     │    │   (THIS REPO)   │    │   (ash-dash)    │
-│                 │    │                 │    │                 │
-│ 10.20.30.253    │    │ 10.20.30.16     │    │ 10.20.30.16     │
-│ Port: 8882      │    │ Port: 8881      │    │ Port: 8883      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                 ▲
-                                 │
-                       ┌─────────────────┐
-                       │  Testing Suite  │
-                       │  (ash-thrash)   │
-                       │                 │
-                       │ 10.20.30.16     │
-                       │ Port: 8884      │
-                       └─────────────────┘
-```
+🧠 **Advanced AI Models**: Multi-model ensemble with depression detection and sentiment analysis  
+🔄 **Adaptive Learning**: Continuous improvement through feedback-based learning  
+⚡ **High Performance**: GPU-accelerated processing with sub-200ms response times  
+🔒 **Privacy-First**: No permanent message storage, ephemeral analysis only  
+📊 **Real-time Analytics**: Live performance metrics and detection statistics  
+🎯 **Crisis Classification**: Precise risk level assessment (High/Medium/Low)  
+
+## 🏗️ Architecture
+
+### Server Specifications
+- **Primary Server**: Windows 11 (10.20.30.16)
+- **CPU**: AMD Ryzen 7 7700X
+- **RAM**: 64GB DDR5
+- **GPU**: NVIDIA RTX 3050 (8GB VRAM)
+- **API Port**: 8881
+- **Docker**: Required for deployment
+
+### Integration Points
+- **Ash Bot**: Discord bot integration (10.20.30.253:8882)
+- **Ash Dashboard**: Analytics visualization (10.20.30.253:8883)
+- **Ash Testing**: Automated validation (10.20.30.253:8884)
 
 ## 🚀 Quick Start
 
-### For NLP Development
-If you're working on the NLP server specifically:
+### Prerequisites
+- Windows 11 Pro with Docker Desktop
+- NVIDIA RTX 3050 with latest drivers (535+)
+- Git for Windows
+- Network access to 10.20.30.16:8881
 
-```bash
-# Clone this repository
+### Installation
+
+**1. Clone Repository:**
+```powershell
+cd C:\Projects
 git clone https://github.com/the-alphabet-cartel/ash-nlp.git
 cd ash-nlp
-
-# Setup development environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements-dev.txt
-
-# Configure environment
-cp .env.template .env
-# Edit .env with your Claude API key and configuration
-
-# Run development server
-python -m src.main
 ```
 
-### For Complete Ecosystem
-If you need the full Ash system (recommended):
+**2. Configure Environment:**
+```powershell
+# Copy environment template
+copy .env.template .env
 
-```bash
-# Clone the main ecosystem repository
-git clone --recursive https://github.com/the-alphabet-cartel/ash.git
-cd ash
-
-# Follow setup instructions in main repository
-# This includes ash-nlp as a submodule along with all other components
+# Edit configuration (using Atom)
+atom .env
 ```
 
-## 🔧 Core Features
+**3. Deploy with Docker:**
+```powershell
+# Create required directories
+mkdir models, learning_data, logs, data, analytics
 
-### Advanced NLP Analysis
-- **Crisis Sentiment Detection**: Machine learning models trained on crisis language patterns
-- **Context Understanding**: Analyzes conversation flow and emotional progression
-- **Multi-model Ensemble**: Combines multiple AI approaches for robust detection
-- **Real-time Processing**: Optimized for Discord's fast-paced communication
+# Deploy services
+docker-compose up -d
 
-### Claude AI Integration
-- **Advanced Language Understanding**: Leverages Claude 4 Sonnet for sophisticated analysis
-- **Contextual Risk Assessment**: Understands nuanced emotional states and crisis indicators
-- **Adaptive Responses**: Learns from team feedback to improve detection accuracy
-- **Privacy-Preserving**: Processes text without storing personal information
-
-### High-Performance Infrastructure
-- **GPU Acceleration**: Utilizes RTX 3050 for fast model inference
-- **Caching System**: Redis-based caching for frequently analyzed patterns
-- **Load Balancing**: Handles multiple concurrent requests from Discord bot
-- **Fail-safe Design**: Graceful degradation when external services unavailable
-
-## 📦 Repository Structure
-
+# Verify deployment
+curl http://10.20.30.16:8881/health
 ```
-ash-nlp/                          # THIS REPOSITORY
-├── src/                          # Main application source
-│   ├── main.py                   # FastAPI server entry point
-│   ├── api/                      # REST API endpoints
-│   │   ├── routes/               # API route definitions
-│   │   ├── middleware/           # Request/response middleware
-│   │   └── models/               # API data models
-│   ├── nlp/                      # NLP processing core
-│   │   ├── analyzers/            # Text analysis modules
-│   │   ├── models/               # ML model management
-│   │   ├── preprocessing/        # Text preprocessing utilities
-│   │   └── ensemble/             # Multi-model coordination
-│   ├── integrations/             # External service integrations
-│   │   ├── claude/               # Claude AI integration
-│   │   ├── cache/                # Caching system
-│   │   └── monitoring/           # Performance monitoring
-│   └── utils/                    # Utility functions
-│       ├── config.py             # Configuration management
-│       ├── logger.py             # Logging setup
-│       └── validators.py         # Input validation
-├── models/                       # ML model files and cache
-├── tests/                        # Unit and integration tests
-├── docs/                         # NLP-specific documentation
-├── scripts/                      # Utility and deployment scripts
-├── docker/                       # Docker configuration
-├── .env.template                 # Environment configuration template
-├── docker-compose.yml            # Docker deployment configuration
-├── requirements.txt              # Production dependencies
-├── requirements-dev.txt          # Development dependencies
-└── README.md                     # This file
-```
-
-## 🛠️ Development
-
-### Prerequisites
-- Python 3.9+
-- NVIDIA GPU with CUDA support (RTX 3050 recommended)
-- Claude API key (for advanced analysis)
-- Docker with GPU support
-- 64GB RAM recommended for model loading
 
 ### Environment Configuration
 
-Create `.env` file from template:
+**Required Settings (.env):**
 ```bash
-cp .env.template .env
-```
-
-Required environment variables:
-```bash
-# Claude AI Configuration
-CLAUDE_API_KEY=your_claude_api_key_here
-CLAUDE_MODEL=claude-sonnet-4-20250514
-
 # Server Configuration
-API_PORT=8881
-API_HOST=0.0.0.0
-ENVIRONMENT=development
+NLP_SERVICE_HOST=0.0.0.0
+NLP_SERVICE_PORT=8881
+DEVICE=auto
 
-# GPU Configuration
-ENABLE_GPU=true
-CUDA_VISIBLE_DEVICES=0
+# AI Models
+DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
+SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
+MODEL_CACHE_DIR=./models
 
-# Performance Settings
-MAX_CONCURRENT_REQUESTS=10
-REQUEST_TIMEOUT_SECONDS=30
-CACHE_TTL_MINUTES=60
+# Learning System
+ENABLE_LEARNING_SYSTEM=true
+LEARNING_RATE=0.1
+MAX_LEARNING_ADJUSTMENTS_PER_DAY=50
 
-# Model Configuration
-MODEL_CACHE_DIR=/app/models
-ENABLE_MODEL_CACHING=true
+# Performance Optimization
+MAX_BATCH_SIZE=32
+INFERENCE_THREADS=4
+GPU_MEMORY_FRACTION=0.8
+
+# Integration
+ENABLE_ANALYTICS_EXPORT=true
+ANALYTICS_WEBHOOK_URL=http://10.20.30.253:8883/webhook/nlp_metrics
 ```
 
-### GPU Setup
+## 🔌 API Reference
 
-**NVIDIA Container Toolkit (Required):**
+### Core Endpoints
+
+**Health Check:**
 ```bash
-# Install NVIDIA Container Toolkit
-distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-sudo apt-get update && sudo apt-get install -y nvidia-docker2
-sudo systemctl restart docker
-
-# Verify GPU access
-docker run --rm --gpus all nvidia/cuda:11.0-base nvidia-smi
+GET /health
 ```
 
-### Testing
-
+**Message Analysis:**
 ```bash
-# Run unit tests
-pytest tests/unit/
+POST /analyze
+Content-Type: application/json
 
-# Run with GPU tests
-pytest tests/gpu/ --gpu
-
-# Integration tests (requires Claude API)
-pytest tests/integration/
-
-# Performance benchmarks
-python scripts/benchmark_models.py
-```
-
-### Docker Deployment
-
-```bash
-# Build with GPU support
-docker-compose up --build
-
-# Production deployment
-docker-compose -f docker-compose.prod.yml up -d
-
-# Verify GPU access in container
-docker-compose exec ash-nlp nvidia-smi
-```
-
-## 🔗 Integration with Ash Ecosystem
-
-### Discord Bot Communication
-- **Endpoint**: `/analyze` - Main crisis detection analysis
-- **Protocol**: REST API with JSON request/response
-- **Authentication**: API key-based authentication
-- **Rate Limiting**: Configurable request throttling
-
-**API Example:**
-```python
-# Request format
 {
-    "message": "text to analyze",
-    "context": {
-        "user_id": "discord_user_id",
-        "channel_id": "discord_channel_id",
-        "conversation_history": ["previous", "messages"]
-    },
-    "options": {
-        "include_confidence": true,
-        "detailed_analysis": false
-    }
-}
-
-# Response format
-{
-    "risk_level": "high|medium|low|none",
-    "confidence": 0.85,
-    "analysis": {
-        "crisis_indicators": ["indicator1", "indicator2"],
-        "emotional_state": "distressed",
-        "urgency": "immediate"
-    },
-    "processing_time_ms": 150
+  "message": "feeling really down today",
+  "user_id": "123456789",
+  "channel_id": "987654321",
+  "context": {
+    "previous_messages": [],
+    "user_history": {}
+  }
 }
 ```
 
-### Dashboard Integration
-- **Metrics Endpoint**: `/metrics` - Performance and accuracy statistics
-- **Health Monitoring**: Real-time processing statistics
-- **Model Performance**: Accuracy metrics and processing times
-
-### Testing Integration
-- **Validation Endpoint**: `/validate` - Used by ash-thrash for accuracy testing
-- **Batch Processing**: Handles 350-phrase test suite efficiently
-- **Performance Metrics**: Detailed timing and accuracy reports
-
-## 📊 NLP Performance
-
-### Hardware Specifications
-- **Server**: Windows 11 (10.20.30.16)
-- **CPU**: AMD Ryzen 7 7700X (8 cores, 16 threads)
-- **RAM**: 64GB DDR4
-- **GPU**: NVIDIA RTX 3050 (8GB VRAM)
-- **Storage**: NVMe SSD for model caching
-
-### Performance Metrics
-- **Response Time**: <500ms for standard analysis
-- **Throughput**: 50+ requests/second sustained
-- **Accuracy**: >95% on validation test suite
-- **GPU Utilization**: 60-80% during peak load
-- **Memory Usage**: ~8GB RAM, ~4GB VRAM
-
-### Monitoring
-- **Health Endpoint**: `http://10.20.30.16:8881/health`
-- **Metrics Dashboard**: Available via ash-dash
-- **Performance Logs**: Detailed timing and accuracy tracking
-- **GPU Monitoring**: Real-time GPU utilization metrics
-
-## 🧪 Testing
-
-This repository includes comprehensive testing for NLP functionality. Integration with the complete crisis detection pipeline is tested via [ash-thrash](https://github.com/the-alphabet-cartel/ash-thrash).
-
+**Learning System:**
 ```bash
-# NLP-specific testing
-python -m pytest tests/unit/
+POST /learning_feedback
+Content-Type: application/json
 
-# GPU performance testing
-python scripts/gpu_benchmark.py
-
-# Model accuracy validation
-python scripts/validate_models.py
-
-# Integration testing (requires ecosystem)
-python -m pytest tests/integration/
+{
+  "message_id": "msg_123",
+  "feedback_type": "false_positive",
+  "correct_classification": "low"
+}
 ```
 
-## 🤖 Model Management
+**Analytics:**
+```bash
+GET /learning_statistics
+GET /performance_metrics
+GET /model_status
+```
 
-### Supported Models
-- **Claude 4 Sonnet**: Primary analysis engine for sophisticated understanding
-- **Local Transformers**: Backup models for offline operation
-- **Custom Fine-tuned Models**: LGBTQIA+ community-specific crisis detection
+### Response Format
+
+```json
+{
+  "risk_level": "medium",
+  "confidence": 0.78,
+  "analysis": {
+    "depression_score": 0.65,
+    "sentiment_score": -0.42,
+    "crisis_indicators": ["mood_negative", "isolation"]
+  },
+  "recommendations": ["close_monitoring", "check_in_6h"],
+  "processing_time_ms": 145
+}
+```
+
+## 🧪 Crisis Detection System
+
+### Detection Categories
+
+**High Crisis (Score ≥ 0.50):**
+- Suicidal ideation indicators
+- Self-harm references
+- Immediate danger signals
+- Crisis escalation language
+
+**Medium Crisis (Score ≥ 0.22):**
+- Depression markers
+- Anxiety indicators
+- Social isolation patterns
+- Identity struggles
+
+**Low Crisis (Score ≥ 0.12):**
+- Mild mood indicators
+- Stress signals
+- Gaming frustration
+- General support needs
 
 ### Model Pipeline
+
 1. **Text Preprocessing**: Cleaning and normalization
-2. **Initial Classification**: Fast preliminary risk assessment
-3. **Deep Analysis**: Claude-powered contextual understanding
+2. **Initial Classification**: Fast preliminary risk assessment  
+3. **Deep Analysis**: Advanced contextual understanding
 4. **Ensemble Scoring**: Combined results from multiple models
 5. **Confidence Calibration**: Reliable confidence scores
+6. **Learning Integration**: Adaptive improvement based on feedback
 
-### Model Updates
-```bash
-# Update Claude model version
-docker-compose exec ash-nlp python scripts/update_claude_model.py
+### Performance Metrics
 
-# Refresh model cache
-docker-compose exec ash-nlp python scripts/refresh_model_cache.py
+- **Overall Accuracy**: 85%+ (vs 75% baseline)
+- **High Crisis Detection**: 95%+
+- **False Positive Rate**: <8% (vs 15% baseline)
+- **Processing Time**: <200ms per analysis
+- **Learning Adaptation**: Real-time model improvements
 
-# Validate model performance
-python scripts/model_validation.py
+## 🔗 Ecosystem Integration
+
+### Ash Bot Integration
+
+The NLP server integrates seamlessly with the [Ash Discord Bot](https://github.com/the-alphabet-cartel/ash-bot):
+
+```python
+# Bot configuration for NLP integration
+NLP_CONFIG = {
+    "base_url": "http://10.20.30.16:8881",
+    "timeout": 30,
+    "retry_attempts": 3,
+    "fallback_enabled": True
+}
 ```
 
-## 🤝 Contributing
+### Dashboard Analytics
 
-### Development Process
+Real-time metrics flow to the [Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash):
+- Live detection statistics
+- Performance monitoring
+- Learning system analytics
+- Historical trend analysis
+
+### Testing Validation
+
+Comprehensive testing via [Ash Testing Suite](https://github.com/the-alphabet-cartel/ash-thrash):
+- 350-phrase validation testing
+- Performance benchmarking
+- Integration testing
+- Accuracy monitoring
+
+## 📚 Documentation
+
+### Complete Documentation Suite
+
+- **[Deployment Guide](docs/deployment_v2_1.md)** - Production deployment procedures
+- **[GitHub Release Guide](docs/github_release_v2_1.md)** - Release management and versioning
+- **[Team Guide](docs/team/team_guide_v2_1.md)** - Operations guide for Crisis Response teams
+- **[API Documentation](docs/tech/API_v2_1.md)** - Complete REST API reference
+- **[Troubleshooting Guide](docs/tech/troubleshooting_v2_1.md)** - Problem diagnosis and resolution
+
+### Technical Specifications
+
+- **Python 3.11+** with FastAPI framework
+- **PyTorch** for deep learning inference
+- **Transformers** for pre-trained model integration
+- **Docker** for containerized deployment
+- **NVIDIA CUDA** for GPU acceleration
+
+## 🛠️ Development
+
+### Development Environment
+
+**Prerequisites:**
+- Windows 11 development machine
+- Atom editor with Python packages
+- GitHub Desktop for version control
+- Docker Desktop for containerization
+
+**Setup:**
+```powershell
+# Clone for development
+git clone https://github.com/the-alphabet-cartel/ash-nlp.git
+cd ash-nlp
+
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run in development mode
+python nlp_main.py --dev
+```
+
+### Contributing
+
 1. **Fork this repository** (ash-nlp specifically)
 2. **Create feature branch** for your changes
 3. **Write comprehensive tests** including GPU tests
@@ -333,13 +287,8 @@ python scripts/model_validation.py
 6. **Update documentation** as needed
 7. **Submit pull request** to this repository
 
-### Model Development
-- **Training Data**: Work with crisis response teams for training examples
-- **Validation**: Use ash-thrash for comprehensive accuracy testing
-- **Performance**: Ensure changes don't degrade response times
-- **Privacy**: Maintain privacy-preserving analysis methods
-
 ### Main Ecosystem
+
 For changes affecting multiple components, coordinate with the [main ash repository](https://github.com/the-alphabet-cartel/ash) which includes this repository as a submodule.
 
 ## 📞 Support
@@ -357,32 +306,32 @@ For changes affecting multiple components, coordinate with the [main ash reposit
 - **Model Performance**: Include validation metrics and test results
 - **API Issues**: Include request/response examples and timing data
 
+## ⚠️ Important Notes
+
+### Repository Scope
+This repository contains **ONLY the NLP processing server**. For the complete crisis detection system including Discord bot, dashboard, and testing suite, see the [main Ash repository](https://github.com/the-alphabet-cartel/ash).
+
+### Production Deployment
+The NLP server runs on dedicated Windows 11 hardware (10.20.30.16) optimized for AI workloads. All production deployments should follow the comprehensive [deployment guide](docs/deployment_v2_1.md).
+
+### Privacy & Security
+- **No message storage**: Messages are analyzed in real-time and immediately discarded
+- **Ephemeral processing**: No conversation history is retained
+- **Local deployment**: All processing occurs on community-controlled servers
+- **Audit logs**: System actions are logged without storing message content
+
 ## 📜 License
 
 This project is part of The Alphabet Cartel's open-source initiatives. See [LICENSE](LICENSE) file for details.
 
 ---
 
-## ⚠️ Important Notes
+## 🌈 Community
 
-### Repository Scope
-This repository contains **ONLY the NLP processing server**. For:
-- **Discord Bot**: See [ash-bot](https://github.com/the-alphabet-cartel/ash-bot)
-- **Analytics Dashboard**: See [ash-dash](https://github.com/the-alphabet-cartel/ash-dash)
-- **Testing Suite**: See [ash-thrash](https://github.com/the-alphabet-cartel/ash-thrash)
-- **Complete System**: See [main ash repository](https://github.com/the-alphabet-cartel/ash)
+**The Alphabet Cartel** - Building inclusive gaming communities through technology.
 
-### Development Recommendations
-- **New Contributors**: Start with the [main ash repository](https://github.com/the-alphabet-cartel/ash) for complete system overview
-- **NLP-Specific Work**: Use this repository for model development and API improvements
-- **System Integration**: Test changes against the full ecosystem using ash-thrash
+**Discord:** https://discord.gg/alphabetcartel | **Website:** https://alphabetcartel.org
 
-### GPU Requirements
-This service **requires NVIDIA GPU support** for optimal performance. While it can run CPU-only for development, production deployment needs proper GPU configuration.
+*"We've all been in that dark place where everything feels impossible. You're not alone."* - Ash
 
-### Privacy Considerations
-This service processes potentially sensitive text data. All processing is designed to be stateless and privacy-preserving, with no permanent storage of personal information.
-
----
-
-**Built with 🖤 for LGBTQIA+ gaming communities by [The Alphabet Cartel](https://discord.gg/alphabetcartel)**
+**Built with 🖤 for chosen family everywhere.**
