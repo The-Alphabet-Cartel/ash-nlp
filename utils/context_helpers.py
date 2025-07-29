@@ -60,25 +60,53 @@ def detect_negation_context(message: str) -> bool:
     return False
 
 def analyze_sentiment_context(sentiment_result) -> Dict[str, float]:
-    """Analyze sentiment to provide additional context"""
+    """
+    Analyze sentiment to provide additional context - BACKWARD COMPATIBLE VERSION
+    
+    This function handles both the old format (for ash-bot compatibility) and 
+    the new Cardiff NLP labels (LABEL_0, LABEL_1, LABEL_2) for ash-nlp.
+    """
     sentiment_scores = {'negative': 0.0, 'neutral': 0.0, 'positive': 0.0}
     
     if not sentiment_result:
         return sentiment_scores
     
-    if isinstance(sentiment_result, list) and len(sentiment_result) > 0:
-        for item in sentiment_result:
-            if isinstance(item, dict):
-                label = item.get('label', '').lower()
-                score = item.get('score', 0.0)
-                
-                # Map sentiment labels to our expected format
-                if 'negative' in label or 'sadness' in label or 'anger' in label:
-                    sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-                elif 'positive' in label or 'joy' in label or 'optimism' in label:
-                    sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
-                elif 'neutral' in label:
-                    sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
+    # Handle different result formats from different sentiment models
+    predictions_to_process = []
+    
+    if isinstance(sentiment_result, list):
+        if len(sentiment_result) > 0:
+            if isinstance(sentiment_result[0], list):
+                # Nested list format: [[{...}, {...}]]
+                predictions_to_process = sentiment_result[0]
+            elif isinstance(sentiment_result[0], dict):
+                # Flat list format: [{...}, {...}]
+                predictions_to_process = sentiment_result
+    elif isinstance(sentiment_result, dict):
+        # Single prediction format: {...}
+        predictions_to_process = [sentiment_result]
+    
+    # Process all predictions and take the max score for each sentiment type
+    for item in predictions_to_process:
+        if isinstance(item, dict):
+            label = item.get('label', '').lower()
+            score = float(item.get('score', 0.0))
+            
+            # Handle Cardiff NLP model labels (NEW - for ash-nlp)
+            if label == 'label_0':  # Cardiff NLP: negative
+                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
+            elif label == 'label_1':  # Cardiff NLP: neutral
+                sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
+            elif label == 'label_2':  # Cardiff NLP: positive
+                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
+            
+            # Handle human-readable labels (EXISTING - for ash-bot compatibility)
+            elif 'negative' in label or 'sadness' in label or 'anger' in label:
+                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
+            elif 'positive' in label or 'joy' in label or 'optimism' in label:
+                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
+            elif 'neutral' in label:
+                sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
     
     return sentiment_scores
 
