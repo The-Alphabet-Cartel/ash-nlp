@@ -71,7 +71,7 @@ class EnvConfigManager:
             'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR']},
             'NLP_LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
             'GLOBAL_PYTHONUNBUFFERED': {'type': str, 'default': '1'},
-            'GLOBAL_ENABLE_DEBUG_LOGGING': {'type': bool, 'default': False},
+            'GLOBAL_ENABLE_DEBUG_MODE': {'type': bool, 'default': False},
             
             # Storage Paths
             'NLP_DATA_DIR': {'type': str, 'default': './data'},

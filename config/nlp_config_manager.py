@@ -186,7 +186,7 @@ class NLPConfigManager:
         # Logging Configuration
         self._config['GLOBAL_LOG_LEVEL'] = self._get_config_value('GLOBAL_LOG_LEVEL', 'INFO').upper()
         self._config['NLP_LOG_FILE'] = self._get_config_value('NLP_LOG_FILE', 'nlp_service.log')
-        self._config['GLOBAL_ENABLE_DEBUG_LOGGING'] = self._get_config_value('GLOBAL_ENABLE_DEBUG_LOGGING', 'false').lower() in ('true', '1', 'yes')
+        self._config['GLOBAL_ENABLE_DEBUG_MODE'] = self._get_config_value('GLOBAL_ENABLE_DEBUG_MODE', 'false').lower() in ('true', '1', 'yes')
         
         # Storage Paths
         self._config['NLP_DATA_DIR'] = self._get_config_value('NLP_DATA_DIR', './data')
