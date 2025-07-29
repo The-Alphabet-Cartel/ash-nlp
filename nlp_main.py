@@ -354,7 +354,6 @@ async def analyze_message(request: MessageRequest):
                 top_result = max(depression_result, key=lambda x: x['score'])
                 
                 # Apply false positive reduction
-                from utils.scoring_helpers import apply_false_positive_reduction
                 original_score = top_result['score']
                 adjusted_score = apply_comprehensive_false_positive_reduction(request.message, original_score)
                 
