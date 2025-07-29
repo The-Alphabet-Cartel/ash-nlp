@@ -1,53 +1,56 @@
+# Ash-NLP Docker Compose for Ash Ecosystem
+# Repository: https://github.com/the-alphabet-cartel/ash-nlp
+# Discord: https://discord.gg/alphabetcartel
+# Website: http://alphabetcartel.org
 services:
+  # ========================================================================
+  # NLP Server (ash-nlp)
+  # ========================================================================
   ash-nlp:
     image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
-    # Uncomment for local development:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-
     container_name: ash-nlp
     restart: unless-stopped
     networks:
-      - ash-network
+      ash-network:
+        ipv4_address: 172.20.0.11
     ports:
-      - "${NLP_SERVICE_PORT:-8881}:${NLP_SERVICE_PORT:-8881}"
+      - 8881:8881
     environment:
       # Point to secret files
-      - HUGGINGFACE_TOKEN=/run/secrets/huggingface_token
+      - GLOBAL_HUGGINGFACE_TOKEN=${GLOBAL_HUGGINGFACE_TOKEN}
+      - GLOBAL_CLAUDE_API_KEY=${GLOBAL_CLAUDE_API_KEY}
 
       # Core Python settings
-      - GLOBAL_PYTHONUNBUFFERED=${GLOBAL_PYTHONUNBUFFERED:-1}
+      - GLOBAL_PYTHONUNBUFFERED=${GLOBAL_PYTHONUNBUFFERED}
       
       # Hugging Face Configuration
-      - NLP_HUGGINGFACE_CACHE_DIR=${NLP_HUGGINGFACE_CACHE_DIR:-./models/cache}
+      - NLP_HUGGINGFACE_CACHE_DIR=${NLP_HUGGINGFACE_CACHE_DIR}
       
       # Learning System Configuration
       - GLOBAL_ENABLE_LEARNING_SYSTEM=${GLOBAL_ENABLE_LEARNING_SYSTEM:-true}
       - NLP_LEARNING_RATE=${NLP_LEARNING_RATE:-0.1}
       - NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY=${NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY:-50}
-      - NLP_LEARNING_PERSISTENCE_FILE=${NLP_LEARNING_PERSISTENCE_FILE:-./learning_data/adjustments.json}
+      - NLP_LEARNING_PERSISTENCE_FILE=${NLP_LEARNING_PERSISTENCE_FILE}
       - NLP_MIN_CONFIDENCE_ADJUSTMENT=${NLP_MIN_CONFIDENCE_ADJUSTMENT:-0.05}
       - NLP_MAX_CONFIDENCE_ADJUSTMENT=${NLP_MAX_CONFIDENCE_ADJUSTMENT:-0.30}
       
       # Model Configuration
       - NLP_DEPRESSION_MODEL=${NLP_DEPRESSION_MODEL:-rafalposwiata/deproberta-large-depression}
       - NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-cardiffnlp/twitter-roberta-base-sentiment-latest}
-      - NLP_MODEL_CACHE_DIR=${NLP_MODEL_CACHE_DIR:-./models/cache}
+      - NLP_MODEL_CACHE_DIR=${NLP_MODEL_CACHE_DIR}
       
-      # Hardware Configuration - Optimized for your RTX 3050
+      # Hardware Configuration
       - NLP_DEVICE=${NLP_DEVICE:-auto}
       - NLP_MODEL_PRECISION=${NLP_MODEL_PRECISION:-float16}
       
-      # Performance Tuning - Tuned for your Ryzen 7 7700x
+      # Performance Tuning
       - NLP_MAX_BATCH_SIZE=${NLP_MAX_BATCH_SIZE:-32}
       - NLP_INFERENCE_THREADS=${NLP_INFERENCE_THREADS:-4}
       - NLP_MAX_CONCURRENT_REQUESTS=${NLP_MAX_CONCURRENT_REQUESTS:-10}
       - NLP_REQUEST_TIMEOUT=${NLP_REQUEST_TIMEOUT:-30}
       
       # Server Configuration
-      - NLP_SERVICE_HOST=${NLP_SERVICE_HOST:-0.0.0.0}
-      - NLP_SERVICE_PORT=${NLP_SERVICE_PORT:-8881}
+      - GLOBAL_NLP_API_PORT=${GLOBAL_NLP_API_PORT:-8881}
       - NLP_UVICORN_WORKERS=${NLP_UVICORN_WORKERS:-1}
       - NLP_RELOAD_ON_CHANGES=${NLP_RELOAD_ON_CHANGES:-false}
       
@@ -57,42 +60,83 @@ services:
       - GLOBAL_ENABLE_DEBUG_LOGGING=${GLOBAL_ENABLE_DEBUG_LOGGING:-false}
       
       # Storage Paths
-      - NLP_DATA_DIR=${NLP_DATA_DIR:-./data}
-      - NLP_MODELS_DIR=${NLP_MODELS_DIR:-./models/cache}
-      - NLP_LOGS_DIR=${NLP_LOGS_DIR:-./logs}
-      - NLP_LEARNING_DATA_DIR=${NLP_LEARNING_DATA_DIR:-./learning_data}
+      - NLP_DATA_DIR=${NLP_DATA_DIR}
+      - NLP_MODELS_DIR=${NLP_MODELS_DIR}
+      - NLP_LOGS_DIR=${NLP_LOGS_DIR}
+      - NLP_LEARNING_DATA_DIR=${NLP_LEARNING_DATA_DIR}
       
       # Crisis Detection Thresholds
-      - NLP_HIGH_CRISIS_THRESHOLD=${NLP_HIGH_CRISIS_THRESHOLD:-0.7}
-      - NLP_MEDIUM_CRISIS_THRESHOLD=${NLP_MEDIUM_CRISIS_THRESHOLD:-0.4}
-      - NLP_LOW_CRISIS_THRESHOLD=${NLP_LOW_CRISIS_THRESHOLD:-0.2}
+      - NLP_HIGH_CRISIS_THRESHOLD=${NLP_HIGH_CRISIS_THRESHOLD}
+      - NLP_MEDIUM_CRISIS_THRESHOLD=${NLP_MEDIUM_CRISIS_THRESHOLD}
+      - NLP_LOW_CRISIS_THRESHOLD=${NLP_LOW_CRISIS_THRESHOLD}
       
       # Rate Limiting
       - NLP_MAX_REQUESTS_PER_MINUTE=${NLP_MAX_REQUESTS_PER_MINUTE:-60}
       - NLP_MAX_REQUESTS_PER_HOUR=${NLP_MAX_REQUESTS_PER_HOUR:-1000}
       
       # Security
-      - GLOBAL_ALLOWED_IPS=${GLOBAL_ALLOWED_IPS:-10.20.30.0/24,127.0.0.1,::1}
-      - GLOBAL_ENABLE_CORS=${GLOBAL_ENABLE_CORS:-true}
+      - GLOABL_ALLOWED_IPS=${GLOBAL_ALLOWED_IPS}
+      - GLOBAL_API_ENABLE_CORS=${GLOBAL_API_ENABLE_CORS}
     volumes:
-      - ./data:/app/data
-      - ./models/cache:/app/models/cache
-      - ./logs:/app/logs
-      - ./learning_data:/app/learning_data
+      - ./ash-nlp/data:/app/data
+      - ./ash-nlp/models/cache:/app/models/cache
+      - ./ash-nlp/logs:/app/logs
+      - ./ash-nlp/learning_data:/app/learning_data
+      - ./secrets:/run/secrets:ro
+    depends_on:
+      ash-redis:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+          cpus: '4.0'
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8881/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+
+  # ========================================================================
+  # Redis Cache
+  # ========================================================================
+  ash-redis:
+    image: redis:7-alpine
+    container_name: ash-redis
+    restart: unless-stopped
+    networks:
+      ash-network:
+        ipv4_address: 172.20.0.20
+    ports:
+      - 6379:6379
+    command: redis-server --appendonly yes --requirepass ${GLOBAL_REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
       - ./secrets:/run/secrets:ro
     deploy:
       resources:
         limits:
-          memory: 8G      # Sufficient for your RTX 3050 setup
-          cpus: '4'       # Half your Ryzen 7 7700x cores
-        reservations:
-          memory: 2G
-          cpus: '1'
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+          memory: 512M
+          cpus: '0.25'
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   ash-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  redis_data:
+    driver: local
