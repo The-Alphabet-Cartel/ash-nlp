@@ -110,7 +110,7 @@ def get_api_keys_status():
     config_manager = get_nlp_config()
     return {
         'claude_api_key': bool(config_manager.get('CLAUDE_API_KEY')),
-        'huggingface_token': bool(config_manager.get('HUGGINGFACE_TOKEN')),
+        'huggingface_token': bool(config_manager.get('GLOBAL_HUGGINGFACE_TOKEN')),
         'openai_api_key': bool(config_manager.get('OPENAI_API_KEY'))
     }
 

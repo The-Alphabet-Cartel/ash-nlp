@@ -51,12 +51,12 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Set Hugging Face token if provided (now from secrets or environment)
-hf_token = config_manager.get('HUGGINGFACE_TOKEN')
+hf_token = config_manager.get('GLOBAL_HUGGINGFACE_TOKEN')
 if hf_token:
-    os.environ['HUGGINGFACE_TOKEN'] = hf_token
+    os.environ['GLOBAL_HUGGINGFACE_TOKEN'] = hf_token
     logger.info("🔑 Hugging Face token configured from secrets")
-elif config['HUGGINGFACE_TOKEN']:
-    os.environ['HUGGINGFACE_TOKEN'] = config['HUGGINGFACE_TOKEN']
+elif config['GLOBAL_HUGGINGFACE_TOKEN']:
+    os.environ['GLOBAL_HUGGINGFACE_TOKEN'] = config['GLOBAL_HUGGINGFACE_TOKEN']
     logger.info("🔑 Hugging Face token configured from environment")
 
 # Log secrets status on startup
