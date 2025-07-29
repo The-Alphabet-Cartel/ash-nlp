@@ -300,6 +300,31 @@ if config['GLOBAL_ENABLE_CORS']:
     )
     logger.info("🌐 CORS middleware enabled")
 
+def extract_sentiment_scores_from_result(sentiment_result) -> dict:
+    """Extract sentiment scores in the format ash-bot expects"""
+    
+    sentiment_scores = {'negative': 0.0, 'positive': 0.0, 'neutral': 0.0}
+    
+    if not sentiment_result:
+        return sentiment_scores
+    
+    # Handle different sentiment result formats
+    if isinstance(sentiment_result, list) and len(sentiment_result) > 0:
+        for item in sentiment_result:
+            if isinstance(item, dict):
+                label = item.get('label', '').lower()
+                score = item.get('score', 0.0)
+                
+                # Map sentiment labels to our expected format
+                if 'negative' in label or 'sadness' in label or 'anger' in label:
+                    sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
+                elif 'positive' in label or 'joy' in label or 'optimism' in label:
+                    sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
+                elif 'neutral' in label:
+                    sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
+    
+    return sentiment_scores
+
 @app.post("/analyze", response_model=CrisisResponse)
 async def analyze_message(request: MessageRequest):
     """Message analysis using available analyzers"""
@@ -331,7 +356,7 @@ async def analyze_message(request: MessageRequest):
                 # Apply false positive reduction
                 from utils.scoring_helpers import apply_false_positive_reduction
                 original_score = top_result['score']
-                adjusted_score = apply_false_positive_reduction(request.message, original_score)
+                adjusted_score = apply_comprehensive_false_positive_reduction(request.message, original_score)
                 
                 # Determine crisis level
                 if top_result['label'] == 'severe' and adjusted_score > config['NLP_HIGH_CRISIS_THRESHOLD']:
