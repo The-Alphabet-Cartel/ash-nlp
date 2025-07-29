@@ -106,8 +106,8 @@ class NLPConfigManager:
             Path(directory).mkdir(parents=True, exist_ok=True)
         
         # API Keys (sensitive - use secrets)
-        self._config['CLAUDE_API_KEY'] = self._get_config_value(
-            'CLAUDE_API_KEY',
+        self._config['GLOBAL_CLAUDE_API_KEY'] = self._get_config_value(
+            'GLOBAL_CLAUDE_API_KEY',
             secret_file_suffix='claude_api_key'
         )
         
@@ -237,7 +237,7 @@ class NLPConfigManager:
         logger.info(f"   📝 Log level: {self._config['GLOBAL_LOG_LEVEL']}")
         
         # Validate critical settings
-        if not self._config['CLAUDE_API_KEY'] and self._config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
+        if not self._config['GLOBAL_CLAUDE_API_KEY'] and self._config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
             logger.warning("⚠️ Claude API key not found - learning system may be limited")
         
         if not self._config['GLOBAL_HUGGINGFACE_TOKEN']:
@@ -292,7 +292,7 @@ class NLPConfigManager:
         })
         
         # Update capabilities based on available API keys
-        if self._config.get('CLAUDE_API_KEY'):
+        if self._config.get('GLOBAL_CLAUDE_API_KEY'):
             base_config['capabilities']['claude_integration'] = "Available with secrets"
         
         if self._config.get('GLOBAL_HUGGINGFACE_TOKEN'):
