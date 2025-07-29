@@ -44,7 +44,12 @@ class CrisisAnalyzer:
             sentiment_result = self.model_manager.analyze_with_sentiment_model(message)
             
             # Step 3: Analyze sentiment for context
-            sentiment_scores = analyze_sentiment_context(sentiment_result)
+            # Import our new function at the top of the file
+            from utils.context_helpers import process_sentiment_with_flip
+
+            # Replace the sentiment processing line with:
+            raw_sentiment = analyze_sentiment_context(sentiment_result)
+            sentiment_scores = process_sentiment_with_flip(raw_sentiment)
             reasoning_steps.append(f"Sentiment: {sentiment_scores}")
             
             # Step 4: Enhanced depression model analysis
@@ -136,7 +141,12 @@ class CrisisAnalyzer:
             sentiment_result = self.model_manager.analyze_with_sentiment_model(text_to_analyze)
             
             # Analyze sentiment for context
-            sentiment_scores = analyze_sentiment_context(sentiment_result)
+            # Import our new function at the top of the file
+            from utils.context_helpers import process_sentiment_with_flip
+
+            # Replace the sentiment processing line with:
+            raw_sentiment = analyze_sentiment_context(sentiment_result)
+            sentiment_scores = process_sentiment_with_flip(raw_sentiment)
             
             # Enhanced depression analysis with message parameter
             depression_score, depression_categories = enhanced_depression_analysis(

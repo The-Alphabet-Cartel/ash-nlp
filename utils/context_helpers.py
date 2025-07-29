@@ -6,6 +6,29 @@ Handles context extraction and sentiment analysis
 import re
 from typing import Dict, List
 from config.nlp_settings import POSITIVE_CONTEXT_PATTERNS, IDIOM_PATTERNS, NEGATION_PATTERNS
+import os
+
+def process_sentiment_with_flip(sentiment_scores):
+    """Process sentiment with optional logic flip for testing"""
+    
+    # Check if we should flip sentiment logic
+    flip_sentiment = os.getenv('NLP_FLIP_SENTIMENT_LOGIC', 'false').lower() == 'true'
+    
+    if not sentiment_scores:
+        return {'negative': 0.5, 'neutral': 0.5, 'positive': 0.0}
+    
+    if flip_sentiment:
+        # FLIP: negative becomes positive, positive becomes negative
+        flipped_scores = {
+            'negative': sentiment_scores.get('positive', 0.0),  # High positive becomes high negative
+            'neutral': sentiment_scores.get('neutral', 0.0),    # Neutral stays neutral
+            'positive': sentiment_scores.get('negative', 0.0)   # High negative becomes high positive
+        }
+        print(f"SENTIMENT FLIP ACTIVE: Original {sentiment_scores} -> Flipped {flipped_scores}")
+        return flipped_scores
+    else:
+        # Normal logic
+        return sentiment_scores
 
 def extract_context_signals(message: str) -> Dict[str, any]:
     """Extract contextual signals from the message"""
