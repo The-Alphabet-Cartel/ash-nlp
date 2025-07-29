@@ -111,26 +111,44 @@ def analyze_sentiment_context(sentiment_result) -> Dict[str, float]:
     return sentiment_scores
 
 def extract_sentiment_scores_from_result(sentiment_result) -> Dict[str, float]:
-    """Extract sentiment scores in the format ash-bot expects"""
+    """Extract sentiment scores - UPDATED VERSION with Cardiff NLP support"""
     sentiment_scores = {'negative': 0.0, 'positive': 0.0, 'neutral': 0.0}
     
     if not sentiment_result:
         return sentiment_scores
     
-    # Handle different sentiment result formats
-    if isinstance(sentiment_result, list) and len(sentiment_result) > 0:
-        for item in sentiment_result:
-            if isinstance(item, dict):
-                label = item.get('label', '').lower()
-                score = item.get('score', 0.0)
-                
-                # Map sentiment labels to our expected format
-                if 'negative' in label or 'sadness' in label or 'anger' in label:
-                    sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-                elif 'positive' in label or 'joy' in label or 'optimism' in label:
-                    sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
-                elif 'neutral' in label:
-                    sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
+    # Handle different sentiment result formats (same logic as above)
+    predictions_to_process = []
+    
+    if isinstance(sentiment_result, list):
+        if len(sentiment_result) > 0:
+            if isinstance(sentiment_result[0], list):
+                predictions_to_process = sentiment_result[0]
+            elif isinstance(sentiment_result[0], dict):
+                predictions_to_process = sentiment_result
+    elif isinstance(sentiment_result, dict):
+        predictions_to_process = [sentiment_result]
+    
+    for item in predictions_to_process:
+        if isinstance(item, dict):
+            label = item.get('label', '').lower()
+            score = item.get('score', 0.0)
+            
+            # Handle Cardiff NLP labels
+            if label == 'label_0':  # negative
+                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
+            elif label == 'label_1':  # neutral
+                sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
+            elif label == 'label_2':  # positive
+                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
+            
+            # Handle human-readable labels
+            elif 'negative' in label or 'sadness' in label or 'anger' in label:
+                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
+            elif 'positive' in label or 'joy' in label or 'optimism' in label:
+                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
+            elif 'neutral' in label:
+                sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
     
     return sentiment_scores
 
