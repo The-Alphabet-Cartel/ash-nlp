@@ -11,7 +11,7 @@ echo -e "\n2. Checking recent container logs for import errors..."
 docker logs ash_nlp_server --tail 50 | grep -E "(import|error|Error|Exception|failed|Failed)"
 
 echo -e "\n3. Testing if we can access the Python environment..."
-docker exec ash_nlp_server python -c "
+docker exec ash_nlp python -c "
 try:
     from utils.scoring_helpers import extract_depression_score
     print('✅ extract_depression_score imported successfully')
@@ -26,7 +26,7 @@ except ImportError as e:
 "
 
 echo -e "\n4. Checking if crisis_analyzer is being used (causing the issue)..."
-docker exec ash_nlp_server python -c "
+docker exec ash_nlp python -c "
 import sys
 sys.path.append('/app')
 
