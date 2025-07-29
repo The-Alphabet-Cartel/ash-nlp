@@ -302,33 +302,30 @@ async def analyze_message(request: MessageRequest):
     start_time = time.time()
     
     try:
-        # Use CrisisAnalyzer if available, otherwise use ModelManager directly
+        # Use CrisisAnalyzer if available
         if crisis_analyzer:
-            # Use the full crisis analyzer (correct method name)
             result = await crisis_analyzer.analyze_message(
                 request.message, 
                 request.user_id, 
                 request.channel_id
             )
         else:
-            # Fallback: Use ModelManager directly for basic analysis
-            logger.info("Using basic ModelManager analysis (CrisisAnalyzer not available)")
-            
-            # Get depression analysis
+            # UPDATED FALLBACK: Include sentiment data
             depression_result = model_manager.analyze_with_depression_model(request.message)
             sentiment_result = model_manager.analyze_with_sentiment_model(request.message)
             
-            # Basic classification logic
+            # Extract sentiment scores properly
+            sentiment_scores = extract_sentiment_scores_from_result(sentiment_result)
+            
             if depression_result and len(depression_result) > 0:
-                # Get the highest confidence result
                 top_result = max(depression_result, key=lambda x: x['score'])
                 
-                # ADD FALSE POSITIVE REDUCTION HERE:
+                # Apply false positive reduction
                 from utils.scoring_helpers import apply_false_positive_reduction
                 original_score = top_result['score']
                 adjusted_score = apply_false_positive_reduction(request.message, original_score)
                 
-                # Simple threshold mapping with adjusted score
+                # Determine crisis level
                 if top_result['label'] == 'severe' and adjusted_score > config['NLP_HIGH_CRISIS_THRESHOLD']:
                     crisis_level = 'high'
                     needs_response = True
@@ -346,35 +343,46 @@ async def analyze_message(request: MessageRequest):
                 detected_categories = [top_result['label']]
                 reasoning = f"Basic model: {top_result['label']} (original: {original_score:.3f}, adjusted: {adjusted_score:.3f})"
                 
-                if sentiment_result:
-                    sentiment_top = max(sentiment_result, key=lambda x: x['score'])
-                    reasoning += f" | Sentiment: {sentiment_top['label']} ({sentiment_top['score']:.3f})"
+                # BUILD RESPONSE WITH SENTIMENT DATA
+                result = {
+                    'needs_response': needs_response,
+                    'crisis_level': crisis_level,
+                    'confidence_score': confidence_score,
+                    'detected_categories': detected_categories,
+                    'method': 'basic_model_manager_with_sentiment',
+                    'processing_time_ms': (time.time() - start_time) * 1000,
+                    'model_info': 'depression+sentiment(basic)+false_positive_reduction',
+                    'reasoning': reasoning,
+                    'analysis': {  # ← ADD THIS SECTION
+                        'depression_score': original_score,
+                        'sentiment_scores': sentiment_scores,  # ← KEY ADDITION
+                        'confidence_adjustment': adjusted_score - original_score,
+                        'crisis_indicators': [top_result['label']]
+                    }
+                }
             else:
-                # No results from model
-                needs_response = False
-                crisis_level = 'none'
-                confidence_score = 0.0
-                detected_categories = []
-                reasoning = "No significant crisis indicators detected"
-            
-            processing_time = (time.time() - start_time) * 1000
-            
-            result = {
-                'needs_response': needs_response,
-                'crisis_level': crisis_level,
-                'confidence_score': confidence_score,
-                'detected_categories': detected_categories,
-                'method': 'basic_model_manager_with_false_positive_reduction',
-                'processing_time_ms': processing_time,
-                'model_info': 'depression+sentiment(basic)+false_positive_reduction',
-                'reasoning': reasoning
-            }
+                # No results case
+                result = {
+                    'needs_response': False,
+                    'crisis_level': 'none',
+                    'confidence_score': 0.0,
+                    'detected_categories': [],
+                    'method': 'no_detection',
+                    'processing_time_ms': (time.time() - start_time) * 1000,
+                    'model_info': 'no_significant_indicators',
+                    'reasoning': "No significant crisis indicators detected",
+                    'analysis': {  # ← ADD THIS SECTION EVEN FOR NO DETECTION
+                        'depression_score': 0.0,
+                        'sentiment_scores': sentiment_scores,  # ← STILL INCLUDE SENTIMENT
+                        'crisis_indicators': []
+                    }
+                }
         
-        # Return the result (either from CrisisAnalyzer or fallback)
+        # Return the result
         if isinstance(result, dict):
             return CrisisResponse(**result)
         else:
-            return result  # Already a CrisisResponse object
+            return result
             
     except Exception as e:
         logger.error(f"Error in message analysis: {e}")

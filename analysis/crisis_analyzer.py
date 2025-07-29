@@ -91,7 +91,13 @@ class CrisisAnalyzer:
                 'method': 'enhanced_ml_analysis_with_false_positive_reduction',  # Updated method name
                 'processing_time_ms': processing_time,
                 'model_info': 'DeBERTa + RoBERTa with Enhanced Learning + False Positive Reduction',
-                'reasoning': full_reasoning
+                'reasoning': full_reasoning,
+                'analysis': {
+                    'depression_score': extract_depression_score(depression_result),
+                    'sentiment_scores': sentiment_scores,  # ← KEY ADDITION
+                    'context_signals': context,
+                    'crisis_indicators': [cat.get('category', 'unknown') for cat in detected_categories if isinstance(cat, dict)]
+                }
             }
             
             logger.info(f"Enhanced analysis complete: {result['crisis_level']} confidence={result['confidence_score']:.3f} time={result['processing_time_ms']:.1f}ms")

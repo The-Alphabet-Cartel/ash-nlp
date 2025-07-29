@@ -24,6 +24,7 @@ class CrisisResponse(BaseModel):
     processing_time_ms: float
     model_info: str
     reasoning: Optional[str] = None
+    analysis: Optional[Dict[str, Any]] = None
 
 class HealthResponse(BaseModel):
     model_config = ConfigDict(protected_namespaces=())
