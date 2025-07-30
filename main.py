@@ -113,22 +113,6 @@ except ImportError as e:
     PHRASE_EXTRACTOR_AVAILABLE = False
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
-try:
-    from analysis.pattern_learner import PatternLearner
-    PATTERN_LEARNER_AVAILABLE = True
-    logger.info("✅ PatternLearner import successful")
-except ImportError as e:
-    PATTERN_LEARNER_AVAILABLE = False
-    logger.warning(f"⚠️ PatternLearner import failed: {e}")
-
-try:
-    from analysis.semantic_analyzer import SemanticAnalyzer
-    SEMANTIC_ANALYZER_AVAILABLE = True
-    logger.info("✅ SemanticAnalyzer import successful")
-except ImportError as e:
-    SEMANTIC_ANALYZER_AVAILABLE = False
-    logger.warning(f"⚠️ SemanticAnalyzer import failed: {e}")
-
 # Global components
 model_manager = None
 crisis_analyzer = None
