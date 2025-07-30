@@ -500,7 +500,7 @@ if __name__ == "__main__":
     
     try:
         uvicorn.run(
-            "nlp_main:app",
+            "main:app",
             host=host,
             port=port,
             log_level=log_level.lower(),
