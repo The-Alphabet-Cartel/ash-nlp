@@ -129,14 +129,6 @@ except ImportError as e:
     SEMANTIC_ANALYZER_AVAILABLE = False
     logger.warning(f"⚠️ SemanticAnalyzer import failed: {e}")
 
-try:
-    from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
-    ENHANCED_LEARNING_AVAILABLE = True
-    logger.info("✅ EnhancedLearningManager import successful")
-except ImportError as e:
-    ENHANCED_LEARNING_AVAILABLE = False
-    logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
-
 # Global components
 model_manager = None
 crisis_analyzer = None
