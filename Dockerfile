@@ -116,4 +116,4 @@ HEALTHCHECK --interval=60s --timeout=35s --start-period=300s --retries=3 \
     CMD curl -f http://localhost:8881/health || exit 1
 
 # Start the service
-CMD ["python", "nlp_main.py"]
+CMD ["python", "main.py"]

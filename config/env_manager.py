@@ -34,63 +34,126 @@ class EnvConfigManager:
         
         # Define configuration with defaults and types
         config_schema = {
-            # Hugging Face Configuration
+            # =================================================================
+            # HUGGING FACE CONFIGURATION
+            # =================================================================
             'GLOBAL_HUGGINGFACE_TOKEN': {'type': str, 'default': None, 'required': False},
             'NLP_HUGGINGFACE_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
-            # Learning System
+            # =================================================================
+            # LEARNING SYSTEM CONFIGURATION
+            # =================================================================
             'GLOBAL_ENABLE_LEARNING_SYSTEM': {'type': bool, 'default': True},
             'NLP_LEARNING_RATE': {'type': float, 'default': 0.1, 'min': 0.01, 'max': 1.0},
             'NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY': {'type': int, 'default': 50, 'min': 1},
             'NLP_LEARNING_PERSISTENCE_FILE': {'type': str, 'default': './learning_data/adjustments.json'},
             'NLP_MIN_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.05, 'min': 0.01, 'max': 0.5},
-            'NLP_MAX_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.30, 'min': 0.1, 'max': 1.0},
+            'NLP_MAX_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.30, 'min': 0.05, 'max': 1.0},
             
-            # Model Configuration
+            # =================================================================
+            # THREE-MODEL CONFIGURATION
+            # =================================================================
+            # Model 1: Primary crisis detection (DeBERTa-based depression analysis)
             'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'rafalposwiata/deproberta-large-depression'},
+            
+            # Model 2: Contextual sentiment analysis (RoBERTa-based sentiment)
             'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'cardiffnlp/twitter-roberta-base-sentiment-latest'},
+            
+            # Model 3: Emotional distress detection (DistilBERT-based emotional analysis)
+            'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'distilbert-base-uncased-finetuned-sst-2-english'},
+            
+            # Model storage configuration
             'NLP_MODEL_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
-            # Hardware Configuration
-            'NLP_DEVICE': {'type': str, 'default': 'auto', 'choices': ['auto', 'cpu', 'cuda']},
+            # =================================================================
+            # ENSEMBLE CONFIGURATION
+            # =================================================================
+            # Ensemble modes: consensus, majority, weighted
+            'NLP_ENSEMBLE_MODE': {'type': str, 'default': 'consensus', 'choices': ['consensus', 'majority', 'weighted']},
+            
+            # Gap detection settings
+            'NLP_GAP_DETECTION_THRESHOLD': {'type': float, 'default': 0.4, 'min': 0.1, 'max': 1.0},
+            'NLP_DISAGREEMENT_THRESHOLD': {'type': float, 'default': 0.5, 'min': 0.1, 'max': 1.0},
+            'NLP_AUTO_FLAG_DISAGREEMENTS': {'type': bool, 'default': True},
+            
+            # Model confidence weighting (for weighted ensemble mode)
+            'NLP_DEPRESSION_MODEL_WEIGHT': {'type': float, 'default': 0.5, 'min': 0.0, 'max': 1.0},
+            'NLP_SENTIMENT_MODEL_WEIGHT': {'type': float, 'default': 0.2, 'min': 0.0, 'max': 1.0},
+            'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT': {'type': float, 'default': 0.3, 'min': 0.0, 'max': 1.0},
+            
+            # =================================================================
+            # HARDWARE CONFIGURATION
+            # =================================================================
+            'NLP_DEVICE': {'type': str, 'default': 'auto', 'choices': ['auto', 'cpu', 'cuda', 'cuda:0', 'cuda:1']},
             'NLP_MODEL_PRECISION': {'type': str, 'default': 'float16', 'choices': ['float32', 'float16', 'bfloat16']},
             
-            # Performance Tuning
-            'NLP_MAX_BATCH_SIZE': {'type': int, 'default': 32, 'min': 1, 'max': 128},
-            'NLP_INFERENCE_THREADS': {'type': int, 'default': 4, 'min': 1, 'max': 16},
-            'NLP_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 10, 'min': 1, 'max': 100},
-            'NLP_REQUEST_TIMEOUT': {'type': int, 'default': 30, 'min': 5, 'max': 300},
+            # =================================================================
+            # PERFORMANCE TUNING - THREE MODEL OPTIMIZATION
+            # =================================================================
+            # Optimized for RTX 3060 (12GB VRAM) + Ryzen 7 5800X + 64GB RAM
+            'NLP_MAX_BATCH_SIZE': {'type': int, 'default': 48, 'min': 1, 'max': 128},  # Much larger batches with 12GB VRAM
+            'NLP_INFERENCE_THREADS': {'type': int, 'default': 16, 'min': 1, 'max': 32},  # Ryzen 7 5800X has 8 cores/16 threads
+            'NLP_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 20, 'min': 1, 'max': 100},  # Higher with abundant VRAM and RAM
+            'NLP_REQUEST_TIMEOUT': {'type': int, 'default': 35, 'min': 5, 'max': 300},  # Faster with more VRAM for batch processing
             
-            # Server Configuration
+            # =================================================================
+            # SERVER CONFIGURATION
+            # =================================================================
             'NLP_SERVICE_HOST': {'type': str, 'default': '0.0.0.0'},
             'NLP_SERVICE_PORT': {'type': int, 'default': 8881, 'min': 1024, 'max': 65535},
             'NLP_UVICORN_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
             'NLP_RELOAD_ON_CHANGES': {'type': bool, 'default': False},
             
-            # Logging Configuration
-            'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR']},
+            # =================================================================
+            # LOGGING CONFIGURATION
+            # =================================================================
+            'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']},
             'NLP_LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
-            'GLOBAL_PYTHONUNBUFFERED': {'type': str, 'default': '1'},
+            'GLOBAL_PYTHONUNBUFFERED': {'type': bool, 'default': True},
             'GLOBAL_ENABLE_DEBUG_MODE': {'type': bool, 'default': False},
+            'NLP_FLIP_SENTIMENT_LOGIC': {'type': bool, 'default': False},
             
-            # Storage Paths
+            # =================================================================
+            # STORAGE PATHS
+            # =================================================================
             'NLP_DATA_DIR': {'type': str, 'default': './data'},
-            'NLP_MODELS_DIR': {'type': str, 'default': './models'},
+            'NLP_MODELS_DIR': {'type': str, 'default': './models/cache'},
             'NLP_LOGS_DIR': {'type': str, 'default': './logs'},
             'NLP_LEARNING_DATA_DIR': {'type': str, 'default': './learning_data'},
             
-            # Crisis Detection Thresholds
-            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.7, 'min': 0.1, 'max': 1.0},
-            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.4, 'min': 0.1, 'max': 1.0},
-            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.2, 'min': 0.1, 'max': 1.0},
+            # =================================================================
+            # CRISIS DETECTION THRESHOLDS
+            # =================================================================
+            # Individual model thresholds
+            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.55, 'min': 0.1, 'max': 1.0},
+            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.28, 'min': 0.1, 'max': 1.0},
+            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.16, 'min': 0.1, 'max': 1.0},
             
-            # Rate Limiting
-            'NLP_MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 60, 'min': 1},
-            'NLP_MAX_REQUESTS_PER_HOUR': {'type': int, 'default': 1000, 'min': 1},
+            # Ensemble-specific thresholds
+            'NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.60, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.35, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.20, 'min': 0.1, 'max': 1.0},
             
-            # Security
+            # =================================================================
+            # RATE LIMITING
+            # =================================================================
+            'NLP_MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 120, 'min': 1},  # Much higher with 12GB VRAM + excellent hardware
+            'NLP_MAX_REQUESTS_PER_HOUR': {'type': int, 'default': 2000, 'min': 1},   # Significantly increased for abundant VRAM
+            
+            # =================================================================
+            # SECURITY
+            # =================================================================
             'GLOBAL_ALLOWED_IPS': {'type': str, 'default': '10.20.30.0/24,127.0.0.1,::1'},
             'GLOBAL_ENABLE_CORS': {'type': bool, 'default': True},
+            
+            # =================================================================
+            # EXPERIMENTAL FEATURES
+            # =================================================================
+            # Enable experimental three-model features
+            'NLP_ENABLE_ENSEMBLE_ANALYSIS': {'type': bool, 'default': True},
+            'NLP_ENABLE_GAP_DETECTION': {'type': bool, 'default': True},
+            'NLP_ENABLE_CONFIDENCE_SPREADING': {'type': bool, 'default': True},
+            'NLP_LOG_MODEL_DISAGREEMENTS': {'type': bool, 'default': True},
         }
         
         # Process each configuration item
@@ -134,19 +197,51 @@ class EnvConfigManager:
             raise ValueError(f"Invalid value for {key}: {raw_value} - {e}")
     
     def validate_config(self):
-        """Validate configuration consistency"""
-        # Validate threshold ordering
+        """Validate configuration consistency for 3-model ensemble"""
+        
+        # Validate individual model threshold ordering
         if self.config['NLP_HIGH_CRISIS_THRESHOLD'] <= self.config['NLP_MEDIUM_CRISIS_THRESHOLD']:
             raise ValueError("NLP_HIGH_CRISIS_THRESHOLD must be > NLP_MEDIUM_CRISIS_THRESHOLD")
         
         if self.config['NLP_MEDIUM_CRISIS_THRESHOLD'] <= self.config['NLP_LOW_CRISIS_THRESHOLD']:
             raise ValueError("NLP_MEDIUM_CRISIS_THRESHOLD must be > NLP_LOW_CRISIS_THRESHOLD")
         
+        # Validate ensemble threshold ordering
+        if self.config['NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD'] <= self.config['NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD']:
+            raise ValueError("NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD must be > NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD")
+        
+        if self.config['NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD'] <= self.config['NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD']:
+            raise ValueError("NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD must be > NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD")
+        
         # Validate learning system settings
         if self.config['NLP_MIN_CONFIDENCE_ADJUSTMENT'] >= self.config['NLP_MAX_CONFIDENCE_ADJUSTMENT']:
             raise ValueError("NLP_MIN_CONFIDENCE_ADJUSTMENT must be < NLP_MAX_CONFIDENCE_ADJUSTMENT")
         
-        logger.info("Configuration validation passed")
+        # Validate model weights sum to 1.0 (for weighted ensemble mode)
+        if self.config['NLP_ENSEMBLE_MODE'] == 'weighted':
+            total_weight = (
+                self.config['NLP_DEPRESSION_MODEL_WEIGHT'] + 
+                self.config['NLP_SENTIMENT_MODEL_WEIGHT'] + 
+                self.config['NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT']
+            )
+            
+            if abs(total_weight - 1.0) > 0.01:  # Allow small floating point errors
+                raise ValueError(f"Model weights must sum to 1.0, got {total_weight}")
+        
+        # Validate gap detection thresholds make sense
+        if self.config['NLP_GAP_DETECTION_THRESHOLD'] >= self.config['NLP_DISAGREEMENT_THRESHOLD']:
+            raise ValueError("NLP_GAP_DETECTION_THRESHOLD should be < NLP_DISAGREEMENT_THRESHOLD")
+        
+        logger.info("3-Model ensemble configuration validation passed")
+        logger.info(f"Ensemble mode: {self.config['NLP_ENSEMBLE_MODE']}")
+        logger.info(f"Model weights: Depression={self.config['NLP_DEPRESSION_MODEL_WEIGHT']}, "
+                    f"Sentiment={self.config['NLP_SENTIMENT_MODEL_WEIGHT']}, "
+                    f"Emotional={self.config['NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT']}")
+        
+        # Log hardware optimization
+        logger.info(f"Hardware optimization: Batch size={self.config['NLP_MAX_BATCH_SIZE']}, "
+                    f"Threads={self.config['NLP_INFERENCE_THREADS']}, "
+                    f"Concurrent requests={self.config['NLP_MAX_CONCURRENT_REQUESTS']}")
     
     def create_directories(self):
         """Create necessary directories"""
