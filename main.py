@@ -117,8 +117,6 @@ except ImportError as e:
 model_manager = None
 crisis_analyzer = None
 phrase_extractor = None
-pattern_learner = None
-semantic_analyzer = None
 enhanced_learning_manager = None
 startup_time = time.time()
 
@@ -133,7 +131,7 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 Enhanced FastAPI app shutting down...")
 
 async def initialize_components_with_config():
-    global model_manager, crisis_analyzer, phrase_extractor, pattern_learner, semantic_analyzer, enhanced_learning_manager
+    global model_manager, crisis_analyzer, phrase_extractor, enhanced_learning_manager
     
     try:
         # Initialize enhanced model manager (pass config manager for secrets support)
@@ -189,38 +187,6 @@ async def initialize_components_with_config():
             logger.info("ℹ️ PhraseExtractor not available")
             phrase_extractor = None
         
-        if PATTERN_LEARNER_AVAILABLE:
-            try:
-                # Try to pass config manager if PatternLearner supports it
-                try:
-                    pattern_learner = PatternLearner(model_manager, config_manager)
-                    logger.info("✅ Pattern learner initialized with secrets support")
-                except TypeError:
-                    # Fallback: PatternLearner doesn't support config parameter yet
-                    pattern_learner = PatternLearner(model_manager)
-                    logger.info("✅ Pattern learner initialized (using environment variables)")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize PatternLearner: {e}")
-                pattern_learner = None
-        else:
-            logger.info("ℹ️ PatternLearner not available")
-        
-        if SEMANTIC_ANALYZER_AVAILABLE:
-            try:
-                # Try to pass config manager if SemanticAnalyzer supports it
-                try:
-                    semantic_analyzer = SemanticAnalyzer(model_manager, config_manager)
-                    logger.info("✅ Semantic analyzer initialized with secrets support")
-                except TypeError:
-                    # Fallback: SemanticAnalyzer doesn't support config parameter yet
-                    semantic_analyzer = SemanticAnalyzer(model_manager)
-                    logger.info("✅ Semantic analyzer initialized (using environment variables)")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize SemanticAnalyzer: {e}")
-                semantic_analyzer = None
-        else:
-            logger.info("ℹ️ SemanticAnalyzer not available")
-
         # Add enhanced learning endpoints if manager is available
         if enhanced_learning_manager:
             try:
@@ -400,8 +366,6 @@ async def health_check():
         "model_manager": model_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
         "phrase_extractor": phrase_extractor is not None,
-        "pattern_learner": pattern_learner is not None,
-        "semantic_analyzer": semantic_analyzer is not None,
         "enhanced_learning": enhanced_learning_manager is not None
     }
     
@@ -455,8 +419,6 @@ async def get_stats():
             "model_manager": model_manager is not None,
             "crisis_analyzer": CRISIS_ANALYZER_AVAILABLE and crisis_analyzer is not None,
             "phrase_extractor": PHRASE_EXTRACTOR_AVAILABLE and phrase_extractor is not None,
-            "pattern_learner": PATTERN_LEARNER_AVAILABLE and pattern_learner is not None,
-            "semantic_analyzer": SEMANTIC_ANALYZER_AVAILABLE and semantic_analyzer is not None,
             "enhanced_learning": ENHANCED_LEARNING_AVAILABLE and enhanced_learning_manager is not None
         },
         "hardware_config": {
