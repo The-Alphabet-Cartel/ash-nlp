@@ -110,9 +110,24 @@ class EnhancedModelManager:
     def _setup_huggingface_auth(self):
         """Set up Hugging Face authentication if token provided"""
         hf_token = self.config.get('huggingface_token')
-        if hf_token and hf_token != 'None' and not hf_token.startswith('/run/secrets'):
-            os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token
-            logger.info("🔐 Hugging Face authentication configured")
+        
+        if hf_token and hf_token != 'None':
+            # Handle Docker secrets path
+            if hf_token.startswith('/run/secrets'):
+                try:
+                    with open(hf_token, 'r') as f:
+                        actual_token = f.read().strip()
+                    if actual_token:
+                        os.environ['HUGGINGFACE_HUB_TOKEN'] = actual_token
+                        logger.info("🔐 Hugging Face authentication configured (from secrets)")
+                    else:
+                        logger.warning("🔓 Hugging Face token file is empty")
+                except Exception as e:
+                    logger.warning(f"🔓 Could not read Hugging Face token from {hf_token}: {e}")
+            else:
+                # Direct token value
+                os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token
+                logger.info("🔐 Hugging Face authentication configured (direct token)")
         else:
             logger.info("🔓 No Hugging Face token provided (using public models only)")
     
