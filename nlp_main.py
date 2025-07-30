@@ -167,27 +167,6 @@ async def initialize_components_with_config():
         await model_manager.load_models()
         logger.info("✅ Enhanced ModelManager initialized and models loaded")
         
-        # Initialize enhanced learning manager if available
-        if ENHANCED_LEARNING_AVAILABLE and config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
-            try:
-                # Try to pass config manager if EnhancedLearningManager supports it
-                try:
-                    enhanced_learning_manager = EnhancedLearningManager(model_manager, config_manager)
-                    logger.info("✅ Enhanced learning system initialized with secrets support")
-                except TypeError:
-                    # Fallback: EnhancedLearningManager doesn't support config parameter yet
-                    enhanced_learning_manager = EnhancedLearningManager(model_manager)
-                    logger.info("✅ Enhanced learning system initialized (using environment variables)")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize Enhanced Learning Manager: {e}")
-                enhanced_learning_manager = None
-        else:
-            if not ENHANCED_LEARNING_AVAILABLE:
-                logger.info("ℹ️ Enhanced learning system not available")
-            else:
-                logger.info("ℹ️ Learning system disabled via configuration")
-            enhanced_learning_manager = None
-        
         # Initialize analyzers (only if available)
         if CRISIS_ANALYZER_AVAILABLE:
             try:
