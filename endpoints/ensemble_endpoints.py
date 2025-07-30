@@ -228,16 +228,22 @@ def _summarize_gaps(gap_details: List[Dict[str, Any]]) -> Dict[str, Any]:
     return summary
 
 def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
-    """Map ensemble consensus to traditional crisis levels"""
+    """Map ensemble consensus to traditional crisis levels with improved logic"""
     prediction = consensus.get('prediction', 'unknown').lower()
     confidence = consensus.get('confidence', 0.0)
     
-    # Map different model outputs to crisis levels
-    if prediction in ['severe', 'negative'] and confidence > 0.6:
-        return 'high'
-    elif prediction in ['moderate', 'negative'] and confidence > 0.4:
-        return 'medium'  
-    elif prediction in ['moderate', 'negative'] and confidence > 0.2:
+    # Map different model outputs to crisis levels with confidence thresholds
+    if prediction in ['severe']:
+        return 'high'  # Severe is always high regardless of confidence
+    elif prediction in ['moderate'] and confidence > 0.5:
+        return 'medium'
+    elif prediction in ['moderate'] and confidence > 0.3:
+        return 'low'
+    elif prediction in ['negative'] and confidence > 0.8:
+        return 'high'  # Very confident negative sentiment
+    elif prediction in ['negative'] and confidence > 0.6:
+        return 'medium'
+    elif prediction in ['negative'] and confidence > 0.4:
         return 'low'
     else:
         return 'none'
