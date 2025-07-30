@@ -428,6 +428,7 @@ class EnhancedModelManager:
             'individual_results': {},
             'confidence_scores': {},
             'predictions': {},
+            'normalized_predictions': {},  # NEW: Normalized for gap detection
             'gaps_detected': False,
             'gap_details': [],
             'consensus': None,
@@ -443,13 +444,18 @@ class EnhancedModelManager:
                     processed['individual_results'][model_name] = predictions
                     processed['confidence_scores'][model_name] = top_prediction.get('score', 0)
                     processed['predictions'][model_name] = top_prediction.get('label', 'unknown')
+                    
+                    # Normalize predictions for gap detection
+                    processed['normalized_predictions'][model_name] = self._normalize_prediction(
+                        top_prediction.get('label', 'unknown')
+                    )
         
-        # Detect gaps and disagreements
+        # Detect gaps and disagreements using normalized predictions
         if len(processed['confidence_scores']) >= 2:
             confidence_values = list(processed['confidence_scores'].values())
             confidence_spread = max(confidence_values) - min(confidence_values)
             
-            # Gap detection logic
+            # Gap detection logic with normalized predictions
             if confidence_spread > self.config['disagreement_threshold']:
                 processed['gaps_detected'] = True
                 processed['gap_details'].append({
@@ -458,19 +464,44 @@ class EnhancedModelManager:
                     'threshold': self.config['disagreement_threshold']
                 })
             
-            # Check for prediction disagreements
-            predictions_set = set(processed['predictions'].values())
-            if len(predictions_set) > 1:
-                processed['gaps_detected'] = True
-                processed['gap_details'].append({
-                    'type': 'prediction_disagreement',
-                    'predictions': processed['predictions']
-                })
+            # Check for meaningful prediction disagreements using normalized predictions
+            normalized_set = set(processed['normalized_predictions'].values())
+            if len(normalized_set) > 1:
+                # Only flag as disagreement if it's actually meaningful
+                crisis_predictions = {pred for pred in normalized_set if pred in ['crisis', 'negative']}
+                safe_predictions = {pred for pred in normalized_set if pred in ['safe', 'positive']}
+                
+                if crisis_predictions and safe_predictions:
+                    # Real disagreement: some models see crisis, others see safe
+                    processed['gaps_detected'] = True
+                    processed['gap_details'].append({
+                        'type': 'meaningful_disagreement',
+                        'crisis_models': [model for model, pred in processed['normalized_predictions'].items() 
+                                        if pred in crisis_predictions],
+                        'safe_models': [model for model, pred in processed['normalized_predictions'].items() 
+                                      if pred in safe_predictions]
+                    })
         
         # Generate consensus based on ensemble mode
         processed['consensus'] = self._generate_consensus(processed)
         
         return processed
+    
+    def _normalize_prediction(self, prediction: str) -> str:
+        """Normalize different model predictions to common categories for gap detection"""
+        pred_lower = prediction.lower()
+        
+        # Crisis/negative indicators
+        if pred_lower in ['severe', 'moderate', 'negative', 'depression']:
+            return 'crisis'
+        
+        # Safe/positive indicators  
+        elif pred_lower in ['not depression', 'positive', 'neutral']:
+            return 'safe'
+        
+        # Unknown
+        else:
+            return 'unknown'
     
     def _generate_consensus(self, processed: Dict[str, Any]) -> Dict[str, Any]:
         """Generate consensus prediction from three models"""
