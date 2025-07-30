@@ -1,19 +1,19 @@
 """
-Enhanced ML Model Management for Ash NLP Service
-Handles loading, caching, and access to ML models with full environment variable support
+Enhanced ML Model Management for Ash NLP Service - Three Model Architecture
+Handles loading, caching, and access to ML models with DistilBERT emotional distress detection
 """
 
 import logging
 import os
 import torch
 from transformers import pipeline, AutoConfig
-from typing import Optional, Dict, Any, Union
+from typing import Optional, Dict, Any, Union, List, Tuple
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 class EnhancedModelManager:
-    """Enhanced centralized management of ML models with environment variable configuration"""
+    """Enhanced centralized management of ML models with three-model ensemble support"""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -25,9 +25,10 @@ class EnhancedModelManager:
         # Load configuration from environment or passed config
         self.config = self._load_config(config)
         
-        # Model instances
+        # Model instances - THREE MODELS NOW
         self.depression_model = None
         self.sentiment_model = None
+        self.emotional_distress_model = None  # NEW: Third model
         self._models_loaded = False
         
         # Device configuration
@@ -39,7 +40,8 @@ class EnhancedModelManager:
         # Set up Hugging Face authentication if token provided
         self._setup_huggingface_auth()
         
-        logger.info(f"ModelManager initialized with device: {self.device}")
+        logger.info(f"Enhanced ModelManager initialized with THREE-MODEL ensemble")
+        logger.info(f"Device: {self.device}")
         logger.info(f"Model cache directory: {self.config['cache_dir']}")
     
     def _load_config(self, config: Optional[Dict[str, Any]]) -> Dict[str, Any]:
@@ -49,10 +51,11 @@ class EnhancedModelManager:
             # Use passed configuration
             return config
         else:
-            # Load from environment variables with defaults
+            # Load from environment variables with defaults - ADD THIRD MODEL CONFIG
             return {
                 'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'),
                 'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'distilbert-base-uncased-finetuned-sst-2-english'),  # NEW
                 'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'),
                 'device': os.getenv('NLP_DEVICE', 'auto'),
                 'precision': os.getenv('NLP_MODEL_PRECISION', 'float16'),
@@ -62,66 +65,59 @@ class EnhancedModelManager:
                 'trust_remote_code': os.getenv('TRUST_REMOTE_CODE', 'false').lower() in ('true', '1', 'yes'),
                 'model_revision': os.getenv('MODEL_REVISION', 'main'),
                 'local_files_only': os.getenv('LOCAL_FILES_ONLY', 'false').lower() in ('true', '1', 'yes'),
+                # NEW: Ensemble configuration
+                'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'consensus'),  # consensus, majority, weighted
+                'gap_detection_threshold': float(os.getenv('NLP_GAP_DETECTION_THRESHOLD', '0.4')),
+                'disagreement_threshold': float(os.getenv('NLP_DISAGREEMENT_THRESHOLD', '0.5')),
             }
     
     def _configure_device(self) -> Union[int, str]:
-        """Configure device based on environment and hardware availability"""
-        
+        """Configure device based on availability and configuration"""
         device_config = self.config['device'].lower()
         
         if device_config == 'auto':
-            # Auto-detect best available device
             if torch.cuda.is_available():
                 device = 0  # Use first GPU
-                gpu_name = torch.cuda.get_device_name(0)
-                logger.info(f"🔥 GPU detected: {gpu_name}")
-                logger.info(f"CUDA version: {torch.version.cuda}")
-                logger.info(f"GPU memory: {torch.cuda.get_device_properties(0).total_memory / 1024**3:.1f} GB")
+                logger.info(f"Auto-detected device: CUDA GPU 0")
             else:
                 device = -1  # Use CPU
-                logger.info("💻 Using CPU for inference")
+                logger.info(f"Auto-detected device: CPU (no CUDA available)")
         elif device_config == 'cpu':
             device = -1
-            logger.info("💻 Forced CPU usage")
+            logger.info(f"Configured device: CPU (forced)")
         elif device_config.startswith('cuda'):
             if torch.cuda.is_available():
-                if device_config == 'cuda':
-                    device = 0
-                else:
-                    # Extract device number from 'cuda:0', 'cuda:1', etc.
+                if ':' in device_config:
                     device = int(device_config.split(':')[1])
-                gpu_name = torch.cuda.get_device_name(device)
-                logger.info(f"🔥 Using specified GPU {device}: {gpu_name}")
+                else:
+                    device = 0
+                logger.info(f"Configured device: {device_config}")
             else:
-                logger.warning("⚠️ CUDA requested but not available, falling back to CPU")
+                logger.warning(f"CUDA requested but not available, falling back to CPU")
                 device = -1
         else:
-            logger.warning(f"⚠️ Unknown device config '{device_config}', using CPU")
-            device = -1
+            logger.warning(f"Unknown device config '{device_config}', using auto-detection")
+            device = 0 if torch.cuda.is_available() else -1
         
         return device
     
     def _setup_cache_directory(self):
-        """Create model cache directory if it doesn't exist"""
+        """Ensure model cache directory exists"""
         cache_path = Path(self.config['cache_dir'])
         cache_path.mkdir(parents=True, exist_ok=True)
-        
-        # Set environment variable for transformers cache
-        os.environ['TRANSFORMERS_CACHE'] = str(cache_path)
-        os.environ['HF_HOME'] = str(cache_path.parent)
-        
-        logger.info(f"📁 Model cache directory: {cache_path}")
+        logger.info(f"Model cache directory ready: {cache_path}")
     
     def _setup_huggingface_auth(self):
-        """Set up Hugging Face authentication if token is provided"""
-        if self.config['huggingface_token']:
-            os.environ['GLOBAL_HUGGINGFACE_TOKEN'] = self.config['huggingface_token']
-            logger.info("🔑 Hugging Face authentication configured")
+        """Set up Hugging Face authentication if token provided"""
+        hf_token = self.config.get('huggingface_token')
+        if hf_token and hf_token != 'None' and not hf_token.startswith('/run/secrets'):
+            os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token
+            logger.info("🔐 Hugging Face authentication configured")
         else:
-            logger.info("ℹ️ No Hugging Face token provided (some models may be inaccessible)")
+            logger.info("🔓 No Hugging Face token provided (using public models only)")
     
     def _get_model_kwargs(self) -> Dict[str, Any]:
-        """Get common model loading arguments for pipeline creation"""
+        """Get arguments for model pipeline creation"""
         return {
             'device': self.device,
             'torch_dtype': self._get_torch_dtype(),
@@ -153,68 +149,32 @@ class EnhancedModelManager:
             return torch.float32
     
     async def load_models(self):
-        """Load both depression and sentiment analysis models with enhanced configuration"""
+        """Load all THREE models with enhanced configuration"""
         
-        logger.info("=" * 60)
-        logger.info("STARTING ENHANCED MODEL LOADING PROCESS")
-        logger.info("=" * 60)
+        logger.info("=" * 70)
+        logger.info("STARTING THREE-MODEL ENSEMBLE LOADING PROCESS")
+        logger.info("=" * 70)
         
         logger.info(f"🔧 Configuration:")
         logger.info(f"   Device: {self.device}")
         logger.info(f"   Precision: {self.config['precision']}")
         logger.info(f"   Cache Dir: {self.config['cache_dir']}")
         logger.info(f"   Max Batch Size: {self.config['max_batch_size']}")
+        logger.info(f"   Ensemble Mode: {self.config['ensemble_mode']}")
         
         try:
             # Get model loading arguments
             model_kwargs = self._get_model_kwargs()
             loading_kwargs = self._get_model_loading_kwargs()
             
-            # Load Depression Detection Model
-            logger.info("🧠 Loading Depression Detection model...")
-            logger.info(f"   Model: {self.config['depression_model']}")
+            # Load Model 1: Depression Detection
+            await self._load_depression_model(model_kwargs, loading_kwargs)
             
-            # Check if model config is accessible before loading
-            try:
-                dep_config = AutoConfig.from_pretrained(
-                    self.config['depression_model'],
-                    **loading_kwargs
-                )
-                logger.info(f"   Architecture: {dep_config.model_type}")
-                logger.info(f"   Labels: {getattr(dep_config, 'id2label', 'Not specified')}")
-            except Exception as e:
-                logger.warning(f"   Could not load model config: {e}")
+            # Load Model 2: Sentiment Analysis  
+            await self._load_sentiment_model(model_kwargs, loading_kwargs)
             
-            self.depression_model = pipeline(
-                "text-classification",
-                model=self.config['depression_model'],
-                top_k=None,
-                **model_kwargs
-            )
-            logger.info("✅ Depression model loaded successfully!")
-            
-            # Load Sentiment Analysis Model  
-            logger.info("💭 Loading Sentiment Analysis model...")
-            logger.info(f"   Model: {self.config['sentiment_model']}")
-            
-            # Check sentiment model config
-            try:
-                sent_config = AutoConfig.from_pretrained(
-                    self.config['sentiment_model'],
-                    **loading_kwargs
-                )
-                logger.info(f"   Architecture: {sent_config.model_type}")
-                logger.info(f"   Labels: {getattr(sent_config, 'id2label', 'Not specified')}")
-            except Exception as e:
-                logger.warning(f"   Could not load model config: {e}")
-            
-            self.sentiment_model = pipeline(
-                "sentiment-analysis",
-                model=self.config['sentiment_model'],
-                top_k=None,
-                **model_kwargs
-            )
-            logger.info("✅ Sentiment model loaded successfully!")
+            # Load Model 3: Emotional Distress (NEW)
+            await self._load_emotional_distress_model(model_kwargs, loading_kwargs)
             
             self._models_loaded = True
             
@@ -225,11 +185,11 @@ class EnhancedModelManager:
                 logger.info(f"   Cached: {torch.cuda.memory_reserved(self.device) / 1024**3:.2f} GB")
             
             # Quick functionality test
-            await self._test_models()
+            await self._test_all_models()
             
-            logger.info("=" * 60)
-            logger.info("✅ ENHANCED MODEL LOADING COMPLETE")
-            logger.info("=" * 60)
+            logger.info("=" * 70)
+            logger.info("✅ THREE-MODEL ENSEMBLE LOADING COMPLETE")
+            logger.info("=" * 70)
             
         except Exception as e:
             self._models_loaded = False
@@ -237,69 +197,146 @@ class EnhancedModelManager:
             logger.exception("Full traceback:")
             raise
     
-    async def _test_models(self):
-        """Test both models with a sample message"""
+    async def _load_depression_model(self, model_kwargs, loading_kwargs):
+        """Load the depression detection model"""
+        logger.info("🧠 Loading Depression Detection model...")
+        logger.info(f"   Model: {self.config['depression_model']}")
+        
         try:
-            test_message = "I'm feeling really down and hopeless today"
+            dep_config = AutoConfig.from_pretrained(
+                self.config['depression_model'],
+                **loading_kwargs
+            )
+            logger.info(f"   Architecture: {dep_config.model_type}")
+            logger.info(f"   Labels: {getattr(dep_config, 'id2label', 'Not specified')}")
+        except Exception as e:
+            logger.warning(f"   Could not load model config: {e}")
+        
+        self.depression_model = pipeline(
+            "text-classification",
+            model=self.config['depression_model'],
+            top_k=None,
+            **model_kwargs
+        )
+        logger.info("✅ Depression model loaded successfully!")
+    
+    async def _load_sentiment_model(self, model_kwargs, loading_kwargs):
+        """Load the sentiment analysis model"""
+        logger.info("💭 Loading Sentiment Analysis model...")
+        logger.info(f"   Model: {self.config['sentiment_model']}")
+        
+        try:
+            sent_config = AutoConfig.from_pretrained(
+                self.config['sentiment_model'],
+                **loading_kwargs
+            )
+            logger.info(f"   Architecture: {sent_config.model_type}")
+            logger.info(f"   Labels: {getattr(sent_config, 'id2label', 'Not specified')}")
+        except Exception as e:
+            logger.warning(f"   Could not load model config: {e}")
+        
+        self.sentiment_model = pipeline(
+            "sentiment-analysis",
+            model=self.config['sentiment_model'],
+            top_k=None,
+            **model_kwargs
+        )
+        logger.info("✅ Sentiment model loaded successfully!")
+    
+    async def _load_emotional_distress_model(self, model_kwargs, loading_kwargs):
+        """Load the emotional distress detection model (NEW)"""
+        logger.info("😰 Loading Emotional Distress model...")
+        logger.info(f"   Model: {self.config['emotional_distress_model']}")
+        
+        try:
+            distress_config = AutoConfig.from_pretrained(
+                self.config['emotional_distress_model'],
+                **loading_kwargs
+            )
+            logger.info(f"   Architecture: {distress_config.model_type}")
+            logger.info(f"   Labels: {getattr(distress_config, 'id2label', 'Not specified')}")
+        except Exception as e:
+            logger.warning(f"   Could not load model config: {e}")
+        
+        self.emotional_distress_model = pipeline(
+            "sentiment-analysis",  # DistilBERT SST-2 uses sentiment-analysis pipeline
+            model=self.config['emotional_distress_model'],
+            top_k=None,
+            **model_kwargs
+        )
+        logger.info("✅ Emotional distress model loaded successfully!")
+    
+    async def _test_all_models(self):
+        """Test all three models with sample messages"""
+        try:
+            test_messages = [
+                "I'm feeling really down and hopeless today",
+                "Everything is falling apart and I can't handle it anymore",
+                "I'm just having a rough day but I'll be okay"
+            ]
             
-            logger.info("🧪 Testing models with sample message...")
+            logger.info("🧪 Testing all three models...")
             
-            # Test depression model
-            dep_result = self.analyze_with_depression_model(test_message)
-            if dep_result:
-                # Handle different result formats - extract predictions
-                predictions_to_process = []
-                if isinstance(dep_result, list):
-                    if len(dep_result) > 0 and isinstance(dep_result[0], list):
-                        # Nested list format [[{...}, {...}]]
-                        predictions_to_process = dep_result[0]
-                    elif len(dep_result) > 0 and isinstance(dep_result[0], dict):
-                        # Flat list format [{...}, {...}]
-                        predictions_to_process = dep_result
-                elif isinstance(dep_result, dict):
-                    # Single result format {...}
-                    predictions_to_process = [dep_result]
+            for i, test_message in enumerate(test_messages):
+                logger.info(f"   Test {i+1}: '{test_message[:30]}...'")
                 
-                if predictions_to_process:
-                    top_dep = max(predictions_to_process, key=lambda x: x.get('score', 0))
-                    logger.info(f"   Depression: {top_dep.get('label', 'unknown')} ({top_dep.get('score', 0):.3f})")
-                else:
-                    logger.warning("   Depression: No valid predictions found")
-            
-            # Test sentiment model
-            sent_result = self.analyze_with_sentiment_model(test_message)
-            if sent_result:
-                # Handle different result formats - extract predictions
-                predictions_to_process = []
-                if isinstance(sent_result, list):
-                    if len(sent_result) > 0 and isinstance(sent_result[0], list):
-                        # Nested list format [[{...}, {...}]]
-                        predictions_to_process = sent_result[0]
-                    elif len(sent_result) > 0 and isinstance(sent_result[0], dict):
-                        # Flat list format [{...}, {...}]
-                        predictions_to_process = sent_result
-                elif isinstance(sent_result, dict):
-                    # Single result format {...}
-                    predictions_to_process = [sent_result]
+                # Test depression model
+                dep_result = self.analyze_with_depression_model(test_message)
+                if dep_result:
+                    predictions = self._extract_predictions(dep_result)
+                    if predictions:
+                        top_dep = max(predictions, key=lambda x: x.get('score', 0))
+                        logger.info(f"     Depression: {top_dep.get('label', 'unknown')} ({top_dep.get('score', 0):.3f})")
                 
-                if predictions_to_process:
-                    top_sent = max(predictions_to_process, key=lambda x: x.get('score', 0))
-                    logger.info(f"   Sentiment: {top_sent.get('label', 'unknown')} ({top_sent.get('score', 0):.3f})")
-                else:
-                    logger.warning("   Sentiment: No valid predictions found")
+                # Test sentiment model
+                sent_result = self.analyze_with_sentiment_model(test_message)
+                if sent_result:
+                    predictions = self._extract_predictions(sent_result)
+                    if predictions:
+                        top_sent = max(predictions, key=lambda x: x.get('score', 0))
+                        logger.info(f"     Sentiment: {top_sent.get('label', 'unknown')} ({top_sent.get('score', 0):.3f})")
+                
+                # Test emotional distress model (NEW)
+                distress_result = self.analyze_with_emotional_distress_model(test_message)
+                if distress_result:
+                    predictions = self._extract_predictions(distress_result)
+                    if predictions:
+                        top_distress = max(predictions, key=lambda x: x.get('score', 0))
+                        logger.info(f"     Distress: {top_distress.get('label', 'unknown')} ({top_distress.get('score', 0):.3f})")
+                
+                logger.info("")
             
-            logger.info("✅ Model testing completed successfully")
+            logger.info("✅ Three-model testing completed successfully")
             
         except Exception as e:
             logger.warning(f"⚠️ Model testing failed: {e}")
             logger.exception("Full model testing traceback:")
-
+    
+    def _extract_predictions(self, result) -> List[Dict]:
+        """Helper method to extract predictions from various result formats"""
+        predictions = []
+        
+        if isinstance(result, list):
+            if len(result) > 0 and isinstance(result[0], list):
+                # Nested list format [[{...}, {...}]]
+                predictions = result[0]
+            elif len(result) > 0 and isinstance(result[0], dict):
+                # Flat list format [{...}, {...}]
+                predictions = result
+        elif isinstance(result, dict):
+            # Single result format {...}
+            predictions = [result]
+        
+        return predictions
+    
     def models_loaded(self) -> bool:
-        """Check if all models are loaded"""
+        """Check if ALL THREE models are loaded"""
         return (self._models_loaded and 
                 self.depression_model is not None and 
-                self.sentiment_model is not None)
+                self.sentiment_model is not None and 
+                self.emotional_distress_model is not None)  # NEW CHECK
     
+    # Model access methods
     def get_depression_model(self):
         """Get the depression detection model"""
         if not self.models_loaded():
@@ -312,180 +349,223 @@ class EnhancedModelManager:
             raise RuntimeError("Models not loaded")
         return self.sentiment_model
     
-    def get_model_status(self) -> Dict[str, Any]:
-        """Get detailed status of all models"""
-        status = {
-            "models_loaded": self.models_loaded(),
-            "depression_model": {
-                "loaded": self.depression_model is not None,
-                "name": self.config['depression_model'],
-                "device": str(self.device),
-            },
-            "sentiment_model": {
-                "loaded": self.sentiment_model is not None,
-                "name": self.config['sentiment_model'],
-                "device": str(self.device),
-            },
-            "configuration": {
-                "device": str(self.device),
-                "precision": self.config['precision'],
-                "cache_dir": self.config['cache_dir'],
-                "max_batch_size": self.config['max_batch_size'],
-            }
-        }
-        
-        # Add GPU info if available
-        if self.device != -1 and torch.cuda.is_available():
-            status["gpu_info"] = {
-                "name": torch.cuda.get_device_name(self.device),
-                "memory_allocated_gb": torch.cuda.memory_allocated(self.device) / 1024**3,
-                "memory_cached_gb": torch.cuda.memory_reserved(self.device) / 1024**3,
-                "memory_total_gb": torch.cuda.get_device_properties(self.device).total_memory / 1024**3,
-            }
-        
-        return status
-    
-    def analyze_with_depression_model(self, text: str, **kwargs) -> Optional[Any]:
-        """
-        Analyze text with depression model
-        
-        Args:
-            text: Text to analyze
-            **kwargs: Additional arguments for the pipeline
-        """
-        if not self.depression_model:
-            return None
-        try:
-            # Use configured batch size if analyzing multiple texts
-            if isinstance(text, list) and len(text) > self.config['max_batch_size']:
-                # Process in batches
-                results = []
-                for i in range(0, len(text), self.config['max_batch_size']):
-                    batch = text[i:i + self.config['max_batch_size']]
-                    batch_results = self.depression_model(batch, **kwargs)
-                    results.extend(batch_results)
-                return results
-            else:
-                return self.depression_model(text, **kwargs)
-        except Exception as e:
-            logger.error(f"Error in depression model analysis: {e}")
-            return None
-    
-    def analyze_with_sentiment_model(self, text: str, **kwargs) -> Optional[Any]:
-        """
-        Analyze text with sentiment model
-        
-        Args:
-            text: Text to analyze
-            **kwargs: Additional arguments for the pipeline
-        """
-        if not self.sentiment_model:
-            return None
-        try:
-            # Use configured batch size if analyzing multiple texts
-            if isinstance(text, list) and len(text) > self.config['max_batch_size']:
-                # Process in batches
-                results = []
-                for i in range(0, len(text), self.config['max_batch_size']):
-                    batch = text[i:i + self.config['max_batch_size']]
-                    batch_results = self.sentiment_model(batch, **kwargs)
-                    results.extend(batch_results)
-                return results
-            else:
-                return self.sentiment_model(text, **kwargs)
-        except Exception as e:
-            logger.error(f"Error in sentiment model analysis: {e}")
-            return None
-    
-    def analyze_batch(self, texts: list, include_sentiment: bool = True) -> Dict[str, Any]:
-        """
-        Analyze a batch of texts with both models
-        
-        Args:
-            texts: List of texts to analyze
-            include_sentiment: Whether to include sentiment analysis
-            
-        Returns:
-            Dictionary with depression and sentiment results
-        """
+    def get_emotional_distress_model(self):  # NEW METHOD
+        """Get the emotional distress detection model"""
         if not self.models_loaded():
             raise RuntimeError("Models not loaded")
-        
-        results = {
-            "depression_results": [],
-            "sentiment_results": [],
-            "processing_info": {
-                "batch_size": len(texts),
-                "max_batch_size": self.config['max_batch_size'],
-                "device": str(self.device)
-            }
-        }
-        
+        return self.emotional_distress_model
+    
+    # Analysis methods
+    def analyze_with_depression_model(self, message: str):
+        """Analyze message with depression detection model"""
         try:
-            # Depression analysis
-            dep_results = self.analyze_with_depression_model(texts)
-            if dep_results:
-                results["depression_results"] = dep_results
+            return self.depression_model(message)
+        except Exception as e:
+            logger.error(f"Depression model analysis failed: {e}")
+            return None
+    
+    def analyze_with_sentiment_model(self, message: str):
+        """Analyze message with sentiment analysis model"""
+        try:
+            return self.sentiment_model(message)
+        except Exception as e:
+            logger.error(f"Sentiment model analysis failed: {e}")
+            return None
+    
+    def analyze_with_emotional_distress_model(self, message: str):  # NEW METHOD
+        """Analyze message with emotional distress detection model"""
+        try:
+            return self.emotional_distress_model(message)
+        except Exception as e:
+            logger.error(f"Emotional distress model analysis failed: {e}")
+            return None
+    
+    def analyze_with_ensemble(self, message: str) -> Dict[str, Any]:  # NEW ENSEMBLE METHOD
+        """
+        Analyze message with all three models and provide ensemble results
+        Returns comprehensive analysis with gap detection
+        """
+        try:
+            results = {
+                'depression': self.analyze_with_depression_model(message),
+                'sentiment': self.analyze_with_sentiment_model(message),
+                'emotional_distress': self.analyze_with_emotional_distress_model(message)
+            }
             
-            # Sentiment analysis (if requested)
-            if include_sentiment:
-                sent_results = self.analyze_with_sentiment_model(texts)
-                if sent_results:
-                    results["sentiment_results"] = sent_results
+            # Process results and detect gaps
+            ensemble_analysis = self._process_ensemble_results(results)
             
-            return results
+            return ensemble_analysis
             
         except Exception as e:
-            logger.error(f"Error in batch analysis: {e}")
-            raise
-    
-    def get_config(self) -> Dict[str, Any]:
-        """Get current configuration"""
-        return self.config.copy()
-    
-    def update_config(self, new_config: Dict[str, Any]):
-        """
-        Update configuration (requires model reload)
-        
-        Args:
-            new_config: New configuration values
-        """
-        self.config.update(new_config)
-        logger.info("Configuration updated - models need to be reloaded")
-        self._models_loaded = False
-        self.depression_model = None
-        self.sentiment_model = None
-    
-    def clear_cache(self):
-        """Clear model cache to free memory"""
-        if torch.cuda.is_available() and self.device != -1:
-            torch.cuda.empty_cache()
-            logger.info("🧹 GPU cache cleared")
-    
-    def get_memory_usage(self) -> Dict[str, Any]:
-        """Get current memory usage information"""
-        memory_info = {}
-        
-        if torch.cuda.is_available() and self.device != -1:
-            memory_info["gpu"] = {
-                "allocated_gb": torch.cuda.memory_allocated(self.device) / 1024**3,
-                "cached_gb": torch.cuda.memory_reserved(self.device) / 1024**3,
-                "total_gb": torch.cuda.get_device_properties(self.device).total_memory / 1024**3,
+            logger.error(f"Ensemble analysis failed: {e}")
+            return {
+                'status': 'error',
+                'error': str(e),
+                'individual_results': {},
+                'consensus': None,
+                'gaps_detected': False
             }
-            memory_info["gpu"]["usage_percent"] = (
-                memory_info["gpu"]["allocated_gb"] / memory_info["gpu"]["total_gb"] * 100
-            )
-        
-        # Could add CPU memory info here too if needed
-        import psutil
-        memory_info["system"] = {
-            "used_gb": psutil.virtual_memory().used / 1024**3,
-            "total_gb": psutil.virtual_memory().total / 1024**3,
-            "usage_percent": psutil.virtual_memory().percent
+    
+    def _process_ensemble_results(self, results: Dict[str, Any]) -> Dict[str, Any]:
+        """Process results from all three models and detect gaps"""
+        processed = {
+            'individual_results': {},
+            'confidence_scores': {},
+            'predictions': {},
+            'gaps_detected': False,
+            'gap_details': [],
+            'consensus': None,
+            'ensemble_mode': self.config['ensemble_mode']
         }
         
-        return memory_info
+        # Process each model's results
+        for model_name, result in results.items():
+            if result:
+                predictions = self._extract_predictions(result)
+                if predictions:
+                    top_prediction = max(predictions, key=lambda x: x.get('score', 0))
+                    processed['individual_results'][model_name] = predictions
+                    processed['confidence_scores'][model_name] = top_prediction.get('score', 0)
+                    processed['predictions'][model_name] = top_prediction.get('label', 'unknown')
+        
+        # Detect gaps and disagreements
+        if len(processed['confidence_scores']) >= 2:
+            confidence_values = list(processed['confidence_scores'].values())
+            confidence_spread = max(confidence_values) - min(confidence_values)
+            
+            # Gap detection logic
+            if confidence_spread > self.config['disagreement_threshold']:
+                processed['gaps_detected'] = True
+                processed['gap_details'].append({
+                    'type': 'confidence_disagreement',
+                    'spread': confidence_spread,
+                    'threshold': self.config['disagreement_threshold']
+                })
+            
+            # Check for prediction disagreements
+            predictions_set = set(processed['predictions'].values())
+            if len(predictions_set) > 1:
+                processed['gaps_detected'] = True
+                processed['gap_details'].append({
+                    'type': 'prediction_disagreement',
+                    'predictions': processed['predictions']
+                })
+        
+        # Generate consensus based on ensemble mode
+        processed['consensus'] = self._generate_consensus(processed)
+        
+        return processed
+    
+    def _generate_consensus(self, processed: Dict[str, Any]) -> Dict[str, Any]:
+        """Generate consensus prediction from three models"""
+        if not processed['confidence_scores']:
+            return None
+        
+        ensemble_mode = self.config['ensemble_mode']
+        
+        if ensemble_mode == 'consensus':
+            # Require all models to agree for high confidence
+            if len(set(processed['predictions'].values())) == 1:
+                # All models agree
+                avg_confidence = sum(processed['confidence_scores'].values()) / len(processed['confidence_scores'])
+                return {
+                    'prediction': list(processed['predictions'].values())[0],
+                    'confidence': avg_confidence,
+                    'method': 'unanimous_consensus'
+                }
+            else:
+                # Models disagree - use highest confidence but mark as uncertain
+                best_model = max(processed['confidence_scores'], key=processed['confidence_scores'].get)
+                return {
+                    'prediction': processed['predictions'][best_model],
+                    'confidence': processed['confidence_scores'][best_model] * 0.7,  # Reduce confidence due to disagreement
+                    'method': 'best_of_disagreeing'
+                }
+        
+        elif ensemble_mode == 'majority':
+            # Simple majority vote with confidence weighting
+            prediction_votes = {}
+            for model, prediction in processed['predictions'].items():
+                confidence = processed['confidence_scores'][model]
+                if prediction not in prediction_votes:
+                    prediction_votes[prediction] = []
+                prediction_votes[prediction].append(confidence)
+            
+            # Find majority prediction
+            majority_prediction = max(prediction_votes, key=lambda x: len(prediction_votes[x]))
+            avg_confidence = sum(prediction_votes[majority_prediction]) / len(prediction_votes[majority_prediction])
+            
+            return {
+                'prediction': majority_prediction,
+                'confidence': avg_confidence,
+                'method': 'majority_vote'
+            }
+        
+        elif ensemble_mode == 'weighted':
+            # Weight models differently (you can adjust these weights)
+            model_weights = {
+                'depression': 0.5,      # Primary model gets highest weight
+                'sentiment': 0.2,       # Secondary contextual model
+                'emotional_distress': 0.3  # Third model for additional insight
+            }
+            
+            weighted_scores = {}
+            for model, prediction in processed['predictions'].items():
+                confidence = processed['confidence_scores'][model]
+                weight = model_weights.get(model, 1.0)
+                weighted_score = confidence * weight
+                
+                if prediction not in weighted_scores:
+                    weighted_scores[prediction] = 0
+                weighted_scores[prediction] += weighted_score
+            
+            best_prediction = max(weighted_scores, key=weighted_scores.get)
+            
+            return {
+                'prediction': best_prediction,
+                'confidence': weighted_scores[best_prediction],
+                'method': 'weighted_ensemble'
+            }
+        
+        # Fallback to highest confidence
+        best_model = max(processed['confidence_scores'], key=processed['confidence_scores'].get)
+        return {
+            'prediction': processed['predictions'][best_model],
+            'confidence': processed['confidence_scores'][best_model],
+            'method': 'highest_confidence_fallback'
+        }
+    
+    def get_model_status(self) -> Dict[str, Any]:
+        """Get comprehensive status of all models"""
+        return {
+            'models_loaded': self.models_loaded(),
+            'device': self.device,
+            'precision': self.config['precision'],
+            'ensemble_mode': self.config['ensemble_mode'],
+            'models': {
+                'depression': {
+                    'name': self.config['depression_model'],
+                    'loaded': self.depression_model is not None,
+                    'purpose': 'Primary crisis classification'
+                },
+                'sentiment': {
+                    'name': self.config['sentiment_model'],
+                    'loaded': self.sentiment_model is not None,
+                    'purpose': 'Contextual validation'
+                },
+                'emotional_distress': {  # NEW
+                    'name': self.config['emotional_distress_model'],
+                    'loaded': self.emotional_distress_model is not None,
+                    'purpose': 'Emotional distress detection'
+                }
+            },
+            'gap_detection': {
+                'enabled': True,
+                'disagreement_threshold': self.config['disagreement_threshold'],
+                'gap_detection_threshold': self.config['gap_detection_threshold']
+            }
+        }
 
-
-# Backward compatibility alias
+# For backwards compatibility, create alias
 ModelManager = EnhancedModelManager
