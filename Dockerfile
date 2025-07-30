@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
-RUN useradd -m -u 1000 nlpuser
+# Create non-root user with matching UID/GID for consistency across containers
+RUN groupadd -g 1001 nlpuser && \
+    useradd -m -u 1001 -g 1001 nlpuser
 
 # Set working directory
 WORKDIR /app
@@ -23,11 +24,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p ./models/cache ./data ./logs ./learning_data
-
-# Set ownership to nlpuser
-RUN chown -R nlpuser:nlpuser /app
+# Create necessary directories with proper ownership
+RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
+    chown -R 1001:1001 /app
 
 # Switch to non-root user
 USER nlpuser
