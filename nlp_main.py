@@ -35,6 +35,8 @@ from utils.scoring_helpers import (
     apply_comprehensive_false_positive_reduction
 )
 
+from endpoints.ensemble_endpoints import add_ensemble_endpoints
+
 # Initialize configuration manager with secrets support
 config_manager = get_nlp_config()
 config = get_env_config()  # Backward compatibility - returns dict
@@ -272,6 +274,16 @@ async def initialize_components_with_config():
                 logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
             except Exception as e:
                 logger.error(f"❌ Failed to add enhanced learning endpoints: {e}")
+                logger.exception("Full traceback:")
+
+        # Add ensemble endpoints if model manager is available
+        if model_manager:
+            try:
+                logger.info("🔧 Adding ensemble endpoints...")
+                add_ensemble_endpoints(app, model_manager)
+                logger.info("🎯 Ensemble endpoints added to FastAPI app!")
+            except Exception as e:
+                logger.error(f"❌ Failed to add ensemble endpoints: {e}")
                 logger.exception("Full traceback:")
 
         logger.info("✅ All available components initialized with secrets-aware configuration")
