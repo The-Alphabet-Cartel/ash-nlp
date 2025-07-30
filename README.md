@@ -4,7 +4,7 @@
 
 [![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da)](https://discord.gg/alphabetcartel)
 [![Website](https://img.shields.io/badge/Website-alphabetcartel.org-blue)](http://alphabetcartel.org)
-[![GitHub](https://img.shields.io/badge/Branch-Organic--Learning-green)](https://github.com/the-alphabet-cartel/ash-nlp/tree/Organic-Learning)
+[![GitHub](https://img.shields.io/badge/Branch-Main-green)](https://github.com/the-alphabet-cartel/ash-nlp)
 
 ## 🚀 What is Ash NLP v3.0?
 
