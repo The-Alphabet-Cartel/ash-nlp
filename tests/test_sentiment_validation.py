@@ -338,8 +338,15 @@ def calculate_sentiment_adjustments(sentiment_info: Dict) -> Tuple[float, List[s
     return adjustments, reasons
 
 def validate_5class_mapping(sentiment_label: str) -> Dict:
-    """Validate 5-class sentiment mapping"""
-    # Expected 5-class mapping for tabularisai model
+    """Validate sentiment mapping - updated for ALBERT binary model"""
+    
+    # ALBERT IMDB binary mapping (NEW)
+    albert_mapping = {
+        "LABEL_0": {"crisis_impact": "high", "confidence_adjustment": 0.08, "normalized": "Negative"},
+        "LABEL_1": {"crisis_impact": "none", "confidence_adjustment": -0.05, "normalized": "Positive"}
+    }
+    
+    # Expected 5-class mapping for tabularisai model (LEGACY)
     class_mapping = {
         "Very Negative": {"crisis_impact": "high", "confidence_adjustment": 0.08},
         "Negative": {"crisis_impact": "medium", "confidence_adjustment": 0.04}, 
@@ -348,7 +355,16 @@ def validate_5class_mapping(sentiment_label: str) -> Dict:
         "Very Positive": {"crisis_impact": "none", "confidence_adjustment": -0.10}
     }
     
-    # Normalize the label (handle case variations)
+    # Check ALBERT labels first
+    if sentiment_label in albert_mapping:
+        return {
+            "valid": True,
+            "normalized_label": albert_mapping[sentiment_label]["normalized"],
+            "mapping": albert_mapping[sentiment_label],
+            "model_type": "albert_binary"
+        }
+    
+    # Check 5-class labels (legacy)
     normalized_label = None
     for key in class_mapping.keys():
         if key.upper() == sentiment_label.upper():
@@ -359,13 +375,15 @@ def validate_5class_mapping(sentiment_label: str) -> Dict:
         return {
             "valid": True,
             "normalized_label": normalized_label,
-            "mapping": class_mapping[normalized_label]
+            "mapping": class_mapping[normalized_label],
+            "model_type": "5_class"
         }
     else:
         return {
             "valid": False,
             "error": f"Unknown sentiment class: {sentiment_label}",
-            "expected_classes": list(class_mapping.keys())
+            "expected_classes": list(class_mapping.keys()) + list(albert_mapping.keys()),
+            "model_type": "unknown"
         }
 
 def run_sentiment_validation_tests():
