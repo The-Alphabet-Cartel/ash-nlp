@@ -228,66 +228,63 @@ def _summarize_gaps(gap_details: List[Dict[str, Any]]) -> Dict[str, Any]:
     return summary
 
 def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
-    """Map ensemble consensus to traditional crisis levels with emotion support"""
+    """Enhanced mapping for swapped models with zero-shot depression detection"""
     prediction = consensus.get('prediction', 'unknown').lower()
     confidence = consensus.get('confidence', 0.0)
     
-    # Handle NORMALIZED predictions (NEW - Add this first)
-    if prediction == 'crisis':
-        # High confidence crisis from unanimous consensus
-        if confidence >= 0.8:
+    # Handle depression model predictions (zero-shot) - MOST IMPORTANT
+    if prediction == 'severe':
+        return 'high'  # Severe depression is always high crisis
+    elif prediction == 'moderate':
+        if confidence >= 0.7:
             return 'high'
+        elif confidence >= 0.5:
+            return 'medium'
+        else:
+            return 'low'
+    elif prediction == 'mild':
+        if confidence >= 0.8:
+            return 'medium'  # High confidence mild can be medium
+        else:
+            return 'low'
+    elif prediction == 'not depression':
+        return 'none'
+    
+    # Handle emotion model predictions (sentiment context)
+    elif prediction in ['sadness', 'fear']:
+        if confidence >= 0.8:
+            return 'medium'  # Emotions are contextual, not primary
         elif confidence >= 0.6:
-            return 'medium'  
-        elif confidence >= 0.4:
             return 'low'
         else:
             return 'none'
-    elif prediction == 'safe':
+    elif prediction == 'anger':
+        if confidence >= 0.8:
+            return 'low'  # Anger less predictive than sadness/fear
+        else:
+            return 'none'
+    elif prediction in ['joy', 'love', 'surprise']:
         return 'none'
     
-    # Handle emotion-based predictions (from DeBERTa-v3 emotions model)
-    elif prediction in ['sadness', 'fear']:
+    # Handle normalized predictions from ensemble
+    elif prediction == 'crisis':
         if confidence >= 0.8:
             return 'high'
         elif confidence >= 0.6:
             return 'medium'
-        elif confidence >= 0.4:
-            return 'low'
         else:
-            return 'none'
-    
-    elif prediction == 'anger':
-        # Anger indicates crisis but generally lower severity
-        if confidence >= 0.8:
-            return 'medium'  # Cap anger at medium
-        elif confidence >= 0.6:
             return 'low'
-        else:
-            return 'none'
-    
-    # Positive emotions - generally not crisis
-    elif prediction in ['joy', 'love', 'surprise']:
+    elif prediction == 'mild_crisis':
+        return 'low'
+    elif prediction == 'safe':
         return 'none'
     
-    # Handle traditional depression labels (for backward compatibility)
-    elif prediction in ['severe']:
-        return 'high'  # Severe is always high regardless of confidence
-    elif prediction in ['moderate'] and confidence > 0.5:
-        return 'medium'
-    elif prediction in ['moderate'] and confidence > 0.3:
-        return 'low'
-    
-    # Handle sentiment/distress labels
+    # Keep existing mappings for other predictions
     elif prediction in ['negative'] and confidence > 0.8:
-        return 'high'  # Very confident negative sentiment
-    elif prediction in ['negative'] and confidence > 0.6:
         return 'medium'
-    elif prediction in ['negative'] and confidence > 0.4:
+    elif prediction in ['negative'] and confidence > 0.6:
         return 'low'
-    
-    # Safe predictions
-    elif prediction in ['positive', 'not depression']:
+    elif prediction in ['positive']:
         return 'none'
     
     # Default fallback
