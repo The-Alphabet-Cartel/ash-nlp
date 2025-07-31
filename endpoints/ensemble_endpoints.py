@@ -1,9 +1,8 @@
-# UPDATED ensemble_endpoints.py - Clean endpoint structure
+# CENTRALIZED ensemble_endpoints.py - ALL thresholds from environment
 
 """
 Ensemble Analysis Endpoint for Three-Model Architecture
-Provides comprehensive analysis with gap detection and consensus building
-UPDATED: /analyze_ensemble renamed to /analyze (primary endpoint)
+CENTRALIZED: All thresholds read from environment variables - NO hard-coded values
 """
 
 import logging
@@ -46,9 +45,9 @@ def add_ensemble_endpoints(app, model_manager):
             consensus_confidence = consensus['confidence']
             consensus_method = consensus['method']
             
-            # Use environment-configured crisis level mapping
-            crisis_level = _map_to_crisis_level(consensus)
-            needs_response = _determine_response_need(consensus)
+            # CENTRALIZED: Use environment-driven crisis level mapping
+            crisis_level = _map_to_crisis_level_centralized(consensus)
+            needs_response = _determine_response_need_centralized(consensus)
             
             # Extract detected categories from individual models
             detected_categories = _extract_categories(ensemble_result)
@@ -56,8 +55,8 @@ def add_ensemble_endpoints(app, model_manager):
             # Calculate processing time
             processing_time = (time.time() - start_time) * 1000
             
-            # Determine if staff review is required
-            requires_staff_review = _requires_staff_review(crisis_level, consensus_confidence, ensemble_result)
+            # CENTRALIZED: Determine staff review using environment thresholds
+            requires_staff_review = _requires_staff_review_centralized(crisis_level, consensus_confidence, ensemble_result)
             
             # Build comprehensive response
             result = CrisisResponse(
@@ -65,9 +64,9 @@ def add_ensemble_endpoints(app, model_manager):
                 crisis_level=crisis_level,
                 confidence_score=consensus_confidence,
                 detected_categories=detected_categories,
-                method=f"three_model_ensemble_{consensus_method}",
+                method=f"three_model_ensemble_{consensus_method}_centralized",
                 processing_time_ms=processing_time,
-                model_info="three_model_ensemble",
+                model_info="three_model_ensemble_centralized_thresholds",
                 reasoning=f"Ensemble consensus: {consensus_prediction} (confidence: {consensus_confidence:.3f}, method: {consensus_method})",
                 analysis={
                     "ensemble_analysis": ensemble_result,
@@ -82,7 +81,7 @@ def add_ensemble_endpoints(app, model_manager):
                     "user_id": request.user_id,
                     "channel_id": request.channel_id,
                     "timestamp": time.time(),
-                    "thresholds_used": _get_current_thresholds()
+                    "thresholds_used": _get_all_thresholds_from_environment()
                 }
             )
             
@@ -100,7 +99,6 @@ def add_ensemble_endpoints(app, model_manager):
         try:
             status = model_manager.get_model_status()
             
-            # Add ensemble-specific health checks
             ensemble_health = {
                 "ensemble_status": "healthy" if status['models_loaded'] else "unhealthy",
                 "individual_models": status['models'],
@@ -108,7 +106,8 @@ def add_ensemble_endpoints(app, model_manager):
                 "gap_detection": status['gap_detection'],
                 "device": status['device'],
                 "precision": status['precision'],
-                "timestamp": time.time()
+                "timestamp": time.time(),
+                "centralized_thresholds": _get_all_thresholds_from_environment()
             }
             
             # Check each model individually
@@ -123,93 +122,90 @@ def add_ensemble_endpoints(app, model_manager):
             logger.error(f"Ensemble health check failed: {e}")
             raise HTTPException(status_code=500, detail=f"Health check error: {str(e)}")
     
-    @app.get("/gap_analysis")
-    async def get_recent_gaps() -> Dict[str, Any]:
-        """Analyze recent model disagreements and gaps"""
+    @app.get("/threshold_status")
+    async def get_threshold_status() -> Dict[str, Any]:
+        """Get current threshold configuration for debugging and tuning"""
         try:
-            # This would typically load from a gap tracking system
-            # For now, return structure for implementation
-            
             return {
-                "gap_analysis_available": False,
-                "message": "Gap tracking system not yet implemented",
-                "suggested_implementation": {
-                    "store_disagreements": "Log all model disagreements to database",
-                    "track_patterns": "Identify common disagreement patterns",
-                    "staff_feedback": "Integrate with staff correction commands",
-                    "learning_integration": "Feed gaps back into learning system"
-                },
+                "threshold_source": "environment_variables",
+                "centralized_management": True,
+                "all_thresholds": _get_all_thresholds_from_environment(),
+                "threshold_validation": _validate_threshold_consistency(),
                 "timestamp": time.time()
             }
-            
         except Exception as e:
-            logger.error(f"Gap analysis failed: {e}")
-            raise HTTPException(status_code=500, detail=f"Gap analysis error: {str(e)}")
-    
-    @app.get("/confidence_distribution")
-    async def get_confidence_distribution() -> Dict[str, Any]:
-        """Analyze confidence patterns across models"""
-        try:
-            # This would typically analyze historical confidence data
-            # For now, return structure for implementation
-            
-            return {
-                "confidence_analysis_available": False,
-                "message": "Confidence tracking system not yet implemented", 
-                "suggested_metrics": {
-                    "average_confidence_by_model": "Track average confidence per model",
-                    "confidence_spread_patterns": "Identify high-spread scenarios",
-                    "consensus_success_rate": "Track consensus prediction accuracy",
-                    "disagreement_frequency": "Monitor model disagreement rates"
-                },
-                "timestamp": time.time()
-            }
-            
-        except Exception as e:
-            logger.error(f"Confidence analysis failed: {e}")
-            raise HTTPException(status_code=500, detail=f"Confidence analysis error: {str(e)}")
+            logger.error(f"Threshold status check failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Threshold status error: {str(e)}")
 
-def _get_current_thresholds() -> Dict[str, float]:
-    """Get current threshold configuration for debugging"""
+def _get_all_thresholds_from_environment() -> Dict[str, float]:
+    """Get ALL thresholds from environment variables - centralized access point"""
     return {
-        'ensemble_high': config.get('NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD'),
-        'ensemble_medium': config.get('NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD'),
-        'ensemble_low': config.get('NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD'),
-        'mild_crisis': config.get('NLP_MILD_CRISIS_THRESHOLD'),
-        'negative_response': config.get('NLP_NEGATIVE_RESPONSE_THRESHOLD'),
-        'unknown_response': config.get('NLP_UNKNOWN_RESPONSE_THRESHOLD'),
-        'safety_bias': config.get('NLP_CONSENSUS_SAFETY_BIAS')
+        # Consensus prediction mapping thresholds (PRIMARY)
+        'consensus_crisis_to_high': config.get('NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD', 0.50),
+        'consensus_crisis_to_medium': config.get('NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD', 0.30),
+        'consensus_mild_crisis_to_low': config.get('NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD', 0.40),
+        'consensus_negative_to_low': config.get('NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD', 0.70),
+        'consensus_unknown_to_low': config.get('NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD', 0.50),
+        
+        # Staff review thresholds
+        'staff_review_medium_confidence': config.get('NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD', 0.45),
+        'staff_review_low_confidence': config.get('NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD', 0.75),
+        
+        # Safety controls
+        'consensus_safety_bias': config.get('NLP_CONSENSUS_SAFETY_BIAS', 0.03),
+        
+        # Gap detection
+        'gap_detection_threshold': config.get('NLP_GAP_DETECTION_THRESHOLD', 0.25),
+        'disagreement_threshold': config.get('NLP_DISAGREEMENT_THRESHOLD', 0.35),
+        
+        # Legacy ensemble thresholds (for compatibility)
+        'ensemble_high': config.get('NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD', 0.45),
+        'ensemble_medium': config.get('NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD', 0.25),
+        'ensemble_low': config.get('NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD', 0.12),
+        
+        # Individual model thresholds (for backward compatibility)
+        'individual_high': config.get('NLP_HIGH_CRISIS_THRESHOLD', 0.45),
+        'individual_medium': config.get('NLP_MEDIUM_CRISIS_THRESHOLD', 0.25),
+        'individual_low': config.get('NLP_LOW_CRISIS_THRESHOLD', 0.15),
     }
 
-def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
+def _map_to_crisis_level_centralized(consensus: Dict[str, Any]) -> str:
     """
-    FIXED: Map ensemble consensus to crisis levels using NORMALIZED predictions
-    This handles the actual ensemble output: 'crisis', 'mild_crisis', 'safe', etc.
+    CENTRALIZED: Map ensemble consensus to crisis levels using ONLY environment thresholds
+    NO hard-coded values - all thresholds from .env file
     """
     prediction = consensus.get('prediction', 'unknown').lower().strip()
     confidence = consensus.get('confidence', 0.0)
     
-    logger.info(f"🎯 Mapping consensus: prediction='{prediction}' confidence={confidence:.3f}")
+    # Get all thresholds from environment
+    thresholds = _get_all_thresholds_from_environment()
+    
+    logger.info(f"🎯 Centralized mapping: prediction='{prediction}' confidence={confidence:.3f}")
     
     # Handle NORMALIZED predictions from three-model ensemble
     if prediction == 'crisis':
-        if confidence >= 0.70:
-            result = 'high'      # High confidence crisis
-        elif confidence >= 0.45:
-            result = 'medium'    # Medium confidence crisis  
+        # Use environment thresholds for crisis prediction mapping
+        if confidence >= thresholds['consensus_crisis_to_high']:
+            result = 'high'
+        elif confidence >= thresholds['consensus_crisis_to_medium']:
+            result = 'medium'
         else:
-            result = 'low'       # Low confidence crisis, but still crisis
+            result = 'low'  # Any crisis prediction gets at least low
         
-        logger.info(f"🚨 CRISIS consensus: {prediction} @ {confidence:.3f} -> {result}")
+        logger.info(f"🚨 CRISIS consensus: {prediction} @ {confidence:.3f} -> {result} "
+                   f"(thresholds: high={thresholds['consensus_crisis_to_high']}, "
+                   f"medium={thresholds['consensus_crisis_to_medium']})")
         return result
     
     elif prediction == 'mild_crisis':
-        if confidence >= 0.60:
-            result = 'low'       # Mild crisis with good confidence
+        # Use environment threshold for mild crisis mapping
+        if confidence >= thresholds['consensus_mild_crisis_to_low']:
+            result = 'low'
         else:
-            result = 'none'      # Very uncertain mild crisis
+            result = 'none'
         
-        logger.info(f"⚠️ MILD_CRISIS consensus: {prediction} @ {confidence:.3f} -> {result}")
+        logger.info(f"⚠️ MILD_CRISIS consensus: {prediction} @ {confidence:.3f} -> {result} "
+                   f"(threshold: {thresholds['consensus_mild_crisis_to_low']})")
         return result
     
     elif prediction in ['safe', 'neutral', 'positive']:
@@ -217,54 +213,86 @@ def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
         return 'none'
     
     elif prediction in ['negative', 'mild_negative']:
-        if confidence >= 0.80:  # Very confident negative sentiment
-            result = 'low'        # Might need monitoring
-        else:
-            result = 'none'
-        
-        logger.info(f"➖ NEGATIVE consensus: {prediction} @ {confidence:.3f} -> {result}")
-        return result
-    
-    # Fallback for unknown predictions - be conservative
-    else:
-        logger.warning(f"❓ Unknown consensus prediction: '{prediction}' with confidence {confidence:.3f}")
-        if confidence > 0.60:  # If we're confident but don't know what it means, be safe
+        # Use environment threshold for negative sentiment mapping
+        if confidence >= thresholds['consensus_negative_to_low']:
             result = 'low'
         else:
             result = 'none'
         
-        logger.info(f"🤷 UNKNOWN consensus: {prediction} @ {confidence:.3f} -> {result} (conservative fallback)")
+        logger.info(f"➖ NEGATIVE consensus: {prediction} @ {confidence:.3f} -> {result} "
+                   f"(threshold: {thresholds['consensus_negative_to_low']})")
+        return result
+    
+    # Fallback for unknown predictions - use environment threshold
+    else:
+        logger.warning(f"❓ Unknown consensus prediction: '{prediction}' with confidence {confidence:.3f}")
+        if confidence > thresholds['consensus_unknown_to_low']:
+            result = 'low'
+        else:
+            result = 'none'
+        
+        logger.info(f"🤷 UNKNOWN consensus: {prediction} @ {confidence:.3f} -> {result} "
+                   f"(threshold: {thresholds['consensus_unknown_to_low']})")
         return result
 
-def _determine_response_need(consensus: Dict[str, Any]) -> bool:
+def _determine_response_need_centralized(consensus: Dict[str, Any]) -> bool:
     """
-    FIXED: Determine if crisis response is needed based on PROPER crisis level mapping
+    CENTRALIZED: Determine if crisis response is needed based on environment-driven crisis level
     """
-    crisis_level = _map_to_crisis_level(consensus)
+    crisis_level = _map_to_crisis_level_centralized(consensus)
     needs_response = crisis_level in ['low', 'medium', 'high']  # ANY crisis level needs response
     
     logger.info(f"📋 Response determination: crisis_level='{crisis_level}' -> needs_response={needs_response}")
     return needs_response
 
-def _requires_staff_review(crisis_level: str, confidence: float, ensemble_result: Dict[str, Any]) -> bool:
-    """Determine if staff review is required"""
-    # High crisis always requires review
+def _requires_staff_review_centralized(crisis_level: str, confidence: float, ensemble_result: Dict[str, Any]) -> bool:
+    """CENTRALIZED: Determine staff review using ONLY environment thresholds"""
+    thresholds = _get_all_thresholds_from_environment()
+    
+    # High crisis always requires review (configurable in future if needed)
     if crisis_level == 'high':
         return True
     
-    # Medium crisis with good confidence requires review
-    if crisis_level == 'medium' and confidence >= 0.60:
+    # Medium crisis with sufficient confidence requires review
+    if crisis_level == 'medium' and confidence >= thresholds['staff_review_medium_confidence']:
         return True
     
     # Low crisis with very high confidence might need review
-    if crisis_level == 'low' and confidence >= 0.80:
+    if crisis_level == 'low' and confidence >= thresholds['staff_review_low_confidence']:
         return True
     
-    # Any model disagreement requires review
+    # Model disagreement requires review (configurable)
     if ensemble_result.get('gaps_detected', False):
-        return True
+        return config.get('NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT', True)
     
     return False
+
+def _validate_threshold_consistency() -> Dict[str, Any]:
+    """Validate that thresholds are logically consistent"""
+    thresholds = _get_all_thresholds_from_environment()
+    issues = []
+    
+    # Check consensus thresholds are ordered correctly
+    if thresholds['consensus_crisis_to_high'] <= thresholds['consensus_crisis_to_medium']:
+        issues.append("consensus_crisis_to_high should be > consensus_crisis_to_medium")
+    
+    # Check staff review thresholds are reasonable
+    if thresholds['staff_review_medium_confidence'] > 1.0:
+        issues.append("staff_review_medium_confidence should be <= 1.0")
+    
+    # Check safety bias is reasonable
+    if thresholds['consensus_safety_bias'] > 0.1:
+        issues.append("consensus_safety_bias seems high (>0.1)")
+    
+    return {
+        "consistent": len(issues) == 0,
+        "issues": issues,
+        "recommendations": [
+            "Ensure high thresholds > medium thresholds > low thresholds",
+            "Keep safety bias small (0.01-0.05)",
+            "Staff review thresholds should be reasonable (0.4-0.8)"
+        ]
+    }
 
 def _extract_categories(ensemble_result: Dict[str, Any]) -> List[str]:
     """Extract detected categories from ensemble analysis"""
@@ -292,4 +320,4 @@ def _extract_categories(ensemble_result: Dict[str, Any]) -> List[str]:
     
     return categories
 
-logger.info("🎯 Ensemble analysis endpoints configured - /analyze is now the primary three-model endpoint")
+logger.info("🎯 CENTRALIZED Ensemble endpoints configured - All thresholds from environment variables")
