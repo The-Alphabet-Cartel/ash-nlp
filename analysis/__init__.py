@@ -6,8 +6,6 @@ Contains all analysis components for crisis detection and keyword discovery
 # Core analysis components
 from .crisis_analyzer import CrisisAnalyzer
 from .phrase_extractor import PhraseExtractor
-from .pattern_learner import PatternLearner
-from .semantic_analyzer import SemanticAnalyzer
 
 # Analysis capabilities metadata
 ANALYSIS_CAPABILITIES = {
@@ -38,32 +36,6 @@ ANALYSIS_CAPABILITIES = {
         "processing_time": "<200ms",
         "max_phrases": 20
     },
-    
-    "pattern_learner": {
-        "description": "Learn crisis patterns from community message history",
-        "input": "message_batches_with_labels",
-        "output": "keyword_recommendations",
-        "features": [
-            "community_pattern_discovery",
-            "distinctive_phrase_identification", 
-            "frequency_analysis",
-            "confidence_scoring"
-        ],
-        "status": "planned_implementation"
-    },
-    
-    "semantic_analyzer": {
-        "description": "Enhanced semantic analysis with community context",
-        "input": "message_with_community_hints",
-        "output": "contextual_crisis_assessment",
-        "features": [
-            "community_vocabulary_matching",
-            "lgbtqia_pattern_recognition",
-            "context_hint_integration",
-            "semantic_relevance_scoring"
-        ],
-        "status": "planned_implementation"
-    }
 }
 
 # Analysis workflow metadata
@@ -90,18 +62,6 @@ ANALYSIS_WORKFLOWS = {
         ],
         "primary_component": "PhraseExtractor"
     },
-    
-    "community_pattern_learning": {
-        "steps": [
-            "analyze_message_history",
-            "identify_crisis_patterns",
-            "compare_with_normal_patterns",
-            "generate_recommendations",
-            "score_distinctiveness"
-        ],
-        "primary_component": "PatternLearner",
-        "status": "future_implementation"
-    }
 }
 
 def get_analysis_capabilities():
@@ -116,9 +76,7 @@ def get_available_analyzers():
     """Get list of available analyzer classes"""
     return {
         "CrisisAnalyzer": "Enhanced crisis detection with multi-model approach",
-        "PhraseExtractor": "Keyword discovery using model scoring", 
         "PatternLearner": "Community pattern learning (planned)",
-        "SemanticAnalyzer": "Enhanced semantic analysis (planned)"
     }
 
 def get_implemented_features():
@@ -133,8 +91,6 @@ def get_implemented_features():
             "safety_first_scoring"
         ],
         "planned": [
-            "pattern_learning",
-            "semantic_analysis",
             "community_vocabulary_integration",
             "automated_keyword_suggestions"
         ]
@@ -149,21 +105,10 @@ def create_phrase_extractor(model_manager):
     """Create and return a PhraseExtractor instance"""
     return PhraseExtractor(model_manager)
 
-def create_pattern_learner(model_manager):
-    """Create and return a PatternLearner instance"""
-    return PatternLearner(model_manager)
-
-def create_semantic_analyzer(model_manager):
-    """Create and return a SemanticAnalyzer instance"""
-    return SemanticAnalyzer(model_manager)
-
 __all__ = [
     # Core analyzer classes
     "CrisisAnalyzer",
     "PhraseExtractor", 
-    "PatternLearner",
-    "SemanticAnalyzer",
-    
     # Metadata
     "ANALYSIS_CAPABILITIES",
     "ANALYSIS_WORKFLOWS",
@@ -177,6 +122,4 @@ __all__ = [
     # Factory functions
     "create_crisis_analyzer",
     "create_phrase_extractor",
-    "create_pattern_learner", 
-    "create_semantic_analyzer"
 ]

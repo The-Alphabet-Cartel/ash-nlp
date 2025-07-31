@@ -3,12 +3,6 @@ Utilities Package for Ash NLP Service
 Helper functions and utilities for context analysis, scoring, and community patterns
 """
 
-# Learning utilities
-from .enhanced_learning_endpoints import (
-    EnhancedLearningManager,
-    add_enhanced_learning_endpoints
-)
-
 # Context analysis utilities
 from .context_helpers import (
     extract_context_signals,

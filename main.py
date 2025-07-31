@@ -1,6 +1,9 @@
+# CRITICAL FIX: Update your main.py file - FIXED LEARNING SYSTEM INTEGRATION
+
 #!/usr/bin/env python3
 """
-Enhanced NLP Service for Ash Bot - With Secrets Support
+Enhanced NLP Service for Ash Bot - With Secrets Support and Three-Model Ensemble
+UPDATED: Fixed learning system integration
 """
 
 from fastapi import FastAPI, HTTPException
@@ -27,13 +30,16 @@ from models.pydantic_models import (
 # Import enhanced configuration with secrets support
 from config import get_nlp_config, get_env_config, get_api_keys_status
 
-# Sentinment Adjustments
+# Sentiment Adjustments
 from utils.context_helpers import analyze_sentiment_context
 from utils.scoring_helpers import (
     extract_depression_score,
     enhanced_depression_analysis,
     apply_comprehensive_false_positive_reduction
 )
+
+# CRITICAL: Import ensemble endpoints FIRST
+from endpoints.ensemble_endpoints import add_ensemble_endpoints
 
 # Initialize configuration manager with secrets support
 config_manager = get_nlp_config()
@@ -111,51 +117,49 @@ except ImportError as e:
     PHRASE_EXTRACTOR_AVAILABLE = False
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
+# FIXED: Import learning system with proper error handling
 try:
-    from analysis.pattern_learner import PatternLearner
-    PATTERN_LEARNER_AVAILABLE = True
-    logger.info("✅ PatternLearner import successful")
-except ImportError as e:
-    PATTERN_LEARNER_AVAILABLE = False
-    logger.warning(f"⚠️ PatternLearner import failed: {e}")
-
-try:
-    from analysis.semantic_analyzer import SemanticAnalyzer
-    SEMANTIC_ANALYZER_AVAILABLE = True
-    logger.info("✅ SemanticAnalyzer import successful")
-except ImportError as e:
-    SEMANTIC_ANALYZER_AVAILABLE = False
-    logger.warning(f"⚠️ SemanticAnalyzer import failed: {e}")
-
-try:
-    from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    from endpoints.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
     ENHANCED_LEARNING_AVAILABLE = True
     logger.info("✅ EnhancedLearningManager import successful")
 except ImportError as e:
     ENHANCED_LEARNING_AVAILABLE = False
     logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
+    logger.info("ℹ️ Learning system will be disabled")
 
 # Global components
 model_manager = None
 crisis_analyzer = None
 phrase_extractor = None
-pattern_learner = None
-semantic_analyzer = None
 enhanced_learning_manager = None
 startup_time = time.time()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("🚀 Enhanced FastAPI app starting with secrets-aware configuration...")
+    logger.info("🚀 Enhanced FastAPI app starting with three-model ensemble...")
     await initialize_components_with_config()
+    
+    # CRITICAL: Add ensemble endpoints AFTER initialization
+    logger.info("🔧 Adding three-model ensemble endpoints...")
+    add_ensemble_endpoints(app, model_manager)
+    logger.info("🎯 Three-model ensemble endpoints added - /analyze is now ensemble-powered!")
+    
+    # FIXED: Add learning endpoints if available
+    if enhanced_learning_manager:
+        logger.info("🔧 Adding enhanced learning endpoints...")
+        add_enhanced_learning_endpoints(app, enhanced_learning_manager)
+        logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
+    else:
+        logger.info("ℹ️ Learning system not available - skipping learning endpoints")
+    
     logger.info("✅ Enhanced FastAPI app startup complete!")
     yield
     # Shutdown
     logger.info("🛑 Enhanced FastAPI app shutting down...")
 
 async def initialize_components_with_config():
-    global model_manager, crisis_analyzer, phrase_extractor, pattern_learner, semantic_analyzer, enhanced_learning_manager
+    global model_manager, crisis_analyzer, phrase_extractor, enhanced_learning_manager
     
     try:
         # Initialize enhanced model manager (pass config manager for secrets support)
@@ -169,11 +173,11 @@ async def initialize_components_with_config():
             logger.info("✅ ModelManager initialized (using environment variables)")
         
         # Load models with the enhanced method
-        logger.info("📦 Loading ML models with secrets-aware configuration...")
+        logger.info("📦 Loading three-model ensemble with secrets-aware configuration...")
         await model_manager.load_models()
-        logger.info("✅ Enhanced ModelManager initialized and models loaded")
+        logger.info("✅ Enhanced ModelManager initialized and THREE MODELS loaded")
         
-        # Initialize enhanced learning manager if available
+        # FIXED: Initialize enhanced learning manager if available and enabled
         if ENHANCED_LEARNING_AVAILABLE and config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
             try:
                 # Try to pass config manager if EnhancedLearningManager supports it
@@ -185,13 +189,14 @@ async def initialize_components_with_config():
                     enhanced_learning_manager = EnhancedLearningManager(model_manager)
                     logger.info("✅ Enhanced learning system initialized (using environment variables)")
             except Exception as e:
-                logger.warning(f"⚠️ Could not initialize Enhanced Learning Manager: {e}")
+                logger.error(f"❌ Could not initialize Enhanced Learning Manager: {e}")
+                logger.exception("Full initialization error:")
                 enhanced_learning_manager = None
         else:
             if not ENHANCED_LEARNING_AVAILABLE:
                 logger.info("ℹ️ Enhanced learning system not available")
-            else:
-                logger.info("ℹ️ Learning system disabled via configuration")
+            elif not config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
+                logger.info("ℹ️ Learning system disabled via GLOBAL_ENABLE_LEARNING_SYSTEM=false")
             enhanced_learning_manager = None
         
         # Initialize analyzers (only if available)
@@ -231,48 +236,6 @@ async def initialize_components_with_config():
         else:
             logger.info("ℹ️ PhraseExtractor not available")
             phrase_extractor = None
-        
-        if PATTERN_LEARNER_AVAILABLE:
-            try:
-                # Try to pass config manager if PatternLearner supports it
-                try:
-                    pattern_learner = PatternLearner(model_manager, config_manager)
-                    logger.info("✅ Pattern learner initialized with secrets support")
-                except TypeError:
-                    # Fallback: PatternLearner doesn't support config parameter yet
-                    pattern_learner = PatternLearner(model_manager)
-                    logger.info("✅ Pattern learner initialized (using environment variables)")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize PatternLearner: {e}")
-                pattern_learner = None
-        else:
-            logger.info("ℹ️ PatternLearner not available")
-        
-        if SEMANTIC_ANALYZER_AVAILABLE:
-            try:
-                # Try to pass config manager if SemanticAnalyzer supports it
-                try:
-                    semantic_analyzer = SemanticAnalyzer(model_manager, config_manager)
-                    logger.info("✅ Semantic analyzer initialized with secrets support")
-                except TypeError:
-                    # Fallback: SemanticAnalyzer doesn't support config parameter yet
-                    semantic_analyzer = SemanticAnalyzer(model_manager)
-                    logger.info("✅ Semantic analyzer initialized (using environment variables)")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize SemanticAnalyzer: {e}")
-                semantic_analyzer = None
-        else:
-            logger.info("ℹ️ SemanticAnalyzer not available")
-
-        # Add enhanced learning endpoints if manager is available
-        if enhanced_learning_manager:
-            try:
-                logger.info("🔧 Adding enhanced learning endpoints...")
-                add_enhanced_learning_endpoints(app, enhanced_learning_manager)
-                logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
-            except Exception as e:
-                logger.error(f"❌ Failed to add enhanced learning endpoints: {e}")
-                logger.exception("Full traceback:")
 
         logger.info("✅ All available components initialized with secrets-aware configuration")
         
@@ -282,9 +245,9 @@ async def initialize_components_with_config():
 
 # Create FastAPI app with enhanced config
 app = FastAPI(
-    title="Enhanced Ash NLP Service with Secrets Support", 
-    version="4.4",
-    description="Multi-model Mental Health Crisis Detection with Secure Configuration Management",
+    title="Enhanced Ash NLP Service - Three-Model Ensemble", 
+    version="4.5.0",  # Updated version
+    description="Advanced crisis detection using three specialized ML models with ensemble consensus and secure configuration",
     lifespan=lifespan
 )
 
@@ -300,125 +263,8 @@ if config['GLOBAL_ENABLE_CORS']:
     )
     logger.info("🌐 CORS middleware enabled")
 
-def extract_sentiment_scores_from_result(sentiment_result) -> dict:
-    """Extract sentiment scores in the format ash-bot expects"""
-    
-    sentiment_scores = {'negative': 0.0, 'positive': 0.0, 'neutral': 0.0}
-    
-    if not sentiment_result:
-        return sentiment_scores
-    
-    # Handle different sentiment result formats
-    if isinstance(sentiment_result, list) and len(sentiment_result) > 0:
-        for item in sentiment_result:
-            if isinstance(item, dict):
-                label = item.get('label', '').lower()
-                score = item.get('score', 0.0)
-                
-                # Map sentiment labels to our expected format
-                if 'negative' in label or 'sadness' in label or 'anger' in label:
-                    sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-                elif 'positive' in label or 'joy' in label or 'optimism' in label:
-                    sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
-                elif 'neutral' in label:
-                    sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
-    
-    return sentiment_scores
-
-@app.post("/analyze", response_model=CrisisResponse)
-async def analyze_message(request: MessageRequest):
-    """Message analysis using available analyzers"""
-    
-    if not model_manager or not model_manager.models_loaded():
-        raise HTTPException(status_code=503, detail="Models not loaded")
-    
-    start_time = time.time()
-    
-    try:
-        # Use CrisisAnalyzer if available
-        if crisis_analyzer:
-            result = await crisis_analyzer.analyze_message(
-                request.message, 
-                request.user_id, 
-                request.channel_id
-            )
-        else:
-            # UPDATED FALLBACK: Include sentiment data
-            depression_result = model_manager.analyze_with_depression_model(request.message)
-            sentiment_result = model_manager.analyze_with_sentiment_model(request.message)
-            
-            # Extract sentiment scores properly
-            sentiment_scores = extract_sentiment_scores_from_result(sentiment_result)
-            
-            if depression_result and len(depression_result) > 0:
-                top_result = max(depression_result, key=lambda x: x['score'])
-                
-                # Apply false positive reduction
-                original_score = top_result['score']
-                adjusted_score = apply_comprehensive_false_positive_reduction(request.message, original_score)
-                
-                # Determine crisis level
-                if top_result['label'] == 'severe' and adjusted_score > config['NLP_HIGH_CRISIS_THRESHOLD']:
-                    crisis_level = 'high'
-                    needs_response = True
-                elif top_result['label'] in ['moderate', 'severe'] and adjusted_score > config['NLP_MEDIUM_CRISIS_THRESHOLD']:
-                    crisis_level = 'medium'
-                    needs_response = True
-                elif adjusted_score > config['NLP_LOW_CRISIS_THRESHOLD']:
-                    crisis_level = 'low'
-                    needs_response = True
-                else:
-                    crisis_level = 'none'
-                    needs_response = False
-                
-                confidence_score = adjusted_score
-                detected_categories = [top_result['label']]
-                reasoning = f"Basic model: {top_result['label']} (original: {original_score:.3f}, adjusted: {adjusted_score:.3f})"
-                
-                # BUILD RESPONSE WITH SENTIMENT DATA
-                result = {
-                    'needs_response': needs_response,
-                    'crisis_level': crisis_level,
-                    'confidence_score': confidence_score,
-                    'detected_categories': detected_categories,
-                    'method': 'basic_model_manager_with_sentiment',
-                    'processing_time_ms': (time.time() - start_time) * 1000,
-                    'model_info': 'depression+sentiment(basic)+false_positive_reduction',
-                    'reasoning': reasoning,
-                    'analysis': {  # ← ADD THIS SECTION
-                        'depression_score': original_score,
-                        'sentiment_scores': sentiment_scores,  # ← KEY ADDITION
-                        'confidence_adjustment': adjusted_score - original_score,
-                        'crisis_indicators': [top_result['label']]
-                    }
-                }
-            else:
-                # No results case
-                result = {
-                    'needs_response': False,
-                    'crisis_level': 'none',
-                    'confidence_score': 0.0,
-                    'detected_categories': [],
-                    'method': 'no_detection',
-                    'processing_time_ms': (time.time() - start_time) * 1000,
-                    'model_info': 'no_significant_indicators',
-                    'reasoning': "No significant crisis indicators detected",
-                    'analysis': {  # ← ADD THIS SECTION EVEN FOR NO DETECTION
-                        'depression_score': 0.0,
-                        'sentiment_scores': sentiment_scores,  # ← STILL INCLUDE SENTIMENT
-                        'crisis_indicators': []
-                    }
-                }
-        
-        # Return the result
-        if isinstance(result, dict):
-            return CrisisResponse(**result)
-        else:
-            return result
-            
-    except Exception as e:
-        logger.error(f"Error in message analysis: {e}")
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+# REMOVED: Old /analyze endpoint - now handled by ensemble_endpoints.py
+# The three-model ensemble /analyze endpoint is added via add_ensemble_endpoints()
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
@@ -433,9 +279,8 @@ async def health_check():
         "model_manager": model_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
         "phrase_extractor": phrase_extractor is not None,
-        "pattern_learner": pattern_learner is not None,
-        "semantic_analyzer": semantic_analyzer is not None,
-        "enhanced_learning": enhanced_learning_manager is not None
+        "enhanced_learning": enhanced_learning_manager is not None,  # FIXED
+        "three_model_ensemble": model_manager and hasattr(model_manager, 'analyze_with_ensemble')
     }
     
     # Get API keys status
@@ -453,9 +298,14 @@ async def health_check():
             "max_batch_size": config['NLP_MAX_BATCH_SIZE'],
             "inference_threads": config['NLP_INFERENCE_THREADS'],
             "components_available": components_status,
-            "learning_system": "enabled" if enhanced_learning_manager else "disabled",
+            "learning_system": "enabled" if enhanced_learning_manager else "disabled",  # FIXED
             "secrets_status": api_keys_status,
-            "using_secrets": any(api_keys_status.values())
+            "using_secrets": any(api_keys_status.values()),
+            "ensemble_info": {
+                "models_count": 3,
+                "ensemble_modes": ["consensus", "majority", "weighted"],
+                "gap_detection": "enabled"
+            }
         }
     )
 
@@ -468,8 +318,8 @@ async def get_stats():
     api_keys_status = get_api_keys_status()
     
     stats = {
-        "service": "Enhanced Ash NLP Service with Secrets Support",
-        "version": "4.4",
+        "service": "Enhanced Ash NLP Service - Three-Model Ensemble",
+        "version": "4.5.0",
         "uptime_seconds": uptime,
         "models_loaded": model_manager.get_model_status() if model_manager else {},
         "configuration": {
@@ -477,10 +327,12 @@ async def get_stats():
             "device": config['NLP_DEVICE'],
             "precision": config['NLP_MODEL_PRECISION'],
             "using_secrets": any(api_keys_status.values()),
+            "ensemble_enabled": True,
+            "models_count": 3,
             "thresholds": {
-                "high": config['NLP_HIGH_CRISIS_THRESHOLD'],
-                "medium": config['NLP_MEDIUM_CRISIS_THRESHOLD'],
-                "low": config['NLP_LOW_CRISIS_THRESHOLD']
+                "high": config.get('NLP_HIGH_CRISIS_THRESHOLD', 0.55),
+                "medium": config.get('NLP_MEDIUM_CRISIS_THRESHOLD', 0.28),
+                "low": config.get('NLP_LOW_CRISIS_THRESHOLD', 0.16)
             }
         },
         "secrets_status": api_keys_status,
@@ -488,24 +340,30 @@ async def get_stats():
             "model_manager": model_manager is not None,
             "crisis_analyzer": CRISIS_ANALYZER_AVAILABLE and crisis_analyzer is not None,
             "phrase_extractor": PHRASE_EXTRACTOR_AVAILABLE and phrase_extractor is not None,
-            "pattern_learner": PATTERN_LEARNER_AVAILABLE and pattern_learner is not None,
-            "semantic_analyzer": SEMANTIC_ANALYZER_AVAILABLE and semantic_analyzer is not None,
-            "enhanced_learning": ENHANCED_LEARNING_AVAILABLE and enhanced_learning_manager is not None
+            "enhanced_learning": ENHANCED_LEARNING_AVAILABLE and enhanced_learning_manager is not None,  # FIXED
+            "three_model_ensemble": model_manager and hasattr(model_manager, 'analyze_with_ensemble')
         },
         "hardware_config": {
             "max_batch_size": config['NLP_MAX_BATCH_SIZE'],
             "inference_threads": config['NLP_INFERENCE_THREADS'],
             "max_concurrent_requests": config['NLP_MAX_CONCURRENT_REQUESTS'],
             "request_timeout": config['NLP_REQUEST_TIMEOUT']
+        },
+        "ensemble_info": {
+            "depression_model": config.get('NLP_DEPRESSION_MODEL', 'unknown'),
+            "sentiment_model": config.get('NLP_SENTIMENT_MODEL', 'unknown'),
+            "emotional_distress_model": config.get('NLP_EMOTIONAL_DISTRESS_MODEL', 'unknown'),
+            "ensemble_mode": config.get('NLP_ENSEMBLE_MODE', 'weighted'),
+            "gap_detection_enabled": True
         }
     }
     
     return stats
 
 if __name__ == "__main__":
-    logger.info("🚀 Starting Enhanced Ash NLP Service v4.4 (Secrets Support)")
+    logger.info("🚀 Starting Enhanced Ash NLP Service v4.5.0 (Three-Model Ensemble)")
     logger.info("🔧 Configuration loaded with secrets-aware management")
-    logger.info("🧠 Advanced capabilities with secure configuration")
+    logger.info("🧠 Three specialized models with ensemble consensus")
     
     # Get server configuration from enhanced config
     host = config['NLP_SERVICE_HOST']
@@ -517,7 +375,7 @@ if __name__ == "__main__":
     
     try:
         uvicorn.run(
-            "nlp_main:app",
+            "main:app",
             host=host,
             port=port,
             log_level=log_level.lower(),
