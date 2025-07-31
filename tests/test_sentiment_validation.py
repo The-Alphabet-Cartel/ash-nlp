@@ -162,6 +162,8 @@ MULTILINGUAL_TESTS = [
 
 def test_model_connectivity():
     """Test basic connectivity to NLP server with fallback URLs"""
+    global NLP_SERVER_URL  # Move global declaration to the top
+    
     print("🔌 Testing NLP server connectivity...")
     
     # Try primary URL first
@@ -175,7 +177,6 @@ def test_model_connectivity():
                 health_data = response.json()
                 print(f"   ✅ Server online: {health_data.get('status', 'unknown')}")
                 # Update global URL to the working one
-                global NLP_SERVER_URL
                 NLP_SERVER_URL = url
                 print(f"   📍 Using server URL: {NLP_SERVER_URL}")
                 return True
