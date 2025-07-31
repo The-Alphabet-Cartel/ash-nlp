@@ -25,10 +25,10 @@ Ash NLP v3.0 is a cutting-edge **three-model ensemble system** designed specific
 - **Labels**: `[severe, moderate, not depression]`
 
 ### Model 2: Sentiment Analysis 💭
-- **Model**: `cardiffnlp/twitter-roberta-base-sentiment-latest`
+- **Model**: `siebert/sentiment-roberta-large-english`
 - **Architecture**: RoBERTa-based sentiment analysis
 - **Purpose**: Contextual validation and emotional tone analysis
-- **Labels**: `[negative, neutral, positive]`
+- **Labels**: `[NEGATIVE, POSITIVE]`
 
 ### Model 3: Emotional Distress Detection 😰
 - **Model**: `distilbert-base-uncased-finetuned-sst-2-english`
@@ -115,7 +115,7 @@ Key configuration options in `.env`:
 ```bash
 # Three-Model Configuration
 NLP_DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
-NLP_SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest
+NLP_SENTIMENT_MODEL=siebert/sentiment-roberta-large-english
 NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
 
 # Ensemble Configuration

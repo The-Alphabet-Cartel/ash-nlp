@@ -89,7 +89,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
       "purpose": "Primary crisis classification"
     },
     "sentiment": {
-      "name": "cardiffnlp/twitter-roberta-base-sentiment-latest", 
+      "name": "siebert/sentiment-roberta-large-english", 
       "loaded": true,
       "purpose": "Contextual validation"
     },
@@ -476,7 +476,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 ```bash
 # Model Selection
 NLP_DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
-NLP_SENTIMENT_MODEL=cardiffnlp/twitter-roberta-base-sentiment-latest  
+NLP_SENTIMENT_MODEL=siebert/sentiment-roberta-large-english  
 NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
 
 # Ensemble Settings

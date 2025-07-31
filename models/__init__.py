@@ -27,9 +27,9 @@ MODEL_INFO = {
             "specialization": "Depression and suicidal ideation detection"
         },
         "sentiment": {
-            "name": "cardiffnlp/twitter-roberta-base-sentiment-latest", 
+            "name": "siebert/sentiment-roberta-large-english", 
             "type": "RoBERTa-based sentiment analysis",
-            "labels": ["negative", "neutral", "positive"],
+            "labels": ["NEGATIVE", "POSITIVE"],
             "purpose": "Contextual validation and enhancement",
             "weight": 0.2,
             "specialization": "Emotional tone and context analysis"

@@ -57,7 +57,7 @@ class EnvConfigManager:
             'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'rafalposwiata/deproberta-large-depression'},
             
             # Model 2: Contextual sentiment analysis (RoBERTa-based sentiment)
-            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'cardiffnlp/twitter-roberta-base-sentiment-latest'},
+            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'siebert/sentiment-roberta-large-english'},
             
             # Model 3: Emotional distress detection (DistilBERT-based emotional analysis)
             'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'distilbert-base-uncased-finetuned-sst-2-english'},

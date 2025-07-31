@@ -33,7 +33,7 @@ Version 3.0 introduces a groundbreaking **three-model ensemble system** that fun
    - Primary crisis assessment engine
 
 2. **Sentiment Analysis Model** 💭
-   - `cardiffnlp/twitter-roberta-base-sentiment-latest`
+   - `siebert/sentiment-roberta-large-english`
    - RoBERTa-based contextual sentiment analysis
    - Validates and enhances primary detection
 

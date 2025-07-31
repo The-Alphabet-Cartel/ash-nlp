@@ -455,7 +455,7 @@ print(model('I am feeling down'))
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('sentiment-analysis',
-                model='cardiffnlp/twitter-roberta-base-sentiment-latest',
+                model='siebert/sentiment-roberta-large-english',
                 device=0)
 print(model('I am feeling down'))
 "

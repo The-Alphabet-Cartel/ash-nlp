@@ -54,7 +54,7 @@ class EnhancedModelManager:
             # Load from environment variables with defaults - ADD THIRD MODEL CONFIG
             return {
                 'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'),
-                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'siebert/sentiment-roberta-large-english'),
                 'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'distilbert-base-uncased-finetuned-sst-2-english'),  # NEW
                 'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'),
                 'device': os.getenv('NLP_DEVICE', 'auto'),

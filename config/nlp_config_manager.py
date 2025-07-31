@@ -157,7 +157,7 @@ class NLPConfigManager:
         )
         
         self._config['NLP_SENTIMENT_MODEL'] = self._get_config_value(
-            'NLP_SENTIMENT_MODEL', 'cardiffnlp/twitter-roberta-base-sentiment-latest'
+            'NLP_SENTIMENT_MODEL', 'siebert/sentiment-roberta-large-english'
         )
         
         self._config['NLP_MODEL_CACHE_DIR'] = self._get_config_value(
