@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Environment Configuration Manager for ash-nlp
-Centralized management of all environment variables with validation
+UPDATED: Centralized threshold management with comprehensive validation
 """
 
 import os
@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 
 class EnvConfigManager:
-    """Centralized environment variable management with validation"""
+    """Centralized environment variable management with threshold validation"""
     
     def __init__(self, env_file: str = ".env"):
         """Initialize configuration manager"""
@@ -53,33 +53,67 @@ class EnvConfigManager:
             # =================================================================
             # THREE-MODEL CONFIGURATION
             # =================================================================
-            # Model 1: Primary crisis detection (DeBERTa-based depression analysis)
             'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'},
-            
-            # Model 2: Contextual sentiment analysis (RoBERTa-based sentiment)
             'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'Lowerated/lm6-deberta-v3-topic-sentiment'},
-            
-            # Model 3: Emotional distress detection (BART-based emotional analysis)
             'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'facebook/bart-large-mnli'},
-            
-            # Model storage configuration
             'NLP_MODEL_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
             # =================================================================
             # ENSEMBLE CONFIGURATION
             # =================================================================
-            # Ensemble modes: consensus, majority, weighted
-            'NLP_ENSEMBLE_MODE': {'type': str, 'default': 'consensus', 'choices': ['consensus', 'majority', 'weighted']},
-            
-            # Gap detection settings
-            'NLP_GAP_DETECTION_THRESHOLD': {'type': float, 'default': 0.4, 'min': 0.1, 'max': 1.0},
-            'NLP_DISAGREEMENT_THRESHOLD': {'type': float, 'default': 0.5, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_MODE': {'type': str, 'default': 'weighted', 'choices': ['consensus', 'majority', 'weighted']},
+            'NLP_GAP_DETECTION_THRESHOLD': {'type': float, 'default': 0.25, 'min': 0.1, 'max': 1.0},
+            'NLP_DISAGREEMENT_THRESHOLD': {'type': float, 'default': 0.35, 'min': 0.1, 'max': 1.0},
             'NLP_AUTO_FLAG_DISAGREEMENTS': {'type': bool, 'default': True},
             
             # Model confidence weighting (for weighted ensemble mode)
-            'NLP_DEPRESSION_MODEL_WEIGHT': {'type': float, 'default': 0.5, 'min': 0.0, 'max': 1.0},
-            'NLP_SENTIMENT_MODEL_WEIGHT': {'type': float, 'default': 0.2, 'min': 0.0, 'max': 1.0},
-            'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT': {'type': float, 'default': 0.3, 'min': 0.0, 'max': 1.0},
+            'NLP_DEPRESSION_MODEL_WEIGHT': {'type': float, 'default': 0.6, 'min': 0.0, 'max': 1.0},
+            'NLP_SENTIMENT_MODEL_WEIGHT': {'type': float, 'default': 0.15, 'min': 0.0, 'max': 1.0},
+            'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT': {'type': float, 'default': 0.25, 'min': 0.0, 'max': 1.0},
+            
+            # =================================================================
+            # CENTRALIZED CONSENSUS PREDICTION MAPPING THRESHOLDS
+            # =================================================================
+            # CRISIS prediction thresholds (PRIMARY - used by ensemble_endpoints.py)
+            'NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD': {'type': float, 'default': 0.50, 'min': 0.1, 'max': 1.0},
+            'NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD': {'type': float, 'default': 0.30, 'min': 0.1, 'max': 1.0},
+            
+            # MILD_CRISIS prediction thresholds
+            'NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD': {'type': float, 'default': 0.40, 'min': 0.1, 'max': 1.0},
+            
+            # NEGATIVE sentiment thresholds
+            'NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD': {'type': float, 'default': 0.70, 'min': 0.1, 'max': 1.0},
+            
+            # UNKNOWN prediction fallback
+            'NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD': {'type': float, 'default': 0.50, 'min': 0.1, 'max': 1.0},
+            
+            # =================================================================
+            # STAFF REVIEW THRESHOLDS
+            # =================================================================
+            'NLP_STAFF_REVIEW_HIGH_ALWAYS': {'type': bool, 'default': True},
+            'NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD': {'type': float, 'default': 0.45, 'min': 0.1, 'max': 1.0},
+            'NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD': {'type': float, 'default': 0.75, 'min': 0.1, 'max': 1.0},
+            'NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT': {'type': bool, 'default': True},
+            
+            # =================================================================
+            # SAFETY AND BIAS CONTROLS
+            # =================================================================
+            'NLP_CONSENSUS_SAFETY_BIAS': {'type': float, 'default': 0.03, 'min': 0.0, 'max': 0.1},
+            'NLP_ENABLE_SAFETY_OVERRIDE': {'type': bool, 'default': True},
+            
+            # =================================================================
+            # LEGACY ENSEMBLE THRESHOLDS (for backward compatibility)
+            # =================================================================
+            'NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.45, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.25, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.12, 'min': 0.1, 'max': 1.0},
+            
+            # =================================================================
+            # INDIVIDUAL MODEL THRESHOLDS (for backward compatibility)
+            # =================================================================
+            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.45, 'min': 0.1, 'max': 1.0},
+            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.25, 'min': 0.1, 'max': 1.0},
+            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.15, 'min': 0.1, 'max': 1.0},
             
             # =================================================================
             # HARDWARE CONFIGURATION
@@ -88,13 +122,12 @@ class EnvConfigManager:
             'NLP_MODEL_PRECISION': {'type': str, 'default': 'float16', 'choices': ['float32', 'float16', 'bfloat16']},
             
             # =================================================================
-            # PERFORMANCE TUNING - THREE MODEL OPTIMIZATION
+            # PERFORMANCE TUNING
             # =================================================================
-            # Optimized for RTX 3060 (12GB VRAM) + Ryzen 7 5800X + 64GB RAM
-            'NLP_MAX_BATCH_SIZE': {'type': int, 'default': 48, 'min': 1, 'max': 128},  # Much larger batches with 12GB VRAM
-            'NLP_INFERENCE_THREADS': {'type': int, 'default': 16, 'min': 1, 'max': 32},  # Ryzen 7 5800X has 8 cores/16 threads
-            'NLP_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 20, 'min': 1, 'max': 100},  # Higher with abundant VRAM and RAM
-            'NLP_REQUEST_TIMEOUT': {'type': int, 'default': 35, 'min': 5, 'max': 300},  # Faster with more VRAM for batch processing
+            'NLP_MAX_BATCH_SIZE': {'type': int, 'default': 32, 'min': 1, 'max': 128},
+            'NLP_INFERENCE_THREADS': {'type': int, 'default': 16, 'min': 1, 'max': 32},
+            'NLP_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 20, 'min': 1, 'max': 100},
+            'NLP_REQUEST_TIMEOUT': {'type': int, 'default': 40, 'min': 5, 'max': 300},
             
             # =================================================================
             # SERVER CONFIGURATION
@@ -122,45 +155,10 @@ class EnvConfigManager:
             'NLP_LEARNING_DATA_DIR': {'type': str, 'default': './learning_data'},
             
             # =================================================================
-            # CRISIS DETECTION THRESHOLDS
-            # =================================================================
-            # Individual model thresholds
-            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.55, 'min': 0.1, 'max': 1.0},
-            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.28, 'min': 0.1, 'max': 1.0},
-            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.16, 'min': 0.1, 'max': 1.0},
-            
-            # Ensemble-specific thresholds
-            'NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.60, 'min': 0.1, 'max': 1.0},
-            'NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.35, 'min': 0.1, 'max': 1.0},
-            'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.20, 'min': 0.1, 'max': 1.0},
-            
-            # =================================================================
-            # ENHANCED CRISIS DETECTION THRESHOLDS
-            # =================================================================
-            # Individual model thresholds
-            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.55, 'min': 0.1, 'max': 1.0},
-            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.28, 'min': 0.1, 'max': 1.0},
-            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.16, 'min': 0.1, 'max': 1.0},
-
-            # Ensemble-specific thresholds (existing - keep these)
-            'NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.60, 'min': 0.1, 'max': 1.0},
-            'NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.35, 'min': 0.1, 'max': 1.0},
-            'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.20, 'min': 0.1, 'max': 1.0},
-
-            # ADDITIONAL THRESHOLD CONTROLS - Add these new ones:
-            'NLP_MILD_CRISIS_THRESHOLD': {'type': float, 'default': 0.30, 'min': 0.1, 'max': 1.0},
-            'NLP_NEGATIVE_RESPONSE_THRESHOLD': {'type': float, 'default': 0.70, 'min': 0.1, 'max': 1.0},
-            'NLP_UNKNOWN_RESPONSE_THRESHOLD': {'type': float, 'default': 0.50, 'min': 0.1, 'max': 1.0},
-
-            # CONSENSUS SENSITIVITY CONTROLS - Add these new ones:
-            'NLP_CONSENSUS_SAFETY_BIAS': {'type': float, 'default': 0.1, 'min': 0.0, 'max': 0.5},  # Bias toward higher crisis levels
-            'NLP_ENABLE_SAFETY_OVERRIDE': {'type': bool, 'default': True},  # Allow individual severe model results to override consensus
-
-            # =================================================================
             # RATE LIMITING
             # =================================================================
-            'NLP_MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 120, 'min': 1},  # Much higher with 12GB VRAM + excellent hardware
-            'NLP_MAX_REQUESTS_PER_HOUR': {'type': int, 'default': 2000, 'min': 1},   # Significantly increased for abundant VRAM
+            'NLP_MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 120, 'min': 1},
+            'NLP_MAX_REQUESTS_PER_HOUR': {'type': int, 'default': 2000, 'min': 1},
             
             # =================================================================
             # SECURITY
@@ -171,7 +169,6 @@ class EnvConfigManager:
             # =================================================================
             # EXPERIMENTAL FEATURES
             # =================================================================
-            # Enable experimental three-model features
             'NLP_ENABLE_ENSEMBLE_ANALYSIS': {'type': bool, 'default': True},
             'NLP_ENABLE_GAP_DETECTION': {'type': bool, 'default': True},
             'NLP_ENABLE_CONFIDENCE_SPREADING': {'type': bool, 'default': True},
@@ -219,25 +216,26 @@ class EnvConfigManager:
             raise ValueError(f"Invalid value for {key}: {raw_value} - {e}")
     
     def validate_config(self):
-        """Validate configuration consistency for 3-model ensemble"""
+        """Validate configuration consistency for centralized thresholds"""
         
-        # Validate individual model threshold ordering
-        if self.config['NLP_HIGH_CRISIS_THRESHOLD'] <= self.config['NLP_MEDIUM_CRISIS_THRESHOLD']:
-            raise ValueError("NLP_HIGH_CRISIS_THRESHOLD must be > NLP_MEDIUM_CRISIS_THRESHOLD")
+        # Validate consensus prediction mapping thresholds are properly ordered
+        crisis_high = self.config['NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD']
+        crisis_medium = self.config['NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD']
         
-        if self.config['NLP_MEDIUM_CRISIS_THRESHOLD'] <= self.config['NLP_LOW_CRISIS_THRESHOLD']:
-            raise ValueError("NLP_MEDIUM_CRISIS_THRESHOLD must be > NLP_LOW_CRISIS_THRESHOLD")
+        if crisis_high <= crisis_medium:
+            raise ValueError(
+                f"NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD ({crisis_high}) must be > "
+                f"NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD ({crisis_medium})"
+            )
         
-        # Validate ensemble threshold ordering
-        if self.config['NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD'] <= self.config['NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD']:
-            raise ValueError("NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD must be > NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD")
+        # Validate staff review thresholds are reasonable
+        medium_review = self.config['NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD']
+        low_review = self.config['NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD']
         
-        if self.config['NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD'] <= self.config['NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD']:
-            raise ValueError("NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD must be > NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD")
-        
-        # Validate learning system settings
-        if self.config['NLP_MIN_CONFIDENCE_ADJUSTMENT'] >= self.config['NLP_MAX_CONFIDENCE_ADJUSTMENT']:
-            raise ValueError("NLP_MIN_CONFIDENCE_ADJUSTMENT must be < NLP_MAX_CONFIDENCE_ADJUSTMENT")
+        if medium_review >= low_review:
+            logger.warning(
+                f"Staff review thresholds: MEDIUM ({medium_review}) should typically be < LOW ({low_review})"
+            )
         
         # Validate model weights sum to 1.0 (for weighted ensemble mode)
         if self.config['NLP_ENSEMBLE_MODE'] == 'weighted':
@@ -251,20 +249,46 @@ class EnvConfigManager:
                 raise ValueError(f"Model weights must sum to 1.0, got {total_weight}")
         
         # Validate gap detection thresholds make sense
-        if self.config['NLP_GAP_DETECTION_THRESHOLD'] >= self.config['NLP_DISAGREEMENT_THRESHOLD']:
-            raise ValueError("NLP_GAP_DETECTION_THRESHOLD should be < NLP_DISAGREEMENT_THRESHOLD")
+        gap_threshold = self.config['NLP_GAP_DETECTION_THRESHOLD']
+        disagreement_threshold = self.config['NLP_DISAGREEMENT_THRESHOLD']
         
-        logger.info("3-Model ensemble configuration validation passed")
-        logger.info(f"Ensemble mode: {self.config['NLP_ENSEMBLE_MODE']}")
-        logger.info(f"Model weights: Depression={self.config['NLP_DEPRESSION_MODEL_WEIGHT']}, "
-                    f"Sentiment={self.config['NLP_SENTIMENT_MODEL_WEIGHT']}, "
-                    f"Emotional={self.config['NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT']}")
+        if gap_threshold >= disagreement_threshold:
+            raise ValueError(
+                f"NLP_GAP_DETECTION_THRESHOLD ({gap_threshold}) should be < "
+                f"NLP_DISAGREEMENT_THRESHOLD ({disagreement_threshold})"
+            )
         
-        # Log hardware optimization
-        logger.info(f"Hardware optimization: Batch size={self.config['NLP_MAX_BATCH_SIZE']}, "
-                    f"Threads={self.config['NLP_INFERENCE_THREADS']}, "
-                    f"Concurrent requests={self.config['NLP_MAX_CONCURRENT_REQUESTS']}")
+        # Validate safety bias is reasonable
+        safety_bias = self.config['NLP_CONSENSUS_SAFETY_BIAS']
+        if safety_bias > 0.1:
+            logger.warning(f"NLP_CONSENSUS_SAFETY_BIAS ({safety_bias}) is quite high, consider <0.1")
+        
+        logger.info("✅ Centralized threshold configuration validation passed")
+        self._log_threshold_summary()
     
+    def _log_threshold_summary(self):
+        """Log a summary of the centralized threshold configuration"""
+        logger.info("🎯 Centralized Threshold Configuration:")
+        logger.info(f"   Ensemble mode: {self.config['NLP_ENSEMBLE_MODE']}")
+        
+        # Consensus mapping thresholds (PRIMARY)
+        logger.info("   Consensus Mapping Thresholds:")
+        logger.info(f"     CRISIS → HIGH: {self.config['NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD']}")
+        logger.info(f"     CRISIS → MEDIUM: {self.config['NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD']}")
+        logger.info(f"     MILD_CRISIS → LOW: {self.config['NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD']}")
+        logger.info(f"     NEGATIVE → LOW: {self.config['NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD']}")
+        
+        # Model weights
+        logger.info("   Model Weights:")
+        logger.info(f"     Depression: {self.config['NLP_DEPRESSION_MODEL_WEIGHT']}")
+        logger.info(f"     Sentiment: {self.config['NLP_SENTIMENT_MODEL_WEIGHT']}")
+        logger.info(f"     Emotional Distress: {self.config['NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT']}")
+        
+        # Staff review thresholds
+        logger.info("   Staff Review Thresholds:")
+        logger.info(f"     MEDIUM confidence: {self.config['NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD']}")
+        logger.info(f"     LOW confidence: {self.config['NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD']}")
+        
     def create_directories(self):
         """Create necessary directories"""
         directories = [
@@ -289,11 +313,30 @@ class EnvConfigManager:
         """Get all configuration values"""
         return self.config.copy()
     
+    def get_consensus_thresholds(self) -> Dict[str, float]:
+        """Get consensus prediction mapping thresholds (PRIMARY thresholds)"""
+        return {
+            'crisis_to_high': self.config['NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD'],
+            'crisis_to_medium': self.config['NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD'],
+            'mild_crisis_to_low': self.config['NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD'],
+            'negative_to_low': self.config['NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD'],
+            'unknown_to_low': self.config['NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD'],
+        }
+    
+    def get_staff_review_thresholds(self) -> Dict[str, Union[bool, float]]:
+        """Get staff review thresholds"""
+        return {
+            'high_always': self.config['NLP_STAFF_REVIEW_HIGH_ALWAYS'],
+            'medium_confidence': self.config['NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD'],
+            'low_confidence': self.config['NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD'],
+            'on_disagreement': self.config['NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT'],
+        }
+    
     def print_config(self):
         """Print configuration for debugging (hiding sensitive values)"""
         sensitive_keys = ['GLOBAL_HUGGINGFACE_TOKEN']
         
-        logger.info("=== NLP Service Configuration ===")
+        logger.info("=== Centralized NLP Service Configuration ===")
         for key, value in sorted(self.config.items()):
             if key in sensitive_keys and value:
                 display_value = f"{str(value)[:8]}..."
