@@ -53,9 +53,9 @@ class EnhancedModelManager:
         else:
             # Load from environment variables with defaults - ADD THIRD MODEL CONFIG
             return {
-                'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'AnkitAI/deberta-v3-small-base-emotions-classifier'),
-                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'siebert/sentiment-roberta-large-english'),
-                'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'distilbert-base-uncased-finetuned-sst-2-english'),  # NEW
+                'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
+                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'facebook/bart-large-mnli'),  # NEW
                 'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'),
                 'device': os.getenv('NLP_DEVICE', 'auto'),
                 'precision': os.getenv('NLP_MODEL_PRECISION', 'float16'),

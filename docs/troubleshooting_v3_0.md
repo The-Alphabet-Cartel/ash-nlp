@@ -92,8 +92,8 @@ deploy:
 docker exec ash-nlp env | grep NLP_
 
 # Common missing variables:
-NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
-NLP_ENSEMBLE_MODE=consensus
+NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
+NLP_ENSEMBLE_MODE=weighted
 ```
 
 **C. Port Conflicts**
@@ -146,7 +146,7 @@ docker exec ash-nlp env | grep HUGGINGFACE
 # Test manual download
 docker exec ash-nlp python -c "
 from transformers import pipeline
-pipeline('text-classification', model='AnkitAI/deberta-v3-small-base-emotions-classifier')
+pipeline('text-classification', model='MoritzLaurer/deberta-v3-base-zeroshot-v2.0')
 "
 ```
 
@@ -414,7 +414,7 @@ docker-compose up ash-nlp
 **C. Check Variable Names**
 ```bash
 # Ensure variables match exactly:
-NLP_ENSEMBLE_MODE=consensus                    # Correct
+NLP_ENSEMBLE_MODE=weighted                    # Correct
 NLP_ENSEMBLE_MODE="consensus"                  # Also correct
 ENSEMBLE_MODE=consensus                        # Wrong - missing NLP_ prefix
 ```
@@ -446,7 +446,7 @@ docker logs ash-nlp -f
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('text-classification', 
-                model='AnkitAI/deberta-v3-small-base-emotions-classifier', 
+                model='MoritzLaurer/deberta-v3-base-zeroshot-v2.0', 
                 device=0)
 print(model('I am feeling down'))
 "
@@ -455,7 +455,7 @@ print(model('I am feeling down'))
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('sentiment-analysis',
-                model='siebert/sentiment-roberta-large-english',
+                model='Lowerated/lm6-deberta-v3-topic-sentiment',
                 device=0)
 print(model('I am feeling down'))
 "
@@ -464,7 +464,7 @@ print(model('I am feeling down'))
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('sentiment-analysis',
-                model='distilbert-base-uncased-finetuned-sst-2-english',
+                model='facebook/bart-large-mnli',
                 device=0)
 print(model('I am feeling down'))
 "
@@ -708,7 +708,7 @@ What actually happens
 **Configuration**:
 ```bash
 # Relevant environment variables
-NLP_ENSEMBLE_MODE=consensus
+NLP_ENSEMBLE_MODE=weighted
 NLP_DEVICE=auto
 # etc.
 ```

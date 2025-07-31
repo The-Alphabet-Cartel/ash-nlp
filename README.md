@@ -19,22 +19,22 @@ Ash NLP v3.0 is a cutting-edge **three-model ensemble system** designed specific
 ## 🤖 Three-Model Architecture
 
 ### Model 1: Depression Detection 🧠
-- **Model**: `AnkitAI/deberta-v3-small-base-emotions-classifier`
+- **Model**: `MoritzLaurer/deberta-v3-base-zeroshot-v2.0`
 - **Architecture**: DeBERTa-based classification
 - **Purpose**: Primary crisis classification with clinical depression focus
-- **Labels**: `[sadness, joy, love, anger, fear, surprise]`
+- **Labels**: `[Dynamic Zero-Shot Labels]`
 
 ### Model 2: Sentiment Analysis 💭
-- **Model**: `siebert/sentiment-roberta-large-english`
-- **Architecture**: RoBERTa-based sentiment analysis
+- **Model**: `Lowerated/lm6-deberta-v3-topic-sentiment`
+- **Architecture**: DeBERTa-based sentiment analysis
 - **Purpose**: Contextual validation and emotional tone analysis
-- **Labels**: `[NEGATIVE, POSITIVE]`
+- **Labels**: `[Dynamic Zero-Shot Labels]`
 
 ### Model 3: Emotional Distress Detection 😰
-- **Model**: `distilbert-base-uncased-finetuned-sst-2-english`
-- **Architecture**: DistilBERT-based emotional analysis
+- **Model**: `facebook/bart-large-mnli`
+- **Architecture**: BART-based emotional analysis
 - **Purpose**: Additional emotional state detection and validation
-- **Labels**: `[NEGATIVE, POSITIVE]`
+- **Labels**: `[Dynamic Zero-Shot]`
 
 ## 🎯 Key Features
 
@@ -114,12 +114,12 @@ Key configuration options in `.env`:
 
 ```bash
 # Three-Model Configuration
-NLP_DEPRESSION_MODEL=AnkitAI/deberta-v3-small-base-emotions-classifier
-NLP_SENTIMENT_MODEL=siebert/sentiment-roberta-large-english
-NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
+NLP_DEPRESSION_MODEL=MoritzLaurer/deberta-v3-base-zeroshot-v2.0
+NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
+NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
 
 # Ensemble Configuration
-NLP_ENSEMBLE_MODE=consensus  # consensus, majority, weighted
+NLP_ENSEMBLE_MODE=weighted  # consensus, majority, weighted
 NLP_GAP_DETECTION_THRESHOLD=0.4
 NLP_DISAGREEMENT_THRESHOLD=0.5
 

@@ -84,17 +84,17 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
   "uptime_seconds": 1337.42,
   "models_loaded": {
     "depression": {
-      "name": "AnkitAI/deberta-v3-small-base-emotions-classifier",
+      "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
       "loaded": true,
       "purpose": "Primary crisis classification"
     },
     "sentiment": {
-      "name": "siebert/sentiment-roberta-large-english", 
+      "name": "Lowerated/lm6-deberta-v3-topic-sentiment", 
       "loaded": true,
       "purpose": "Contextual validation"
     },
     "emotional_distress": {
-      "name": "distilbert-base-uncased-finetuned-sst-2-english",
+      "name": "facebook/bart-large-mnli",
       "loaded": true,
       "purpose": "Emotional distress detection"
     }
@@ -475,12 +475,12 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 #### Three-Model Configuration
 ```bash
 # Model Selection
-NLP_DEPRESSION_MODEL=AnkitAI/deberta-v3-small-base-emotions-classifier
-NLP_SENTIMENT_MODEL=siebert/sentiment-roberta-large-english  
-NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
+NLP_DEPRESSION_MODEL=MoritzLaurer/deberta-v3-base-zeroshot-v2.0
+NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment  
+NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
 
 # Ensemble Settings
-NLP_ENSEMBLE_MODE=consensus              # consensus, majority, weighted
+NLP_ENSEMBLE_MODE=weighted              # consensus, majority, weighted
 NLP_GAP_DETECTION_THRESHOLD=0.4          # 0.0-1.0
 NLP_DISAGREEMENT_THRESHOLD=0.5           # 0.0-1.0
 NLP_AUTO_FLAG_DISAGREEMENTS=true

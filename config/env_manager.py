@@ -54,13 +54,13 @@ class EnvConfigManager:
             # THREE-MODEL CONFIGURATION
             # =================================================================
             # Model 1: Primary crisis detection (DeBERTa-based depression analysis)
-            'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'AnkitAI/deberta-v3-small-base-emotions-classifier'},
+            'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'},
             
             # Model 2: Contextual sentiment analysis (RoBERTa-based sentiment)
-            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'siebert/sentiment-roberta-large-english'},
+            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'Lowerated/lm6-deberta-v3-topic-sentiment'},
             
-            # Model 3: Emotional distress detection (DistilBERT-based emotional analysis)
-            'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'distilbert-base-uncased-finetuned-sst-2-english'},
+            # Model 3: Emotional distress detection (BART-based emotional analysis)
+            'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'facebook/bart-large-mnli'},
             
             # Model storage configuration
             'NLP_MODEL_CACHE_DIR': {'type': str, 'default': './models/cache'},

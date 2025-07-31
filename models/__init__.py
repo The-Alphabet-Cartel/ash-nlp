@@ -19,25 +19,25 @@ MODEL_INFO = {
     "ensemble_architecture": "three_model_consensus",
     "primary_models": {
         "depression": {
-            "name": "AnkitAI/deberta-v3-small-base-emotions-classifier",
+            "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
             "type": "DeBERTa-based classification",
-            "labels": ['sadness', 'joy', 'love', 'anger', 'fear', 'surprise'],
+            "labels": ['Dynamic Zero-Shot Labels'],
             "purpose": "Primary crisis classification",
             "weight": 0.5,
             "specialization": "Depression and suicidal ideation detection"
         },
         "sentiment": {
-            "name": "siebert/sentiment-roberta-large-english", 
-            "type": "RoBERTa-based sentiment analysis",
-            "labels": ["NEGATIVE", "POSITIVE"],
+            "name": "Lowerated/lm6-deberta-v3-topic-sentiment", 
+            "type": "DeBERTa-based sentiment analysis",
+            "labels": ['Dynamic Zero-Shot Labels'],
             "purpose": "Contextual validation and enhancement",
             "weight": 0.2,
             "specialization": "Emotional tone and context analysis"
         },
         "emotional_distress": {  # NEW MODEL
-            "name": "distilbert-base-uncased-finetuned-sst-2-english",
-            "type": "DistilBERT-based emotional classification",
-            "labels": ["negative", "positive"], 
+            "name": "facebook/bart-large-mnli",
+            "type": "BART-based emotional classification",
+            "labels": ['Dynamic Zero-Shot Labels'], 
             "purpose": "Emotional distress and stress detection",
             "weight": 0.3,
             "specialization": "General emotional distress and mental strain"

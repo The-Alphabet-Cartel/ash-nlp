@@ -54,11 +54,9 @@ ENV NLP_MIN_CONFIDENCE_ADJUSTMENT="0.05"
 ENV NLP_MAX_CONFIDENCE_ADJUSTMENT="0.30"
 
 ## Three-Model Configuration
-#ENV NLP_DEPRESSION_MODEL="rafalposwiata/deproberta-large-depression"
-ENV NLP_DEPRESSION_MODEL="AnkitAI/deberta-v3-small-base-emotions-classifier"
-#ENV NLP_SENTIMENT_MODEL="cardiffnlp/twitter-roberta-base-sentiment-latest"
-ENV NLP_SENTIMENT_MODEL="siebert/sentiment-roberta-large-english"
-ENV NLP_EMOTIONAL_DISTRESS_MODEL="distilbert-base-uncased-finetuned-sst-2-english"
+ENV NLP_DEPRESSION_MODEL="MoritzLaurer/deberta-v3-base-zeroshot-v2.0"
+ENV NLP_SENTIMENT_MODEL="Lowerated/lm6-deberta-v3-topic-sentiment"
+ENV NLP_EMOTIONAL_DISTRESS_MODEL="facebook/bart-large-mnli"
 ENV NLP_MODEL_CACHE_DIR="./models/cache"
 
 ## Ensemble Configuration

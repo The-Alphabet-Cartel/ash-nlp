@@ -153,11 +153,11 @@ class NLPConfigManager:
         
         # Model Configuration
         self._config['NLP_DEPRESSION_MODEL'] = self._get_config_value(
-            'NLP_DEPRESSION_MODEL', 'AnkitAI/deberta-v3-small-base-emotions-classifier'
+            'NLP_DEPRESSION_MODEL', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'
         )
         
         self._config['NLP_SENTIMENT_MODEL'] = self._get_config_value(
-            'NLP_SENTIMENT_MODEL', 'siebert/sentiment-roberta-large-english'
+            'NLP_SENTIMENT_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'
         )
         
         self._config['NLP_MODEL_CACHE_DIR'] = self._get_config_value(

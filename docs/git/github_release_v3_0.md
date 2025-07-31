@@ -28,18 +28,18 @@ Version 3.0 introduces a groundbreaking **three-model ensemble system** that fun
 ### 🤖 The Three Models
 
 1. **Depression Detection Model** 🧠
-   - `AnkitAI/deberta-v3-small-base-emotions-classifier`
+   - `MoritzLaurer/deberta-v3-base-zeroshot-v2.0`
    - DeBERTa-based clinical depression classification
    - Primary crisis assessment engine
 
 2. **Sentiment Analysis Model** 💭
-   - `siebert/sentiment-roberta-large-english`
-   - RoBERTa-based contextual sentiment analysis
+   - `Lowerated/lm6-deberta-v3-topic-sentiment`
+   - DeBERTa-based contextual sentiment analysis
    - Validates and enhances primary detection
 
 3. **Emotional Distress Model** 😰
-   - `distilbert-base-uncased-finetuned-sst-2-english`
-   - DistilBERT-based emotional state detection
+   - `facebook/bart-large-mnli`
+   - BART-based emotional state detection
    - Additional validation and edge case detection
 
 ---
@@ -140,10 +140,10 @@ Add these to your `.env` file:
 
 ```bash
 # Three-Model Configuration
-NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
+NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
 
 # Ensemble Configuration
-NLP_ENSEMBLE_MODE=consensus
+NLP_ENSEMBLE_MODE=weighted
 NLP_GAP_DETECTION_THRESHOLD=0.4
 NLP_DISAGREEMENT_THRESHOLD=0.5
 NLP_DEPRESSION_MODEL_WEIGHT=0.5
