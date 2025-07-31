@@ -7,8 +7,8 @@ services:
   # NLP Server (ash-nlp)
   # ========================================================================
   ash-nlp:
-    build:
-      context: .
+#    build:
+#      context: .
     image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
     container_name: ash-nlp
     restart: unless-stopped
