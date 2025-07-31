@@ -25,7 +25,7 @@ def get_detailed_analysis():
     # Send to ensemble endpoint
     try:
         payload = {"message": TEST_PHRASE}
-        response = requests.post(f"{NLP_SERVER_URL}/analyze_ensemble", json=payload, timeout=30)
+        response = requests.post(f"{NLP_SERVER_URL}/analyze", json=payload, timeout=30)
         
         if response.status_code != 200:
             print(f"❌ Request failed: {response.status_code}")
