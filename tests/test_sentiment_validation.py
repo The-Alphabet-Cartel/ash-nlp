@@ -24,7 +24,7 @@ print()
 
 # Configuration - Docker container internal networking
 NLP_SERVER_URL = "http://localhost:8881"  # Inside container, nlp service runs on localhost
-TEST_MODEL = "tabularisai/multilingual-sentiment-analysis"
+TEST_MODEL = "textattack/albert-base-v2-imdb"
 
 # Alternative URLs to try if localhost fails
 FALLBACK_URLS = [
