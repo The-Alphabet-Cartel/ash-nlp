@@ -85,13 +85,8 @@ docker-compose up ash-nlp
 # Health check
 curl http://localhost:8881/health
 
-# Basic analysis
-curl -X POST http://localhost:8881/analyze \
-  -H "Content-Type: application/json" \
-  -d '{"message": "I am feeling really down", "user_id": "test", "channel_id": "test"}'
-
 # Three-model ensemble analysis
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "I am feeling really down", "user_id": "test", "channel_id": "test"}'
 ```
@@ -124,7 +119,7 @@ NLP_GAP_DETECTION_THRESHOLD=0.4
 NLP_DISAGREEMENT_THRESHOLD=0.5
 
 # Hardware Optimization
-NLP_MAX_BATCH_SIZE=48
+NLP_MAX_BATCH_SIZE=32
 NLP_INFERENCE_THREADS=16
 NLP_MAX_CONCURRENT_REQUESTS=20
 ```
@@ -167,8 +162,8 @@ NLP_MAX_CONCURRENT_REQUESTS=20
 Ash NLP v3.0 integrates seamlessly with:
 
 - **[Ash Bot](https://github.com/the-alphabet-cartel/ash-bot)** - Discord crisis response bot
-- **[Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash)** - Analytics and monitoring
-- **[Ash Thrash](https://github.com/the-alphabet-cartel/ash-thrash)** - Testing and validation
+- **[Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash)** - Analytics and monitoring (Not Yet Implemented)
+- **[Ash Thrash](https://github.com/the-alphabet-cartel/ash-thrash)** - Testing and validation (Not Yet Implemented)
 
 ## 🔒 Security & Privacy
 

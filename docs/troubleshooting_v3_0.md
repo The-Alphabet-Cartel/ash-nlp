@@ -166,7 +166,7 @@ df -h
 #### Issue: Slow Response Times (>100ms)
 **Symptoms**:
 - API responses taking 100ms+ consistently
-- Timeouts on `/analyze_ensemble` endpoint
+- Timeouts on `/analyze` endpoint
 
 **Diagnostic Commands**:
 ```bash
@@ -230,7 +230,7 @@ NLP_MODEL_PRECISION=float16  # Faster, less memory
 **Diagnostic Commands**:
 ```bash
 # Test with known gap-triggering message
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "This exam is killing me but I can handle it", "user_id": "test", "channel_id": "test"}' \
   | jq '.ensemble_analysis.gaps_detected'
@@ -260,7 +260,7 @@ curl http://localhost:8881/stats | jq '.models_loaded'
 **C. Test Individual Model Responses**
 ```bash
 # Test each model's response to ambiguous message
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "I am dying to see that movie", "user_id": "test", "channel_id": "test"}' \
   | jq '.ensemble_analysis.individual_results'
@@ -479,7 +479,7 @@ docker stats ash-nlp
 
 # Terminal 2: Send test requests
 for i in {1..10}; do
-  time curl -X POST http://localhost:8881/analyze_ensemble \
+  time curl -X POST http://localhost:8881/analyze \
     -H "Content-Type: application/json" \
     -d '{"message": "test message '$i'", "user_id": "test", "channel_id": "test"}' \
     > /dev/null 2>&1

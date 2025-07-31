@@ -25,8 +25,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 |----------|--------|---------|---------------|
 | `/health` | GET | System health check | ~1ms |
 | `/stats` | GET | Service statistics | ~2ms |
-| `/analyze` | POST | Basic crisis analysis | ~25ms |
-| `/analyze_ensemble` | POST | Three-model ensemble analysis | ~31ms |
+| `/analyze` | POST | Three-model ensemble analysis | ~63ms |
 | `/extract_phrases` | POST | Crisis keyword extraction | ~200ms |
 | `/learning_statistics` | GET | Learning system metrics | ~3ms |
 
@@ -43,25 +42,35 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 {
   "status": "healthy",
   "model_loaded": true,
-  "uptime_seconds": 420.15,
+  "uptime_seconds": 1604.6477420330048,
   "hardware_info": {
     "device": "auto",
     "precision": "float16",
-    "max_batch_size": 48,
+    "max_batch_size": 32,
     "inference_threads": 16,
     "components_available": {
       "model_manager": true,
       "crisis_analyzer": true,
       "phrase_extractor": true,
-      "enhanced_learning": false
+      "enhanced_learning": true,
+      "three_model_ensemble": true
     },
-    "learning_system": "disabled",
+    "learning_system": "enabled",
     "secrets_status": {
       "claude_api_key": true,
       "huggingface_token": true,
       "openai_api_key": false
     },
-    "using_secrets": true
+    "using_secrets": true,
+    "ensemble_info": {
+      "models_count": 3,
+      "ensemble_modes": [
+        "consensus",
+        "majority",
+        "weighted"
+      ],
+      "gap_detection": "enabled"
+    }
   }
 }
 ```
@@ -79,55 +88,74 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 **Response**:
 ```json
 {
-  "service": "Enhanced Ash NLP Service with Secrets Support",
-  "version": "4.4",
-  "uptime_seconds": 1337.42,
+  "service": "Enhanced Ash NLP Service - Three-Model Ensemble",
+  "version": "4.5.0",
+  "uptime_seconds": 1635.8521761894226,
   "models_loaded": {
-    "depression": {
-      "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-      "loaded": true,
-      "purpose": "Primary crisis classification"
+    "models_loaded": true,
+    "device": 0,
+    "precision": "float16",
+    "ensemble_mode": "consensus",
+    "models": {
+      "depression": {
+        "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+        "loaded": true,
+        "purpose": "Primary crisis classification"
+      },
+      "sentiment": {
+        "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+        "loaded": true,
+        "purpose": "Contextual validation"
+      },
+      "emotional_distress": {
+        "name": "facebook/bart-large-mnli",
+        "loaded": true,
+        "purpose": "Emotional distress detection"
+      }
     },
-    "sentiment": {
-      "name": "Lowerated/lm6-deberta-v3-topic-sentiment", 
-      "loaded": true,
-      "purpose": "Contextual validation"
-    },
-    "emotional_distress": {
-      "name": "facebook/bart-large-mnli",
-      "loaded": true,
-      "purpose": "Emotional distress detection"
+    "gap_detection": {
+      "enabled": true,
+      "disagreement_threshold": 0.35,
+      "gap_detection_threshold": 0.25
     }
   },
   "configuration": {
     "learning_enabled": true,
-    "device": "0",
+    "device": "auto",
     "precision": "float16",
     "using_secrets": true,
+    "ensemble_enabled": true,
+    "models_count": 3,
     "thresholds": {
-      "high": 0.55,
-      "medium": 0.28,
-      "low": 0.16
-    },
-    "ensemble": {
-      "mode": "consensus",
-      "gap_detection_threshold": 0.4,
-      "disagreement_threshold": 0.5
+      "high": 0.45,
+      "medium": 0.25,
+      "low": 0.15
     }
   },
-  "hardware_config": {
-    "max_batch_size": 48,
-    "inference_threads": 16,
-    "max_concurrent_requests": 20,
-    "request_timeout": 35
+  "secrets_status": {
+    "claude_api_key": true,
+    "huggingface_token": true,
+    "openai_api_key": false
   },
   "components_available": {
     "model_manager": true,
     "crisis_analyzer": true,
     "phrase_extractor": true,
-    "pattern_learner": false,
-    "semantic_analyzer": false,
-    "enhanced_learning": true
+    "enhanced_learning": true,
+    "three_model_ensemble": true
+  },
+  "hardware_config": {
+    "max_batch_size": 32,
+    "inference_threads": 16,
+    "max_concurrent_requests": 20,
+    "request_timeout": 40
+  },
+  "ensemble_info": {
+    "depression_model": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+    "sentiment_model": "Lowerated/lm6-deberta-v3-topic-sentiment",
+    "emotional_distress_model": "unknown",
+    "ensemble_mode": "weighted",
+    "gap_detection_enabled": true
   }
 }
 ```
@@ -137,80 +165,6 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 ## 🧠 Analysis Endpoints
 
 ### POST `/analyze`
-
-**Purpose**: Basic crisis analysis using optimized two-model approach (backward compatible)
-
-**Request Body**:
-```json
-{
-  "message": "I am feeling really down and hopeless",
-  "user_id": "user123",
-  "channel_id": "channel456"
-}
-```
-
-**Parameters**:
-- `message` (string, required): Text message to analyze
-- `user_id` (string, required): Unique identifier for user
-- `channel_id` (string, required): Channel identifier for context
-
-**Response**:
-```json
-{
-  "needs_response": true,
-  "crisis_level": "medium",
-  "confidence_score": 0.4392612016201019,
-  "detected_categories": [
-    "moderate",
-    "not depression", 
-    "severe",
-    "negative_sentiment"
-  ],
-  "method": "enhanced_ml_analysis_with_false_positive_reduction",
-  "processing_time_ms": 25.3,
-  "model_info": "DeBERTa + RoBERTa with Enhanced Learning + False Positive Reduction",
-  "reasoning": "Context: {'has_positive_words': False, 'has_humor_context': False, 'has_work_context': False, 'has_idiom': False, 'idiom_type': None, 'question_mark': False, 'exclamation': False, 'negation_context': False, 'temporal_indicators': [], 'message_lower': 'i am feeling really down and hopeless'} | Sentiment: {'negative': 0.9044589400291443, 'neutral': 0.08435402065515518, 'positive': 0.011187071911990643} | Depression model: 0.439 | Context-adjusted: 0.439",
-  "analysis": {
-    "depression_score": 0.6050518811680377,
-    "sentiment_scores": {
-      "negative": 0.9044589400291443,
-      "neutral": 0.08435402065515518,
-      "positive": 0.011187071911990643
-    },
-    "context_signals": {
-      "has_positive_words": false,
-      "has_humor_context": false,
-      "has_work_context": false,
-      "has_idiom": false,
-      "idiom_type": null,
-      "question_mark": false,
-      "exclamation": false,
-      "negation_context": false,
-      "temporal_indicators": [],
-      "message_lower": "i am feeling really down and hopeless"
-    },
-    "crisis_indicators": []
-  }
-}
-```
-
-**Response Fields**:
-- `needs_response` (boolean): Whether team response is recommended
-- `crisis_level` (string): Final crisis level (`high`, `medium`, `low`, `none`)
-- `confidence_score` (float): Overall confidence in decision (0.0-1.0)
-- `detected_categories` (array): All categories detected by models
-- `processing_time_ms` (float): Analysis processing time
-- `reasoning` (string): Human-readable explanation of decision
-
-**Status Codes**:
-- `200`: Analysis completed successfully
-- `400`: Invalid request format
-- `422`: Invalid message content
-- `500`: Analysis failed (server error)
-
----
-
-### POST `/analyze_ensemble`
 
 **Purpose**: Advanced three-model ensemble analysis with gap detection
 
@@ -342,7 +296,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 
 ## 🔍 Analysis Tools
 
-### POST `/extract_phrases`
+### POST `/extract_phrases` (Not Yet Implemented)
 
 **Purpose**: Extract potential crisis keywords and phrases using model scoring
 
@@ -418,7 +372,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 
 ## 📈 Learning & Analytics
 
-### GET `/learning_statistics`
+### GET `/learning_statistics` (Work in Progress)
 
 **Purpose**: Get learning system performance metrics
 
@@ -618,20 +572,9 @@ GLOBAL_ALLOWED_IPS=10.20.30.0/24,172.20.0.0/16,127.0.0.1,::1
 
 ### Example Requests
 
-#### Basic Crisis Analysis
-```bash
-curl -X POST http://localhost:8881/analyze \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "I cannot handle this anymore",
-    "user_id": "user123",
-    "channel_id": "general"
-  }'
-```
-
 #### Ensemble Analysis with Gap Detection
 ```bash
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{
     "message": "This test is killing me but I think I can handle it",
@@ -640,7 +583,7 @@ curl -X POST http://localhost:8881/analyze_ensemble \
   }'
 ```
 
-#### Phrase Extraction
+#### Phrase Extraction (Not Yet Implemented)
 ```bash
 curl -X POST http://localhost:8881/extract_phrases \
   -H "Content-Type: application/json" \
@@ -687,8 +630,7 @@ curl -X POST http://localhost:8881/extract_phrases \
 |----------|--------|---------|----------|
 | `/health` | <2ms | ~1ms | Any |
 | `/stats` | <5ms | ~2ms | Any |
-| `/analyze` | <30ms | ~25ms | CPU/GPU |
-| `/analyze_ensemble` | <40ms | ~31ms | GPU Recommended |
+| `/analyze` | <100ms | ~25ms | GPU Recommended |
 | `/extract_phrases` | <250ms | ~185ms | GPU Recommended |
 
 ### Hardware Recommendations
@@ -762,7 +704,7 @@ curl http://localhost:8881/health | jq '.hardware_info.components_available'
 curl http://localhost:8881/stats | jq '.configuration.ensemble'
 
 # Test gap detection
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "This is killing me but I got this", "user_id": "test", "channel_id": "test"}' \
   | jq '.ensemble_analysis.gaps_detected'
@@ -784,7 +726,7 @@ class AshNLPClient:
         
     async def analyze_message(self, message, user_id, channel_id, use_ensemble=True):
         """Analyze a Discord message for crisis indicators"""
-        endpoint = "/analyze_ensemble" if use_ensemble else "/analyze"
+        endpoint = "/analyze" if use_ensemble else "/analyze"
         
         async with aiohttp.ClientSession() as session:
             payload = {
@@ -845,7 +787,7 @@ class AshNLPAPI {
     }
     
     async analyzeMessage(message, userId, channelId, useEnsemble = true) {
-        const endpoint = useEnsemble ? '/analyze_ensemble' : '/analyze';
+        const endpoint = useEnsemble ? '/analyze' : '/analyze';
         
         const response = await fetch(`${this.baseURL}${endpoint}`, {
             method: 'POST',
@@ -903,7 +845,7 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
 });
 ```
 
-### Monitoring Dashboard Integration
+### Monitoring Dashboard Integration (Not Yet Implemented)
 
 ```python
 import asyncio
@@ -958,7 +900,7 @@ class AshNLPMonitor:
                     "channel_id": channel_id
                 }
                 
-                async with session.post(f"{self.nlp_url}/analyze_ensemble", 
+                async with session.post(f"{self.nlp_url}/analyze", 
                                       json=payload) as response:
                     result = await response.json()
                     
@@ -1087,7 +1029,7 @@ class AshNLPSDK:
     async def analyze(self, message: str, user_id: str, channel_id: str,
                      use_ensemble: bool = True) -> AnalysisResult:
         """Analyze a message for crisis indicators"""
-        endpoint = '/analyze_ensemble' if use_ensemble else '/analyze'
+        endpoint = '/analyze' if use_ensemble else '/analyze'
         
         payload = {
             'message': message,
@@ -1168,65 +1110,6 @@ if __name__ == "__main__":
 
 ---
 
-## 📊 Batch Processing
-
-### Batch Analysis Endpoint
-
-```bash
-# POST /analyze_batch - Analyze multiple messages at once
-curl -X POST http://localhost:8881/analyze_batch \
-  -H "Content-Type: application/json" \
-  -d '{
-    "messages": [
-      {
-        "id": "msg1",
-        "message": "I am feeling down",
-        "user_id": "user1", 
-        "channel_id": "channel1"
-      },
-      {
-        "id": "msg2",
-        "message": "Having a great day",
-        "user_id": "user2",
-        "channel_id": "channel1"  
-      }
-    ],
-    "use_ensemble": true
-  }'
-```
-
-### Batch Response Format
-
-```json
-{
-  "results": [
-    {
-      "id": "msg1",
-      "crisis_level": "medium",
-      "confidence": 0.67,
-      "needs_response": true,
-      "processing_time_ms": 28.4
-    },
-    {
-      "id": "msg2", 
-      "crisis_level": "none",
-      "confidence": 0.95,
-      "needs_response": false,
-      "processing_time_ms": 23.1
-    }
-  ],
-  "summary": {
-    "total_messages": 2,
-    "crisis_detected": 1,
-    "gaps_detected": 0,
-    "avg_processing_time_ms": 25.75,
-    "total_processing_time_ms": 51.5
-  }
-}
-```
-
----
-
 ## 🔄 Version Migration
 
 ### Migrating from v2.x to v3.0
@@ -1288,7 +1171,7 @@ def handle_response_v2_to_v3(response_data):
 
 ### v3.0.0 (Current)
 - ✅ Added three-model ensemble analysis
-- ✅ Added `/analyze_ensemble` endpoint
+- ✅ Added `/analyze` endpoint
 - ✅ Added gap detection system
 - ✅ Added ensemble configuration options
 - ✅ Enhanced `/health` and `/stats` endpoints

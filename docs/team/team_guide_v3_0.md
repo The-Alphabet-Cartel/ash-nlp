@@ -313,7 +313,7 @@ curl -X POST http://localhost:8881/analyze \
   -d '{"message": "TEST MESSAGE HERE", "user_id": "test", "channel_id": "test"}'
 
 # Full ensemble analysis
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "TEST MESSAGE HERE", "user_id": "test", "channel_id": "test"}'
 ```

@@ -95,8 +95,7 @@ def get_supported_endpoints():
     """Get list of supported API endpoints for three-model ensemble"""
     return {
         "analysis": [
-            "/analyze - Enhanced message analysis with three-model ensemble",
-            "/analyze_ensemble - Full ensemble analysis with gap detection",
+            "/analyze - Full ensemble analysis with gap detection",
             "/extract_phrases - Extract potential crisis keywords using ensemble scoring",
             "/learn_patterns - Learn crisis communication patterns from history",
             "/semantic_analysis - Enhanced crisis detection with community context"

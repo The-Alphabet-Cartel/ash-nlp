@@ -171,4 +171,4 @@ LABEL maintainer="The Alphabet Cartel" \
       feature.api-server="enabled" \
       feature.analytics-dashboard="supported" \
       api.port="8881" \
-      api.endpoints="/health,/stats,/analyze,/analyze_ensemble,/extract_phrases,/learning_statistics"
+      api.endpoints="/health,/stats,/analyze,/learning_statistics"

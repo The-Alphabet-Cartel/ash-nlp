@@ -99,9 +99,9 @@ Choose how your models work together:
 
 ## 🆕 New API Endpoints
 
-### `/analyze_ensemble` - Three-Model Analysis
+### `/analyze` - Three-Model Analysis
 ```bash
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "I am struggling", "user_id": "user123", "channel_id": "channel456"}'
 ```
@@ -222,7 +222,7 @@ curl http://localhost:8881/health
 const response = await fetch('/analyze', {...});
 
 // New ensemble endpoint for advanced features
-const ensembleResponse = await fetch('/analyze_ensemble', {...});
+const ensembleResponse = await fetch('/analyze', {...});
 ```
 
 ---
@@ -232,7 +232,7 @@ const ensembleResponse = await fetch('/analyze_ensemble', {...});
 ### Performance Testing
 ```bash
 # Quick validation test
-curl -X POST http://localhost:8881/analyze_ensemble \
+curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "This test is killing me but I can handle it", "user_id": "test", "channel_id": "test"}'
 
