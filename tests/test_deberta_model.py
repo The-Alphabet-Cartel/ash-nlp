@@ -22,10 +22,11 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 try:
     import torch
     from transformers import pipeline, AutoConfig
+    from huggingface_hub import login
     print("✅ Required packages imported successfully")
 except ImportError as e:
     print(f"❌ Import error: {e}")
-    print("Make sure transformers and torch are installed")
+    print("Make sure transformers, torch, and huggingface_hub are installed")
     sys.exit(1)
 
 # Configure logging
@@ -122,6 +123,66 @@ class MentalHealthModelTester:
             'performance_metrics': {},
             'recommendation': ''
         }
+        
+        # Set up Hugging Face authentication
+        self._setup_huggingface_auth()
+        
+    def _setup_huggingface_auth(self):
+        """Set up Hugging Face authentication"""
+        try:
+            # Try multiple token locations
+            token_paths = [
+                "/run/secrets/huggingface",  # Docker secrets location
+                "./secrets/huggingface",     # Local secrets location
+                "../secrets/huggingface",    # Parent directory secrets
+                "../../secrets/huggingface", # Two levels up
+            ]
+            
+            token = None
+            
+            # Try environment variable first
+            if os.getenv('GLOBAL_HUGGINGFACE_TOKEN'):
+                token = os.getenv('GLOBAL_HUGGINGFACE_TOKEN')
+                if token.startswith('/run/secrets'):
+                    # It's a path, read from file
+                    try:
+                        with open(token, 'r') as f:
+                            token = f.read().strip()
+                    except:
+                        token = None
+                elif token and len(token) > 10:  # Direct token
+                    pass
+                else:
+                    token = None
+            
+            # Try reading from file paths
+            if not token:
+                for path in token_paths:
+                    try:
+                        if os.path.exists(path):
+                            with open(path, 'r') as f:
+                                token = f.read().strip()
+                            if token and len(token) > 10:
+                                logger.info(f"✅ Found Hugging Face token at: {path}")
+                                break
+                    except Exception as e:
+                        continue
+            
+            # Try hardcoded token as fallback (for testing)
+            if not token:
+                hardcoded_token = "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"
+                logger.warning("🔑 Using hardcoded token for testing - replace with secure method")
+                token = hardcoded_token
+            
+            if token and len(token) > 10:
+                login(token=token)
+                logger.info("🔐 Successfully authenticated with Hugging Face")
+            else:
+                logger.warning("🔓 No Hugging Face token found - will try without authentication")
+                
+        except Exception as e:
+            logger.warning(f"🔓 Could not authenticate with Hugging Face: {e}")
+            logger.info("Will attempt to load models without authentication")
         
     def _configure_device(self):
         """Configure device for testing"""
