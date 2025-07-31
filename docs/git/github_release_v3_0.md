@@ -28,7 +28,7 @@ Version 3.0 introduces a groundbreaking **three-model ensemble system** that fun
 ### 🤖 The Three Models
 
 1. **Depression Detection Model** 🧠
-   - `rafalposwiata/deproberta-large-depression`
+   - `AnkitAI/deberta-v3-small-base-emotions-classifier`
    - DeBERTa-based clinical depression classification
    - Primary crisis assessment engine
 

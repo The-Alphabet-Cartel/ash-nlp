@@ -146,7 +146,7 @@ docker exec ash-nlp env | grep HUGGINGFACE
 # Test manual download
 docker exec ash-nlp python -c "
 from transformers import pipeline
-pipeline('text-classification', model='rafalposwiata/deproberta-large-depression')
+pipeline('text-classification', model='AnkitAI/deberta-v3-small-base-emotions-classifier')
 "
 ```
 
@@ -446,7 +446,7 @@ docker logs ash-nlp -f
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('text-classification', 
-                model='rafalposwiata/deproberta-large-depression', 
+                model='AnkitAI/deberta-v3-small-base-emotions-classifier', 
                 device=0)
 print(model('I am feeling down'))
 "

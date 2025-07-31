@@ -153,7 +153,7 @@ class NLPConfigManager:
         
         # Model Configuration
         self._config['NLP_DEPRESSION_MODEL'] = self._get_config_value(
-            'NLP_DEPRESSION_MODEL', 'rafalposwiata/deproberta-large-depression'
+            'NLP_DEPRESSION_MODEL', 'AnkitAI/deberta-v3-small-base-emotions-classifier'
         )
         
         self._config['NLP_SENTIMENT_MODEL'] = self._get_config_value(

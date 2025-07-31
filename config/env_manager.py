@@ -54,7 +54,7 @@ class EnvConfigManager:
             # THREE-MODEL CONFIGURATION
             # =================================================================
             # Model 1: Primary crisis detection (DeBERTa-based depression analysis)
-            'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'rafalposwiata/deproberta-large-depression'},
+            'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'AnkitAI/deberta-v3-small-base-emotions-classifier'},
             
             # Model 2: Contextual sentiment analysis (RoBERTa-based sentiment)
             'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'siebert/sentiment-roberta-large-english'},

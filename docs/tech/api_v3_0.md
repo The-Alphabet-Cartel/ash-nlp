@@ -84,7 +84,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
   "uptime_seconds": 1337.42,
   "models_loaded": {
     "depression": {
-      "name": "rafalposwiata/deproberta-large-depression",
+      "name": "AnkitAI/deberta-v3-small-base-emotions-classifier",
       "loaded": true,
       "purpose": "Primary crisis classification"
     },
@@ -475,7 +475,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 #### Three-Model Configuration
 ```bash
 # Model Selection
-NLP_DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
+NLP_DEPRESSION_MODEL=AnkitAI/deberta-v3-small-base-emotions-classifier
 NLP_SENTIMENT_MODEL=siebert/sentiment-roberta-large-english  
 NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
 

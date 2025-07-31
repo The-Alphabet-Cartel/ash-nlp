@@ -37,7 +37,8 @@ services:
       - NLP_MAX_CONFIDENCE_ADJUSTMENT=${NLP_MAX_CONFIDENCE_ADJUSTMENT:-0.30}
       
       # Model Configuration
-      - NLP_DEPRESSION_MODEL=${NLP_DEPRESSION_MODEL:-rafalposwiata/deproberta-large-depression}
+      #- NLP_DEPRESSION_MODEL=${NLP_DEPRESSION_MODEL:-rafalposwiata/deproberta-large-depression}
+      - NLP_DEPRESSION_MODEL=${NLP_DEPRESSION_MODEL:-AnkitAI/deberta-v3-small-base-emotions-classifier}
       #- NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-cardiffnlp/twitter-roberta-base-sentiment-latest}
       - NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-siebert/sentiment-roberta-large-english}
 

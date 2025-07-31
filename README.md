@@ -19,10 +19,10 @@ Ash NLP v3.0 is a cutting-edge **three-model ensemble system** designed specific
 ## 🤖 Three-Model Architecture
 
 ### Model 1: Depression Detection 🧠
-- **Model**: `rafalposwiata/deproberta-large-depression`
+- **Model**: `AnkitAI/deberta-v3-small-base-emotions-classifier`
 - **Architecture**: DeBERTa-based classification
 - **Purpose**: Primary crisis classification with clinical depression focus
-- **Labels**: `[severe, moderate, not depression]`
+- **Labels**: `[sadness, joy, love, anger, fear, surprise]`
 
 ### Model 2: Sentiment Analysis 💭
 - **Model**: `siebert/sentiment-roberta-large-english`
@@ -114,7 +114,7 @@ Key configuration options in `.env`:
 
 ```bash
 # Three-Model Configuration
-NLP_DEPRESSION_MODEL=rafalposwiata/deproberta-large-depression
+NLP_DEPRESSION_MODEL=AnkitAI/deberta-v3-small-base-emotions-classifier
 NLP_SENTIMENT_MODEL=siebert/sentiment-roberta-large-english
 NLP_EMOTIONAL_DISTRESS_MODEL=distilbert-base-uncased-finetuned-sst-2-english
 

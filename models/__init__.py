@@ -19,9 +19,9 @@ MODEL_INFO = {
     "ensemble_architecture": "three_model_consensus",
     "primary_models": {
         "depression": {
-            "name": "rafalposwiata/deproberta-large-depression",
+            "name": "AnkitAI/deberta-v3-small-base-emotions-classifier",
             "type": "DeBERTa-based classification",
-            "labels": ["not depression", "moderate", "severe"],
+            "labels": ['sadness', 'joy', 'love', 'anger', 'fear', 'surprise'],
             "purpose": "Primary crisis classification",
             "weight": 0.5,
             "specialization": "Depression and suicidal ideation detection"
