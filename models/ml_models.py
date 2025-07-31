@@ -495,15 +495,21 @@ class EnhancedModelManager:
         if pred_lower in ['severe', 'moderate', 'negative', 'depression']:
             return 'crisis'
         
-        # Emotion-based crisis indicators (UPDATED)
-        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:  # Added disgust
+        # ALBERT IMDB labels (NEW)
+        elif pred_lower == 'label_0':  # LABEL_0 = Negative sentiment in IMDB
+            return 'crisis'
+        elif pred_lower == 'label_1':  # LABEL_1 = Positive sentiment in IMDB  
+            return 'safe'
+        
+        # Emotion-based crisis indicators
+        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:
             return 'crisis'
         
         # Safe/positive indicators  
         elif pred_lower in ['not depression', 'positive', 'neutral']:
             return 'safe'
         
-        # Positive emotions (UPDATED)
+        # Positive emotions
         elif pred_lower in ['joy', 'love', 'surprise']:
             return 'safe'
         
