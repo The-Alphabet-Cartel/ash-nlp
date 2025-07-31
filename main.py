@@ -1,8 +1,9 @@
-# CRITICAL FIX: Update your main.py file
+# CRITICAL FIX: Update your main.py file - FIXED LEARNING SYSTEM INTEGRATION
 
 #!/usr/bin/env python3
 """
 Enhanced NLP Service for Ash Bot - With Secrets Support and Three-Model Ensemble
+UPDATED: Fixed learning system integration
 """
 
 from fastapi import FastAPI, HTTPException
@@ -116,6 +117,16 @@ except ImportError as e:
     PHRASE_EXTRACTOR_AVAILABLE = False
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
+# FIXED: Import learning system with proper error handling
+try:
+    from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    ENHANCED_LEARNING_AVAILABLE = True
+    logger.info("✅ EnhancedLearningManager import successful")
+except ImportError as e:
+    ENHANCED_LEARNING_AVAILABLE = False
+    logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
+    logger.info("ℹ️ Learning system will be disabled")
+
 # Global components
 model_manager = None
 crisis_analyzer = None
@@ -133,6 +144,14 @@ async def lifespan(app: FastAPI):
     logger.info("🔧 Adding three-model ensemble endpoints...")
     add_ensemble_endpoints(app, model_manager)
     logger.info("🎯 Three-model ensemble endpoints added - /analyze is now ensemble-powered!")
+    
+    # FIXED: Add learning endpoints if available
+    if enhanced_learning_manager:
+        logger.info("🔧 Adding enhanced learning endpoints...")
+        add_enhanced_learning_endpoints(app, enhanced_learning_manager)
+        logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
+    else:
+        logger.info("ℹ️ Learning system not available - skipping learning endpoints")
     
     logger.info("✅ Enhanced FastAPI app startup complete!")
     yield
@@ -157,6 +176,28 @@ async def initialize_components_with_config():
         logger.info("📦 Loading three-model ensemble with secrets-aware configuration...")
         await model_manager.load_models()
         logger.info("✅ Enhanced ModelManager initialized and THREE MODELS loaded")
+        
+        # FIXED: Initialize enhanced learning manager if available and enabled
+        if ENHANCED_LEARNING_AVAILABLE and config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
+            try:
+                # Try to pass config manager if EnhancedLearningManager supports it
+                try:
+                    enhanced_learning_manager = EnhancedLearningManager(model_manager, config_manager)
+                    logger.info("✅ Enhanced learning system initialized with secrets support")
+                except TypeError:
+                    # Fallback: EnhancedLearningManager doesn't support config parameter yet
+                    enhanced_learning_manager = EnhancedLearningManager(model_manager)
+                    logger.info("✅ Enhanced learning system initialized (using environment variables)")
+            except Exception as e:
+                logger.error(f"❌ Could not initialize Enhanced Learning Manager: {e}")
+                logger.exception("Full initialization error:")
+                enhanced_learning_manager = None
+        else:
+            if not ENHANCED_LEARNING_AVAILABLE:
+                logger.info("ℹ️ Enhanced learning system not available")
+            elif not config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
+                logger.info("ℹ️ Learning system disabled via GLOBAL_ENABLE_LEARNING_SYSTEM=false")
+            enhanced_learning_manager = None
         
         # Initialize analyzers (only if available)
         if CRISIS_ANALYZER_AVAILABLE:
@@ -195,16 +236,6 @@ async def initialize_components_with_config():
         else:
             logger.info("ℹ️ PhraseExtractor not available")
             phrase_extractor = None
-        
-        # Add enhanced learning endpoints if manager is available
-        if enhanced_learning_manager:
-            try:
-                logger.info("🔧 Adding enhanced learning endpoints...")
-                add_enhanced_learning_endpoints(app, enhanced_learning_manager)
-                logger.info("🧠 Enhanced learning endpoints added to FastAPI app!")
-            except Exception as e:
-                logger.error(f"❌ Failed to add enhanced learning endpoints: {e}")
-                logger.exception("Full traceback:")
 
         logger.info("✅ All available components initialized with secrets-aware configuration")
         
@@ -248,7 +279,7 @@ async def health_check():
         "model_manager": model_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
         "phrase_extractor": phrase_extractor is not None,
-        "enhanced_learning": enhanced_learning_manager is not None,
+        "enhanced_learning": enhanced_learning_manager is not None,  # FIXED
         "three_model_ensemble": model_manager and hasattr(model_manager, 'analyze_with_ensemble')
     }
     
@@ -267,7 +298,7 @@ async def health_check():
             "max_batch_size": config['NLP_MAX_BATCH_SIZE'],
             "inference_threads": config['NLP_INFERENCE_THREADS'],
             "components_available": components_status,
-            "learning_system": "enabled" if enhanced_learning_manager else "disabled",
+            "learning_system": "enabled" if enhanced_learning_manager else "disabled",  # FIXED
             "secrets_status": api_keys_status,
             "using_secrets": any(api_keys_status.values()),
             "ensemble_info": {
@@ -309,7 +340,7 @@ async def get_stats():
             "model_manager": model_manager is not None,
             "crisis_analyzer": CRISIS_ANALYZER_AVAILABLE and crisis_analyzer is not None,
             "phrase_extractor": PHRASE_EXTRACTOR_AVAILABLE and phrase_extractor is not None,
-            "enhanced_learning": enhanced_learning_manager is not None,
+            "enhanced_learning": ENHANCED_LEARNING_AVAILABLE and enhanced_learning_manager is not None,  # FIXED
             "three_model_ensemble": model_manager and hasattr(model_manager, 'analyze_with_ensemble')
         },
         "hardware_config": {
