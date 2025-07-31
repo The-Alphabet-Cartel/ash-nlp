@@ -495,15 +495,15 @@ class EnhancedModelManager:
         if pred_lower in ['severe', 'moderate', 'negative', 'depression']:
             return 'crisis'
         
-        # NEW: Add emotion-based crisis indicators
-        elif pred_lower in ['sadness', 'fear', 'anger']:
+        # Emotion-based crisis indicators (UPDATED)
+        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:  # Added disgust
             return 'crisis'
         
         # Safe/positive indicators  
         elif pred_lower in ['not depression', 'positive', 'neutral']:
             return 'safe'
         
-        # NEW: Add positive emotions
+        # Positive emotions (UPDATED)
         elif pred_lower in ['joy', 'love', 'surprise']:
             return 'safe'
         
