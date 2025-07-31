@@ -553,24 +553,30 @@ class EnhancedModelManager:
         return processed
     
     def _normalize_prediction(self, prediction: str) -> str:
-        """Enhanced normalization for swapped models"""
+        """Enhanced normalization - ADD THESE MISSING MAPPINGS"""
         pred_lower = prediction.lower()
         
-        # Depression model predictions (from zero-shot) - PRIMARY CRISIS DETECTION
+        # Depression model predictions (from zero-shot)
         if pred_lower in ['severe', 'moderate']:
             return 'crisis'
         elif pred_lower in ['mild']:
-            return 'mild_crisis'  # New intermediate category
+            return 'mild_crisis'
         elif pred_lower in ['not depression']:
             return 'safe'
         
-        # Sentiment model predictions (from emotion classifier) - CONTEXTUAL
+        # Sentiment model predictions (from emotion classifier)
         elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:
             return 'crisis'
         elif pred_lower in ['joy', 'love', 'surprise']:
             return 'safe'
         
-        # Keep existing mappings for third model (DistilBERT)
+        # ← ADD THESE MISSING MAPPINGS FOR DISTILBERT
+        elif pred_lower == 'negative':
+            return 'crisis'
+        elif pred_lower == 'positive':
+            return 'safe'
+        
+        # Keep existing mappings
         elif pred_lower == 'label_0':  # DistilBERT IMDB (negative)
             return 'crisis'
         elif pred_lower == 'label_1':  # DistilBERT IMDB (positive)
