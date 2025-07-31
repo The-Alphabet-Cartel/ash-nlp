@@ -100,12 +100,19 @@ NORMAL_MESSAGES = [
     "Can't wait for the concert next week!"
 ]
 
-class DeBERTaModelTester:
-    """Test the new DeBERTa model against crisis keywords"""
+class MentalHealthModelTester:
+    """Test mental health classification models against crisis keywords"""
     
     def __init__(self):
         self.old_model_name = "rafalposwiata/deproberta-large-depression"
-        self.new_model_name = "microsoft/deberta-v3-large"
+        # Better alternatives - these are already fine-tuned for classification
+        self.model_candidates = [
+            "slimshady07/Mental_BERT",  # Fine-tuned BERT for mental health classification
+            "AIMH/mental-roberta-large",  # Mental health specific RoBERTa (may need gating)
+            "mental/mental-bert-base-uncased",  # Original MentalBERT (may need gating)
+            "siebert/sentiment-roberta-large-english"  # Current working sentiment model
+        ]
+        self.new_model_name = "slimshady07/Mental_BERT"  # Start with this one
         self.device = self._configure_device()
         self.old_model = None
         self.new_model = None
@@ -145,34 +152,47 @@ class DeBERTaModelTester:
             old_load_time = time.time() - start_time
             logger.info(f"✅ Old model loaded in {old_load_time:.2f}s")
             
-            # Load new model
-            logger.info(f"Loading new model: {self.new_model_name}")
-            start_time = time.time()
-            
-            # First, check the model config to understand its labels
-            try:
-                config = AutoConfig.from_pretrained(self.new_model_name)
-                logger.info(f"Model config: {config.model_type}")
-                if hasattr(config, 'id2label'):
-                    logger.info(f"Model labels: {config.id2label}")
-                else:
-                    logger.info("No predefined labels found in config")
-            except Exception as e:
-                logger.warning(f"Could not load model config: {e}")
-            
-            self.new_model = pipeline(
-                "text-classification",
-                model=self.new_model_name,
-                device=self.device,
-                torch_dtype=torch.float16,
-                top_k=None
-            )
-            new_load_time = time.time() - start_time
-            logger.info(f"✅ New model loaded in {new_load_time:.2f}s")
+            # Try loading new models in order of preference
+            for model_name in self.model_candidates:
+                logger.info(f"Trying to load: {model_name}")
+                start_time = time.time()
+                
+                try:
+                    # First, check the model config to understand its labels
+                    try:
+                        config = AutoConfig.from_pretrained(model_name)
+                        logger.info(f"Model config: {config.model_type}")
+                        if hasattr(config, 'id2label'):
+                            logger.info(f"Model labels: {config.id2label}")
+                        else:
+                            logger.info("No predefined labels found in config")
+                    except Exception as e:
+                        logger.warning(f"Could not load model config: {e}")
+                    
+                    # Try to load the model
+                    self.new_model = pipeline(
+                        "text-classification",
+                        model=model_name,
+                        device=self.device,
+                        torch_dtype=torch.float16,
+                        top_k=None,
+                        use_fast=False  # Use slow tokenizer to avoid protobuf issues
+                    )
+                    new_load_time = time.time() - start_time
+                    self.new_model_name = model_name  # Update the name to what actually worked
+                    logger.info(f"✅ New model ({model_name}) loaded in {new_load_time:.2f}s")
+                    break
+                    
+                except Exception as e:
+                    logger.warning(f"❌ Failed to load {model_name}: {e}")
+                    continue
+            else:
+                raise Exception("All candidate models failed to load")
             
             # Store load times
             self.results['performance_metrics']['old_model_load_time'] = old_load_time
             self.results['performance_metrics']['new_model_load_time'] = new_load_time
+            self.results['performance_metrics']['selected_model'] = self.new_model_name
             
             # Check memory usage
             if self.device != -1:
@@ -400,7 +420,7 @@ class DeBERTaModelTester:
 def main():
     """Main function to run the test"""
     try:
-        tester = DeBERTaModelTester()
+        tester = MentalHealthModelTester()
         test_results = tester.run_comprehensive_test()
         tester.print_summary(test_results)
         tester.save_results()
