@@ -7,7 +7,7 @@ import logging
 import os
 import torch
 from transformers import pipeline, AutoConfig
-from typing import Optional, Dict, Any, Union, List, Tuple
+from typing import Optional, Dict, Any, Union, List, Tuple  # ← Make sure List is included
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -131,6 +131,39 @@ class EnhancedModelManager:
         else:
             logger.info("🔓 No Hugging Face token provided (using public models only)")
     
+    def get_depression_labels(self):
+        """Ultra-specific crisis detection labels for primary model"""
+        return [
+            "person actively expressing suicidal ideation, plans for self-harm, or immediate danger to themselves",
+            "person showing severe clinical depression with major functional impairment and crisis indicators",
+            "person experiencing moderate depression with significant distress requiring professional intervention",
+            "person having mild depressive episode or temporary low mood with manageable symptoms",
+            "person in stable mental health with normal emotional fluctuations and no depression signs",
+            "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
+        ]
+
+    def get_sentiment_labels(self):
+        """Emotional tone and affect labels for contextual analysis"""
+        return [
+            "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
+            "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment", 
+            "person displaying mixed or neutral emotional state without strong positive or negative feelings",
+            "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
+            "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
+            "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
+        ]
+
+    def get_emotional_distress_labels(self):
+        """Stress and coping capacity labels for validation"""
+        return [
+            "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
+            "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
+            "person showing moderate distress with some difficulty managing emotions and daily responsibilities", 
+            "person handling normal life stress with adequate coping strategies and emotional regulation",
+            "person demonstrating strong emotional resilience with healthy stress management and adaptation",
+            "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
+        ]
+
     def _get_model_kwargs(self) -> Dict[str, Any]:
         """Get arguments for model pipeline creation"""
         return {
@@ -213,8 +246,8 @@ class EnhancedModelManager:
             raise
     
     async def _load_depression_model(self, model_kwargs, loading_kwargs):
-        """Load zero-shot depression detection model"""
-        logger.info("🧠 Loading Zero-Shot Depression Detection model...")
+        """Load specialized zero-shot model for depression detection"""
+        logger.info("🧠 Loading Depression-Specialized Zero-Shot model...")
         logger.info(f"   Model: {self.config['depression_model']}")
         
         try:
@@ -223,21 +256,20 @@ class EnhancedModelManager:
                 **loading_kwargs
             )
             logger.info(f"   Architecture: {dep_config.model_type}")
-            logger.info(f"   Labels: Zero-shot classification for depression detection")
+            logger.info(f"   Task: Mental health crisis detection")
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
-        # CHANGED: Load as zero-shot-classification instead of text-classification
         self.depression_model = pipeline(
-            "zero-shot-classification",  # ← CHANGED
+            "zero-shot-classification",
             model=self.config['depression_model'],
             **model_kwargs
         )
-        logger.info("✅ Zero-shot depression model loaded successfully!")
-    
+        logger.info("✅ Depression zero-shot model loaded successfully!")
+
     async def _load_sentiment_model(self, model_kwargs, loading_kwargs):
-        """Load emotion-based sentiment analysis model"""
-        logger.info("💭 Loading Emotion-based Sentiment Analysis model...")
+        """Load specialized zero-shot model for sentiment analysis"""
+        logger.info("💭 Loading Sentiment-Specialized Zero-Shot model...")
         logger.info(f"   Model: {self.config['sentiment_model']}")
         
         try:
@@ -246,22 +278,20 @@ class EnhancedModelManager:
                 **loading_kwargs
             )
             logger.info(f"   Architecture: {sent_config.model_type}")
-            logger.info(f"   Labels: {getattr(sent_config, 'id2label', 'Emotion classification')}")
+            logger.info(f"   Task: Emotional context analysis")
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
-        # CHANGED: Load as text-classification instead of zero-shot-classification
         self.sentiment_model = pipeline(
-            "text-classification",  # ← CHANGED
+            "zero-shot-classification",
             model=self.config['sentiment_model'],
-            top_k=None,
             **model_kwargs
         )
-        logger.info("✅ Emotion sentiment model loaded successfully!")
-    
+        logger.info("✅ Sentiment zero-shot model loaded successfully!")
+
     async def _load_emotional_distress_model(self, model_kwargs, loading_kwargs):
-        """Load the emotional distress detection model (NEW)"""
-        logger.info("😰 Loading Emotional Distress model...")
+        """Load specialized zero-shot model for emotional distress"""
+        logger.info("😰 Loading Distress-Specialized Zero-Shot model...")
         logger.info(f"   Model: {self.config['emotional_distress_model']}")
         
         try:
@@ -270,17 +300,16 @@ class EnhancedModelManager:
                 **loading_kwargs
             )
             logger.info(f"   Architecture: {distress_config.model_type}")
-            logger.info(f"   Labels: {getattr(distress_config, 'id2label', 'Not specified')}")
+            logger.info(f"   Task: Emotional distress validation")
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
         self.emotional_distress_model = pipeline(
-            "sentiment-analysis",  # DistilBERT SST-2 uses sentiment-analysis pipeline
+            "zero-shot-classification",
             model=self.config['emotional_distress_model'],
-            top_k=None,
             **model_kwargs
         )
-        logger.info("✅ Emotional distress model loaded successfully!")
+        logger.info("✅ Emotional distress zero-shot model loaded successfully!")
     
     async def _test_all_models(self):
         """Test all three models with sample messages"""
@@ -373,34 +402,127 @@ class EnhancedModelManager:
     
     # Analysis methods
     def analyze_with_depression_model(self, message: str):
-        """Analyze message with zero-shot depression detection"""
+        """Primary crisis detection using specialized depression model"""
         try:
-            # Depression-specific labels for primary crisis detection
-            depression_labels = [
-                "severe depression with suicidal ideation requiring immediate intervention",
-                "moderate depression with significant functional impairment", 
-                "mild depression or temporary low mood",
-                "normal emotional state with no depression indicators",
-                "positive mental health and emotional wellbeing"
-            ]
+            labels = self.get_depression_labels()
+            result = self.depression_model(message, labels)
             
-            result = self.depression_model(message, depression_labels)
-            
-            # Convert to expected format for compatibility
             formatted_result = []
             for label, score in zip(result['labels'], result['scores']):
-                # Map to depression categories
-                depression_category = self._map_to_depression_category(label)
+                category = self._map_depression_zero_shot_label(label)
                 formatted_result.append({
-                    'label': depression_category,
-                    'score': score
+                    'label': category,
+                    'score': score,
+                    'model_type': 'depression_specialist',
+                    'raw_label': label  # Keep for debugging
                 })
             
             return formatted_result
             
         except Exception as e:
-            logger.error(f"Zero-shot depression analysis failed: {e}")
+            logger.error(f"Depression specialist zero-shot failed: {e}")
             return None
+
+    def analyze_with_sentiment_model(self, message: str):
+        """Emotional context analysis using specialized sentiment model"""
+        try:
+            labels = self.get_sentiment_labels()
+            result = self.sentiment_model(message, labels)
+            
+            formatted_result = []
+            for label, score in zip(result['labels'], result['scores']):
+                category = self._map_sentiment_zero_shot_label(label)
+                formatted_result.append({
+                    'label': category,
+                    'score': score,
+                    'model_type': 'sentiment_specialist',
+                    'raw_label': label  # Keep for debugging
+                })
+            
+            return formatted_result
+            
+        except Exception as e:
+            logger.error(f"Sentiment specialist zero-shot failed: {e}")
+            return None
+
+    def analyze_with_emotional_distress_model(self, message: str):
+        """Distress validation using specialized distress model"""
+        try:
+            labels = self.get_emotional_distress_labels()
+            result = self.emotional_distress_model(message, labels)
+            
+            formatted_result = []
+            for label, score in zip(result['labels'], result['scores']):
+                category = self._map_distress_zero_shot_label(label)
+                formatted_result.append({
+                    'label': category,
+                    'score': score,
+                    'model_type': 'distress_specialist',
+                    'raw_label': label  # Keep for debugging
+                })
+            
+            return formatted_result
+            
+        except Exception as e:
+            logger.error(f"Distress specialist zero-shot failed: {e}")
+            return None
+
+    def _map_depression_zero_shot_label(self, long_label: str) -> str:
+        """Map depression specialist labels to crisis categories"""
+        label_lower = long_label.lower()
+        
+        if "actively expressing suicidal ideation" in label_lower or "immediate danger" in label_lower:
+            return "severe"
+        elif "severe clinical depression" in label_lower or "major functional impairment" in label_lower:
+            return "severe"
+        elif "moderate depression" in label_lower or "professional intervention" in label_lower:
+            return "moderate"
+        elif "mild depressive episode" in label_lower or "manageable symptoms" in label_lower:
+            return "mild"
+        elif "stable mental health" in label_lower or "no depression signs" in label_lower:
+            return "not depression"
+        elif "positive mental wellness" in label_lower or "psychological stability" in label_lower:
+            return "not depression"
+        else:
+            return "not depression"
+
+    def _map_sentiment_zero_shot_label(self, long_label: str) -> str:
+        """Map sentiment specialist labels to emotional categories"""
+        label_lower = long_label.lower()
+        
+        if "profound despair" in label_lower or "overwhelming sadness" in label_lower or "emotional devastation" in label_lower:
+            return "Very Negative"
+        elif "significant negative emotions" in label_lower or "anger" in label_lower or "deep disappointment" in label_lower:
+            return "Negative"
+        elif "mixed or neutral emotional state" in label_lower:
+            return "Neutral"
+        elif "mild positive emotions" in label_lower or "calm contentment" in label_lower:
+            return "Positive"
+        elif "strong positive emotions" in label_lower or "joy" in label_lower or "enthusiasm" in label_lower:
+            return "Very Positive"
+        elif "intense positive energy" in label_lower or "euphoria" in label_lower or "peak emotional highs" in label_lower:
+            return "Very Positive"
+        else:
+            return "Neutral"
+
+    def _map_distress_zero_shot_label(self, long_label: str) -> str:
+        """Map distress specialist labels to stress categories"""
+        label_lower = long_label.lower()
+        
+        if "acute psychological distress" in label_lower or "immediate crisis intervention" in label_lower:
+            return "High Distress"
+        elif "severe emotional overwhelm" in label_lower or "significantly impaired functioning" in label_lower:
+            return "High Distress"
+        elif "moderate distress" in label_lower or "difficulty managing emotions" in label_lower:
+            return "Medium Distress"
+        elif "normal life stress" in label_lower or "adequate coping strategies" in label_lower:
+            return "Low Distress"
+        elif "strong emotional resilience" in label_lower or "healthy stress management" in label_lower:
+            return "No Distress"
+        elif "optimal emotional wellbeing" in label_lower or "excellent coping skills" in label_lower:
+            return "No Distress"
+        else:
+            return "Low Distress"
 
     def _map_to_depression_category(self, zero_shot_label: str) -> str:
         """Map zero-shot labels to depression categories"""
@@ -418,17 +540,6 @@ class EnhancedModelManager:
             return "not depression"
         else:
             return "not depression"  # Default to safe
-    
-    def analyze_with_sentiment_model(self, message: str):
-        """Analyze message with emotion classification model"""
-        try:
-            # Direct emotion classification - no labels needed
-            result = self.sentiment_model(message)
-            return result  # Already in correct format
-            
-        except Exception as e:
-            logger.error(f"Emotion sentiment analysis failed: {e}")
-            return None
     
     def _map_crisis_label_to_sentiment(self, long_label: str) -> str:
         """Map crisis-specific labels back to sentiment categories"""
@@ -553,37 +664,41 @@ class EnhancedModelManager:
         return processed
     
     def _normalize_prediction(self, prediction: str) -> str:
-        """Enhanced normalization - ADD THESE MISSING MAPPINGS"""
+        """Enhanced normalization for multi zero-shot specialist predictions"""
         pred_lower = prediction.lower()
         
-        # Depression model predictions (from zero-shot)
-        if pred_lower in ['severe', 'moderate']:
+        # Depression specialist predictions (highest priority for crisis)
+        if pred_lower in ['severe']:
+            return 'crisis'
+        elif pred_lower in ['moderate']:
             return 'crisis'
         elif pred_lower in ['mild']:
             return 'mild_crisis'
         elif pred_lower in ['not depression']:
             return 'safe'
         
-        # Sentiment model predictions (from emotion classifier)
-        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:
+        # Sentiment specialist predictions (emotional context)
+        elif pred_lower in ['very negative']:
             return 'crisis'
-        elif pred_lower in ['joy', 'love', 'surprise']:
+        elif pred_lower in ['negative']:
+            return 'mild_crisis'  # Less severe than depression model
+        elif pred_lower in ['neutral']:
+            return 'neutral'
+        elif pred_lower in ['positive', 'very positive']:
             return 'safe'
         
-        # ← ADD THESE MISSING MAPPINGS FOR DISTILBERT
-        elif pred_lower == 'negative':
+        # Distress specialist predictions (validation context)
+        elif pred_lower in ['high distress']:
             return 'crisis'
-        elif pred_lower == 'positive':
-            return 'safe'
-        
-        # Keep existing mappings
-        elif pred_lower == 'label_0':  # DistilBERT IMDB (negative)
-            return 'crisis'
-        elif pred_lower == 'label_1':  # DistilBERT IMDB (positive)
+        elif pred_lower in ['medium distress']:
+            return 'mild_crisis'
+        elif pred_lower in ['low distress']:
+            return 'neutral'
+        elif pred_lower in ['no distress']:
             return 'safe'
         
         return 'unknown'
-    
+
     def _generate_consensus(self, processed: Dict[str, Any]) -> Dict[str, Any]:
         """Generate consensus prediction from three models using NORMALIZED predictions"""
         if not processed['confidence_scores']:
