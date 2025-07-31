@@ -11,18 +11,17 @@ import time
 from fastapi import HTTPException
 from typing import Dict, Any, List
 from models.pydantic_models import MessageRequest, CrisisResponse
+from config.env_manager import get_config
 
 logger = logging.getLogger(__name__)
+config = get_config()
 
 def add_ensemble_endpoints(app, model_manager):
     """Add ensemble analysis endpoints to the FastAPI app"""
     
     @app.post("/analyze", response_model=CrisisResponse)
     async def analyze_message(request: MessageRequest) -> CrisisResponse:
-        """
-        PRIMARY ENDPOINT: Three-model ensemble analysis with crisis detection
-        RENAMED from /analyze_ensemble - this is now the main analysis endpoint
-        """
+        """PRIMARY ENDPOINT: Three-model ensemble analysis with crisis detection"""
         start_time = time.time()
         
         try:
@@ -47,7 +46,7 @@ def add_ensemble_endpoints(app, model_manager):
             consensus_confidence = consensus['confidence']
             consensus_method = consensus['method']
             
-            # FIXED: Map consensus to crisis level using corrected logic
+            # Use environment-configured crisis level mapping
             crisis_level = _map_to_crisis_level(consensus)
             needs_response = _determine_response_need(consensus)
             
@@ -60,7 +59,7 @@ def add_ensemble_endpoints(app, model_manager):
             # Determine if staff review is required
             requires_staff_review = _requires_staff_review(crisis_level, consensus_confidence, ensemble_result)
             
-            # Build comprehensive response in CrisisResponse format
+            # Build comprehensive response
             result = CrisisResponse(
                 needs_response=needs_response,
                 crisis_level=crisis_level,
@@ -71,25 +70,19 @@ def add_ensemble_endpoints(app, model_manager):
                 model_info="three_model_ensemble",
                 reasoning=f"Ensemble consensus: {consensus_prediction} (confidence: {consensus_confidence:.3f}, method: {consensus_method})",
                 analysis={
-                    # Core ensemble data
                     "ensemble_analysis": ensemble_result,
                     "consensus_prediction": consensus_prediction,
                     "consensus_confidence": consensus_confidence,
                     "consensus_method": consensus_method,
-                    
-                    # Individual model results
                     "individual_results": ensemble_result.get('individual_results', {}),
-                    
-                    # Gap detection
                     "gaps_detected": ensemble_result.get('gaps_detected', False),
                     "gap_details": ensemble_result.get('gap_details', []),
                     "requires_staff_review": requires_staff_review,
-                    
-                    # Request metadata
                     "message_analyzed": message,
                     "user_id": request.user_id,
                     "channel_id": request.channel_id,
-                    "timestamp": time.time()
+                    "timestamp": time.time(),
+                    "thresholds_used": _get_current_thresholds()
                 }
             )
             
