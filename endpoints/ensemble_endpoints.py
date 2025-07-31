@@ -1,6 +1,9 @@
+# UPDATED ensemble_endpoints.py - Clean endpoint structure
+
 """
 Ensemble Analysis Endpoint for Three-Model Architecture
 Provides comprehensive analysis with gap detection and consensus building
+UPDATED: /analyze_ensemble renamed to /analyze (primary endpoint)
 """
 
 import logging
@@ -14,11 +17,11 @@ logger = logging.getLogger(__name__)
 def add_ensemble_endpoints(app, model_manager):
     """Add ensemble analysis endpoints to the FastAPI app"""
     
-    @app.post("/analyze_ensemble")
-    async def analyze_message_with_ensemble(request: MessageRequest) -> Dict[str, Any]:
+    @app.post("/analyze", response_model=CrisisResponse)
+    async def analyze_message(request: MessageRequest) -> CrisisResponse:
         """
-        Comprehensive ensemble analysis using all three models
-        Includes gap detection and consensus building
+        PRIMARY ENDPOINT: Three-model ensemble analysis with crisis detection
+        RENAMED from /analyze_ensemble - this is now the main analysis endpoint
         """
         start_time = time.time()
         
@@ -29,107 +32,73 @@ def add_ensemble_endpoints(app, model_manager):
             message = request.message.strip()
             if not message:
                 raise HTTPException(status_code=400, detail="Empty message")
+            
+            logger.info(f"🔍 Three-model ensemble analysis: '{message[:50]}...'")
             
             # Perform ensemble analysis
             ensemble_result = model_manager.analyze_with_ensemble(message)
             
+            # Extract consensus information
+            consensus = ensemble_result.get('consensus')
+            if not consensus:
+                raise HTTPException(status_code=500, detail="Ensemble analysis failed to produce consensus")
+            
+            consensus_prediction = consensus['prediction']
+            consensus_confidence = consensus['confidence']
+            consensus_method = consensus['method']
+            
+            # FIXED: Map consensus to crisis level using corrected logic
+            crisis_level = _map_to_crisis_level(consensus)
+            needs_response = _determine_response_need(consensus)
+            
+            # Extract detected categories from individual models
+            detected_categories = _extract_categories(ensemble_result)
+            
             # Calculate processing time
             processing_time = (time.time() - start_time) * 1000
             
-            # Build comprehensive response
-            response = {
-                "message_analyzed": message,
-                "user_id": request.user_id,
-                "channel_id": request.channel_id,
-                "ensemble_analysis": ensemble_result,
-                "processing_time_ms": processing_time,
-                "model_info": "three_model_ensemble",
-                "timestamp": time.time()
-            }
+            # Determine if staff review is required
+            requires_staff_review = _requires_staff_review(crisis_level, consensus_confidence, ensemble_result)
             
-            # Add gap detection summary
-            if ensemble_result.get('gaps_detected'):
-                response['requires_staff_review'] = True
-                response['gap_summary'] = _summarize_gaps(ensemble_result.get('gap_details', []))
-            else:
-                response['requires_staff_review'] = False
-            
-            # Add consensus information
-            consensus = ensemble_result.get('consensus')
-            if consensus:
-                response['consensus_prediction'] = consensus['prediction']
-                response['consensus_confidence'] = consensus['confidence']
-                response['consensus_method'] = consensus['method']
-                
-                # Map to traditional crisis levels for compatibility
-                response['crisis_level'] = _map_to_crisis_level(consensus)
-                response['needs_response'] = _determine_response_need(consensus)
-            
-            return response
-            
-        except Exception as e:
-            logger.error(f"Ensemble analysis failed: {e}")
-            raise HTTPException(status_code=500, detail=f"Ensemble analysis error: {str(e)}")
-    
-    @app.post("/analyze")
-    async def analyze_message_legacy(request: MessageRequest) -> CrisisResponse:
-        """
-        Legacy analysis endpoint - now uses ensemble but returns compatible format
-        """
-        start_time = time.time()
-        
-        try:
-            if not model_manager.models_loaded():
-                raise HTTPException(status_code=503, detail="Models not loaded")
-            
-            message = request.message.strip()
-            if not message:
-                raise HTTPException(status_code=400, detail="Empty message")
-            
-            # Use ensemble analysis but format as legacy response
-            ensemble_result = model_manager.analyze_with_ensemble(message)
-            consensus = ensemble_result.get('consensus')
-            
-            processing_time = (time.time() - start_time) * 1000
-            
-            # Build legacy-compatible response
-            if consensus:
-                crisis_level = _map_to_crisis_level(consensus)
-                needs_response = _determine_response_need(consensus)
-                confidence = consensus['confidence']
-                method = f"ensemble_{consensus['method']}"
-                
-                # Extract detected categories from individual models
-                detected_categories = _extract_categories(ensemble_result)
-                
-                # Add reasoning if gaps detected
-                reasoning = None
-                if ensemble_result.get('gaps_detected'):
-                    reasoning = f"Model disagreement detected: {len(ensemble_result.get('gap_details', []))} gaps found"
-                
-            else:
-                # Fallback values
-                crisis_level = "none"
-                needs_response = False
-                confidence = 0.0
-                method = "ensemble_error"
-                detected_categories = []
-                reasoning = "Ensemble analysis failed"
-            
-            return CrisisResponse(
+            # Build comprehensive response in CrisisResponse format
+            result = CrisisResponse(
                 needs_response=needs_response,
                 crisis_level=crisis_level,
-                confidence_score=confidence,
+                confidence_score=consensus_confidence,
                 detected_categories=detected_categories,
-                method=method,
+                method=f"three_model_ensemble_{consensus_method}",
                 processing_time_ms=processing_time,
                 model_info="three_model_ensemble",
-                reasoning=reasoning,
-                analysis=ensemble_result  # Include full ensemble details
+                reasoning=f"Ensemble consensus: {consensus_prediction} (confidence: {consensus_confidence:.3f}, method: {consensus_method})",
+                analysis={
+                    # Core ensemble data
+                    "ensemble_analysis": ensemble_result,
+                    "consensus_prediction": consensus_prediction,
+                    "consensus_confidence": consensus_confidence,
+                    "consensus_method": consensus_method,
+                    
+                    # Individual model results
+                    "individual_results": ensemble_result.get('individual_results', {}),
+                    
+                    # Gap detection
+                    "gaps_detected": ensemble_result.get('gaps_detected', False),
+                    "gap_details": ensemble_result.get('gap_details', []),
+                    "requires_staff_review": requires_staff_review,
+                    
+                    # Request metadata
+                    "message_analyzed": message,
+                    "user_id": request.user_id,
+                    "channel_id": request.channel_id,
+                    "timestamp": time.time()
+                }
             )
             
+            logger.info(f"✅ Ensemble analysis complete: {crisis_level} (consensus: {consensus_prediction} @ {consensus_confidence:.3f})")
+            return result
+            
         except Exception as e:
-            logger.error(f"Legacy analysis failed: {e}")
+            logger.error(f"❌ Ensemble analysis failed: {e}")
+            logger.exception("Full traceback:")
             raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
     
     @app.get("/ensemble_health")
@@ -207,94 +176,90 @@ def add_ensemble_endpoints(app, model_manager):
             logger.error(f"Confidence analysis failed: {e}")
             raise HTTPException(status_code=500, detail=f"Confidence analysis error: {str(e)}")
 
-def _summarize_gaps(gap_details: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Summarize detected gaps for staff review"""
-    summary = {
-        "total_gaps": len(gap_details),
-        "gap_types": {},
-        "requires_immediate_attention": False
-    }
-    
-    for gap in gap_details:
-        gap_type = gap.get('type', 'unknown')
-        if gap_type not in summary['gap_types']:
-            summary['gap_types'][gap_type] = 0
-        summary['gap_types'][gap_type] += 1
-        
-        # Flag for immediate attention if high confidence disagreement
-        if gap_type == 'confidence_disagreement' and gap.get('spread', 0) > 0.7:
-            summary['requires_immediate_attention'] = True
-    
-    return summary
-
 def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
-    """Enhanced mapping for swapped models with zero-shot depression detection"""
-    prediction = consensus.get('prediction', 'unknown').lower()
+    """
+    FIXED: Map ensemble consensus to crisis levels using NORMALIZED predictions
+    This handles the actual ensemble output: 'crisis', 'mild_crisis', 'safe', etc.
+    """
+    prediction = consensus.get('prediction', 'unknown').lower().strip()
     confidence = consensus.get('confidence', 0.0)
     
-    # Handle depression model predictions (zero-shot) - MOST IMPORTANT
-    if prediction == 'severe':
-        return 'high'  # Severe depression is always high crisis
-    elif prediction == 'moderate':
-        if confidence >= 0.7:
-            return 'high'
-        elif confidence >= 0.5:
-            return 'medium'
-        else:
-            return 'low'
-    elif prediction == 'mild':
-        if confidence >= 0.8:
-            return 'medium'  # High confidence mild can be medium
-        else:
-            return 'low'
-    elif prediction == 'not depression':
-        return 'none'
+    logger.info(f"🎯 Mapping consensus: prediction='{prediction}' confidence={confidence:.3f}")
     
-    # Handle emotion model predictions (sentiment context)
-    elif prediction in ['sadness', 'fear']:
-        if confidence >= 0.8:
-            return 'medium'  # Emotions are contextual, not primary
-        elif confidence >= 0.6:
-            return 'low'
+    # Handle NORMALIZED predictions from three-model ensemble
+    if prediction == 'crisis':
+        if confidence >= 0.70:
+            result = 'high'      # High confidence crisis
+        elif confidence >= 0.45:
+            result = 'medium'    # Medium confidence crisis  
         else:
-            return 'none'
-    elif prediction == 'anger':
-        if confidence >= 0.8:
-            return 'low'  # Anger less predictive than sadness/fear
-        else:
-            return 'none'
-    elif prediction in ['joy', 'love', 'surprise']:
-        return 'none'
+            result = 'low'       # Low confidence crisis, but still crisis
+        
+        logger.info(f"🚨 CRISIS consensus: {prediction} @ {confidence:.3f} -> {result}")
+        return result
     
-    # Handle normalized predictions from ensemble
-    elif prediction == 'crisis':
-        if confidence >= 0.8:
-            return 'high'
-        elif confidence >= 0.6:
-            return 'medium'
-        else:
-            return 'low'
     elif prediction == 'mild_crisis':
-        return 'low'
-    elif prediction == 'safe':
+        if confidence >= 0.60:
+            result = 'low'       # Mild crisis with good confidence
+        else:
+            result = 'none'      # Very uncertain mild crisis
+        
+        logger.info(f"⚠️ MILD_CRISIS consensus: {prediction} @ {confidence:.3f} -> {result}")
+        return result
+    
+    elif prediction in ['safe', 'neutral', 'positive']:
+        logger.info(f"✅ SAFE consensus: {prediction} @ {confidence:.3f} -> none")
         return 'none'
     
-    # Keep existing mappings for other predictions
-    elif prediction in ['negative'] and confidence > 0.8:
-        return 'medium'
-    elif prediction in ['negative'] and confidence > 0.6:
-        return 'low'
-    elif prediction in ['positive']:
-        return 'none'
+    elif prediction in ['negative', 'mild_negative']:
+        if confidence >= 0.80:  # Very confident negative sentiment
+            result = 'low'        # Might need monitoring
+        else:
+            result = 'none'
+        
+        logger.info(f"➖ NEGATIVE consensus: {prediction} @ {confidence:.3f} -> {result}")
+        return result
     
-    # Default fallback
+    # Fallback for unknown predictions - be conservative
     else:
-        return 'none'
+        logger.warning(f"❓ Unknown consensus prediction: '{prediction}' with confidence {confidence:.3f}")
+        if confidence > 0.60:  # If we're confident but don't know what it means, be safe
+            result = 'low'
+        else:
+            result = 'none'
+        
+        logger.info(f"🤷 UNKNOWN consensus: {prediction} @ {confidence:.3f} -> {result} (conservative fallback)")
+        return result
 
 def _determine_response_need(consensus: Dict[str, Any]) -> bool:
-    """Determine if crisis response is needed based on consensus"""
+    """
+    FIXED: Determine if crisis response is needed based on PROPER crisis level mapping
+    """
     crisis_level = _map_to_crisis_level(consensus)
-    return crisis_level in ['medium', 'high']
+    needs_response = crisis_level in ['low', 'medium', 'high']  # ANY crisis level needs response
+    
+    logger.info(f"📋 Response determination: crisis_level='{crisis_level}' -> needs_response={needs_response}")
+    return needs_response
+
+def _requires_staff_review(crisis_level: str, confidence: float, ensemble_result: Dict[str, Any]) -> bool:
+    """Determine if staff review is required"""
+    # High crisis always requires review
+    if crisis_level == 'high':
+        return True
+    
+    # Medium crisis with good confidence requires review
+    if crisis_level == 'medium' and confidence >= 0.60:
+        return True
+    
+    # Low crisis with very high confidence might need review
+    if crisis_level == 'low' and confidence >= 0.80:
+        return True
+    
+    # Any model disagreement requires review
+    if ensemble_result.get('gaps_detected', False):
+        return True
+    
+    return False
 
 def _extract_categories(ensemble_result: Dict[str, Any]) -> List[str]:
     """Extract detected categories from ensemble analysis"""
@@ -304,9 +269,10 @@ def _extract_categories(ensemble_result: Dict[str, Any]) -> List[str]:
     individual_results = ensemble_result.get('individual_results', {})
     
     for model_name, results in individual_results.items():
-        for result in results:
-            label = result.get('label', '').lower()
-            if label in ['severe', 'negative', 'moderate'] and label not in categories:
+        if results and isinstance(results, list) and len(results) > 0:
+            top_result = max(results, key=lambda x: x.get('score', 0))
+            label = top_result.get('label', '').lower()
+            if label in ['severe', 'moderate', 'negative', 'high distress', 'medium distress']:
                 categories.append(f"{model_name}_{label}")
     
     # Add ensemble-specific categories
@@ -316,7 +282,9 @@ def _extract_categories(ensemble_result: Dict[str, Any]) -> List[str]:
     consensus = ensemble_result.get('consensus', {})
     if consensus.get('method') == 'unanimous_consensus':
         categories.append('unanimous_consensus')
+    elif consensus.get('method') == 'weighted_ensemble':
+        categories.append('weighted_consensus')
     
     return categories
 
-logger.info("🎯 Ensemble analysis endpoints defined (three-model architecture)")
+logger.info("🎯 Ensemble analysis endpoints configured - /analyze is now the primary three-model endpoint")
