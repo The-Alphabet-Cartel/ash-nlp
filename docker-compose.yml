@@ -9,7 +9,7 @@ services:
   ash-nlp:
     build:
       context: .
-    image: ghcr.io/the-alphabet-cartel/ash-nlp:organic
+    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
     container_name: ash-nlp
     restart: unless-stopped
     networks:
