@@ -39,6 +39,8 @@ RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
 USER nlpuser
 
 # Set default environment variables optimized for three-model ensemble
+ENV TZ="America/Los_Angeles"
+
 ## Core Python settings
 ENV GLOBAL_PYTHONUNBUFFERED="1"
 
