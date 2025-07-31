@@ -236,8 +236,8 @@ class EnhancedModelManager:
         logger.info("✅ Depression model loaded successfully!")
     
     async def _load_sentiment_model(self, model_kwargs, loading_kwargs):
-        """Load the sentiment analysis model"""
-        logger.info("💭 Loading Sentiment Analysis model...")
+        """Load the zero-shot sentiment analysis model"""
+        logger.info("💭 Loading Zero-Shot Sentiment Analysis model...")
         logger.info(f"   Model: {self.config['sentiment_model']}")
         
         try:
@@ -246,17 +246,17 @@ class EnhancedModelManager:
                 **loading_kwargs
             )
             logger.info(f"   Architecture: {sent_config.model_type}")
-            logger.info(f"   Labels: {getattr(sent_config, 'id2label', 'Not specified')}")
+            logger.info(f"   Labels: Zero-shot classification (dynamic)")
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
+        # CHANGE THIS LINE - use 'zero-shot-classification' not 'sentiment-analysis'
         self.sentiment_model = pipeline(
-            "sentiment-analysis",
+            "zero-shot-classification",  # ← CHANGED FROM "sentiment-analysis"
             model=self.config['sentiment_model'],
-            top_k=None,
             **model_kwargs
         )
-        logger.info("✅ Sentiment model loaded successfully!")
+        logger.info("✅ Zero-shot sentiment model loaded successfully!")
     
     async def _load_emotional_distress_model(self, model_kwargs, loading_kwargs):
         """Load the emotional distress detection model (NEW)"""
