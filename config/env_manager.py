@@ -135,6 +135,28 @@ class EnvConfigManager:
             'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.20, 'min': 0.1, 'max': 1.0},
             
             # =================================================================
+            # ENHANCED CRISIS DETECTION THRESHOLDS
+            # =================================================================
+            # Individual model thresholds
+            'NLP_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.55, 'min': 0.1, 'max': 1.0},
+            'NLP_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.28, 'min': 0.1, 'max': 1.0},
+            'NLP_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.16, 'min': 0.1, 'max': 1.0},
+
+            # Ensemble-specific thresholds (existing - keep these)
+            'NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD': {'type': float, 'default': 0.60, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD': {'type': float, 'default': 0.35, 'min': 0.1, 'max': 1.0},
+            'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'type': float, 'default': 0.20, 'min': 0.1, 'max': 1.0},
+
+            # ADDITIONAL THRESHOLD CONTROLS - Add these new ones:
+            'NLP_MILD_CRISIS_THRESHOLD': {'type': float, 'default': 0.30, 'min': 0.1, 'max': 1.0},
+            'NLP_NEGATIVE_RESPONSE_THRESHOLD': {'type': float, 'default': 0.70, 'min': 0.1, 'max': 1.0},
+            'NLP_UNKNOWN_RESPONSE_THRESHOLD': {'type': float, 'default': 0.50, 'min': 0.1, 'max': 1.0},
+
+            # CONSENSUS SENSITIVITY CONTROLS - Add these new ones:
+            'NLP_CONSENSUS_SAFETY_BIAS': {'type': float, 'default': 0.1, 'min': 0.0, 'max': 0.5},  # Bias toward higher crisis levels
+            'NLP_ENABLE_SAFETY_OVERRIDE': {'type': bool, 'default': True},  # Allow individual severe model results to override consensus
+
+            # =================================================================
             # RATE LIMITING
             # =================================================================
             'NLP_MAX_REQUESTS_PER_MINUTE': {'type': int, 'default': 120, 'min': 1},  # Much higher with 12GB VRAM + excellent hardware
