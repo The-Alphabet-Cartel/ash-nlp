@@ -38,7 +38,9 @@ services:
       
       # Model Configuration
       - NLP_DEPRESSION_MODEL=${NLP_DEPRESSION_MODEL:-rafalposwiata/deproberta-large-depression}
-      - NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-cardiffnlp/twitter-roberta-base-sentiment-latest}
+      #- NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-cardiffnlp/twitter-roberta-base-sentiment-latest}
+      - NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-siebert/sentiment-roberta-large-english}
+
       - NLP_MODEL_CACHE_DIR=${NLP_MODEL_CACHE_DIR}
       
       # Hardware Configuration

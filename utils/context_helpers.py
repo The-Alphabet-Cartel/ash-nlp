@@ -1,6 +1,6 @@
 """
-Context Helper Functions
-Handles context extraction and sentiment analysis
+Context Helper Functions - UPDATED for Siebert RoBERTa Integration
+Handles context extraction and sentiment analysis with Siebert support
 """
 
 import re
@@ -84,10 +84,12 @@ def detect_negation_context(message: str) -> bool:
 
 def analyze_sentiment_context(sentiment_result) -> Dict[str, float]:
     """
-    Analyze sentiment to provide additional context - BACKWARD COMPATIBLE VERSION
+    UPDATED: Analyze sentiment with Siebert RoBERTa support
     
-    This function handles both the old format (for ash-bot compatibility) and 
-    the new Cardiff NLP labels (LABEL_0, LABEL_1, LABEL_2) for ash-nlp.
+    Handles multiple sentiment model formats:
+    - Siebert RoBERTa: [{'label': 'POSITIVE', 'score': 0.95}] (binary)
+    - Cardiff NLP: [{'label': 'LABEL_0', 'score': 0.85}] (ternary) 
+    - Human-readable: [{'label': 'negative', 'score': 0.80}] (legacy)
     """
     sentiment_scores = {'negative': 0.0, 'neutral': 0.0, 'positive': 0.0}
     
@@ -112,68 +114,46 @@ def analyze_sentiment_context(sentiment_result) -> Dict[str, float]:
     # Process all predictions and take the max score for each sentiment type
     for item in predictions_to_process:
         if isinstance(item, dict):
-            label = item.get('label', '').lower()
+            label = item.get('label', '').upper()
             score = float(item.get('score', 0.0))
             
-            # Handle Cardiff NLP model labels (NEW - for ash-nlp)
-            if label == 'label_0':  # Cardiff NLP: negative
+            # ====== NEW: Handle Siebert RoBERTa labels (BINARY) ======
+            if label == 'POSITIVE':
+                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
+                # Infer neutral for low-confidence positive
+                if score < 0.75:
+                    inferred_neutral = 1.0 - score
+                    sentiment_scores['neutral'] = max(sentiment_scores['neutral'], inferred_neutral)
+                    
+            elif label == 'NEGATIVE':
                 sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-            elif label == 'label_1':  # Cardiff NLP: neutral
+                # Infer neutral for low-confidence negative
+                if score < 0.75:
+                    inferred_neutral = 1.0 - score
+                    sentiment_scores['neutral'] = max(sentiment_scores['neutral'], inferred_neutral)
+            
+            # ====== EXISTING: Handle Cardiff NLP model labels ======
+            elif label == 'LABEL_0':  # Cardiff NLP: negative
+                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
+            elif label == 'LABEL_1':  # Cardiff NLP: neutral
                 sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
-            elif label == 'label_2':  # Cardiff NLP: positive
+            elif label == 'LABEL_2':  # Cardiff NLP: positive
                 sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
             
-            # Handle human-readable labels (EXISTING - for ash-bot compatibility)
-            elif 'negative' in label or 'sadness' in label or 'anger' in label:
+            # ====== EXISTING: Handle human-readable labels (LEGACY) ======
+            elif 'negative' in label.lower() or 'sadness' in label.lower() or 'anger' in label.lower():
                 sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-            elif 'positive' in label or 'joy' in label or 'optimism' in label:
+            elif 'positive' in label.lower() or 'joy' in label.lower() or 'optimism' in label.lower():
                 sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
-            elif 'neutral' in label:
+            elif 'neutral' in label.lower():
                 sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
     
     return sentiment_scores
 
 def extract_sentiment_scores_from_result(sentiment_result) -> Dict[str, float]:
-    """Extract sentiment scores - UPDATED VERSION with Cardiff NLP support"""
-    sentiment_scores = {'negative': 0.0, 'positive': 0.0, 'neutral': 0.0}
-    
-    if not sentiment_result:
-        return sentiment_scores
-    
-    # Handle different sentiment result formats (same logic as above)
-    predictions_to_process = []
-    
-    if isinstance(sentiment_result, list):
-        if len(sentiment_result) > 0:
-            if isinstance(sentiment_result[0], list):
-                predictions_to_process = sentiment_result[0]
-            elif isinstance(sentiment_result[0], dict):
-                predictions_to_process = sentiment_result
-    elif isinstance(sentiment_result, dict):
-        predictions_to_process = [sentiment_result]
-    
-    for item in predictions_to_process:
-        if isinstance(item, dict):
-            label = item.get('label', '').lower()
-            score = item.get('score', 0.0)
-            
-            # Handle Cardiff NLP labels
-            if label == 'label_0':  # negative
-                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-            elif label == 'label_1':  # neutral
-                sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
-            elif label == 'label_2':  # positive
-                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
-            
-            # Handle human-readable labels
-            elif 'negative' in label or 'sadness' in label or 'anger' in label:
-                sentiment_scores['negative'] = max(sentiment_scores['negative'], score)
-            elif 'positive' in label or 'joy' in label or 'optimism' in label:
-                sentiment_scores['positive'] = max(sentiment_scores['positive'], score)
-            elif 'neutral' in label:
-                sentiment_scores['neutral'] = max(sentiment_scores['neutral'], score)
-    
-    return sentiment_scores
+    """UPDATED: Extract sentiment scores with Siebert RoBERTa support"""
+    # Use the same logic as analyze_sentiment_context for consistency
+    return analyze_sentiment_context(sentiment_result)
 
 def perform_enhanced_context_analysis(message: str, context_hints: List[str]) -> Dict:
     """Perform enhanced context analysis with community awareness"""
