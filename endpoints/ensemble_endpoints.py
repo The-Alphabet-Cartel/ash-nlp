@@ -169,6 +169,18 @@ def add_ensemble_endpoints(app, model_manager):
             logger.error(f"Confidence analysis failed: {e}")
             raise HTTPException(status_code=500, detail=f"Confidence analysis error: {str(e)}")
 
+def _get_current_thresholds() -> Dict[str, float]:
+    """Get current threshold configuration for debugging"""
+    return {
+        'ensemble_high': config.get('NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD'),
+        'ensemble_medium': config.get('NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD'),
+        'ensemble_low': config.get('NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD'),
+        'mild_crisis': config.get('NLP_MILD_CRISIS_THRESHOLD'),
+        'negative_response': config.get('NLP_NEGATIVE_RESPONSE_THRESHOLD'),
+        'unknown_response': config.get('NLP_UNKNOWN_RESPONSE_THRESHOLD'),
+        'safety_bias': config.get('NLP_CONSENSUS_SAFETY_BIAS')
+    }
+
 def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
     """
     FIXED: Map ensemble consensus to crisis levels using NORMALIZED predictions
