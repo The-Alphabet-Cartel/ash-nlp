@@ -1,16 +1,29 @@
-# Existing dependencies
-fastapi>=0.104.1
-uvicorn[standard]>=0.24.0
-transformers>=4.35.0
-torch>=2.1.0
-tokenizers>=0.15.0
-numpy>=1.24.0
-pydantic>=2.5.0
-aiohttp>=3.9.0
+# Core dependencies (existing)
+torch>=2.0.0
+transformers[sentencepiece]>=4.21.0
+numpy>=1.21.0
+pandas>=1.3.0
+scikit-learn>=1.0.0
+fastapi>=0.95.0
+uvicorn>=0.20.0
+pydantic>=1.10.0
+requests>=2.28.0
+aiofiles>=0.8.0
+python-multipart>=0.0.5
 
-# Additional dependencies for enhanced configuration
-python-dotenv>=1.0.0
-pathlib2>=2.3.7  # For enhanced path handling
-psutil==5.9.6    # For system resource monitoring
-accelerate==0.24.1
-requests>=2.31.0
+# Hugging Face ecosystem
+huggingface-hub>=0.16.0
+
+# Additional NLP dependencies
+nltk>=3.8
+spacy>=3.4.0
+
+# Logging and monitoring
+python-json-logger>=2.0.0
+
+# Development and testing (optional)
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Production dependencies
+gunicorn>=20.1.0
