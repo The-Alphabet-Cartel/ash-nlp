@@ -232,8 +232,22 @@ def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
     prediction = consensus.get('prediction', 'unknown').lower()
     confidence = consensus.get('confidence', 0.0)
     
+    # Handle NORMALIZED predictions (NEW - Add this first)
+    if prediction == 'crisis':
+        # High confidence crisis from unanimous consensus
+        if confidence >= 0.8:
+            return 'high'
+        elif confidence >= 0.6:
+            return 'medium'  
+        elif confidence >= 0.4:
+            return 'low'
+        else:
+            return 'none'
+    elif prediction == 'safe':
+        return 'none'
+    
     # Handle emotion-based predictions (from DeBERTa-v3 emotions model)
-    if prediction in ['sadness', 'fear']:
+    elif prediction in ['sadness', 'fear']:
         if confidence >= 0.8:
             return 'high'
         elif confidence >= 0.6:
