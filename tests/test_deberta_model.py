@@ -106,14 +106,14 @@ class MentalHealthModelTester:
     
     def __init__(self):
         self.old_model_name = "rafalposwiata/deproberta-large-depression"
-        # Use only PUBLIC models first to avoid authentication issues
+        # NEW: Modern DeBERTa-v3 classification models (actively maintained, 2024)
         self.model_candidates = [
-            "slimshady07/Mental_BERT",  # Fine-tuned BERT for mental health classification (public)
-            "siebert/sentiment-roberta-large-english",  # Current working sentiment model (public)
-            "cardiffnlp/twitter-roberta-base-sentiment-latest",  # Alternative sentiment model (public)
-            "distilbert-base-uncased-finetuned-sst-2-english",  # Basic sentiment model (public)
+            "MoritzLaurer/deberta-v3-large-zeroshot-v2.0",     # Latest DeBERTa-v3, 2024
+            "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",      # Smaller/faster version  
+            "MoritzLaurer/deberta-v3-large-zeroshot-v1.1-all-33", # Comprehensive training
+            "slimshady07/Mental_BERT",                         # Mental health specific (fallback)
         ]
-        self.new_model_name = "slimshady07/Mental_BERT"  # Start with this one
+        self.new_model_name = "MoritzLaurer/deberta-v3-large-zeroshot-v2.0"  # Start with latest
         self.device = self._configure_device()
         self.old_model = None
         self.new_model = None
@@ -243,15 +243,29 @@ class MentalHealthModelTester:
                     except Exception as e:
                         logger.warning(f"Could not load model config: {e}")
                     
-                    # Try to load the model
-                    self.new_model = pipeline(
-                        "text-classification",
-                        model=model_name,
-                        device=self.device,
-                        torch_dtype=torch.float16,
-                        top_k=None,
-                        use_fast=False  # Use slow tokenizer to avoid protobuf issues
-                    )
+                    # Try to load the model - These are zero-shot classifiers, use different pipeline
+                    if "zeroshot" in model_name:
+                        # Use zero-shot classification pipeline
+                        self.new_model = pipeline(
+                            "zero-shot-classification",
+                            model=model_name,
+                            device=self.device,
+                            torch_dtype=torch.float16,
+                            use_fast=False  # Use slow tokenizer to avoid issues
+                        )
+                        # Test zero-shot classification works
+                        test_result = self.new_model("I am feeling sad", ["depression", "normal"])
+                        logger.info(f"Zero-shot test successful: {test_result}")
+                    else:
+                        # Use regular text classification pipeline
+                        self.new_model = pipeline(
+                            "text-classification",
+                            model=model_name,
+                            device=self.device,
+                            torch_dtype=torch.float16,
+                            top_k=None,
+                            use_fast=False  # Use slow tokenizer to avoid protobuf issues
+                        )
                     new_load_time = time.time() - start_time
                     self.new_model_name = model_name  # Update the name to what actually worked
                     logger.info(f"✅ New model ({model_name}) loaded in {new_load_time:.2f}s")
@@ -298,9 +312,16 @@ class MentalHealthModelTester:
             results['old_model_time'] = time.time() - start_time
             results['old_model_result'] = old_result
             
-            # Test new model
+            # Test new model - handle zero-shot vs regular classification
             start_time = time.time()
-            new_result = self.new_model(message)
+            if "zeroshot" in self.new_model_name:
+                # Zero-shot classification with depression-related labels
+                candidate_labels = ["depression", "mental health crisis", "normal", "no concern"]
+                new_result = self.new_model(message, candidate_labels)
+            else:
+                # Regular classification
+                new_result = self.new_model(message)
+            
             results['new_model_time'] = time.time() - start_time
             results['new_model_result'] = new_result
             
@@ -331,10 +352,16 @@ class MentalHealthModelTester:
                 elif isinstance(old_result, dict):
                     old_labels.add(old_result.get('label', 'unknown'))
                         
-            # Handle new model results
+            # Handle new model results (including zero-shot format)
             if result.get('new_model_result'):
                 new_result = result['new_model_result']
-                if isinstance(new_result, list):
+                
+                # Zero-shot classification returns different format
+                if isinstance(new_result, dict) and 'labels' in new_result:
+                    # Zero-shot format: {'sequence': '...', 'labels': [...], 'scores': [...]}
+                    for label in new_result['labels']:
+                        new_labels.add(label)
+                elif isinstance(new_result, list):
                     for pred in new_result:
                         if isinstance(pred, dict):
                             new_labels.add(pred.get('label', 'unknown'))
@@ -349,11 +376,13 @@ class MentalHealthModelTester:
         self.results['label_analysis'] = {
             'old_model_labels': sorted(list(old_labels)),
             'new_model_labels': sorted(list(new_labels)),
-            'label_mapping_needed': old_labels != new_labels
+            'label_mapping_needed': old_labels != new_labels,
+            'new_model_type': 'zero_shot' if 'zeroshot' in self.new_model_name else 'regular_classification'
         }
         
         logger.info(f"Old model labels: {sorted(list(old_labels))}")
         logger.info(f"New model labels: {sorted(list(new_labels))}")
+        logger.info(f"New model type: {self.results['label_analysis']['new_model_type']}")
         
         if old_labels != new_labels:
             logger.warning("⚠️ Label formats differ between models - mapping will be needed")
