@@ -17,8 +17,14 @@ RUN groupadd -g 1001 nlpuser && \
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install Python dependencies
+# Copy requirements first for better caching
 COPY requirements.txt .
+
+# Create virtual environment and install dependencies
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies in virtual environment
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -117,3 +123,14 @@ HEALTHCHECK --interval=60s --timeout=35s --start-period=300s --retries=3 \
 
 # Start the service
 CMD ["python", "main.py"]
+
+# Updated labels for API server version
+LABEL maintainer="The Alphabet Cartel" \
+      version="3.0" \
+      description="Ash NLP Server - Mental Health Support with Analytics" \
+      org.opencontainers.image.source="https://github.com/The-Alphabet-Cartel/ash" \
+      feature.conversation-isolation="enabled" \
+      feature.api-server="enabled" \
+      feature.analytics-dashboard="supported" \
+      api.port="8881" \
+      api.endpoints="/health,/stats,/analyze,/analyze_ensemble,/extract_phrases,/learning_statistics"
