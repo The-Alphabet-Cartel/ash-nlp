@@ -106,12 +106,12 @@ class MentalHealthModelTester:
     
     def __init__(self):
         self.old_model_name = "rafalposwiata/deproberta-large-depression"
-        # Better alternatives - these are already fine-tuned for classification
+        # Use only PUBLIC models first to avoid authentication issues
         self.model_candidates = [
-            "slimshady07/Mental_BERT",  # Fine-tuned BERT for mental health classification
-            "AIMH/mental-roberta-large",  # Mental health specific RoBERTa (may need gating)
-            "mental/mental-bert-base-uncased",  # Original MentalBERT (may need gating)
-            "siebert/sentiment-roberta-large-english"  # Current working sentiment model
+            "slimshady07/Mental_BERT",  # Fine-tuned BERT for mental health classification (public)
+            "siebert/sentiment-roberta-large-english",  # Current working sentiment model (public)
+            "cardiffnlp/twitter-roberta-base-sentiment-latest",  # Alternative sentiment model (public)
+            "distilbert-base-uncased-finetuned-sst-2-english",  # Basic sentiment model (public)
         ]
         self.new_model_name = "slimshady07/Mental_BERT"  # Start with this one
         self.device = self._configure_device()
@@ -124,65 +124,78 @@ class MentalHealthModelTester:
             'recommendation': ''
         }
         
-        # Set up Hugging Face authentication
-        self._setup_huggingface_auth()
+        # Try to set up Hugging Face authentication (but continue without it)
+        auth_success = self._setup_huggingface_auth()
+        if not auth_success:
+            logger.info("🔓 Continuing with public models only")
+            # Add gated models to try if auth worked
+            # self.model_candidates.extend([
+            #     "AIMH/mental-roberta-large",
+            #     "mental/mental-bert-base-uncased"
+            # ])
         
     def _setup_huggingface_auth(self):
         """Set up Hugging Face authentication"""
         try:
-            # Try multiple token locations
-            token_paths = [
-                "/run/secrets/huggingface",  # Docker secrets location
-                "./secrets/huggingface",     # Local secrets location
-                "../secrets/huggingface",    # Parent directory secrets
-                "../../secrets/huggingface", # Two levels up
-            ]
-            
             token = None
             
-            # Try environment variable first
-            if os.getenv('GLOBAL_HUGGINGFACE_TOKEN'):
-                token = os.getenv('GLOBAL_HUGGINGFACE_TOKEN')
-                if token.startswith('/run/secrets'):
+            # Method 1: Read from Docker secrets (most reliable in container)
+            secrets_path = "/run/secrets/huggingface"
+            if os.path.exists(secrets_path):
+                with open(secrets_path, 'r') as f:
+                    token = f.read().strip()
+                logger.info(f"✅ Found Hugging Face token at: {secrets_path}")
+            
+            # Method 2: Try environment variable
+            elif os.getenv('GLOBAL_HUGGINGFACE_TOKEN'):
+                env_token = os.getenv('GLOBAL_HUGGINGFACE_TOKEN')
+                if env_token.startswith('/run/secrets'):
                     # It's a path, read from file
                     try:
-                        with open(token, 'r') as f:
+                        with open(env_token, 'r') as f:
                             token = f.read().strip()
-                    except:
-                        token = None
-                elif token and len(token) > 10:  # Direct token
-                    pass
+                    except Exception as e:
+                        logger.warning(f"Could not read token from path {env_token}: {e}")
                 else:
-                    token = None
+                    # Direct token
+                    token = env_token.strip()
+                logger.info("✅ Found Hugging Face token in environment")
             
-            # Try reading from file paths
-            if not token:
+            # Method 3: Try other common locations
+            else:
+                token_paths = [
+                    "./secrets/huggingface",
+                    "../secrets/huggingface",
+                    "../../secrets/huggingface",
+                ]
+                
                 for path in token_paths:
                     try:
                         if os.path.exists(path):
                             with open(path, 'r') as f:
                                 token = f.read().strip()
-                            if token and len(token) > 10:
-                                logger.info(f"✅ Found Hugging Face token at: {path}")
-                                break
-                    except Exception as e:
+                            logger.info(f"✅ Found Hugging Face token at: {path}")
+                            break
+                    except Exception:
                         continue
             
-            # Try hardcoded token as fallback (for testing)
-            if not token:
-                hardcoded_token = "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"
-                logger.warning("🔑 Using hardcoded token for testing - replace with secure method")
-                token = hardcoded_token
-            
-            if token and len(token) > 10:
+            # Validate and login
+            if token and len(token.strip()) > 10:
+                token = token.strip()  # Ensure no whitespace
+                logger.info(f"🔑 Token length: {len(token)}, starts with: {token[:10]}...")
+                
+                # Attempt login
                 login(token=token)
                 logger.info("🔐 Successfully authenticated with Hugging Face")
+                return True
             else:
-                logger.warning("🔓 No Hugging Face token found - will try without authentication")
+                logger.warning("🔓 No valid Hugging Face token found")
+                return False
                 
         except Exception as e:
-            logger.warning(f"🔓 Could not authenticate with Hugging Face: {e}")
+            logger.warning(f"🔓 Authentication failed: {e}")
             logger.info("Will attempt to load models without authentication")
+            return False
         
     def _configure_device(self):
         """Configure device for testing"""
@@ -303,15 +316,35 @@ class MentalHealthModelTester:
         new_labels = set()
         
         for result in test_results:
+            # Handle old model results
             if result.get('old_model_result'):
-                if isinstance(result['old_model_result'], list):
-                    for pred in result['old_model_result']:
-                        old_labels.add(pred.get('label', 'unknown'))
+                old_result = result['old_model_result']
+                if isinstance(old_result, list):
+                    for pred in old_result:
+                        if isinstance(pred, dict):
+                            old_labels.add(pred.get('label', 'unknown'))
+                        elif isinstance(pred, list):
+                            # Handle nested lists
+                            for nested_pred in pred:
+                                if isinstance(nested_pred, dict):
+                                    old_labels.add(nested_pred.get('label', 'unknown'))
+                elif isinstance(old_result, dict):
+                    old_labels.add(old_result.get('label', 'unknown'))
                         
+            # Handle new model results
             if result.get('new_model_result'):
-                if isinstance(result['new_model_result'], list):
-                    for pred in result['new_model_result']:
-                        new_labels.add(pred.get('label', 'unknown'))
+                new_result = result['new_model_result']
+                if isinstance(new_result, list):
+                    for pred in new_result:
+                        if isinstance(pred, dict):
+                            new_labels.add(pred.get('label', 'unknown'))
+                        elif isinstance(pred, list):
+                            # Handle nested lists
+                            for nested_pred in pred:
+                                if isinstance(nested_pred, dict):
+                                    new_labels.add(nested_pred.get('label', 'unknown'))
+                elif isinstance(new_result, dict):
+                    new_labels.add(new_result.get('label', 'unknown'))
         
         self.results['label_analysis'] = {
             'old_model_labels': sorted(list(old_labels)),
@@ -443,10 +476,12 @@ class MentalHealthModelTester:
     def print_summary(self, test_results: List[Dict]):
         """Print a summary of test results"""
         print("\n" + "="*80)
-        print("🎯 DEBERTA MODEL TEST SUMMARY")
+        print("🎯 MENTAL HEALTH MODEL TEST SUMMARY")
         print("="*80)
         
         print(f"📊 Total messages tested: {len(test_results)}")
+        print(f"🤖 Old model: {self.old_model_name}")
+        print(f"🤖 New model: {self.results['performance_metrics'].get('selected_model', self.new_model_name)}")
         print(f"🏷️ Old model labels: {self.results['label_analysis']['old_model_labels']}")
         print(f"🏷️ New model labels: {self.results['label_analysis']['new_model_labels']}")
         
@@ -466,15 +501,48 @@ class MentalHealthModelTester:
         
         print(f"\n💡 Recommendation: {self.results['recommendation']}")
         
-        # Show some example predictions
+        # Show some example predictions with better error handling
         print(f"\n📝 Example predictions:")
-        for i, result in enumerate(test_results[:5]):
+        examples_shown = 0
+        for i, result in enumerate(test_results):
+            if examples_shown >= 5:
+                break
+                
             if result.get('old_model_result') and result.get('new_model_result'):
-                old_top = max(result['old_model_result'], key=lambda x: x.get('score', 0))
-                new_top = max(result['new_model_result'], key=lambda x: x.get('score', 0))
-                print(f"  {i+1}. '{result['message'][:50]}...'")
-                print(f"     Old: {old_top.get('label')} ({old_top.get('score', 0):.3f})")
-                print(f"     New: {new_top.get('label')} ({new_top.get('score', 0):.3f})")
+                try:
+                    # Handle different result formats more robustly
+                    old_result = result['old_model_result']
+                    new_result = result['new_model_result']
+                    
+                    # Extract top prediction from old model
+                    old_top = None
+                    if isinstance(old_result, list) and len(old_result) > 0:
+                        if isinstance(old_result[0], dict):
+                            old_top = max(old_result, key=lambda x: x.get('score', 0))
+                        elif isinstance(old_result[0], list) and len(old_result[0]) > 0:
+                            old_top = max(old_result[0], key=lambda x: x.get('score', 0))
+                    elif isinstance(old_result, dict):
+                        old_top = old_result
+                    
+                    # Extract top prediction from new model
+                    new_top = None
+                    if isinstance(new_result, list) and len(new_result) > 0:
+                        if isinstance(new_result[0], dict):
+                            new_top = max(new_result, key=lambda x: x.get('score', 0))
+                        elif isinstance(new_result[0], list) and len(new_result[0]) > 0:
+                            new_top = max(new_result[0], key=lambda x: x.get('score', 0))
+                    elif isinstance(new_result, dict):
+                        new_top = new_result
+                    
+                    if old_top and new_top:
+                        print(f"  {examples_shown+1}. '{result['message'][:50]}...'")
+                        print(f"     Old: {old_top.get('label', 'N/A')} ({old_top.get('score', 0):.3f})")
+                        print(f"     New: {new_top.get('label', 'N/A')} ({new_top.get('score', 0):.3f})")
+                        examples_shown += 1
+                        
+                except Exception as e:
+                    logger.debug(f"Error showing example {i}: {e}")
+                    continue
         
         print("="*80)
 
