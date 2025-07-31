@@ -703,28 +703,39 @@ class EnhancedModelManager:
         ensemble_mode = self.config['ensemble_mode']
         
         if ensemble_mode == 'consensus':
-            # Existing consensus logic...
+            # FIXED: Use normalized predictions instead of raw labels
             normalized_predictions = set(processed['normalized_predictions'].values())
             
             if len(normalized_predictions) == 1:
                 avg_confidence = sum(processed['confidence_scores'].values()) / len(processed['confidence_scores'])
-                consensus_prediction = list(normalized_predictions)[0]
+                consensus_prediction = list(normalized_predictions)[0]  # ← Use normalized
                 
                 return {
-                    'prediction': consensus_prediction,
+                    'prediction': consensus_prediction,  # ← This will be 'crisis', not 'severe'
                     'confidence': avg_confidence,
                     'method': 'unanimous_consensus'
                 }
             else:
-                best_model = max(processed['confidence_scores'], key=processed['confidence_scores'].get)
+                # FIXED: When disagreeing, pick the most severe normalized prediction
+                severity_order = ['safe', 'neutral', 'mild_crisis', 'crisis']
+                most_severe = max(processed['normalized_predictions'].values(), 
+                                key=lambda x: severity_order.index(x) if x in severity_order else 0)
+                
+                # Get confidence of the model that predicted the most severe
+                best_model = None
+                for model, pred in processed['normalized_predictions'].items():
+                    if pred == most_severe:
+                        best_model = model
+                        break
+                
                 return {
-                    'prediction': processed['predictions'][best_model],
-                    'confidence': processed['confidence_scores'][best_model] * 0.7,
-                    'method': 'best_of_disagreeing'
+                    'prediction': most_severe,  # ← Use normalized prediction
+                    'confidence': processed['confidence_scores'][best_model] * 0.8,  # Reduced confidence for disagreement
+                    'method': 'most_severe_normalized'
                 }
         
         elif ensemble_mode == 'majority':
-            # Existing majority logic...
+            # Use normalized predictions for majority vote
             prediction_votes = {}
             for model, normalized_pred in processed['normalized_predictions'].items():
                 confidence = processed['confidence_scores'][model]
@@ -738,7 +749,7 @@ class EnhancedModelManager:
             return {
                 'prediction': majority_prediction,
                 'confidence': avg_confidence,
-                'method': 'majority_vote'
+                'method': 'majority_vote_normalized'
             }
         
         elif ensemble_mode == 'weighted':
@@ -749,7 +760,7 @@ class EnhancedModelManager:
                 'emotional_distress': self.env_config.get('NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT')
             }
             
-            # Validate weights sum to 1.0 (env_manager should ensure this, but double-check)
+            # Validate weights sum to 1.0
             total_weight = sum(model_weights.values())
             if abs(total_weight - 1.0) > 0.01:
                 logger.warning(f"Model weights don't sum to 1.0 ({total_weight}), normalizing...")
@@ -757,6 +768,7 @@ class EnhancedModelManager:
             
             logger.info(f"🎯 Using env-configured model weights: {model_weights}")
             
+            # FIXED: Use normalized predictions for weighted voting
             weighted_scores = {}
             for model, normalized_pred in processed['normalized_predictions'].items():
                 confidence = processed['confidence_scores'][model]
@@ -777,19 +789,19 @@ class EnhancedModelManager:
                 logger.info(f"🛡️ Applied safety bias: +{safety_bias:.3f}")
             
             return {
-                'prediction': best_prediction,
+                'prediction': best_prediction,  # ← Normalized prediction like 'crisis'
                 'confidence': final_confidence,
-                'method': 'weighted_ensemble'
+                'method': 'weighted_ensemble_normalized'
             }
         
-        # Fallback to highest confidence
+        # Fallback to highest confidence with normalized prediction
         best_model = max(processed['confidence_scores'], key=processed['confidence_scores'].get)
         return {
-            'prediction': processed['predictions'][best_model],
+            'prediction': processed['normalized_predictions'][best_model],  # ← Use normalized
             'confidence': processed['confidence_scores'][best_model],
-            'method': 'highest_confidence_fallback'
+            'method': 'highest_confidence_normalized_fallback'
         }
-    
+
     def get_model_status(self) -> Dict[str, Any]:
         """Get comprehensive status of all models"""
         return {
