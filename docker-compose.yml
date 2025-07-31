@@ -18,7 +18,10 @@ services:
     ports:
       - 8881:8881
     environment:
-      # Point to secret files
+      # Local Timezone
+      - TZ=America/Los_Angeles
+      
+      # Secrets
       - GLOBAL_HUGGINGFACE_TOKEN=${GLOBAL_HUGGINGFACE_TOKEN}
       - GLOBAL_CLAUDE_API_KEY=${GLOBAL_CLAUDE_API_KEY}
 
