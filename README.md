@@ -135,7 +135,7 @@ NLP_MAX_CONCURRENT_REQUESTS=20
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Depression    │    │    Sentiment     │    │ Emotional       │
 │     Model       │    │     Model        │    │ Distress Model  │
-│   (DeBERTa)     │    │   (RoBERTa)      │    │ (DistilBERT)    │
+│   (DeBERTa)     │    │   (DeBERTa)      │    │ (BART)          │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          │                       │                       │
          └───────────────────────┼───────────────────────┘
