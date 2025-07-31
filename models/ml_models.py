@@ -380,13 +380,58 @@ class EnhancedModelManager:
             return None
     
     def analyze_with_sentiment_model(self, message: str):
-        """Analyze message with sentiment analysis model"""
+        """Analyze message with zero-shot sentiment model using crisis-optimized labels"""
         try:
-            return self.sentiment_model(message)
+            # CRISIS-OPTIMIZED LABELS - much more specific and distinct
+            crisis_labels = [
+                "person expressing severe mental health crisis, suicidal thoughts, or immediate danger",
+                "person expressing significant emotional distress and needing support",
+                "person having a difficult day or minor negative feelings",
+                "person making neutral everyday conversation or factual statements", 
+                "person expressing positive feelings, gratitude, or happiness",
+                "person expressing excitement, joy, or very positive emotions"
+            ]
+            
+            result = self.sentiment_model(message, crisis_labels)
+            
+            # Convert to format compatible with your existing code
+            formatted_result = []
+            for label, score in zip(result['labels'], result['scores']):
+                # Map long labels to short ones for compatibility
+                short_label = self._map_crisis_label_to_sentiment(label)
+                formatted_result.append({
+                    'label': short_label,
+                    'score': score
+                })
+            
+            return formatted_result
+            
         except Exception as e:
-            logger.error(f"Sentiment model analysis failed: {e}")
+            logger.error(f"Zero-shot sentiment analysis failed: {e}")
             return None
     
+    def _map_crisis_label_to_sentiment(self, long_label: str) -> str:
+        """Map crisis-specific labels back to sentiment categories"""
+        
+        # Look for key phrases in the label to determine mapping
+        label_lower = long_label.lower()
+        
+        if "severe mental health crisis" in label_lower or "suicidal" in label_lower:
+            return "Very Negative"
+        elif "significant emotional distress" in label_lower or "needing support" in label_lower:
+            return "Negative"
+        elif "difficult day" in label_lower or "minor negative" in label_lower:
+            return "Slightly Negative"
+        elif "neutral everyday conversation" in label_lower or "factual statements" in label_lower:
+            return "Neutral"
+        elif "positive feelings" in label_lower or "gratitude" in label_lower:
+            return "Positive"
+        elif "excitement" in label_lower or "very positive" in label_lower:
+            return "Very Positive"
+        else:
+            # Fallback mapping
+            return "Neutral"
+
     def analyze_with_emotional_distress_model(self, message: str):  # NEW METHOD
         """Analyze message with emotional distress detection model"""
         try:
@@ -488,34 +533,30 @@ class EnhancedModelManager:
         return processed
     
     def _normalize_prediction(self, prediction: str) -> str:
-        """Normalize different model predictions to common categories for gap detection"""
+        """Enhanced normalization for zero-shot crisis predictions"""
         pred_lower = prediction.lower()
         
-        # Crisis/negative indicators
-        if pred_lower in ['severe', 'moderate', 'negative', 'depression']:
+        # Crisis indicators (updated for new labels)
+        if pred_lower in ['very negative', 'severe']:
             return 'crisis'
-        
-        # ALBERT IMDB labels (NEW)
-        elif pred_lower == 'label_0':  # LABEL_0 = Negative sentiment in IMDB
-            return 'crisis'
-        elif pred_lower == 'label_1':  # LABEL_1 = Positive sentiment in IMDB  
+        elif pred_lower in ['negative', 'slightly negative']:
+            return 'crisis'  # Still treat as crisis for safety-first approach
+        elif pred_lower in ['neutral']:
+            return 'neutral'
+        elif pred_lower in ['positive', 'very positive']:
             return 'safe'
         
-        # Emotion-based crisis indicators
-        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:
+        # Keep your existing mappings for other models
+        elif pred_lower == 'label_0':  # ALBERT IMDB
             return 'crisis'
-        
-        # Safe/positive indicators  
-        elif pred_lower in ['not depression', 'positive', 'neutral']:
+        elif pred_lower == 'label_1':  # ALBERT IMDB 
+            return 'safe'
+        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:  # Emotion models
+            return 'crisis'
+        elif pred_lower in ['joy', 'love', 'surprise']:  # Emotion models
             return 'safe'
         
-        # Positive emotions
-        elif pred_lower in ['joy', 'love', 'surprise']:
-            return 'safe'
-        
-        # Unknown
-        else:
-            return 'unknown'
+        return 'unknown'
     
     def _generate_consensus(self, processed: Dict[str, Any]) -> Dict[str, Any]:
         """Generate consensus prediction from three models using NORMALIZED predictions"""
