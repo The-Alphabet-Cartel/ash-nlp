@@ -228,23 +228,55 @@ def _summarize_gaps(gap_details: List[Dict[str, Any]]) -> Dict[str, Any]:
     return summary
 
 def _map_to_crisis_level(consensus: Dict[str, Any]) -> str:
-    """Map ensemble consensus to traditional crisis levels with improved logic"""
+    """Map ensemble consensus to traditional crisis levels with emotion support"""
     prediction = consensus.get('prediction', 'unknown').lower()
     confidence = consensus.get('confidence', 0.0)
     
-    # Map different model outputs to crisis levels with confidence thresholds
-    if prediction in ['severe']:
+    # Handle emotion-based predictions (from DeBERTa-v3 emotions model)
+    if prediction in ['sadness', 'fear']:
+        if confidence >= 0.8:
+            return 'high'
+        elif confidence >= 0.6:
+            return 'medium'
+        elif confidence >= 0.4:
+            return 'low'
+        else:
+            return 'none'
+    
+    elif prediction == 'anger':
+        # Anger indicates crisis but generally lower severity
+        if confidence >= 0.8:
+            return 'medium'  # Cap anger at medium
+        elif confidence >= 0.6:
+            return 'low'
+        else:
+            return 'none'
+    
+    # Positive emotions - generally not crisis
+    elif prediction in ['joy', 'love', 'surprise']:
+        return 'none'
+    
+    # Handle traditional depression labels (for backward compatibility)
+    elif prediction in ['severe']:
         return 'high'  # Severe is always high regardless of confidence
     elif prediction in ['moderate'] and confidence > 0.5:
         return 'medium'
     elif prediction in ['moderate'] and confidence > 0.3:
         return 'low'
+    
+    # Handle sentiment/distress labels
     elif prediction in ['negative'] and confidence > 0.8:
         return 'high'  # Very confident negative sentiment
     elif prediction in ['negative'] and confidence > 0.6:
         return 'medium'
     elif prediction in ['negative'] and confidence > 0.4:
         return 'low'
+    
+    # Safe predictions
+    elif prediction in ['positive', 'not depression']:
+        return 'none'
+    
+    # Default fallback
     else:
         return 'none'
 
