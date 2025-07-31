@@ -119,7 +119,7 @@ except ImportError as e:
 
 # FIXED: Import learning system with proper error handling
 try:
-    from utils.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    from endpoints.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
     ENHANCED_LEARNING_AVAILABLE = True
     logger.info("✅ EnhancedLearningManager import successful")
 except ImportError as e:
