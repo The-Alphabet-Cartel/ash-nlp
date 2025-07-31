@@ -25,13 +25,17 @@ class EnvConfigManager:
     
     def load_environment(self):
         """Load environment variables from .env file and system"""
-        # Load from .env file if it exists
+        # Load from .env file if it exists (development mode)
         if os.path.exists(self.env_file):
             load_dotenv(self.env_file)
-            logger.info(f"Loaded environment from {self.env_file}")
+            logger.info(f"✅ Loaded environment from {self.env_file}")
         else:
-            logger.warning(f"No {self.env_file} file found, using system environment only")
-        
+            # Check if we're in Docker (environment variables should be present)
+            if os.getenv('NLP_DEPRESSION_MODEL'):
+                logger.info(f"🐳 Running in Docker mode - using system environment variables")
+            else:
+                logger.warning(f"⚠️ No {self.env_file} file found and no environment variables detected")
+
         # Define configuration with defaults and types
         config_schema = {
             # =================================================================
