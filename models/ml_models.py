@@ -563,14 +563,6 @@ class EnhancedModelManager:
             # Fallback mapping
             return "Neutral"
 
-    def analyze_with_emotional_distress_model(self, message: str):  # NEW METHOD
-        """Analyze message with emotional distress detection model"""
-        try:
-            return self.emotional_distress_model(message)
-        except Exception as e:
-            logger.error(f"Emotional distress model analysis failed: {e}")
-            return None
-    
     def analyze_with_ensemble(self, message: str) -> Dict[str, Any]:  # NEW ENSEMBLE METHOD
         """
         Analyze message with all three models and provide ensemble results
