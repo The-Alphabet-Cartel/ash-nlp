@@ -9,7 +9,7 @@ from config.nlp_settings import POSITIVE_CONTEXT_PATTERNS, IDIOM_PATTERNS, NEGAT
 import os
 
 def process_sentiment_with_flip(sentiment_scores):
-    """Process sentiment with optional logic flip for testing"""
+    """Process sentiment with optional logic flip for testing - UPDATED for 5-class models"""
     
     # Check if we should flip sentiment logic
     flip_sentiment = os.getenv('NLP_FLIP_SENTIMENT_LOGIC', 'false').lower() == 'true'
@@ -18,14 +18,29 @@ def process_sentiment_with_flip(sentiment_scores):
         return {'negative': 0.5, 'neutral': 0.5, 'positive': 0.0}
     
     if flip_sentiment:
-        # FLIP: negative becomes positive, positive becomes negative
-        flipped_scores = {
-            'negative': sentiment_scores.get('positive', 0.0),  # High positive becomes high negative
-            'neutral': sentiment_scores.get('neutral', 0.0),    # Neutral stays neutral
-            'positive': sentiment_scores.get('negative', 0.0)   # High negative becomes high positive
-        }
-        print(f"SENTIMENT FLIP ACTIVE: Original {sentiment_scores} -> Flipped {flipped_scores}")
-        return flipped_scores
+        # Check if this is a 5-class model (tabularisai) or 3-class model
+        has_5_classes = any(key in sentiment_scores for key in ['very_negative', 'very_positive'])
+        
+        if has_5_classes:
+            # FLIP for 5-class models: Very Negative <-> Very Positive, Negative <-> Positive
+            flipped_scores = {
+                'very_negative': sentiment_scores.get('very_positive', 0.0),
+                'negative': sentiment_scores.get('positive', 0.0),
+                'neutral': sentiment_scores.get('neutral', 0.0),  # Neutral stays neutral
+                'positive': sentiment_scores.get('negative', 0.0),
+                'very_positive': sentiment_scores.get('very_negative', 0.0)
+            }
+            print(f"5-CLASS SENTIMENT FLIP ACTIVE: Original {sentiment_scores} -> Flipped {flipped_scores}")
+            return flipped_scores
+        else:
+            # FLIP for 3-class models (original logic)
+            flipped_scores = {
+                'negative': sentiment_scores.get('positive', 0.0),
+                'neutral': sentiment_scores.get('neutral', 0.0),
+                'positive': sentiment_scores.get('negative', 0.0)
+            }
+            print(f"3-CLASS SENTIMENT FLIP ACTIVE: Original {sentiment_scores} -> Flipped {flipped_scores}")
+            return flipped_scores
     else:
         # Normal logic
         return sentiment_scores
