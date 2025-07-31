@@ -11,9 +11,21 @@ from typing import Dict, List, Tuple
 import sys
 
 # Import the crisis keyword modules
-from high_crisis import get_high_crisis_keywords, check_high_crisis_match
-from medium_crisis import get_medium_crisis_keywords, check_medium_crisis_match  
-from low_crisis import get_low_crisis_keywords, check_low_crisis_match
+import os
+import sys
+
+# Add current directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+try:
+    from high_crisis import get_high_crisis_keywords, check_high_crisis_match
+    from medium_crisis import get_medium_crisis_keywords, check_medium_crisis_match  
+    from low_crisis import get_low_crisis_keywords, check_low_crisis_match
+    print("✅ Crisis keyword modules imported successfully")
+except ImportError as e:
+    print(f"❌ Failed to import crisis modules: {e}")
+    print("Please ensure high_crisis.py, medium_crisis.py, and low_crisis.py are in the same directory")
+    sys.exit(1)
 
 class ComprehensiveCrisisTest:
     def __init__(self, base_url="http://localhost:8881"):
@@ -445,6 +457,20 @@ class ComprehensiveCrisisTest:
         print("🚀 STARTING COMPREHENSIVE THREE-MODEL ENSEMBLE TEST")
         print("📊 Testing crisis detection across all levels...")
         print(f"🎯 Target: {self.base_url}")
+        print(f"📁 Working directory: {os.getcwd()}")
+        
+        # Test server connectivity first
+        try:
+            response = requests.get(f"{self.base_url}/health", timeout=5)
+            if response.status_code == 200:
+                health_data = response.json()
+                print(f"✅ Server healthy - Models loaded: {health_data.get('model_loaded', False)}")
+            else:
+                print(f"⚠️ Server responded with status {response.status_code}")
+        except Exception as e:
+            print(f"❌ Server connectivity issue: {e}")
+            print("Please ensure the NLP server is running at", self.base_url)
+            return None, None
         
         start_time = time.time()
         
@@ -461,33 +487,66 @@ class ComprehensiveCrisisTest:
         self.print_final_statistics()
         
         print(f"\n⏱️ Total test time: {end_time - start_time:.1f} seconds")
-        print(f"📝 Detailed results saved for analysis")
+        
+        # Save results with timestamp in filename
+        timestamp = int(time.time())
+        results_file = f'comprehensive_test_results_{timestamp}.json'
+        
+        with open(results_file, 'w') as f:
+            json.dump({
+                'results': self.results,
+                'stats': self.stats,
+                'timestamp': time.time(),
+                'test_duration': end_time - start_time,
+                'server_url': self.base_url
+            }, f, indent=2)
+        
+        print(f"📝 Detailed results saved to: {results_file}")
         
         return self.results, self.stats
 
 def main():
     """Run the comprehensive crisis detection test"""
+    print("🎯 Comprehensive Three-Model Ensemble Crisis Detection Test")
+    print("=" * 60)
+    
+    # Default to localhost (works from inside Docker container)
     if len(sys.argv) > 1:
         base_url = sys.argv[1]
     else:
         base_url = "http://localhost:8881"
     
-    print(f"🎯 Testing Three-Model Ensemble at: {base_url}")
+    print(f"📡 Testing server at: {base_url}")
+    print(f"📂 Test files location: {os.path.dirname(os.path.abspath(__file__))}")
     
     tester = ComprehensiveCrisisTest(base_url)
     results, stats = tester.run_comprehensive_test()
     
-    # Save results to file for further analysis
-    with open('comprehensive_test_results.json', 'w') as f:
-        json.dump({
-            'results': results,
-            'stats': stats,
-            'timestamp': time.time()
-        }, f, indent=2)
+    if results is None:
+        print("❌ Test aborted due to server connectivity issues")
+        return False
     
-    print(f"\n💾 Results saved to: comprehensive_test_results.json")
+    # Calculate success threshold
+    accuracy = stats['correct_predictions'] / stats['total_tests'] if stats['total_tests'] > 0 else 0
+    critical_miss_rate = tester._calculate_critical_miss_rate()
     
-    return stats['correct_predictions'] / stats['total_tests'] > 0.8  # 80% accuracy threshold
+    print(f"\n🏆 FINAL ASSESSMENT:")
+    print(f"   Overall Accuracy: {accuracy*100:.1f}%")
+    print(f"   Critical Miss Rate: {critical_miss_rate:.1f}%")
+    
+    # Success criteria: >80% accuracy AND <10% critical miss rate
+    success = accuracy > 0.8 and critical_miss_rate < 10
+    
+    if success:
+        print("   🎉 TEST PASSED - System ready for production!")
+    else:
+        print("   ⚠️ TEST NEEDS ATTENTION - Review thresholds and model performance")
+        if accuracy <= 0.8:
+            print(f"      - Overall accuracy too low ({accuracy*100:.1f}% < 80%)")
+        if critical_miss_rate >= 10:
+            print(f"      - Critical miss rate too high ({critical_miss_rate:.1f}% >= 10%)")
+    
+    return success
 
 if __name__ == "__main__":
     success = main()
