@@ -518,52 +518,56 @@ class EnhancedModelManager:
             return 'unknown'
     
     def _generate_consensus(self, processed: Dict[str, Any]) -> Dict[str, Any]:
-        """Generate consensus prediction from three models"""
+        """Generate consensus prediction from three models using NORMALIZED predictions"""
         if not processed['confidence_scores']:
             return None
         
         ensemble_mode = self.config['ensemble_mode']
         
         if ensemble_mode == 'consensus':
-            # Require all models to agree for high confidence
-            if len(set(processed['predictions'].values())) == 1:
-                # All models agree
+            # Check if NORMALIZED predictions agree (not raw predictions)
+            normalized_predictions = set(processed['normalized_predictions'].values())
+            
+            if len(normalized_predictions) == 1:
+                # All models agree on normalized prediction
                 avg_confidence = sum(processed['confidence_scores'].values()) / len(processed['confidence_scores'])
+                consensus_prediction = list(normalized_predictions)[0]  # Use normalized prediction
+                
                 return {
-                    'prediction': list(processed['predictions'].values())[0],
+                    'prediction': consensus_prediction,  # 'crisis' or 'safe' instead of raw labels
                     'confidence': avg_confidence,
-                    'method': 'unanimous_consensus'
+                    'method': 'unanimous_consensus'  # This will now trigger correctly!
                 }
             else:
-                # Models disagree - use highest confidence but mark as uncertain
+                # Models disagree on normalized predictions - use highest confidence but mark as uncertain
                 best_model = max(processed['confidence_scores'], key=processed['confidence_scores'].get)
                 return {
-                    'prediction': processed['predictions'][best_model],
+                    'prediction': processed['predictions'][best_model],  # Keep original prediction for debugging
                     'confidence': processed['confidence_scores'][best_model] * 0.7,  # Reduce confidence due to disagreement
                     'method': 'best_of_disagreeing'
                 }
         
         elif ensemble_mode == 'majority':
-            # Simple majority vote with confidence weighting
+            # Simple majority vote with confidence weighting on NORMALIZED predictions
             prediction_votes = {}
-            for model, prediction in processed['predictions'].items():
+            for model, normalized_pred in processed['normalized_predictions'].items():
                 confidence = processed['confidence_scores'][model]
-                if prediction not in prediction_votes:
-                    prediction_votes[prediction] = []
-                prediction_votes[prediction].append(confidence)
+                if normalized_pred not in prediction_votes:
+                    prediction_votes[normalized_pred] = []
+                prediction_votes[normalized_pred].append(confidence)
             
             # Find majority prediction
             majority_prediction = max(prediction_votes, key=lambda x: len(prediction_votes[x]))
             avg_confidence = sum(prediction_votes[majority_prediction]) / len(prediction_votes[majority_prediction])
             
             return {
-                'prediction': majority_prediction,
+                'prediction': majority_prediction,  # Use normalized prediction
                 'confidence': avg_confidence,
                 'method': 'majority_vote'
             }
         
         elif ensemble_mode == 'weighted':
-            # Weight models differently (you can adjust these weights)
+            # Weight models differently using normalized predictions
             model_weights = {
                 'depression': 0.5,      # Primary model gets highest weight
                 'sentiment': 0.2,       # Secondary contextual model
@@ -571,24 +575,24 @@ class EnhancedModelManager:
             }
             
             weighted_scores = {}
-            for model, prediction in processed['predictions'].items():
+            for model, normalized_pred in processed['normalized_predictions'].items():
                 confidence = processed['confidence_scores'][model]
                 weight = model_weights.get(model, 1.0)
                 weighted_score = confidence * weight
                 
-                if prediction not in weighted_scores:
-                    weighted_scores[prediction] = 0
-                weighted_scores[prediction] += weighted_score
+                if normalized_pred not in weighted_scores:
+                    weighted_scores[normalized_pred] = 0
+                weighted_scores[normalized_pred] += weighted_score
             
             best_prediction = max(weighted_scores, key=weighted_scores.get)
             
             return {
-                'prediction': best_prediction,
+                'prediction': best_prediction,  # Use normalized prediction
                 'confidence': weighted_scores[best_prediction],
                 'method': 'weighted_ensemble'
             }
         
-        # Fallback to highest confidence
+        # Fallback to highest confidence (use raw prediction for compatibility)
         best_model = max(processed['confidence_scores'], key=processed['confidence_scores'].get)
         return {
             'prediction': processed['predictions'][best_model],
