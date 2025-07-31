@@ -213,8 +213,8 @@ class EnhancedModelManager:
             raise
     
     async def _load_depression_model(self, model_kwargs, loading_kwargs):
-        """Load the depression detection model"""
-        logger.info("🧠 Loading Depression Detection model...")
+        """Load zero-shot depression detection model"""
+        logger.info("🧠 Loading Zero-Shot Depression Detection model...")
         logger.info(f"   Model: {self.config['depression_model']}")
         
         try:
@@ -223,21 +223,21 @@ class EnhancedModelManager:
                 **loading_kwargs
             )
             logger.info(f"   Architecture: {dep_config.model_type}")
-            logger.info(f"   Labels: {getattr(dep_config, 'id2label', 'Not specified')}")
+            logger.info(f"   Labels: Zero-shot classification for depression detection")
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
+        # CHANGED: Load as zero-shot-classification instead of text-classification
         self.depression_model = pipeline(
-            "text-classification",
+            "zero-shot-classification",  # ← CHANGED
             model=self.config['depression_model'],
-            top_k=None,
             **model_kwargs
         )
-        logger.info("✅ Depression model loaded successfully!")
+        logger.info("✅ Zero-shot depression model loaded successfully!")
     
     async def _load_sentiment_model(self, model_kwargs, loading_kwargs):
-        """Load the zero-shot sentiment analysis model"""
-        logger.info("💭 Loading Zero-Shot Sentiment Analysis model...")
+        """Load emotion-based sentiment analysis model"""
+        logger.info("💭 Loading Emotion-based Sentiment Analysis model...")
         logger.info(f"   Model: {self.config['sentiment_model']}")
         
         try:
@@ -246,17 +246,18 @@ class EnhancedModelManager:
                 **loading_kwargs
             )
             logger.info(f"   Architecture: {sent_config.model_type}")
-            logger.info(f"   Labels: Zero-shot classification (dynamic)")
+            logger.info(f"   Labels: {getattr(sent_config, 'id2label', 'Emotion classification')}")
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
-        # CHANGE THIS LINE - use 'zero-shot-classification' not 'sentiment-analysis'
+        # CHANGED: Load as text-classification instead of zero-shot-classification
         self.sentiment_model = pipeline(
-            "zero-shot-classification",  # ← CHANGED FROM "sentiment-analysis"
+            "text-classification",  # ← CHANGED
             model=self.config['sentiment_model'],
+            top_k=None,
             **model_kwargs
         )
-        logger.info("✅ Zero-shot sentiment model loaded successfully!")
+        logger.info("✅ Emotion sentiment model loaded successfully!")
     
     async def _load_emotional_distress_model(self, model_kwargs, loading_kwargs):
         """Load the emotional distress detection model (NEW)"""
@@ -372,42 +373,61 @@ class EnhancedModelManager:
     
     # Analysis methods
     def analyze_with_depression_model(self, message: str):
-        """Analyze message with depression detection model"""
+        """Analyze message with zero-shot depression detection"""
         try:
-            return self.depression_model(message)
-        except Exception as e:
-            logger.error(f"Depression model analysis failed: {e}")
-            return None
-    
-    def analyze_with_sentiment_model(self, message: str):
-        """Analyze message with zero-shot sentiment model using crisis-optimized labels"""
-        try:
-            # CRISIS-OPTIMIZED LABELS - much more specific and distinct
-            crisis_labels = [
-                "person expressing severe mental health crisis, suicidal thoughts, or immediate danger",
-                "person expressing significant emotional distress and needing support",
-                "person having a difficult day or minor negative feelings",
-                "person making neutral everyday conversation or factual statements", 
-                "person expressing positive feelings, gratitude, or happiness",
-                "person expressing excitement, joy, or very positive emotions"
+            # Depression-specific labels for primary crisis detection
+            depression_labels = [
+                "severe depression with suicidal ideation requiring immediate intervention",
+                "moderate depression with significant functional impairment", 
+                "mild depression or temporary low mood",
+                "normal emotional state with no depression indicators",
+                "positive mental health and emotional wellbeing"
             ]
             
-            result = self.sentiment_model(message, crisis_labels)
+            result = self.depression_model(message, depression_labels)
             
-            # Convert to format compatible with your existing code
+            # Convert to expected format for compatibility
             formatted_result = []
             for label, score in zip(result['labels'], result['scores']):
-                # Map long labels to short ones for compatibility
-                short_label = self._map_crisis_label_to_sentiment(label)
+                # Map to depression categories
+                depression_category = self._map_to_depression_category(label)
                 formatted_result.append({
-                    'label': short_label,
+                    'label': depression_category,
                     'score': score
                 })
             
             return formatted_result
             
         except Exception as e:
-            logger.error(f"Zero-shot sentiment analysis failed: {e}")
+            logger.error(f"Zero-shot depression analysis failed: {e}")
+            return None
+
+    def _map_to_depression_category(self, zero_shot_label: str) -> str:
+        """Map zero-shot labels to depression categories"""
+        label_lower = zero_shot_label.lower()
+        
+        if "severe depression" in label_lower or "suicidal ideation" in label_lower:
+            return "severe"
+        elif "moderate depression" in label_lower or "significant functional impairment" in label_lower:
+            return "moderate"
+        elif "mild depression" in label_lower or "temporary low mood" in label_lower:
+            return "mild"
+        elif "normal emotional state" in label_lower:
+            return "not depression"
+        elif "positive mental health" in label_lower:
+            return "not depression"
+        else:
+            return "not depression"  # Default to safe
+    
+    def analyze_with_sentiment_model(self, message: str):
+        """Analyze message with emotion classification model"""
+        try:
+            # Direct emotion classification - no labels needed
+            result = self.sentiment_model(message)
+            return result  # Already in correct format
+            
+        except Exception as e:
+            logger.error(f"Emotion sentiment analysis failed: {e}")
             return None
     
     def _map_crisis_label_to_sentiment(self, long_label: str) -> str:
@@ -533,27 +553,27 @@ class EnhancedModelManager:
         return processed
     
     def _normalize_prediction(self, prediction: str) -> str:
-        """Enhanced normalization for zero-shot crisis predictions"""
+        """Enhanced normalization for swapped models"""
         pred_lower = prediction.lower()
         
-        # Crisis indicators (updated for new labels)
-        if pred_lower in ['very negative', 'severe']:
+        # Depression model predictions (from zero-shot) - PRIMARY CRISIS DETECTION
+        if pred_lower in ['severe', 'moderate']:
             return 'crisis'
-        elif pred_lower in ['negative', 'slightly negative']:
-            return 'crisis'  # Still treat as crisis for safety-first approach
-        elif pred_lower in ['neutral']:
-            return 'neutral'
-        elif pred_lower in ['positive', 'very positive']:
+        elif pred_lower in ['mild']:
+            return 'mild_crisis'  # New intermediate category
+        elif pred_lower in ['not depression']:
             return 'safe'
         
-        # Keep your existing mappings for other models
-        elif pred_lower == 'label_0':  # ALBERT IMDB
+        # Sentiment model predictions (from emotion classifier) - CONTEXTUAL
+        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:
             return 'crisis'
-        elif pred_lower == 'label_1':  # ALBERT IMDB 
+        elif pred_lower in ['joy', 'love', 'surprise']:
             return 'safe'
-        elif pred_lower in ['sadness', 'fear', 'anger', 'disgust']:  # Emotion models
+        
+        # Keep existing mappings for third model (DistilBERT)
+        elif pred_lower == 'label_0':  # DistilBERT IMDB (negative)
             return 'crisis'
-        elif pred_lower in ['joy', 'love', 'surprise']:  # Emotion models
+        elif pred_lower == 'label_1':  # DistilBERT IMDB (positive)
             return 'safe'
         
         return 'unknown'
