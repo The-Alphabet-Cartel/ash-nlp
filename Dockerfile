@@ -17,8 +17,8 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Create non-root user with matching UID/GID for consistency across containers
-RUN groupadd -r -g 1001 nlp && \
-    useradd -r -g 1001 -u 1001 nlp
+RUN groupadd -g 1001 nlp && \
+    useradd -g 1001 -u 1001 nlp
 
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
