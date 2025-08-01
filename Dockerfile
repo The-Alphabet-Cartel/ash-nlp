@@ -16,9 +16,9 @@ WORKDIR /app
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Create non-root user with matching UID/GID for consistency across containers
+# Create non-root user with /app as home directory (no separate home dir)
 RUN groupadd -g 1001 nlp && \
-    useradd -g 1001 -u 1001 nlp
+    useradd -g 1001 -u 1001 -d /app -M nlp
 
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
@@ -52,6 +52,11 @@ ENV PYTHONPATH="/app"
 
 ## Hugging Face Configuration
 ENV NLP_HUGGINGFACE_CACHE_DIR="./models/cache"
+ENV HF_HOME="/app/models/cache"
+ENV TRANSFORMERS_CACHE="/app/models/cache"
+ENV HF_DATASETS_CACHE="/app/models/cache"
+ENV TORCH_HOME="/app/models/cache"
+ENV XDG_CACHE_HOME="/app/models/cache"
 
 ## Learning System Configuration
 ENV GLOBAL_ENABLE_LEARNING_SYSTEM="true"
