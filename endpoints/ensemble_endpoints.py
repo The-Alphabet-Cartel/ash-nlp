@@ -20,7 +20,7 @@ def add_ensemble_endpoints(app, model_manager):
     
     @app.post("/analyze", response_model=CrisisResponse)
     async def analyze_message(request: MessageRequest) -> CrisisResponse:
-        """PRIMARY ENDPOINT: Three-model ensemble analysis with crisis detection"""
+        """PRIMARY ENDPOINT: Three Zero-Shot Model Ensemble analysis with crisis detection"""
         start_time = time.time()
         
         try:
@@ -31,7 +31,7 @@ def add_ensemble_endpoints(app, model_manager):
             if not message:
                 raise HTTPException(status_code=400, detail="Empty message")
             
-            logger.info(f"🔍 Three-model ensemble analysis: '{message[:50]}...'")
+            logger.info(f"🔍 Three Zero-Shot Model Ensemble analysis: '{message[:50]}...'")
             
             # Perform ensemble analysis
             ensemble_result = model_manager.analyze_with_ensemble(message)
@@ -182,7 +182,7 @@ def _map_to_crisis_level_centralized(consensus: Dict[str, Any]) -> str:
     
     logger.info(f"🎯 Centralized mapping: prediction='{prediction}' confidence={confidence:.3f}")
     
-    # Handle NORMALIZED predictions from three-model ensemble
+    # Handle NORMALIZED predictions from Three Zero-Shot Model Ensemble
     if prediction == 'crisis':
         # Use environment thresholds for crisis prediction mapping
         if confidence >= thresholds['consensus_crisis_to_high']:
