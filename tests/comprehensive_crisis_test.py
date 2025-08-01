@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive Three-Model Ensemble Crisis Detection Test
+Comprehensive Three Zero-Shot Model Ensemble Crisis Detection Test
 Tests the full spectrum of crisis levels using actual Ash Bot keywords
 """
 
@@ -362,7 +362,7 @@ class ComprehensiveCrisisTest:
     def print_final_statistics(self):
         """Print comprehensive test statistics"""
         print("\n" + "="*80)
-        print("🏆 COMPREHENSIVE THREE-MODEL ENSEMBLE TEST RESULTS")
+        print("🏆 COMPREHENSIVE THREE ZERO-SHOT MODEL ENSEMBLE TEST RESULTS")
         print("="*80)
         
         total = self.stats['total_tests']
@@ -454,7 +454,7 @@ class ComprehensiveCrisisTest:
 
     def run_comprehensive_test(self):
         """Run the complete test suite"""
-        print("🚀 STARTING COMPREHENSIVE THREE-MODEL ENSEMBLE TEST")
+        print("🚀 STARTING COMPREHENSIVE THREE ZERO-SHOT MODEL ENSEMBLE TEST")
         print("📊 Testing crisis detection across all levels...")
         print(f"🎯 Target: {self.base_url}")
         print(f"📁 Working directory: {os.getcwd()}")
@@ -507,7 +507,7 @@ class ComprehensiveCrisisTest:
 
 def main():
     """Run the comprehensive crisis detection test"""
-    print("🎯 Comprehensive Three-Model Ensemble Crisis Detection Test")
+    print("🎯 Comprehensive Three Zero-Shot Model Ensemble Crisis Detection Test")
     print("=" * 60)
     
     # Default to localhost (works from inside Docker container)
