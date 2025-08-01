@@ -43,7 +43,9 @@ USER nlp
 ENV TZ="America/Los_Angeles"
 
 ## Core Python settings
-ENV GLOBAL_PYTHONUNBUFFERED="1"
+ENV PYTHONUNBUFFERED="1"
+ENV PYTHONDONTWRITEBYTECODE="1"
+ENV PYTHONPATH="/app"
 
 ## Hugging Face Configuration
 ENV NLP_HUGGINGFACE_CACHE_DIR="./models/cache"
