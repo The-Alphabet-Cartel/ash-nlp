@@ -2,7 +2,7 @@
 
 #!/usr/bin/env python3
 """
-Enhanced NLP Service for Ash Bot - With Secrets Support and Three-Model Ensemble
+Enhanced NLP Service for Ash Bot - With Secrets Support and Three Zero-Shot Model Ensemble
 UPDATED: Fixed learning system integration
 """
 
@@ -137,13 +137,13 @@ startup_time = time.time()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("🚀 Enhanced FastAPI app starting with three-model ensemble...")
+    logger.info("🚀 Enhanced FastAPI app starting with Three Zero-Shot Model Ensemble...")
     await initialize_components_with_config()
     
     # CRITICAL: Add ensemble endpoints AFTER initialization
-    logger.info("🔧 Adding three-model ensemble endpoints...")
+    logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
     add_ensemble_endpoints(app, model_manager)
-    logger.info("🎯 Three-model ensemble endpoints added - /analyze is now ensemble-powered!")
+    logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added - /analyze is now ensemble-powered!")
     
     # FIXED: Add learning endpoints if available
     if enhanced_learning_manager:
@@ -173,7 +173,7 @@ async def initialize_components_with_config():
             logger.info("✅ ModelManager initialized (using environment variables)")
         
         # Load models with the enhanced method
-        logger.info("📦 Loading three-model ensemble with secrets-aware configuration...")
+        logger.info("📦 Loading Three Zero-Shot Model Ensemble with secrets-aware configuration...")
         await model_manager.load_models()
         logger.info("✅ Enhanced ModelManager initialized and THREE MODELS loaded")
         
@@ -245,7 +245,7 @@ async def initialize_components_with_config():
 
 # Create FastAPI app with enhanced config
 app = FastAPI(
-    title="Enhanced Ash NLP Service - Three-Model Ensemble", 
+    title="Enhanced Ash NLP Service - Three Zero-Shot Model Ensemble", 
     version="4.5.0",  # Updated version
     description="Advanced crisis detection using three specialized ML models with ensemble consensus and secure configuration",
     lifespan=lifespan
@@ -264,7 +264,7 @@ if config['GLOBAL_ENABLE_CORS']:
     logger.info("🌐 CORS middleware enabled")
 
 # REMOVED: Old /analyze endpoint - now handled by ensemble_endpoints.py
-# The three-model ensemble /analyze endpoint is added via add_ensemble_endpoints()
+# The Three Zero-Shot Model Ensemble /analyze endpoint is added via add_ensemble_endpoints()
 
 # Health check endpoint
 @app.get("/health", response_model=HealthResponse)
@@ -318,7 +318,7 @@ async def get_stats():
     api_keys_status = get_api_keys_status()
     
     stats = {
-        "service": "Enhanced Ash NLP Service - Three-Model Ensemble",
+        "service": "Enhanced Ash NLP Service - Three Zero-Shot Model Ensemble",
         "version": "4.5.0",
         "uptime_seconds": uptime,
         "models_loaded": model_manager.get_model_status() if model_manager else {},
@@ -361,7 +361,7 @@ async def get_stats():
     return stats
 
 if __name__ == "__main__":
-    logger.info("🚀 Starting Enhanced Ash NLP Service v4.5.0 (Three-Model Ensemble)")
+    logger.info("🚀 Starting Enhanced Ash NLP Service v3.0 (Three Zero-Shot Model Ensemble)")
     logger.info("🔧 Configuration loaded with secrets-aware management")
     logger.info("🧠 Three specialized models with ensemble consensus")
     
