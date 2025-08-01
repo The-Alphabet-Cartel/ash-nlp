@@ -33,7 +33,7 @@ COPY --chown=nlp:nlp . .
 
 # Create necessary directories with proper ownership
 RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
-    chown -R nlp:nlp /app
+    chown -R nlp:nlp /app && \
     chmod 755 /app
 
 # Switch to non-root user
