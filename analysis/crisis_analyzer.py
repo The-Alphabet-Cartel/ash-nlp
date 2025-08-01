@@ -1,5 +1,5 @@
 """
-CRITICAL FIXES for Crisis Analyzer - THREE-MODEL ENSEMBLE INTEGRATION
+CRITICAL FIXES for Crisis Analyzer - Three Zero-Shot Model Ensemble INTEGRATION
 These changes fix the dangerous under-response bug and integrate ensemble analysis
 """
 
@@ -19,7 +19,7 @@ from config.nlp_settings import CRISIS_THRESHOLDS
 logger = logging.getLogger(__name__)
 
 class CrisisAnalyzer:
-    """UPDATED: Three-model ensemble crisis analysis with proper crisis level mapping"""
+    """UPDATED: Three Zero-Shot Model Ensemble crisis analysis with proper crisis level mapping"""
     
     def __init__(self, model_manager, learning_manager=None):
         self.model_manager = model_manager
@@ -27,7 +27,7 @@ class CrisisAnalyzer:
 
     async def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict:
         """
-        UPDATED: Three-model ensemble analysis with FIXED crisis level mapping
+        UPDATED: Three Zero-Shot Model Ensemble analysis with FIXED crisis level mapping
         """
         
         start_time = time.time()
@@ -38,9 +38,9 @@ class CrisisAnalyzer:
             context = extract_context_signals(message)
             reasoning_steps.append(f"Context: {context}")
             
-            # Step 2: THREE-MODEL ENSEMBLE ANALYSIS
+            # Step 2: Three Zero-Shot Model Ensemble ANALYSIS
             if hasattr(self.model_manager, 'analyze_with_ensemble'):
-                # Use the new three-model ensemble if available
+                # Use the new Three Zero-Shot Model Ensemble if available
                 ensemble_result = self.model_manager.analyze_with_ensemble(message)
                 
                 # Extract consensus prediction for crisis level mapping
@@ -89,7 +89,7 @@ class CrisisAnalyzer:
                     'method': 'three_model_ensemble_v2'
                 }
                 
-                logger.info(f"Three-model ensemble analysis: {crisis_level} confidence={consensus_confidence:.3f} consensus={consensus_prediction}")
+                logger.info(f"Three Zero-Shot Model Ensemble analysis: {crisis_level} confidence={consensus_confidence:.3f} consensus={consensus_prediction}")
                 return result
                 
             else:
