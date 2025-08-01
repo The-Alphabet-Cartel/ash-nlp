@@ -8,7 +8,7 @@
 
 ## 🚀 What is Ash NLP v3.0?
 
-Ash NLP v3.0 is a cutting-edge **three-model ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
+Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
 
 - **🧠 Enhanced accuracy** through model consensus and disagreement detection
 - **⚡ Sub-35ms response times** optimized for real-time Discord interactions
@@ -85,7 +85,7 @@ docker-compose up ash-nlp
 # Health check
 curl http://localhost:8881/health
 
-# Three-model ensemble analysis
+# Three Zero-Shot Model Ensemble analysis
 curl -X POST http://localhost:8881/analyze \
   -H "Content-Type: application/json" \
   -d '{"message": "I am feeling really down", "user_id": "test", "channel_id": "test"}'
@@ -93,7 +93,7 @@ curl -X POST http://localhost:8881/analyze \
 
 ## 📊 Performance Benchmarks
 
-| Metric | Single Model | Three-Model Ensemble |
+| Metric | Single Model | Three Zero-Shot Model Ensemble |
 |--------|--------------|---------------------|
 | **Response Time** | 25ms | 31ms |
 | **Accuracy** | 61.7% | 75%+ |
