@@ -146,7 +146,6 @@ class EnvConfigManager:
             # =================================================================
             'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']},
             'NLP_LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
-            'GLOBAL_PYTHONUNBUFFERED': {'type': bool, 'default': True},
             'GLOBAL_ENABLE_DEBUG_MODE': {'type': bool, 'default': False},
             'NLP_FLIP_SENTIMENT_LOGIC': {'type': bool, 'default': False},
             
