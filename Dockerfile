@@ -39,6 +39,9 @@ RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
 # Switch to non-root user
 USER nlp
 
+# Set working directory
+WORKDIR /app
+
 # Set default environment variables optimized for Three Zero-Shot Model Ensemble
 ENV TZ="America/Los_Angeles"
 
