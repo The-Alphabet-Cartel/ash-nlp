@@ -53,7 +53,7 @@ ENV PYTHONPATH="/app"
 ## Hugging Face Configuration
 ENV NLP_HUGGINGFACE_CACHE_DIR="./models/cache"
 ENV HF_HOME="/app/models/cache"
-ENV TRANSFORMERS_CACHE="/app/models/cache"
+# ENV TRANSFORMERS_CACHE="/app/models/cache"
 ENV HF_DATASETS_CACHE="/app/models/cache"
 ENV TORCH_HOME="/app/models/cache"
 ENV XDG_CACHE_HOME="/app/models/cache"
