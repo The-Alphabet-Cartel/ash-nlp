@@ -1,4 +1,4 @@
-# Ash NLP Service v3.0 - "Three-Model Ensemble" Release
+# Ash NLP Service v3.0 - "Three Zero-Shot Model Ensemble" Release
 
 ## 🚀 Major Release: Revolutionary Three-Model Crisis Detection
 
@@ -10,9 +10,9 @@
 
 ## 🌟 What's New in v3.0
 
-### 🧠 Three-Model Ensemble Architecture
+### 🧠 Three Zero-Shot Model Ensemble Architecture
 
-Version 3.0 introduces a groundbreaking **three-model ensemble system** that fundamentally changes how we detect mental health crises:
+Version 3.0 introduces a groundbreaking **Three Zero-Shot Model Ensemble system** that fundamentally changes how we detect mental health crises:
 
 **Previous Architecture** (v2.x):
 - Single depression detection model
