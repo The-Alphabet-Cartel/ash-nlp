@@ -50,8 +50,8 @@ log_level = config['GLOBAL_LOG_LEVEL']
 log_file = config['NLP_LOG_FILE']
 enable_debug = config['GLOBAL_ENABLE_DEBUG_MODE']
 
-# Set GLOBAL_PYTHONUNBUFFERED for Docker
-os.environ['GLOBAL_PYTHONUNBUFFERED'] = '1'
+# Set PYTHONUNBUFFERED for Docker
+os.environ['PYTHONUNBUFFERED'] = '1'
 
 # Configure logging
 logging.basicConfig(
