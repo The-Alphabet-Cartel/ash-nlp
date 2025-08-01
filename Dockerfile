@@ -28,11 +28,12 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=1001:1001 . .
+COPY --chown=nlpuser:nlpuser . .
 
 # Create necessary directories with proper ownership
 RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
-    chown -R 1001:1001 /app
+    chown -R nlpuser:nlpuser /app
+    chmod 755 /app
 
 # Switch to non-root user
 USER nlpuser
