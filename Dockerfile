@@ -13,11 +13,12 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Create non-root user with matching UID/GID for consistency across containers
-RUN groupadd -r nlpuser && useradd -r -g nlpuser -u 1001 nlpuser
-
 # Copy requirements first for better caching
 COPY requirements.txt .
+
+# Create non-root user with matching UID/GID for consistency across containers
+RUN groupadd -r -g 1001 nlp && \
+    useradd -r -g 1001 -u 1001 nlp
 
 # Create virtual environment and install dependencies
 RUN python -m venv /opt/venv
@@ -28,15 +29,15 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=nlpuser:nlpuser . .
+COPY --chown=nlp:nlp . .
 
 # Create necessary directories with proper ownership
 RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
-    chown -R nlpuser:nlpuser /app
+    chown -R nlp:nlp /app
     chmod 755 /app
 
 # Switch to non-root user
-USER nlpuser
+USER nlp
 
 # Set default environment variables optimized for Three Zero-Shot Model Ensemble
 ENV TZ="America/Los_Angeles"
