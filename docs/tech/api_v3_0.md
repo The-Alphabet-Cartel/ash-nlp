@@ -296,7 +296,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 
 ## 🔍 Analysis Tools
 
-### POST `/extract_phrases` (Not Yet Implemented)
+### POST `/extract_phrases`
 
 **Purpose**: Extract potential crisis keywords and phrases using model scoring
 
