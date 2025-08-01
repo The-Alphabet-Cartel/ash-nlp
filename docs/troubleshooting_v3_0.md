@@ -1,6 +1,6 @@
 # Ash NLP v3.0 Troubleshooting Guide
 
-**Comprehensive troubleshooting for the three-model ensemble crisis detection system**
+**Comprehensive troubleshooting for the Three Zero-Shot Model Ensemble crisis detection system**
 
 ---
 
