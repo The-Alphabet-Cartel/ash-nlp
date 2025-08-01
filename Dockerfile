@@ -38,7 +38,7 @@ RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
 # Switch to non-root user
 USER nlpuser
 
-# Set default environment variables optimized for three-model ensemble
+# Set default environment variables optimized for Three Zero-Shot Model Ensemble
 ENV TZ="America/Los_Angeles"
 
 ## Core Python settings
