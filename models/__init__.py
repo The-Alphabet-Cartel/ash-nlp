@@ -3,7 +3,7 @@ Models Package for Ash NLP Service - Three Model Ensemble Architecture
 Contains ML model management and Pydantic data models
 """
 
-# ML Models - Updated for three-model ensemble
+# ML Models - Updated for Three Zero-Shot Model Ensemble
 from .ml_models import ModelManager
 
 # Pydantic Models - Request/Response structures
@@ -88,11 +88,11 @@ MODEL_INFO = {
 }
 
 def get_model_info():
-    """Get information about the three-model ensemble and pipeline"""
+    """Get information about the Three Zero-Shot Model Ensemble and pipeline"""
     return MODEL_INFO
 
 def get_supported_endpoints():
-    """Get list of supported API endpoints for three-model ensemble"""
+    """Get list of supported API endpoints for Three Zero-Shot Model Ensemble"""
     return {
         "analysis": [
             "/analyze - Full ensemble analysis with gap detection",
@@ -131,7 +131,7 @@ def get_ensemble_capabilities():
     }
 
 def get_performance_targets():
-    """Get performance targets for the three-model ensemble"""
+    """Get performance targets for the Three Zero-Shot Model Ensemble"""
     return MODEL_INFO["performance_characteristics"]
 
 __all__ = [
