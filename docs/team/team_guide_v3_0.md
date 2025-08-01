@@ -1,6 +1,6 @@
 # Crisis Response Team Guide - Ash NLP v3.0
 
-**A comprehensive guide for crisis response teams using the three-model ensemble system**
+**A comprehensive guide for crisis response teams using the Three Zero-Shot Model Ensemble system**
 
 ---
 
