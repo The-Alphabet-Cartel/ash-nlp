@@ -10,12 +10,11 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user with matching UID/GID for consistency across containers
-RUN groupadd -g 1001 nlpuser && \
-    useradd -m -u 1001 -g 1001 nlpuser
-
 # Set working directory
 WORKDIR /app
+
+# Create non-root user with matching UID/GID for consistency across containers
+RUN groupadd -r nlpuser && useradd -r -g nlpuser -u 1001 nlpuser
 
 # Copy requirements first for better caching
 COPY requirements.txt .
@@ -29,7 +28,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY . .
+COPY --chown=1001:1001 . .
 
 # Create necessary directories with proper ownership
 RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
