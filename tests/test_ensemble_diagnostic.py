@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Ensemble Diagnostic Test Script
-Diagnoses exactly what each model in the three-model ensemble is returning
+Diagnoses exactly what each model in the Three Zero-Shot Model Ensemble is returning
 Location: ash/ash-nlp/tests/test_ensemble_diagnostic.py
 """
 
