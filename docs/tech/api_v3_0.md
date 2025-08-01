@@ -1,12 +1,12 @@
 # Ash NLP v3.0 API Documentation
 
-**Complete API reference for the three-model ensemble crisis detection system**
+**Complete API reference for the Three Zero-Shot Model Ensemble crisis detection system**
 
 ---
 
 ## 🚀 API Overview
 
-Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a sophisticated three-model ensemble. The API is designed for:
+Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a sophisticated Three Zero-Shot Model Ensemble. The API is designed for:
 
 - **Real-time message analysis** with sub-35ms response times
 - **Multiple analysis modes** from basic to advanced ensemble
@@ -25,7 +25,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 |----------|--------|---------|---------------|
 | `/health` | GET | System health check | ~1ms |
 | `/stats` | GET | Service statistics | ~2ms |
-| `/analyze` | POST | Three-model ensemble analysis | ~63ms |
+| `/analyze` | POST | Three Zero-Shot Model Ensemble analysis | ~63ms |
 | `/extract_phrases` | POST | Crisis keyword extraction | ~200ms |
 | `/learning_statistics` | GET | Learning system metrics | ~3ms |
 
@@ -88,7 +88,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 **Response**:
 ```json
 {
-  "service": "Enhanced Ash NLP Service - Three-Model Ensemble",
+  "service": "Enhanced Ash NLP Service - Three Zero-Shot Model Ensemble",
   "version": "4.5.0",
   "uptime_seconds": 1635.8521761894226,
   "models_loaded": {
@@ -166,7 +166,7 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 
 ### POST `/analyze`
 
-**Purpose**: Advanced three-model ensemble analysis with gap detection
+**Purpose**: Advanced Three Zero-Shot Model Ensemble analysis with gap detection
 
 **Request Body**:
 ```json
@@ -1170,7 +1170,7 @@ def handle_response_v2_to_v3(response_data):
 ## 📋 API Changelog
 
 ### v3.0.0 (Current)
-- ✅ Added three-model ensemble analysis
+- ✅ Added Three Zero-Shot Model Ensemble analysis
 - ✅ Added `/analyze` endpoint
 - ✅ Added gap detection system
 - ✅ Added ensemble configuration options
