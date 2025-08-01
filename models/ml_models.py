@@ -14,7 +14,7 @@ from config.env_manager import get_config
 logger = logging.getLogger(__name__)
 
 class EnhancedModelManager:
-    """Enhanced centralized management of ML models with three-model ensemble support"""
+    """Enhanced centralized management of ML models with Three Zero-Shot Model Ensemble support"""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -44,7 +44,7 @@ class EnhancedModelManager:
         # Set up Hugging Face authentication if token provided
         self._setup_huggingface_auth()
         
-        logger.info(f"Enhanced ModelManager initialized with THREE-MODEL ensemble")
+        logger.info(f"Enhanced ModelManager initialized with Three Zero-Shot Model Ensemble")
         logger.info(f"Device: {self.device}")
         logger.info(f"Model cache directory: {self.config['cache_dir']}")
     
@@ -204,7 +204,7 @@ class EnhancedModelManager:
         """Load all THREE models with enhanced configuration"""
         
         logger.info("=" * 70)
-        logger.info("STARTING THREE-MODEL ENSEMBLE LOADING PROCESS")
+        logger.info("STARTING Three Zero-Shot Model Ensemble LOADING PROCESS")
         logger.info("=" * 70)
         
         logger.info(f"🔧 Configuration:")
@@ -240,7 +240,7 @@ class EnhancedModelManager:
             await self._test_all_models()
             
             logger.info("=" * 70)
-            logger.info("✅ THREE-MODEL ENSEMBLE LOADING COMPLETE")
+            logger.info("✅ Three Zero-Shot Model Ensemble LOADING COMPLETE")
             logger.info("=" * 70)
             
         except Exception as e:
