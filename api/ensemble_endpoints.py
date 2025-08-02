@@ -10,7 +10,7 @@ import time
 from fastapi import HTTPException
 from typing import Dict, Any, List
 from models.pydantic_models import MessageRequest, CrisisResponse
-from config.env_manager import get_config
+from managers.env_manager import get_config
 
 logger = logging.getLogger(__name__)
 config = get_config()
