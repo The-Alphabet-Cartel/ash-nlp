@@ -28,6 +28,9 @@ services:
       # Hugging Face Configuration
       - NLP_HUGGINGFACE_CACHE_DIR=${NLP_HUGGINGFACE_CACHE_DIR}
       
+      # Mode
+      - NLP_ENSEMBLE_MODE=${NLP_ENSEMBLE_MODE:-consensus}
+
       # Learning System Configuration
       - GLOBAL_ENABLE_LEARNING_SYSTEM=${GLOBAL_ENABLE_LEARNING_SYSTEM:-true}
       - NLP_LEARNING_RATE=${NLP_LEARNING_RATE:-0.1}
