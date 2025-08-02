@@ -5,7 +5,7 @@ Handles context extraction and sentiment analysis with Siebert support
 
 import re
 from typing import Dict, List
-from config.nlp_settings import POSITIVE_CONTEXT_PATTERNS, IDIOM_PATTERNS, NEGATION_PATTERNS
+from managers.settings_manager import POSITIVE_CONTEXT_PATTERNS, IDIOM_PATTERNS, NEGATION_PATTERNS
 import os
 
 def process_sentiment_with_flip(sentiment_scores):
@@ -230,7 +230,7 @@ def score_term_in_context(term: str, message: str) -> float:
     base_score = 0.5
     
     # Context enhancement patterns
-    from config.nlp_settings import CONTEXT_WEIGHTS
+    from managers.settings_manager import CONTEXT_WEIGHTS
     
     crisis_context_words = CONTEXT_WEIGHTS['crisis_context_words']
     positive_context_words = CONTEXT_WEIGHTS['positive_context_words']
