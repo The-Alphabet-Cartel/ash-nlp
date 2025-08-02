@@ -10,10 +10,10 @@ from transformers import pipeline, AutoConfig
 from typing import Optional, Dict, Any, Union, List, Tuple
 from pathlib import Path
 from datetime import datetime
-from config.env_manager import get_config
+from managers.env_manager import get_config
 
 # Import JSON-based label configuration
-from config.zero_shot_config import (
+from managers.zero_shot_manager import (
     get_labels_config,
     map_depression_zero_shot_label,
     map_sentiment_zero_shot_label, 
