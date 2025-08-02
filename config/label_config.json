@@ -64,6 +64,11 @@
       "optimized_for": "high_crisis_detection",
       "sensitivity_level": "high",
       "recommended": true,
+      "models_used": {
+        "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+        "sentiment": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli", 
+        "emotional_distress": "Lowerated/lm6-deberta-v3-topic-sentiment"
+      },
       "labels": {
         "depression": [
           "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
