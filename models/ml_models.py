@@ -1,20 +1,32 @@
 """
 Enhanced ML Model Management for Ash NLP Service - Three Model Architecture
-Handles loading, caching, and access to ML models with DistilBERT emotional distress detection
+Handles loading, caching, and access to ML models with JSON-based zero-shot label configuration
 """
 
 import logging
 import os
 import torch
 from transformers import pipeline, AutoConfig
-from typing import Optional, Dict, Any, Union, List, Tuple  # ← Make sure List is included
+from typing import Optional, Dict, Any, Union, List, Tuple
 from pathlib import Path
+from datetime import datetime
 from config.env_manager import get_config
+
+# Import JSON-based label configuration
+from config.zero_shot_config import (
+    get_labels_config,
+    map_depression_zero_shot_label,
+    map_sentiment_zero_shot_label, 
+    map_distress_zero_shot_label,
+    switch_label_set,
+    get_current_label_set,
+    reload_labels_config
+)
 
 logger = logging.getLogger(__name__)
 
 class EnhancedModelManager:
-    """Enhanced centralized management of ML models with Three Zero-Shot Model Ensemble support"""
+    """Enhanced centralized management of ML models with JSON-configured Three Zero-Shot Model Ensemble"""
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
@@ -28,6 +40,9 @@ class EnhancedModelManager:
         
         # Load configuration from environment or passed config
         self.config = self._load_config(config)
+        
+        # Initialize JSON-based labels configuration
+        self.labels_config = get_labels_config()
         
         # Model instances - THREE MODELS NOW
         self.depression_model = None
@@ -44,9 +59,10 @@ class EnhancedModelManager:
         # Set up Hugging Face authentication if token provided
         self._setup_huggingface_auth()
         
-        logger.info(f"Enhanced ModelManager initialized with Three Zero-Shot Model Ensemble")
+        logger.info(f"Enhanced ModelManager initialized with JSON-configured Three Zero-Shot Model Ensemble")
         logger.info(f"Device: {self.device}")
         logger.info(f"Model cache directory: {self.config['cache_dir']}")
+        logger.info(f"Labels configuration: {self.labels_config.get_current_stats()}")
     
     def _load_config(self, config: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         """Load configuration from environment variables or passed config"""
@@ -135,46 +151,145 @@ class EnhancedModelManager:
         else:
             logger.info("🔓 No Hugging Face token provided (using public models only)")
     
-    def get_depression_labels(self):
-        """Ultra-specific crisis detection labels for primary model"""
-        return [
-            "person actively expressing suicidal ideation, plans for self-harm, or immediate danger to themselves",
-            "person showing severe clinical depression with major functional impairment and crisis indicators",
-            "person experiencing moderate depression with significant distress requiring professional intervention",
-            "person having mild depressive episode or temporary low mood with manageable symptoms",
-            "person in stable mental health with normal emotional fluctuations and no depression signs",
-            "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
-        ]
+    # =============================================================================
+    # JSON-BASED LABEL METHODS - Now use centralized JSON configuration
+    # =============================================================================
+    
+    def get_depression_labels(self) -> List[str]:
+        """Get depression detection labels from JSON configuration"""
+        return self.labels_config.get_depression_labels()
 
-    def get_sentiment_labels(self):
-        """Emotional tone and affect labels for contextual analysis"""
-        return [
-            "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
-            "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment", 
-            "person displaying mixed or neutral emotional state without strong positive or negative feelings",
-            "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
-            "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
-            "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
-        ]
+    def get_sentiment_labels(self) -> List[str]:
+        """Get sentiment analysis labels from JSON configuration"""
+        return self.labels_config.get_sentiment_labels()
 
-    def get_emotional_distress_labels(self):
-        """Stress and coping capacity labels for validation"""
-        return [
-            "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
-            "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
-            "person showing moderate distress with some difficulty managing emotions and daily responsibilities", 
-            "person handling normal life stress with adequate coping strategies and emotional regulation",
-            "person demonstrating strong emotional resilience with healthy stress management and adaptation",
-            "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
-        ]
+    def get_emotional_distress_labels(self) -> List[str]:
+        """Get emotional distress labels from JSON configuration"""
+        return self.labels_config.get_emotional_distress_labels()
 
+    # =============================================================================
+    # JSON-BASED MAPPING METHODS - Now use centralized mapping functions
+    # =============================================================================
+    
+    def _map_depression_zero_shot_label(self, long_label: str) -> str:
+        """Map depression specialist labels using JSON configuration"""
+        return self.labels_config.map_depression_label(long_label)
+
+    def _map_sentiment_zero_shot_label(self, long_label: str) -> str:
+        """Map sentiment specialist labels using JSON configuration"""
+        return self.labels_config.map_sentiment_label(long_label)
+
+    def _map_distress_zero_shot_label(self, long_label: str) -> str:
+        """Map distress specialist labels using JSON configuration"""
+        return self.labels_config.map_distress_label(long_label)
+
+    # =============================================================================
+    # JSON CONFIGURATION MANAGEMENT METHODS
+    # =============================================================================
+    
+    def switch_label_set(self, label_set_name: str) -> bool:
+        """Switch to a different label set from JSON configuration"""
+        success = self.labels_config.switch_label_set(label_set_name)
+        if success:
+            logger.info(f"♻️ Switched labels to: {label_set_name}")
+            logger.info(f"📊 New label stats: {self.labels_config.get_current_stats()}")
+        return success
+    
+    def get_available_label_sets(self) -> List[str]:
+        """Get list of available label sets from JSON configuration"""
+        return self.labels_config.get_available_label_sets()
+    
+    def get_current_label_set_name(self) -> str:
+        """Get current label set name"""
+        return self.labels_config.get_current_label_set_name()
+    
+    def get_label_set_info(self, label_set_name: Optional[str] = None) -> Dict[str, Any]:
+        """Get information about a label set (current if none specified)"""
+        if label_set_name is None:
+            label_set_name = self.get_current_label_set_name()
+        
+        info = self.labels_config.get_label_set_info(label_set_name)
+        if info:
+            return {
+                'name': info.name,
+                'description': info.description,
+                'optimized_for': info.optimized_for,
+                'sensitivity_level': info.sensitivity_level,
+                'recommended': info.recommended,
+                'label_counts': info.label_counts,
+                'total_labels': sum(info.label_counts.values()) if info.label_counts else 0
+            }
+        return {}
+    
+    def get_labels_config_info(self) -> Dict[str, Any]:
+        """Get comprehensive configuration information"""
+        return self.labels_config.get_config_info()
+    
+    def reload_labels_from_json(self) -> bool:
+        """Reload labels configuration from JSON file"""
+        try:
+            reload_labels_config()
+            
+            # Update our reference
+            self.labels_config = get_labels_config()
+            logger.info(f"♻️ Reloaded labels from JSON: {self.labels_config.get_current_stats()}")
+            return True
+        except Exception as e:
+            logger.error(f"Failed to reload labels from JSON: {e}")
+            return False
+    
+    def validate_current_labels(self) -> Dict[str, Any]:
+        """Validate current label configuration"""
+        stats = self.labels_config.get_current_stats()
+        
+        validation = {
+            'valid': True,
+            'issues': [],
+            'warnings': [],
+            'stats': stats
+        }
+        
+        # Check if we have labels for all models
+        required_models = ['depression', 'sentiment', 'emotional_distress']
+        current_labels = self.labels_config.get_all_labels()
+        
+        for model in required_models:
+            if model not in current_labels:
+                validation['valid'] = False
+                validation['issues'].append(f"Missing labels for {model} model")
+            elif len(current_labels[model]) == 0:
+                validation['valid'] = False
+                validation['issues'].append(f"No labels defined for {model} model")
+            elif len(current_labels[model]) < 3:
+                validation['warnings'].append(f"Only {len(current_labels[model])} labels for {model} model (recommend 5+)")
+        
+        # Check total label count
+        total_labels = stats.get('total_labels', 0)
+        if total_labels < 10:
+            validation['warnings'].append(f"Only {total_labels} total labels (recommend 15+)")
+        
+        return validation
+    
+    def export_current_labels(self) -> Dict[str, Any]:
+        """Export current label configuration for backup/sharing"""
+        return {
+            'exported_at': datetime.utcnow().isoformat(),
+            'label_set': self.get_current_label_set_name(),
+            'info': self.get_label_set_info(),
+            'labels': self.labels_config.get_all_labels(),
+            'stats': self.labels_config.get_current_stats(),
+            'config_info': self.labels_config.get_config_info()
+        }
+
+    # =============================================================================
+    # MODEL LOADING METHODS (unchanged)
+    # =============================================================================
+    
     def _get_model_kwargs(self) -> Dict[str, Any]:
         """Get arguments for model pipeline creation"""
         return {
             'device': self.device,
             'torch_dtype': self._get_torch_dtype(),
-            # Note: Only include parameters that are valid for pipeline()
-            # Other parameters like cache_dir, trust_remote_code are handled separately
         }
     
     def _get_model_loading_kwargs(self) -> Dict[str, Any]:
@@ -213,6 +328,7 @@ class EnhancedModelManager:
         logger.info(f"   Cache Dir: {self.config['cache_dir']}")
         logger.info(f"   Max Batch Size: {self.config['max_batch_size']}")
         logger.info(f"   Ensemble Mode: {self.config['ensemble_mode']}")
+        logger.info(f"   Current Label Set: {self.get_current_label_set_name()}")
         
         try:
             # Get model loading arguments
@@ -325,6 +441,7 @@ class EnhancedModelManager:
             ]
             
             logger.info("🧪 Testing all three models...")
+            logger.info(f"   Using label set: {self.get_current_label_set_name()}")
             
             for i, test_message in enumerate(test_messages):
                 logger.info(f"   Test {i+1}: '{test_message[:30]}...'")
@@ -471,101 +588,42 @@ class EnhancedModelManager:
             logger.error(f"Distress specialist zero-shot failed: {e}")
             return None
 
-    def _map_depression_zero_shot_label(self, long_label: str) -> str:
-        """Map depression specialist labels to crisis categories"""
-        label_lower = long_label.lower()
-        
-        if "actively expressing suicidal ideation" in label_lower or "immediate danger" in label_lower:
-            return "severe"
-        elif "severe clinical depression" in label_lower or "major functional impairment" in label_lower:
-            return "severe"
-        elif "moderate depression" in label_lower or "professional intervention" in label_lower:
-            return "moderate"
-        elif "mild depressive episode" in label_lower or "manageable symptoms" in label_lower:
-            return "mild"
-        elif "stable mental health" in label_lower or "no depression signs" in label_lower:
-            return "not depression"
-        elif "positive mental wellness" in label_lower or "psychological stability" in label_lower:
-            return "not depression"
-        else:
-            return "not depression"
-
-    def _map_sentiment_zero_shot_label(self, long_label: str) -> str:
-        """Map sentiment specialist labels to emotional categories"""
-        label_lower = long_label.lower()
-        
-        if "profound despair" in label_lower or "overwhelming sadness" in label_lower or "emotional devastation" in label_lower:
-            return "Very Negative"
-        elif "significant negative emotions" in label_lower or "anger" in label_lower or "deep disappointment" in label_lower:
-            return "Negative"
-        elif "mixed or neutral emotional state" in label_lower:
-            return "Neutral"
-        elif "mild positive emotions" in label_lower or "calm contentment" in label_lower:
-            return "Positive"
-        elif "strong positive emotions" in label_lower or "joy" in label_lower or "enthusiasm" in label_lower:
-            return "Very Positive"
-        elif "intense positive energy" in label_lower or "euphoria" in label_lower or "peak emotional highs" in label_lower:
-            return "Very Positive"
-        else:
-            return "Neutral"
-
-    def _map_distress_zero_shot_label(self, long_label: str) -> str:
-        """Map distress specialist labels to stress categories"""
-        label_lower = long_label.lower()
-        
-        if "acute psychological distress" in label_lower or "immediate crisis intervention" in label_lower:
-            return "High Distress"
-        elif "severe emotional overwhelm" in label_lower or "significantly impaired functioning" in label_lower:
-            return "High Distress"
-        elif "moderate distress" in label_lower or "difficulty managing emotions" in label_lower:
-            return "Medium Distress"
-        elif "normal life stress" in label_lower or "adequate coping strategies" in label_lower:
-            return "Low Distress"
-        elif "strong emotional resilience" in label_lower or "healthy stress management" in label_lower:
-            return "No Distress"
-        elif "optimal emotional wellbeing" in label_lower or "excellent coping skills" in label_lower:
-            return "No Distress"
-        else:
-            return "Low Distress"
-
-    def _map_to_depression_category(self, zero_shot_label: str) -> str:
-        """Map zero-shot labels to depression categories"""
-        label_lower = zero_shot_label.lower()
-        
-        if "severe depression" in label_lower or "suicidal ideation" in label_lower:
-            return "severe"
-        elif "moderate depression" in label_lower or "significant functional impairment" in label_lower:
-            return "moderate"
-        elif "mild depression" in label_lower or "temporary low mood" in label_lower:
-            return "mild"
-        elif "normal emotional state" in label_lower:
-            return "not depression"
-        elif "positive mental health" in label_lower:
-            return "not depression"
-        else:
-            return "not depression"  # Default to safe
+    # =============================================================================
+    # ENHANCED ANALYSIS WITH LABEL CONTEXT
+    # =============================================================================
     
-    def _map_crisis_label_to_sentiment(self, long_label: str) -> str:
-        """Map crisis-specific labels back to sentiment categories"""
-        
-        # Look for key phrases in the label to determine mapping
-        label_lower = long_label.lower()
-        
-        if "severe mental health crisis" in label_lower or "suicidal" in label_lower:
-            return "Very Negative"
-        elif "significant emotional distress" in label_lower or "needing support" in label_lower:
-            return "Negative"
-        elif "difficult day" in label_lower or "minor negative" in label_lower:
-            return "Slightly Negative"
-        elif "neutral everyday conversation" in label_lower or "factual statements" in label_lower:
-            return "Neutral"
-        elif "positive feelings" in label_lower or "gratitude" in label_lower:
-            return "Positive"
-        elif "excitement" in label_lower or "very positive" in label_lower:
-            return "Very Positive"
-        else:
-            # Fallback mapping
-            return "Neutral"
+    def analyze_with_label_context(self, message: str) -> Dict[str, Any]:
+        """
+        Analyze message with enhanced context about label configuration
+        Useful for debugging and understanding model decisions
+        """
+        try:
+            # Standard ensemble analysis
+            ensemble_result = self.analyze_with_ensemble(message)
+            
+            # Add label context
+            label_context = {
+                'label_set_used': self.get_current_label_set_name(),
+                'label_set_info': self.get_label_set_info(),
+                'labels_per_model': {
+                    'depression': len(self.get_depression_labels()),
+                    'sentiment': len(self.get_sentiment_labels()),
+                    'emotional_distress': len(self.get_emotional_distress_labels())
+                }
+            }
+            
+            # Combine results
+            enhanced_result = {
+                **ensemble_result,
+                'label_context': label_context
+            }
+            
+            return enhanced_result
+            
+        except Exception as e:
+            logger.error(f"Enhanced analysis with label context failed: {e}")
+            # Fallback to standard analysis
+            return self.analyze_with_ensemble(message)
 
     def analyze_with_ensemble(self, message: str) -> Dict[str, Any]:  # NEW ENSEMBLE METHOD
         """
@@ -809,6 +867,8 @@ class EnhancedModelManager:
             'device': self.device,
             'precision': self.config['precision'],
             'ensemble_mode': self.config['ensemble_mode'],
+            'current_label_set': self.get_current_label_set_name(),
+            'label_stats': self.labels_config.get_current_stats(),
             'models': {
                 'depression': {
                     'name': self.config['depression_model'],
@@ -835,3 +895,16 @@ class EnhancedModelManager:
 
 # For backwards compatibility, create alias
 ModelManager = EnhancedModelManager
+
+# Global model manager instance
+_global_model_manager = None
+
+def get_model_manager() -> EnhancedModelManager:
+    """Get global model manager instance"""
+    global _global_model_manager
+    return _global_model_manager
+
+def set_model_manager(manager: EnhancedModelManager):
+    """Set global model manager instance"""
+    global _global_model_manager
+    _global_model_manager = manager
