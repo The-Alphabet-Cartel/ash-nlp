@@ -17,7 +17,7 @@ from typing import Dict, List, Any
 sys.path.append(str(Path(__file__).parent.parent))
 
 try:
-    from config.zero_shot_config import ZeroShotLabelsConfig, get_labels_config
+    from managers.zero_shot_manager import ZeroShotLabelsConfig, get_labels_config
 except ImportError:
     print("❌ Could not import zero_shot_config. Make sure you're running from the correct directory.")
     sys.exit(1)
