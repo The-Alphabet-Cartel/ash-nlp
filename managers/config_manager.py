@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 from pathlib import Path
 
 # Import existing settings for defaults
-from .nlp_settings import CRISIS_THRESHOLDS, SERVER_CONFIG
+from .settings_manager import CRISIS_THRESHOLDS, SERVER_CONFIG
 
 logger = logging.getLogger(__name__)
 
