@@ -39,7 +39,7 @@ from utils.scoring_helpers import (
 )
 
 # CRITICAL: Import ensemble endpoints FIRST
-from endpoints.ensemble_endpoints import add_ensemble_endpoints
+from api.ensemble_endpoints import add_ensemble_endpoints
 
 # Initialize configuration manager with secrets support
 config_manager = get_nlp_config()
@@ -129,7 +129,7 @@ except ImportError as e:
 
 # FIXED: Import learning system with proper error handling
 try:
-    from endpoints.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    from api.learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
     ENHANCED_LEARNING_AVAILABLE = True
     logger.info("✅ EnhancedLearningManager import successful")
 except ImportError as e:
