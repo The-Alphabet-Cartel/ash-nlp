@@ -14,7 +14,7 @@ from utils.scoring_helpers import (
     advanced_idiom_detection, 
     enhanced_crisis_level_mapping
 )
-from config.nlp_settings import CRISIS_THRESHOLDS
+from managers.settings_manager import CRISIS_THRESHOLDS
 
 logger = logging.getLogger(__name__)
 
