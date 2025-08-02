@@ -282,7 +282,7 @@ class EnhancedModelManager:
         }
 
     # =============================================================================
-    # MODEL LOADING METHODS (unchanged)
+    # MODEL LOADING METHODS - ENHANCED WITH CRITICAL FIXES
     # =============================================================================
     
     def _get_model_kwargs(self) -> Dict[str, Any]:
@@ -316,7 +316,7 @@ class EnhancedModelManager:
             return torch.float32
     
     async def load_models(self):
-        """Load all THREE models with enhanced configuration"""
+        """Load all THREE models with enhanced error handling - CRITICAL FIXES"""
         
         logger.info("=" * 70)
         logger.info("STARTING Three Zero-Shot Model Ensemble LOADING PROCESS")
@@ -330,21 +330,37 @@ class EnhancedModelManager:
         logger.info(f"   Ensemble Mode: {self.config['ensemble_mode']}")
         logger.info(f"   Current Label Set: {self.get_current_label_set_name()}")
         
+        # Initialize models to None explicitly
+        self.depression_model = None
+        self.sentiment_model = None
+        self.emotional_distress_model = None
+        self._models_loaded = False
+        
         try:
             # Get model loading arguments
             model_kwargs = self._get_model_kwargs()
             loading_kwargs = self._get_model_loading_kwargs()
             
             # Load Model 1: Depression Detection
+            logger.info("🚀 Loading Model 1/3...")
             await self._load_depression_model(model_kwargs, loading_kwargs)
+            if self.depression_model is None:
+                raise RuntimeError("Depression model failed to load")
+            logger.info("✅ Model 1/3 loaded successfully")
             
             # Load Model 2: Sentiment Analysis  
+            logger.info("🚀 Loading Model 2/3...")
             await self._load_sentiment_model(model_kwargs, loading_kwargs)
+            if self.sentiment_model is None:
+                raise RuntimeError("Sentiment model failed to load")
+            logger.info("✅ Model 2/3 loaded successfully")
             
-            # Load Model 3: Emotional Distress (NEW)
+            # Load Model 3: Emotional Distress
+            logger.info("🚀 Loading Model 3/3...")
             await self._load_emotional_distress_model(model_kwargs, loading_kwargs)
-            
-            self._models_loaded = True
+            if self.emotional_distress_model is None:
+                raise RuntimeError("Emotional distress model failed to load")
+            logger.info("✅ Model 3/3 loaded successfully")
             
             # Memory usage info
             if self.device != -1:  # GPU
@@ -352,25 +368,50 @@ class EnhancedModelManager:
                 logger.info(f"   Allocated: {torch.cuda.memory_allocated(self.device) / 1024**3:.2f} GB")
                 logger.info(f"   Cached: {torch.cuda.memory_reserved(self.device) / 1024**3:.2f} GB")
             
-            # Quick functionality test
-            await self._test_all_models()
+            # CRITICAL FIX: Set the flag BEFORE testing
+            self._models_loaded = True
+            logger.info("✅ All three models loaded, flag set to True")
+            
+            # Quick functionality test (with improved error handling)
+            logger.info("🧪 Running model functionality tests...")
+            try:
+                await self._test_all_models()
+                logger.info("✅ Model functionality tests passed")
+            except Exception as test_error:
+                logger.warning(f"⚠️ Model testing failed, but models are loaded: {test_error}")
+                # Don't fail the entire loading process if just testing fails
+                # The models are loaded, so we can continue
             
             logger.info("=" * 70)
             logger.info("✅ Three Zero-Shot Model Ensemble LOADING COMPLETE")
             logger.info("=" * 70)
             
+            # Final verification
+            final_status = self.models_loaded()
+            logger.info(f"🔍 Final model status check: {final_status}")
+            if not final_status:
+                logger.error("❌ CRITICAL: models_loaded() returning False despite successful loading!")
+                logger.error(f"   Model status: {self.get_model_status()}")
+            
         except Exception as e:
             self._models_loaded = False
+            self.depression_model = None
+            self.sentiment_model = None
+            self.emotional_distress_model = None
             logger.error(f"❌ Failed to load models: {e}")
             logger.exception("Full traceback:")
             raise
     
     async def _load_depression_model(self, model_kwargs, loading_kwargs):
-        """Load specialized zero-shot model for depression detection"""
+        """Load specialized zero-shot model for depression detection - ENHANCED"""
         logger.info("🧠 Loading Depression-Specialized Zero-Shot model...")
         logger.info(f"   Model: {self.config['depression_model']}")
         
         try:
+            # Validate model configuration first
+            if not self.config['depression_model']:
+                raise ValueError("Depression model configuration is empty")
+            
             dep_config = AutoConfig.from_pretrained(
                 self.config['depression_model'],
                 **loading_kwargs
@@ -380,19 +421,30 @@ class EnhancedModelManager:
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
+        # Load the actual model
+        logger.info("   Creating pipeline...")
         self.depression_model = pipeline(
             "zero-shot-classification",
             model=self.config['depression_model'],
             **model_kwargs
         )
+        
+        # Verify the model loaded
+        if self.depression_model is None:
+            raise RuntimeError("Pipeline creation returned None")
+        
         logger.info("✅ Depression zero-shot model loaded successfully!")
 
     async def _load_sentiment_model(self, model_kwargs, loading_kwargs):
-        """Load specialized zero-shot model for sentiment analysis"""
+        """Load specialized zero-shot model for sentiment analysis - ENHANCED"""
         logger.info("💭 Loading Sentiment-Specialized Zero-Shot model...")
         logger.info(f"   Model: {self.config['sentiment_model']}")
         
         try:
+            # Validate model configuration first
+            if not self.config['sentiment_model']:
+                raise ValueError("Sentiment model configuration is empty")
+            
             sent_config = AutoConfig.from_pretrained(
                 self.config['sentiment_model'],
                 **loading_kwargs
@@ -402,19 +454,30 @@ class EnhancedModelManager:
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
+        # Load the actual model
+        logger.info("   Creating pipeline...")
         self.sentiment_model = pipeline(
             "zero-shot-classification",
             model=self.config['sentiment_model'],
             **model_kwargs
         )
+        
+        # Verify the model loaded
+        if self.sentiment_model is None:
+            raise RuntimeError("Pipeline creation returned None")
+        
         logger.info("✅ Sentiment zero-shot model loaded successfully!")
 
     async def _load_emotional_distress_model(self, model_kwargs, loading_kwargs):
-        """Load specialized zero-shot model for emotional distress"""
+        """Load specialized zero-shot model for emotional distress - ENHANCED"""
         logger.info("😰 Loading Distress-Specialized Zero-Shot model...")
         logger.info(f"   Model: {self.config['emotional_distress_model']}")
         
         try:
+            # Validate model configuration first
+            if not self.config['emotional_distress_model']:
+                raise ValueError("Emotional distress model configuration is empty")
+            
             distress_config = AutoConfig.from_pretrained(
                 self.config['emotional_distress_model'],
                 **loading_kwargs
@@ -424,15 +487,22 @@ class EnhancedModelManager:
         except Exception as e:
             logger.warning(f"   Could not load model config: {e}")
         
+        # Load the actual model
+        logger.info("   Creating pipeline...")
         self.emotional_distress_model = pipeline(
             "zero-shot-classification",
             model=self.config['emotional_distress_model'],
             **model_kwargs
         )
+        
+        # Verify the model loaded
+        if self.emotional_distress_model is None:
+            raise RuntimeError("Pipeline creation returned None")
+        
         logger.info("✅ Emotional distress zero-shot model loaded successfully!")
     
     async def _test_all_models(self):
-        """Test all three models with sample messages"""
+        """Test all three models with sample messages - improved error handling"""
         try:
             test_messages = [
                 "I'm feeling really down and hopeless today",
@@ -447,36 +517,46 @@ class EnhancedModelManager:
                 logger.info(f"   Test {i+1}: '{test_message[:30]}...'")
                 
                 # Test depression model
-                dep_result = self.analyze_with_depression_model(test_message)
-                if dep_result:
-                    predictions = self._extract_predictions(dep_result)
-                    if predictions:
-                        top_dep = max(predictions, key=lambda x: x.get('score', 0))
+                try:
+                    dep_result = self.analyze_with_depression_model(test_message)
+                    if dep_result and len(dep_result) > 0:
+                        top_dep = max(dep_result, key=lambda x: x.get('score', 0))
                         logger.info(f"     Depression: {top_dep.get('label', 'unknown')} ({top_dep.get('score', 0):.3f})")
+                    else:
+                        logger.warning(f"     Depression: No valid result")
+                except Exception as e:
+                    logger.error(f"     Depression model test failed: {e}")
                 
                 # Test sentiment model
-                sent_result = self.analyze_with_sentiment_model(test_message)
-                if sent_result:
-                    predictions = self._extract_predictions(sent_result)
-                    if predictions:
-                        top_sent = max(predictions, key=lambda x: x.get('score', 0))
+                try:
+                    sent_result = self.analyze_with_sentiment_model(test_message)
+                    if sent_result and len(sent_result) > 0:
+                        top_sent = max(sent_result, key=lambda x: x.get('score', 0))
                         logger.info(f"     Sentiment: {top_sent.get('label', 'unknown')} ({top_sent.get('score', 0):.3f})")
+                    else:
+                        logger.warning(f"     Sentiment: No valid result")
+                except Exception as e:
+                    logger.error(f"     Sentiment model test failed: {e}")
                 
-                # Test emotional distress model (NEW)
-                distress_result = self.analyze_with_emotional_distress_model(test_message)
-                if distress_result:
-                    predictions = self._extract_predictions(distress_result)
-                    if predictions:
-                        top_distress = max(predictions, key=lambda x: x.get('score', 0))
+                # Test emotional distress model
+                try:
+                    distress_result = self.analyze_with_emotional_distress_model(test_message)
+                    if distress_result and len(distress_result) > 0:
+                        top_distress = max(distress_result, key=lambda x: x.get('score', 0))
                         logger.info(f"     Distress: {top_distress.get('label', 'unknown')} ({top_distress.get('score', 0):.3f})")
+                    else:
+                        logger.warning(f"     Distress: No valid result")
+                except Exception as e:
+                    logger.error(f"     Distress model test failed: {e}")
                 
                 logger.info("")
             
-            logger.info("✅ Three-model testing completed successfully")
+            logger.info("✅ Three-model testing completed")
             
         except Exception as e:
-            logger.warning(f"⚠️ Model testing failed: {e}")
+            logger.error(f"❌ Model testing failed: {e}")
             logger.exception("Full model testing traceback:")
+            # Don't re-raise the exception - testing failure shouldn't break model loading
     
     def _extract_predictions(self, result) -> List[Dict]:
         """Helper method to extract predictions from various result formats"""
@@ -496,11 +576,39 @@ class EnhancedModelManager:
         return predictions
     
     def models_loaded(self) -> bool:
-        """Check if ALL THREE models are loaded"""
-        return (self._models_loaded and 
-                self.depression_model is not None and 
-                self.sentiment_model is not None and 
-                self.emotional_distress_model is not None)  # NEW CHECK
+        """Check if ALL THREE models are loaded with enhanced debugging"""
+        # Add debugging information
+        logger.debug(f"🔍 Model Status Check:")
+        logger.debug(f"   _models_loaded flag: {self._models_loaded}")
+        logger.debug(f"   depression_model: {self.depression_model is not None}")
+        logger.debug(f"   sentiment_model: {self.sentiment_model is not None}")
+        logger.debug(f"   emotional_distress_model: {self.emotional_distress_model is not None}")
+        
+        # Check each component
+        models_ready = (
+            self._models_loaded and 
+            self.depression_model is not None and 
+            self.sentiment_model is not None and 
+            self.emotional_distress_model is not None
+        )
+        
+        logger.debug(f"   Final result: {models_ready}")
+        return models_ready
+    
+    def get_model_status(self) -> Dict[str, Any]:
+        """Get detailed model status for debugging"""
+        return {
+            "models_loaded": self.models_loaded(),
+            "_models_loaded_flag": self._models_loaded,
+            "individual_models": {
+                "depression_model": self.depression_model is not None,
+                "sentiment_model": self.sentiment_model is not None,
+                "emotional_distress_model": self.emotional_distress_model is not None
+            },
+            "device": self.device,
+            "precision": self.config.get('precision', 'unknown'),
+            "ensemble_mode": self.config.get('ensemble_mode', 'unknown')
+        }
     
     # Model access methods
     def get_depression_model(self):
@@ -860,7 +968,7 @@ class EnhancedModelManager:
             'method': 'highest_confidence_normalized_fallback'
         }
 
-    def get_model_status(self) -> Dict[str, Any]:
+    def get_comprehensive_model_status(self) -> Dict[str, Any]:
         """Get comprehensive status of all models"""
         return {
             'models_loaded': self.models_loaded(),
@@ -892,6 +1000,77 @@ class EnhancedModelManager:
                 'gap_detection_threshold': self.config['gap_detection_threshold']
             }
         }
+
+    def health_check(self) -> Dict[str, Any]:
+        """Comprehensive health check for all models"""
+        try:
+            status = {
+                "overall_status": "unknown",
+                "models_loaded_flag": self._models_loaded,
+                "individual_models": {
+                    "depression": {
+                        "loaded": self.depression_model is not None,
+                        "model_name": self.config.get('depression_model', 'unknown'),
+                        "functional": False
+                    },
+                    "sentiment": {
+                        "loaded": self.sentiment_model is not None,
+                        "model_name": self.config.get('sentiment_model', 'unknown'),
+                        "functional": False
+                    },
+                    "emotional_distress": {
+                        "loaded": self.emotional_distress_model is not None,
+                        "model_name": self.config.get('emotional_distress_model', 'unknown'),
+                        "functional": False
+                    }
+                },
+                "final_check": self.models_loaded()
+            }
+            
+            # Test functionality for each loaded model
+            test_message = "I am feeling okay today"
+            
+            if self.depression_model is not None:
+                try:
+                    result = self.analyze_with_depression_model(test_message)
+                    status["individual_models"]["depression"]["functional"] = result is not None
+                except:
+                    status["individual_models"]["depression"]["functional"] = False
+            
+            if self.sentiment_model is not None:
+                try:
+                    result = self.analyze_with_sentiment_model(test_message)
+                    status["individual_models"]["sentiment"]["functional"] = result is not None
+                except:
+                    status["individual_models"]["sentiment"]["functional"] = False
+            
+            if self.emotional_distress_model is not None:
+                try:
+                    result = self.analyze_with_emotional_distress_model(test_message)
+                    status["individual_models"]["emotional_distress"]["functional"] = result is not None
+                except:
+                    status["individual_models"]["emotional_distress"]["functional"] = False
+            
+            # Determine overall status
+            all_loaded = all(model["loaded"] for model in status["individual_models"].values())
+            all_functional = all(model["functional"] for model in status["individual_models"].values())
+            
+            if all_loaded and all_functional:
+                status["overall_status"] = "healthy"
+            elif all_loaded:
+                status["overall_status"] = "loaded_but_not_functional"
+            else:
+                status["overall_status"] = "not_loaded"
+            
+            return status
+            
+        except Exception as e:
+            return {
+                "overall_status": "error",
+                "error": str(e),
+                "models_loaded_flag": getattr(self, '_models_loaded', False),
+                "final_check": False
+            }
 
 # For backwards compatibility, create alias
 ModelManager = EnhancedModelManager
