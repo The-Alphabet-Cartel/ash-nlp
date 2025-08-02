@@ -187,6 +187,11 @@ async def initialize_components_with_config():
         await model_manager.load_models()
         logger.info("✅ Enhanced ModelManager initialized and THREE MODELS loaded")
         
+        # CRITICAL FIX: Set the global model manager for API access
+        from models.ml_models import set_model_manager
+        set_model_manager(model_manager)
+        logger.info("✅ Global model manager set for API access")
+        
         # FIXED: Initialize enhanced learning manager if available and enabled
         if ENHANCED_LEARNING_AVAILABLE and config['GLOBAL_ENABLE_LEARNING_SYSTEM']:
             try:
