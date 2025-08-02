@@ -687,3 +687,4 @@ def main():
         print("Use 'python manage_labels.py' for usage help")
 
 if __name__ == "__main__":
+    main()
