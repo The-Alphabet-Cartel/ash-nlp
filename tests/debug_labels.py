@@ -9,7 +9,7 @@ from pathlib import Path
 # Add the parent directory to the path so we can import config
 sys.path.append(str(Path(__file__).parent.parent))
 
-from config.zero_shot_config import get_labels_config
+from managers.zero_shot_manager import get_labels_config
 
 def debug_labels():
     """Debug the label configuration"""
