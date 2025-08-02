@@ -1,4 +1,4 @@
-# Add these endpoints to your main API file
+# Complete admin endpoints file
 # Location: ash/ash-nlp/api/admin_endpoints.py
 
 from fastapi import APIRouter, HTTPException
@@ -43,6 +43,70 @@ class LabelValidationResponse(BaseModel):
     issues: List[str]
     warnings: List[str]
     stats: Dict[str, Any]
+
+# MOVED FROM MAIN.PY: Basic status endpoint (always available)
+@admin_router.get("/labels/status")
+async def get_label_status():
+    """Get current label configuration status (always available)"""
+    try:
+        from config.zero_shot_config import get_labels_config
+        
+        config = get_labels_config()
+        model_manager = get_model_manager()
+        
+        # Get model status if available
+        model_status = {}
+        if model_manager and model_manager.models_loaded():
+            model_status = model_manager.get_model_status()
+        
+        return {
+            "status": "healthy",
+            "current_label_set": config.get_current_label_set_name(),
+            "available_sets": config.get_available_label_sets(),
+            "label_stats": config.get_current_stats(),
+            "models_loaded": model_manager.models_loaded() if model_manager else False,
+            "model_status": model_status,
+            "admin_endpoints_available": True,  # Since this is in admin_endpoints.py
+            "models_in_use": {
+                "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+                "sentiment": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+                "distress": "Lowerated/lm6-deberta-v3-topic-sentiment"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting label status: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "admin_endpoints_available": True
+        }
+
+# MOVED FROM MAIN.PY: Simple switching endpoint (fallback)
+@admin_router.post("/labels/simple-switch")
+async def simple_label_switch(request: dict):
+    """Simple label switching endpoint (fallback if admin endpoints unavailable)"""
+    try:
+        label_set = request.get("label_set")
+        if not label_set:
+            return {"error": "label_set required"}
+        
+        model_manager = get_model_manager()
+        if not model_manager:
+            return {"error": "Model manager not available"}
+        
+        success = model_manager.switch_label_set(label_set)
+        if success:
+            return {
+                "success": True,
+                "message": f"Switched to label set: {label_set}",
+                "current_set": model_manager.get_current_label_set_name()
+            }
+        else:
+            return {"error": f"Failed to switch to label set: {label_set}"}
+            
+    except Exception as e:
+        logger.error(f"Error in simple label switch: {e}")
+        return {"error": str(e)}
 
 @admin_router.get("/labels/config", response_model=LabelConfigInfoResponse)
 async def get_label_configuration():
@@ -337,11 +401,3 @@ async def trigger_comprehensive_test():
     except Exception as e:
         logger.error(f"Error triggering comprehensive test: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Example of how to include this in your main app:
-"""
-from api.admin_endpoints import admin_router
-
-app = FastAPI(title="Ash NLP Service")
-app.include_router(admin_router)
-"""
