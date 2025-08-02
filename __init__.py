@@ -22,7 +22,7 @@ from .models.pydantic_models import (
 
 from .models.ml_models import ModelManager
 from .analysis.crisis_analyzer import CrisisAnalyzer
-from .config.nlp_settings import SERVER_CONFIG, CRISIS_THRESHOLDS
+from .managers.settings_manager import SERVER_CONFIG, CRISIS_THRESHOLDS
 
 # Service metadata
 SERVICE_INFO = {
