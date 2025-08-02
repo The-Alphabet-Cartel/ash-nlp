@@ -241,9 +241,14 @@ class ZeroShotLabelsConfig:
             ('none', rules.get('none_patterns', []))
         ]:
             if any(pattern.lower() in label_lower for pattern in patterns):
-                return "severe" if severity == "severe" else \
-                       "moderate" if severity == "moderate" else \
-                       "mild" if severity == "mild" else "not depression"
+                if severity == "severe":
+                    return "severe"
+                elif severity == "moderate":
+                    return "moderate"
+                elif severity == "mild":
+                    return "mild"
+                else:
+                    return "not depression"
         
         return "not depression"  # Default safe
     
