@@ -41,16 +41,6 @@ from utils.scoring_helpers import (
 # CRITICAL: Import ensemble endpoints FIRST
 from endpoints.ensemble_endpoints import add_ensemble_endpoints
 
-# Add this import for admin endpoints
-try:
-    from api.admin_endpoints import admin_router
-    ADMIN_ENDPOINTS_AVAILABLE = True
-    logger.info("✅ Admin endpoints module loaded")
-except ImportError as e:
-    ADMIN_ENDPOINTS_AVAILABLE = False
-    logger.warning(f"⚠️ Admin endpoints not available: {e}")
-    logger.warning("⚠️ Create api/admin_endpoints.py for label management")
-
 # Initialize configuration manager with secrets support
 config_manager = get_nlp_config()
 config = get_env_config()  # Backward compatibility - returns dict
@@ -73,6 +63,16 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+# Add this import for admin endpoints
+try:
+    from api.admin_endpoints import admin_router
+    ADMIN_ENDPOINTS_AVAILABLE = True
+    logger.info("✅ Admin endpoints module loaded")
+except ImportError as e:
+    ADMIN_ENDPOINTS_AVAILABLE = False
+    logger.warning(f"⚠️ Admin endpoints not available: {e}")
+    logger.warning("⚠️ Create api/admin_endpoints.py for label management")
 
 # Set Hugging Face token if provided (now from secrets or environment)
 hf_token = config_manager.get('GLOBAL_HUGGINGFACE_TOKEN')
