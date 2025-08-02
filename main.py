@@ -41,6 +41,16 @@ from utils.scoring_helpers import (
 # CRITICAL: Import ensemble endpoints FIRST
 from endpoints.ensemble_endpoints import add_ensemble_endpoints
 
+# Add this import for admin endpoints
+try:
+    from api.admin_endpoints import admin_router
+    ADMIN_ENDPOINTS_AVAILABLE = True
+    logger.info("✅ Admin endpoints module loaded")
+except ImportError as e:
+    ADMIN_ENDPOINTS_AVAILABLE = False
+    logger.warning(f"⚠️ Admin endpoints not available: {e}")
+    logger.warning("⚠️ Create api/admin_endpoints.py for label management")
+
 # Initialize configuration manager with secrets support
 config_manager = get_nlp_config()
 config = get_env_config()  # Backward compatibility - returns dict
@@ -251,6 +261,80 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Add admin endpoints if available
+if ADMIN_ENDPOINTS_AVAILABLE:
+    app.include_router(admin_router)
+    logger.info("✅ Admin endpoints added - /admin/labels/* routes available")
+else:
+    logger.warning("⚠️ Admin endpoints not included - label management via API unavailable")
+
+# Add a simple status endpoint for label configuration
+@app.get("/admin/labels/status")
+async def get_label_status():
+    """Get current label configuration status (always available)"""
+    try:
+        from config.zero_shot_config import get_labels_config
+        from models.ml_models import get_model_manager
+        
+        config = get_labels_config()
+        model_manager = get_model_manager()
+        
+        # Get model status if available
+        model_status = {}
+        if model_manager and model_manager.models_loaded():
+            model_status = model_manager.get_model_status()
+        
+        return {
+            "status": "healthy",
+            "current_label_set": config.get_current_label_set_name(),
+            "available_sets": config.get_available_label_sets(),
+            "label_stats": config.get_current_stats(),
+            "models_loaded": model_manager.models_loaded() if model_manager else False,
+            "model_status": model_status,
+            "admin_endpoints_available": ADMIN_ENDPOINTS_AVAILABLE,
+            "models_in_use": {
+                "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+                "sentiment": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+                "distress": "Lowerated/lm6-deberta-v3-topic-sentiment"
+            }
+        }
+    except Exception as e:
+        logger.error(f"Error getting label status: {e}")
+        return {
+            "status": "error",
+            "error": str(e),
+            "admin_endpoints_available": ADMIN_ENDPOINTS_AVAILABLE
+        }
+
+# Add a simple endpoint to test label switching without full admin endpoints
+@app.post("/admin/labels/simple-switch")
+async def simple_label_switch(request: dict):
+    """Simple label switching endpoint (fallback if admin endpoints unavailable)"""
+    try:
+        from models.ml_models import get_model_manager
+        
+        label_set = request.get("label_set")
+        if not label_set:
+            return {"error": "label_set required"}
+        
+        model_manager = get_model_manager()
+        if not model_manager:
+            return {"error": "Model manager not available"}
+        
+        success = model_manager.switch_label_set(label_set)
+        if success:
+            return {
+                "success": True,
+                "message": f"Switched to label set: {label_set}",
+                "current_set": model_manager.get_current_label_set_name()
+            }
+        else:
+            return {"error": f"Failed to switch to label set: {label_set}"}
+            
+    except Exception as e:
+        logger.error(f"Error in simple label switch: {e}")
+        return {"error": str(e)}
+
 # Configure CORS if enabled
 if config['GLOBAL_ENABLE_CORS']:
     from fastapi.middleware.cors import CORSMiddleware
@@ -364,6 +448,10 @@ if __name__ == "__main__":
     logger.info("🚀 Starting Enhanced Ash NLP Service v3.0 (Three Zero-Shot Model Ensemble)")
     logger.info("🔧 Configuration loaded with secrets-aware management")
     logger.info("🧠 Three specialized models with ensemble consensus")
+    logger.info("🏷️ Label Management Status:")
+    logger.info(f"   JSON Configuration: ✅ Loaded")
+    logger.info(f"   Admin Endpoints: {'✅ Available' if ADMIN_ENDPOINTS_AVAILABLE else '❌ Not Available'}")
+    logger.info(f"   Basic Status Endpoint: ✅ /admin/labels/status")
     
     # Get server configuration from enhanced config
     host = config['NLP_SERVICE_HOST']
