@@ -58,6 +58,9 @@ ENV HF_DATASETS_CACHE="/app/models/cache"
 ENV TORCH_HOME="/app/models/cache"
 ENV XDG_CACHE_HOME="/app/models/cache"
 
+## Mode
+ENV NLP_ENSEMBLE_MODE="consensus"
+
 ## Learning System Configuration
 ENV GLOBAL_ENABLE_LEARNING_SYSTEM="true"
 ENV NLP_LEARNING_RATE="0.1"
