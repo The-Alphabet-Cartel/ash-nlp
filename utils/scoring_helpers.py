@@ -7,7 +7,7 @@ Includes critical self-harm protection and moderate concern boosting
 import logging
 import re
 from typing import Dict, List, Tuple, Any
-from config.nlp_settings import (
+from managers.settings_manager import (
     CRISIS_THRESHOLDS, BURDEN_PATTERNS, HOPELESSNESS_PATTERNS, 
     STRUGGLE_PATTERNS, ENHANCED_IDIOM_PATTERNS
 )
