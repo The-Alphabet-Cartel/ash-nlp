@@ -189,27 +189,58 @@ class JSONLabelManager:
                 print(f"Sensitivity: {info.sensitivity_level}")
                 print()
             
-            # Test mapping functions on sample text
-            test_mappings = [
-                ("I want to kill myself", "Should map to severe depression"),
-                ("I have the pills ready", "Should map to severe depression"),
-                ("Having a rough day", "Should map to mild depression"),
-                ("Going to the store", "Should map to no depression")
+            # Show the actual labels being used
+            labels = self.config.get_all_labels()
+            print("📋 LABELS IN USE:")
+            for model, model_labels in labels.items():
+                print(f"\n{model.upper()} ({len(model_labels)} labels):")
+                for i, label in enumerate(model_labels[:3], 1):  # Show first 3
+                    print(f"  {i}. {label[:80]}...")
+                if len(model_labels) > 3:
+                    print(f"  ... and {len(model_labels) - 3} more")
+            
+            # Test mapping functions with actual zero-shot labels (this is how they're designed to work)
+            print(f"\n🗺️ MAPPING FUNCTION TESTS:")
+            print("-" * 40)
+            
+            # Test with actual depression labels
+            depression_labels = self.config.get_depression_labels()
+            test_depression_labels = [
+                depression_labels[0] if len(depression_labels) > 0 else "person actively expressing suicidal thoughts",
+                depression_labels[2] if len(depression_labels) > 2 else "person with mild depression",
+                depression_labels[-1] if len(depression_labels) > 0 else "person with stable mental health"
             ]
             
-            print("🗺️ MAPPING TESTS:")
-            print("-" * 30)
+            for label in test_depression_labels:
+                result = self.config.map_depression_label(label)
+                print(f"Depression: '{label[:50]}...' → {result}")
             
-            for text, expectation in test_mappings:
-                depression_result = self.config.map_depression_label(f"person saying: {text}")
-                sentiment_result = self.config.map_sentiment_label(f"person expressing: {text}")
-                distress_result = self.config.map_distress_label(f"person experiencing: {text}")
-                
-                print(f"\nText: '{text}'")
-                print(f"  Expected: {expectation}")
-                print(f"  Depression: {depression_result}")
-                print(f"  Sentiment: {sentiment_result}")
-                print(f"  Distress: {distress_result}")
+            # Test with actual sentiment labels  
+            sentiment_labels = self.config.get_sentiment_labels()
+            if sentiment_labels:
+                test_sent_label = sentiment_labels[0]
+                result = self.config.map_sentiment_label(test_sent_label)
+                print(f"Sentiment: '{test_sent_label[:50]}...' → {result}")
+            
+            # Test with actual distress labels
+            distress_labels = self.config.get_emotional_distress_labels()
+            if distress_labels:
+                test_dist_label = distress_labels[0]
+                result = self.config.map_distress_label(test_dist_label)
+                print(f"Distress: '{test_dist_label[:50]}...' → {result}")
+            
+            # Show mapping rules if available
+            print(f"\n🔧 MAPPING RULES STATUS:")
+            if hasattr(self.config, 'current_mapping_rules') and self.config.current_mapping_rules:
+                print("✅ Mapping rules loaded:")
+                for model, rules in self.config.current_mapping_rules.items():
+                    total_patterns = sum(len(patterns) for patterns in rules.values())
+                    print(f"   {model}: {total_patterns} patterns across {len(rules)} categories")
+            else:
+                print("❌ No mapping rules found - this might be the issue!")
+            
+            print(f"\n💡 NOTE: Mapping functions work with zero-shot model outputs, not user input.")
+            print(f"    To test with actual user input, use 'test-server' command.")
         
         finally:
             # Switch back
@@ -656,4 +687,3 @@ def main():
         print("Use 'python manage_labels.py' for usage help")
 
 if __name__ == "__main__":
-    main()
