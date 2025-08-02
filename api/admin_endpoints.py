@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 
 from models.ml_models import get_model_manager
-from config.zero_shot_config import get_labels_config, reload_labels_config
+from managers.zero_shot_manager import get_labels_config, reload_labels_config
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class LabelValidationResponse(BaseModel):
 async def get_label_status():
     """Get current label configuration status (always available)"""
     try:
-        from config.zero_shot_config import get_labels_config
+        from managers.zero_shot_manager import get_labels_config
         
         config = get_labels_config()
         model_manager = get_model_manager()
