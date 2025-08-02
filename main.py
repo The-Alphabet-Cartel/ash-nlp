@@ -28,7 +28,7 @@ from models.pydantic_models import (
 )
 
 # Import enhanced configuration with secrets support
-from config import get_nlp_config, get_env_config, get_api_keys_status
+from managers import get_nlp_config, get_env_config, get_api_keys_status
 
 # Sentiment Adjustments
 from utils.context_helpers import analyze_sentiment_context
