@@ -260,10 +260,18 @@ async def lifespan(app: FastAPI):
     await initialize_components_with_clean_managers()
     
     # Import and add ensemble endpoints after initialization
-    from api.ensemble_endpoints import add_ensemble_endpoints
-    logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
-    add_ensemble_endpoints(app, model_manager, config_manager)
-    logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
+    try:
+        from api.ensemble_endpoints import add_ensemble_endpoints
+        logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
+        add_ensemble_endpoints(app, model_manager, config_manager)
+        logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
+    except ImportError:
+        # FALLBACK: Try old endpoints directory
+        from endpoints.ensemble_endpoints import add_ensemble_endpoints
+        logger.warning("⚠️ Imported ensemble_endpoints from old 'endpoints' path - should update to 'api'")
+        logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
+        add_ensemble_endpoints(app, model_manager, config_manager)
+        logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
     
     # Add learning endpoints if available
     if enhanced_learning_manager and ENHANCED_LEARNING_AVAILABLE:
