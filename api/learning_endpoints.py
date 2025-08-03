@@ -25,26 +25,34 @@ class EnhancedLearningManager:
     """Enhanced learning manager with clean manager architecture support"""
     
     def __init__(self, model_manager, config_manager):
-        """Initialize with clean manager architecture - JSON defaults + ENV overrides"""
+        """Initialize with clean manager architecture - FIXED for current ConfigManager API"""
         self.model_manager = model_manager
         self.config_manager = config_manager
         
-        # Use ConfigManager for JSON defaults + ENV overrides pattern
+        # FIXED: Use correct ConfigManager API for ash-nlp
         if config_manager:
             try:
-                # Load learning configuration with JSON defaults + ENV overrides
-                learning_config = config_manager.get_config("learning_parameters")
-                if learning_config and "learning_system" in learning_config:
-                    ls_config = learning_config["learning_system"]
+                # The current ConfigManager doesn't have get_config method
+                # Instead, check if learning_parameters.json file exists and try to load it
+                learning_config_file = "/app/config/learning_parameters.json"
+                
+                if os.path.exists(learning_config_file):
+                    logger.info(f"📁 Found learning configuration file: {learning_config_file}")
+                    with open(learning_config_file, 'r') as f:
+                        import json
+                        learning_config_raw = json.load(f)
                     
-                    # ConfigManager handles ${VAR} substitution automatically
-                    self.learning_data_path = ls_config.get('persistence_file', './learning_data/enhanced_learning_adjustments.json')
-                    self.learning_rate = float(ls_config.get('learning_rate', 0.1))
-                    self.min_adjustment = float(ls_config.get('min_adjustment', 0.05))
-                    self.max_adjustment = float(ls_config.get('max_adjustment', 0.30))
-                    self.max_adjustments_per_day = int(ls_config.get('max_adjustments_per_day', 50))
+                    # Manually substitute environment variables (since ConfigManager substitution happens elsewhere)
+                    ls_config = learning_config_raw.get("learning_system", {})
                     
-                    # Load sensitivity bounds
+                    # Use environment variables directly since the substitution pattern ${VAR} needs manual handling
+                    self.learning_data_path = os.getenv('NLP_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
+                    self.learning_rate = float(os.getenv('NLP_LEARNING_RATE', '0.1'))
+                    self.min_adjustment = float(os.getenv('NLP_MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
+                    self.max_adjustment = float(os.getenv('NLP_MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
+                    self.max_adjustments_per_day = int(os.getenv('NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'))
+                    
+                    # Load other configuration from JSON with fallbacks
                     sensitivity_bounds = ls_config.get('sensitivity_bounds', {})
                     self.min_global_sensitivity = float(sensitivity_bounds.get('min_global_sensitivity', 0.5))
                     self.max_global_sensitivity = float(sensitivity_bounds.get('max_global_sensitivity', 1.5))
@@ -60,9 +68,11 @@ class EnhancedLearningManager:
                     self.false_negative_factor = float(adjustment_rules.get('false_negative_adjustment_factor', 0.1))
                     self.severity_multipliers = adjustment_rules.get('severity_multipliers', {'high': 3.0, 'medium': 2.0, 'low': 1.0})
                     
-                    logger.info("🔧 Learning configuration loaded from JSON + ENV overrides")
+                    logger.info("🔧 Learning configuration loaded from JSON file + ENV variables")
                 else:
-                    raise Exception("learning_parameters.json not found or invalid")
+                    logger.warning(f"⚠️ Learning configuration file not found: {learning_config_file}")
+                    raise FileNotFoundError("learning_parameters.json not found")
+                    
             except Exception as e:
                 logger.warning(f"⚠️ Could not load learning config from JSON, using environment fallback: {e}")
                 self._load_from_environment()
