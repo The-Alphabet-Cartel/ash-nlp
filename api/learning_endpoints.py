@@ -1,6 +1,7 @@
 """
-Enhanced Learning Endpoints for NLP Server
+Enhanced Learning Endpoints for NLP Server v3.1
 Handles false positive and false negative staff corrections
+FIXED: Clean manager architecture with proper function signatures
 """
 
 import logging
@@ -8,7 +9,7 @@ import json
 import os
 import time
 from datetime import datetime, timezone
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from fastapi import HTTPException
 
 # Import centralized models
@@ -21,23 +22,88 @@ from models.pydantic_models import (
 logger = logging.getLogger(__name__)
 
 class EnhancedLearningManager:
-    """Enhanced learning manager that handles both false positives and false negatives"""
+    """Enhanced learning manager with clean manager architecture support"""
     
-    def __init__(self, model_manager, config_manager=None):
+    def __init__(self, model_manager, config_manager):
+        """Initialize with clean manager architecture - JSON defaults + ENV overrides"""
         self.model_manager = model_manager
         self.config_manager = config_manager
         
-        # Learning configuration
+        # Use ConfigManager for JSON defaults + ENV overrides pattern
+        if config_manager:
+            try:
+                # Load learning configuration with JSON defaults + ENV overrides
+                learning_config = config_manager.get_config("learning_parameters")
+                if learning_config and "learning_system" in learning_config:
+                    ls_config = learning_config["learning_system"]
+                    
+                    # ConfigManager handles ${VAR} substitution automatically
+                    self.learning_data_path = ls_config.get('persistence_file', './learning_data/enhanced_learning_adjustments.json')
+                    self.learning_rate = float(ls_config.get('learning_rate', 0.1))
+                    self.min_adjustment = float(ls_config.get('min_adjustment', 0.05))
+                    self.max_adjustment = float(ls_config.get('max_adjustment', 0.30))
+                    self.max_adjustments_per_day = int(ls_config.get('max_adjustments_per_day', 50))
+                    
+                    # Load sensitivity bounds
+                    sensitivity_bounds = ls_config.get('sensitivity_bounds', {})
+                    self.min_global_sensitivity = float(sensitivity_bounds.get('min_global_sensitivity', 0.5))
+                    self.max_global_sensitivity = float(sensitivity_bounds.get('max_global_sensitivity', 1.5))
+                    
+                    # Load pattern detection rules
+                    pattern_config = ls_config.get('pattern_detection', {})
+                    self.false_positive_indicators = pattern_config.get('false_positive_indicators', [])
+                    self.false_negative_indicators = pattern_config.get('false_negative_indicators', [])
+                    
+                    # Load adjustment rules
+                    adjustment_rules = ls_config.get('adjustment_rules', {})
+                    self.false_positive_factor = float(adjustment_rules.get('false_positive_adjustment_factor', -0.1))
+                    self.false_negative_factor = float(adjustment_rules.get('false_negative_adjustment_factor', 0.1))
+                    self.severity_multipliers = adjustment_rules.get('severity_multipliers', {'high': 3.0, 'medium': 2.0, 'low': 1.0})
+                    
+                    logger.info("🔧 Learning configuration loaded from JSON + ENV overrides")
+                else:
+                    raise Exception("learning_parameters.json not found or invalid")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not load learning config from JSON, using environment fallback: {e}")
+                self._load_from_environment()
+        else:
+            logger.warning("⚠️ No config_manager provided, using environment fallback")
+            self._load_from_environment()
+        
+        # Initialize learning data
+        self._initialize_enhanced_learning_data()
+        
+        logger.info("🧠 Enhanced learning manager initialized with clean manager architecture")
+        logger.info(f"   Learning rate: {self.learning_rate}")
+        logger.info(f"   Adjustment range: {self.min_adjustment} to {self.max_adjustment}")
+        logger.info(f"   Max adjustments per day: {self.max_adjustments_per_day}")
+        logger.info(f"   Sensitivity bounds: {self.min_global_sensitivity} to {self.max_global_sensitivity}")
+        logger.info(f"   Data file: {self.learning_data_path}")
+    
+    def _load_from_environment(self):
+        """Fallback method to load configuration from environment variables only"""
         self.learning_data_path = os.getenv('NLP_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
         self.learning_rate = float(os.getenv('NLP_LEARNING_RATE', '0.1'))
         self.min_adjustment = float(os.getenv('NLP_MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
         self.max_adjustment = float(os.getenv('NLP_MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
         self.max_adjustments_per_day = int(os.getenv('NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'))
         
-        # Initialize learning data
-        self._initialize_enhanced_learning_data()
+        # Hardcoded defaults for fallback
+        self.min_global_sensitivity = 0.5
+        self.max_global_sensitivity = 1.5
+        self.false_positive_indicators = [
+            'just tired', 'dead tired', 'dying of laughter', 'killing it',
+            'murder a burger', 'joke killed me', 'that\'s brutal', 'insane workout'
+        ]
+        self.false_negative_indicators = [
+            'don\'t want to be here', 'tired of everything', 'can\'t go on',
+            'no point', 'what\'s the use', 'giving up', 'had enough'
+        ]
+        self.false_positive_factor = -0.1
+        self.false_negative_factor = 0.1
+        self.severity_multipliers = {'high': 3.0, 'medium': 2.0, 'low': 1.0}
         
-        logger.info("🧠 Enhanced learning manager initialized with false positive + negative support")
+        logger.info("🔧 Learning configuration loaded from environment variables (fallback)")
     
     def _initialize_enhanced_learning_data(self):
         """Initialize enhanced learning data structure"""
@@ -58,7 +124,8 @@ class EnhancedLearningManager:
                     'sensitivity_decreases': 0,
                     'last_update': None
                 },
-                'version': '2.0',
+                'version': '3.1',
+                'architecture': 'clean_manager_v3.1',
                 'created': datetime.now(timezone.utc).isoformat()
             }
             
@@ -131,7 +198,7 @@ class EnhancedLearningManager:
             # Update statistics
             self._update_false_positive_statistics(patterns_discovered, confidence_adjustments)
             
-            logger.info(f"False positive analysis: {patterns_discovered} patterns, {confidence_adjustments} adjustments")
+            logger.info(f"✅ False positive analysis: {patterns_discovered} patterns, {confidence_adjustments} adjustments")
             
             return {
                 'status': 'success',
@@ -189,7 +256,7 @@ class EnhancedLearningManager:
             # Update statistics
             self._update_false_negative_statistics(patterns_discovered, confidence_adjustments)
             
-            logger.info(f"False negative analysis: {patterns_discovered} patterns, {confidence_adjustments} adjustments")
+            logger.info(f"✅ False negative analysis: {patterns_discovered} patterns, {confidence_adjustments} adjustments")
             
             return {
                 'status': 'success',
@@ -217,40 +284,24 @@ class EnhancedLearningManager:
             }
     
     def _extract_over_detection_patterns(self, message: str, detected_level: str, correct_level: str) -> List[str]:
-        """Extract patterns that led to over-detection"""
+        """Extract patterns that led to over-detection using JSON-configured patterns"""
         patterns = []
         message_lower = message.lower()
         
-        # Common false positive patterns
-        false_positive_indicators = [
-            'just tired', 'dead tired', 'dying of laughter', 'killing it',
-            'murder a burger', 'joke killed me', 'that\'s brutal', 'insane workout',
-            'crazy day', 'driving me nuts', 'killing time', 'dead serious',
-            'movie about', 'studying', 'research', 'class', 'homework',
-            'character died', 'boss fight', 'video game', 'fictional',
-            'embarrassment', 'figurative', 'metaphor', 'expression'
-        ]
-        
-        for indicator in false_positive_indicators:
+        # Use JSON-configured patterns (with ENV overrides)
+        for indicator in self.false_positive_indicators:
             if indicator in message_lower:
                 patterns.append(indicator)
         
         return patterns
     
     def _extract_under_detection_patterns(self, message: str, should_detect: str, actually_detected: str) -> List[str]:
-        """Extract patterns that led to under-detection"""
+        """Extract patterns that led to under-detection using JSON-configured patterns"""
         patterns = []
         message_lower = message.lower()
         
-        # Crisis patterns that might be missed
-        subtle_crisis_indicators = [
-            'don\'t want to be here', 'tired of everything', 'can\'t go on',
-            'no point', 'what\'s the use', 'giving up', 'had enough',
-            'everyone better without me', 'burden', 'waste of space',
-            'failed at everything', 'hopeless', 'pointless', 'empty inside'
-        ]
-        
-        for indicator in subtle_crisis_indicators:
+        # Use JSON-configured patterns (with ENV overrides)
+        for indicator in self.false_negative_indicators:
             if indicator in message_lower:
                 patterns.append(indicator)
         
@@ -268,6 +319,8 @@ class EnhancedLearningManager:
             for pattern in patterns:
                 if pattern not in learning_data['false_positive_patterns']:
                     learning_data['false_positive_patterns'].append(pattern)
+            
+            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
             
             with open(self.learning_data_path, 'w') as f:
                 json.dump(learning_data, f, indent=2)
@@ -288,6 +341,8 @@ class EnhancedLearningManager:
                 if pattern not in learning_data['false_negative_patterns']:
                     learning_data['false_negative_patterns'].append(pattern)
             
+            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
+            
             with open(self.learning_data_path, 'w') as f:
                 json.dump(learning_data, f, indent=2)
             
@@ -295,17 +350,17 @@ class EnhancedLearningManager:
             logger.error(f"Error saving under-detection patterns: {e}")
     
     def _adjust_sensitivity_for_false_positive(self, message: str, detected_level: str, correct_level: str, severity_score: float) -> bool:
-        """Adjust sensitivity downward for false positive"""
+        """Adjust sensitivity downward for false positive using JSON-configured factors"""
         try:
             with open(self.learning_data_path, 'r') as f:
                 learning_data = json.load(f)
             
-            # Calculate adjustment magnitude
-            adjustment = -self.learning_rate * severity_score * 0.1  # Negative for false positive
+            # Use JSON-configured adjustment factor
+            adjustment = self.learning_rate * severity_score * self.false_positive_factor
             
-            # Apply global sensitivity adjustment
+            # Apply global sensitivity adjustment with JSON-configured bounds
             current_sensitivity = learning_data.get('global_sensitivity', 1.0)
-            new_sensitivity = max(0.5, current_sensitivity + adjustment)  # Don't go below 0.5
+            new_sensitivity = max(self.min_global_sensitivity, current_sensitivity + adjustment)
             learning_data['global_sensitivity'] = new_sensitivity
             
             # Apply phrase-specific adjustment
@@ -317,11 +372,12 @@ class EnhancedLearningManager:
             phrase_adjustments[message_key] = new_adjustment
             
             learning_data['phrase_adjustments'] = phrase_adjustments
+            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
             
             with open(self.learning_data_path, 'w') as f:
                 json.dump(learning_data, f, indent=2)
             
-            logger.info(f"Decreased sensitivity by {abs(adjustment):.3f} for false positive")
+            logger.info(f"Decreased sensitivity by {abs(adjustment):.3f} for false positive (JSON-configured factor: {self.false_positive_factor})")
             return True
             
         except Exception as e:
@@ -329,18 +385,18 @@ class EnhancedLearningManager:
             return False
     
     def _adjust_sensitivity_for_false_negative(self, message: str, should_detect: str, actually_detected: str, severity_score: float) -> bool:
-        """Adjust sensitivity upward for false negative"""
+        """Adjust sensitivity upward for false negative using JSON-configured factors"""
         try:
             with open(self.learning_data_path, 'r') as f:
                 learning_data = json.load(f)
             
-            # Calculate adjustment magnitude (higher for missed high crisis)
-            severity_multiplier = {'high': 3.0, 'medium': 2.0, 'low': 1.0}.get(should_detect, 1.0)
-            adjustment = self.learning_rate * severity_score * severity_multiplier * 0.1  # Positive for false negative
+            # Use JSON-configured severity multiplier and adjustment factor
+            severity_multiplier = self.severity_multipliers.get(should_detect, 1.0)
+            adjustment = self.learning_rate * severity_score * severity_multiplier * self.false_negative_factor
             
-            # Apply global sensitivity adjustment
+            # Apply global sensitivity adjustment with JSON-configured bounds
             current_sensitivity = learning_data.get('global_sensitivity', 1.0)
-            new_sensitivity = min(1.5, current_sensitivity + adjustment)  # Don't go above 1.5
+            new_sensitivity = min(self.max_global_sensitivity, current_sensitivity + adjustment)
             learning_data['global_sensitivity'] = new_sensitivity
             
             # Apply phrase-specific adjustment
@@ -352,11 +408,12 @@ class EnhancedLearningManager:
             phrase_adjustments[message_key] = new_adjustment
             
             learning_data['phrase_adjustments'] = phrase_adjustments
+            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
             
             with open(self.learning_data_path, 'w') as f:
                 json.dump(learning_data, f, indent=2)
             
-            logger.info(f"Increased sensitivity by {adjustment:.3f} for missed {should_detect} crisis")
+            logger.info(f"Increased sensitivity by {adjustment:.3f} for missed {should_detect} crisis (multiplier: {severity_multiplier}, factor: {self.false_negative_factor})")
             return True
             
         except Exception as e:
@@ -413,6 +470,8 @@ class EnhancedLearningManager:
             
             return {
                 'learning_system_status': 'active',
+                'version': learning_data.get('version', '3.1'),
+                'architecture': learning_data.get('architecture', 'clean_manager_v3.1'),
                 'total_false_positives_processed': stats.get('total_false_positives_processed', 0),
                 'total_false_negatives_processed': stats.get('total_false_negatives_processed', 0),
                 'total_adjustments_made': stats.get('adjustments_made', 0),
@@ -427,7 +486,8 @@ class EnhancedLearningManager:
                     'learning_rate': self.learning_rate,
                     'min_adjustment': self.min_adjustment,
                     'max_adjustment': self.max_adjustment,
-                    'max_adjustments_per_day': self.max_adjustments_per_day
+                    'max_adjustments_per_day': self.max_adjustments_per_day,
+                    'data_file': self.learning_data_path
                 }
             }
             
@@ -438,8 +498,11 @@ class EnhancedLearningManager:
                 'error': str(e)
             }
 
-def add_enhanced_learning_endpoints(app, learning_manager):
-    """Add enhanced learning endpoints to FastAPI app"""
+def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None):
+    """
+    Add enhanced learning endpoints to FastAPI app
+    FIXED: Function signature now accepts config_manager parameter
+    """
     
     @app.post("/analyze_false_negative")
     async def analyze_false_negative(request: FalseNegativeAnalysisRequest):
@@ -525,4 +588,4 @@ def add_enhanced_learning_endpoints(app, learning_manager):
             logger.error(f"Error getting learning statistics: {e}")
             raise HTTPException(status_code=500, detail=f"Statistics retrieval failed: {str(e)}")
     
-    logger.info("🧠 Enhanced learning endpoints added (false positives + negatives)")
+    logger.info("🧠 Enhanced learning endpoints added with clean manager architecture v3.1")
