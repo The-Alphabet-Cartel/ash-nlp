@@ -16,6 +16,70 @@ logger = logging.getLogger(__name__)
 # PATTERN CONSTANTS FOR COMPONENT COMPATIBILITY
 # ============================================================================
 
+# ============================================================================
+# PATTERN CONSTANTS FOR COMPONENT COMPATIBILITY
+# ============================================================================
+
+# Server configuration
+SERVER_CONFIG = {
+    "version": "4.1",
+    "architecture": "modular",
+    "hardware_info": {
+        "cpu": "Ryzen 7 7700x",
+        "gpu": "RTX 3050 (8GB VRAM)",
+        "ram": "64GB",
+        "inference_device": "CPU",
+        "models_loaded": 2
+    },
+    "capabilities": {
+        "crisis_analysis": "Original depression + sentiment analysis",
+        "phrase_extraction": "Extract crisis keywords using model scoring",
+        "pattern_learning": "Learn distinctive crisis patterns from community messages", 
+        "semantic_analysis": "Enhanced crisis detection with community context",
+        "community_awareness": "LGBTQIA+ specific pattern recognition"
+    }
+}
+
+# Crisis level mapping thresholds - REQUIRED BY COMPONENTS
+CRISIS_THRESHOLDS = {
+    "high": 0.55,    # Reduced from 0.50 - matches new systematic approach
+    "medium": 0.28,  # Reduced from 0.22 - more selective for medium alerts
+    "low": 0.16      # Reduced from 0.12 - avoids very mild expressions
+}
+
+# Default parameters for analysis
+DEFAULT_PARAMS = {
+    'phrase_extraction': {
+        'min_phrase_length': 2,
+        'max_phrase_length': 6,
+        'crisis_focus': True,
+        'community_specific': True,
+        'min_confidence': 0.3,
+        'max_results': 20
+    },
+    'pattern_learning': {
+        'min_crisis_messages': 10,
+        'max_phrases_to_analyze': 200,
+        'min_distinctiveness_ratio': 2.0,
+        'min_frequency': 3,
+        'confidence_thresholds': {
+            'high_confidence': 0.7,
+            'medium_confidence': 0.4,
+            'low_confidence': 0.1
+        }
+    },
+    'semantic_analysis': {
+        'context_window': 3,  # Words around community terms
+        'boost_weights': {
+            'high_relevance': 0.1,
+            'medium_relevance': 0.05,
+            'family_rejection': 0.15,
+            'discrimination_fear': 0.15,
+            'support_seeking': -0.05  # Reduces crisis level (positive)
+        }
+    }
+}
+
 # Context patterns for detection (from old settings_manager.py)
 POSITIVE_CONTEXT_PATTERNS = {
     'humor': ['joke', 'funny', 'hilarious', 'laugh', 'comedy', 'lol', 'haha'],
@@ -39,6 +103,7 @@ IDIOM_PATTERNS = [
 
 # LGBTQIA+ community patterns
 LGBTQIA_PATTERNS = {
+    # Family rejection patterns (HIGH crisis)
     'family_rejection': {
         'patterns': [
             r'family (rejected|disowned|kicked out|threw out) me',
@@ -50,6 +115,8 @@ LGBTQIA_PATTERNS = {
         'crisis_level': 'high',
         'category': 'family_rejection'
     },
+    
+    # Identity crisis patterns (MEDIUM)
     'identity_crisis': {
         'patterns': [
             r'(gender|trans|gay|lesbian|bi) (panic|crisis|confusion)',
@@ -60,6 +127,44 @@ LGBTQIA_PATTERNS = {
         ],
         'crisis_level': 'medium',
         'category': 'identity_crisis'
+    },
+    
+    # Dysphoria and transition patterns (MEDIUM)
+    'dysphoria_transition': {
+        'patterns': [
+            r'(gender|body) dysphoria',
+            r'(transition|dysphoria) (regret|doubt|scared|anxiety)',
+            r'(deadnamed|misgendered) (me|today|again|constantly)',
+            r'(passing|voice|body) (anxiety|dysphoria|stress)',
+            r'(hormone|surgery) (regret|doubt|scared)'
+        ],
+        'crisis_level': 'medium',
+        'category': 'dysphoria_transition'
+    },
+    
+    # Discrimination and safety patterns (HIGH)
+    'discrimination_safety': {
+        'patterns': [
+            r'(hate crime|discrimination|harassment)',
+            r'(conversion therapy|pray away|religious trauma)',
+            r'(unsafe|scared) (to be|being) (myself|gay|trans)',
+            r'(workplace|school) (discrimination|harassment)',
+            r'(violent|aggressive) (homophobia|transphobia)'
+        ],
+        'crisis_level': 'high',
+        'category': 'discrimination_safety'
+    },
+    
+    # Community support patterns (LOW - positive but worth tracking)
+    'community_support': {
+        'patterns': [
+            r'(chosen|found) family',
+            r'(pride|community) (support|family|love)',
+            r'(lgbtq|queer) (community|support|friends)',
+            r'(ally|allies) (support|help|love)'
+        ],
+        'crisis_level': 'low',
+        'category': 'community_support'
     }
 }
 
@@ -73,6 +178,16 @@ CRISIS_CONTEXTS = {
         'indicators': ['extremely', 'incredibly', 'absolutely', 'completely', 'totally'],
         'context_type': 'intensity_amplifier', 
         'crisis_boost': 'medium'
+    },
+    'social_isolation': {
+        'indicators': ['no one', 'nobody', 'alone', 'isolated', 'abandoned'],
+        'context_type': 'social_isolation',
+        'crisis_boost': 'medium'
+    },
+    'capability_loss': {
+        'indicators': ['can\'t', 'unable', 'impossible', 'won\'t be able'],
+        'context_type': 'capability_loss',
+        'crisis_boost': 'medium'
     }
 }
 
@@ -84,13 +199,22 @@ COMMUNITY_VOCABULARY = {
     'experience_terms': [
         'coming out', 'dysphoria', 'euphoria', 'transition', 'deadname', 
         'chosen name', 'passing', 'binding', 'misgendered'
+    ],
+    'community_terms': [
+        'chosen family', 'found family', 'pride', 'ally', 'safe space', 
+        'visibility', 'representation'
+    ],
+    'struggle_terms': [
+        'closeted', 'discrimination', 'homophobia', 'transphobia', 
+        'religious trauma', 'internalized shame'
     ]
 }
 
 TEMPORAL_INDICATORS = {
     'immediate': ['right now', 'immediately', 'urgent', 'asap', 'tonight'],
     'recent': ['today', 'yesterday', 'lately', 'recently', 'this week'],
-    'ongoing': ['always', 'constantly', 'every day', 'all the time', 'never stops']
+    'ongoing': ['always', 'constantly', 'every day', 'all the time', 'never stops'],
+    'future_fear': ['never get better', 'will never', 'hopeless', 'pointless', 'no future']
 }
 
 CONTEXT_WEIGHTS = {
@@ -107,15 +231,38 @@ CONTEXT_WEIGHTS = {
 ENHANCED_IDIOM_PATTERNS = [
     {
         'patterns': [r'\b(dead|dying) (tired|exhausted|beat)\b'],
+        'required_context': lambda msg: not any(word in msg.lower() for word in ['depressed', 'sad', 'hopeless', 'hate', 'kill myself']),
         'reduction_factor': 0.15,
         'max_score_after': 0.10,
         'name': 'fatigue_idiom'
     },
     {
         'patterns': [r'\b(joke|that|it) (killed|murdered) me\b', r'\bdying of laughter\b'],
+        'required_context': lambda msg: any(word in msg.lower() for word in ['funny', 'hilarious', 'laugh', 'lol', 'haha']),
         'reduction_factor': 0.05,
         'max_score_after': 0.08,
         'name': 'humor_idiom'
+    },
+    {
+        'patterns': [r'\b(killing|slaying|crushing) it\b'],
+        'required_context': lambda msg: any(word in msg.lower() for word in ['work', 'job', 'performance', 'success']),
+        'reduction_factor': 0.10,
+        'max_score_after': 0.05,
+        'name': 'success_idiom'
+    },
+    {
+        'patterns': [r'\bmurder (a|some) \w+\b', r'\bcould kill for\b'],
+        'required_context': lambda msg: any(word in msg.lower() for word in ['food', 'hungry', 'eat', 'burger', 'pizza']),
+        'reduction_factor': 0.08,
+        'max_score_after': 0.05,
+        'name': 'food_craving_idiom'
+    },
+    {
+        'patterns': [r'\bdriving me (crazy|insane|nuts)\b', r'\b(brutal|killer) (test|exam|homework)\b'],
+        'required_context': lambda msg: any(word in msg.lower() for word in ['traffic', 'homework', 'test', 'exam', 'work']),
+        'reduction_factor': 0.12,
+        'max_score_after': 0.08,
+        'name': 'frustration_idiom'
     }
 ]
 
@@ -139,7 +286,9 @@ STRUGGLE_PATTERNS = [
 NEGATION_PATTERNS = [
     r'\bnot (really|actually|that|very|going to|planning to|trying to)\b',
     r'\bdoesn\'t (really|actually|mean|want to)\b',
-    r'\bisn\'t (really|actually|that)\b'
+    r'\bisn\'t (really|actually|that)\b',
+    r'\bwon\'t (really|actually|ever)\b',
+    r'\bdon\'t (want to|plan to|intend to)\b'
 ]
 
 # ============================================================================
@@ -342,7 +491,10 @@ class SettingsManager:
 __all__ = [
     'SettingsManager',
     'create_settings_manager',
-    # Pattern constants for component compatibility
+    # Pattern constants for component compatibility (COMPLETE SET)
+    'SERVER_CONFIG',
+    'CRISIS_THRESHOLDS',
+    'DEFAULT_PARAMS',
     'POSITIVE_CONTEXT_PATTERNS',
     'IDIOM_PATTERNS', 
     'LGBTQIA_PATTERNS',
