@@ -429,7 +429,6 @@ Enable comprehensive logging:
 
 ```bash
 # Enable debug mode
-GLOBAL_ENABLE_DEBUG_MODE=true
 GLOBAL_LOG_LEVEL=DEBUG
 
 # Restart and check detailed logs
@@ -558,7 +557,7 @@ rm -rf ./ash-nlp/learning_data/*
 docker-compose build --no-cache ash-nlp
 
 # 5. Start with debug enabled
-GLOBAL_ENABLE_DEBUG_MODE=true docker-compose up ash-nlp
+GLOBAL_LOG_LEVEL=DEBUG docker-compose up ash-nlp
 ```
 
 ### Rollback to Previous Version
