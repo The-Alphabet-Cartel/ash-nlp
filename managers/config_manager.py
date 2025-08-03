@@ -416,3 +416,9 @@ class ConfigManager:
 def create_config_manager(config_dir: str = "/app/config") -> ConfigManager:
     """Create and return a ConfigManager instance"""
     return ConfigManager(config_dir)
+
+# Export for clean architecture
+__all__ = [
+    'ConfigManager',
+    'create_config_manager'
+]
