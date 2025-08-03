@@ -3,7 +3,7 @@
 ## Overview
 This guide outlines the complete recode of the configuration system for clean JSON + environment variable management with JSON defaults and ENV overrides pattern.
 
-**Project Scope**: This migration focuses exclusively on the **NLP Server (ash/ash-nlp)** configuration system. The Discord Bot (ash/ash-bot) will be addressed in a future phase after the NLP server's JSON configuration migration is fully completed. The NLP server must be running correctly with clean JSON configuration before any bot-related work begins.
+**Project Scope**: This migration focuses exclusively on the **NLP Server (`ash/ash-nlp`)** configuration system. The Discord Bot (`ash/ash-bot`) will be addressed in a future phase after the NLP server's JSON configuration migration is fully completed. The NLP server must be running correctly with clean JSON configuration before any bot-related work begins.
 
 **Current Status**: ✅ **PRIMARY SYSTEM WORKING** - The NLP server is successfully running with JSON defaults + ENV overrides configuration pattern.
 
@@ -20,11 +20,17 @@ This guide outlines the complete recode of the configuration system for clean JS
   - JSON configuration does not need hot-loading capability at this time
     - May be added in future
 - **DEBUG Mode Logging**
-  - Logging needs to respect the JSON configuration and environmental variable `GLOBAL_ENABLE_DEBUG_MODE`
-    - The environmental variable should override the JSON configuration default
-    - When set to `true`, logging should show highly detailed logs and explanations
-    - When set to `false`, only production required logging should be shown
+  - Logging needs to respect the JSON configuration and environmental variable `GLOBAL_ENABLE_DEBUG_MODE` and `GLOBAL_LOG_LEVEL`
+    - The environmental variables should override the JSON configuration defaults
+    - When set to `true` or `DEBUG`, logging should show highly detailed logs and explanations
+    - When set to `false` or `INFO`, only production required logging should be shown
       - This keeps logs slim and shows only the minimum information required to show that the system is working as intended, along with any major failure points.
+- **Knowledge Base**
+  - Always assume that the project knowledge base contains incorrect and outdated files and directory structures.
+  - The only true source for correct and current files and directory structures is the GitHub (https://github.com/the-alphabet-cartel/ash).
+    - Always update the GitHub branches when starting a new conversation to see the current files and directory structures.
+      - We are working in the "v3.0" GitHub branch of `ash`
+      - We are working in the "v3.1" GitHub branch of `ash/ash-nlp`
 
 ### 🚫 **What We Don't Do**
 - **No Bash Scripts**
@@ -127,11 +133,11 @@ This guide outlines the complete recode of the configuration system for clean JS
   - This document, `ash/ash-nlp/docs/implementation_guide_v3_1.md`, shall be kept up to date at each step of the migration
   - It shall document:
     - Our core design standards and philosophies
-    - Problems encountered
-      - Fixes implmented for them
     - What we've accomplished thus far in the migration
     - What we have left to accomplish
-    - Any miscellaneous information that may be needed by Claude to assist in this migration
+    - Problems encountered
+      - Fixes implemented for them
+    - Any miscellaneous information that may be needed to assist in this migration
 
 These principles guide all development decisions and ensure consistency across the entire Ash ecosystem. When in doubt, refer back to these philosophies to determine the correct approach.
 
@@ -540,7 +546,7 @@ With the JSON defaults + ENV overrides pattern complete, the startup should show
 - Three Zero-Shot Model Ensemble ✅ (All models loaded and working)
 - Configuration validation ✅ (Comprehensive validation working)
 - API endpoints ❌
-  - Testing Endpocints Still
+  - Testing Endpoints Still
 - Debug Logging Configuration ❌
   - DEBUG logs still showing when `GLOBAL_ENABLE_DEBUG_MODE` configuration switch is set to `false`
 
