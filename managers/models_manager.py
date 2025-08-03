@@ -72,13 +72,19 @@ class ModelsManager:
         try:
             # Try to get configuration from the existing manager's methods
             full_model_config = config_manager.get_model_configuration()
+            hardware_config = config_manager.get_hardware_configuration()
             models = full_model_config.get('models', {})
+            
+            # Get cache_dir from hardware_config or fallback to environment/default
+            cache_dir = (hardware_config.get('cache_dir') or 
+                        full_model_config.get('cache_dir') or 
+                        os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'))
             
             return {
                 'depression_model': models.get('depression', {}).get('name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                 'sentiment_model': models.get('sentiment', {}).get('name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_model': models.get('emotional_distress', {}).get('name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
-                'cache_dir': full_model_config.get('cache_dir', './models/cache'),
+                'cache_dir': cache_dir,
                 'huggingface_token': os.getenv('GLOBAL_HUGGINGFACE_TOKEN'),
                 'ensemble_mode': config_manager.get_ensemble_mode(),
                 'depression_weight': models.get('depression', {}).get('weight', 0.5),
