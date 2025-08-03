@@ -30,55 +30,54 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Comprehensive Logging**: Detailed status reporting and error handling
 - **Fail-Fast**: If components don't support managers, initialization fails with clear error messages
 
-## Current Status - Fail Fast Implementation ✅
+## Current Status - Component Imports Resolved ✅
 
-### 🎯 Approach: Fail Fast, No Graceful Degradation
-- ❌ **No backward compatibility**
-- ❌ **No graceful fallbacks**  
-- ✅ **Immediate errors showing what needs to be fixed**
-- ✅ **Clear error messages indicating required changes**
+### 🎯 Progress Made
+✅ **CrisisAnalyzer**: Import successful - no more pattern constant errors  
+✅ **PhraseExtractor**: Import successful - no more pattern constant errors  
+✅ **Pattern Constants**: All required constants now available in SettingsManager  
+✅ **Manager Architecture**: Core system working cleanly  
 
-### 🔧 Updated to Fail Fast
+### 🔧 Remaining Issue - Learning Module Import
 
-**Fixed Import Paths** ✅
-- Updated: `endpoints` → `api` (reflects your directory structure)
-- All imports now fail immediately with clear error messages
-
-**Updated Component Requirements** ✅  
-- All components **must** support clean manager architecture
-- No fallback to old parameter structures
-- Immediate failure if components don't support managers
-
-### 📋 Expected Failure Points (What We Want to See)
-
-**Test Now** ⚠️ **IMMEDIATE**
-```bash
-docker compose up -d ash-nlp
-docker logs ash-nlp
+**Issue: Learning Module Path** ⚠️ **LAST REMAINING**
+```
+⚠️ EnhancedLearningManager import failed: No module named 'endpoints'
 ```
 
-**Expected Errors** ✅ **GOOD - THESE TELL US WHAT TO FIX**
-```
-❌ CrisisAnalyzer import failed - needs to be updated for clean architecture
-❌ PhraseExtractor import failed - needs to be updated for clean architecture  
-❌ EnhancedLearningManager import failed - update import path from 'endpoints' to 'api'
+**Root Cause**: The learning module still has hardcoded imports pointing to old `endpoints` directory
+
+**Solution Options**:
+1. **Move/symlink**: Create `endpoints` as symlink to `api`
+2. **Update learning module**: Change imports inside learning module from `endpoints` to `api`
+3. **Temporarily disable**: Skip learning module to test core environment variable substitution
+
+### 📋 Next Action
+
+**Option A: Quick Test Core System** ⚠️ **RECOMMENDED**
+Temporarily disable learning to test environment variable substitution:
+```python
+# In main.py - temporarily set:
+ENHANCED_LEARNING_AVAILABLE = False
 ```
 
-**OR Core Success** ✅ **IDEAL**
+**Option B: Fix Learning Module** ⚠️ **PERMANENT FIX**
+Update any imports inside the learning module files that reference `from endpoints.` to `from api.`
+
+### 🎯 Expected Core System Results
+
+Once learning is bypassed, we should see:
 ```
 ✅ ConfigManager initialized with config directory: /app/config
 🔍 DEBUG: Key Environment Variables:
    NLP_DEPRESSION_MODEL: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
-✅ All components initialized with clean manager architecture
+   NLP_SENTIMENT_MODEL: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+   NLP_EMOTIONAL_DISTRESS_MODEL: Lowerated/lm6-deberta-v3-topic-sentiment
+🔄 DEBUG: Substituting ${NLP_SENTIMENT_MODEL} = MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+✅ Model configuration processing complete
 ```
 
-### 📍 Next Actions Based on Results
-
-1. **If core managers work**: We'll see environment variable substitution logs
-2. **If components fail**: We'll get exact error messages showing what to fix
-3. **If import paths fail**: We'll know exactly which modules need updating
-
-**Status**: Ready for fail-fast testing - will show us exactly what needs to be fixed
+**Status**: 95% complete - only learning module import path needs fixing. Core architecture and environment substitution ready to test.
 
 ### Step 4: Update Component Classes (REQUIRED)
 1. **CrisisAnalyzer** must be updated to accept: `(model_manager, config_manager, settings_manager, learning_manager)`
