@@ -14,8 +14,8 @@ from pydantic import BaseModel
 
 # Set up logging FIRST to catch any import errors
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s -- %(levelname)s -- %(message)s',
     handlers=[
         logging.StreamHandler(sys.stdout)
     ]
