@@ -146,7 +146,6 @@ class EnvConfigManager:
             # =================================================================
             'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']},
             'NLP_LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
-            'GLOBAL_ENABLE_DEBUG_MODE': {'type': bool, 'default': False},
             'NLP_FLIP_SENTIMENT_LOGIC': {'type': bool, 'default': False},
             
             # =================================================================
@@ -271,26 +270,26 @@ class EnvConfigManager:
     
     def _log_threshold_summary(self):
         """Log a summary of the centralized threshold configuration"""
-        logger.info("🎯 Centralized Threshold Configuration:")
-        logger.info(f"   Ensemble mode: {self.config['NLP_ENSEMBLE_MODE']}")
+        logger.debug("🎯 Centralized Threshold Configuration:")
+        logger.debug(f"   Ensemble mode: {self.config['NLP_ENSEMBLE_MODE']}")
         
         # Consensus mapping thresholds (PRIMARY)
-        logger.info("   Consensus Mapping Thresholds:")
-        logger.info(f"     CRISIS → HIGH: {self.config['NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD']}")
-        logger.info(f"     CRISIS → MEDIUM: {self.config['NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD']}")
-        logger.info(f"     MILD_CRISIS → LOW: {self.config['NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD']}")
-        logger.info(f"     NEGATIVE → LOW: {self.config['NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD']}")
+        logger.debug("   Consensus Mapping Thresholds:")
+        logger.debug(f"     CRISIS → HIGH: {self.config['NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD']}")
+        logger.debug(f"     CRISIS → MEDIUM: {self.config['NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD']}")
+        logger.debug(f"     MILD_CRISIS → LOW: {self.config['NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD']}")
+        logger.debug(f"     NEGATIVE → LOW: {self.config['NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD']}")
         
         # Model weights
-        logger.info("   Model Weights:")
-        logger.info(f"     Depression: {self.config['NLP_DEPRESSION_MODEL_WEIGHT']}")
-        logger.info(f"     Sentiment: {self.config['NLP_SENTIMENT_MODEL_WEIGHT']}")
-        logger.info(f"     Emotional Distress: {self.config['NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT']}")
+        logger.debug("   Model Weights:")
+        logger.debug(f"     Depression: {self.config['NLP_DEPRESSION_MODEL_WEIGHT']}")
+        logger.debug(f"     Sentiment: {self.config['NLP_SENTIMENT_MODEL_WEIGHT']}")
+        logger.debug(f"     Emotional Distress: {self.config['NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT']}")
         
         # Staff review thresholds
-        logger.info("   Staff Review Thresholds:")
-        logger.info(f"     MEDIUM confidence: {self.config['NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD']}")
-        logger.info(f"     LOW confidence: {self.config['NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD']}")
+        logger.debug("   Staff Review Thresholds:")
+        logger.debug(f"     MEDIUM confidence: {self.config['NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD']}")
+        logger.debug(f"     LOW confidence: {self.config['NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD']}")
         
     def create_directories(self):
         """Create necessary directories"""
