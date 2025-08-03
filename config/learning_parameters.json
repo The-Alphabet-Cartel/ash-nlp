@@ -1,0 +1,74 @@
+{
+  "learning_system": {
+    "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
+    "persistence_file": "${NLP_LEARNING_PERSISTENCE_FILE}",
+    "learning_rate": "${NLP_LEARNING_RATE}",
+    "min_adjustment": "${NLP_MIN_CONFIDENCE_ADJUSTMENT}",
+    "max_adjustment": "${NLP_MAX_CONFIDENCE_ADJUSTMENT}",
+    "max_adjustments_per_day": "${NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY}",
+    "sensitivity_bounds": {
+      "min_global_sensitivity": 0.5,
+      "max_global_sensitivity": 1.5
+    },
+    "pattern_detection": {
+      "false_positive_indicators": [
+        "just tired",
+        "dead tired", 
+        "dying of laughter",
+        "killing it",
+        "murder a burger",
+        "joke killed me",
+        "that's brutal",
+        "insane workout",
+        "crazy day",
+        "driving me nuts",
+        "killing time",
+        "dead serious",
+        "movie about",
+        "studying",
+        "research",
+        "class",
+        "homework",
+        "character died",
+        "boss fight",
+        "video game",
+        "fictional",
+        "embarrassment",
+        "figurative",
+        "metaphor",
+        "expression"
+      ],
+      "false_negative_indicators": [
+        "don't want to be here",
+        "tired of everything",
+        "can't go on",
+        "no point",
+        "what's the use",
+        "giving up",
+        "had enough",
+        "everyone better without me",
+        "burden",
+        "waste of space",
+        "failed at everything",
+        "hopeless",
+        "pointless",
+        "empty inside"
+      ]
+    },
+    "adjustment_rules": {
+      "false_positive_adjustment_factor": -0.1,
+      "false_negative_adjustment_factor": 0.1,
+      "severity_multipliers": {
+        "high": 3.0,
+        "medium": 2.0,
+        "low": 1.0
+      }
+    },
+    "statistics_tracking": {
+      "track_patterns": true,
+      "track_adjustments": true,
+      "track_sensitivity_changes": true,
+      "retention_days": 365
+    }
+  }
+}
