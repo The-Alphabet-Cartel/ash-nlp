@@ -3,7 +3,6 @@
 """
 Clean initialization system for Ash NLP Service v3.1
 Manager-first architecture with conditional debug logging
-UPDATED: Respects GLOBAL_ENABLE_DEBUG_MODE for clean production logs
 """
 
 import os
@@ -43,9 +42,6 @@ PHRASE_EXTRACTOR_AVAILABLE = False
 LEARNING_AVAILABLE = False
 FASTAPI_AVAILABLE = False
 
-# Debug logger (will be initialized after config manager)
-debug_logger = None
-
 # ============================================================================
 # SAFE IMPORT SECTION - All imports wrapped in try-catch
 # ============================================================================
@@ -74,27 +70,6 @@ except ImportError as e:
     import traceback
     traceback.print_exc()
     sys.exit(1)
-
-# Import debug logger
-try:
-    from utils.debug_logger import set_debug_logger, get_debug_logger
-    logger.info("✅ Debug logger imported successfully")
-except ImportError as e:
-    logger.warning(f"⚠️ Debug logger import failed: {e}")
-    # Create a simple fallback debug logger
-    class FallbackDebugLogger:
-        def is_debug_enabled(self): return os.getenv('GLOBAL_ENABLE_DEBUG_MODE', 'false').lower() == 'true'
-        def debug_info(self, msg, *args, **kwargs): 
-            if self.is_debug_enabled(): logger.debug(msg, *args, **kwargs)
-        def debug_config(self, msg, *args, **kwargs): 
-            if self.is_debug_enabled(): logger.debug(msg, *args, **kwargs)
-        def debug_substitution(self, msg, *args, **kwargs): 
-            if self.is_debug_enabled(): logger.debug(msg, *args, **kwargs)
-        def production_info(self, msg, *args, **kwargs): logger.info(msg, *args, **kwargs)
-        def production_success(self, msg, *args, **kwargs): logger.info(msg, *args, **kwargs)
-    
-    def get_debug_logger(): return FallbackDebugLogger()
-    def set_debug_logger(cm): return FallbackDebugLogger()
 
 # Import ModelManager
 try:
@@ -182,28 +157,25 @@ def initialize_centralized_threshold_config():
         logger.error(f"   Emotional Distress: {thresholds['emotional_distress_weight']}")
         sys.exit(1)
     
-    # Use debug logger for configuration output
-    debug_logger = get_debug_logger()
-    
-    debug_logger.production_info("🐳 Running in Docker mode - using system environment variables")
+    logger.info("🐳 Running in Docker mode - using system environment variables")
     logger.info("✅ Centralized threshold configuration validation passed")
     
-    debug_logger.debug_config("🎯 Centralized Threshold Configuration:")
-    debug_logger.debug_config(f"   Ensemble mode: {thresholds['ensemble_mode']}")
-    debug_logger.debug_config("   Consensus Mapping Thresholds:")
-    debug_logger.debug_config(f"     CRISIS → HIGH: {thresholds['consensus_crisis_to_high']}")
-    debug_logger.debug_config(f"     CRISIS → MEDIUM: {thresholds['consensus_crisis_to_medium']}")
-    debug_logger.debug_config(f"     MILD_CRISIS → LOW: {thresholds['consensus_mild_crisis_to_low']}")
-    debug_logger.debug_config(f"     NEGATIVE → LOW: {thresholds['consensus_negative_to_low']}")
-    debug_logger.debug_config("   Model Weights:")
-    debug_logger.debug_config(f"     Depression: {thresholds['depression_weight']}")
-    debug_logger.debug_config(f"     Sentiment: {thresholds['sentiment_weight']}")
-    debug_logger.debug_config(f"     Emotional Distress: {thresholds['emotional_distress_weight']}")
-    debug_logger.debug_config("   Staff Review Thresholds:")
-    debug_logger.debug_config(f"     MEDIUM confidence: {thresholds['staff_review_medium_threshold']}")
-    debug_logger.debug_config(f"     LOW confidence: {thresholds['staff_review_low_threshold']}")
+    logger.debug("🎯 Centralized Threshold Configuration:")
+    logger.debug(f"   Ensemble mode: {thresholds['ensemble_mode']}")
+    logger.debug("   Consensus Mapping Thresholds:")
+    logger.debug(f"     CRISIS → HIGH: {thresholds['consensus_crisis_to_high']}")
+    logger.debug(f"     CRISIS → MEDIUM: {thresholds['consensus_crisis_to_medium']}")
+    logger.debug(f"     MILD_CRISIS → LOW: {thresholds['consensus_mild_crisis_to_low']}")
+    logger.debug(f"     NEGATIVE → LOW: {thresholds['consensus_negative_to_low']}")
+    logger.debug("   Model Weights:")
+    logger.debug(f"     Depression: {thresholds['depression_weight']}")
+    logger.debug(f"     Sentiment: {thresholds['sentiment_weight']}")
+    logger.debug(f"     Emotional Distress: {thresholds['emotional_distress_weight']}")
+    logger.debug("   Staff Review Thresholds:")
+    logger.debug(f"     MEDIUM confidence: {thresholds['staff_review_medium_threshold']}")
+    logger.debug(f"     LOW confidence: {thresholds['staff_review_low_threshold']}")
     
-    debug_logger.debug_config("🎯 CENTRALIZED Ensemble endpoints configured - All thresholds from environment variables")
+    logger.debug("🎯 CENTRALIZED Ensemble endpoints configured - All thresholds from environment variables")
     
     return thresholds
 
@@ -214,7 +186,7 @@ def initialize_centralized_threshold_config():
 async def initialize_components_with_clean_managers():
     """Initialize all components with clean manager-only architecture"""
     global model_manager, crisis_analyzer, phrase_extractor, learning_manager
-    global config_manager, settings_manager, zero_shot_manager, debug_logger
+    global config_manager, settings_manager, zero_shot_manager
     
     try:
         logger.info("🚀 Initializing components with clean manager-only architecture...")
@@ -227,9 +199,6 @@ async def initialize_components_with_clean_managers():
         config_manager = ConfigManager("/app/config")
         settings_manager = SettingsManager(config_manager)
         zero_shot_manager = ZeroShotManager(config_manager)
-        
-        # Initialize debug logger with config manager
-        debug_logger = set_debug_logger(config_manager)
         
         logger.info("✅ Core managers initialized successfully")
         
@@ -261,15 +230,15 @@ async def initialize_components_with_clean_managers():
         
         # Log the models that will be loaded (with environment overrides applied)
         models = model_config.get('models', {})
-        debug_logger.production_info("🎯 Final Model Configuration (JSON + Environment Overrides):")
+        logger.info("🎯 Final Model Configuration (JSON + Environment Overrides):")
         for model_type, model_info in models.items():
-            debug_logger.production_info(f"   {model_type.title()} Model: {model_info['name']}")
-            debug_logger.debug_config(f"   {model_type.title()} Weight: {model_info['weight']}")
+            logger.info(f"   {model_type.title()} Model: {model_info['name']}")
+            logger.debug(f"   {model_type.title()} Weight: {model_info['weight']}")
         
-        debug_logger.production_info(f"   Ensemble Mode: {ensemble_mode}")
+        logger.info(f"   Ensemble Mode: {ensemble_mode}")
         
         gap_detection_enabled = model_config.get('ensemble_config', {}).get('gap_detection', {}).get('enabled', True)
-        debug_logger.production_info(f"   Gap Detection: {'✅ Enabled' if gap_detection_enabled else '❌ Disabled'}")
+        logger.info(f"   Gap Detection: {'✅ Enabled' if gap_detection_enabled else '❌ Disabled'}")
         
         # ========================================================================
         # STEP 4: Initialize Enhanced ModelManager
@@ -297,7 +266,7 @@ async def initialize_components_with_clean_managers():
         
         # Set global model manager for API access
         globals()['model_manager'] = model_manager
-        debug_logger.production_info("✅ Global model manager set for API access")
+        logger.info("✅ Global model manager set for API access")
         
         # ========================================================================
         # STEP 6: Initialize Learning System
@@ -311,10 +280,10 @@ async def initialize_components_with_clean_managers():
                 )
                 logger.info("✅ Learning system initialized with clean manager architecture")
             else:
-                debug_logger.production_info("ℹ️ Learning system disabled via configuration")
+                logger.info("ℹ️ Learning system disabled via configuration")
                 learning_manager = None
         else:
-            debug_logger.production_info("ℹ️ Learning system not available")
+            logger.info("ℹ️ Learning system not available")
             learning_manager = None
         
         # ========================================================================
@@ -333,7 +302,7 @@ async def initialize_components_with_clean_managers():
                 logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
                 crisis_analyzer = None
         else:
-            debug_logger.production_info("ℹ️ CrisisAnalyzer not available")
+            logger.info("ℹ️ CrisisAnalyzer not available")
             crisis_analyzer = None
         
         # Initialize PhraseExtractor
@@ -347,13 +316,13 @@ async def initialize_components_with_clean_managers():
                 logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
                 phrase_extractor = None
         else:
-            debug_logger.production_info("ℹ️ PhraseExtractor not available")
+            logger.info("ℹ️ PhraseExtractor not available")
             phrase_extractor = None
         
         # ========================================================================
         # STEP 8: Final Status Report (with debug control)
         # ========================================================================
-        debug_logger.debug_config("📊 Component Initialization Summary:")
+        logger.debug("📊 Component Initialization Summary:")
         
         components_status = {
             'core_managers': {
@@ -373,10 +342,10 @@ async def initialize_components_with_clean_managers():
         }
         
         for category, components in components_status.items():
-            debug_logger.debug_config(f"   {category.replace('_', ' ').title()}:")
+            logger.debug(f"   {category.replace('_', ' ').title()}:")
             for component, status in components.items():
                 status_icon = "✅" if status else "❌"
-                debug_logger.debug_config(f"     {component}: {status_icon}")
+                logger.debug(f"     {component}: {status_icon}")
         
         # Check if any critical components failed
         critical_failures = []
@@ -440,8 +409,7 @@ async def lifespan(app: FastAPI):
                 logger.error(f"❌ Failed to add learning endpoints: {e}")
                 raise
         else:
-            debug_logger = get_debug_logger()
-            debug_logger.production_info("ℹ️ Learning system not available - skipping learning endpoints")
+            logger.info("ℹ️ Learning system not available - skipping learning endpoints")
         
         logger.info("✅ Enhanced FastAPI app startup complete with Clean Manager Architecture!")
         
@@ -476,8 +444,7 @@ if FASTAPI_AVAILABLE:
                 allow_methods=["*"],
                 allow_headers=["*"],
             )
-            debug_logger = get_debug_logger()
-            debug_logger.debug_config("🌐 CORS middleware enabled")
+            logger.debug("🌐 CORS middleware enabled")
         except Exception as e:
             logger.warning(f"⚠️ Could not enable CORS: {e}")
     
@@ -522,8 +489,7 @@ async def health_check():
         "environment_overrides_applied": True,
         "model_configuration_valid": False,
         "ensemble_mode": "unknown",
-        "config_validation_passed": False,
-        "debug_mode": get_debug_logger().is_debug_enabled()
+        "config_validation_passed": False
     }
     
     if config_manager:
