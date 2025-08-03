@@ -99,7 +99,6 @@ ENV NLP_RELOAD_ON_CHANGES="false"
 ## Logging Configuration
 ENV GLOBAL_LOG_LEVEL="INFO"
 ENV NLP_LOG_FILE="nlp_service.log"
-ENV GLOBAL_ENABLE_DEBUG_MODE="false"
 ENV NLP_FLIP_SENTIMENT_LOGIC="false"
 
 ## Storage Paths
