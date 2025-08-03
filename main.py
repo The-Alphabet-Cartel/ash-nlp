@@ -54,7 +54,7 @@ except ImportError as e:
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
 try:
-    from api.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    from api.learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
     ENHANCED_LEARNING_AVAILABLE = True
     logger.info("✅ EnhancedLearningManager import successful")
 except ImportError as e:
