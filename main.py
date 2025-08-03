@@ -54,7 +54,7 @@ except ImportError as e:
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
 try:
-    from endpoints.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
+    from api.enhanced_learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
     ENHANCED_LEARNING_AVAILABLE = True
     logger.info("✅ EnhancedLearningManager import successful")
 except ImportError as e:
@@ -267,7 +267,7 @@ async def lifespan(app: FastAPI):
         logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
     except ImportError:
         # FALLBACK: Try old endpoints directory
-        from endpoints.ensemble_endpoints import add_ensemble_endpoints
+        from api.ensemble_endpoints import add_ensemble_endpoints
         logger.warning("⚠️ Imported ensemble_endpoints from old 'endpoints' path - should update to 'api'")
         logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
         add_ensemble_endpoints(app, model_manager, config_manager)
