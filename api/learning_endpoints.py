@@ -37,7 +37,7 @@ class EnhancedLearningManager:
                 learning_config_file = "/app/config/learning_parameters.json"
                 
                 if os.path.exists(learning_config_file):
-                    logger.info(f"📁 Found learning configuration file: {learning_config_file}")
+                    logger.debug(f"📁 Found learning configuration file: {learning_config_file}")
                     with open(learning_config_file, 'r') as f:
                         import json
                         learning_config_raw = json.load(f)
@@ -84,11 +84,11 @@ class EnhancedLearningManager:
         self._initialize_enhanced_learning_data()
         
         logger.info("🧠 Enhanced learning manager initialized with clean manager architecture")
-        logger.info(f"   Learning rate: {self.learning_rate}")
-        logger.info(f"   Adjustment range: {self.min_adjustment} to {self.max_adjustment}")
-        logger.info(f"   Max adjustments per day: {self.max_adjustments_per_day}")
-        logger.info(f"   Sensitivity bounds: {self.min_global_sensitivity} to {self.max_global_sensitivity}")
-        logger.info(f"   Data file: {self.learning_data_path}")
+        logger.debug(f"   Learning rate: {self.learning_rate}")
+        logger.debug(f"   Adjustment range: {self.min_adjustment} to {self.max_adjustment}")
+        logger.debug(f"   Max adjustments per day: {self.max_adjustments_per_day}")
+        logger.debug(f"   Sensitivity bounds: {self.min_global_sensitivity} to {self.max_global_sensitivity}")
+        logger.debug(f"   Data file: {self.learning_data_path}")
     
     def _load_from_environment(self):
         """Fallback method to load configuration from environment variables only"""
