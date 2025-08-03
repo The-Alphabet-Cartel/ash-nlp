@@ -57,7 +57,7 @@ This guide outlines the complete recode of the configuration system for clean JS
   - All JSON configuration files shall live in `ash/ash-nlp/config/` with descriptive filenames
 - **ash/ash-nlp/data**
   - Data Storage
-  - (future implementation)
+    - (future implementation)
 - **Documentation**
   - All documentation shall live in `ash/ash-nlp/docs`
 - **ash/ash-nlp/learning_data**
@@ -67,7 +67,7 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Manager Classes**
   - All Manager files and manager classes shall live in `ash/ash-nlp/managers/` with descriptive filenames ending in `_manager.py`
 - **Models**
-  - Currently the Model (`ml_models.py`) and Pydantic (`pydantic_models.py`) Managers reside here
+  - Currently the Model (`ml_models.py`) and Pydantic (`pydantic_models.py`) managers reside here
     - We will be migrating them to `ash/ash-nlp/managers` soon&trade;
   - Model caching is located in `ash/ash-nlp/models/cache`
 - **Debug / Testing Scripts**
