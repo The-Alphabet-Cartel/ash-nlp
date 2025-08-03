@@ -85,11 +85,11 @@ except ImportError as e:
     class FallbackDebugLogger:
         def is_debug_enabled(self): return os.getenv('GLOBAL_ENABLE_DEBUG_MODE', 'false').lower() == 'true'
         def debug_info(self, msg, *args, **kwargs): 
-            if self.is_debug_enabled(): logger.info(msg, *args, **kwargs)
+            if self.is_debug_enabled(): logger.debug(msg, *args, **kwargs)
         def debug_config(self, msg, *args, **kwargs): 
-            if self.is_debug_enabled(): logger.info(msg, *args, **kwargs)
+            if self.is_debug_enabled(): logger.debug(msg, *args, **kwargs)
         def debug_substitution(self, msg, *args, **kwargs): 
-            if self.is_debug_enabled(): logger.info(msg, *args, **kwargs)
+            if self.is_debug_enabled(): logger.debug(msg, *args, **kwargs)
         def production_info(self, msg, *args, **kwargs): logger.info(msg, *args, **kwargs)
         def production_success(self, msg, *args, **kwargs): logger.info(msg, *args, **kwargs)
     
