@@ -204,7 +204,8 @@ class SettingsManager:
         return validation_result
 
 
-# Factory function for backward compatibility
-def create_settings_manager(config_manager) -> SettingsManager:
-    """Create and return a SettingsManager instance"""
-    return SettingsManager(config_manager)
+# Export for clean architecture
+__all__ = [
+    'SettingsManager',
+    'create_settings_manager'
+]
