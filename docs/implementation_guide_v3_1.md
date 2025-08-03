@@ -30,49 +30,55 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Comprehensive Logging**: Detailed status reporting and error handling
 - **Fail-Fast**: If components don't support managers, initialization fails with clear error messages
 
-## Current Status - Root Cause Identified ✅
+## Current Status - Fail Fast Implementation ✅
 
-### 🎯 Problem Found
-Your current `main.py` is importing from the **old configuration system**:
-```python
-from config import get_nlp_config, get_env_config, get_api_keys_status
+### 🎯 Approach: Fail Fast, No Graceful Degradation
+- ❌ **No backward compatibility**
+- ❌ **No graceful fallbacks**  
+- ✅ **Immediate errors showing what needs to be fixed**
+- ✅ **Clear error messages indicating required changes**
+
+### 🔧 Updated to Fail Fast
+
+**Fixed Import Paths** ✅
+- Updated: `endpoints` → `api` (reflects your directory structure)
+- All imports now fail immediately with clear error messages
+
+**Updated Component Requirements** ✅  
+- All components **must** support clean manager architecture
+- No fallback to old parameter structures
+- Immediate failure if components don't support managers
+
+### 📋 Expected Failure Points (What We Want to See)
+
+**Test Now** ⚠️ **IMMEDIATE**
+```bash
+docker compose up -d ash-nlp
+docker logs ash-nlp
 ```
 
-This is importing from the old `config/` directory instead of our new `managers/` system.
-
-### 🔧 Clean Fix Required
-
-**Step 1: Replace Main.py Imports** ⚠️ **CRITICAL**
-Replace the imports section in your `main.py` with:
-```python
-# OLD (remove these):
-from config import get_nlp_config, get_env_config, get_api_keys_status
-
-# NEW (use these):
-from managers.config_manager import ConfigManager
-from managers.settings_manager import SettingsManager
-from managers.zero_shot_manager import ZeroShotManager
+**Expected Errors** ✅ **GOOD - THESE TELL US WHAT TO FIX**
+```
+❌ CrisisAnalyzer import failed - needs to be updated for clean architecture
+❌ PhraseExtractor import failed - needs to be updated for clean architecture  
+❌ EnhancedLearningManager import failed - update import path from 'endpoints' to 'api'
 ```
 
-**Step 2: Update Main.py Initialization** ⚠️ **CRITICAL**
-Replace your entire initialization function with our clean `initialize_components_with_clean_managers()` function.
-
-**Step 3: Test Clean Architecture** ⚠️ 
-After fixing the imports:
-1. Start container: `docker compose up -d ash-nlp`
-2. Check logs: `docker logs ash-nlp`
-3. Should see: `✅ ConfigManager initialized` instead of import errors
-
-### 📋 Expected Result
+**OR Core Success** ✅ **IDEAL**
 ```
 ✅ ConfigManager initialized with config directory: /app/config
 🔍 DEBUG: Key Environment Variables:
    NLP_DEPRESSION_MODEL: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
-   NLP_SENTIMENT_MODEL: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
-   NLP_EMOTIONAL_DISTRESS_MODEL: Lowerated/lm6-deberta-v3-topic-sentiment
+✅ All components initialized with clean manager architecture
 ```
 
-**Status**: Ready to implement - this will fix both import errors and environment variable issues.
+### 📍 Next Actions Based on Results
+
+1. **If core managers work**: We'll see environment variable substitution logs
+2. **If components fail**: We'll get exact error messages showing what to fix
+3. **If import paths fail**: We'll know exactly which modules need updating
+
+**Status**: Ready for fail-fast testing - will show us exactly what needs to be fixed
 
 ### Step 4: Update Component Classes (REQUIRED)
 1. **CrisisAnalyzer** must be updated to accept: `(model_manager, config_manager, settings_manager, learning_manager)`
