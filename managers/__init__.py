@@ -71,7 +71,7 @@ __all__ = [
 logger.info("📦 Clean Manager Architecture initialized")
 for manager_name, available in MANAGERS_STATUS.items():
     status = "✅ Available" if available else "❌ Failed"
-    logger.info(f"   {manager_name}: {status}")
+    logger.debug(f"   {manager_name}: {status}")
 
 if all(MANAGERS_STATUS.values()):
     logger.info("🎯 All managers loaded successfully - clean architecture ready")
