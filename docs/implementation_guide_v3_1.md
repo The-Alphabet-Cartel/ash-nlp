@@ -22,11 +22,13 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Standard Python Logging**
   - Logging uses Python's built-in logging levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
   - The `GLOBAL_LOG_LEVEL` environment variable controls logging verbosity
-  - **No custom debug mode logic** - let Python's logging system handle it
-  - When set to `DEBUG`, all detailed logs are shown
-  - When set to `INFO`, only production-level logs are shown (INFO, WARNING, ERROR, CRITICAL)
+  - **No custom debug mode logic**
+    - Let Python's logging system handle it
+  - When set to `DEBUG`: all detailed logs are shown
+  - When set to `INFO`: only production-level logs are shown (INFO, WARNING, ERROR, CRITICAL)
 - **Knowledge Base**
-  - Always assume that the project knowledge base contains incorrect and outdated files and directory structures.
+  - Always assume that the project knowledge base contains incorrect and outdated files and directory structures
+    - Ask for current versions of files as needed
   - The only true source for correct and current files and directory structures is the GitHub (https://github.com/the-alphabet-cartel/ash).
     - Always update the GitHub branches when starting a new conversation to see the current files and directory structures.
       - We are working in the "v3.0" GitHub branch of `ash`
@@ -49,12 +51,16 @@ This guide outlines the complete recode of the configuration system for clean JS
 
 ### 🔧 **Development Standards**
 - **Manager-First Architecture**
-  - All components must integrate with the clean manager system
-    - (ConfigManager, SettingsManager, etc.)
+  - All components must integrate with the clean manager system (ConfigManager, SettingsManager, etc.)
 - **Fail-Fast Design**
   - Components that don't support the new architecture should fail with clear error messages
 - **Standard Python Logging**
-  - Use appropriate logging levels: `logger.debug()`, `logger.info()`, `logger.warning()`, `logger.error()`, `logger.critical()`
+  - Use appropriate logging levels:
+    - `logger.debug()`
+    - `logger.info()`
+    - `logger.warning()`
+    - `logger.error()`
+    - `logger.critical()`
   - Control logging verbosity through `GLOBAL_LOG_LEVEL` environment variable
   - All detailed debugging information should use `logger.debug()`
   - All production-relevant information should use `logger.info()` or higher
@@ -619,7 +625,11 @@ With the JSON defaults + ENV overrides pattern complete and standard logging, th
 - **✅ Clean Professional Production Logs**
 - **✅ Debug Logging Available When Needed**
 
-### Phase 2: Analysis Components ⏳ **PLANNED**
+### Phase 2: Migrate Model Managers ⏳ **In Progress**
+- Migrate `models/ml_models.py` to `managers/models_manager.py`
+- Migrate `models/pydantic_models.py` to `managers/pydantic_manager.py`
+
+### Phase 3: Analysis Components ⏳ **PLANNED**
 - Crisis patterns configuration migration to JSON
 - Analysis parameters configuration migration to JSON
 - Threshold mapping configuration migration to JSON
