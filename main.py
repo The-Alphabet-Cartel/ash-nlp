@@ -228,13 +228,12 @@ async def initialize_components_with_clean_managers():
         # Initialize CrisisAnalyzer
         if CRISIS_ANALYZER_AVAILABLE:
             try:
+                # Use current expected parameters until components are updated
                 crisis_analyzer = CrisisAnalyzer(
                     model_manager=model_manager,
-                    config_manager=config_manager,
-                    settings_manager=settings_manager,
                     learning_manager=learning_manager
                 )
-                logger.info("✅ CrisisAnalyzer initialized with clean manager architecture")
+                logger.info("✅ CrisisAnalyzer initialized with current architecture")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
                 crisis_analyzer = None
@@ -245,12 +244,11 @@ async def initialize_components_with_clean_managers():
         # Initialize PhraseExtractor
         if PHRASE_EXTRACTOR_AVAILABLE:
             try:
+                # Use current expected parameters until components are updated
                 phrase_extractor = PhraseExtractor(
-                    model_manager=model_manager,
-                    config_manager=config_manager,
-                    zero_shot_manager=zero_shot_manager
+                    model_manager=model_manager
                 )
-                logger.info("✅ PhraseExtractor initialized with clean manager architecture")
+                logger.info("✅ PhraseExtractor initialized with current architecture")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
                 phrase_extractor = None
@@ -332,7 +330,7 @@ async def lifespan(app: FastAPI):
         try:
             logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
             from api.ensemble_endpoints import add_ensemble_endpoints
-            add_ensemble_endpoints(app, model_manager, config_manager)
+            add_ensemble_endpoints(app, model_manager)
             logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
         except Exception as e:
             logger.error(f"❌ Failed to add ensemble endpoints: {e}")
