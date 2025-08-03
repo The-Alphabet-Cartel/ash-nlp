@@ -211,8 +211,7 @@ async def initialize_components_with_clean_managers():
             if learning_config.get('enabled', True):
                 learning_manager = EnhancedLearningManager(
                     model_manager=model_manager,
-                    config_manager=config_manager,
-                    settings_manager=settings_manager
+                    config_manager=config_manager
                 )
                 logger.info("✅ Learning system initialized with clean manager architecture")
             else:
