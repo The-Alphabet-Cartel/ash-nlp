@@ -30,28 +30,49 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Comprehensive Logging**: Detailed status reporting and error handling
 - **Fail-Fast**: If components don't support managers, initialization fails with clear error messages
 
-## Current Status - Issue Analysis
+## Current Status - Root Cause Identified ✅
 
-### ❌ Problem Identified
-The logs show that you've implemented the files, but:
+### 🎯 Problem Found
+Your current `main.py` is importing from the **old configuration system**:
+```python
+from config import get_nlp_config, get_env_config, get_api_keys_status
+```
 
-1. **Wrong Initialization System**: The logs show it's still using the OLD initialization system with parameter fallback detection instead of our NEW clean manager-only architecture
-2. **Environment Substitution Not Working**: Models being loaded are:
-   - Depression: `MoritzLaurer/deberta-v3-base-zeroshot-v2.0` ✅ (matches .env)
-   - Sentiment: `Lowerated/lm6-deberta-v3-topic-sentiment` ❌ (should be `MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`)
-   - Emotional Distress: `facebook/bart-large-mnli` ❌ (should be `Lowerated/lm6-deberta-v3-topic-sentiment`)
+This is importing from the old `config/` directory instead of our new `managers/` system.
 
-### 🔍 Debug Steps
+### 🔧 Clean Fix Required
 
-**Step 1A: Replace ConfigManager with Debug Version** ⚠️ 
-1. Replace the current `managers/config_manager.py` with the debug version I just created
-2. This will show us exactly what's happening with environment variable substitution
-3. **Status**: Ready for implementation - will show detailed logs
+**Step 1: Replace Main.py Imports** ⚠️ **CRITICAL**
+Replace the imports section in your `main.py` with:
+```python
+# OLD (remove these):
+from config import get_nlp_config, get_env_config, get_api_keys_status
 
-**Step 1B: Verify Clean Main.py is Active** ⚠️
-1. Ensure your `main.py` is using our clean `initialize_components_with_clean_managers()` function
-2. The logs show it's using the old `initialize_components_with_managers_config` with fallback
-3. **Status**: Needs verification - logs suggest old system is still active
+# NEW (use these):
+from managers.config_manager import ConfigManager
+from managers.settings_manager import SettingsManager
+from managers.zero_shot_manager import ZeroShotManager
+```
+
+**Step 2: Update Main.py Initialization** ⚠️ **CRITICAL**
+Replace your entire initialization function with our clean `initialize_components_with_clean_managers()` function.
+
+**Step 3: Test Clean Architecture** ⚠️ 
+After fixing the imports:
+1. Start container: `docker compose up -d ash-nlp`
+2. Check logs: `docker logs ash-nlp`
+3. Should see: `✅ ConfigManager initialized` instead of import errors
+
+### 📋 Expected Result
+```
+✅ ConfigManager initialized with config directory: /app/config
+🔍 DEBUG: Key Environment Variables:
+   NLP_DEPRESSION_MODEL: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+   NLP_SENTIMENT_MODEL: MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+   NLP_EMOTIONAL_DISTRESS_MODEL: Lowerated/lm6-deberta-v3-topic-sentiment
+```
+
+**Status**: Ready to implement - this will fix both import errors and environment variable issues.
 
 ### Step 4: Update Component Classes (REQUIRED)
 1. **CrisisAnalyzer** must be updated to accept: `(model_manager, config_manager, settings_manager, learning_manager)`
