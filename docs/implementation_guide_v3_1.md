@@ -41,18 +41,42 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Health Check Integration**: All components should report their status through health endpoints
 
 ### 📁 **File Organization Standards**
-- **Analyzers**: All analyzers, and supporting scripts for said analyzers, shall live in `ash/ash-nlp/analysis/` with descriptive filenames
-- **API Endpoints**: All API Endpoint files shall live in `ash/ash-nlp/api/` with descriptive filenames ending in `_endpoints.py` (migrated from `endpoints/`)
-- **Configuration Files**: All JSON configuration files shall live in `ash/ash-nlp/config/` with descriptive filenames
-- **ash/ash-nlp/data** Data Storage (future implementation)
-- **Documentation** all documentation shall live in `ash/ash-nlp/docs`
-- **ash/ash-nlp/learning_data** Learning Data Storage
-- **ash/ash-nlp/logs** Logging Storage
-- **Manager Classes**: All Manager files and manager classes shall live in `ash/ash-nlp/managers/` with descriptive filenames ending in `_manager.py`
-- **Models** Currently the Model and Pydantic Managers reside here, but we will be migrating them to `ash/ash-nlp/managers` soon.  Actual model caching is located in `ash/ash-nlp/models/cache`
-- **Debug / Testing Scripts**: All Debug and/or Testing scripts are to be coded in python only (no bash scripting), and shall live in `ash/ash-nlp/tests/` with descriptive filenames beginning with either `test_` or `debug_`
-- **Utility Scripts** Utility and helper scripts shall live in `ash/ash-nlp/utils` using descriptive filenames
-- **Clean Import Structure**: All imports shall be wrapped in `try-catch` blocks with detailed logging
+- **Docker**
+  - The Dockerfile for building Ash-NLP lives in `ash/ash-nlp/Dockerfile`
+  - The `docker-compose.yml` file we use to start all of the containers resides in the Ash project root, `ash/docker-compose.yml`
+- **ENVironmental Variables**
+  - The `.env` file for our variables lives in the Ash project root, `ash/.env`
+  - Our `.env.template` is our governing file for all environmental variables and is what our `.env` file is based on
+    - All changes to environmental variables *must* be made in the `ash/.env.template` file
+- **Analyzers**
+  - All analyzers, and supporting scripts for said analyzers, shall live in `ash/ash-nlp/analysis/` with descriptive filenames
+- **API Endpoints**
+  - All API Endpoint files shall live in `ash/ash-nlp/api/` with descriptive filenames ending in `_endpoints.py`
+  - (migrated from `endpoints/`)
+- **Configuration Files**
+  - All JSON configuration files shall live in `ash/ash-nlp/config/` with descriptive filenames
+- **ash/ash-nlp/data**
+  - Data Storage
+  - (future implementation)
+- **Documentation**
+  - All documentation shall live in `ash/ash-nlp/docs`
+- **ash/ash-nlp/learning_data**
+  - Learning Data Storage
+- **ash/ash-nlp/logs**
+  - Logging Storage
+- **Manager Classes**
+  - All Manager files and manager classes shall live in `ash/ash-nlp/managers/` with descriptive filenames ending in `_manager.py`
+- **Models**
+  - Currently the Model (`ml_models.py`) and Pydantic (`pydantic_models.py`) Managers reside here
+    - We will be migrating them to `ash/ash-nlp/managers` soon&trade;
+  - Model caching is located in `ash/ash-nlp/models/cache`
+- **Debug / Testing Scripts**
+  - All Debug and/or Testing scripts shall live in `ash/ash-nlp/tests/` with descriptive filenames beginning with either `test_` or `debug_`
+    - To be coded in Python only (no bash scripting)
+- **Utility Scripts**
+  - Utility and helper scripts shall live in `ash/ash-nlp/utils` using descriptive filenames
+- **Clean Import Structure**
+  - All imports shall be wrapped in "try-catch" blocks with detailed logging
 
 ### 🔄 **Migration Strategy**
 - **Incremental JSON Migration**: Gradually move configuration from environment variables to JSON files
