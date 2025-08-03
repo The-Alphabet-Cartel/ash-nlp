@@ -71,18 +71,28 @@ except ImportError as e:
     traceback.print_exc()
     sys.exit(1)
 
-# Import ModelManager
+# Import ModelManager - PHASE 2 UPDATE
 try:
-    logger.info("🧠 Importing ModelManager...")
-    from models.ml_models import ModelManager
+    logger.info("🧠 Importing ModelsManager v3.1...")
+    from managers.models_manager import ModelsManager as ModelManager
+    MODEL_MANAGER_V3_1_AVAILABLE = True
     MODEL_MANAGER_AVAILABLE = True
-    logger.info("✅ ModelManager import successful")
+    logger.info("✅ Phase 2: ModelsManager v3.1 imported from managers/")
 except ImportError as e:
-    MODEL_MANAGER_AVAILABLE = False
-    logger.error(f"❌ ModelManager import failed: {e}")
-    import traceback
-    traceback.print_exc()
-    sys.exit(1)
+    logger.warning(f"⚠️ Phase 2 ModelsManager not available: {e}")
+    try:
+        logger.info("🧠 Falling back to legacy ModelManager...")
+        from models.ml_models import ModelManager
+        MODEL_MANAGER_V3_1_AVAILABLE = False
+        MODEL_MANAGER_AVAILABLE = True
+        logger.info("⚠️ Using legacy ModelManager - Phase 2 migration recommended")
+    except ImportError as e2:
+        MODEL_MANAGER_V3_1_AVAILABLE = False
+        MODEL_MANAGER_AVAILABLE = False
+        logger.error(f"❌ No ModelManager available: {e2}")
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
 
 # Import analysis components (optional)
 try:
