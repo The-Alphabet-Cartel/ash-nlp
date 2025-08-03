@@ -1,4 +1,4 @@
-# ash/ash-nlp/main.py (Clean Manager-Only Initialization)
+# ash/ash-nlp/main.py (Clean Manager-Only Architecture)
 """
 Clean initialization system for Ash NLP Service v3.1
 Manager-first architecture with no backward compatibility
@@ -9,13 +9,15 @@ import time
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from models.ml_models import ModelManager
 from pydantic import BaseModel
 
-# Import managers
+# Import managers (our new clean architecture)
 from managers.config_manager import ConfigManager
 from managers.settings_manager import SettingsManager
 from managers.zero_shot_manager import ZeroShotManager
+
+# Import ModelManager (clean version)
+from models.ml_models import ModelManager
 
 logger = logging.getLogger(__name__)
 
