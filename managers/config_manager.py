@@ -40,7 +40,7 @@ class ConfigManager:
         logger.info(f"✅ ConfigManager initialized with config directory: {config_dir}")
         
         # DEBUG: Log key environment variables
-        logger.info("🔍 DEBUG: Key Environment Variables:")
+        logger.debug("🔍 DEBUG: Key Environment Variables:")
         env_vars_to_check = [
             'NLP_DEPRESSION_MODEL',
             'NLP_SENTIMENT_MODEL', 
@@ -53,7 +53,7 @@ class ConfigManager:
         
         for env_var in env_vars_to_check:
             value = os.getenv(env_var)
-            logger.info(f"   {env_var}: {value}")
+            logger.debug(f"   {env_var}: {value}")
     
     def substitute_environment_variables(self, value: Any) -> Any:
         """
@@ -71,30 +71,30 @@ class ConfigManager:
                 env_var = match.group(1)
                 env_value = os.getenv(env_var)
                 
-                logger.info(f"🔄 DEBUG: Substituting ${{{env_var}}} = {env_value}")
+                logger.debug(f"🔄 DEBUG: Substituting ${{{env_var}}} = {env_value}")
                 
                 if env_value is not None:
                     # Try to convert to appropriate type
                     if env_value.lower() in ('true', 'false'):
                         result = str(env_value.lower() == 'true')
-                        logger.info(f"   → Converted to boolean: {result}")
+                        logger.debug(f"   → Converted to boolean: {result}")
                         return result
                     elif env_value.replace('.', '').replace('-', '').isdigit():
                         try:
                             # Try float first, then int
                             if '.' in env_value:
                                 result = str(float(env_value))
-                                logger.info(f"   → Converted to float: {result}")
+                                logger.debug(f"   → Converted to float: {result}")
                                 return result
                             else:
                                 result = str(int(env_value))
-                                logger.info(f"   → Converted to int: {result}")
+                                logger.debug(f"   → Converted to int: {result}")
                                 return result
                         except ValueError:
-                            logger.info(f"   → Kept as string: {env_value}")
+                            logger.debug(f"   → Kept as string: {env_value}")
                             return env_value
                     else:
-                        logger.info(f"   → Used as string: {env_value}")
+                        logger.debug(f"   → Used as string: {env_value}")
                         return env_value
                 else:
                     logger.warning(f"⚠️ Environment variable {env_var} not found, keeping placeholder")
@@ -122,7 +122,7 @@ class ConfigManager:
             Parsed configuration dictionary
         """
         if config_name in self.config_cache:
-            logger.info(f"📋 DEBUG: Using cached config for {config_name}")
+            logger.debug(f"📋 DEBUG: Using cached config for {config_name}")
             return self.config_cache[config_name]
         
         config_file = self.config_files.get(config_name)
@@ -137,28 +137,28 @@ class ConfigManager:
             return {}
         
         try:
-            logger.info(f"📁 DEBUG: Loading config file: {config_path}")
+            logger.debug(f"📁 DEBUG: Loading config file: {config_path}")
             
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
             
-            logger.info(f"✅ DEBUG: JSON loaded successfully")
+            logger.debug(f"✅ DEBUG: JSON loaded successfully")
             
             # DEBUG: Log before substitution
             model_defs = raw_config.get('model_definitions', {})
-            logger.info("🔍 DEBUG: Model definitions BEFORE substitution:")
+            logger.debug("🔍 DEBUG: Model definitions BEFORE substitution:")
             for model_type, model_config in model_defs.items():
-                logger.info(f"   {model_type}: {model_config.get('name', 'NO_NAME')}")
+                logger.debug(f"   {model_type}: {model_config.get('name', 'NO_NAME')}")
             
             # Substitute environment variables
-            logger.info("🔄 DEBUG: Starting environment variable substitution...")
+            logger.debug("🔄 DEBUG: Starting environment variable substitution...")
             processed_config = self.substitute_environment_variables(raw_config)
             
             # DEBUG: Log after substitution
             processed_model_defs = processed_config.get('model_definitions', {})
-            logger.info("🔍 DEBUG: Model definitions AFTER substitution:")
+            logger.debug("🔍 DEBUG: Model definitions AFTER substitution:")
             for model_type, model_config in processed_model_defs.items():
-                logger.info(f"   {model_type}: {model_config.get('name', 'NO_NAME')}")
+                logger.debug(f"   {model_type}: {model_config.get('name', 'NO_NAME')}")
             
             # Cache the processed configuration
             self.config_cache[config_name] = processed_config
@@ -175,7 +175,7 @@ class ConfigManager:
     
     def get_model_configuration(self) -> Dict[str, Any]:
         """Get model ensemble configuration with environment overrides"""
-        logger.info("🔍 DEBUG: Getting model configuration...")
+        logger.debug("🔍 DEBUG: Getting model configuration...")
         
         config = self.load_config_file('model_ensemble')
         
@@ -187,29 +187,29 @@ class ConfigManager:
         model_defs = config.get('model_definitions', {})
         processed_models = {}
         
-        logger.info("🔧 DEBUG: Processing model definitions...")
+        logger.debug("🔧 DEBUG: Processing model definitions...")
         
         for model_type, model_config in model_defs.items():
-            logger.info(f"🔍 DEBUG: Processing {model_type} model...")
+            logger.debug(f"🔍 DEBUG: Processing {model_type} model...")
             
             # Get model name with environment override
             env_var = model_config.get('environment_variable')
-            logger.info(f"   Environment variable: {env_var}")
+            logger.debug(f"   Environment variable: {env_var}")
             
             if env_var and os.getenv(env_var):
                 model_name = os.getenv(env_var)
-                logger.info(f"🔄 Environment override for {model_type}: {model_name}")
+                logger.debug(f"🔄 Environment override for {model_type}: {model_name}")
             else:
                 model_name = model_config.get('name', model_config.get('default_name', ''))
-                logger.info(f"   Using config/default name: {model_name}")
+                logger.debug(f"   Using config/default name: {model_name}")
             
             # Get weight with environment override
             weight_str = str(model_config.get('weight', model_config.get('default_weight', 0.33)))
-            logger.info(f"   Weight string: {weight_str}")
+            logger.debug(f"   Weight string: {weight_str}")
             
             try:
                 weight = float(weight_str)
-                logger.info(f"   Weight value: {weight}")
+                logger.debug(f"   Weight value: {weight}")
             except (ValueError, TypeError):
                 weight = model_config.get('default_weight', 0.33)
                 logger.warning(f"⚠️ Invalid weight for {model_type}, using default: {weight}")
@@ -228,7 +228,7 @@ class ConfigManager:
         
         # Validate weights sum to 1.0
         total_weight = sum(model['weight'] for model in processed_models.values())
-        logger.info(f"🔍 DEBUG: Total weight: {total_weight}")
+        logger.debug(f"🔍 DEBUG: Total weight: {total_weight}")
         
         if abs(total_weight - 1.0) > 0.001:
             logger.warning(f"⚠️ Model weights sum to {total_weight}, should be 1.0")
@@ -242,12 +242,12 @@ class ConfigManager:
             'validation_rules': config.get('validation_rules', {})
         }
         
-        logger.info("✅ DEBUG: Model configuration processing complete")
+        logger.debug("✅ DEBUG: Model configuration processing complete")
         return result
     
     def _get_fallback_model_config(self) -> Dict[str, Any]:
         """Fallback configuration using only environment variables"""
-        logger.info("🔄 DEBUG: Using fallback environment configuration")
+        logger.debug("🔄 DEBUG: Using fallback environment configuration")
         
         config = {
             'models': {
