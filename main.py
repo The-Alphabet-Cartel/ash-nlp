@@ -143,22 +143,18 @@ async def initialize_components_with_clean_managers():
         logger.info("✅ Global model manager set for API access")
         
         # ========================================================================
-        # STEP 6: Initialize Learning System
+        # STEP 6: Initialize Learning System (FAIL FAST)
         # ========================================================================
         if ENHANCED_LEARNING_AVAILABLE:
             learning_config = feature_flags.get('learning_system', {})
             if learning_config.get('enabled', True):
-                try:
-                    enhanced_learning_manager = EnhancedLearningManager(
-                        model_manager=model_manager,
-                        config_manager=config_manager,
-                        settings_manager=settings_manager
-                    )
-                    logger.info("✅ Enhanced learning system initialized with clean manager architecture")
-                except Exception as e:
-                    logger.error(f"❌ Failed to initialize enhanced learning system: {e}")
-                    logger.info("🔧 This component needs to be updated to support the new manager architecture")
-                    enhanced_learning_manager = None
+                # FAIL FAST - require proper manager integration
+                enhanced_learning_manager = EnhancedLearningManager(
+                    model_manager=model_manager,
+                    config_manager=config_manager,
+                    settings_manager=settings_manager
+                )
+                logger.info("✅ Enhanced learning system initialized with clean manager architecture")
             else:
                 logger.info("ℹ️ Learning system disabled via configuration")
                 enhanced_learning_manager = None
@@ -167,44 +163,32 @@ async def initialize_components_with_clean_managers():
             enhanced_learning_manager = None
         
         # ========================================================================
-        # STEP 7: Initialize Analysis Components (Manager-Only)
+        # STEP 7: Initialize Analysis Components (FAIL FAST)
         # ========================================================================
         
-        # Initialize CrisisAnalyzer with required managers
+        # Initialize CrisisAnalyzer - FAIL FAST if not compatible
         if CRISIS_ANALYZER_AVAILABLE:
-            try:
-                crisis_analyzer = CrisisAnalyzer(
-                    model_manager=model_manager,
-                    config_manager=config_manager,
-                    settings_manager=settings_manager,
-                    learning_manager=enhanced_learning_manager
-                )
-                logger.info("✅ CrisisAnalyzer initialized with clean manager architecture")
-            except Exception as e:
-                logger.error(f"❌ Failed to initialize CrisisAnalyzer: {e}")
-                logger.info("🔧 CrisisAnalyzer needs to be updated to support the new manager architecture")
-                logger.info("   Expected: CrisisAnalyzer(model_manager, config_manager, settings_manager, learning_manager)")
-                crisis_analyzer = None
+            crisis_analyzer = CrisisAnalyzer(
+                model_manager=model_manager,
+                config_manager=config_manager,
+                settings_manager=settings_manager,
+                learning_manager=enhanced_learning_manager
+            )
+            logger.info("✅ CrisisAnalyzer initialized with clean manager architecture")
         else:
-            logger.info("ℹ️ CrisisAnalyzer not available")
+            logger.error("❌ CrisisAnalyzer not available - import failed")
             crisis_analyzer = None
         
-        # Initialize PhraseExtractor with required managers
+        # Initialize PhraseExtractor - FAIL FAST if not compatible
         if PHRASE_EXTRACTOR_AVAILABLE:
-            try:
-                phrase_extractor = PhraseExtractor(
-                    model_manager=model_manager,
-                    config_manager=config_manager,
-                    zero_shot_manager=zero_shot_manager
-                )
-                logger.info("✅ PhraseExtractor initialized with clean manager architecture")
-            except Exception as e:
-                logger.error(f"❌ Failed to initialize PhraseExtractor: {e}")
-                logger.info("🔧 PhraseExtractor needs to be updated to support the new manager architecture")
-                logger.info("   Expected: PhraseExtractor(model_manager, config_manager, zero_shot_manager)")
-                phrase_extractor = None
+            phrase_extractor = PhraseExtractor(
+                model_manager=model_manager,
+                config_manager=config_manager,
+                zero_shot_manager=zero_shot_manager
+            )
+            logger.info("✅ PhraseExtractor initialized with clean manager architecture")
         else:
-            logger.info("ℹ️ PhraseExtractor not available")
+            logger.error("❌ PhraseExtractor not available - import failed")
             phrase_extractor = None
         
         # ========================================================================
@@ -276,7 +260,7 @@ async def lifespan(app: FastAPI):
     await initialize_components_with_clean_managers()
     
     # Import and add ensemble endpoints after initialization
-    from endpoints.ensemble_endpoints import add_ensemble_endpoints
+    from api.ensemble_endpoints import add_ensemble_endpoints
     logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
     add_ensemble_endpoints(app, model_manager, config_manager)
     logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
@@ -287,7 +271,8 @@ async def lifespan(app: FastAPI):
         add_enhanced_learning_endpoints(app, enhanced_learning_manager, config_manager)
         logger.info("🧠 Enhanced learning endpoints added with manager integration!")
     else:
-        logger.info("ℹ️ Learning system not available - skipping learning endpoints")
+        logger.error("❌ Learning system required but not available")
+        raise RuntimeError("Enhanced learning system is required but not available")
     
     logger.info("✅ Enhanced FastAPI app startup complete with Clean Manager Architecture!")
     
