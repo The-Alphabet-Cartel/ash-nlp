@@ -2,8 +2,7 @@
 Enhanced ML Model Management for Ash NLP Service v3.1 - Manager Architecture
 Phase 2 Migration: models/ml_models.py → managers/models_manager.py
 
-This manager handles loading, caching, and access to ML models with Three Zero-Shot Model Ensemble
-following the clean manager architecture with JSON defaults + ENV overrides pattern.
+FIXED VERSION: Robust cache directory handling with multiple fallbacks
 """
 
 import logging
@@ -19,11 +18,7 @@ class ModelsManager:
     """
     Enhanced centralized management of ML models with Three Zero-Shot Model Ensemble support
     
-    Migration from models/ml_models.py to managers/models_manager.py following v3.1 architecture:
-    - Clean manager architecture with config_manager integration
-    - JSON defaults + ENV overrides pattern
-    - Standard Python logging levels
-    - No backward compatibility with old patterns
+    FIXED: Robust cache directory handling and configuration extraction
     """
     
     def __init__(self, config_manager=None, model_config: Dict[str, Any] = None, hardware_config: Dict[str, Any] = None):
@@ -38,15 +33,23 @@ class ModelsManager:
         Note: For compatibility with existing main.py, this can also be called with just config_manager
         and will extract model_config and hardware_config automatically.
         """
+        logger.debug("🔧 Initializing ModelsManager with provided parameters...")
+        
         if config_manager and model_config is None and hardware_config is None:
+            logger.debug("🔄 Compatibility mode: extracting configs from ConfigManager")
             # Compatibility mode: extract configs from ConfigManager
             model_config = self._extract_model_config_from_manager(config_manager)
             hardware_config = self._extract_hardware_config_from_manager(config_manager)
         elif model_config is None or hardware_config is None:
             raise ValueError("Must provide either config_manager alone OR both model_config and hardware_config")
+        
         self.config_manager = config_manager
-        self.model_config = model_config
-        self.hardware_config = hardware_config
+        self.model_config = model_config or {}
+        self.hardware_config = hardware_config or {}
+        
+        # Debug logging to see what we received
+        logger.debug(f"ModelsManager model_config keys: {list(self.model_config.keys())}")
+        logger.debug(f"ModelsManager hardware_config keys: {list(self.hardware_config.keys())}")
         
         # Model instances - THREE MODELS
         self.depression_model = None
@@ -57,7 +60,7 @@ class ModelsManager:
         # Device configuration
         self.device = self._configure_device()
         
-        # Set up model cache directory
+        # Set up model cache directory (with robust fallback handling)
         self._setup_cache_directory()
         
         # Set up Hugging Face authentication if token provided
@@ -65,22 +68,28 @@ class ModelsManager:
         
         logger.info("✅ ModelsManager initialized with Three Zero-Shot Model Ensemble")
         logger.debug(f"Device: {self.device}")
-        logger.debug(f"Model cache directory: {self.model_config['cache_dir']}")
+        logger.debug(f"Model cache directory: {self.model_config.get('cache_dir', 'not set')}")
     
     def _extract_model_config_from_manager(self, config_manager) -> Dict[str, Any]:
         """Extract model configuration from existing ConfigManager (compatibility)"""
+        logger.debug("🔍 Extracting model configuration from ConfigManager...")
+        
         try:
             # Try to get configuration from the existing manager's methods
             full_model_config = config_manager.get_model_configuration()
             hardware_config = config_manager.get_hardware_configuration()
             models = full_model_config.get('models', {})
             
-            # Get cache_dir from hardware_config or fallback to environment/default
-            cache_dir = (hardware_config.get('cache_dir') or 
-                        full_model_config.get('cache_dir') or 
-                        os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'))
+            # Get cache_dir from multiple possible locations
+            cache_dir = (
+                hardware_config.get('cache_dir') or 
+                full_model_config.get('cache_dir') or 
+                os.getenv('NLP_MODEL_CACHE_DIR') or
+                os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or
+                './models/cache'
+            )
             
-            return {
+            config = {
                 'depression_model': models.get('depression', {}).get('name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                 'sentiment_model': models.get('sentiment', {}).get('name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_model': models.get('emotional_distress', {}).get('name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
@@ -93,14 +102,20 @@ class ModelsManager:
                 'gap_detection_enabled': full_model_config.get('ensemble_config', {}).get('gap_detection', {}).get('enabled', True),
                 'disagreement_threshold': full_model_config.get('ensemble_config', {}).get('gap_detection', {}).get('disagreement_threshold', 2)
             }
+            
+            logger.debug(f"✅ Extracted model config with cache_dir: {config['cache_dir']}")
+            return config
+            
         except Exception as e:
             logger.warning(f"Could not extract model config from manager: {e}")
+            logger.debug("🔄 Falling back to environment variables")
+            
             # Fallback to environment variables
             return {
                 'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                 'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
-                'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR', './models/cache'),
+                'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR') or os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or './models/cache',
                 'huggingface_token': os.getenv('GLOBAL_HUGGINGFACE_TOKEN'),
                 'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
                 'depression_weight': float(os.getenv('NLP_DEPRESSION_MODEL_WEIGHT', '0.5')),
@@ -112,11 +127,13 @@ class ModelsManager:
     
     def _extract_hardware_config_from_manager(self, config_manager) -> Dict[str, Any]:
         """Extract hardware configuration from existing ConfigManager (compatibility)"""
+        logger.debug("🔍 Extracting hardware configuration from ConfigManager...")
+        
         try:
             # Try to get configuration from the existing manager's methods
             hardware_config = config_manager.get_hardware_configuration()
             
-            return {
+            config = {
                 'device': hardware_config.get('device', 'auto'),
                 'precision': hardware_config.get('precision', 'float16'),
                 'max_batch_size': hardware_config.get('max_batch_size', 32),
@@ -124,8 +141,14 @@ class ModelsManager:
                 'trust_remote_code': hardware_config.get('trust_remote_code', False),
                 'model_revision': hardware_config.get('model_revision', 'main')
             }
+            
+            logger.debug(f"✅ Extracted hardware config")
+            return config
+            
         except Exception as e:
             logger.warning(f"Could not extract hardware config from manager: {e}")
+            logger.debug("🔄 Falling back to environment variables")
+            
             # Fallback to environment variables
             return {
                 'device': os.getenv('NLP_DEVICE', 'auto'),
@@ -154,10 +177,28 @@ class ModelsManager:
         return device
     
     def _setup_cache_directory(self):
-        """Set up model cache directory"""
-        cache_dir = Path(self.model_config['cache_dir'])
+        """Set up model cache directory with robust fallback handling"""
+        logger.debug("🔧 Setting up model cache directory...")
+        
+        # Try multiple sources for cache_dir with comprehensive fallbacks
+        cache_dir_str = (
+            self.model_config.get('cache_dir') or 
+            self.hardware_config.get('cache_dir') or 
+            os.getenv('NLP_MODEL_CACHE_DIR') or 
+            os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or 
+            './models/cache'
+        )
+        
+        logger.debug(f"Using cache directory: {cache_dir_str}")
+        
+        cache_dir = Path(cache_dir_str)
         cache_dir.mkdir(parents=True, exist_ok=True)
-        logger.debug(f"Model cache directory ready: {cache_dir}")
+        
+        # Ensure the model_config has cache_dir for later use
+        if 'cache_dir' not in self.model_config:
+            self.model_config['cache_dir'] = str(cache_dir)
+        
+        logger.debug(f"✅ Model cache directory ready: {cache_dir}")
     
     def _setup_huggingface_auth(self):
         """Set up Hugging Face authentication"""
