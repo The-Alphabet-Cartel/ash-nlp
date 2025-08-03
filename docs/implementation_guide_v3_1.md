@@ -10,35 +10,70 @@ This guide outlines the complete recode of the configuration system for clean JS
 ## Design Philosophies and Core Principles
 
 ### 🎯 **Configuration Management Philosophy**
-- **JSON as Source of Truth**: JSON files contain the default configuration structure and values
-- **Environment Variable Overrides**: The .env file variables override JSON defaults for deployment-specific customization
-- **Centralized Configuration Goal**: The end goal is to eventually move **ALL** configuration parameters into JSON files for a central configuration management solution
-- **No Hot-Loading Required**: JSON configuration does not need hot-loading capability at this time (may be added in future)
+- **JSON as Source of Truth**
+  - JSON files contain the default configuration structure and values
+- **Environment Variable Overrides**
+  - The `.env` file variables override JSON defaults for deployment-specific customization
+- **Centralized Configuration Goal**
+  - The end goal is to eventually move **ALL** configuration parameters into JSON files for a central configuration management solution
+- **No Hot-Loading Required**
+  - JSON configuration does not need hot-loading capability at this time
+    - May be added in future
+- **DEBUG Mode Logging**
+  - Logging needs to respect the JSON configuration and environmental variable `GLOBAL_ENABLE_DEBUG_MODE`
+    - The environmental variable should override the JSON configuration default
+    - When set to `true`, logging should show highly detailed logs and explanations
+    - When set to `false`, only production required logging should be shown
+      - This keeps logs slim and shows only the minimum information required to show that the system is working as intended, along with any major failure points.
 
 ### 🚫 **What We Don't Do**
-- **No Bash Scripts**: All automation and configuration management is done through Python, Docker, and JSON
-- **No Quick Fixes**: Always implement proper, complete solutions rather than temporary workarounds
-- **No Backward Compatibility**: Only forward-looking code - no support for legacy patterns or deprecated approaches
-- **No Hard-coded Defaults in Code**: All defaults should be defined in JSON configuration files
+- **No Bash Scripts**
+  - All automation and configuration management is done through Python, Docker, and JSON
+- **No Quick Fixes**
+  - Always implement proper, complete solutions rather than temporary workarounds
+- **No Backward Compatibility**
+  - Only forward-looking code
+    - No support for legacy patterns or deprecated approaches
+- **No Hard-coded Defaults in Code**
+  - All defaults should be defined in JSON configuration files
 
 ### 🔧 **Development Standards**
-- **Manager-First Architecture**: All components must integrate with the clean manager system (ConfigManager, SettingsManager, etc.)
-- **Fail-Fast Design**: Components that don't support the new architecture should fail with clear error messages
-- **Comprehensive Logging**: Every step should be logged with detailed status reporting
-- **Full Error Handling**: No silent failures - all errors must be caught, logged, and handled appropriately
-- **Modular Code Structure**: Separate code into logical modules based on functionality to keep the main codebase clean and maintainable
+- **Manager-First Architecture**
+  - All components must integrate with the clean manager system
+    - (ConfigManager, SettingsManager, etc.)
+- **Fail-Fast Design**
+  - Components that don't support the new architecture should fail with clear error messages
+- **Comprehensive DEBUG Logging**
+  - Every step should be logged with detailed status reporting
+    - Needs to respect the `GLOBAL_ENABLE_DEBUG_MODE` configuration switch
+- **Full Error Handling**
+  - No silent failures
+    - All errors must be caught, logged, and handled appropriately
+- **Modular Code Structure**
+  - Separate code into logical modules based on functionality to keep the main codebase clean and maintainable
 
 ### 🐳 **Deployment Philosophy**
-- **Docker-First**: All services run in Docker containers with docker-compose orchestration
-- **Environment-Specific Overrides**: Use .env files to customize deployments without changing JSON configuration
-- **Container Restart for Configuration Changes**: Configuration changes require container restart (no hot-reloading)
-- **Secrets Management**: Sensitive configuration should use Docker secrets or secure environment variables
+- **Docker-First**
+  - All services run in Docker containers with docker-compose orchestration
+- **Environment-Specific Overrides**
+  - Use `.env` files to customize deployments without changing JSON configuration
+- **Container Restart for Configuration Changes**
+  - Configuration changes require container restart
+    - No hot-reloading
+- **Secrets Management**
+  - Sensitive configuration should use Docker secrets or secure environment variables
 
 ### 🧪 **Testing and Debugging Philosophy**
-- **Component Isolation**: Each component should be testable independently
-- **Detailed Error Reporting**: Error messages should be specific and actionable
-- **Configuration Validation**: All configuration should be validated at startup with meaningful error messages
-- **Health Check Integration**: All components should report their status through health endpoints
+- **Component Isolation**
+  - Each component should be testable independently
+- **Detailed Error Reporting**
+  - Error messages should be specific and actionable
+    - Should respect the `GLOBAL_ENABLE_DEBUG_MODE` configuration switch
+- **Configuration Validation**
+  - All configuration should be validated at startup with meaningful error messages
+    - Should respect the `GLOBAL_ENABLE_DEBUG_MODE` configuration switch
+- **Health Check Integration**
+  - All components should report their status through the `/health` endpoint
 
 ### 📁 **File Organization Standards**
 - **Docker**
@@ -79,19 +114,37 @@ This guide outlines the complete recode of the configuration system for clean JS
   - All imports shall be wrapped in "try-catch" blocks with detailed logging
 
 ### 🔄 **Migration Strategy**
-- **Incremental JSON Migration**: Gradually move configuration from environment variables to JSON files
-- **Maintain Override Capability**: Always preserve the ability for environment variables to override JSON defaults
-- **Phase-Based Approach**: Migrate configuration in logical phases (Core Systems → Analysis Components → Performance & Advanced)
-- **Validation at Each Step**: Ensure each migration phase is fully tested before proceeding to the next
+- **Incremental JSON Migration**
+  - Gradually move configuration from environment variables to JSON files
+- **Maintain Override Capability**
+  - Always preserve the ability for environment variables to override JSON defaults
+- **Phase-Based Approach**
+  - Migrate configuration in logical phases
+    - Core Systems → Analysis Components → Performance & Advanced
+- **Validation At Each Step**
+  - Ensure each migration phase is fully tested before proceeding to the next
+- **Update Implementation Documentation At Each Step**
+  - This document, `ash/ash-nlp/docs/implementation_guide_v3_1.md`, shall be kept up to date at each step of the migration
+  - It shall document:
+    - Our core design standards and philosophies
+    - Problems encountered
+      - Fixes implmented for them
+    - What we've accomplished thus far in the migration
+    - What we have left to accomplish
+    - Any miscellaneous information that may be needed by Claude to assist in this migration
 
 These principles guide all development decisions and ensure consistency across the entire Ash ecosystem. When in doubt, refer back to these philosophies to determine the correct approach.
 
 ## Current Issues Resolved
 
-1. **Environment Variable Substitution**: The JSON placeholders like `${NLP_DEPRESSION_MODEL}` are now being replaced with actual environment values ✅
-2. **Model Configuration**: The loaded models now match the configuration with JSON defaults + ENV overrides ✅
-3. **Function Signatures**: All parameter mismatches resolved between function definitions and calls ✅
-4. **Directory Migration**: Complete migration from `endpoints/` to `api/` directory structure ✅
+1. **Environment Variable Substitution**
+  - The JSON placeholders like `${NLP_DEPRESSION_MODEL}` are now being replaced with actual environment values ✅
+2. **Model Configuration**
+  - The loaded models now match the configuration with JSON defaults + ENV overrides ✅
+3. **Function Signatures**
+  - All parameter mismatches resolved between function definitions and calls ✅
+4. **Directory Migration**
+  - Complete migration from `endpoints/` to `api/` directory structure ✅
 
 ## Solution Architecture (Clean Implementation)
 
@@ -157,7 +210,6 @@ These principles guide all development decisions and ensure consistency across t
 ✅ **JSON Configuration**: Learning system now uses JSON defaults + ENV overrides
 
 ### 🔧 Root Cause Identified and Fixed
-
 **Issue: Function Signature Mismatch** ✅ **RESOLVED**
 ```
 add_enhanced_learning_endpoints() takes 2 positional arguments but 3 were given
@@ -318,7 +370,6 @@ With the fixed function signatures and directory migration, startup should show:
 5. **Directory Migration**: All files moved from `endpoints/` to `api/` ✅
 
 ### 📁 Configuration File Structure
-
 JSON configuration files in `ash/ash-nlp/config/`:
 - `model_ensemble.json` - Main ensemble configuration ✅ (has content with ${VAR} substitution)
 - `learning_parameters.json` - Learning system configuration ✅ (has content with ${VAR} substitution)
@@ -391,7 +442,6 @@ Perfect substitution working as seen in test output:
 ```
 
 ## Testing the Fixed Implementation
-
 1. **Replace files with corrected versions**:
    ```bash
    # Copy corrected_learning_endpoints content to ash/ash-nlp/api/learning_endpoints.py
@@ -483,7 +533,6 @@ With the JSON defaults + ENV overrides pattern complete, the startup should show
 ```
 
 ## Configuration Migration Roadmap
-
 ## Phase 1: Core Systems ✅ **COMPLETE AND WORKING**
 - Model ensemble configuration ✅ (Successfully loading with JSON + ENV overrides)
 - Learning system configuration ✅ (Successfully loading with JSON + ENV overrides)  
@@ -495,6 +544,7 @@ With the JSON defaults + ENV overrides pattern complete, the startup should show
 **Status**: 🎯 **Phase 1 Complete - System Running Successfully**
 
 ### Phase 2: Analysis Components ⏳ **IN PROGRESS**
+- Debug Logging Configuration
 - Crisis patterns configuration
 - Analysis parameters configuration
 - Threshold mapping configuration
