@@ -7,10 +7,144 @@ Repository: https://github.com/the-alphabet-cartel/ash-nlp
 
 import os
 import logging
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+# ============================================================================
+# PATTERN CONSTANTS FOR COMPONENT COMPATIBILITY
+# ============================================================================
+
+# Context patterns for detection (from old settings_manager.py)
+POSITIVE_CONTEXT_PATTERNS = {
+    'humor': ['joke', 'funny', 'hilarious', 'laugh', 'comedy', 'lol', 'haha'],
+    'entertainment': ['movie', 'show', 'game', 'book', 'story', 'video'],
+    'work_success': ['work', 'job', 'project', 'performance', 'success', 'achievement'],
+    'food': ['hungry', 'eat', 'food', 'burger', 'pizza', 'meal'],
+    'fatigue': ['tired', 'exhausted', 'sleepy', 'worn out'],
+    'frustration': ['traffic', 'homework', 'test', 'exam', 'assignment']
+}
+
+IDIOM_PATTERNS = [
+    (r'\b(dead|dying) (tired|exhausted)\b', 'fatigue'),
+    (r'\bjoke (killed|murdered) me\b', 'humor'),
+    (r'\b(that|it) (killed|murdered) me\b', 'humor'),
+    (r'\bdying of laughter\b', 'humor'),
+    (r'\b(killing|slaying) it\b', 'success'),
+    (r'\bmurder (a|some) \w+\b', 'desire'),
+    (r'\bdriving me (crazy|insane|nuts)\b', 'frustration'),
+    (r'\b(brutal|killer) (test|exam|workout)\b', 'difficulty')
+]
+
+# LGBTQIA+ community patterns
+LGBTQIA_PATTERNS = {
+    'family_rejection': {
+        'patterns': [
+            r'family (rejected|disowned|kicked out|threw out) me',
+            r'parents (don\'t|won\'t) (accept|love|support) me',
+            r'(mom|dad|mother|father) (rejected|disowned) me',
+            r'family (doesn\'t|won\'t) accept (my|me being)',
+            r'(religious|conservative) family'
+        ],
+        'crisis_level': 'high',
+        'category': 'family_rejection'
+    },
+    'identity_crisis': {
+        'patterns': [
+            r'(gender|trans|gay|lesbian|bi) (panic|crisis|confusion)',
+            r'questioning (my|myself|everything)',
+            r'(internalized|religious) (homophobia|shame|guilt)',
+            r'(coming out|pride) (anxiety|stress|fear)',
+            r'(closet|hiding) (suffocating|exhausting|killing me)'
+        ],
+        'crisis_level': 'medium',
+        'category': 'identity_crisis'
+    }
+}
+
+CRISIS_CONTEXTS = {
+    'temporal_urgency': {
+        'indicators': ['right now', 'tonight', 'today', 'immediately', 'urgent'],
+        'context_type': 'temporal_urgency',
+        'crisis_boost': 'high'
+    },
+    'intensity_amplifier': {
+        'indicators': ['extremely', 'incredibly', 'absolutely', 'completely', 'totally'],
+        'context_type': 'intensity_amplifier', 
+        'crisis_boost': 'medium'
+    }
+}
+
+COMMUNITY_VOCABULARY = {
+    'identity_terms': [
+        'trans', 'transgender', 'gay', 'lesbian', 'bisexual', 'pansexual', 
+        'asexual', 'queer', 'enby', 'nonbinary', 'genderfluid'
+    ],
+    'experience_terms': [
+        'coming out', 'dysphoria', 'euphoria', 'transition', 'deadname', 
+        'chosen name', 'passing', 'binding', 'misgendered'
+    ]
+}
+
+TEMPORAL_INDICATORS = {
+    'immediate': ['right now', 'immediately', 'urgent', 'asap', 'tonight'],
+    'recent': ['today', 'yesterday', 'lately', 'recently', 'this week'],
+    'ongoing': ['always', 'constantly', 'every day', 'all the time', 'never stops']
+}
+
+CONTEXT_WEIGHTS = {
+    'crisis_context_words': [
+        'struggling', 'difficult', 'hard', 'painful', 'scared', 'worried', 
+        'anxious', 'depressed', 'rejected', 'alone', 'isolated', 'hate', 'hurt'
+    ],
+    'positive_context_words': [
+        'proud', 'happy', 'celebrating', 'love', 'support', 'accepted', 
+        'supported', 'community', 'friends', 'family'
+    ]
+}
+
+ENHANCED_IDIOM_PATTERNS = [
+    {
+        'patterns': [r'\b(dead|dying) (tired|exhausted|beat)\b'],
+        'reduction_factor': 0.15,
+        'max_score_after': 0.10,
+        'name': 'fatigue_idiom'
+    },
+    {
+        'patterns': [r'\b(joke|that|it) (killed|murdered) me\b', r'\bdying of laughter\b'],
+        'reduction_factor': 0.05,
+        'max_score_after': 0.08,
+        'name': 'humor_idiom'
+    }
+]
+
+BURDEN_PATTERNS = [
+    'better off without me', 'everyone would be better without me',
+    'better off if i was gone', 'better off if i wasn\'t here',
+    'nobody would miss me', 'wouldn\'t be missed'
+]
+
+HOPELESSNESS_PATTERNS = [
+    'everything feels pointless', 'life feels pointless',
+    'i hate my life', 'hate my life',
+    'wish i could disappear', 'want to disappear'
+]
+
+STRUGGLE_PATTERNS = [
+    'really struggling', 'struggling so much',
+    'can\'t take it anymore', 'can\'t go on'
+]
+
+NEGATION_PATTERNS = [
+    r'\bnot (really|actually|that|very|going to|planning to|trying to)\b',
+    r'\bdoesn\'t (really|actually|mean|want to)\b',
+    r'\bisn\'t (really|actually|that)\b'
+]
+
+# ============================================================================
+# SETTINGS MANAGER CLASS
+# ============================================================================
 
 class SettingsManager:
     """Settings manager for runtime configuration and overrides"""
@@ -207,5 +341,18 @@ class SettingsManager:
 # Export for clean architecture
 __all__ = [
     'SettingsManager',
-    'create_settings_manager'
+    'create_settings_manager',
+    # Pattern constants for component compatibility
+    'POSITIVE_CONTEXT_PATTERNS',
+    'IDIOM_PATTERNS', 
+    'LGBTQIA_PATTERNS',
+    'CRISIS_CONTEXTS',
+    'COMMUNITY_VOCABULARY',
+    'TEMPORAL_INDICATORS',
+    'CONTEXT_WEIGHTS',
+    'ENHANCED_IDIOM_PATTERNS',
+    'BURDEN_PATTERNS',
+    'HOPELESSNESS_PATTERNS',
+    'STRUGGLE_PATTERNS',
+    'NEGATION_PATTERNS'
 ]
