@@ -1,43 +1,93 @@
+#!/usr/bin/env python3
 # ash/ash-nlp/main.py (Clean Manager-Only Architecture)
 """
 Clean initialization system for Ash NLP Service v3.1
 Manager-first architecture with no backward compatibility
+FIXED: All imports in try-catch blocks to prevent silent failures
 """
 
 import os
+import sys
 import time
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
 from pydantic import BaseModel
 
-# Import managers (our new clean architecture)
-from managers.config_manager import ConfigManager
-from managers.settings_manager import SettingsManager
-from managers.zero_shot_manager import ZeroShotManager
-
-# Import ModelManager (clean version)
-from models.ml_models import ModelManager
+# Set up logging FIRST to catch any import errors
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 
 logger = logging.getLogger(__name__)
+logger.info("🚀 Starting Ash NLP Service v3.1 with Clean Manager Architecture")
 
 # Global components
 model_manager = None
 crisis_analyzer = None
 phrase_extractor = None
-enhanced_learning_manager = None
+learning_manager = None
 config_manager = None
 settings_manager = None
 zero_shot_manager = None
 startup_time = time.time()
 
-# Component availability flags (will be set during imports)
+# Component availability flags
+MANAGERS_AVAILABLE = False
+MODEL_MANAGER_AVAILABLE = False
 CRISIS_ANALYZER_AVAILABLE = False
 PHRASE_EXTRACTOR_AVAILABLE = False
-ENHANCED_LEARNING_AVAILABLE = False
+LEARNING_AVAILABLE = False
+FASTAPI_AVAILABLE = False
 
-# Import components with manager requirement
+# ============================================================================
+# SAFE IMPORT SECTION - All imports wrapped in try-catch
+# ============================================================================
+
+# Import FastAPI
 try:
+    from fastapi import FastAPI
+    FASTAPI_AVAILABLE = True
+    logger.info("✅ FastAPI import successful")
+except ImportError as e:
+    FASTAPI_AVAILABLE = False
+    logger.error(f"❌ FastAPI import failed: {e}")
+    sys.exit(1)
+
+# Import managers
+try:
+    logger.info("🔧 Importing managers...")
+    from managers.config_manager import ConfigManager
+    from managers.settings_manager import SettingsManager
+    from managers.zero_shot_manager import ZeroShotManager
+    MANAGERS_AVAILABLE = True
+    logger.info("✅ All managers imported successfully")
+except ImportError as e:
+    MANAGERS_AVAILABLE = False
+    logger.error(f"❌ Manager imports failed: {e}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+
+# Import ModelManager
+try:
+    logger.info("🧠 Importing ModelManager...")
+    from models.ml_models import ModelManager
+    MODEL_MANAGER_AVAILABLE = True
+    logger.info("✅ ModelManager import successful")
+except ImportError as e:
+    MODEL_MANAGER_AVAILABLE = False
+    logger.error(f"❌ ModelManager import failed: {e}")
+    import traceback
+    traceback.print_exc()
+    sys.exit(1)
+
+# Import analysis components (optional)
+try:
+    logger.info("🔍 Importing CrisisAnalyzer...")
     from analysis.crisis_analyzer import CrisisAnalyzer
     CRISIS_ANALYZER_AVAILABLE = True
     logger.info("✅ CrisisAnalyzer import successful")
@@ -46,6 +96,7 @@ except ImportError as e:
     logger.warning(f"⚠️ CrisisAnalyzer import failed: {e}")
 
 try:
+    logger.info("📝 Importing PhraseExtractor...")
     from analysis.phrase_extractor import PhraseExtractor
     PHRASE_EXTRACTOR_AVAILABLE = True
     logger.info("✅ PhraseExtractor import successful")
@@ -53,17 +104,23 @@ except ImportError as e:
     PHRASE_EXTRACTOR_AVAILABLE = False
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
+# Import learning system (optional)
 try:
+    logger.info("🧠 Importing Learning System...")
     from api.learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
-    ENHANCED_LEARNING_AVAILABLE = True
-    logger.info("✅ EnhancedLearningManager import successful")
+    LEARNING_AVAILABLE = True
+    logger.info("✅ Learning system import successful")
 except ImportError as e:
-    ENHANCED_LEARNING_AVAILABLE = False
-    logger.warning(f"⚠️ EnhancedLearningManager import failed: {e}")
+    LEARNING_AVAILABLE = False
+    logger.warning(f"⚠️ Learning system import failed: {e}")
+
+# ============================================================================
+# INITIALIZATION FUNCTIONS
+# ============================================================================
 
 async def initialize_components_with_clean_managers():
     """Initialize all components with clean manager-only architecture"""
-    global model_manager, crisis_analyzer, phrase_extractor, enhanced_learning_manager
+    global model_manager, crisis_analyzer, phrase_extractor, learning_manager
     global config_manager, settings_manager, zero_shot_manager
     
     try:
@@ -123,6 +180,10 @@ async def initialize_components_with_clean_managers():
         # ========================================================================
         logger.info("🧠 Initializing Enhanced ModelManager with processed configuration...")
         
+        if not MODEL_MANAGER_AVAILABLE:
+            logger.error("❌ ModelManager not available - cannot continue")
+            raise RuntimeError("ModelManager import failed")
+        
         model_manager = ModelManager(
             config_manager=config_manager,
             model_config=model_config,
@@ -143,52 +204,59 @@ async def initialize_components_with_clean_managers():
         logger.info("✅ Global model manager set for API access")
         
         # ========================================================================
-        # STEP 6: Initialize Learning System (FAIL FAST)
+        # STEP 6: Initialize Learning System
         # ========================================================================
-        if ENHANCED_LEARNING_AVAILABLE:
+        if LEARNING_AVAILABLE:
             learning_config = feature_flags.get('learning_system', {})
             if learning_config.get('enabled', True):
-                # FAIL FAST - require proper manager integration
-                enhanced_learning_manager = EnhancedLearningManager(
+                learning_manager = EnhancedLearningManager(
                     model_manager=model_manager,
                     config_manager=config_manager,
                     settings_manager=settings_manager
                 )
-                logger.info("✅ Enhanced learning system initialized with clean manager architecture")
+                logger.info("✅ Learning system initialized with clean manager architecture")
             else:
                 logger.info("ℹ️ Learning system disabled via configuration")
-                enhanced_learning_manager = None
+                learning_manager = None
         else:
-            logger.info("ℹ️ Enhanced learning system not available")
-            enhanced_learning_manager = None
+            logger.info("ℹ️ Learning system not available")
+            learning_manager = None
         
         # ========================================================================
-        # STEP 7: Initialize Analysis Components (FAIL FAST)
+        # STEP 7: Initialize Analysis Components
         # ========================================================================
         
-        # Initialize CrisisAnalyzer - FAIL FAST if not compatible
+        # Initialize CrisisAnalyzer
         if CRISIS_ANALYZER_AVAILABLE:
-            crisis_analyzer = CrisisAnalyzer(
-                model_manager=model_manager,
-                config_manager=config_manager,
-                settings_manager=settings_manager,
-                learning_manager=enhanced_learning_manager
-            )
-            logger.info("✅ CrisisAnalyzer initialized with clean manager architecture")
+            try:
+                crisis_analyzer = CrisisAnalyzer(
+                    model_manager=model_manager,
+                    config_manager=config_manager,
+                    settings_manager=settings_manager,
+                    learning_manager=learning_manager
+                )
+                logger.info("✅ CrisisAnalyzer initialized with clean manager architecture")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
+                crisis_analyzer = None
         else:
-            logger.error("❌ CrisisAnalyzer not available - import failed")
+            logger.info("ℹ️ CrisisAnalyzer not available")
             crisis_analyzer = None
         
-        # Initialize PhraseExtractor - FAIL FAST if not compatible
+        # Initialize PhraseExtractor
         if PHRASE_EXTRACTOR_AVAILABLE:
-            phrase_extractor = PhraseExtractor(
-                model_manager=model_manager,
-                config_manager=config_manager,
-                zero_shot_manager=zero_shot_manager
-            )
-            logger.info("✅ PhraseExtractor initialized with clean manager architecture")
+            try:
+                phrase_extractor = PhraseExtractor(
+                    model_manager=model_manager,
+                    config_manager=config_manager,
+                    zero_shot_manager=zero_shot_manager
+                )
+                logger.info("✅ PhraseExtractor initialized with clean manager architecture")
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
+                phrase_extractor = None
         else:
-            logger.error("❌ PhraseExtractor not available - import failed")
+            logger.info("ℹ️ PhraseExtractor not available")
             phrase_extractor = None
         
         # ========================================================================
@@ -209,7 +277,7 @@ async def initialize_components_with_clean_managers():
             'analysis_components': {
                 'crisis_analyzer': crisis_analyzer is not None,
                 'phrase_extractor': phrase_extractor is not None,
-                'enhanced_learning': enhanced_learning_manager is not None
+                'learning_manager': learning_manager is not None
             }
         }
         
@@ -257,32 +325,38 @@ async def lifespan(app: FastAPI):
     """FastAPI lifespan context manager with clean manager architecture"""
     # Startup
     logger.info("🚀 Enhanced FastAPI app starting with Clean Manager Architecture v3.1...")
-    await initialize_components_with_clean_managers()
     
-    # Import and add ensemble endpoints after initialization
     try:
-        from api.ensemble_endpoints import add_ensemble_endpoints
-        logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
-        add_ensemble_endpoints(app, model_manager, config_manager)
-        logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
-    except ImportError:
-        # FALLBACK: Try old endpoints directory
-        from api.ensemble_endpoints import add_ensemble_endpoints
-        logger.warning("⚠️ Imported ensemble_endpoints from old 'endpoints' path - should update to 'api'")
-        logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
-        add_ensemble_endpoints(app, model_manager, config_manager)
-        logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
-    
-    # Add learning endpoints if available
-    if enhanced_learning_manager and ENHANCED_LEARNING_AVAILABLE:
-        logger.info("🔧 Adding enhanced learning endpoints...")
-        add_enhanced_learning_endpoints(app, enhanced_learning_manager, config_manager)
-        logger.info("🧠 Enhanced learning endpoints added with manager integration!")
-    else:
-        logger.error("❌ Learning system required but not available")
-        raise RuntimeError("Enhanced learning system is required but not available")
-    
-    logger.info("✅ Enhanced FastAPI app startup complete with Clean Manager Architecture!")
+        await initialize_components_with_clean_managers()
+        
+        # Import and add ensemble endpoints after initialization
+        try:
+            logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints...")
+            from api.ensemble_endpoints import add_ensemble_endpoints
+            add_ensemble_endpoints(app, model_manager, config_manager)
+            logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with manager integration!")
+        except Exception as e:
+            logger.error(f"❌ Failed to add ensemble endpoints: {e}")
+            raise
+        
+        # Add learning endpoints if available
+        if learning_manager and LEARNING_AVAILABLE:
+            try:
+                logger.info("🔧 Adding enhanced learning endpoints...")
+                add_enhanced_learning_endpoints(app, learning_manager, config_manager)
+                logger.info("🧠 Enhanced learning endpoints added with manager integration!")
+            except Exception as e:
+                logger.error(f"❌ Failed to add learning endpoints: {e}")
+                raise
+        else:
+            logger.info("ℹ️ Learning system not available - skipping learning endpoints")
+        
+        logger.info("✅ Enhanced FastAPI app startup complete with Clean Manager Architecture!")
+        
+    except Exception as e:
+        logger.error(f"❌ FastAPI app startup failed: {e}")
+        logger.exception("Full startup error:")
+        raise
     
     yield
     
@@ -290,25 +364,34 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 FastAPI app shutting down...")
 
 # Create FastAPI app
-app = FastAPI(
-    title="Ash NLP Service v3.1 - Clean Manager Architecture", 
-    version="3.1.0",
-    description="Advanced crisis detection using three specialized ML models with clean JSON+ENV configuration management",
-    lifespan=lifespan
-)
-
-# Configure CORS if enabled
-cors_enabled = os.getenv('GLOBAL_ENABLE_CORS', 'true').lower() == 'true'
-if cors_enabled:
-    from fastapi.middleware.cors import CORSMiddleware
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # Configure appropriately for production
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+if FASTAPI_AVAILABLE:
+    app = FastAPI(
+        title="Ash NLP Service v3.1 - Clean Manager Architecture", 
+        version="3.1.0",
+        description="Advanced crisis detection using three specialized ML models with clean JSON+ENV configuration management",
+        lifespan=lifespan
     )
-    logger.info("🌐 CORS middleware enabled")
+    
+    # Configure CORS if enabled
+    cors_enabled = os.getenv('GLOBAL_ENABLE_CORS', 'true').lower() == 'true'
+    if cors_enabled:
+        try:
+            from fastapi.middleware.cors import CORSMiddleware
+            app.add_middleware(
+                CORSMiddleware,
+                allow_origins=["*"],  # Configure appropriately for production
+                allow_credentials=True,
+                allow_methods=["*"],
+                allow_headers=["*"],
+            )
+            logger.info("🌐 CORS middleware enabled")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not enable CORS: {e}")
+    
+    logger.info("✅ FastAPI app created successfully")
+else:
+    logger.error("❌ Cannot create FastAPI app - FastAPI import failed")
+    sys.exit(1)
 
 # ============================================================================
 # Health Check Endpoint
@@ -325,7 +408,7 @@ async def health_check():
         "model_manager": model_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
         "phrase_extractor": phrase_extractor is not None,
-        "enhanced_learning": enhanced_learning_manager is not None,
+        "learning_manager": learning_manager is not None,
         "three_model_ensemble": models_loaded
     }
     
@@ -378,4 +461,18 @@ async def health_check():
         configuration_status=configuration_status,
         manager_status=manager_status,
         secrets_status=secrets_status
+    )
+
+# ============================================================================
+# Main execution
+# ============================================================================
+if __name__ == "__main__":
+    logger.info("🎯 Starting Ash NLP Service directly...")
+    
+    import uvicorn
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=int(os.getenv('GLOBAL_NLP_API_PORT', 8881)),
+        log_level=os.getenv('GLOBAL_LOG_LEVEL', 'info').lower()
     )
