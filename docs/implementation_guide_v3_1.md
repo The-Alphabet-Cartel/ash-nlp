@@ -26,6 +26,10 @@ This guide outlines the complete recode of the configuration system for clean JS
     - Let Python's logging system handle it
   - When set to `DEBUG`: all detailed logs are shown
   - When set to `INFO`: only production-level logs are shown (INFO, WARNING, ERROR, CRITICAL)
+- **Implementation Restrictions**
+  - For the purposes of this document and implementation guide, we are *ONLY* working with Ash (`ash`) and Ash-NLP (`ash-nlp`)
+    - The other submodules (`ash-bot`, `ash-thrash`, `ash-dash`) will be handled separately under their own versions and implementations
+  
 - **Knowledge Base**
   - Always assume that the project knowledge base contains incorrect and outdated files and directory structures
     - Ask for current versions of files as needed
