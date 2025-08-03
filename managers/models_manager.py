@@ -78,32 +78,55 @@ class ModelsManager:
             # Try to get configuration from the existing manager's methods
             full_model_config = config_manager.get_model_configuration()
             hardware_config = config_manager.get_hardware_configuration()
+            
+            logger.debug(f"🔍 Full model config structure: {list(full_model_config.keys())}")
+            
+            # Extract models from the nested structure
             models = full_model_config.get('models', {})
+            logger.debug(f"🔍 Models found: {list(models.keys())}")
             
             # Get cache_dir from multiple possible locations
             cache_dir = (
                 hardware_config.get('cache_dir') or 
+                full_model_config.get('hardware_config', {}).get('cache_dir') or
                 full_model_config.get('cache_dir') or 
                 os.getenv('NLP_MODEL_CACHE_DIR') or
                 os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or
                 './models/cache'
             )
             
+            # Extract ensemble mode from nested structure
+            ensemble_mode = (
+                full_model_config.get('ensemble_config', {}).get('mode') or
+                config_manager.get_ensemble_mode() or
+                'majority'
+            )
+            
+            # Extract gap detection settings
+            gap_detection_config = full_model_config.get('ensemble_config', {}).get('gap_detection', {})
+            
             config = {
+                # Flatten the models structure
                 'depression_model': models.get('depression', {}).get('name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                 'sentiment_model': models.get('sentiment', {}).get('name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_model': models.get('emotional_distress', {}).get('name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                 'cache_dir': cache_dir,
                 'huggingface_token': os.getenv('GLOBAL_HUGGINGFACE_TOKEN'),
-                'ensemble_mode': config_manager.get_ensemble_mode(),
+                'ensemble_mode': ensemble_mode,
                 'depression_weight': models.get('depression', {}).get('weight', 0.5),
                 'sentiment_weight': models.get('sentiment', {}).get('weight', 0.2),
                 'emotional_distress_weight': models.get('emotional_distress', {}).get('weight', 0.3),
-                'gap_detection_enabled': full_model_config.get('ensemble_config', {}).get('gap_detection', {}).get('enabled', True),
-                'disagreement_threshold': full_model_config.get('ensemble_config', {}).get('gap_detection', {}).get('disagreement_threshold', 2)
+                'gap_detection_enabled': gap_detection_config.get('enabled', True),
+                'disagreement_threshold': gap_detection_config.get('disagreement_threshold', 2)
             }
             
-            logger.debug(f"✅ Extracted model config with cache_dir: {config['cache_dir']}")
+            logger.debug(f"✅ Extracted model config:")
+            logger.debug(f"   depression_model: {config['depression_model']}")
+            logger.debug(f"   sentiment_model: {config['sentiment_model']}")
+            logger.debug(f"   emotional_distress_model: {config['emotional_distress_model']}")
+            logger.debug(f"   cache_dir: {config['cache_dir']}")
+            logger.debug(f"   ensemble_mode: {config['ensemble_mode']}")
+            
             return config
             
         except Exception as e:
@@ -131,18 +154,27 @@ class ModelsManager:
         
         try:
             # Try to get configuration from the existing manager's methods
-            hardware_config = config_manager.get_hardware_configuration()
+            full_config = config_manager.get_hardware_configuration()
+            
+            logger.debug(f"🔍 Hardware config structure: {list(full_config.keys())}")
+            
+            # Handle nested hardware config structure
+            hardware_config = full_config.get('hardware_config', full_config)
             
             config = {
                 'device': hardware_config.get('device', 'auto'),
                 'precision': hardware_config.get('precision', 'float16'),
-                'max_batch_size': hardware_config.get('max_batch_size', 32),
+                'max_batch_size': hardware_config.get('max_batch_size') or hardware_config.get('performance_settings', {}).get('max_batch_size', 32),
                 'use_fast_tokenizer': hardware_config.get('use_fast_tokenizer', True),
                 'trust_remote_code': hardware_config.get('trust_remote_code', False),
                 'model_revision': hardware_config.get('model_revision', 'main')
             }
             
-            logger.debug(f"✅ Extracted hardware config")
+            logger.debug(f"✅ Extracted hardware config:")
+            logger.debug(f"   device: {config['device']}")
+            logger.debug(f"   precision: {config['precision']}")
+            logger.debug(f"   max_batch_size: {config['max_batch_size']}")
+            
             return config
             
         except Exception as e:
@@ -279,7 +311,7 @@ class ModelsManager:
     
     async def _load_depression_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the depression detection model"""
-        model_name = self.model_config['depression_model']
+        model_name = self.model_config.get('depression_model', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0')
         logger.info(f"📦 Loading Depression Model: {model_name}")
         
         try:
@@ -299,7 +331,7 @@ class ModelsManager:
     
     async def _load_sentiment_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the sentiment analysis model"""
-        model_name = self.model_config['sentiment_model']
+        model_name = self.model_config.get('sentiment_model', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli')
         logger.info(f"📦 Loading Sentiment Model: {model_name}")
         
         try:
@@ -319,7 +351,7 @@ class ModelsManager:
     
     async def _load_emotional_distress_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the emotional distress detection model"""
-        model_name = self.model_config['emotional_distress_model']
+        model_name = self.model_config.get('emotional_distress_model', 'Lowerated/lm6-deberta-v3-topic-sentiment')
         logger.info(f"📦 Loading Emotional Distress Model: {model_name}")
         
         try:
@@ -732,19 +764,19 @@ class ModelsManager:
             'ensemble_mode': self.model_config.get('ensemble_mode'),
             'models': {
                 'depression': {
-                    'name': self.model_config['depression_model'],
+                    'name': self.model_config.get('depression_model', 'Unknown'),
                     'loaded': self.depression_model is not None,
                     'purpose': 'Primary crisis classification',
                     'weight': self.model_config.get('depression_weight', 0.5)
                 },
                 'sentiment': {
-                    'name': self.model_config['sentiment_model'],
+                    'name': self.model_config.get('sentiment_model', 'Unknown'),
                     'loaded': self.sentiment_model is not None,
                     'purpose': 'Contextual validation',
                     'weight': self.model_config.get('sentiment_weight', 0.2)
                 },
                 'emotional_distress': {
-                    'name': self.model_config['emotional_distress_model'],
+                    'name': self.model_config.get('emotional_distress_model', 'Unknown'),
                     'loaded': self.emotional_distress_model is not None,
                     'purpose': 'Emotional distress detection',
                     'weight': self.model_config.get('emotional_distress_weight', 0.3)
