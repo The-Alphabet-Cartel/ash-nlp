@@ -3,6 +3,10 @@
 ## Overview
 This guide outlines the complete recode of the configuration system for clean JSON + environment variable management with JSON defaults and ENV overrides pattern.
 
+**Project Scope**: This migration focuses exclusively on the **NLP Server (ash/ash-nlp)** configuration system. The Discord Bot (ash/ash-bot) will be addressed in a future phase after the NLP server's JSON configuration migration is fully completed. The NLP server must be running correctly with clean JSON configuration before any bot-related work begins.
+
+**Current Status**: ✅ **PRIMARY SYSTEM WORKING** - The NLP server is successfully running with JSON defaults + ENV overrides configuration pattern.
+
 ## Design Philosophies and Core Principles
 
 ### 🎯 **Configuration Management Philosophy**
@@ -37,10 +41,18 @@ This guide outlines the complete recode of the configuration system for clean JS
 - **Health Check Integration**: All components should report their status through health endpoints
 
 ### 📁 **File Organization Standards**
-- **Configuration Files**: All JSON configuration in `ash/ash-nlp/config/`
-- **Manager Classes**: All manager classes in `ash/ash-nlp/managers/` with descriptive filenames ending in `_manager.py`
-- **API Endpoints**: All FastAPI endpoints in `ash/ash-nlp/api/` (migrated from `endpoints/`)
-- **Clean Import Structure**: All imports wrapped in try-catch blocks with detailed logging
+- **Analyzers**: All analyzers, and supporting scripts for said analyzers, shall live in `ash/ash-nlp/analysis/` with descriptive filenames
+- **API Endpoints**: All API Endpoint files shall live in `ash/ash-nlp/api/` with descriptive filenames ending in `_endpoints.py` (migrated from `endpoints/`)
+- **Configuration Files**: All JSON configuration files shall live in `ash/ash-nlp/config/` with descriptive filenames
+- **ash/ash-nlp/data** Data Storage (future implementation)
+- **Documentation** all documentation shall live in `ash/ash-nlp/docs`
+- **ash/ash-nlp/learning_data** Learning Data Storage
+- **ash/ash-nlp/logs** Logging Storage
+- **Manager Classes**: All Manager files and manager classes shall live in `ash/ash-nlp/managers/` with descriptive filenames ending in `_manager.py`
+- **Models** Currently the Model and Pydantic Managers reside here, but we will be migrating them to `ash/ash-nlp/managers` soon.  Actual model caching is located in `ash/ash-nlp/models/cache`
+- **Debug / Testing Scripts**: All Debug and/or Testing scripts are to be coded in python only (no bash scripting), and shall live in `ash/ash-nlp/tests/` with descriptive filenames beginning with either `test_` or `debug_`
+- **Utility Scripts** Utility and helper scripts shall live in `ash/ash-nlp/utils` using descriptive filenames
+- **Clean Import Structure**: All imports shall be wrapped in `try-catch` blocks with detailed logging
 
 ### 🔄 **Migration Strategy**
 - **Incremental JSON Migration**: Gradually move configuration from environment variables to JSON files
@@ -86,7 +98,28 @@ These principles guide all development decisions and ensure consistency across t
 - **Comprehensive Logging**: Detailed status reporting and error handling
 - **Fail-Fast**: If critical components don't support managers, initialization fails with clear error messages
 
-## Current Status - Function Signature Issue RESOLVED ✅
+## Current Status - SYSTEM WORKING SUCCESSFULLY ✅
+
+### 🎯 **MAJOR MILESTONE ACHIEVED**
+✅ **NLP Server Running**: Successfully started with clean manager architecture  
+✅ **JSON Configuration**: Learning system loading from `/app/config/learning_parameters.json`  
+✅ **Environment Overrides**: ENV variables properly overriding JSON defaults  
+✅ **All Models Loaded**: Three Zero-Shot Model Ensemble operational  
+✅ **API Endpoints**: All endpoints including learning system are functional  
+✅ **Manager Architecture**: Clean integration with ConfigManager working perfectly
+
+### 🔧 **System Status Summary**
+```
+📁 Found learning configuration file: /app/config/learning_parameters.json
+🔧 Learning configuration loaded from JSON file + ENV variables
+🧠 Enhanced learning manager initialized with clean manager architecture
+   Learning rate: 0.1
+   Adjustment range: 0.05 to 0.3
+   Max adjustments per day: 50
+   Sensitivity bounds: 0.5 to 1.5
+   Data file: ./learning_data/adjustments.json
+✅ Enhanced FastAPI app startup complete with Clean Manager Architecture!
+```
 
 ### 🎯 Progress Made
 ✅ **CrisisAnalyzer**: Import successful - no more pattern constant errors  
@@ -226,20 +259,29 @@ With the fixed function signatures and directory migration, startup should show:
 ✅ Enhanced FastAPI app startup complete with Clean Manager Architecture!
 ```
 
-### Component Status (Post-Fix)
+### Component Status (FINAL - WORKING)
 ```
 📊 Component Initialization Summary:
    Core Managers:
      config_manager: ✅
      settings_manager: ✅  
      zero_shot_manager: ✅
-   Ml Components:
+   Configuration Files:
+     model_ensemble.json: ✅ (JSON defaults + ENV overrides working)
+     learning_parameters.json: ✅ (JSON defaults + ENV overrides working)
+   ML Components:
      model_manager: ✅
-     three_model_ensemble: ✅
+     three_model_ensemble: ✅ (All 3 models loaded successfully)
+   Learning Components:
+     enhanced_learning_manager: ✅ (JSON configuration working)
    Analysis Components:
-     crisis_analyzer: ✅ (with manager support)
-     phrase_extractor: ✅ (with manager support)
-     learning_manager: ✅ (with clean manager architecture v3.1 + JSON config)
+     crisis_analyzer: ✅
+     phrase_extractor: ✅
+   API Endpoints:
+     /health: ✅
+     /analyze: ✅
+     /learning_statistics: ✅
+     All endpoints: ✅ Operational
 ```
 
 ## Files Created/Modified
@@ -370,7 +412,15 @@ Perfect substitution working as seen in test output:
 6. **Fail-Fast Design**: Critical failures caught immediately ✅
 7. **Centralized Configuration**: Path forward for moving all settings to JSON ✅
 
-**Status**: 🎯 **Function signature issue resolved - directory migration complete with enhanced manager architecture using JSON defaults + ENV overrides pattern**
+**Status**: 🎉 **MAJOR SUCCESS - NLP Server running with complete JSON defaults + ENV overrides configuration system**
+
+The implementation is working exactly as designed:
+- JSON files provide default configuration structure and values
+- Environment variables override JSON defaults for deployment customization  
+- ConfigManager handles variable substitution automatically
+- Clean manager architecture is operational across all components
+- All learning system functionality is working with JSON configuration
+- The path is clear for migrating additional configuration to JSON in Phase 2
 
 ### Expected Results After Migration
 
@@ -410,10 +460,15 @@ With the JSON defaults + ENV overrides pattern complete, the startup should show
 
 ## Configuration Migration Roadmap
 
-### Phase 1: Core Systems ✅ **COMPLETE**
-- Model ensemble configuration ✅
-- Learning system configuration ✅
-- Manager architecture ✅
+## Phase 1: Core Systems ✅ **COMPLETE AND WORKING**
+- Model ensemble configuration ✅ (Successfully loading with JSON + ENV overrides)
+- Learning system configuration ✅ (Successfully loading with JSON + ENV overrides)  
+- Manager architecture ✅ (Clean manager architecture operational)
+- Three Zero-Shot Model Ensemble ✅ (All models loaded and working)
+- API endpoints ✅ (All endpoints operational including learning system)
+- Configuration validation ✅ (Comprehensive validation working)
+
+**Status**: 🎯 **Phase 1 Complete - System Running Successfully**
 
 ### Phase 2: Analysis Components ⏳ **IN PROGRESS**
 - Crisis patterns configuration
