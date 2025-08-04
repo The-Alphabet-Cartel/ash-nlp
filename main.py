@@ -14,21 +14,12 @@ from pydantic import BaseModel
 
 # Set up logging FIRST to catch any import errors
 logging.basicConfig(
-    level=getattr(logging, log_level),
-    format='%(asctime)s -- %(levelname)s -- %(name)s - %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s -- %(levelname)s -- %(message)s',
     handlers=[
-        logging.FileHandler(log_file, encoding='utf-8'),
-        logging.StreamHandler()
+        logging.StreamHandler(sys.stdout)
     ]
 )
-#logging.basicConfig(
-#    level=logging.DEBUG,
-#    format='%(asctime)s -- %(levelname)s -- %(message)s',
-#    handlers=[
-#        logging.StreamHandler(sys.stdout)
-#    ]
-#)
-
 logger = logging.getLogger(__name__)
 logger.info("🚀 Starting Ash NLP Service v3.1 with Clean Manager Architecture - Phase 2B")
 
@@ -162,6 +153,24 @@ try:
 except ImportError as e:
     LEARNING_AVAILABLE = False
     logger.warning(f"⚠️ Learning system import failed: {e}")
+
+# Get configuration values
+log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
+log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
+
+# NOW configure the proper logging system:
+logging.basicConfig(
+    level=getattr(logging, log_level),
+    format='%(asctime)s -- %(levelname)s -- %(name)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file, encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+
+# Create new logger with proper configuration
+logger = logging.getLogger(__name__)
+logger.info("✅ Logging system configured properly")
 
 # ============================================================================
 # PHASE 2B: PYDANTIC MODEL ACCESS HELPERS
