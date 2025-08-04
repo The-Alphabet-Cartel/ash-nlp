@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "pattern_type": "burden_patterns",
+    "version": "3.1.0",
+    "description": "Crisis patterns indicating self-worth issues and burden feelings",
+    "last_updated": "2025-08-04",
+    "total_patterns": 6,
+    "source": "Migrated from managers/settings_manager.py lines 264-268",
+    "environment_overrides": {
+      "weight_multiplier": "NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER",
+      "enabled": "NLP_CONFIG_ENABLE_BURDEN_PATTERNS",
+      "threshold": "NLP_CONFIG_BURDEN_PATTERN_THRESHOLD"
+    }
+  },
+  "configuration": {
+    "enabled": true,
+    "weight_multiplier": 1.2,
+    "confidence_boost": 0.15,
+    "priority_level": "high",
+    "auto_escalate": true
+  },
+  "patterns": {
+    "burden_expressions": {
+      "crisis_level": "high",
+      "category": "self_worth",
+      "description": "Direct expressions of feeling like a burden to others",
+      "patterns": [
+        {
+          "pattern": "better off without me",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "high",
+          "auto_review": true
+        },
+        {
+          "pattern": "everyone would be better without me",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "high",
+          "auto_review": true
+        },
+        {
+          "pattern": "better off if i was gone",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "high",
+          "auto_review": true
+        },
+        {
+          "pattern": "better off if i wasn't here",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "high",
+          "auto_review": true
+        },
+        {
+          "pattern": "nobody would miss me",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_review": true
+        },
+        {
+          "pattern": "wouldn't be missed",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "medium",
+          "auto_review": true
+        }
+      ]
+    }
+  },
+  "detection_rules": {
+    "case_sensitive": false,
+    "require_word_boundaries": true,
+    "allow_punctuation_variations": true,
+    "context_window": 5,
+    "negation_detection": true
+  },
+  "escalation_rules": {
+    "immediate_review": true,
+    "staff_notification": true,
+    "crisis_level_override": "high",
+    "combine_with_other_patterns": true
+  },
+  "usage_instructions": {
+    "integration": "Load via ConfigManager.get_crisis_patterns('burden_patterns')",
+    "access_method": "SettingsManager.get_burden_patterns()",
+    "environment_override_example": "NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER=1.5",
+    "notes": [
+      "All burden patterns should trigger immediate staff review",
+      "These patterns have high correlation with suicidal ideation",
+      "Consider context analysis to avoid false positives in creative content"
+    ]
+  }
+}
