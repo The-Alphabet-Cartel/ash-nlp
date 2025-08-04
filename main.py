@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-# ash/ash-nlp/main.py (Clean Manager-Only Architecture with Debug Control - Phase 2B Update)
+# ash/ash-nlp/main.py (Clean v3.1 Architecture - Phase 2C Complete)
 """
-Clean initialization system for Ash NLP Service v3.1
-Manager-first architecture with conditional debug logging - Phase 2B Update
+Clean v3.1 Ash NLP Service - No Backward Compatibility
+Pure manager architecture with JSON defaults + ENV overrides
 """
 
 import os
@@ -13,11 +13,9 @@ from contextlib import asynccontextmanager
 from pydantic import BaseModel
 
 # Set up logging FIRST to catch any import errors
-# Get configuration values
 log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
 log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
 
-# Configure the proper logging system:
 logging.basicConfig(
     level=getattr(logging, log_level),
     format='%(asctime)s %(levelname)s: %(name)s - %(message)s',
@@ -27,32 +25,33 @@ logging.basicConfig(
     ]
 )
 
-# Create new logger with proper configuration
 logger = logging.getLogger(__name__)
-logger.info("🚀 Starting Ash NLP Service v3.1 with Clean Manager Architecture - Phase 2B")
+logger.info("🚀 Starting Ash NLP Service v3.1 - Clean Architecture (Phase 2C Complete)")
 
-# Global components
-model_manager = None
-pydantic_manager = None  # PHASE 2B: New global component
-crisis_analyzer = None
-phrase_extractor = None
-learning_manager = None
-config_manager = None
-settings_manager = None
-zero_shot_manager = None
+# Initialize startup tracking
 startup_time = time.time()
 
 # Component availability flags
 MANAGERS_AVAILABLE = False
-MODEL_MANAGER_AVAILABLE = False
-PYDANTIC_MANAGER_AVAILABLE = False  # PHASE 2B: New availability flag
+MODELS_MANAGER_AVAILABLE = False
+PYDANTIC_MANAGER_AVAILABLE = False
 CRISIS_ANALYZER_AVAILABLE = False
 PHRASE_EXTRACTOR_AVAILABLE = False
 LEARNING_AVAILABLE = False
 FASTAPI_AVAILABLE = False
 
+# Global components
+config_manager = None
+settings_manager = None
+zero_shot_manager = None
+model_manager = None
+pydantic_manager = None
+crisis_analyzer = None
+phrase_extractor = None
+learning_manager = None
+
 # ============================================================================
-# SAFE IMPORT SECTION - All imports wrapped in try-catch
+# CLEAN IMPORT SECTION - No Fallbacks, Direct Imports Only
 # ============================================================================
 
 # Import FastAPI
@@ -65,75 +64,45 @@ except ImportError as e:
     logger.error(f"❌ FastAPI import failed: {e}")
     sys.exit(1)
 
-# Import managers
+# Import Core Managers - DIRECT IMPORTS ONLY
 try:
-    logger.info("🔧 Importing managers...")
+    logger.info("🔧 Importing core managers...")
     from managers.config_manager import ConfigManager
     from managers.settings_manager import SettingsManager
     from managers.zero_shot_manager import ZeroShotManager
     MANAGERS_AVAILABLE = True
-    logger.info("✅ All managers imported successfully")
+    logger.info("✅ Core managers imported successfully")
 except ImportError as e:
     MANAGERS_AVAILABLE = False
-    logger.error(f"❌ Manager imports failed: {e}")
-    import traceback
-    traceback.print_exc()
+    logger.error(f"❌ Core manager imports failed: {e}")
+    logger.error("💡 Ensure managers are properly installed in managers/ directory")
     sys.exit(1)
 
-# Import ModelManager - PHASE 2A COMPLETE
+# Import ModelsManager v3.1 - DIRECT IMPORT ONLY (No Fallback)
 try:
     logger.info("🧠 Importing ModelsManager v3.1...")
-    from managers.models_manager import ModelsManager as ModelManager
-    MODEL_MANAGER_V3_1_AVAILABLE = True
-    MODEL_MANAGER_AVAILABLE = True
-    logger.info("✅ Phase 2A: ModelsManager v3.1 imported from managers/ (COMPLETE)")
+    from managers.models_manager import ModelsManager
+    MODELS_MANAGER_AVAILABLE = True
+    logger.info("✅ ModelsManager v3.1 imported from managers/")
 except ImportError as e:
-    logger.warning(f"⚠️ Phase 2A ModelsManager not available: {e}")
-    try:
-        logger.info("🧠 Falling back to legacy ModelManager...")
-        from models.ml_models import ModelManager
-        MODEL_MANAGER_V3_1_AVAILABLE = False
-        MODEL_MANAGER_AVAILABLE = True
-        logger.info("⚠️ Using legacy ModelManager - Phase 2A migration recommended")
-    except ImportError as e2:
-        MODEL_MANAGER_V3_1_AVAILABLE = False
-        MODEL_MANAGER_AVAILABLE = False
-        logger.error(f"❌ No ModelManager available: {e2}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    MODELS_MANAGER_AVAILABLE = False
+    logger.error(f"❌ ModelsManager v3.1 import failed: {e}")
+    logger.error("💡 Ensure ModelsManager is properly installed in managers/models_manager.py")
+    sys.exit(1)
 
-# Import PydanticManager - PHASE 2B NEW
+# Import PydanticManager v3.1 - DIRECT IMPORT ONLY (No Fallback)
 try:
     logger.info("📋 Importing PydanticManager v3.1...")
     from managers.pydantic_manager import PydanticManager, create_pydantic_manager
-    PYDANTIC_MANAGER_V3_1_AVAILABLE = True
     PYDANTIC_MANAGER_AVAILABLE = True
-    logger.info("✅ Phase 2B: PydanticManager v3.1 imported from managers/")
+    logger.info("✅ PydanticManager v3.1 imported from managers/")
 except ImportError as e:
-    logger.warning(f"⚠️ Phase 2B PydanticManager not available: {e}")
-    try:
-        logger.info("📋 Falling back to legacy Pydantic models...")
-        # Import the most commonly used models for backward compatibility
-        from models.pydantic_models import (
-            MessageRequest, CrisisResponse, HealthResponse,
-            FalsePositiveAnalysisRequest, FalseNegativeAnalysisRequest, 
-            LearningUpdateRequest, FalsePositiveAnalysisResponse,
-            FalseNegativeAnalysisResponse, LearningUpdateResponse,
-            LearningStatisticsResponse
-        )
-        PYDANTIC_MANAGER_V3_1_AVAILABLE = False
-        PYDANTIC_MANAGER_AVAILABLE = True
-        logger.info("⚠️ Using legacy Pydantic models - Phase 2B migration recommended")
-    except ImportError as e2:
-        PYDANTIC_MANAGER_V3_1_AVAILABLE = False
-        PYDANTIC_MANAGER_AVAILABLE = False
-        logger.error(f"❌ No Pydantic models available: {e2}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+    PYDANTIC_MANAGER_AVAILABLE = False
+    logger.error(f"❌ PydanticManager v3.1 import failed: {e}")
+    logger.error("💡 Ensure PydanticManager is properly installed in managers/pydantic_manager.py")
+    sys.exit(1)
 
-# Import analysis components (optional)
+# Import Analysis Components (Optional)
 try:
     logger.info("🔍 Importing CrisisAnalyzer...")
     from analysis.crisis_analyzer import CrisisAnalyzer
@@ -152,7 +121,7 @@ except ImportError as e:
     PHRASE_EXTRACTOR_AVAILABLE = False
     logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
 
-# Import learning system (optional)
+# Import Learning System (Optional)
 try:
     logger.info("🧠 Importing Learning System...")
     from api.learning_endpoints import EnhancedLearningManager, add_enhanced_learning_endpoints
@@ -163,48 +132,24 @@ except ImportError as e:
     logger.warning(f"⚠️ Learning system import failed: {e}")
 
 # ============================================================================
-# PHASE 2B: PYDANTIC MODEL ACCESS HELPERS
+# CLEAN MODEL ACCESS - Direct Manager Usage Only
 # ============================================================================
 
 def get_pydantic_models():
     """
-    Get Pydantic models from either PydanticManager v3.1 or legacy imports
-    Returns: Dictionary of model classes for use in endpoints
+    Get Pydantic models from PydanticManager v3.1 - NO FALLBACKS
     """
-    if PYDANTIC_MANAGER_V3_1_AVAILABLE and pydantic_manager:
+    if pydantic_manager and pydantic_manager.is_initialized():
         logger.debug("🏗️ Using PydanticManager v3.1 for model access")
-        return pydantic_manager.get_legacy_imports()
-    
-    elif PYDANTIC_MANAGER_AVAILABLE:
-        logger.debug("⚠️ Using legacy Pydantic model imports")
-        # Return legacy imports if available
-        try:
-            # These should already be imported above if available
-            return {
-                'MessageRequest': MessageRequest,
-                'CrisisResponse': CrisisResponse,
-                'HealthResponse': HealthResponse,
-                'FalsePositiveAnalysisRequest': FalsePositiveAnalysisRequest,
-                'FalseNegativeAnalysisRequest': FalseNegativeAnalysisRequest,
-                'LearningUpdateRequest': LearningUpdateRequest,
-                'FalsePositiveAnalysisResponse': FalsePositiveAnalysisResponse,
-                'FalseNegativeAnalysisResponse': FalseNegativeAnalysisResponse,
-                'LearningUpdateResponse': LearningUpdateResponse,
-                'LearningStatisticsResponse': LearningStatisticsResponse
-            }
-        except NameError as e:
-            logger.error(f"❌ Legacy Pydantic models not available: {e}")
-            raise RuntimeError("No Pydantic models available")
-    
+        return pydantic_manager.get_core_models()
     else:
-        logger.error("❌ No Pydantic models available - cannot continue")
-        raise RuntimeError("No Pydantic models available")
+        logger.error("❌ PydanticManager not available or not initialized")
+        raise RuntimeError("PydanticManager v3.1 required but not available")
 
-# Initialize threshold configuration using clean centralized approach
+# Initialize threshold configuration
 def initialize_centralized_threshold_config():
     """Initialize centralized threshold configuration from environment variables"""
     
-    # Load centralized configuration from environment variables
     thresholds = {
         # Ensemble mode
         'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
@@ -267,19 +212,19 @@ def initialize_centralized_threshold_config():
     return thresholds
 
 # ============================================================================
-# INITIALIZATION FUNCTIONS (Updated for Phase 2B)
+# CLEAN INITIALIZATION - No Backward Compatibility
 # ============================================================================
 
-async def initialize_components_with_clean_managers():
-    """Initialize all components with clean manager-only architecture - Phase 2B Update"""
-    global model_manager, pydantic_manager, crisis_analyzer, phrase_extractor, learning_manager
+async def initialize_components_clean_v3_1():
+    """Initialize all components with clean v3.1 architecture - NO FALLBACKS"""
     global config_manager, settings_manager, zero_shot_manager
+    global model_manager, pydantic_manager, crisis_analyzer, phrase_extractor, learning_manager
     
     try:
-        logger.info("🚀 Initializing components with clean manager-only architecture - Phase 2B...")
+        logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 2C Complete...")
         
         # ========================================================================
-        # STEP 1: Initialize Core Configuration Managers
+        # STEP 1: Initialize Core Configuration Managers - DIRECT ONLY
         # ========================================================================
         logger.info("📋 Initializing core configuration managers...")
         
@@ -290,35 +235,26 @@ async def initialize_components_with_clean_managers():
         logger.info("✅ Core managers initialized successfully")
         
         # ========================================================================
-        # STEP 2: Initialize PydanticManager v3.1 (Phase 2B)
+        # STEP 2: Initialize PydanticManager v3.1 - DIRECT ONLY
         # ========================================================================
-        if PYDANTIC_MANAGER_V3_1_AVAILABLE:
-            logger.info("📋 Initializing PydanticManager v3.1 with clean architecture...")
-            
-            pydantic_manager = create_pydantic_manager(config_manager=config_manager)
-            
-            if not pydantic_manager.is_initialized():
-                raise RuntimeError("PydanticManager failed to initialize")
-            
-            logger.info("✅ PydanticManager v3.1 initialized successfully")
-            
-            # Log model summary for verification
-            summary = pydantic_manager.get_model_summary()
-            logger.info(f"📊 PydanticManager Summary: {summary['total_models']} models across {len(summary['categories'])} categories")
-            logger.debug(f"📋 Available model categories: {list(summary['categories'].keys())}")
-            
-        else:
-            logger.info("⚠️ Using legacy Pydantic models - PydanticManager v3.1 not available")
-            pydantic_manager = None
+        logger.info("📋 Initializing PydanticManager v3.1...")
+        
+        pydantic_manager = create_pydantic_manager(config_manager=config_manager)
+        
+        if not pydantic_manager.is_initialized():
+            raise RuntimeError("PydanticManager v3.1 failed to initialize")
+        
+        logger.info("✅ PydanticManager v3.1 initialized successfully")
+        
+        # Log model summary
+        summary = pydantic_manager.get_model_summary()
+        logger.info(f"📊 PydanticManager Summary: {summary['total_models']} models across {len(summary['categories'])} categories")
+        logger.debug(f"📋 Available model categories: {list(summary['categories'].keys())}")
         
         # Test model access
-        try:
-            models = get_pydantic_models()
-            logger.info(f"✅ Pydantic models accessible: {len(models)} models available")
-            logger.debug(f"📋 Available models: {list(models.keys())}")
-        except Exception as e:
-            logger.error(f"❌ Failed to access Pydantic models: {e}")
-            raise
+        models = get_pydantic_models()
+        logger.info(f"✅ Pydantic models accessible: {len(models)} models available")
+        logger.debug(f"📋 Available models: {list(models.keys())}")
         
         # ========================================================================
         # STEP 3: Validate Configuration
@@ -336,7 +272,7 @@ async def initialize_components_with_clean_managers():
         logger.info("✅ Configuration validation passed")
         
         # ========================================================================
-        # STEP 4: Extract and Log Configuration (with debug control)
+        # STEP 4: Extract Configuration
         # ========================================================================
         logger.info("📊 Extracting processed configuration...")
         
@@ -346,7 +282,7 @@ async def initialize_components_with_clean_managers():
         feature_flags = config_manager.get_feature_flags()
         ensemble_mode = config_manager.get_ensemble_mode()
         
-        # Log the models that will be loaded (with environment overrides applied)
+        # Log the models that will be loaded
         models = model_config.get('models', {})
         logger.info("🎯 Final Model Configuration (JSON + Environment Overrides):")
         for model_type, model_info in models.items():
@@ -359,21 +295,17 @@ async def initialize_components_with_clean_managers():
         logger.info(f"   Gap Detection: {'✅ Enabled' if gap_detection_enabled else '❌ Disabled'}")
         
         # ========================================================================
-        # STEP 5: Initialize Enhanced ModelManager
+        # STEP 5: Initialize ModelsManager v3.1 - DIRECT ONLY
         # ========================================================================
-        logger.info("🧠 Initializing Enhanced ModelManager with processed configuration...")
+        logger.info("🧠 Initializing ModelsManager v3.1...")
         
-        if not MODEL_MANAGER_AVAILABLE:
-            logger.error("❌ ModelManager not available - cannot continue")
-            raise RuntimeError("ModelManager import failed")
-        
-        model_manager = ModelManager(
+        model_manager = ModelsManager(
             config_manager=config_manager,
             model_config=model_config,
             hardware_config=hardware_config
         )
         
-        logger.info("✅ ModelManager initialized with clean manager architecture")
+        logger.info("✅ ModelsManager v3.1 initialized successfully")
         
         # ========================================================================
         # STEP 6: Load Models
@@ -381,10 +313,6 @@ async def initialize_components_with_clean_managers():
         logger.info("📦 Loading Three Zero-Shot Model Ensemble...")
         await model_manager.load_models()
         logger.info("✅ All three models loaded successfully")
-        
-        # Set global model manager for API access
-        globals()['model_manager'] = model_manager
-        logger.info("✅ Global model manager set for API access")
         
         # ========================================================================
         # STEP 7: Initialize Learning System
@@ -396,7 +324,7 @@ async def initialize_components_with_clean_managers():
                     model_manager=model_manager,
                     config_manager=config_manager
                 )
-                logger.info("✅ Learning system initialized with clean manager architecture")
+                logger.info("✅ Learning system initialized")
             else:
                 logger.info("ℹ️ Learning system disabled via configuration")
                 learning_manager = None
@@ -415,7 +343,7 @@ async def initialize_components_with_clean_managers():
                     model_manager=model_manager,
                     learning_manager=learning_manager
                 )
-                logger.info("✅ CrisisAnalyzer initialized with current architecture")
+                logger.info("✅ CrisisAnalyzer initialized")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
                 crisis_analyzer = None
@@ -429,7 +357,7 @@ async def initialize_components_with_clean_managers():
                 phrase_extractor = PhraseExtractor(
                     model_manager=model_manager
                 )
-                logger.info("✅ PhraseExtractor initialized with current architecture")
+                logger.info("✅ PhraseExtractor initialized")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
                 phrase_extractor = None
@@ -438,19 +366,19 @@ async def initialize_components_with_clean_managers():
             phrase_extractor = None
         
         # ========================================================================
-        # STEP 9: Final Status Report (Phase 2B Update)
+        # STEP 9: Final Status Report - Clean v3.1
         # ========================================================================
-        logger.debug("📊 Component Initialization Summary (Phase 2B):")
+        logger.debug("📊 Component Initialization Summary (Clean v3.1):")
         
         components_status = {
             'core_managers': {
                 'config_manager': config_manager is not None,
                 'settings_manager': settings_manager is not None,
                 'zero_shot_manager': zero_shot_manager is not None,
-                'pydantic_manager': pydantic_manager is not None  # PHASE 2B: New status
+                'pydantic_manager_v3_1': pydantic_manager is not None
             },
             'ml_components': {
-                'model_manager': model_manager is not None,
+                'models_manager_v3_1': model_manager is not None,
                 'three_model_ensemble': model_manager and model_manager.models_loaded() if model_manager else False
             },
             'analysis_components': {
@@ -466,28 +394,29 @@ async def initialize_components_with_clean_managers():
                 status_icon = "✅" if status else "❌"
                 logger.debug(f"     {component}: {status_icon}")
         
-        # Check if any critical components failed
+        # Check for critical failures
         critical_failures = []
         if not model_manager:
-            critical_failures.append("ModelManager")
+            critical_failures.append("ModelsManager v3.1")
         if model_manager and not model_manager.models_loaded():
             critical_failures.append("Model Loading")
-        if not PYDANTIC_MANAGER_AVAILABLE:
-            critical_failures.append("Pydantic Models")
+        if not pydantic_manager:
+            critical_failures.append("PydanticManager v3.1")
         
         if critical_failures:
             logger.error(f"❌ Critical component failures: {critical_failures}")
-            raise RuntimeError(f"Critical components failed to initialize: {critical_failures}")
+            raise RuntimeError(f"Critical v3.1 components failed: {critical_failures}")
         
-        logger.info("✅ All critical components initialized successfully with clean manager architecture - Phase 2B")
+        logger.info("✅ All critical components initialized successfully - Clean v3.1 Architecture")
+        logger.info("🎉 Phase 2C Complete - No backward compatibility code")
         
     except Exception as e:
-        logger.error(f"❌ Failed to initialize components: {e}")
+        logger.error(f"❌ Failed to initialize v3.1 components: {e}")
         logger.exception("Full initialization error:")
         raise
 
 # ============================================================================
-# Health Response Model (Updated for Phase 2B)
+# Health Response Model
 # ============================================================================
 class HealthResponse(BaseModel):
     status: str
@@ -496,33 +425,30 @@ class HealthResponse(BaseModel):
     components_available: dict
     configuration_status: dict
     manager_status: dict
-    secrets_status: dict
+    architecture_version: str
+    phase_2c_status: str
 
 # ============================================================================
-# FastAPI Application Setup
+# FastAPI Application Setup - Clean v3.1
 # ============================================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """FastAPI lifespan context manager with clean manager architecture"""
+    """FastAPI lifespan context manager - Clean v3.1 Architecture"""
     # Startup
-    logger.info("🚀 Enhanced FastAPI app starting with Clean Manager Architecture v3.1 - Phase 2B...")
+    logger.info("🚀 Enhanced FastAPI app starting - Clean v3.1 Architecture (Phase 2C Complete)...")
     
     try:
-        await initialize_components_with_clean_managers()
+        await initialize_components_clean_v3_1()
         
-        # Import and add ensemble endpoints after initialization - PHASE 2B UPDATE
+        # Import and add ensemble endpoints - CLEAN v3.1
         try:
-            logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints with Phase 2B integration...")
+            logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints - Clean v3.1...")
             from api.ensemble_endpoints import add_ensemble_endpoints
             
-            # Pass pydantic_manager to endpoints for Phase 2B integration
+            # Direct manager usage - no fallbacks
             add_ensemble_endpoints(app, model_manager, pydantic_manager)
-            logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added with Phase 2B manager integration!")
-            
-            if pydantic_manager:
-                logger.info("✅ Phase 2B: Endpoints using PydanticManager v3.1 for model management")
-            else:
-                logger.info("⚠️ Phase 2B: Endpoints using legacy model imports (migration recommended)")
+            logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added - Clean v3.1!")
+            logger.info("✅ Clean v3.1: All endpoints using direct manager access")
                 
         except Exception as e:
             logger.error(f"❌ Failed to add ensemble endpoints: {e}")
@@ -533,14 +459,15 @@ async def lifespan(app: FastAPI):
             try:
                 logger.info("🔧 Adding enhanced learning endpoints...")
                 add_enhanced_learning_endpoints(app, learning_manager, config_manager)
-                logger.info("🧠 Enhanced learning endpoints added with manager integration!")
+                logger.info("🧠 Enhanced learning endpoints added!")
             except Exception as e:
                 logger.error(f"❌ Failed to add learning endpoints: {e}")
                 raise
         else:
             logger.info("ℹ️ Learning system not available - skipping learning endpoints")
         
-        logger.info("✅ Enhanced FastAPI app startup complete with Clean Manager Architecture - Phase 2B!")
+        logger.info("✅ Enhanced FastAPI app startup complete - Clean v3.1 Architecture!")
+        logger.info("🎉 Phase 2C: All backward compatibility removed - Pure v3.1")
         
     except Exception as e:
         logger.error(f"❌ FastAPI app startup failed: {e}")
@@ -553,65 +480,63 @@ async def lifespan(app: FastAPI):
     logger.info("🛑 FastAPI app shutting down...")
 
 # Create FastAPI app
-if FASTAPI_AVAILABLE:
-    app = FastAPI(
-        title="Ash NLP Service v3.1 - Clean Manager Architecture (Phase 2B)", 
-        version="3.1.0",
-        description="Advanced crisis detection using three specialized ML models with clean JSON+ENV configuration management and PydanticManager v3.1",
-        lifespan=lifespan
-    )
-    
-    # Configure CORS if enabled
-    cors_enabled = os.getenv('GLOBAL_ENABLE_CORS', 'true').lower() == 'true'
-    if cors_enabled:
-        try:
-            from fastapi.middleware.cors import CORSMiddleware
-            app.add_middleware(
-                CORSMiddleware,
-                allow_origins=["*"],  # Configure appropriately for production
-                allow_credentials=True,
-                allow_methods=["*"],
-                allow_headers=["*"],
-            )
-            logger.debug("🌐 CORS middleware enabled")
-        except Exception as e:
-            logger.warning(f"⚠️ Could not enable CORS: {e}")
-    
-    logger.info("✅ FastAPI app created successfully")
-else:
-    logger.error("❌ Cannot create FastAPI app - FastAPI import failed")
-    sys.exit(1)
+app = FastAPI(
+    title="Ash NLP Service v3.1 - Clean Architecture (Phase 2C Complete)", 
+    version="3.1.0",
+    description="Advanced crisis detection using three specialized ML models with clean JSON+ENV configuration management - NO backward compatibility",
+    lifespan=lifespan
+)
 
-# Initialize configuration early
+# Configure CORS if enabled
+cors_enabled = os.getenv('GLOBAL_ENABLE_CORS', 'true').lower() == 'true'
+if cors_enabled:
+    try:
+        from fastapi.middleware.cors import CORSMiddleware
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],  # Configure appropriately for production
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+        logger.debug("🌐 CORS middleware enabled")
+    except Exception as e:
+        logger.warning(f"⚠️ Could not enable CORS: {e}")
+
+logger.info("✅ FastAPI app created successfully - Clean v3.1")
+
+# Initialize configuration
 thresholds = initialize_centralized_threshold_config()
 
 # ============================================================================
-# Health Check Endpoint (Updated for Phase 2B)
+# Health Check Endpoint - Clean v3.1
 # ============================================================================
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Enhanced health check with clean manager architecture status - Phase 2B Update"""
+    """Enhanced health check - Clean v3.1 Architecture (Phase 2C Complete)"""
     
     uptime = time.time() - startup_time
     models_loaded = model_manager and model_manager.models_loaded() if model_manager else False
     
     # Check component availability
     components_status = {
-        "model_manager": model_manager is not None,
-        "pydantic_manager": pydantic_manager is not None,  # PHASE 2B: New status
+        "models_manager_v3_1": model_manager is not None,
+        "pydantic_manager_v3_1": pydantic_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
         "phrase_extractor": phrase_extractor is not None,
         "learning_manager": learning_manager is not None,
         "three_model_ensemble": models_loaded
     }
     
-    # Manager status (Updated for Phase 2B)
+    # Manager status - Clean v3.1
     manager_status = {
         "config_manager": config_manager is not None,
         "settings_manager": settings_manager is not None,
         "zero_shot_manager": zero_shot_manager is not None,
-        "pydantic_manager_v3_1": pydantic_manager is not None,  # PHASE 2B: New status
-        "manager_architecture": "clean_v3.1_phase2b"  # PHASE 2B: Updated version
+        "models_manager_v3_1": model_manager is not None,
+        "pydantic_manager_v3_1": pydantic_manager is not None,
+        "clean_architecture": "v3.1",
+        "backward_compatibility": "removed"
     }
     
     # Configuration status
@@ -621,7 +546,7 @@ async def health_check():
         "model_configuration_valid": False,
         "ensemble_mode": "unknown",
         "config_validation_passed": False,
-        "pydantic_models_available": PYDANTIC_MANAGER_AVAILABLE  # PHASE 2B: New status
+        "managers_available": True
     }
     
     if config_manager:
@@ -633,16 +558,9 @@ async def health_check():
         except Exception as e:
             logger.warning(f"Health check configuration validation error: {e}")
     
-    # Check secrets status
-    secrets_status = {
-        "huggingface_token": bool(os.getenv('GLOBAL_HUGGINGFACE_TOKEN')),
-        "claude_api_key": bool(os.getenv('GLOBAL_CLAUDE_API_KEY')),
-        "openai_api_key": bool(os.getenv('OPENAI_API_KEY'))
-    }
-    
     # Determine overall status
-    if (models_loaded and components_status["model_manager"] and 
-        manager_status["config_manager"] and PYDANTIC_MANAGER_AVAILABLE):
+    if (models_loaded and components_status["models_manager_v3_1"] and 
+        components_status["pydantic_manager_v3_1"] and manager_status["config_manager"]):
         overall_status = "healthy"
     elif model_manager and manager_status["config_manager"]:
         overall_status = "degraded"
@@ -656,14 +574,15 @@ async def health_check():
         components_available=components_status,
         configuration_status=configuration_status,
         manager_status=manager_status,
-        secrets_status=secrets_status
+        architecture_version="v3.1_clean",
+        phase_2c_status="complete"
     )
 
 # ============================================================================
 # Main execution
 # ============================================================================
 if __name__ == "__main__":
-    logger.info("🎯 Starting Ash NLP Service directly...")
+    logger.info("🎯 Starting Ash NLP Service v3.1 - Clean Architecture...")
     
     import uvicorn
     uvicorn.run(
