@@ -1,0 +1,181 @@
+{
+  "metadata": {
+    "pattern_type": "community_vocabulary_patterns",
+    "version": "3.1.0",
+    "description": "LGBTQIA+ community vocabulary for enhanced context awareness and accurate crisis detection",
+    "last_updated": "2025-08-04",
+    "total_terms": 45,
+    "source": "Migrated from managers/settings_manager.py COMMUNITY_VOCABULARY",
+    "environment_overrides": {
+      "enabled": "NLP_CONFIG_ENABLE_COMMUNITY_VOCABULARY",
+      "context_boost": "NLP_CONFIG_COMMUNITY_CONTEXT_BOOST",
+      "sensitivity_level": "NLP_CONFIG_COMMUNITY_SENSITIVITY"
+    }
+  },
+  "configuration": {
+    "enabled": true,
+    "context_boost_factor": 0.05,
+    "sensitivity_level": "high",
+    "priority_level": "medium",
+    "requires_additional_analysis": true
+  },
+  "vocabulary": {
+    "identity_terms": {
+      "category": "identity_terms",
+      "boost_factor": 0.03,
+      "description": "Terms related to LGBTQIA+ identity that may indicate relevant context",
+      "terms": [
+        "trans",
+        "transgender",
+        "gay",
+        "lesbian",
+        "bisexual",
+        "pansexual",
+        "asexual",
+        "queer",
+        "enby",
+        "nonbinary",
+        "genderfluid",
+        "agender",
+        "demisexual",
+        "aromantic",
+        "genderqueer"
+      ],
+      "weight": 0.7,
+      "context_required": false
+    },
+    "experience_terms": {
+      "category": "experience_terms",
+      "boost_factor": 0.08,
+      "description": "Terms describing LGBTQIA+ experiences that may indicate stress or crisis",
+      "terms": [
+        "coming out",
+        "dysphoria",
+        "euphoria",
+        "transition",
+        "deadname",
+        "chosen name",
+        "passing",
+        "binding",
+        "misgendered",
+        "outed",
+        "closeted",
+        "questioning",
+        "egg crack",
+        "voice training"
+      ],
+      "weight": 0.9,
+      "context_required": true
+    },
+    "community_terms": {
+      "category": "community_terms", 
+      "boost_factor": -0.02,
+      "description": "Positive community terms that may reduce crisis likelihood",
+      "terms": [
+        "chosen family",
+        "found family",
+        "pride",
+        "ally",
+        "safe space",
+        "visibility",
+        "representation",
+        "community support",
+        "lgbtq center",
+        "pride month",
+        "chosen family"
+      ],
+      "weight": 0.5,
+      "context_required": false,
+      "modifier": "positive"
+    },
+    "struggle_terms": {
+      "category": "struggle_terms",
+      "boost_factor": 0.15,
+      "description": "Terms indicating LGBTQIA+-specific struggles requiring attention",
+      "terms": [
+        "closeted",
+        "discrimination",
+        "homophobia",
+        "transphobia",
+        "religious trauma",
+        "internalized shame",
+        "conversion therapy",
+        "pray the gay away",
+        "family rejection",
+        "workplace discrimination",
+        "bathroom bills",
+        "deadnaming",
+        "misgendering"
+      ],
+      "weight": 1.0,
+      "context_required": true,
+      "escalation_required": true
+    },
+    "medical_terms": {
+      "category": "medical_terms",
+      "boost_factor": 0.05,
+      "description": "Medical and transition-related terms that may indicate stress",
+      "terms": [
+        "hormone therapy",
+        "hrt",
+        "top surgery",
+        "bottom surgery",
+        "testosterone",
+        "estrogen",
+        "blockers",
+        "gender dysphoria",
+        "therapist",
+        "gender clinic",
+        "informed consent",
+        "medical transition"
+      ],
+      "weight": 0.6,
+      "context_required": true
+    },
+    "relationship_terms": {
+      "category": "relationship_terms",
+      "boost_factor": 0.02,
+      "description": "Relationship terms specific to LGBTQIA+ community",
+      "terms": [
+        "partner",
+        "girlfriend",
+        "boyfriend",
+        "spouse",
+        "significant other",
+        "polyamorous",
+        "poly",
+        "metamour",
+        "chosen family",
+        "found family",
+        "queer platonic"
+      ],
+      "weight": 0.4,
+      "context_required": false
+    }
+  },
+  "processing_rules": {
+    "context_window_words": 15,
+    "multiple_terms": "cumulative_boost",
+    "max_vocabulary_boost": 0.25,
+    "negative_boost_enabled": true,
+    "escalation_threshold": 0.10
+  },
+  "analysis_enhancement": {
+    "community_context_detection": true,
+    "specialized_pattern_matching": true,
+    "cultural_sensitivity_required": true,
+    "staff_training_recommended": true
+  },
+  "usage_instructions": {
+    "integration": "Load via ConfigManager.get_crisis_patterns('community_vocabulary_patterns')",
+    "access_method": "CrisisPatternManager.get_community_vocabulary()",
+    "environment_override_example": "NLP_CONFIG_COMMUNITY_CONTEXT_BOOST=0.08",
+    "implementation_notes": [
+      "Community terms provide context for more accurate crisis assessment",
+      "Struggle terms should increase crisis detection sensitivity",
+      "Community support terms may reduce false positive rates",
+      "Medical terms require additional context validation to avoid false positives",
+      "Staff should be trained on LGBTQIA+ terminology and context"
+    ]
+  }
+}
