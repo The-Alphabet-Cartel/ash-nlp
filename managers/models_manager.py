@@ -53,6 +53,9 @@ class ModelsManager:
             logger.error(f"Failed to extract configuration from managers: {e}")
             raise ValueError(f"ModelsManager initialization failed: {e}")
         
+        # CRITICAL: Set up Hugging Face authentication IMMEDIATELY after config extraction
+        self._setup_huggingface_auth()
+        
         # Model instances - THREE MODELS
         self.depression_model = None
         self.sentiment_model = None
@@ -65,12 +68,10 @@ class ModelsManager:
         # Set up model cache directory (with robust fallback handling)
         self._setup_cache_directory()
         
-        # Set up Hugging Face authentication if token provided
-        self._setup_huggingface_auth()
-        
         logger.info("✅ ModelsManager initialized with Three Zero-Shot Model Ensemble")
         logger.debug(f"Device: {self.device}")
         logger.debug(f"Model cache directory: {self.model_config.get('cache_dir', 'not set')}")
+        logger.debug(f"HuggingFace token available: {bool(self.model_config.get('huggingface_token'))}")
     
     def _extract_model_config_from_manager(self, config_manager) -> Dict[str, Any]:
         """Extract model configuration from existing ConfigManager (compatibility)"""
@@ -235,13 +236,20 @@ class ModelsManager:
         logger.debug(f"✅ Model cache directory ready: {cache_dir}")
     
     def _setup_huggingface_auth(self):
-        """Set up Hugging Face authentication"""
+        """Set up Hugging Face authentication with multiple environment variable names"""
         hf_token = self.model_config.get('huggingface_token')
         if hf_token:
+            # Set multiple environment variable names that different libraries may check
             os.environ['HF_TOKEN'] = hf_token
-            logger.info("🔑 Hugging Face authentication configured")
+            os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token  # Alternative name
+            os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token   # Another alternative
+            os.environ['HF_HOME'] = self.model_config.get('cache_dir', './models/cache')
+            
+            logger.info("🔑 Hugging Face authentication configured with multiple token variables")
+            logger.debug(f"Token variables set: HF_TOKEN, HUGGING_FACE_HUB_TOKEN, HUGGINGFACE_HUB_TOKEN")
+            logger.debug(f"HF_HOME set to: {os.environ['HF_HOME']}")
         else:
-            logger.debug("No Hugging Face token provided")
+            logger.warning("⚠️ No Hugging Face token provided - this may cause authentication errors")
     
     def _get_model_kwargs(self) -> Dict[str, Any]:
         """Get arguments for pipeline creation"""
@@ -253,13 +261,21 @@ class ModelsManager:
         }
     
     def _get_model_loading_kwargs(self) -> Dict[str, Any]:
-        """Get arguments for model/tokenizer loading"""
-        return {
+        """Get arguments for model/tokenizer loading with token authentication"""
+        kwargs = {
             'cache_dir': self.model_config['cache_dir'],
             'use_fast': self.hardware_config.get('use_fast_tokenizer', True),
             'trust_remote_code': self.hardware_config.get('trust_remote_code', False),
             'revision': self.hardware_config.get('model_revision', 'main'),
         }
+        
+        # Add token directly to loading kwargs as fallback
+        hf_token = self.model_config.get('huggingface_token')
+        if hf_token:
+            kwargs['token'] = hf_token
+            logger.debug("🔑 Added HuggingFace token directly to model loading kwargs")
+        
+        return kwargs
     
     def _get_torch_dtype(self):
         """Get torch dtype based on precision setting"""
@@ -405,6 +421,9 @@ class ModelsManager:
         logger.info(f"📦 Loading Depression Model: {model_name}")
         
         try:
+            # Ensure authentication is set up before loading
+            self._setup_huggingface_auth()
+            
             self.depression_model = pipeline(
                 "zero-shot-classification",
                 model=model_name,
@@ -417,14 +436,20 @@ class ModelsManager:
             
         except Exception as e:
             logger.error(f"❌ Failed to load depression model: {e}")
+            if "401" in str(e) or "Unauthorized" in str(e):
+                logger.error("🔑 Authentication error - check HuggingFace token")
+                logger.error(f"Token present: {bool(self.model_config.get('huggingface_token'))}")
             raise
-    
+
     async def _load_sentiment_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the sentiment analysis model"""
         model_name = self.model_config.get('sentiment_model', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli')
         logger.info(f"📦 Loading Sentiment Model: {model_name}")
         
         try:
+            # Ensure authentication is set up before loading
+            self._setup_huggingface_auth()
+            
             self.sentiment_model = pipeline(
                 "zero-shot-classification",
                 model=model_name,
@@ -437,14 +462,20 @@ class ModelsManager:
             
         except Exception as e:
             logger.error(f"❌ Failed to load sentiment model: {e}")
+            if "401" in str(e) or "Unauthorized" in str(e):
+                logger.error("🔑 Authentication error - check HuggingFace token")
+                logger.error(f"Token present: {bool(self.model_config.get('huggingface_token'))}")
             raise
-    
+
     async def _load_emotional_distress_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the emotional distress detection model"""
         model_name = self.model_config.get('emotional_distress_model', 'Lowerated/lm6-deberta-v3-topic-sentiment')
         logger.info(f"📦 Loading Emotional Distress Model: {model_name}")
         
         try:
+            # Ensure authentication is set up before loading
+            self._setup_huggingface_auth()
+            
             self.emotional_distress_model = pipeline(
                 "zero-shot-classification",
                 model=model_name,
@@ -457,6 +488,9 @@ class ModelsManager:
             
         except Exception as e:
             logger.error(f"❌ Failed to load emotional distress model: {e}")
+            if "401" in str(e) or "Unauthorized" in str(e):
+                logger.error("🔑 Authentication error - check HuggingFace token")
+                logger.error(f"Token present: {bool(self.model_config.get('huggingface_token'))}")
             raise
     
     def models_loaded(self) -> bool:
