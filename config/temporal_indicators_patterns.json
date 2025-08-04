@@ -1,0 +1,147 @@
+{
+  "metadata": {
+    "pattern_type": "temporal_indicators_patterns",
+    "version": "3.1.0",
+    "description": "Temporal indicators that modify crisis detection based on time-related expressions",
+    "last_updated": "2025-08-04",
+    "total_patterns": 24,
+    "source": "Migrated from managers/settings_manager.py TEMPORAL_INDICATORS",
+    "environment_overrides": {
+      "enabled": "NLP_CONFIG_ENABLE_TEMPORAL_INDICATORS",
+      "immediate_boost": "NLP_CONFIG_IMMEDIATE_TEMPORAL_BOOST",
+      "future_fear_boost": "NLP_CONFIG_FUTURE_FEAR_BOOST"
+    }
+  },
+  "configuration": {
+    "enabled": true,
+    "priority_level": "high",
+    "escalation_enabled": true,
+    "staff_notification_required": true
+  },
+  "patterns": {
+    "immediate": {
+      "crisis_boost": "critical",
+      "boost_factor": 0.35,
+      "escalation_level": "immediate",
+      "description": "Immediate temporal indicators requiring urgent response",
+      "indicators": [
+        "right now",
+        "immediately", 
+        "urgent",
+        "asap",
+        "tonight",
+        "this moment",
+        "can't wait",
+        "need help now",
+        "happening now"
+      ],
+      "weight": 1.0,
+      "auto_escalate": true,
+      "staff_alert": true
+    },
+    "recent": {
+      "crisis_boost": "medium",
+      "boost_factor": 0.20,
+      "escalation_level": "high",
+      "description": "Recent temporal indicators showing current distress",
+      "indicators": [
+        "today",
+        "yesterday",
+        "lately",
+        "recently", 
+        "this week",
+        "past few days",
+        "since yesterday",
+        "all day",
+        "this morning"
+      ],
+      "weight": 0.8,
+      "auto_escalate": false,
+      "staff_alert": false
+    },
+    "ongoing": {
+      "crisis_boost": "high",
+      "boost_factor": 0.30,
+      "escalation_level": "high",
+      "description": "Ongoing temporal patterns indicating persistent crisis",
+      "indicators": [
+        "always",
+        "constantly",
+        "every day",
+        "all the time",
+        "never stops",
+        "continuously",
+        "non-stop",
+        "24/7",
+        "every night"
+      ],
+      "weight": 0.9,
+      "auto_escalate": true,
+      "staff_alert": true
+    },
+    "future_fear": {
+      "crisis_boost": "critical",
+      "boost_factor": 0.40,
+      "escalation_level": "immediate",
+      "description": "Future-oriented hopelessness indicating severe crisis risk",
+      "indicators": [
+        "never get better",
+        "will never",
+        "hopeless",
+        "pointless",
+        "no future",
+        "never going to",
+        "no point in",
+        "will always be",
+        "forever stuck"
+      ],
+      "weight": 1.0,
+      "auto_escalate": true,
+      "staff_alert": true
+    },
+    "escalation_timeline": {
+      "crisis_boost": "high",
+      "boost_factor": 0.25,
+      "escalation_level": "medium",
+      "description": "Temporal indicators showing escalating crisis over time",
+      "indicators": [
+        "getting worse",
+        "escalating",
+        "more frequent",
+        "increasing",
+        "spiraling",
+        "deteriorating",
+        "declining",
+        "worsening"
+      ],
+      "weight": 0.8,
+      "auto_escalate": false,
+      "staff_alert": true
+    }
+  },
+  "escalation_rules": {
+    "immediate_patterns": ["immediate", "future_fear", "ongoing"],
+    "staff_notification_patterns": ["immediate", "future_fear", "ongoing", "escalation_timeline"],
+    "auto_escalation_threshold": 0.30,
+    "multiple_temporal_indicators": "cumulative_boost",
+    "max_temporal_boost": 0.50
+  },
+  "processing_rules": {
+    "context_window_words": 8,
+    "require_crisis_context": true,
+    "negation_check": true,
+    "multiple_matches": "apply_strongest_boost",
+    "fallback_behavior": "no_boost"
+  },
+  "usage_instructions": {
+    "integration": "Load via ConfigManager.get_crisis_patterns('temporal_indicators_patterns')",
+    "access_method": "CrisisPatternManager.get_temporal_indicators()",
+    "environment_override_example": "NLP_CONFIG_IMMEDIATE_TEMPORAL_BOOST=0.4",
+    "implementation_notes": [
+      "Immediate and future_fear patterns should trigger automatic escalation",
+      "Ongoing patterns indicate chronic crisis requiring sustained support",
+      "Temporal indicators should be combined with other crisis patterns for full assessment",
+      "Staff notifications are required for high-boost temporal patterns"
+    ]
+  }
+}
