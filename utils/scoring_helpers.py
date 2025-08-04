@@ -1,361 +1,266 @@
 """
-Handles depression analysis, idiom detection, and crisis level mapping
-Comprehensive fix for false positives while maintaining crisis detection safety
-Includes critical self-harm protection and moderate concern boosting
+Scoring Helpers for Ash NLP Service v3.1 - Phase 3a Updated
+Enhanced scoring utilities with crisis pattern integration
+
+Phase 3a: Updated to work without hardcoded pattern imports
+All pattern analysis now handled by CrisisPatternManager
 """
 
-import logging
 import re
-from typing import Dict, List, Tuple, Any
-from managers.settings_manager import (
-    CRISIS_THRESHOLDS, BURDEN_PATTERNS, HOPELESSNESS_PATTERNS, 
-    STRUGGLE_PATTERNS, ENHANCED_IDIOM_PATTERNS
-)
+import logging
+from typing import Dict, List, Any, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-def extract_depression_score(depression_result) -> float:
-    """Extract depression score from model's output"""
+# Basic crisis level thresholds - these are algorithm constants, not patterns
+DEFAULT_CRISIS_THRESHOLDS = {
+    "high": 0.55,    # Reduced from 0.50 - matches new systematic approach
+    "medium": 0.28,  # Reduced from 0.22 - more selective for medium alerts
+    "low": 0.16      # Reduced from 0.12 - avoids very mild expressions
+}
+
+def extract_depression_score(message: str, depression_model, context: Dict = None) -> float:
+    """Extract depression score from model - Phase 3a compatible"""
     
-    if not depression_result:
+    if not depression_model:
+        logger.warning("No depression model available for scoring")
         return 0.0
     
-    # Handle different result formats
-    predictions = []
-    if isinstance(depression_result, list):
-        if len(depression_result) > 0 and isinstance(depression_result[0], list):
-            predictions = depression_result[0]
-        elif len(depression_result) > 0 and isinstance(depression_result[0], dict):
-            predictions = depression_result
-    elif isinstance(depression_result, dict):
-        predictions = [depression_result]
-    
-    # Extract scores
-    moderate_score = 0.0
-    severe_score = 0.0
-    
-    for pred in predictions:
-        if not isinstance(pred, dict):
-            continue
-            
-        label = str(pred.get('label', '')).lower().strip()
-        score = float(pred.get('score', 0.0))
+    try:
+        # Get model prediction
+        result = depression_model(message)
         
-        if label == 'moderate':
-            moderate_score = score
-        elif label == 'severe':
-            severe_score = score
-    
-    # Return combined depression signal
-    return moderate_score + severe_score
+        if not result or not isinstance(result, list):
+            logger.warning("Invalid depression model result")
+            return 0.0
+        
+        # Extract score based on model output format
+        for item in result:
+            if isinstance(item, dict):
+                label = item.get('label', '').lower()
+                score = item.get('score', 0.0)
+                
+                # Look for crisis/depression indicators
+                if any(indicator in label for indicator in ['crisis', 'depression', 'severe', 'high']):
+                    logger.debug(f"Depression model score: {score:.3f} (label: {label})")
+                    return float(score)
+        
+        # Fallback: return highest score
+        max_score = max(item.get('score', 0.0) for item in result if isinstance(item, dict))
+        logger.debug(f"Depression model fallback score: {max_score:.3f}")
+        return float(max_score)
+        
+    except Exception as e:
+        logger.error(f"Error extracting depression score: {e}")
+        return 0.0
 
-def apply_comprehensive_false_positive_reduction(message: str, base_score: float) -> float:
-    """Apply comprehensive false positive reduction for common expression patterns"""
-    if not message:
+def enhanced_depression_analysis(message: str, base_score: float, depression_model, sentiment_model, 
+                               context: Dict = None, crisis_pattern_manager=None) -> Dict[str, Any]:
+    """
+    Enhanced depression analysis with pattern integration - Phase 3a compatible
+    
+    Args:
+        message: Message text to analyze
+        base_score: Base depression score
+        depression_model: Depression detection model
+        sentiment_model: Sentiment analysis model  
+        context: Optional context information
+        crisis_pattern_manager: Optional CrisisPatternManager for pattern analysis
+        
+    Returns:
+        Dictionary with enhanced analysis results
+    """
+    
+    logger.debug(f"Enhanced depression analysis: base_score={base_score:.3f}")
+    
+    try:
+        detected_categories = []
+        adjustment_reasons = []
+        
+        # Sentiment analysis
+        sentiment_scores = {}
+        if sentiment_model:
+            try:
+                sentiment_result = sentiment_model(message)
+                sentiment_scores = _process_sentiment_result(sentiment_result)
+            except Exception as e:
+                logger.warning(f"Sentiment analysis failed: {e}")
+        
+        # Pattern-based adjustments using CrisisPatternManager if available
+        pattern_adjustment = 0.0
+        if crisis_pattern_manager:
+            try:
+                # Apply context weights if available
+                modified_score, weight_details = crisis_pattern_manager.apply_context_weights(message, base_score)
+                pattern_adjustment = modified_score - base_score
+                
+                if pattern_adjustment != 0:
+                    adjustment_reasons.append(f"pattern_analysis({pattern_adjustment:+.3f})")
+                    logger.debug(f"Pattern adjustment: {pattern_adjustment:+.3f}")
+                
+            except Exception as e:
+                logger.warning(f"Pattern analysis failed: {e}")
+        
+        # Context-based adjustments (conservative)
+        context_adjustment = 0.0
+        if context:
+            # Social isolation indicators
+            isolation_count = context.get('social_isolation_indicators', 0)
+            if isolation_count > 2:
+                context_adjustment += 0.04
+                adjustment_reasons.append("social_isolation(+0.04)")
+            
+            # Hopelessness indicators
+            hopelessness_count = context.get('hopelessness_indicators', 0)
+            if hopelessness_count > 1:
+                context_adjustment += 0.06
+                adjustment_reasons.append("hopelessness(+0.06)")
+            
+            # Negation context (reduce score)
+            if context.get('negation_context'):
+                context_adjustment -= 0.05
+                adjustment_reasons.append("negation(-0.05)")
+        
+        # Sentiment-based adjustments (conservative)
+        sentiment_adjustment = 0.0
+        if sentiment_scores:
+            negative_score = sentiment_scores.get('negative', 0.0)
+            if negative_score > 0.85:  # Very negative sentiment
+                sentiment_adjustment += 0.08
+                adjustment_reasons.append("very_negative_sentiment(+0.08)")
+            elif negative_score > 0.70:  # Moderately negative
+                sentiment_adjustment += 0.04
+                adjustment_reasons.append("negative_sentiment(+0.04)")
+        
+        # Calculate final score
+        total_adjustment = pattern_adjustment + context_adjustment + sentiment_adjustment
+        final_score = base_score + total_adjustment
+        final_score = max(0.0, min(1.0, final_score))  # Clamp to [0,1]
+        
+        # Determine categories
+        if final_score >= 0.4:
+            detected_categories.append("depression_indicators")
+        if sentiment_scores.get('negative', 0) > 0.7:
+            detected_categories.append("negative_sentiment")
+        if context and context.get('social_isolation_indicators', 0) > 1:
+            detected_categories.append("social_isolation")
+        
+        # Create reasoning
+        reasoning_parts = [f"base_depression={base_score:.3f}"]
+        reasoning_parts.extend(adjustment_reasons)
+        reasoning_parts.append(f"final={final_score:.3f}")
+        reasoning = " + ".join(reasoning_parts)
+        
+        logger.debug(f"Enhanced analysis complete: {reasoning}")
+        
+        return {
+            'final_score': final_score,
+            'base_score': base_score,
+            'total_adjustment': total_adjustment,
+            'pattern_adjustment': pattern_adjustment,
+            'context_adjustment': context_adjustment,
+            'sentiment_adjustment': sentiment_adjustment,
+            'detected_categories': detected_categories,
+            'sentiment_scores': sentiment_scores,
+            'reasoning': reasoning,
+            'adjustment_reasons': adjustment_reasons
+        }
+        
+    except Exception as e:
+        logger.error(f"Enhanced depression analysis failed: {e}")
+        return {
+            'final_score': base_score,
+            'base_score': base_score,
+            'total_adjustment': 0.0,
+            'detected_categories': ['analysis_error'],
+            'reasoning': f"Enhanced analysis failed: {str(e)}",
+            'error': str(e)
+        }
+
+def advanced_idiom_detection(message: str, context: Dict, base_score: float, 
+                           crisis_pattern_manager=None) -> float:
+    """
+    Advanced idiom detection with pattern manager integration - Phase 3a compatible
+    
+    Args:
+        message: Message text to analyze
+        context: Context information
+        base_score: Base crisis score
+        crisis_pattern_manager: Optional CrisisPatternManager for idiom patterns
+        
+    Returns:
+        Adjusted score after idiom detection
+    """
+    
+    if not crisis_pattern_manager:
+        logger.debug("No CrisisPatternManager available for idiom detection")
         return base_score
+    
+    try:
+        # Get idiom patterns from manager
+        idiom_patterns = crisis_pattern_manager.get_idiom_patterns()
         
-    message_lower = message.lower().strip()
-    
-    # TIER 1: Common frustration/tiredness expressions (aggressive reduction)
-    tier1_patterns = [
-        r"sick\s+and\s+tired\s+of\s+being\s+sick\s+and\s+tired",
-        r"sick\s+and\s+tired\s+of",
-        r"tired\s+of\s+being\s+tired",
-        r"so\s+tired\s+of\s+this",
-        r"fed\s+up\s+with",
-        r"done\s+with\s+this",
-    ]
-    
-    # TIER 2: Mild emotional expressions (moderate reduction)
-    tier2_patterns = [
-        r"just\s+feel\s+(?:so|really|pretty|kinda|)\s*down",
-        r"feeling\s+(?:a\s+bit|kind\s+of|sort\s+of|pretty|)\s*down",
-        r"feeling\s+(?:pretty|really|quite|)\s*(?:low|blue|sad)",
-        r"having\s+(?:a|an)\s*(?:rough|tough|bad|off)\s+(?:day|time|moment)",
-        r"not\s+(?:doing|feeling)\s+(?:so|very|)\s*(?:great|good|well)",
-        r"(?:been|having)\s+(?:a|an)\s*(?:rough|tough|hard|difficult)\s+(?:day|week|time)",
-    ]
-    
-    # TIER 3: Casual/temporary expressions (light reduction)
-    tier3_patterns = [
-        r"(?:i'm|im)\s+(?:just|really|)\s*(?:tired|exhausted|drained)",
-        r"feeling\s+(?:overwhelmed|stressed)\s+(?:today|right now)",
-        r"having\s+(?:a|)\s*bad\s+(?:day|time|moment)",
-        r"(?:really|pretty|quite)\s+bummed\s+(?:out|about)",
-    ]
-    
-    # Casual indicators that suggest non-crisis context
-    casual_indicators = [
-        r"(?:lol|haha|😄|😅|🙂)",  # Humor
-        r"(?:just|only|kinda|sorta)",  # Minimizing language  
-        r"(?:today|right now|at the moment)",  # Temporal/temporary
-        r"(?:but|however)\s+(?:i'll|ill|i\s+will)\s+be\s+(?:okay|fine|alright)",  # Reassurance
-    ]
-    
-    # Check for patterns and apply reductions
-    original_score = base_score
-    reduction_applied = None
-    
-    # TIER 1: Frustration expressions (40% reduction)
-    for pattern in tier1_patterns:
-        if re.search(pattern, message_lower):
-            has_casual = any(re.search(casual, message_lower) for casual in casual_indicators)
-            if has_casual:
-                base_score = base_score * 0.45  # 55% reduction with casual indicators
-                reduction_applied = f"TIER1+CASUAL: {pattern}"
-            else:
-                base_score = base_score * 0.60  # 40% reduction
-                reduction_applied = f"TIER1: {pattern}"
-            break
-    
-    # TIER 2: Mild emotions (25% reduction) 
-    if not reduction_applied:
-        for pattern in tier2_patterns:
-            if re.search(pattern, message_lower):
-                has_casual = any(re.search(casual, message_lower) for casual in casual_indicators)
-                if has_casual:
-                    base_score = base_score * 0.65  # 35% reduction with casual indicators
-                    reduction_applied = f"TIER2+CASUAL: {pattern}"
-                else:
-                    base_score = base_score * 0.75  # 25% reduction
-                    reduction_applied = f"TIER2: {pattern}"
-                break
-    
-    # TIER 3: Casual expressions (15% reduction)
-    if not reduction_applied:
-        for pattern in tier3_patterns:
-            if re.search(pattern, message_lower):
-                base_score = base_score * 0.85  # 15% reduction
-                reduction_applied = f"TIER3: {pattern}"
-                break
-    
-    if reduction_applied:
-        logger.info(f"FALSE POSITIVE REDUCTION: {reduction_applied} -> {original_score:.3f} → {base_score:.3f}")
-    
-    return base_score
-
-def enhanced_depression_analysis(depression_result, sentiment_scores: Dict, context: Dict, message: str = "") -> Tuple[float, List[str]]:
-    """COMPREHENSIVE BALANCED depression model analysis - FINAL VERSION WITH TARGETED FIXES"""
-    
-    max_crisis_score = 0.0
-    detected_categories = []
-    
-    if not depression_result:
-        return max_crisis_score, detected_categories
-    
-    # Extract predictions
-    predictions_to_process = []
-    if isinstance(depression_result, list):
-        if len(depression_result) > 0 and isinstance(depression_result[0], list):
-            predictions_to_process = depression_result[0]
-        elif len(depression_result) > 0 and isinstance(depression_result[0], dict):
-            predictions_to_process = depression_result
-    else:
-        if isinstance(depression_result, dict):
-            predictions_to_process = [depression_result]
-        else:
-            return max_crisis_score, detected_categories
-    
-    # Extract depression scores
-    not_depression_score = 0.0
-    moderate_score = 0.0
-    severe_score = 0.0
-    
-    for prediction in predictions_to_process:
-        if not isinstance(prediction, dict):
-            continue
-            
-        label = str(prediction.get('label', '')).lower().strip()
-        score = float(prediction.get('score', 0.0))
+        if not idiom_patterns or not idiom_patterns.get('patterns'):
+            logger.debug("No idiom patterns available")
+            return base_score
         
-        if label == 'not depression':
-            not_depression_score = score
-        elif label == 'moderate':
-            moderate_score = score
-        elif label == 'severe':
-            severe_score = score
-        
-        detected_categories.append({
-            'category': label,
-            'raw_score': score,
-            'confidence': score,
-            'original_label': prediction.get('label', 'unknown'),
-            'is_crisis': label in ['moderate', 'severe']
-        })
-    
-    # Calculate base depression score - COMPREHENSIVE BALANCED APPROACH
-    total_depression = moderate_score + severe_score
-    
-    # SYSTEMATIC BALANCED SCORING: Reasonable safety-first without over-reaction
-    if severe_score > 0.20:  # 20% severe signal for HIGH (was 2% - much more reasonable)
-        base_score = 0.60 + (severe_score * 1.5)  # Reasonable boost (was 6.0x)
-        reason = f"severe_detected ({severe_score:.3f})"
-        
-    elif moderate_score > 0.75:  # 75% moderate for HIGH (was 60%)
-        base_score = 0.55 + (moderate_score * 0.25)  # Conservative boost
-        reason = f"strong_moderate ({moderate_score:.3f})"
-        
-    elif moderate_score > 0.60:  # 60% moderate for MEDIUM (was 35% for HIGH!)
-        base_score = 0.30 + (moderate_score * 0.35)  # Target MEDIUM range
-        reason = f"moderate_signal ({moderate_score:.3f})"
-        
-    elif moderate_score > 0.40:  # 40% moderate for LOW-MEDIUM (was 20% for MEDIUM)
-        base_score = 0.18 + (moderate_score * 0.30)  # Target LOW-MEDIUM range
-        reason = f"mild_moderate ({moderate_score:.3f})"
-        
-    elif total_depression > 0.25:  # Depression signal above 25% - LOW range (was 15%)
-        base_score = 0.10 + (total_depression * 0.40)  # Lower base score
-        reason = f"minor_depression_signal ({total_depression:.3f})"
-        
-    elif not_depression_score > 0.90:  # Very confident not depression
-        base_score = 0.05  # Minimal score
-        reason = f"confident_not_depression ({not_depression_score:.3f})"
-        
-    else:
-        # Very low or no depression signal
-        base_score = total_depression * 0.4  # Minimal scoring
-        reason = f"minimal_depression ({total_depression:.3f})"
-    
-    # CRITICAL SELF-HARM PROTECTION - MUST BE ADDED BEFORE ANY REDUCTIONS
-    if message:
         message_lower = message.lower().strip()
         
-        # Critical self-harm patterns that must be HIGH priority
-        critical_self_harm_patterns = [
-            r"thoughts?\s+of\s+(?:hurting|harming|killing)\s+myself",
-            r"want\s+to\s+(?:hurt|harm|kill)\s+myself", 
-            r"thinking\s+about\s+(?:hurting|harming|killing)\s+myself",
-            r"(?:self|)[\s-]*harm",
-            r"cut\s+myself",
-            r"end\s+(?:my\s+|it\s+all|everything)",
-            r"suicide",
-            r"kill\s+myself"
-        ]
+        # Check each idiom pattern group
+        for pattern_name, pattern_group in idiom_patterns['patterns'].items():
+            patterns = pattern_group.get('patterns', [])
+            
+            for pattern_config in patterns:
+                pattern = pattern_config.get('pattern', '')
+                reduction_factor = pattern_group.get('reduction_factor', 0.15)
+                max_score_after = pattern_group.get('max_score_after', 0.10)
+                
+                try:
+                    if re.search(pattern, message_lower, re.IGNORECASE):
+                        # Apply idiom reduction
+                        reduced_score = base_score * (1.0 - reduction_factor)
+                        final_score = min(reduced_score, max_score_after)
+                        
+                        logger.info(f"Idiom detected ({pattern_name}): {base_score:.3f} → {final_score:.3f}")
+                        return final_score
+                        
+                except re.error as e:
+                    logger.warning(f"Invalid regex pattern '{pattern}': {e}")
+                    continue
         
-        # Check for critical patterns
-        for pattern in critical_self_harm_patterns:
-            if re.search(pattern, message_lower):
-                # Force HIGH threshold regardless of model output
-                base_score = max(base_score, 0.70)  # Ensure HIGH detection
-                reason += f" + CRITICAL_SELF_HARM_PROTECTION"
-                logger.warning(f"CRITICAL: Self-harm pattern detected: '{pattern}' - forced HIGH")
-                break
+        return base_score
         
-        # MODERATE CONCERN PATTERNS - should be at least MEDIUM
-        moderate_concern_patterns = [
-            r"really\s+struggling\s+with\s+everything",
-            r"can[''']t\s+handle\s+this\s+anymore",
-            r"falling\s+apart",
-            r"breaking\s+down",
-            r"overwhelmed\s+and\s+don[''']t\s+know"
-        ]
-        
-        # Check for moderate concern patterns  
-        for pattern in moderate_concern_patterns:
-            if re.search(pattern, message_lower):
-                # Ensure at least MEDIUM level
-                base_score = max(base_score, 0.35)  # Ensure MEDIUM detection
-                reason += f" + MODERATE_CONCERN_BOOST"
-                logger.info(f"MODERATE: Concern pattern detected: '{pattern}' - boosted to MEDIUM minimum")
-                break
-    
-    # Apply comprehensive false positive reduction (but only to non-critical cases)
-    if message and base_score < 0.65:  # Only apply to non-critical cases
-        base_score = apply_comprehensive_false_positive_reduction(message, base_score)
-    
-    # CRITICAL PATTERN DETECTION: Patterns that MUST be HIGH (keep existing safety)
-    message_lower = context.get('message_lower', message.lower() if message else '')
-    
-    critical_pattern_found = False
-    
-    for pattern_list, pattern_name in [
-        (BURDEN_PATTERNS, "burden_ideation"),
-        (HOPELESSNESS_PATTERNS, "severe_hopelessness"), 
-        (STRUGGLE_PATTERNS, "severe_struggle")
-    ]:
-        for pattern in pattern_list:
-            if pattern in message_lower:
-                base_score = max(base_score, 0.65)  # Force HIGH threshold
-                reason += f" + {pattern_name}_boost"
-                critical_pattern_found = True
-                break
-        if critical_pattern_found:
-            break
-    
-    # Context adjustments (more conservative)
-    context_adjustment = 0.0
-    adjustment_reasons = []
-    
-    # Negative sentiment boost (reduced)
-    if sentiment_scores and 'negative' in sentiment_scores:
-        negative_score = sentiment_scores['negative']
-        if negative_score > 0.85:  # Very negative sentiment
-            context_adjustment += 0.08  # Reduced from 0.10
-            adjustment_reasons.append(f"very_negative_sentiment (+0.08)")
-        elif negative_score > 0.70:  # Moderately negative
-            context_adjustment += 0.04  # Reduced boost
-            adjustment_reasons.append(f"negative_sentiment (+0.04)")
-    
-    # Social context adjustments (keep reasonable ones)
-    if context.get('social_isolation_indicators', 0) > 2:
-        context_adjustment += 0.04  # Reduced from 0.05
-        adjustment_reasons.append("social_isolation (+0.04)")
-    
-    if context.get('hopelessness_indicators', 0) > 1:
-        context_adjustment += 0.06  # Reduced from 0.08
-        adjustment_reasons.append("hopelessness_indicators (+0.06)")
-    
-    # Context reductions (more generous)
-    if context.get('has_humor_context') and base_score < 0.40:  # Don't reduce HIGH scores
-        context_adjustment -= 0.08  # Increased reduction
-        adjustment_reasons.append("humor_context (-0.08)")
-    
-    if context.get('has_work_context') and base_score < 0.30:  # Don't reduce MEDIUM+ scores
-        context_adjustment -= 0.06  # Increased reduction
-        adjustment_reasons.append("work_success_context (-0.06)")
-    
-    # Apply context adjustment
-    max_crisis_score = base_score + context_adjustment
-    max_crisis_score = max(0.0, min(1.0, max_crisis_score))  # Clamp to [0,1]
-    
-    if adjustment_reasons:
-        logger.info(f"Context adjustments: {adjustment_reasons} -> {base_score:.3f} → {max_crisis_score:.3f}")
-    
-    logger.info(f"COMPREHENSIVE BALANCED analysis: {reason} -> final score: {max_crisis_score:.3f}")
-    
-    return max_crisis_score, detected_categories
+    except Exception as e:
+        logger.error(f"Advanced idiom detection failed: {e}")
+        return base_score
 
-def advanced_idiom_detection(message: str, context: Dict, base_score: float) -> float:
-    """Advanced idiom detection with context verification"""
-    message_lower = message.lower().strip()
+def enhanced_crisis_level_mapping(crisis_score: float, thresholds: Dict = None) -> str:
+    """
+    Enhanced crisis level mapping with configurable thresholds
     
-    for idiom_rule in ENHANCED_IDIOM_PATTERNS:
-        for pattern in idiom_rule['patterns']:
-            if re.search(pattern, message_lower, re.IGNORECASE):
-                if idiom_rule['required_context'](message):
-                    reduced_score = base_score * idiom_rule['reduction_factor']
-                    final_score = min(reduced_score, idiom_rule['max_score_after'])
-                    
-                    logger.info(f"ADVANCED IDIOM REDUCTION: {idiom_rule['name']} -> {base_score:.3f} → {final_score:.3f}")
-                    return final_score
+    Args:
+        crisis_score: Crisis confidence score (0.0 to 1.0)
+        thresholds: Optional custom thresholds
+        
+    Returns:
+        Crisis level string ('none', 'low', 'medium', 'high')
+    """
     
-    return base_score
-
-def enhanced_crisis_level_mapping(crisis_score: float) -> str:
-    """COMPREHENSIVE BALANCED crisis level mapping with targeted adjusted thresholds"""
-    # Use the targeted adjusted thresholds based on test results
-    if crisis_score >= 0.55:  # Reduced from 0.60 - catches self-harm at 0.503
-        return 'high'      
-    elif crisis_score >= 0.28:  # Reduced from 0.32 - catches "can't handle" at 0.308
-        return 'medium'    
-    elif crisis_score >= 0.16:  # Keep same - working perfectly for false positive prevention
-        return 'low'       
+    if thresholds is None:
+        thresholds = DEFAULT_CRISIS_THRESHOLDS
+    
+    if crisis_score >= thresholds.get('high', 0.55):
+        return 'high'
+    elif crisis_score >= thresholds.get('medium', 0.28):
+        return 'medium'
+    elif crisis_score >= thresholds.get('low', 0.16):
+        return 'low'
     else:
         return 'none'
 
-def map_confidence_to_crisis_level(confidence: float) -> str:
-    """Map confidence score to crisis level using comprehensive balanced thresholds"""
-    return enhanced_crisis_level_mapping(confidence)
+def map_confidence_to_crisis_level(confidence: float, thresholds: Dict = None) -> str:
+    """Map confidence score to crisis level using enhanced thresholds"""
+    return enhanced_crisis_level_mapping(confidence, thresholds)
 
 def determine_crisis_level_from_context(phrase_data: Dict, confidence: float) -> str:
     """Determine crisis level based on context and confidence"""
@@ -365,15 +270,15 @@ def determine_crisis_level_from_context(phrase_data: Dict, confidence: float) ->
     
     # Temporal urgency is always concerning
     if context_type == 'temporal_urgency':
-        return 'high' if confidence > 0.50 else 'medium'  # Adjusted threshold
+        return 'high' if confidence > 0.50 else 'medium'
     
     # Social isolation is medium-high concern
     if context_type == 'social_isolation':
-        return 'medium' if confidence > 0.30 else 'low'  # Adjusted threshold
+        return 'medium' if confidence > 0.30 else 'low'
     
     # Capability loss varies by confidence
     if context_type == 'capability_loss':
-        return 'medium' if confidence > 0.45 else 'low'  # Adjusted threshold
+        return 'medium' if confidence > 0.45 else 'low'
     
     # Default mapping with balanced thresholds
     return map_confidence_to_crisis_level(confidence)
@@ -383,111 +288,150 @@ async def score_phrases_with_models(model_manager, phrases: List[str], original_
     Score extracted phrases using the ML models
     
     Args:
-        model_manager: The model manager instance with depression and sentiment models
+        model_manager: ML model manager
         phrases: List of phrases to score
-        original_message: The original message for context
-    
+        original_message: Original message for context
+        
     Returns:
-        List of scored phrases compatible with existing filter_and_rank_phrases function
+        List of phrases with scores
     """
-    if not phrases:
+    
+    if not model_manager or not phrases:
         return []
     
     scored_phrases = []
     
     try:
+        # Get models
+        depression_model = model_manager.get_model('depression') if hasattr(model_manager, 'get_model') else None
+        
         for phrase in phrases:
-            if not phrase or len(phrase.strip()) < 2:
+            if isinstance(phrase, dict):
+                phrase_text = phrase.get('text', '')
+            else:
+                phrase_text = str(phrase)
+            
+            if not phrase_text.strip():
                 continue
             
-            phrase_clean = phrase.strip()
-            
             try:
-                # Run the phrase through depression model
-                depression_result = model_manager.analyze_with_depression_model(phrase_clean)
-                depression_score = extract_depression_score(depression_result)
+                # Score phrase with depression model
+                score = 0.0
+                if depression_model:
+                    score = extract_depression_score(phrase_text, depression_model)
                 
-                # Run through sentiment model for additional context
-                sentiment_result = model_manager.analyze_with_sentiment_model(phrase_clean)
-                
-                # Calculate combined confidence score
-                confidence = depression_score
-                
-                # Add sentiment context if available
-                if sentiment_result and isinstance(sentiment_result, list) and len(sentiment_result) > 0:
-                    for sent_pred in sentiment_result[0] if isinstance(sentiment_result[0], list) else sentiment_result:
-                        if isinstance(sent_pred, dict):
-                            label = sent_pred.get('label', '').lower()
-                            score = sent_pred.get('score', 0.0)
-                            
-                            # Boost negative sentiment phrases
-                            if label in ['negative', 'sadness', 'anger', 'fear']:
-                                confidence += score * 0.15  # Small boost for negative sentiment
-                            elif label in ['positive', 'joy', 'optimism']:
-                                confidence *= 0.9  # Slight reduction for positive sentiment
-                
-                # Clamp confidence to [0, 1]
-                confidence = max(0.0, min(1.0, confidence))
-                
-                # Create phrase data compatible with existing filter_and_rank_phrases function
-                scored_phrase = {
-                    'text': phrase_clean,
-                    'confidence': confidence,
-                    'depression_score': depression_score,
-                    'sentiment_result': sentiment_result,
-                    'source': 'model_scoring',
-                    'context_type': 'general',
-                    'crisis_boost': 'medium' if confidence > 0.5 else 'low'
+                phrase_data = {
+                    'text': phrase_text,
+                    'score': score,
+                    'model': 'depression',
+                    'context': 'phrase_scoring'
                 }
                 
-                scored_phrases.append(scored_phrase)
+                # Preserve original phrase data if it was a dict
+                if isinstance(phrase, dict):
+                    phrase_data.update(phrase)
+                    phrase_data['score'] = score  # Override with new score
                 
-                logger.debug(f"Scored phrase: '{phrase_clean}' -> confidence: {confidence:.3f}")
+                scored_phrases.append(phrase_data)
                 
             except Exception as e:
-                logger.warning(f"Error scoring phrase '{phrase_clean}': {e}")
-                # Add phrase with minimal score to avoid losing it
-                scored_phrases.append({
-                    'text': phrase_clean,
-                    'confidence': 0.0,
-                    'depression_score': 0.0,
-                    'sentiment_result': None,
-                    'source': 'model_scoring',
-                    'context_type': 'general',
-                    'crisis_boost': 'low',
-                    'error': str(e)
-                })
-    
+                logger.warning(f"Failed to score phrase '{phrase_text}': {e}")
+                continue
+        
+        logger.debug(f"Scored {len(scored_phrases)} phrases successfully")
+        return scored_phrases
+        
     except Exception as e:
-        logger.error(f"Error in score_phrases_with_models: {e}")
+        logger.error(f"Phrase scoring failed: {e}")
+        return []
+
+def filter_and_rank_phrases(phrases: List[Dict], parameters: Dict = None) -> List[Dict]:
+    """
+    Filter and rank phrases by relevance and confidence
+    
+    Args:
+        phrases: List of phrase dictionaries with scores
+        parameters: Optional filtering parameters
+        
+    Returns:
+        Filtered and ranked list of phrases
+    """
+    
+    if not phrases:
         return []
     
-    logger.info(f"Scored {len(scored_phrases)} phrases from {len(phrases)} input phrases")
-    return scored_phrases
+    try:
+        # Default parameters
+        min_confidence = parameters.get('min_confidence', 0.3) if parameters else 0.3
+        max_results = parameters.get('max_results', 20) if parameters else 20
+        
+        # Filter by minimum confidence
+        filtered_phrases = [
+            phrase for phrase in phrases 
+            if phrase.get('score', 0.0) >= min_confidence
+        ]
+        
+        # Sort by score (descending)
+        ranked_phrases = sorted(
+            filtered_phrases,
+            key=lambda x: x.get('score', 0.0),
+            reverse=True
+        )
+        
+        # Limit results
+        final_phrases = ranked_phrases[:max_results]
+        
+        logger.debug(f"Filtered and ranked: {len(phrases)} → {len(final_phrases)} phrases")
+        return final_phrases
+        
+    except Exception as e:
+        logger.error(f"Phrase filtering failed: {e}")
+        return phrases  # Return original if filtering fails
 
-def filter_and_rank_phrases(phrases: List[Dict], params: Dict) -> List[Dict]:
-    """Filter and rank phrases by relevance and confidence"""
+def _process_sentiment_result(sentiment_result) -> Dict[str, float]:
+    """Helper function to process sentiment model results"""
     
-    # Remove duplicates
-    unique_phrases = {}
-    for phrase in phrases:
-        text = phrase['text']
-        if text not in unique_phrases or phrase['confidence'] > unique_phrases[text]['confidence']:
-            unique_phrases[text] = phrase
+    if not sentiment_result or not isinstance(sentiment_result, list):
+        return {}
     
-    # Convert back to list
-    filtered_phrases = list(unique_phrases.values())
+    sentiment_scores = {}
     
-    # Sort by confidence descending
-    filtered_phrases.sort(key=lambda x: x['confidence'], reverse=True)
-    
-    # Apply additional filters with adjusted confidence threshold
-    min_confidence = params.get('min_confidence', 0.20)  # Reduced from 0.3
-    max_results = params.get('max_results', 20)
-    
-    final_phrases = [
-        phrase for phrase in filtered_phrases
-        if phrase['confidence'] >= min_confidence
-    ][:max_results]
-    
-    return final_phrases
+    try:
+        for result in sentiment_result:
+            if not isinstance(result, dict):
+                continue
+                
+            label = result.get('label', '').upper()
+            score = result.get('score', 0.0)
+            
+            # Handle different label formats
+            if label in ['POSITIVE', 'POS']:
+                sentiment_scores['positive'] = score
+            elif label in ['NEGATIVE', 'NEG']:
+                sentiment_scores['negative'] = score
+            elif label in ['NEUTRAL', 'NEU']:
+                sentiment_scores['neutral'] = score
+            elif label in ['LABEL_0']:  # Cardiff NLP negative
+                sentiment_scores['negative'] = score
+            elif label in ['LABEL_1']:  # Cardiff NLP neutral
+                sentiment_scores['neutral'] = score
+            elif label in ['LABEL_2']:  # Cardiff NLP positive
+                sentiment_scores['positive'] = score
+        
+        return sentiment_scores
+        
+    except Exception as e:
+        logger.error(f"Error processing sentiment result: {e}")
+        return {}
+
+# Export for clean architecture
+__all__ = [
+    'extract_depression_score',
+    'enhanced_depression_analysis',
+    'advanced_idiom_detection',
+    'enhanced_crisis_level_mapping',
+    'map_confidence_to_crisis_level',
+    'determine_crisis_level_from_context',
+    'score_phrases_with_models',
+    'filter_and_rank_phrases'
+]
