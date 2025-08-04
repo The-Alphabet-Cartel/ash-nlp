@@ -787,9 +787,3 @@ class ModelsManager:
                 'disagreement_threshold': self.model_config.get('disagreement_threshold', 2)
             }
         }
-
-
-# Backward compatibility alias for migration period
-# This allows existing code to import ModelManager during the migration
-ModelManager = ModelsManager
-EnhancedModelManager = ModelsManager
