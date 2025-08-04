@@ -838,6 +838,14 @@ class ModelsManager:
         
         # Configure disagreement threshold
         disagreement_threshold = self.model_config.get('disagreement_threshold', 2)
+
+        # Convert to int if it's a string (from environment variables)
+        if isinstance(disagreement_threshold, str):
+            try:
+                disagreement_threshold = int(disagreement_threshold)
+            except ValueError:
+                logger.warning(f"⚠️ Invalid disagreement_threshold '{disagreement_threshold}', using default 2")
+                disagreement_threshold = 2
         
         return risk_range >= disagreement_threshold
     
