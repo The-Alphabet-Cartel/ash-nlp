@@ -25,8 +25,8 @@ SERVER_CONFIG = {
         "cpu": "Ryzen 7 7700x",
         "gpu": "RTX 3050 (8GB VRAM)",
         "ram": "64GB",
-        "inference_device": "CPU",
-        "models_loaded": 2
+        "inference_device": "GPU",
+        "models_loaded": 3
     },
     "capabilities": {
         "crisis_analysis": "Original depression + sentiment analysis",
