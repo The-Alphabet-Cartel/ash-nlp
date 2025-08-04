@@ -1,21 +1,28 @@
-#!/usr/bin/env python3
-# ash/ash-nlp/main.py (Clean v3.1 Architecture - Phase 2C Complete)
+# ash/ash-nlp/main.py - Clean v3.1 Architecture with Phase 3a Crisis Pattern Manager
 """
-Clean v3.1 Ash NLP Service - No Backward Compatibility
-Pure manager architecture with JSON defaults + ENV overrides
+Enhanced Mental Health Crisis Detection API
+Clean v3.1 Architecture - Phase 3a Complete with CrisisPatternManager
+
+CRITICAL UPDATE: Three Zero-Shot Model Ensemble Integration with Crisis Pattern Manager
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
 """
 
-import os
 import sys
-import time
 import logging
+import time
+import os
 from contextlib import asynccontextmanager
+from typing import Dict, Any, Optional
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-# Set up logging FIRST to catch any import errors
+# ============================================================================
+# LOGGING SETUP
+# ============================================================================
+## Set up logging FIRST to catch any import errors
+## !!!Leave this block alone during development!!!
 log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
 log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
-
 logging.basicConfig(
     level=getattr(logging, log_level),
     format='%(asctime)s %(levelname)s: %(name)s - %(message)s',
@@ -24,63 +31,30 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
 )
-
 logger = logging.getLogger(__name__)
 logger.info("🚀 Starting Ash NLP Service v3.1 - Clean Architecture (Phase 2C Complete)")
 
-# Initialize startup tracking
-startup_time = time.time()
-
-# Component availability flags
-MANAGERS_AVAILABLE = False
-MODELS_MANAGER_AVAILABLE = False
-PYDANTIC_MANAGER_AVAILABLE = False
-CRISIS_ANALYZER_AVAILABLE = False
-PHRASE_EXTRACTOR_AVAILABLE = False
-LEARNING_AVAILABLE = False
-FASTAPI_AVAILABLE = False
-
-# Global components
-config_manager = None
-settings_manager = None
-zero_shot_manager = None
-model_manager = None
-pydantic_manager = None
-crisis_analyzer = None
-phrase_extractor = None
-learning_manager = None
-
 # ============================================================================
-# CLEAN IMPORT SECTION - No Fallbacks, Direct Imports Only
+# CLEAN V3.1 IMPORTS - Phase 3a Updated with CrisisPatternManager
 # ============================================================================
 
-# Import FastAPI
+# Core Manager Imports - DIRECT ONLY (NO FALLBACKS)
 try:
-    from fastapi import FastAPI
-    FASTAPI_AVAILABLE = True
-    logger.info("✅ FastAPI import successful")
-except ImportError as e:
-    FASTAPI_AVAILABLE = False
-    logger.error(f"❌ FastAPI import failed: {e}")
-    sys.exit(1)
-
-# Import Core Managers - DIRECT IMPORTS ONLY
-try:
-    logger.info("🔧 Importing core managers...")
+    logger.info("📋 Importing Core Managers v3.1...")
     from managers.config_manager import ConfigManager
     from managers.settings_manager import SettingsManager
     from managers.zero_shot_manager import ZeroShotManager
-    MANAGERS_AVAILABLE = True
+    CORE_MANAGERS_AVAILABLE = True
     logger.info("✅ Core managers imported successfully")
 except ImportError as e:
-    MANAGERS_AVAILABLE = False
+    CORE_MANAGERS_AVAILABLE = False
     logger.error(f"❌ Core manager imports failed: {e}")
-    logger.error("💡 Ensure managers are properly installed in managers/ directory")
+    logger.error("💡 Ensure core managers are properly installed in managers/")
     sys.exit(1)
 
 # Import ModelsManager v3.1 - DIRECT IMPORT ONLY (No Fallback)
 try:
-    logger.info("🧠 Importing ModelsManager v3.1...")
+    logger.info("🤖 Importing ModelsManager v3.1...")
     from managers.models_manager import ModelsManager
     MODELS_MANAGER_AVAILABLE = True
     logger.info("✅ ModelsManager v3.1 imported from managers/")
@@ -100,6 +74,18 @@ except ImportError as e:
     PYDANTIC_MANAGER_AVAILABLE = False
     logger.error(f"❌ PydanticManager v3.1 import failed: {e}")
     logger.error("💡 Ensure PydanticManager is properly installed in managers/pydantic_manager.py")
+    sys.exit(1)
+
+# Import CrisisPatternManager v3.1 - Phase 3a Integration
+try:
+    logger.info("🔍 Importing CrisisPatternManager v3.1...")
+    from managers.crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
+    CRISIS_PATTERN_MANAGER_AVAILABLE = True
+    logger.info("✅ CrisisPatternManager v3.1 imported from managers/ (Phase 3a)")
+except ImportError as e:
+    CRISIS_PATTERN_MANAGER_AVAILABLE = False
+    logger.error(f"❌ CrisisPatternManager v3.1 import failed: {e}")
+    logger.error("💡 Ensure CrisisPatternManager is properly installed in managers/crisis_pattern_manager.py")
     sys.exit(1)
 
 # Import Analysis Components (Optional)
@@ -132,6 +118,23 @@ except ImportError as e:
     logger.warning(f"⚠️ Learning system import failed: {e}")
 
 # ============================================================================
+# GLOBAL MANAGER INSTANCES - Phase 3a Updated
+# ============================================================================
+
+# Core managers
+config_manager = None
+settings_manager = None
+zero_shot_manager = None
+crisis_pattern_manager = None  # Phase 3a addition
+
+# ML and analysis managers
+model_manager = None
+pydantic_manager = None
+crisis_analyzer = None
+phrase_extractor = None
+learning_manager = None
+
+# ============================================================================
 # CLEAN MODEL ACCESS - Direct Manager Usage Only
 # ============================================================================
 
@@ -143,50 +146,53 @@ def get_pydantic_models():
         logger.debug("🏗️ Using PydanticManager v3.1 for model access")
         return pydantic_manager.get_core_models()
     else:
-        logger.error("❌ PydanticManager not available or not initialized")
-        raise RuntimeError("PydanticManager v3.1 required but not available")
+        logger.error("❌ PydanticManager v3.1 not available or not initialized")
+        raise RuntimeError(
+            "Clean v3.1: PydanticManager not available. "
+            "Ensure PydanticManager is properly initialized."
+        )
 
-# Initialize threshold configuration
-def initialize_centralized_threshold_config():
-    """Initialize centralized threshold configuration from environment variables"""
+# ============================================================================
+# CONFIGURATION VALIDATION
+# ============================================================================
+
+def validate_centralized_thresholds():
+    """Validate centralized threshold configuration from environment variables"""
+    required_thresholds = [
+        'NLP_ENSEMBLE_MODE',
+        'NLP_CONSENSUS_CRISIS_TO_HIGH',
+        'NLP_CONSENSUS_CRISIS_TO_MEDIUM', 
+        'NLP_CONSENSUS_MILD_CRISIS_TO_LOW',
+        'NLP_DEPRESSION_WEIGHT',
+        'NLP_SENTIMENT_WEIGHT',
+        'NLP_EMOTIONAL_DISTRESS_WEIGHT'
+    ]
     
-    thresholds = {
-        # Ensemble mode
-        'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
-        
-        # Consensus mapping thresholds
-        'consensus_crisis_to_high': float(os.getenv('NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD', '0.50')),
-        'consensus_crisis_to_medium': float(os.getenv('NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD', '0.30')),
-        'consensus_mild_crisis_to_low': float(os.getenv('NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD', '0.40')),
-        'consensus_negative_to_low': float(os.getenv('NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD', '0.70')),
-        'consensus_unknown_to_low': float(os.getenv('NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD', '0.50')),
-        
-        # Model weights
-        'depression_weight': float(os.getenv('NLP_DEPRESSION_MODEL_WEIGHT', '0.6')),
-        'sentiment_weight': float(os.getenv('NLP_SENTIMENT_MODEL_WEIGHT', '0.15')),
-        'emotional_distress_weight': float(os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT', '0.25')),
-        
-        # Staff review thresholds
-        'staff_review_high_always': os.getenv('NLP_STAFF_REVIEW_HIGH_ALWAYS', 'true').lower() == 'true',
-        'staff_review_medium_threshold': float(os.getenv('NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD', '0.45')),
-        'staff_review_low_threshold': float(os.getenv('NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD', '0.75')),
-        'staff_review_on_disagreement': os.getenv('NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT', 'true').lower() == 'true',
-        
-        # Safety controls  
-        'consensus_safety_bias': float(os.getenv('NLP_CONSENSUS_SAFETY_BIAS', '0.05')),
-        'enable_safety_override': os.getenv('NLP_ENABLE_SAFETY_OVERRIDE', 'true').lower() == 'true',
-        
-        # Learning system
-        'enable_learning': os.getenv('GLOBAL_ENABLE_LEARNING_SYSTEM', 'true').lower() == 'true'
-    }
+    thresholds = {}
+    missing_vars = []
     
-    # Validate model weights sum to 1.0
-    total_weight = thresholds['depression_weight'] + thresholds['sentiment_weight'] + thresholds['emotional_distress_weight']
-    if abs(total_weight - 1.0) > 0.001:
-        logger.error(f"❌ Model weights must sum to 1.0, got {total_weight}")
-        logger.error(f"   Depression: {thresholds['depression_weight']}")
-        logger.error(f"   Sentiment: {thresholds['sentiment_weight']}")
-        logger.error(f"   Emotional Distress: {thresholds['emotional_distress_weight']}")
+    for var in required_thresholds:
+        value = os.getenv(var)
+        if value is None:
+            missing_vars.append(var)
+        else:
+            try:
+                # Convert to appropriate type
+                if var in ['NLP_ENSEMBLE_MODE']:
+                    thresholds[var.lower().replace('nlp_', '')] = value
+                else:
+                    thresholds[var.lower().replace('nlp_', '')] = float(value)
+            except ValueError:
+                logger.error(f"❌ Invalid value for {var}: {value}")
+                missing_vars.append(f"{var} (invalid value)")
+    
+    if missing_vars:
+        logger.error("❌ Missing or invalid centralized threshold configuration:")
+        for var in missing_vars:
+            logger.error(f"   {var}")
+        logger.error(f"   Depression: {thresholds.get('depression_weight', 'MISSING')}")
+        logger.error(f"   Sentiment: {thresholds.get('sentiment_weight', 'MISSING')}")
+        logger.error(f"   Emotional Distress: {thresholds.get('emotional_distress_weight', 'MISSING')}")
         sys.exit(1)
     
     logger.info("🐳 Running in Docker mode - using system environment variables")
@@ -198,30 +204,26 @@ def initialize_centralized_threshold_config():
     logger.debug(f"     CRISIS → HIGH: {thresholds['consensus_crisis_to_high']}")
     logger.debug(f"     CRISIS → MEDIUM: {thresholds['consensus_crisis_to_medium']}")
     logger.debug(f"     MILD_CRISIS → LOW: {thresholds['consensus_mild_crisis_to_low']}")
-    logger.debug(f"     NEGATIVE → LOW: {thresholds['consensus_negative_to_low']}")
     logger.debug("   Model Weights:")
     logger.debug(f"     Depression: {thresholds['depression_weight']}")
     logger.debug(f"     Sentiment: {thresholds['sentiment_weight']}")
     logger.debug(f"     Emotional Distress: {thresholds['emotional_distress_weight']}")
-    logger.debug("   Staff Review Thresholds:")
-    logger.debug(f"     MEDIUM confidence: {thresholds['staff_review_medium_threshold']}")
-    logger.debug(f"     LOW confidence: {thresholds['staff_review_low_threshold']}")
     
     logger.debug("🎯 CENTRALIZED Ensemble endpoints configured - All thresholds from environment variables")
     
     return thresholds
 
 # ============================================================================
-# CLEAN INITIALIZATION - No Backward Compatibility
+# CLEAN INITIALIZATION - Phase 3a Updated with CrisisPatternManager
 # ============================================================================
 
 async def initialize_components_clean_v3_1():
-    """Initialize all components with clean v3.1 architecture - NO FALLBACKS"""
-    global config_manager, settings_manager, zero_shot_manager
+    """Initialize all components with clean v3.1 architecture - Phase 3a Complete"""
+    global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
     global model_manager, pydantic_manager, crisis_analyzer, phrase_extractor, learning_manager
     
     try:
-        logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 2C Complete...")
+        logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3a Complete...")
         
         # ========================================================================
         # STEP 1: Initialize Core Configuration Managers - DIRECT ONLY
@@ -232,118 +234,98 @@ async def initialize_components_clean_v3_1():
         settings_manager = SettingsManager(config_manager)
         zero_shot_manager = ZeroShotManager(config_manager)
         
-        logger.info("✅ Core managers initialized successfully")
+        logger.info("✅ Core configuration managers initialized (ConfigManager, SettingsManager, ZeroShotManager)")
         
         # ========================================================================
-        # STEP 2: Initialize PydanticManager v3.1 - DIRECT ONLY
+        # STEP 2: Initialize CrisisPatternManager - Phase 3a
+        # ========================================================================
+        logger.info("🔍 Initializing CrisisPatternManager v3.1 (Phase 3a)...")
+        
+        if CRISIS_PATTERN_MANAGER_AVAILABLE:
+            try:
+                crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
+                logger.info("✅ CrisisPatternManager v3.1 initialized with JSON configuration")
+                
+                # Validate pattern loading
+                pattern_status = crisis_pattern_manager.get_status()
+                logger.debug(f"🔍 Pattern Manager Status: {pattern_status['loaded_pattern_sets']} pattern sets loaded")
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Could not initialize CrisisPatternManager: {e}")
+                crisis_pattern_manager = None
+        else:
+            logger.warning("⚠️ CrisisPatternManager not available")
+            crisis_pattern_manager = None
+        
+        # ========================================================================
+        # STEP 3: Initialize PydanticManager v3.1 - DIRECT ONLY
         # ========================================================================
         logger.info("📋 Initializing PydanticManager v3.1...")
         
-        pydantic_manager = create_pydantic_manager(config_manager=config_manager)
-        
-        if not pydantic_manager.is_initialized():
-            raise RuntimeError("PydanticManager v3.1 failed to initialize")
-        
-        logger.info("✅ PydanticManager v3.1 initialized successfully")
-        
-        # Log model summary
-        summary = pydantic_manager.get_model_summary()
-        logger.info(f"📊 PydanticManager Summary: {summary['total_models']} models across {len(summary['categories'])} categories")
-        logger.debug(f"📋 Available model categories: {list(summary['categories'].keys())}")
-        
-        # Test model access
-        models = get_pydantic_models()
-        logger.info(f"✅ Pydantic models accessible: {len(models)} models available")
-        logger.debug(f"📋 Available models: {list(models.keys())}")
+        if PYDANTIC_MANAGER_AVAILABLE:
+            try:
+                pydantic_manager = create_pydantic_manager()
+                if pydantic_manager.is_initialized():
+                    logger.info("✅ PydanticManager v3.1 initialized successfully")
+                else:
+                    logger.error("❌ PydanticManager v3.1 failed to initialize")
+                    raise RuntimeError("PydanticManager v3.1 initialization failed")
+            except Exception as e:
+                logger.error(f"❌ PydanticManager v3.1 initialization failed: {e}")
+                raise
+        else:
+            logger.error("❌ PydanticManager v3.1 not available")
+            raise RuntimeError("PydanticManager v3.1 required but not available")
         
         # ========================================================================
-        # STEP 3: Validate Configuration
+        # STEP 4: Initialize ModelsManager v3.1 - DIRECT ONLY
         # ========================================================================
-        logger.info("🔍 Validating configuration...")
+        logger.info("🤖 Initializing ModelsManager v3.1...")
         
-        validation_result = config_manager.validate_configuration()
-        if not validation_result['valid']:
-            logger.error(f"❌ Configuration validation failed: {validation_result['errors']}")
-            raise RuntimeError(f"Invalid configuration: {validation_result['errors']}")
-        
-        for warning in validation_result['warnings']:
-            logger.warning(f"⚠️ Configuration warning: {warning}")
-        
-        logger.info("✅ Configuration validation passed")
-        
-        # ========================================================================
-        # STEP 4: Extract Configuration
-        # ========================================================================
-        logger.info("📊 Extracting processed configuration...")
-        
-        model_config = config_manager.get_model_configuration()
-        hardware_config = config_manager.get_hardware_configuration()
-        threshold_config = config_manager.get_threshold_configuration()
-        feature_flags = config_manager.get_feature_flags()
-        ensemble_mode = config_manager.get_ensemble_mode()
-        
-        # Log the models that will be loaded
-        models = model_config.get('models', {})
-        logger.info("🎯 Final Model Configuration (JSON + Environment Overrides):")
-        for model_type, model_info in models.items():
-            logger.info(f"   {model_type.title()} Model: {model_info['name']}")
-            logger.debug(f"   {model_type.title()} Weight: {model_info['weight']}")
-        
-        logger.info(f"   Ensemble Mode: {ensemble_mode}")
-        
-        gap_detection_enabled = model_config.get('ensemble_config', {}).get('gap_detection', {}).get('enabled', True)
-        logger.info(f"   Gap Detection: {'✅ Enabled' if gap_detection_enabled else '❌ Disabled'}")
+        if MODELS_MANAGER_AVAILABLE:
+            try:
+                model_manager = ModelsManager(config_manager, settings_manager, zero_shot_manager)
+                await model_manager.initialize()
+                
+                if model_manager.models_loaded():
+                    logger.info("✅ ModelsManager v3.1 initialized with all models loaded")
+                else:
+                    logger.error("❌ ModelsManager v3.1 failed to load models")
+                    raise RuntimeError("ModelsManager v3.1 model loading failed")
+            except Exception as e:
+                logger.error(f"❌ ModelsManager v3.1 initialization failed: {e}")
+                raise
+        else:
+            logger.error("❌ ModelsManager v3.1 not available")
+            raise RuntimeError("ModelsManager v3.1 required but not available")
         
         # ========================================================================
-        # STEP 5: Initialize ModelsManager v3.1 - DIRECT ONLY
-        # ========================================================================
-        logger.info("🧠 Initializing ModelsManager v3.1...")
-        
-        model_manager = ModelsManager(
-            config_manager=config_manager,
-            model_config=model_config,
-            hardware_config=hardware_config
-        )
-        
-        logger.info("✅ ModelsManager v3.1 initialized successfully")
-        
-        # ========================================================================
-        # STEP 6: Load Models
-        # ========================================================================
-        logger.info("📦 Loading Three Zero-Shot Model Ensemble...")
-        await model_manager.load_models()
-        logger.info("✅ All three models loaded successfully")
-        
-        # ========================================================================
-        # STEP 7: Initialize Learning System
+        # STEP 5: Initialize Learning System (Optional)
         # ========================================================================
         if LEARNING_AVAILABLE:
-            learning_config = feature_flags.get('learning_system', {})
-            if learning_config.get('enabled', True):
-                learning_manager = EnhancedLearningManager(
-                    model_manager=model_manager,
-                    config_manager=config_manager
-                )
-                logger.info("✅ Learning system initialized")
-            else:
-                logger.info("ℹ️ Learning system disabled via configuration")
+            try:
+                learning_manager = EnhancedLearningManager()
+                logger.info("✅ Enhanced Learning Manager initialized")
+            except Exception as e:
+                logger.warning(f"⚠️  Could not initialize Enhanced Learning Manager: {e}")
                 learning_manager = None
         else:
-            logger.info("ℹ️ Learning system not available")
+            logger.info("ℹ️ Enhanced Learning Manager not available")
             learning_manager = None
         
         # ========================================================================
-        # STEP 8: Initialize Analysis Components
+        # STEP 6: Initialize Analysis Components with Crisis Pattern Manager
         # ========================================================================
         
-        # Initialize CrisisAnalyzer
+        # Initialize CrisisAnalyzer with CrisisPatternManager integration
         if CRISIS_ANALYZER_AVAILABLE:
             try:
                 crisis_analyzer = CrisisAnalyzer(
                     model_manager=model_manager,
+                    crisis_pattern_manager=crisis_pattern_manager,  # Phase 3a integration
                     learning_manager=learning_manager
                 )
-                logger.info("✅ CrisisAnalyzer initialized")
+                logger.info("✅ CrisisAnalyzer initialized with CrisisPatternManager integration")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
                 crisis_analyzer = None
@@ -366,15 +348,16 @@ async def initialize_components_clean_v3_1():
             phrase_extractor = None
         
         # ========================================================================
-        # STEP 9: Final Status Report - Clean v3.1
+        # STEP 7: Final Status Report - Clean v3.1 Phase 3a
         # ========================================================================
-        logger.debug("📊 Component Initialization Summary (Clean v3.1):")
+        logger.debug("📊 Component Initialization Summary (Clean v3.1 Phase 3a):")
         
         components_status = {
             'core_managers': {
                 'config_manager': config_manager is not None,
                 'settings_manager': settings_manager is not None,
                 'zero_shot_manager': zero_shot_manager is not None,
+                'crisis_pattern_manager_v3_1': crisis_pattern_manager is not None,  # Phase 3a
                 'pydantic_manager_v3_1': pydantic_manager is not None
             },
             'ml_components': {
@@ -382,7 +365,7 @@ async def initialize_components_clean_v3_1():
                 'three_model_ensemble': model_manager and model_manager.models_loaded() if model_manager else False
             },
             'analysis_components': {
-                'crisis_analyzer': crisis_analyzer is not None,
+                'crisis_analyzer_with_patterns': crisis_analyzer is not None,  # Phase 3a enhanced
                 'phrase_extractor': phrase_extractor is not None,
                 'learning_manager': learning_manager is not None
             }
@@ -408,7 +391,13 @@ async def initialize_components_clean_v3_1():
             raise RuntimeError(f"Critical v3.1 components failed: {critical_failures}")
         
         logger.info("✅ All critical components initialized successfully - Clean v3.1 Architecture")
-        logger.info("🎉 Phase 2C Complete - No backward compatibility code")
+        logger.info("🎉 Phase 3a Complete - CrisisPatternManager integrated with JSON configuration")
+        
+        # Report Pattern Manager Status
+        if crisis_pattern_manager:
+            logger.info("🔍 Crisis Pattern Manager Status: Operational with JSON patterns")
+        else:
+            logger.warning("⚠️ Crisis Pattern Manager: Not available - pattern analysis limited")
         
     except Exception as e:
         logger.error(f"❌ Failed to initialize v3.1 components: {e}")
@@ -427,15 +416,16 @@ class HealthResponse(BaseModel):
     manager_status: dict
     architecture_version: str
     phase_2c_status: str
+    phase_3a_status: str  # Phase 3a addition
 
 # ============================================================================
-# FastAPI Application Setup - Clean v3.1
+# FastAPI Application Setup - Clean v3.1 Phase 3a
 # ============================================================================
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """FastAPI lifespan context manager - Clean v3.1 Architecture"""
+    """FastAPI lifespan context manager - Clean v3.1 Architecture Phase 3a"""
     # Startup
-    logger.info("🚀 Enhanced FastAPI app starting - Clean v3.1 Architecture (Phase 2C Complete)...")
+    logger.info("🚀 Enhanced FastAPI app starting - Clean v3.1 Architecture (Phase 3a Complete)...")
     
     try:
         await initialize_components_clean_v3_1()
@@ -448,158 +438,141 @@ async def lifespan(app: FastAPI):
             # Direct manager usage - no fallbacks
             add_ensemble_endpoints(app, model_manager, pydantic_manager)
             logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added - Clean v3.1!")
-            logger.info("✅ Clean v3.1: All endpoints using direct manager access")
-                
+            
         except Exception as e:
-            logger.error(f"❌ Failed to add ensemble endpoints: {e}")
+            logger.error(f"❌ Could not add ensemble endpoints: {e}")
             raise
         
         # Import and add admin endpoints - CLEAN v3.1
         try:
-            logger.info("🔧 Adding admin endpoints...")
-            from api.admin_endpoints import setup_admin_endpoints
+            logger.info("🔧 Adding admin endpoints - Clean v3.1...")
+            from api.admin_endpoints import add_admin_endpoints
             
-            # Direct usage - no fallbacks
-            setup_admin_endpoints(app, model_manager, zero_shot_manager)
-            logger.info("✅ Admin endpoints added successfully")
-
+            # Direct manager usage with all managers
+            add_admin_endpoints(
+                app, 
+                config_manager=config_manager,
+                settings_manager=settings_manager,
+                zero_shot_manager=zero_shot_manager,
+                crisis_pattern_manager=crisis_pattern_manager  # Phase 3a addition
+            )
+            logger.info("🎯 Admin endpoints added - Clean v3.1!")
+            
         except Exception as e:
-            logger.error(f"❌ Failed to add admin endpoints: {e}")
-
-        # Add learning endpoints if available
-        if learning_manager and LEARNING_AVAILABLE:
-            try:
-                logger.info("🔧 Adding enhanced learning endpoints...")
-                add_enhanced_learning_endpoints(app, learning_manager, config_manager)
-                logger.info("🧠 Enhanced learning endpoints added!")
-            except Exception as e:
-                logger.error(f"❌ Failed to add learning endpoints: {e}")
-                raise
-        else:
-            logger.info("ℹ️ Learning system not available - skipping learning endpoints")
+            logger.error(f"❌ Could not add admin endpoints: {e}")
+            raise
         
-        logger.info("✅ Enhanced FastAPI app startup complete - Clean v3.1 Architecture!")
-        logger.info("🎉 Phase 2C: All backward compatibility removed - Pure v3.1")
+        # Import and add learning endpoints - CLEAN v3.1
+        if LEARNING_AVAILABLE and learning_manager:
+            try:
+                logger.info("🧠 Adding enhanced learning endpoints - Clean v3.1...")
+                add_enhanced_learning_endpoints(
+                    app, 
+                    learning_manager=learning_manager,
+                    model_manager=model_manager,
+                    pydantic_manager=pydantic_manager
+                )
+                logger.info("🎓 Enhanced learning endpoints added - Clean v3.1!")
+                
+            except Exception as e:
+                logger.warning(f"⚠️ Could not add learning endpoints: {e}")
+        
+        logger.info("🎉 FastAPI app startup complete - All v3.1 Phase 3a components operational!")
         
     except Exception as e:
         logger.error(f"❌ FastAPI app startup failed: {e}")
-        logger.exception("Full startup error:")
         raise
     
     yield
     
     # Shutdown
-    logger.info("🛑 FastAPI app shutting down...")
+    logger.info("🔄 FastAPI app shutting down...")
 
-# Create FastAPI app
+# Initialize FastAPI app with clean v3.1 architecture
 app = FastAPI(
-    title="Ash NLP Service v3.1 - Clean Architecture (Phase 2C Complete)", 
+    title="Ash NLP Service v3.1 - Phase 3a Complete",
+    description="Enhanced Mental Health Crisis Detection with CrisisPatternManager",
     version="3.1.0",
-    description="Advanced crisis detection using three specialized ML models with clean JSON+ENV configuration management - NO backward compatibility",
     lifespan=lifespan
 )
 
-# Configure CORS if enabled
-cors_enabled = os.getenv('GLOBAL_ENABLE_CORS', 'true').lower() == 'true'
-if cors_enabled:
-    try:
-        from fastapi.middleware.cors import CORSMiddleware
-        app.add_middleware(
-            CORSMiddleware,
-            allow_origins=["*"],  # Configure appropriately for production
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-        )
-        logger.debug("🌐 CORS middleware enabled")
-    except Exception as e:
-        logger.warning(f"⚠️ Could not enable CORS: {e}")
-
-logger.info("✅ FastAPI app created successfully - Clean v3.1")
-
-# Initialize configuration
-thresholds = initialize_centralized_threshold_config()
+# Track startup time
+startup_time = time.time()
 
 # ============================================================================
-# Health Check Endpoint - Clean v3.1
+# Enhanced Health Check - Phase 3a Updated
 # ============================================================================
 @app.get("/health", response_model=HealthResponse)
-async def health_check():
-    """Enhanced health check - Clean v3.1 Architecture (Phase 2C Complete)"""
+async def enhanced_health_check():
+    """Enhanced health check with Phase 3a CrisisPatternManager status"""
     
     uptime = time.time() - startup_time
-    models_loaded = model_manager and model_manager.models_loaded() if model_manager else False
+    model_loaded = model_manager is not None and model_manager.models_loaded()
     
-    # Check component availability
-    components_status = {
+    components_available = {
+        "config_manager": config_manager is not None,
+        "settings_manager": settings_manager is not None,
+        "zero_shot_manager": zero_shot_manager is not None,
+        "crisis_pattern_manager": crisis_pattern_manager is not None,  # Phase 3a
         "models_manager_v3_1": model_manager is not None,
         "pydantic_manager_v3_1": pydantic_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
         "phrase_extractor": phrase_extractor is not None,
-        "learning_manager": learning_manager is not None,
-        "three_model_ensemble": models_loaded
+        "learning_manager": learning_manager is not None
     }
     
-    # Manager status - Clean v3.1
-    manager_status = {
-        "config_manager": config_manager is not None,
-        "settings_manager": settings_manager is not None,
-        "zero_shot_manager": zero_shot_manager is not None,
-        "models_manager_v3_1": model_manager is not None,
-        "pydantic_manager_v3_1": pydantic_manager is not None,
-        "clean_architecture": "v3.1",
-        "backward_compatibility": "removed"
-    }
-    
-    # Configuration status
     configuration_status = {
         "json_config_loaded": config_manager is not None,
-        "environment_overrides_applied": True,
-        "model_configuration_valid": False,
-        "ensemble_mode": "unknown",
-        "config_validation_passed": False,
-        "managers_available": True
+        "settings_validated": settings_manager is not None,
+        "crisis_patterns_loaded": crisis_pattern_manager is not None,  # Phase 3a
+        "zero_shot_labels_loaded": zero_shot_manager is not None,
+        "pydantic_models_available": pydantic_manager is not None and pydantic_manager.is_initialized()
     }
     
-    if config_manager:
-        try:
-            validation_result = config_manager.validate_configuration()
-            configuration_status["model_configuration_valid"] = validation_result['valid']
-            configuration_status["config_validation_passed"] = validation_result['valid']
-            configuration_status["ensemble_mode"] = config_manager.get_ensemble_mode()
-        except Exception as e:
-            logger.warning(f"Health check configuration validation error: {e}")
+    manager_status = {
+        "models_manager_operational": model_manager is not None and model_manager.models_loaded(),
+        "ensemble_analysis_available": model_manager is not None and hasattr(model_manager, 'analyze_with_ensemble'),
+        "crisis_pattern_analysis_available": crisis_pattern_manager is not None,  # Phase 3a
+        "learning_system_operational": learning_manager is not None
+    }
     
-    # Determine overall status
-    if (models_loaded and components_status["models_manager_v3_1"] and 
-        components_status["pydantic_manager_v3_1"] and manager_status["config_manager"]):
-        overall_status = "healthy"
-    elif model_manager and manager_status["config_manager"]:
-        overall_status = "degraded"
-    else:
-        overall_status = "unhealthy"
+    overall_status = "healthy" if all([
+        config_manager is not None,
+        settings_manager is not None, 
+        model_manager is not None and model_manager.models_loaded(),
+        pydantic_manager is not None and pydantic_manager.is_initialized()
+    ]) else "degraded"
     
     return HealthResponse(
         status=overall_status,
         uptime=uptime,
-        model_loaded=models_loaded,
-        components_available=components_status,
+        model_loaded=model_loaded,
+        components_available=components_available,
         configuration_status=configuration_status,
         manager_status=manager_status,
-        architecture_version="v3.1_clean",
-        phase_2c_status="complete"
+        architecture_version="v3.1_clean_phase_3a_complete",
+        phase_2c_status="complete",
+        phase_3a_status="complete" if crisis_pattern_manager is not None else "pattern_manager_unavailable"
     )
 
 # ============================================================================
-# Main execution
+# PRODUCTION READY - Clean v3.1 Architecture Phase 3a Complete
 # ============================================================================
+
 if __name__ == "__main__":
-    logger.info("🎯 Starting Ash NLP Service v3.1 - Clean Architecture...")
-    
     import uvicorn
+    
+    logger.info("🚀 Starting Ash NLP Service v3.1 - Phase 3a Complete")
+    logger.info("🔧 Clean Architecture: Direct manager access only")
+    logger.info("🔍 Crisis Pattern Manager: JSON configuration with ENV overrides")
+    logger.info("🎯 Three Zero-Shot Model Ensemble: Enhanced with pattern analysis")
+    
+    # Validate configuration before starting
+    validate_centralized_thresholds()
+    
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=int(os.getenv('GLOBAL_NLP_API_PORT', 8881)),
-        log_level=os.getenv('GLOBAL_LOG_LEVEL', 'info').lower()
+        port=8881,
+        log_level="info"
     )
