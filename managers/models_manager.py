@@ -295,16 +295,19 @@ class ModelsManager:
         """
         Load all three models for the ensemble analysis
         
-        This method should already exist in your ModelsManager, but if it doesn't,
-        this is a placeholder that calls the individual model loading methods.
+        This method loads all models using the proper arguments structure.
         """
         logger.info("📦 Loading Three Zero-Shot Model Ensemble...")
         
         try:
-            # Load all three models
-            await self._load_depression_model()
-            await self._load_sentiment_model()  
-            await self._load_emotional_distress_model()
+            # Get the arguments that the model loading methods expect
+            model_kwargs = self._get_model_kwargs()
+            loading_kwargs = self._get_model_loading_kwargs()
+            
+            # Load all three models with proper arguments
+            await self._load_depression_model(model_kwargs, loading_kwargs)
+            await self._load_sentiment_model(model_kwargs, loading_kwargs)  
+            await self._load_emotional_distress_model(model_kwargs, loading_kwargs)
             
             self._models_loaded = True
             logger.info("✅ All three models loaded successfully")
