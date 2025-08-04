@@ -11,6 +11,142 @@ from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
+def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pattern_result: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Combine ensemble and pattern analysis results to create final crisis assessment
+    
+    Args:
+        ensemble_result: Results from the three-model ensemble
+        pattern_result: Results from crisis pattern analysis
+        
+    Returns:
+        Combined analysis with final crisis determination
+    """
+    try:
+        # Extract ensemble consensus
+        ensemble_consensus = ensemble_result.get('consensus', {})
+        ensemble_prediction = ensemble_consensus.get('prediction', 'unknown')
+        ensemble_confidence = ensemble_consensus.get('confidence', 0.0)
+        
+        # Extract pattern information
+        patterns_triggered = pattern_result.get('patterns_triggered', [])
+        pattern_error = pattern_result.get('error')
+        
+        # Determine pattern severity
+        pattern_severity = 'none'
+        highest_pattern_level = 'none'
+        
+        if patterns_triggered:
+            for pattern in patterns_triggered:
+                pattern_level = pattern.get('crisis_level', 'low')
+                if pattern_level == 'high':
+                    highest_pattern_level = 'high'
+                    pattern_severity = 'high'
+                    break
+                elif pattern_level == 'medium' and highest_pattern_level != 'high':
+                    highest_pattern_level = 'medium'
+                    pattern_severity = 'medium'
+                elif pattern_level == 'low' and highest_pattern_level == 'none':
+                    highest_pattern_level = 'low'
+                    pattern_severity = 'low'
+        
+        # INTEGRATION LOGIC: Combine ensemble and patterns
+        final_crisis_level = 'none'
+        final_confidence = ensemble_confidence
+        integration_reasoning = []
+        
+        # Map ensemble prediction to crisis level
+        ensemble_crisis_mapping = {
+            'crisis': 'high',
+            'mild_crisis': 'medium',
+            'negative': 'low',
+            'low_risk': 'low',
+            'neutral': 'none',
+            'positive': 'none',
+            'unknown': 'none'
+        }
+        
+        ensemble_crisis_level = ensemble_crisis_mapping.get(ensemble_prediction.lower(), 'none')
+        integration_reasoning.append(f"Ensemble: {ensemble_prediction} -> {ensemble_crisis_level}")
+        
+        # Pattern boost logic
+        if patterns_triggered:
+            integration_reasoning.append(f"Patterns: {len(patterns_triggered)} triggered, highest: {highest_pattern_level}")
+            
+            # If patterns detected crisis, escalate appropriately
+            if pattern_severity == 'high':
+                final_crisis_level = 'high'
+                final_confidence = max(final_confidence, 0.75)
+                integration_reasoning.append("Pattern escalation: HIGH crisis pattern detected")
+                
+            elif pattern_severity == 'medium':
+                if ensemble_crisis_level in ['high', 'medium']:
+                    final_crisis_level = 'medium'
+                    final_confidence = max(final_confidence, 0.60)
+                else:
+                    final_crisis_level = 'low'
+                    final_confidence = max(final_confidence, 0.45)
+                integration_reasoning.append(f"Pattern escalation: MEDIUM pattern -> {final_crisis_level}")
+                
+            elif pattern_severity == 'low':
+                if ensemble_crisis_level in ['high', 'medium']:
+                    final_crisis_level = ensemble_crisis_level
+                else:
+                    final_crisis_level = 'low'
+                    final_confidence = max(final_confidence, 0.35)
+                integration_reasoning.append("Pattern escalation: LOW pattern detected")
+        else:
+            final_crisis_level = ensemble_crisis_level
+            integration_reasoning.append("No patterns triggered, using ensemble result")
+        
+        # Safety check: Never downgrade from ensemble if it detected crisis
+        if ensemble_crisis_level == 'high' and final_crisis_level != 'high':
+            final_crisis_level = 'high'
+            integration_reasoning.append("Safety check: Maintaining ensemble HIGH crisis level")
+        
+        # Determine if response needed
+        needs_response = final_crisis_level != 'none'
+        
+        # Build detected categories
+        detected_categories = []
+        if patterns_triggered:
+            detected_categories.extend([p.get('pattern_name', 'unknown_pattern') for p in patterns_triggered])
+        
+        ensemble_categories = ensemble_result.get('detected_categories', [])
+        detected_categories.extend(ensemble_categories)
+        detected_categories = list(set(detected_categories))
+        
+        return {
+            'needs_response': needs_response,
+            'crisis_level': final_crisis_level,
+            'confidence_score': final_confidence,
+            'detected_categories': detected_categories,
+            'method': 'ensemble_and_patterns_integrated',
+            'model_info': 'Three Zero-Shot Model Ensemble + Crisis Pattern Analysis',
+            'reasoning': ' | '.join(integration_reasoning),
+            'integration_details': {
+                'ensemble_prediction': ensemble_prediction,
+                'ensemble_crisis_level': ensemble_crisis_level,
+                'pattern_severity': pattern_severity,
+                'patterns_count': len(patterns_triggered),
+                'final_determination': final_crisis_level,
+                'pattern_available': not bool(pattern_error)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Error in pattern/ensemble integration: {e}")
+        return {
+            'needs_response': ensemble_result.get('consensus', {}).get('prediction', 'unknown') != 'neutral',
+            'crisis_level': 'low',
+            'confidence_score': ensemble_result.get('consensus', {}).get('confidence', 0.0),
+            'detected_categories': ensemble_result.get('detected_categories', []),
+            'method': 'integration_error_fallback',
+            'model_info': 'Integration error - using ensemble fallback',
+            'reasoning': f"Integration failed: {str(e)}",
+            'integration_error': str(e)
+        }
+
 def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis_pattern_manager=None):
     """
     Add Three Zero-Shot Model Ensemble endpoints to FastAPI app
