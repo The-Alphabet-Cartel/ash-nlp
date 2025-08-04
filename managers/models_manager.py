@@ -270,41 +270,57 @@ class ModelsManager:
             logger.warning(f"Unknown precision '{precision}', using float32")
             return torch.float32
     
-    async def load_models(self):
-        """Load all THREE models with enhanced configuration"""
+    async def initialize(self):
+        """
+        Initialize the ModelsManager by loading all models
         
-        logger.info("=" * 70)
-        logger.info("🚀 Starting Three Zero-Shot Model Ensemble Loading Process")
-        logger.info("=" * 70)
-        
-        logger.info("🔧 Model Configuration:")
-        logger.info(f"   Device: {self.device}")
-        logger.info(f"   Precision: {self.hardware_config.get('precision')}")
-        logger.info(f"   Cache Dir: {self.model_config['cache_dir']}")
-        logger.info(f"   Max Batch Size: {self.hardware_config.get('max_batch_size')}")
-        logger.info(f"   Ensemble Mode: {self.model_config.get('ensemble_mode')}")
+        This method loads all three models required for the ensemble analysis.
+        """
+        logger.info("🚀 Initializing ModelsManager - Loading Three Zero-Shot Model Ensemble...")
         
         try:
-            # Get model loading arguments
-            model_kwargs = self._get_model_kwargs()
-            loading_kwargs = self._get_model_loading_kwargs()
+            await self.load_models()
             
-            # Load Model 1: Depression Detection
-            await self._load_depression_model(model_kwargs, loading_kwargs)
-            
-            # Load Model 2: Sentiment Analysis
-            await self._load_sentiment_model(model_kwargs, loading_kwargs)
-            
-            # Load Model 3: Emotional Distress Detection
-            await self._load_emotional_distress_model(model_kwargs, loading_kwargs)
+            if self.models_loaded():
+                logger.info("✅ ModelsManager initialization complete - All models loaded")
+            else:
+                logger.error("❌ ModelsManager initialization failed - Models not loaded")
+                raise RuntimeError("ModelsManager initialization failed - models not loaded")
+                
+        except Exception as e:
+            logger.error(f"❌ ModelsManager initialization failed: {e}")
+            raise
+
+    async def load_models(self):
+        """
+        Load all three models for the ensemble analysis
+        
+        This method should already exist in your ModelsManager, but if it doesn't,
+        this is a placeholder that calls the individual model loading methods.
+        """
+        logger.info("📦 Loading Three Zero-Shot Model Ensemble...")
+        
+        try:
+            # Load all three models
+            await self._load_depression_model()
+            await self._load_sentiment_model()  
+            await self._load_emotional_distress_model()
             
             self._models_loaded = True
             logger.info("✅ All three models loaded successfully")
             
         except Exception as e:
-            logger.error(f"❌ Failed to load models: {e}")
-            logger.exception("Model loading error details:")
+            logger.error(f"❌ Model loading failed: {e}")
+            self._models_loaded = False
             raise
+
+    def models_loaded(self) -> bool:
+        """Check if all models are loaded"""
+        return self._models_loaded and all([
+            self.depression_model is not None,
+            self.sentiment_model is not None,
+            self.emotional_distress_model is not None
+        ])
     
     async def _load_depression_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the depression detection model"""
