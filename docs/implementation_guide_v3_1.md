@@ -10,69 +10,125 @@ This guide outlines the complete recode of the configuration system for clean JS
 ## Design Philosophies and Core Principles
 
 ### 🎯 **Configuration Management Philosophy**
+- **GitHub Is The Central Source Of Everything!**
+  - ALL project knowledge, files, and directory structures are found here.
+  - We are working from the `ash` repository
+    - We are working from the `v3.0` branch for `ash`
+    - https://github.com/The-Alphabet-Cartel/ash/tree/v3.0
+  - We are working from the `ash-nlp` repository
+    - We are working from the `v3.1` branch for `ash-nlp`
+    - https://github.com/The-Alphabet-Cartel/ash-nlp/tree/v3.1
+- **_ALWAYS_ assume you are working from outdated data!**
+  - Refresh information from GitHub
+  - ASK questions if things are unclear
+    - Especially if your information is more than a couple of hours old, as things *will* have changed by then!
+- **This Implementation Guide Is Our Bible**
 - **JSON as Source of Truth**
-  - JSON files contain the default configuration structure and values ✅ **FULLY IMPLEMENTED**
+  - JSON files contain the default configuration structure and values
 - **Environment Variable Overrides**
-  - The `.env` file variables override JSON defaults for deployment-specific customization ✅ **OPERATIONAL**
+  - The `.env` file variables override JSON defaults for deployment-specific customization
 - **Centralized Configuration Goal**
-  - All configuration parameters moved into JSON files for central configuration management ✅ **ACHIEVED**
+  - All configuration parameters moved into JSON files for central configuration management
 - **No Hot-Loading Required**
-  - JSON configuration does not need hot-loading capability at this time ✅ **CONFIRMED**
+  - JSON configuration does not need hot-loading capability at this time
 - **Standard Python Logging**
-  - Logging uses Python's built-in logging levels (DEBUG, INFO, WARNING, ERROR, CRITICAL) ✅ **PRODUCTION READY**
-  - The `GLOBAL_LOG_LEVEL` environment variable controls logging verbosity ✅ **OPERATIONAL**
-  - **No custom debug mode logic** ✅ **IMPLEMENTED AND TESTED**
+  - Logging uses Python's built-in logging levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  - The `GLOBAL_LOG_LEVEL` environment variable controls logging verbosity
+  - **No custom debug mode logic**
 - **Implementation Complete**
-  - All work completed on Ash (`ash`) and Ash-NLP (`ash-nlp`) ✅ **VERIFIED IN PRODUCTION**
-  - Clean v3.1 architecture fully implemented and tested ✅ **OPERATIONAL**
+  - All work completed on Ash (`ash`) and Ash-NLP (`ash-nlp`)
+  - Clean v3.1 architecture fully implemented and tested
 
 ### 🚫 **What We Achieved (No Longer Do)**
-- **No Bash Scripts** - All automation through Python, Docker, and JSON ✅ **MAINTAINED**
-- **No Quick Fixes** - Complete, proper solutions implemented ✅ **ACHIEVED**
-- **No Backward Compatibility** - Clean v3.1 release without fallback mechanisms ✅ **COMPLETED AND VERIFIED**
-- **No Hard-coded Defaults** - All defaults in JSON configuration files ✅ **IMPLEMENTED**
-- **No Custom Debug Mode Logic** - Standard Python logging levels used ✅ **IMPLEMENTED**
+- **No Bash Scripts**
+  - All automation through Python, Docker, and JSON
+- **No Quick Fixes**
+  - Complete, proper solutions implemented
+- **No Backward Compatibility**
+  - Clean v3.1 release without fallback mechanisms
+- **No Hard-coded Defaults**
+  - All defaults in JSON configuration files
+- **No Custom Debug Mode Logic**
+  - Standard Python logging levels used
 
 ### 🔧 **Development Standards Achieved**
-- **Manager-First Architecture** ✅ **FULLY IMPLEMENTED** - All components integrated with clean manager system
-- **Fail-Fast Design** ✅ **IMPLEMENTED** - Clear error messages when components missing
-- **Standard Python Logging** ✅ **IMPLEMENTED** - Professional production logs with debug capability
-- **Full Error Handling** ✅ **IMPLEMENTED** - No silent failures, comprehensive error handling
-- **Modular Code Structure** ✅ **ACHIEVED** - Clean separation of functionality
+- **Manager-First Architecture**
+  - All components integrated with clean manager system
+- **Fail-Fast Design**
+  - Clear error messages when components missing
+- **Standard Python Logging**
+  - Professional production logs with debug capability
+- **Full Error Handling**
+  - No silent failures, comprehensive error handling
+- **Modular Code Structure**
+  - Clean separation of functionality
 
 ### 🐳 **Deployment Philosophy Implemented**
-- **Docker-First** ✅ **WORKING** - All services run in Docker containers
-- **Environment-Specific Overrides** ✅ **IMPLEMENTED** - `.env` files customize deployments
-- **Container Restart for Configuration Changes** ✅ **IMPLEMENTED** - No hot-reloading
-- **Secrets Management** ✅ **IMPLEMENTED** - Secure environment variables
+- **Docker-First**
+  - All services run in Docker containers
+- **Environment-Specific Overrides**
+  - `.env` files customize deployments
+- **Container Restart for Configuration Changes**
+  - No hot-reloading
+- **Secrets Management**
+  - Secure environment variables
 
 ### 🧪 **Testing and Debugging Philosophy Achieved**
-- **Component Isolation** ✅ **IMPLEMENTED** - Each component testable independently
-- **Detailed Error Reporting** ✅ **IMPLEMENTED** - Specific, actionable error messages
-- **Configuration Validation** ✅ **IMPLEMENTED** - All configuration validated at startup
-- **Health Check Integration** ✅ **IMPLEMENTED** - All components report status through `/health`
+- **Component Isolation**
+  - Each component testable independently
+- **Detailed Error Reporting**
+  - Specific, actionable error messages
+- **Configuration Validation**
+  - All configuration validated at startup
+- **Health Check Integration**
+  - All components report status through `/health`
 
-### 📁 **File Organization Standards - Final Structure (Deployed)**
+### 📁 **File Organization Standards - Current Structure**
 ```
 ash/ash-nlp/
-├── managers/               # All manager classes ✅ OPERATIONAL
-│   ├── config_manager.py
-│   ├── settings_manager.py  
-│   ├── zero_shot_manager.py
-│   ├── models_manager.py       # Phase 2A ✅ OPERATIONAL
-│   └── pydantic_manager.py     # Phase 2B ✅ OPERATIONAL
-├── models/                 # Clean storage directory ✅ OPERATIONAL  
-│   ├── __init__.py            # Storage marker only ✅ DEPLOYED
-│   └── cache/                 # Hugging Face model cache
-├── api/                    # API endpoints ✅ OPERATIONAL
-│   ├── ensemble_endpoints.py  # Clean v3.1 ✅ OPERATIONAL
-│   ├── admin_endpoints.py     # Clean v3.1 ✅ OPERATIONAL
-│   └── learning_endpoints.py  # Clean v3.1 ✅ OPERATIONAL
 ├── analysis/               # Analysis components
+│   ├── __init__.py
+│   ├── crisis_analyzer.py
+│   └── phrase_extractor.py
+├── api/                    # API endpoints
+│   ├── __init__.py
+│   ├── admin_endpoints.py
+│   ├── ensemble_endpoints.py
+│   └── learning_endpoints.py
 ├── config/                 # JSON configuration files
-├── main.py                 # Clean v3.1 ✅ OPERATIONAL
-├── __init__.py             # Clean v3.1 ✅ OPERATIONAL
-└── [other directories]
+│   ├── analysis_parameters.json
+│   ├── crisis_patterns.json
+│   ├── label_config.json
+│   ├── learning_parameters.json
+│   ├── model_ensemble.json
+│   ├── performance_settings.json
+│   └── threshold_mapping.json
+├── data/                   # Data Storage
+├── docs/                   # Documentation
+│   └── implementation_guide_v3_1.md
+├── learning_data/          # Learning Data Persistence
+├── logs/                   # Logs
+├── managers/               # All manager classes
+│   ├── __init__.py
+│   ├── config_manager.py
+│   ├── env_manager.py
+│   ├── model_ensemble_manager.py
+│   ├── models_manager.py
+│   ├── pydantic_manager.py
+│   ├── settings_manager.py  
+│   └── zero_shot_manager.py
+├── models/                 # Model storage directory
+│   ├── __init__.py         # Storage marker only
+│   └── cache/              # Hugging Face model cache
+├── tests/                  # Debug and Testing Files
+├── utils/                  # Utility and Helper Files
+│   ├── __init__.py
+│   ├── community_patterns.py
+│   ├── context_helpers.py
+│   └── scoring_helpers.py
+├── __init__.py
+├── main.py
+└── requirements.txt
 ```
 
 ## Current Status - PHASE 2C SUCCESSFULLY DEPLOYED 🎉
