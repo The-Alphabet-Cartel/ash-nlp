@@ -454,6 +454,18 @@ async def lifespan(app: FastAPI):
             logger.error(f"❌ Failed to add ensemble endpoints: {e}")
             raise
         
+        # Import and add admin endpoints - CLEAN v3.1
+        try:
+            logger.info("🔧 Adding admin endpoints...")
+            from api.admin_endpoints import setup_admin_endpoints
+            
+            # Direct usage - no fallbacks
+            setup_admin_endpoints(app, model_manager, zero_shot_manager)
+            logger.info("✅ Admin endpoints added successfully")
+
+        except Exception as e:
+            logger.error(f"❌ Failed to add admin endpoints: {e}")
+
         # Add learning endpoints if available
         if learning_manager and LEARNING_AVAILABLE:
             try:
