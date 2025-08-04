@@ -224,7 +224,7 @@ class ConfigManager:
                 'pipeline_kwargs': model_config.get('pipeline_kwargs', {})
             }
             
-            logger.info(f"✅ Processed {model_type}: {model_name} (weight: {weight})")
+            logger.debug(f"✅ Processed {model_type}: {model_name} (weight: {weight})")
         
         # Validate weights sum to 1.0
         total_weight = sum(model['weight'] for model in processed_models.values())
