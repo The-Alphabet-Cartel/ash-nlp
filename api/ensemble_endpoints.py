@@ -175,7 +175,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
             ensemble_info = {}
             if model_manager and models_loaded:
                 try:
-                    ensemble_info = await model_manager.get_ensemble_status()
+                    ensemble_info = model_manager.get_ensemble_status()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get ensemble status: {e}")
                     ensemble_info = {"error": str(e)}
