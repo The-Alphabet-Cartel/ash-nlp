@@ -85,12 +85,11 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
     # ========================================================================
     # ANALYSIS ENDPOINT - Clean v3.1 Implementation  
     # ========================================================================
-    
     @app.post("/analyze", response_model=models['CrisisResponse'])
     async def analyze_message_ensemble(request: models['MessageRequest']):
         """
-        Analyze message using Three Zero-Shot Model Ensemble
-        Clean v3.1 implementation with direct manager usage
+        Analyze message using Three Zero-Shot Model Ensemble + Crisis Patterns
+        Clean v3.1 implementation with Pattern Integration (Phase 3a)
         """
         start_time = time.time()
         
@@ -105,36 +104,76 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
                     detail="Three Zero-Shot Model Ensemble not available"
                 )
             
-            # Perform ensemble analysis - Direct manager usage
+            # STEP 1: Perform ensemble analysis - Direct manager usage
             try:
-                analysis_result = await model_manager.analyze_message_ensemble(
+                ensemble_analysis = await model_manager.analyze_message_ensemble(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
                 )
+                logger.debug(f"✅ Ensemble analysis complete")
             except Exception as e:
                 logger.error(f"❌ Ensemble analysis failed: {e}")
                 raise HTTPException(
                     status_code=500,
-                    detail=f"Analysis failed: {str(e)}"
+                    detail=f"Ensemble analysis failed: {str(e)}"
                 )
+            
+            # STEP 2: PATTERN ANALYSIS INTEGRATION (Phase 3a Fix)
+            pattern_analysis = {}
+            if crisis_pattern_manager:
+                try:
+                    logger.debug("🔍 Running crisis pattern analysis...")
+                    pattern_analysis = crisis_pattern_manager.analyze_message(
+                        message=request.message,
+                        user_id=request.user_id,
+                        channel_id=request.channel_id
+                    )
+                    patterns_found = pattern_analysis.get('patterns_triggered', [])
+                    logger.debug(f"✅ Pattern analysis complete: {len(patterns_found)} patterns triggered")
+                    
+                    if patterns_found:
+                        logger.info(f"🚨 Crisis patterns detected: {[p.get('pattern_name', 'unknown') for p in patterns_found]}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Pattern analysis failed: {e}")
+                    pattern_analysis = {
+                        "error": str(e), 
+                        "patterns_triggered": [],
+                        "analysis_available": False
+                    }
+            else:
+                logger.debug("⚠️ No crisis pattern manager available - skipping pattern analysis")
+                pattern_analysis = {
+                    "error": "CrisisPatternManager not available", 
+                    "patterns_triggered": [],
+                    "analysis_available": False
+                }
+            
+            # STEP 3: COMBINE ENSEMBLE AND PATTERN RESULTS (Fix #4)
+            combined_analysis = integrate_pattern_and_ensemble_analysis(
+                ensemble_analysis, pattern_analysis
+            )
             
             processing_time_ms = (time.time() - start_time) * 1000
             
-            # Create response using PydanticManager models - Direct usage
+            # Create response using PydanticManager models with combined analysis
             response = models['CrisisResponse'](
-                needs_response=analysis_result.get('needs_response', False),
-                crisis_level=analysis_result.get('crisis_level', 'none'),
-                confidence_score=analysis_result.get('confidence_score', 0.0),
-                detected_categories=analysis_result.get('detected_categories', []),
-                method=analysis_result.get('method', 'three_model_ensemble'),
+                needs_response=combined_analysis.get('needs_response', False),
+                crisis_level=combined_analysis.get('crisis_level', 'none'),
+                confidence_score=combined_analysis.get('confidence_score', 0.0),
+                detected_categories=combined_analysis.get('detected_categories', []),
+                method=combined_analysis.get('method', 'ensemble_and_patterns'),
                 processing_time_ms=processing_time_ms,
-                model_info=analysis_result.get('model_info', 'Clean v3.1 Three Zero-Shot Model Ensemble'),
-                reasoning=analysis_result.get('reasoning'),
-                analysis=analysis_result.get('analysis', {})
+                model_info=combined_analysis.get('model_info', 'Clean v3.1 Ensemble + Patterns'),
+                reasoning=combined_analysis.get('reasoning'),
+                analysis={
+                    'ensemble_analysis': ensemble_analysis,
+                    'pattern_analysis': pattern_analysis,
+                    'combined_result': combined_analysis
+                }
             )
             
-            logger.debug(f"✅ Clean v3.1: Analysis complete - {analysis_result.get('crisis_level', 'none')} level detected")
+            logger.debug(f"✅ Clean v3.1: Analysis complete - {combined_analysis.get('crisis_level', 'none')} level detected")
             return response
             
         except HTTPException:
