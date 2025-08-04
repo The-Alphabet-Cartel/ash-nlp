@@ -317,14 +317,6 @@ class ModelsManager:
             self._models_loaded = False
             raise
 
-    def models_loaded(self) -> bool:
-        """Check if all models are loaded"""
-        return self._models_loaded and all([
-            self.depression_model is not None,
-            self.sentiment_model is not None,
-            self.emotional_distress_model is not None
-        ])
-    
     def get_ensemble_status(self) -> Dict[str, Any]:
         """Get ensemble status information"""
         return {
@@ -388,6 +380,20 @@ class ModelsManager:
             }
         }
 
+    def get_configuration_status(self) -> Dict[str, Any]:
+        """Get configuration status"""
+        return {
+            'models_initialized': self.models_loaded(),
+            'status': 'operational' if self.models_loaded() else 'loading'
+        }
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """Get model information"""
+        return {
+            'total_models': 3,
+            'status': 'operational' if self.models_loaded() else 'loading'
+        }
+
     async def _load_depression_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the depression detection model"""
         model_name = self.model_config.get('depression_model', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0')
@@ -449,12 +455,13 @@ class ModelsManager:
             raise
     
     def models_loaded(self) -> bool:
-        """Check if ALL THREE models are loaded"""
-        return (self._models_loaded and 
-                self.depression_model is not None and 
-                self.sentiment_model is not None and 
-                self.emotional_distress_model is not None)
-    
+        """Check if all models are loaded"""
+        return self._models_loaded and all([
+            self.depression_model is not None,
+            self.sentiment_model is not None,
+            self.emotional_distress_model is not None
+        ])
+        
     # Model access methods
     def get_depression_model(self):
         """Get the depression detection model"""
@@ -586,7 +593,7 @@ class ModelsManager:
             logger.error(f"Emotional distress model analysis failed: {e}")
             return []
     
-    def analyze_with_ensemble(self, message: str) -> Dict[str, Any]:
+    async def analyze_message_ensemble(self, message: str, user_id: str, channel_id: str = None) -> Dict[str, Any]:
         """
         Three Zero-Shot Model Ensemble analysis with consensus building
         
