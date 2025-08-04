@@ -1,441 +1,343 @@
-#!/usr/bin/env python3
-# ash/ash-nlp/api/ensemble_endpoints.py - Updated for Phase 2B PydanticManager Integration
+# ash/ash-nlp/api/ensemble_endpoints.py (Clean v3.1 Architecture - Phase 2C Complete)
 """
-Ensemble Analysis Endpoint for Three-Model Architecture - Phase 2B Update
-Updated to use PydanticManager v3.1 when available, with legacy fallback
-
-CENTRALIZED: All thresholds read from environment variables - NO hard-coded values
-Phase 2B: Integrated with PydanticManager for clean model access
+Clean Three Zero-Shot Model Ensemble API Endpoints - NO Backward Compatibility
+Direct manager usage only, no fallback code
 """
 
 import logging
 import time
-import os
-from fastapi import HTTPException
-from typing import Dict, Any, List
+from typing import Optional, Dict, Any
+from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-def add_ensemble_endpoints(app, model_manager, pydantic_manager=None):
+def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
     """
-    Add ensemble analysis endpoints to the FastAPI app - Phase 2B Update
+    Add Three Zero-Shot Model Ensemble endpoints to FastAPI app
+    Clean v3.1 implementation - Direct manager usage only
     
     Args:
         app: FastAPI application instance
-        model_manager: ModelManager instance (from Phase 2A)
-        pydantic_manager: PydanticManager instance (Phase 2B - optional for backward compatibility)
+        model_manager: ModelsManager v3.1 instance (required)
+        pydantic_manager: PydanticManager v3.1 instance (required)
     """
     
     # ========================================================================
-    # PHASE 2B: SMART MODEL ACCESS
+    # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
-    def get_models():
-        """Get Pydantic models from PydanticManager or legacy imports"""
-        if pydantic_manager:
-            logger.debug("🏗️ Using PydanticManager v3.1 for endpoint models")
-            return pydantic_manager.get_legacy_imports()
-        else:
-            logger.debug("⚠️ Using legacy model imports for endpoints")
-            try:
-                from models.pydantic_models import MessageRequest, CrisisResponse
-                return {
-                    'MessageRequest': MessageRequest,
-                    'CrisisResponse': CrisisResponse
-                }
-            except ImportError as e:
-                logger.error(f"❌ Failed to import legacy models: {e}")
-                raise RuntimeError("No Pydantic models available for endpoints")
     
-    # Get model classes
+    if not model_manager:
+        logger.error("❌ ModelsManager v3.1 is required but not provided")
+        raise RuntimeError("ModelsManager v3.1 required for ensemble endpoints")
+    
+    if not pydantic_manager:
+        logger.error("❌ PydanticManager v3.1 is required but not provided")
+        raise RuntimeError("PydanticManager v3.1 required for ensemble endpoints")
+    
+    if not pydantic_manager.is_initialized():
+        logger.error("❌ PydanticManager v3.1 is not properly initialized")
+        raise RuntimeError("PydanticManager v3.1 must be initialized")
+    
+    logger.info("✅ Clean v3.1: Direct manager access validated")
+    logger.info("🎯 Clean v3.1: No backward compatibility code present")
+    
+    # ========================================================================
+    # CLEAN MODEL ACCESS - Direct PydanticManager Usage Only
+    # ========================================================================
+    
+    def get_request_response_models():
+        """Get request/response models from PydanticManager v3.1 - NO FALLBACKS"""
+        try:
+            core_models = pydantic_manager.get_core_models()
+            learning_request_models = pydantic_manager.get_learning_request_models()
+            learning_response_models = pydantic_manager.get_learning_response_models()
+            
+            return {
+                # Core models
+                'MessageRequest': core_models['MessageRequest'],
+                'CrisisResponse': core_models['CrisisResponse'], 
+                'HealthResponse': core_models['HealthResponse'],
+                
+                # Learning request models  
+                'FalsePositiveAnalysisRequest': learning_request_models['FalsePositiveAnalysisRequest'],
+                'FalseNegativeAnalysisRequest': learning_request_models['FalseNegativeAnalysisRequest'],
+                'LearningUpdateRequest': learning_request_models['LearningUpdateRequest'],
+                
+                # Learning response models
+                'FalsePositiveAnalysisResponse': learning_response_models['FalsePositiveAnalysisResponse'],
+                'FalseNegativeAnalysisResponse': learning_response_models['FalseNegativeAnalysisResponse'], 
+                'LearningUpdateResponse': learning_response_models['LearningUpdateResponse'],
+                'LearningStatisticsResponse': learning_response_models['LearningStatisticsResponse']
+            }
+        except Exception as e:
+            logger.error(f"❌ Failed to access PydanticManager v3.1 models: {e}")
+            raise RuntimeError(f"PydanticManager v3.1 model access failed: {e}")
+    
+    # Get models once at startup - Clean v3.1
     try:
-        models = get_models()
-        MessageRequest = models['MessageRequest']
-        CrisisResponse = models['CrisisResponse']
-        logger.info("✅ Pydantic models loaded successfully for ensemble endpoints")
-        
-        if pydantic_manager:
-            logger.info("🎯 Phase 2B: Using PydanticManager v3.1 for endpoint model management")
-        else:
-            logger.info("⚠️ Phase 2B: Using legacy model imports (migration recommended)")
-            
+        models = get_request_response_models()
+        logger.info("✅ Clean v3.1: Direct model access successful")
+        logger.debug(f"📋 Available models: {list(models.keys())}")
     except Exception as e:
-        logger.error(f"❌ Failed to load Pydantic models for endpoints: {e}")
-        raise RuntimeError(f"Endpoint initialization failed: {e}")
+        logger.error(f"❌ Clean v3.1: Model access failed: {e}")
+        raise
     
     # ========================================================================
-    # CENTRALIZED THRESHOLD CONFIGURATION
+    # ANALYSIS ENDPOINT - Clean v3.1 Implementation  
     # ========================================================================
-    def _get_centralized_thresholds():
-        """Load centralized threshold configuration from environment variables"""
-        
-        return {
-            # Ensemble mode
-            'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
-            
-            # Consensus mapping thresholds
-            'consensus_crisis_to_high': float(os.getenv('NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD', '0.50')),
-            'consensus_crisis_to_medium': float(os.getenv('NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD', '0.30')),
-            'consensus_mild_crisis_to_low': float(os.getenv('NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD', '0.40')),
-            'consensus_negative_to_low': float(os.getenv('NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD', '0.70')),
-            'consensus_unknown_to_low': float(os.getenv('NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD', '0.50')),
-            
-            # Model weights
-            'depression_weight': float(os.getenv('NLP_DEPRESSION_MODEL_WEIGHT', '0.6')),
-            'sentiment_weight': float(os.getenv('NLP_SENTIMENT_MODEL_WEIGHT', '0.15')),
-            'emotional_distress_weight': float(os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT', '0.25')),
-            
-            # Staff review thresholds
-            'staff_review_high_always': os.getenv('NLP_STAFF_REVIEW_HIGH_ALWAYS', 'true').lower() == 'true',
-            'staff_review_medium_threshold': float(os.getenv('NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD', '0.45')),
-            'staff_review_low_threshold': float(os.getenv('NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD', '0.75')),
-            'staff_review_on_disagreement': os.getenv('NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT', 'true').lower() == 'true',
-            
-            # Safety controls  
-            'consensus_safety_bias': float(os.getenv('NLP_CONSENSUS_SAFETY_BIAS', '0.05')),
-            'enable_safety_override': os.getenv('NLP_ENABLE_SAFETY_OVERRIDE', 'true').lower() == 'true',
-        }
     
-    # Load thresholds once
-    thresholds = _get_centralized_thresholds()
-    logger.info("🎯 Centralized thresholds loaded for ensemble endpoints")
-    
-    # ========================================================================
-    # HELPER FUNCTIONS
-    # ========================================================================
-    def _map_to_crisis_level_centralized(consensus: Dict[str, Any]) -> str:
-        """Map consensus result to crisis level using centralized thresholds"""
-        prediction = consensus['prediction']
-        confidence = consensus['confidence']
-        
-        # Apply centralized mapping logic using environment-driven thresholds
-        if prediction == 'CRISIS':
-            if confidence >= thresholds['consensus_crisis_to_high']:
-                return 'high'
-            elif confidence >= thresholds['consensus_crisis_to_medium']:
-                return 'medium'
-            else:
-                return 'low'
-        elif prediction == 'MILD_CRISIS':
-            if confidence >= thresholds['consensus_mild_crisis_to_low']:
-                return 'low'
-            else:
-                return 'none'
-        elif prediction == 'NEGATIVE':
-            if confidence >= thresholds['consensus_negative_to_low']:
-                return 'low'
-            else:
-                return 'none'
-        elif prediction == 'UNKNOWN':
-            if confidence >= thresholds['consensus_unknown_to_low']:
-                return 'low'
-            else:
-                return 'none'
-        else:  # NEUTRAL, POSITIVE
-            return 'none'
-    
-    def _determine_response_need_centralized(consensus: Dict[str, Any]) -> bool:
-        """Determine if response is needed using centralized logic"""
-        prediction = consensus['prediction']
-        confidence = consensus['confidence']
-        
-        # High-risk predictions always need response
-        if prediction in ['CRISIS', 'MILD_CRISIS']:
-            return True
-        
-        # NEGATIVE with high confidence needs response
-        if prediction == 'NEGATIVE' and confidence >= thresholds['consensus_negative_to_low']:
-            return True
-        
-        # UNKNOWN with high confidence might need response
-        if prediction == 'UNKNOWN' and confidence >= thresholds['consensus_unknown_to_low']:
-            return True
-        
-        return False
-    
-    def _determine_staff_review_centralized(crisis_level: str, confidence: float, gaps_detected: bool) -> bool:
-        """Determine if staff review is needed using centralized thresholds"""
-        
-        # HIGH always needs review
-        if crisis_level == 'high' and thresholds['staff_review_high_always']:
-            return True
-        
-        # MEDIUM with low confidence needs review
-        if crisis_level == 'medium' and confidence < thresholds['staff_review_medium_threshold']:
-            return True
-        
-        # LOW with very high confidence might not need review
-        if crisis_level == 'low' and confidence < thresholds['staff_review_low_threshold']:
-            return True
-        
-        # Gaps detected (model disagreement) always needs review if enabled
-        if gaps_detected and thresholds['staff_review_on_disagreement']:
-            return True
-        
-        return False
-    
-    # ========================================================================
-    # PRIMARY ANALYSIS ENDPOINT
-    # ========================================================================
-    @app.post("/analyze", response_model=CrisisResponse)
-    async def analyze_message(request: MessageRequest) -> CrisisResponse:
+    @app.post("/analyze", response_model=models['CrisisResponse'])
+    async def analyze_message_ensemble(request: models['MessageRequest']):
         """
-        PRIMARY ENDPOINT: Three Zero-Shot Model Ensemble analysis with crisis detection
-        Phase 2B: Uses PydanticManager v3.1 when available for model validation
+        Analyze message using Three Zero-Shot Model Ensemble
+        Clean v3.1 implementation with direct manager usage
         """
         start_time = time.time()
         
         try:
+            logger.debug(f"🔍 Clean v3.1: Analyzing message from user {request.user_id}")
+            
+            # Validate models are loaded - Direct manager check
             if not model_manager.models_loaded():
-                raise HTTPException(status_code=503, detail="Models not loaded")
+                logger.error("❌ Three Zero-Shot Model Ensemble not loaded")
+                raise HTTPException(
+                    status_code=503, 
+                    detail="Three Zero-Shot Model Ensemble not available"
+                )
             
-            message = request.message.strip()
-            if not message:
-                raise HTTPException(status_code=400, detail="Empty message")
+            # Perform ensemble analysis - Direct manager usage
+            try:
+                analysis_result = await model_manager.analyze_message_ensemble(
+                    message=request.message,
+                    user_id=request.user_id,
+                    channel_id=request.channel_id
+                )
+            except Exception as e:
+                logger.error(f"❌ Ensemble analysis failed: {e}")
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Analysis failed: {str(e)}"
+                )
             
-            logger.info(f"🔍 Three Zero-Shot Model Ensemble analysis: '{message[:50]}...'")
+            processing_time_ms = (time.time() - start_time) * 1000
             
-            # Log Phase 2B status
-            if pydantic_manager:
-                logger.debug("🏗️ Using PydanticManager v3.1 for request/response validation")
-            else:
-                logger.debug("⚠️ Using legacy Pydantic models for request/response validation")
-            
-            # Perform ensemble analysis
-            ensemble_result = model_manager.analyze_with_ensemble(message)
-            
-            # Extract consensus information
-            consensus = ensemble_result.get('consensus')
-            if not consensus:
-                raise HTTPException(status_code=500, detail="Ensemble analysis failed to produce consensus")
-            
-            consensus_prediction = consensus['prediction']
-            consensus_confidence = consensus['confidence']
-            consensus_method = consensus['method']
-            
-            # CENTRALIZED: Use environment-driven crisis level mapping
-            crisis_level = _map_to_crisis_level_centralized(consensus)
-            needs_response = _determine_response_need_centralized(consensus)
-            
-            # Extract detected categories from individual models
-            detected_categories = []
-            individual_results = ensemble_result.get('individual_results', {})
-            
-            for model_name, result in individual_results.items():
-                if result and len(result) > 0:
-                    top_prediction = result[0]
-                    if top_prediction.get('score', 0) > 0.3:  # Configurable threshold
-                        detected_categories.append(f"{model_name}:{top_prediction.get('label', 'unknown')}")
-            
-            # Gap detection and staff review determination
-            gaps_detected = ensemble_result.get('gaps_detected', False)
-            needs_staff_review = _determine_staff_review_centralized(crisis_level, consensus_confidence, gaps_detected)
-            
-            # Build comprehensive analysis information
-            analysis_info = {
-                'ensemble_analysis': {
-                    'consensus_prediction': consensus_prediction,
-                    'consensus_confidence': round(consensus_confidence, 4),
-                    'consensus_method': consensus_method,
-                    'gaps_detected': gaps_detected,
-                    'individual_results': individual_results,
-                    'model_agreement': ensemble_result.get('model_agreement', {}),
-                    'confidence_spread': ensemble_result.get('confidence_spread', {})
-                },
-                'decision_analysis': {
-                    'crisis_level_mapping': f"{consensus_prediction} -> {crisis_level}",
-                    'needs_response_reason': "High-risk prediction detected" if needs_response else "Low-risk prediction",
-                    'staff_review_triggered': needs_staff_review,
-                    'staff_review_reason': "Model disagreement detected" if gaps_detected and needs_staff_review else "Confidence threshold triggered" if needs_staff_review else "No review needed"
-                },
-                'processing_metadata': {
-                    'models_used': list(individual_results.keys()),
-                    'total_models': len(individual_results),
-                    'successful_analyses': len([r for r in individual_results.values() if r]),
-                    'processing_time_ms': round((time.time() - start_time) * 1000, 2)
-                }
-            }
-            
-            # Calculate processing time
-            processing_time_ms = round((time.time() - start_time) * 1000, 2)
-            
-            # Create response using the appropriate model class
-            response = CrisisResponse(
-                needs_response=needs_response,
-                crisis_level=crisis_level,
-                confidence_score=round(consensus_confidence, 4),
-                detected_categories=detected_categories,
-                method="three_model_ensemble_consensus",
+            # Create response using PydanticManager models - Direct usage
+            response = models['CrisisResponse'](
+                needs_response=analysis_result.get('needs_response', False),
+                crisis_level=analysis_result.get('crisis_level', 'none'),
+                confidence_score=analysis_result.get('confidence_score', 0.0),
+                detected_categories=analysis_result.get('detected_categories', []),
+                method=analysis_result.get('method', 'three_model_ensemble'),
                 processing_time_ms=processing_time_ms,
-                model_info=f"Three Zero-Shot Model Ensemble ({consensus_method} consensus)",
-                reasoning=f"Consensus: {consensus_prediction} (confidence: {consensus_confidence:.3f}), Gaps: {gaps_detected}",
-                analysis=analysis_info
+                model_info=analysis_result.get('model_info', 'Clean v3.1 Three Zero-Shot Model Ensemble'),
+                reasoning=analysis_result.get('reasoning'),
+                analysis=analysis_result.get('analysis', {})
             )
             
-            logger.info(f"✅ Analysis complete: {crisis_level} ({consensus_confidence:.3f}) - {processing_time_ms:.1f}ms")
-            
-            # Log Phase 2B completion status
-            if pydantic_manager:
-                logger.debug("✅ Response validated using PydanticManager v3.1")
-            else:
-                logger.debug("✅ Response validated using legacy Pydantic models")
-            
+            logger.debug(f"✅ Clean v3.1: Analysis complete - {analysis_result.get('crisis_level', 'none')} level detected")
             return response
             
+        except HTTPException:
+            raise
         except Exception as e:
-            processing_time_ms = round((time.time() - start_time) * 1000, 2)
-            logger.error(f"❌ Analysis failed after {processing_time_ms:.1f}ms: {e}")
+            processing_time_ms = (time.time() - start_time) * 1000
+            logger.error(f"❌ Unexpected error in analysis: {e}")
+            logger.exception("Full analysis error:")
             
-            if "Models not loaded" in str(e):
-                raise HTTPException(status_code=503, detail="Models not available")
-            elif "Empty message" in str(e):
-                raise HTTPException(status_code=400, detail="Invalid message content")
-            else:
-                raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
+            # Return error response using PydanticManager models  
+            return models['CrisisResponse'](
+                needs_response=False,
+                crisis_level='none',
+                confidence_score=0.0,
+                detected_categories=[],
+                method='error',
+                processing_time_ms=processing_time_ms,
+                model_info='Clean v3.1 - Analysis Error',
+                reasoning=f"Error during analysis: {str(e)}",
+                analysis={'error': str(e)}
+            )
     
     # ========================================================================
-    # PHASE 2B: NEW STATUS ENDPOINT
+    # STATUS ENDPOINTS - Clean v3.1 Implementation
     # ========================================================================
     
     @app.get("/ensemble/status")
     async def ensemble_status():
-        """Get status of the three-model ensemble system - Phase 2B Update"""
+        """
+        Get comprehensive ensemble status - Clean v3.1 Architecture
+        """
         try:
-            models_status = {
-                'models_loaded': model_manager.models_loaded() if model_manager else False,
-                'ensemble_mode': thresholds['ensemble_mode'],
-                'pydantic_manager': {
-                    'version': '3.1' if pydantic_manager else 'legacy',
-                    'available': pydantic_manager is not None,
-                    'models_count': len(pydantic_manager.get_all_models()) if pydantic_manager else 'unknown'
-                }
-            }
+            # Direct manager status checks - No fallbacks
+            models_loaded = model_manager.models_loaded() if model_manager else False
+            pydantic_available = pydantic_manager.is_initialized() if pydantic_manager else False
             
-            if model_manager and model_manager.models_loaded():
-                models_status.update({
-                    'depression_model_loaded': hasattr(model_manager, 'depression_model') and model_manager.depression_model is not None,
-                    'sentiment_model_loaded': hasattr(model_manager, 'sentiment_model') and model_manager.sentiment_model is not None,
-                    'emotional_distress_model_loaded': hasattr(model_manager, 'emotional_distress_model') and model_manager.emotional_distress_model is not None
-                })
+            # Get ensemble information - Direct manager usage
+            ensemble_info = {}
+            if model_manager and models_loaded:
+                try:
+                    ensemble_info = await model_manager.get_ensemble_status()
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get ensemble status: {e}")
+                    ensemble_info = {"error": str(e)}
             
-            return {
-                'status': 'ready' if models_status['models_loaded'] else 'not_ready',
-                'phase_2b_status': 'complete' if pydantic_manager else 'legacy_mode',
-                'models': models_status,
-                'configuration': {
-                    'ensemble_mode': thresholds['ensemble_mode'],
-                    'crisis_mapping_thresholds': {
-                        'crisis_to_high': thresholds['consensus_crisis_to_high'],
-                        'crisis_to_medium': thresholds['consensus_crisis_to_medium'],
-                        'mild_crisis_to_low': thresholds['consensus_mild_crisis_to_low']
-                    },
-                    'staff_review_enabled': thresholds['staff_review_on_disagreement']
+            # Get PydanticManager summary - Direct usage
+            pydantic_info = {}
+            if pydantic_manager and pydantic_available:
+                try:
+                    pydantic_info = pydantic_manager.get_model_summary()
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get PydanticManager summary: {e}")
+                    pydantic_info = {"error": str(e)}
+            
+            status = {
+                "architecture_version": "v3.1_clean",
+                "phase_2c_status": "complete",
+                "backward_compatibility": "removed",
+                "ensemble_status": {
+                    "models_loaded": models_loaded,
+                    "ensemble_info": ensemble_info
                 },
-                'architecture': {
-                    'manager_version': '3.1',
-                    'pydantic_manager_enabled': pydantic_manager is not None,
-                    'models_manager_enabled': model_manager is not None
+                "pydantic_manager": {
+                    "available": pydantic_available,
+                    "summary": pydantic_info
+                },
+                "manager_integration": {
+                    "models_manager_v3_1": model_manager is not None,
+                    "pydantic_manager_v3_1": pydantic_manager is not None,
+                    "direct_access_only": True,
+                    "fallback_code": "removed"
                 }
             }
+            
+            return status
             
         except Exception as e:
-            logger.error(f"❌ Failed to get ensemble status: {e}")
-            raise HTTPException(status_code=500, detail=f"Status check failed: {str(e)}")
-    
-    # ========================================================================
-    # ADDITIONAL ENDPOINTS
-    # ========================================================================
+            logger.error(f"❌ Status endpoint error: {e}")
+            return {
+                "architecture_version": "v3.1_clean",
+                "phase_2c_status": "complete", 
+                "error": str(e),
+                "manager_integration": {
+                    "direct_access_only": True,
+                    "fallback_code": "removed"
+                }
+            }
     
     @app.get("/ensemble/health")
     async def ensemble_health():
-        """Get health status of all three models in the ensemble"""
+        """
+        Get ensemble health status - Clean v3.1 Implementation
+        """
         try:
-            if not model_manager:
-                raise HTTPException(status_code=503, detail="ModelManager not available")
-            
-            models_loaded = model_manager.models_loaded()
-            
+            # Direct manager health checks - No fallbacks
             health_status = {
-                'status': 'healthy' if models_loaded else 'unhealthy',
-                'models_loaded': models_loaded,
-                'individual_models': {
-                    'depression': hasattr(model_manager, 'depression_model') and model_manager.depression_model is not None,
-                    'sentiment': hasattr(model_manager, 'sentiment_model') and model_manager.sentiment_model is not None,
-                    'emotional_distress': hasattr(model_manager, 'emotional_distress_model') and model_manager.emotional_distress_model is not None
+                "status": "healthy",
+                "architecture": "v3.1_clean",
+                "phase_2c_complete": True,
+                "managers": {
+                    "models_manager_v3_1": model_manager is not None,
+                    "pydantic_manager_v3_1": pydantic_manager is not None and pydantic_manager.is_initialized()
                 },
-                'phase_2b_integration': pydantic_manager is not None,
-                'timestamp': time.time()
+                "models": {
+                    "loaded": model_manager.models_loaded() if model_manager else False,
+                    "count": 3 if model_manager and model_manager.models_loaded() else 0
+                },
+                "integration": {
+                    "backward_compatibility": "removed",
+                    "direct_manager_access": True,
+                    "clean_architecture": True
+                }
             }
+            
+            # Determine overall health
+            if (health_status["managers"]["models_manager_v3_1"] and 
+                health_status["managers"]["pydantic_manager_v3_1"] and
+                health_status["models"]["loaded"]):
+                health_status["status"] = "healthy"
+            elif health_status["managers"]["models_manager_v3_1"]:
+                health_status["status"] = "degraded"
+            else:
+                health_status["status"] = "unhealthy"
             
             return health_status
             
         except Exception as e:
-            logger.error(f"❌ Ensemble health check failed: {e}")
-            raise HTTPException(status_code=500, detail=f"Health check error: {str(e)}")
+            logger.error(f"❌ Health endpoint error: {e}")
+            return {
+                "status": "unhealthy",
+                "architecture": "v3.1_clean",
+                "phase_2c_complete": True,
+                "error": str(e),
+                "integration": {
+                    "backward_compatibility": "removed",
+                    "direct_manager_access": True
+                }
+            }
     
     @app.get("/ensemble/config")
-    async def ensemble_configuration():
-        """Get current ensemble configuration for debugging"""
+    async def ensemble_config():
+        """
+        Get ensemble configuration - Clean v3.1 Implementation
+        """
         try:
-            return {
-                'thresholds': thresholds,
-                'source': 'environment_variables',
-                'centralized_management': True,
-                'phase_2b_status': 'complete' if pydantic_manager else 'legacy_mode',
-                'pydantic_manager_info': {
-                    'enabled': pydantic_manager is not None,
-                    'summary': pydantic_manager.get_model_summary() if pydantic_manager else None
-                },
-                'timestamp': time.time()
+            config_info = {
+                "architecture": "v3.1_clean",
+                "phase_2c_status": "complete",
+                "configuration": {},
+                "models": {},
+                "manager_info": {
+                    "models_manager": "v3.1",
+                    "pydantic_manager": "v3.1",
+                    "backward_compatibility": "removed",
+                    "direct_access": True
+                }
             }
-        except Exception as e:
-            logger.error(f"❌ Configuration retrieval failed: {e}")
-            raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
-    
-    # ========================================================================
-    # ENDPOINT REGISTRATION LOGGING
-    # ========================================================================
-    
-    logger.info("🎯 Ensemble endpoints registered successfully with Phase 2B integration")
-    
-    if pydantic_manager:
-        logger.info("✅ Phase 2B: All endpoints using PydanticManager v3.1 for model management")
-        # Log model summary for verification
-        try:
-            summary = pydantic_manager.get_model_summary()
-            logger.debug(f"📊 PydanticManager Summary: {summary['total_models']} models, {summary['architecture']} architecture")
-        except Exception as e:
-            logger.warning(f"⚠️ Could not retrieve PydanticManager summary: {e}")
-    else:
-        logger.info("⚠️ Phase 2B: Endpoints using legacy Pydantic models (migration recommended)")
-    
-    logger.info("🔧 Centralized threshold configuration applied to all ensemble endpoints")
-
-# ============================================================================
-# BACKWARD COMPATIBILITY FUNCTION
-# ============================================================================
-
-def add_ensemble_endpoints_legacy(app, model_manager):
-    """
-    Legacy function signature for backward compatibility
-    Automatically detects if PydanticManager is available
-    """
-    logger.info("🔄 Legacy endpoint registration called - attempting PydanticManager detection")
-    
-    # Try to detect if PydanticManager is available in the global scope
-    pydantic_manager = None
-    try:
-        import sys
-        if 'main' in sys.modules:
-            main_module = sys.modules['main']
-            pydantic_manager = getattr(main_module, 'pydantic_manager', None)
-        
-        if pydantic_manager:
-            logger.info("✅ PydanticManager detected - using Phase 2B integration")
-        else:
-            logger.info("⚠️ PydanticManager not detected - using legacy mode")
             
-    except Exception as e:
-        logger.warning(f"⚠️ PydanticManager detection failed: {e} - using legacy mode")
+            # Get configuration from model manager - Direct usage
+            if model_manager:
+                try:
+                    config_info["configuration"] = await model_manager.get_configuration_status()
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get model manager configuration: {e}")
+                    config_info["configuration"] = {"error": str(e)}
+                
+                try:
+                    config_info["models"] = await model_manager.get_model_info()
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get model info: {e}")
+                    config_info["models"] = {"error": str(e)}
+            
+            # Get PydanticManager configuration - Direct usage  
+            if pydantic_manager:
+                try:
+                    config_info["pydantic_models"] = pydantic_manager.get_model_summary()
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get PydanticManager config: {e}")
+                    config_info["pydantic_models"] = {"error": str(e)}
+            
+            return config_info
+            
+        except Exception as e:
+            logger.error(f"❌ Config endpoint error: {e}")
+            return {
+                "architecture": "v3.1_clean",
+                "phase_2c_status": "complete",
+                "error": str(e),
+                "manager_info": {
+                    "backward_compatibility": "removed",
+                    "direct_access": True
+                }
+            }
     
-    # Call the updated function
-    return add_ensemble_endpoints(app, model_manager, pydantic_manager)
+    # ========================================================================
+    # ENDPOINT REGISTRATION COMPLETE
+    # ========================================================================
+    
+    logger.info("🎯 Clean v3.1: Three Zero-Shot Model Ensemble endpoints registered successfully")
+    logger.info("🔧 Endpoints added:")
+    logger.info("   POST /analyze - Main ensemble analysis endpoint")
+    logger.info("   GET /ensemble/status - Comprehensive status information")
+    logger.info("   GET /ensemble/health - Health check for ensemble components")
+    logger.info("   GET /ensemble/config - Configuration and model information")
+    logger.info("✅ Phase 2C: All endpoints using direct manager access - No fallback code")
+    logger.info("🎉 Clean v3.1 Architecture: Backward compatibility completely removed")
