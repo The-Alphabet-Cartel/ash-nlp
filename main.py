@@ -14,12 +14,20 @@ from pydantic import BaseModel
 
 # Set up logging FIRST to catch any import errors
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s -- %(levelname)s -- %(message)s',
+    level=getattr(logging, log_level),
+    format='%(asctime)s -- %(levelname)s -- %(name)s - %(message)s',
     handlers=[
-        logging.StreamHandler(sys.stdout)
+        logging.FileHandler(log_file, encoding='utf-8'),
+        logging.StreamHandler()
     ]
 )
+#logging.basicConfig(
+#    level=logging.DEBUG,
+#    format='%(asctime)s -- %(levelname)s -- %(message)s',
+#    handlers=[
+#        logging.StreamHandler(sys.stdout)
+#    ]
+#)
 
 logger = logging.getLogger(__name__)
 logger.info("🚀 Starting Ash NLP Service v3.1 with Clean Manager Architecture - Phase 2B")
