@@ -1,7 +1,7 @@
-# ash/ash-nlp/managers/settings_manager.py
+# ash/ash-nlp/managers/settings_manager.py (Phase 3a Updated)
 """
-Settings Manager for Ash NLP Service v3.1
-Handles runtime settings and configuration overrides
+Settings Manager for Ash NLP Service v3.1 - Phase 3a Crisis Patterns Integration
+Handles runtime settings and configuration overrides with crisis patterns from ConfigManager
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 """
 
@@ -13,14 +13,11 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# PATTERN CONSTANTS FOR COMPONENT COMPATIBILITY
+# PATTERN CONSTANTS FOR COMPONENT COMPATIBILITY (FALLBACK ONLY)
+# Phase 3a: These are now fallbacks - primary source is ConfigManager JSON
 # ============================================================================
 
-# ============================================================================
-# PATTERN CONSTANTS FOR COMPONENT COMPATIBILITY
-# ============================================================================
-
-# Server configuration
+# Server configuration - PRESERVED (not part of crisis patterns migration)
 SERVER_CONFIG = {
     "version": "4.1",
     "architecture": "modular",
@@ -40,14 +37,14 @@ SERVER_CONFIG = {
     }
 }
 
-# Crisis level mapping thresholds - REQUIRED BY COMPONENTS
+# Crisis level mapping thresholds - PRESERVED (not part of crisis patterns migration)
 CRISIS_THRESHOLDS = {
     "high": 0.55,    # Reduced from 0.50 - matches new systematic approach
     "medium": 0.28,  # Reduced from 0.22 - more selective for medium alerts
     "low": 0.16      # Reduced from 0.12 - avoids very mild expressions
 }
 
-# Default parameters for analysis
+# Default parameters for analysis - PRESERVED (not part of crisis patterns migration)
 DEFAULT_PARAMS = {
     'phrase_extraction': {
         'min_phrase_length': 2,
@@ -80,7 +77,10 @@ DEFAULT_PARAMS = {
     }
 }
 
-# Context patterns for detection (from old settings_manager.py)
+# Phase 3a: CRISIS PATTERNS NOW LOADED FROM CONFIGMANAGER JSON FILES
+# These constants are kept as FALLBACKS ONLY for backward compatibility
+
+# Context patterns for detection (FALLBACK - Primary: ConfigManager JSON)
 POSITIVE_CONTEXT_PATTERNS = {
     'humor': ['joke', 'funny', 'hilarious', 'laugh', 'comedy', 'lol', 'haha'],
     'entertainment': ['movie', 'show', 'game', 'book', 'story', 'video'],
@@ -101,7 +101,7 @@ IDIOM_PATTERNS = [
     (r'\b(brutal|killer) (test|exam|workout)\b', 'difficulty')
 ]
 
-# LGBTQIA+ community patterns
+# LGBTQIA+ community patterns (FALLBACK - Primary: ConfigManager JSON)
 LGBTQIA_PATTERNS = {
     # Family rejection patterns (HIGH crisis)
     'family_rejection': {
@@ -292,15 +292,15 @@ NEGATION_PATTERNS = [
 ]
 
 # ============================================================================
-# SETTINGS MANAGER CLASS
+# SETTINGS MANAGER CLASS - PHASE 3A UPDATED
 # ============================================================================
 
 class SettingsManager:
-    """Settings manager for runtime configuration and overrides"""
+    """Settings manager for runtime configuration and overrides - Phase 3a Enhanced"""
     
     def __init__(self, config_manager):
         """
-        Initialize settings manager
+        Initialize settings manager with ConfigManager integration
         
         Args:
             config_manager: ConfigManager instance for configuration access
@@ -312,10 +312,17 @@ class SettingsManager:
         self.runtime_settings = {}
         self.setting_overrides = {}
         
-        logger.info("✅ SettingsManager initialized with ConfigManager integration")
+        # Phase 3a: Crisis patterns from ConfigManager (not hardcoded constants)
+        self.crisis_patterns_cache = {}
+        self.crisis_patterns_loaded = False
+        
+        logger.info("✅ SettingsManager initialized with ConfigManager integration (Phase 3a)")
         
         # Load initial settings
         self._load_initial_settings()
+        
+        # Phase 3a: Load crisis patterns from ConfigManager
+        self._load_crisis_patterns_from_config()
     
     def _load_initial_settings(self):
         """Load initial settings from configuration"""
@@ -337,6 +344,260 @@ class SettingsManager:
         except Exception as e:
             logger.error(f"❌ Failed to load initial settings: {e}")
             self.runtime_settings = {}
+    
+    def _load_crisis_patterns_from_config(self):
+        """Phase 3a: Load crisis patterns from ConfigManager JSON files"""
+        try:
+            logger.info("🔍 Loading crisis patterns from ConfigManager JSON files...")
+            
+            # Get all crisis patterns from ConfigManager
+            all_patterns = self.config_manager.get_crisis_patterns()
+            
+            if all_patterns:
+                self.crisis_patterns_cache = all_patterns
+                self.crisis_patterns_loaded = True
+                
+                # Log summary
+                pattern_count = len(all_patterns)
+                enabled_count = sum(1 for p in all_patterns.values() 
+                                   if p.get('configuration', {}).get('enabled', True))
+                
+                logger.info(f"✅ Loaded {pattern_count} crisis pattern types from JSON ({enabled_count} enabled)")
+                
+                # Log details for each pattern type
+                for pattern_type, pattern_data in all_patterns.items():
+                    config = pattern_data.get('configuration', {})
+                    metadata = pattern_data.get('metadata', {})
+                    enabled = config.get('enabled', True)
+                    total_patterns = metadata.get('total_patterns', 'unknown')
+                    source = metadata.get('source', 'JSON')
+                    
+                    status = "✅ enabled" if enabled else "❌ disabled"
+                    logger.debug(f"   📋 {pattern_type}: {total_patterns} patterns from {source} ({status})")
+            else:
+                logger.warning("⚠️ No crisis patterns loaded from ConfigManager, using fallback constants")
+                self.crisis_patterns_loaded = False
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to load crisis patterns from ConfigManager: {e}")
+            logger.warning("⚠️ Falling back to hardcoded pattern constants")
+            self.crisis_patterns_loaded = False
+    
+    # ========================================================================
+    # PHASE 3A: CRISIS PATTERN ACCESS METHODS (NEW)
+    # ========================================================================
+    
+    def get_crisis_patterns(self, pattern_type: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get crisis patterns from ConfigManager JSON (Phase 3a)
+        
+        Args:
+            pattern_type: Specific pattern type or None for all
+            
+        Returns:
+            Crisis patterns dictionary
+        """
+        if not self.crisis_patterns_loaded:
+            logger.debug("🔄 Crisis patterns not loaded from JSON, using fallback constants")
+            return self._get_fallback_crisis_patterns(pattern_type)
+        
+        if pattern_type:
+            pattern_data = self.crisis_patterns_cache.get(pattern_type, {})
+            if pattern_data:
+                # Check if enabled
+                enabled = pattern_data.get('configuration', {}).get('enabled', True)
+                if enabled:
+                    return pattern_data.get('patterns', {})
+                else:
+                    logger.debug(f"🚫 Pattern type {pattern_type} is disabled")
+                    return {}
+            else:
+                logger.warning(f"⚠️ Pattern type {pattern_type} not found in ConfigManager")
+                return self._get_fallback_crisis_patterns(pattern_type)
+        
+        # Return all enabled patterns
+        result = {}
+        for ptype, pdata in self.crisis_patterns_cache.items():
+            enabled = pdata.get('configuration', {}).get('enabled', True)
+            if enabled:
+                result[ptype] = pdata.get('patterns', {})
+        
+        return result
+    
+    def _get_fallback_crisis_patterns(self, pattern_type: Optional[str] = None) -> Dict[str, Any]:
+        """Get fallback crisis patterns from hardcoded constants"""
+        fallback_patterns = {
+            'lgbtqia_patterns': LGBTQIA_PATTERNS,
+            'burden_patterns': BURDEN_PATTERNS,
+            'hopelessness_patterns': HOPELESSNESS_PATTERNS,
+            'struggle_patterns': STRUGGLE_PATTERNS,
+            'idiom_patterns': ENHANCED_IDIOM_PATTERNS,
+            'positive_context_patterns': POSITIVE_CONTEXT_PATTERNS,
+            'context_patterns': CRISIS_CONTEXTS,
+            'community_vocabulary': COMMUNITY_VOCABULARY,
+            'temporal_patterns': TEMPORAL_INDICATORS,
+            'context_weights': CONTEXT_WEIGHTS,
+            'negation_patterns': NEGATION_PATTERNS,
+            'basic_idiom_patterns': IDIOM_PATTERNS
+        }
+        
+        if pattern_type:
+            return fallback_patterns.get(pattern_type, {})
+        
+        return fallback_patterns
+    
+    def get_lgbtqia_patterns(self) -> Dict[str, Any]:
+        """Get LGBTQIA+ patterns from ConfigManager JSON or fallback"""
+        return self.get_crisis_patterns('lgbtqia_patterns')
+    
+    def get_burden_patterns(self) -> List[str]:
+        """Get burden patterns from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('burden_patterns')
+        
+        # Extract pattern list from JSON structure or use fallback
+        if isinstance(patterns, dict) and 'burden_expressions' in patterns:
+            # JSON structure
+            burden_data = patterns['burden_expressions']
+            if isinstance(burden_data, dict) and 'patterns' in burden_data:
+                return [p.get('pattern', p) if isinstance(p, dict) else p 
+                       for p in burden_data['patterns']]
+        
+        # Fallback to constant
+        return BURDEN_PATTERNS
+    
+    def get_hopelessness_patterns(self) -> List[str]:
+        """Get hopelessness patterns from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('hopelessness_patterns')
+        
+        # If JSON structure, extract patterns; otherwise use fallback
+        if isinstance(patterns, dict):
+            # Try to extract from JSON structure
+            for key, value in patterns.items():
+                if isinstance(value, dict) and 'patterns' in value:
+                    return [p.get('pattern', p) if isinstance(p, dict) else p 
+                           for p in value['patterns']]
+        
+        # Fallback to constant
+        return HOPELESSNESS_PATTERNS
+    
+    def get_struggle_patterns(self) -> List[str]:
+        """Get struggle patterns from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('struggle_patterns')
+        
+        # If JSON structure, extract patterns; otherwise use fallback
+        if isinstance(patterns, dict):
+            # Try to extract from JSON structure
+            for key, value in patterns.items():
+                if isinstance(value, dict) and 'patterns' in value:
+                    return [p.get('pattern', p) if isinstance(p, dict) else p 
+                           for p in value['patterns']]
+        
+        # Fallback to constant
+        return STRUGGLE_PATTERNS
+    
+    def get_enhanced_idiom_patterns(self) -> List[Dict[str, Any]]:
+        """Get enhanced idiom patterns from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('idiom_patterns')
+        
+        # If JSON structure, convert to expected format; otherwise use fallback
+        if isinstance(patterns, dict):
+            # Try to convert JSON structure to expected format
+            result = []
+            for pattern_name, pattern_data in patterns.items():
+                if isinstance(pattern_data, dict):
+                    # Convert JSON format to expected dict format
+                    converted_pattern = {
+                        'name': pattern_data.get('name', pattern_name),
+                        'patterns': [p.get('pattern', p) if isinstance(p, dict) else p 
+                                   for p in pattern_data.get('patterns', [])],
+                        'reduction_factor': pattern_data.get('reduction_factor', 0.1),
+                        'max_score_after': pattern_data.get('max_score_after', 0.1),
+                        'required_context': pattern_data.get('context_validation'),
+                    }
+                    result.append(converted_pattern)
+            if result:
+                return result
+        
+        # Fallback to constant
+        return ENHANCED_IDIOM_PATTERNS
+    
+    def get_community_vocabulary(self) -> Dict[str, List[str]]:
+        """Get community vocabulary from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('community_vocabulary')
+        
+        # If JSON structure, extract vocabulary; otherwise use fallback
+        if isinstance(patterns, dict) and 'vocabulary' in patterns:
+            vocab_data = patterns['vocabulary']
+            result = {}
+            
+            for category, category_data in vocab_data.items():
+                if isinstance(category_data, dict) and 'terms' in category_data:
+                    # Extract terms from JSON structure
+                    result[category] = [
+                        term.get('term', term) if isinstance(term, dict) else term
+                        for term in category_data['terms']
+                    ]
+                else:
+                    result[category] = category_data
+            
+            return result
+        
+        # Fallback to constant
+        return COMMUNITY_VOCABULARY
+    
+    def get_temporal_indicators(self) -> Dict[str, List[str]]:
+        """Get temporal indicators from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('temporal_patterns')
+        
+        # If JSON structure, extract indicators; otherwise use fallback
+        if isinstance(patterns, dict):
+            return patterns
+        
+        # Fallback to constant
+        return TEMPORAL_INDICATORS
+    
+    def get_context_weights(self) -> Dict[str, List[str]]:
+        """Get context weights from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('context_weights')
+        
+        # If JSON structure, extract weights; otherwise use fallback
+        if isinstance(patterns, dict):
+            return patterns
+        
+        # Fallback to constant
+        return CONTEXT_WEIGHTS
+    
+    def get_negation_patterns(self) -> List[str]:
+        """Get negation patterns from ConfigManager JSON or fallback"""
+        patterns = self.get_crisis_patterns('negation_patterns')
+        
+        # If JSON structure, extract patterns; otherwise use fallback
+        if isinstance(patterns, dict):
+            # Try to extract from JSON structure
+            for key, value in patterns.items():
+                if isinstance(value, dict) and 'patterns' in value:
+                    return [p.get('pattern', p) if isinstance(p, dict) else p 
+                           for p in value['patterns']]
+                elif isinstance(value, list):
+                    return value
+        
+        # Fallback to constant
+        return NEGATION_PATTERNS
+    
+    def get_crisis_patterns_summary(self) -> Dict[str, Any]:
+        """Get summary of crisis patterns loading status"""
+        if self.crisis_patterns_loaded:
+            return self.config_manager.get_crisis_pattern_summary()
+        else:
+            return {
+                'source': 'fallback_constants',
+                'total_pattern_types': 12,
+                'note': 'Using hardcoded constants from settings_manager.py'
+            }
+    
+    # ========================================================================
+    # EXISTING METHODS (PRESERVED)
+    # ========================================================================
     
     def get_setting(self, setting_path: str, default: Any = None) -> Any:
         """
@@ -430,6 +691,10 @@ class SettingsManager:
         """Reload settings from ConfigManager"""
         logger.info("🔄 Reloading settings from ConfigManager...")
         self._load_initial_settings()
+        
+        # Phase 3a: Reload crisis patterns
+        self._load_crisis_patterns_from_config()
+        
         logger.info("✅ Settings reloaded")
     
     def get_all_settings(self) -> Dict[str, Any]:
@@ -441,11 +706,14 @@ class SettingsManager:
             # Simple override application (doesn't handle nested paths)
             result[f"override_{path}"] = value
         
+        # Phase 3a: Add crisis patterns summary
+        result['crisis_patterns'] = self.get_crisis_patterns_summary()
+        
         return result
     
     def get_settings_summary(self) -> Dict[str, Any]:
         """Get a summary of current settings"""
-        return {
+        summary = {
             'device': self.get_device_setting(),
             'precision': self.get_precision_setting(),
             'cache_dir': self.get_cache_dir_setting(),
@@ -453,8 +721,13 @@ class SettingsManager:
             'gap_detection_enabled': self.get_gap_detection_enabled_setting(),
             'ensemble_analysis_enabled': self.get_ensemble_analysis_enabled_setting(),
             'active_overrides': len(self.setting_overrides),
-            'total_settings_categories': len(self.runtime_settings)
+            'total_settings_categories': len(self.runtime_settings),
+            # Phase 3a: Crisis patterns status
+            'crisis_patterns_loaded': self.crisis_patterns_loaded,
+            'crisis_patterns_source': 'JSON' if self.crisis_patterns_loaded else 'fallback'
         }
+        
+        return summary
     
     def validate_settings(self) -> Dict[str, Any]:
         """Validate current settings"""
@@ -480,6 +753,16 @@ class SettingsManager:
             if not Path(cache_dir).exists():
                 validation_result['warnings'].append(f"Cache directory does not exist: {cache_dir}")
             
+            # Phase 3a: Validate crisis patterns
+            if self.crisis_patterns_loaded:
+                pattern_validation = self.config_manager.validate_crisis_patterns()
+                if not pattern_validation['valid']:
+                    validation_result['errors'].extend(pattern_validation['errors'])
+                    validation_result['valid'] = False
+                validation_result['warnings'].extend(pattern_validation['warnings'])
+            else:
+                validation_result['warnings'].append("Crisis patterns using fallback constants instead of JSON")
+            
         except Exception as e:
             validation_result['errors'].append(f"Settings validation error: {e}")
             validation_result['valid'] = False
@@ -487,13 +770,13 @@ class SettingsManager:
         return validation_result
 
 
-# Export for clean architecture
+# Export for clean architecture - PHASE 3A UPDATED
 __all__ = [
     'SettingsManager',
     'create_settings_manager',
-    # Pattern constants for component compatibility (COMPLETE SET)
+    # Pattern constants for component compatibility (FALLBACK ONLY - Primary: ConfigManager JSON)
     'SERVER_CONFIG',
-    'CRISIS_THRESHOLDS',
+    'CRISIS_THRESHOLDS', 
     'DEFAULT_PARAMS',
     'POSITIVE_CONTEXT_PATTERNS',
     'IDIOM_PATTERNS', 
