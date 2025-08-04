@@ -173,6 +173,49 @@ class ConfigManager:
             logger.error(f"❌ Error loading {config_file}: {e}")
             return {}
     
+    def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
+        """
+        Get crisis pattern configuration by type
+        
+        Args:
+            pattern_type: Type of crisis patterns to load
+            
+        Returns:
+            Crisis pattern configuration dictionary
+        """
+        cache_key = f"crisis_patterns_{pattern_type}"
+        
+        if cache_key in self.config_cache:
+            logger.debug(f"🎯 Using cached crisis patterns: {pattern_type}")
+            return self.config_cache[cache_key]
+        
+        config_file = f"{pattern_type}.json"
+        config_path = self.config_dir / config_file
+        
+        try:
+            if not config_path.exists():
+                logger.warning(f"Crisis pattern file not found: {config_path}")
+                return {}
+            
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            
+            # Apply environment variable overrides if specified
+            config = self._apply_environment_overrides(config)
+            
+            # Cache the configuration
+            self.config_cache[cache_key] = config
+            
+            logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
+            return config
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"❌ Invalid JSON in {config_path}: {e}")
+            return {}
+        except Exception as e:
+            logger.error(f"❌ Error loading crisis patterns {pattern_type}: {e}")
+            return {}
+
     def get_model_configuration(self) -> Dict[str, Any]:
         """Get model ensemble configuration with environment overrides"""
         logger.debug("🔍 Getting model configuration...")
