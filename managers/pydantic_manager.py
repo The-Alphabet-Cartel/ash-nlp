@@ -300,37 +300,6 @@ class PydanticManager:
             'initialization_status': self.is_initialized()
         }
     
-    # ============================================================================
-    # BACKWARD COMPATIBILITY METHODS
-    # ============================================================================
-    
-    def get_legacy_imports(self) -> Dict[str, type]:
-        """
-        Provide backward compatibility for direct imports
-        
-        Returns models in the format expected by existing import statements:
-        from models.pydantic_models import MessageRequest, CrisisResponse, etc.
-        """
-        logger.debug("🔄 Providing backward compatibility imports for existing code")
-        
-        return {
-            # Core models (most commonly imported)
-            'MessageRequest': self.MessageRequest,
-            'CrisisResponse': self.CrisisResponse,
-            'HealthResponse': self.HealthResponse,
-            
-            # Learning request models
-            'FalsePositiveAnalysisRequest': self.FalsePositiveAnalysisRequest,
-            'FalseNegativeAnalysisRequest': self.FalseNegativeAnalysisRequest,
-            'LearningUpdateRequest': self.LearningUpdateRequest,
-            
-            # Learning response models  
-            'FalsePositiveAnalysisResponse': self.FalsePositiveAnalysisResponse,
-            'FalseNegativeAnalysisResponse': self.FalseNegativeAnalysisResponse,
-            'LearningUpdateResponse': self.LearningUpdateResponse,
-            'LearningStatisticsResponse': self.LearningStatisticsResponse
-        }
-
 # ============================================================================
 # FACTORY FUNCTION FOR CLEAN INITIALIZATION
 # ============================================================================
@@ -374,28 +343,6 @@ def _get_default_manager():
         _default_manager = create_pydantic_manager()
     return _default_manager
 
-# Export models at module level for backward compatibility with existing imports
-def _setup_module_exports():
-    """Setup module-level exports for backward compatibility"""
-    try:
-        manager = _get_default_manager()
-        legacy_imports = manager.get_legacy_imports()
-        
-        # Add to current module's globals for import compatibility
-        current_module = globals()
-        for model_name, model_class in legacy_imports.items():
-            current_module[model_name] = model_class
-            
-        logger.debug("✅ Module-level backward compatibility exports configured")
-        
-    except Exception as e:
-        logger.error(f"❌ Failed to setup module-level exports: {e}")
-        raise
-
-# Initialize backward compatibility when module is imported
-if __name__ != "__main__":
-    _setup_module_exports()
-
 # ============================================================================
 # MAIN EXECUTION FOR TESTING
 # ============================================================================
@@ -420,9 +367,5 @@ if __name__ == "__main__":
     # Test model validation
     validation = manager.validate_model_structure('MessageRequest')
     print(f"✅ MessageRequest Validation: {validation}")
-    
-    # Test backward compatibility
-    legacy = manager.get_legacy_imports()
-    print(f"🔄 Legacy Imports Available: {list(legacy.keys())}")
     
     print("✅ PydanticManager v3.1 testing complete!")
