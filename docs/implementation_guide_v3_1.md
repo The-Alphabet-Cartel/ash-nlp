@@ -287,10 +287,10 @@ All components now require manager integration:
 ### Environment Variable Substitution ✅
 Perfect substitution working as seen in production:
 ```
-🔄 DEBUG: Substituting ${NLP_DEPRESSION_MODEL} = MoritzLaurer/deberta-v3-base-zeroshot-v2.0
-🔄 DEBUG: Substituting ${NLP_SENTIMENT_MODEL} = MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
-🔄 DEBUG: Substituting ${NLP_EMOTIONAL_DISTRESS_MODEL} = Lowerated/lm6-deberta-v3-topic-sentiment
-✅ DEBUG: Model configuration processing complete
+🔄 Substituting ${NLP_DEPRESSION_MODEL} = MoritzLaurer/deberta-v3-base-zeroshot-v2.0
+🔄 Substituting ${NLP_SENTIMENT_MODEL} = MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+🔄 Substituting ${NLP_EMOTIONAL_DISTRESS_MODEL} = Lowerated/lm6-deberta-v3-topic-sentiment
+✅ Model configuration processing complete
 ```
 
 ### Three Zero-Shot Model Ensemble ✅
