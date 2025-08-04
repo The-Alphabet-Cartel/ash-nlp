@@ -10,6 +10,7 @@ Phase 2B: Integrated with PydanticManager for clean model access
 
 import logging
 import time
+import os
 from fastapi import HTTPException
 from typing import Dict, Any, List
 
@@ -66,7 +67,6 @@ def add_ensemble_endpoints(app, model_manager, pydantic_manager=None):
     # ========================================================================
     def _get_centralized_thresholds():
         """Load centralized threshold configuration from environment variables"""
-        import os
         
         return {
             # Ensemble mode
@@ -255,6 +255,9 @@ def add_ensemble_endpoints(app, model_manager, pydantic_manager=None):
                 }
             }
             
+            # Calculate processing time
+            processing_time_ms = round((time.time() - start_time) * 1000, 2)
+            
             # Create response using the appropriate model class
             response = CrisisResponse(
                 needs_response=needs_response,
@@ -262,7 +265,7 @@ def add_ensemble_endpoints(app, model_manager, pydantic_manager=None):
                 confidence_score=round(consensus_confidence, 4),
                 detected_categories=detected_categories,
                 method="three_model_ensemble_consensus",
-                processing_time_ms=round((time.time() - start_time) * 1000, 2),
+                processing_time_ms=processing_time_ms,
                 model_info=f"Three Zero-Shot Model Ensemble ({consensus_method} consensus)",
                 reasoning=f"Consensus: {consensus_prediction} (confidence: {consensus_confidence:.3f}), Gaps: {gaps_detected}",
                 analysis=analysis_info
@@ -290,7 +293,7 @@ def add_ensemble_endpoints(app, model_manager, pydantic_manager=None):
                 raise HTTPException(status_code=500, detail=f"Analysis error: {str(e)}")
     
     # ========================================================================
-    # ADDITIONAL ENDPOINTS
+    # PHASE 2B: NEW STATUS ENDPOINT
     # ========================================================================
     
     @app.get("/ensemble/status")
@@ -326,12 +329,67 @@ def add_ensemble_endpoints(app, model_manager, pydantic_manager=None):
                         'mild_crisis_to_low': thresholds['consensus_mild_crisis_to_low']
                     },
                     'staff_review_enabled': thresholds['staff_review_on_disagreement']
+                },
+                'architecture': {
+                    'manager_version': '3.1',
+                    'pydantic_manager_enabled': pydantic_manager is not None,
+                    'models_manager_enabled': model_manager is not None
                 }
             }
             
         except Exception as e:
             logger.error(f"❌ Failed to get ensemble status: {e}")
             raise HTTPException(status_code=500, detail=f"Status check failed: {str(e)}")
+    
+    # ========================================================================
+    # ADDITIONAL ENDPOINTS
+    # ========================================================================
+    
+    @app.get("/ensemble/health")
+    async def ensemble_health():
+        """Get health status of all three models in the ensemble"""
+        try:
+            if not model_manager:
+                raise HTTPException(status_code=503, detail="ModelManager not available")
+            
+            models_loaded = model_manager.models_loaded()
+            
+            health_status = {
+                'status': 'healthy' if models_loaded else 'unhealthy',
+                'models_loaded': models_loaded,
+                'individual_models': {
+                    'depression': hasattr(model_manager, 'depression_model') and model_manager.depression_model is not None,
+                    'sentiment': hasattr(model_manager, 'sentiment_model') and model_manager.sentiment_model is not None,
+                    'emotional_distress': hasattr(model_manager, 'emotional_distress_model') and model_manager.emotional_distress_model is not None
+                },
+                'phase_2b_integration': pydantic_manager is not None,
+                'timestamp': time.time()
+            }
+            
+            return health_status
+            
+        except Exception as e:
+            logger.error(f"❌ Ensemble health check failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Health check error: {str(e)}")
+    
+    @app.get("/ensemble/config")
+    async def ensemble_configuration():
+        """Get current ensemble configuration for debugging"""
+        try:
+            return {
+                'thresholds': thresholds,
+                'source': 'environment_variables',
+                'centralized_management': True,
+                'phase_2b_status': 'complete' if pydantic_manager else 'legacy_mode',
+                'pydantic_manager_info': {
+                    'enabled': pydantic_manager is not None,
+                    'summary': pydantic_manager.get_model_summary() if pydantic_manager else None
+                },
+                'timestamp': time.time()
+            }
+        except Exception as e:
+            logger.error(f"❌ Configuration retrieval failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
     
     # ========================================================================
     # ENDPOINT REGISTRATION LOGGING
