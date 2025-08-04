@@ -282,9 +282,11 @@ class ConfigManager:
                     logger.debug(f"🔄 Applied environment override {env_var}={converted_value} to {config_key}")
         
         # Apply generic overrides recursively to nested structures
+        # BUT ONLY if they are dictionaries - skip primitives (float, bool, etc.)
         for key, value in result_config.items():
             if isinstance(value, dict):
                 result_config[key] = self._apply_environment_overrides(value, pattern_type)
+            # Skip non-dict values (floats, bools, strings, etc.) - don't try to call .get() on them
         
         return result_config
 
