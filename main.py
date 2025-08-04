@@ -160,12 +160,12 @@ def validate_centralized_thresholds():
     """Validate centralized threshold configuration from environment variables"""
     required_thresholds = [
         'NLP_ENSEMBLE_MODE',
-        'NLP_CONSENSUS_CRISIS_TO_HIGH',
-        'NLP_CONSENSUS_CRISIS_TO_MEDIUM', 
-        'NLP_CONSENSUS_MILD_CRISIS_TO_LOW',
-        'NLP_DEPRESSION_WEIGHT',
-        'NLP_SENTIMENT_WEIGHT',
-        'NLP_EMOTIONAL_DISTRESS_WEIGHT'
+        'NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD',      # Updated to match .env.template
+        'NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD',    # Updated to match .env.template
+        'NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD',  # Updated to match .env.template
+        'NLP_DEPRESSION_MODEL_WEIGHT',                 # Updated to match .env.template
+        'NLP_SENTIMENT_MODEL_WEIGHT',                  # Updated to match .env.template
+        'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT'          # Updated to match .env.template
     ]
     
     thresholds = {}
@@ -190,9 +190,10 @@ def validate_centralized_thresholds():
         logger.error("❌ Missing or invalid centralized threshold configuration:")
         for var in missing_vars:
             logger.error(f"   {var}")
-        logger.error(f"   Depression: {thresholds.get('depression_weight', 'MISSING')}")
-        logger.error(f"   Sentiment: {thresholds.get('sentiment_weight', 'MISSING')}")
-        logger.error(f"   Emotional Distress: {thresholds.get('emotional_distress_weight', 'MISSING')}")
+        logger.error("💡 These should be defined in your .env file:")
+        logger.error(f"   Depression Weight: {thresholds.get('depression_model_weight', 'MISSING')}")
+        logger.error(f"   Sentiment Weight: {thresholds.get('sentiment_model_weight', 'MISSING')}")
+        logger.error(f"   Emotional Distress Weight: {thresholds.get('emotional_distress_model_weight', 'MISSING')}")
         sys.exit(1)
     
     logger.info("🐳 Running in Docker mode - using system environment variables")
@@ -201,13 +202,13 @@ def validate_centralized_thresholds():
     logger.debug("🎯 Centralized Threshold Configuration:")
     logger.debug(f"   Ensemble mode: {thresholds['ensemble_mode']}")
     logger.debug("   Consensus Mapping Thresholds:")
-    logger.debug(f"     CRISIS → HIGH: {thresholds['consensus_crisis_to_high']}")
-    logger.debug(f"     CRISIS → MEDIUM: {thresholds['consensus_crisis_to_medium']}")
-    logger.debug(f"     MILD_CRISIS → LOW: {thresholds['consensus_mild_crisis_to_low']}")
+    logger.debug(f"     CRISIS → HIGH: {thresholds['consensus_crisis_to_high_threshold']}")
+    logger.debug(f"     CRISIS → MEDIUM: {thresholds['consensus_crisis_to_medium_threshold']}")
+    logger.debug(f"     MILD_CRISIS → LOW: {thresholds['consensus_mild_crisis_to_low_threshold']}")
     logger.debug("   Model Weights:")
-    logger.debug(f"     Depression: {thresholds['depression_weight']}")
-    logger.debug(f"     Sentiment: {thresholds['sentiment_weight']}")
-    logger.debug(f"     Emotional Distress: {thresholds['emotional_distress_weight']}")
+    logger.debug(f"     Depression: {thresholds['depression_model_weight']}")
+    logger.debug(f"     Sentiment: {thresholds['sentiment_model_weight']}")
+    logger.debug(f"     Emotional Distress: {thresholds['emotional_distress_model_weight']}")
     
     logger.debug("🎯 CENTRALIZED Ensemble endpoints configured - All thresholds from environment variables")
     
