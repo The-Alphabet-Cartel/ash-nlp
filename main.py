@@ -459,7 +459,8 @@ async def lifespan(app: FastAPI):
                 config_manager=config_manager,
                 settings_manager=settings_manager,
                 zero_shot_manager=zero_shot_manager,
-                crisis_pattern_manager=crisis_pattern_manager  # Phase 3a addition
+                crisis_pattern_manager=crisis_pattern_manager,
+                model_manager=model_manager
             )
             logger.info("🎯 Admin endpoints added - Clean v3.1!")
             
