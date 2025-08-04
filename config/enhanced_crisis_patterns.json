@@ -1,0 +1,327 @@
+{
+  "metadata": {
+    "pattern_type": "enhanced_crisis_patterns",
+    "version": "3.1.0", 
+    "description": "Comprehensive enhanced crisis patterns including hopelessness, struggle, and negation patterns",
+    "last_updated": "2025-08-04",
+    "total_patterns": 75,
+    "source": "Migrated from managers/settings_manager.py ENHANCED patterns",
+    "environment_overrides": {
+      "enabled": "NLP_CONFIG_ENABLE_ENHANCED_CRISIS_PATTERNS",
+      "weight_multiplier": "NLP_CONFIG_ENHANCED_CRISIS_WEIGHT",
+      "escalation_threshold": "NLP_CONFIG_ENHANCED_ESCALATION_THRESHOLD"
+    }
+  },
+  "configuration": {
+    "enabled": true,
+    "weight_multiplier": 1.2,
+    "confidence_boost": 0.20,
+    "priority_level": "critical",
+    "auto_escalate": true,
+    "staff_notification_required": true
+  },
+  "patterns": {
+    "hopelessness_patterns": {
+      "crisis_level": "critical",
+      "category": "hopelessness",
+      "description": "Direct expressions of hopelessness and despair requiring immediate attention",
+      "patterns": [
+        {
+          "pattern": "no hope left",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "completely hopeless",
+          "type": "exact_match", 
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "nothing will ever change",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "no point in trying",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "given up completely",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "nothing matters anymore",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "life is meaningless",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "no reason to live",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        }
+      ]
+    },
+    "struggle_patterns": {
+      "crisis_level": "high",
+      "category": "struggle",
+      "description": "Expressions of intense struggle and inability to cope",
+      "patterns": [
+        {
+          "pattern": "can't take it anymore",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "struggling to survive",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "barely hanging on",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "drowning in despair",
+          "type": "exact_match",
+          "weight": 0.7,
+          "urgency": "medium",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "can't handle this",
+          "type": "exact_match",
+          "weight": 0.6,
+          "urgency": "medium",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "overwhelmed completely",
+          "type": "exact_match",
+          "weight": 0.6,
+          "urgency": "medium",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "breaking down",
+          "type": "exact_match",
+          "weight": 0.7,
+          "urgency": "medium",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "falling apart",
+          "type": "exact_match",
+          "weight": 0.6,
+          "urgency": "medium",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "spiraling out of control",
+          "type": "exact_match",
+          "weight": 0.7,
+          "urgency": "medium",
+          "auto_escalate": false
+        }
+      ]
+    },
+    "negation_patterns": {
+      "crisis_level": "variable",
+      "category": "negation_detection",
+      "description": "Negation patterns that modify crisis detection accuracy",
+      "patterns": [
+        {
+          "pattern": "\\bnot (suicidal|depressed|hopeless|sad)\\b",
+          "type": "regex",
+          "weight": -0.5,
+          "urgency": "low",
+          "modifier": "reduction",
+          "context_required": true
+        },
+        {
+          "pattern": "\\bdon't (want to die|feel hopeless|want to hurt)\\b",
+          "type": "regex",
+          "weight": -0.6,
+          "urgency": "low", 
+          "modifier": "reduction",
+          "context_required": true
+        },
+        {
+          "pattern": "\\bnever (thought about|considered) (suicide|killing myself)\\b",
+          "type": "regex",
+          "weight": -0.7,
+          "urgency": "low",
+          "modifier": "reduction",
+          "context_required": true
+        },
+        {
+          "pattern": "\\bwon't (hurt myself|do anything)\\b",
+          "type": "regex",
+          "weight": -0.4,
+          "urgency": "low",
+          "modifier": "reduction",
+          "context_required": true
+        },
+        {
+          "pattern": "\\bnot going to (kill myself|hurt myself)\\b",
+          "type": "regex",
+          "weight": -0.6,
+          "urgency": "low",
+          "modifier": "reduction",
+          "context_required": true
+        },
+        {
+          "pattern": "\\bdon't worry\\b",
+          "type": "regex",
+          "weight": -0.3,
+          "urgency": "low",
+          "modifier": "reduction",
+          "context_required": false
+        }
+      ]
+    },
+    "planning_indicators": {
+      "crisis_level": "critical",
+      "category": "planning",
+      "description": "Indicators of crisis planning requiring immediate intervention",
+      "patterns": [
+        {
+          "pattern": "made a plan",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "figured out how",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "writing goodbye",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "final arrangements",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "saying goodbye",
+          "type": "exact_match",
+          "weight": 0.7,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "getting affairs in order",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        }
+      ]
+    },
+    "method_references": {
+      "crisis_level": "critical",
+      "category": "method_discussion",
+      "description": "References to specific methods requiring immediate escalation",
+      "patterns": [
+        {
+          "pattern": "\\b(pills|overdose|medication)\\b.*\\b(take|swallow|consume)\\b",
+          "type": "regex",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true,
+          "context_required": true
+        },
+        {
+          "pattern": "\\b(bridge|building|height)\\b.*\\b(jump|leap|fall)\\b",
+          "type": "regex",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true,
+          "context_required": true
+        },
+        {
+          "pattern": "\\b(rope|hanging|noose)\\b",
+          "type": "regex",
+          "weight": 0.9,
+          "urgency": "critical",
+          "auto_escalate": true,
+          "context_required": true
+        },
+        {
+          "pattern": "\\b(gun|weapon|knife)\\b.*\\b(myself|me)\\b",
+          "type": "regex",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true,
+          "context_required": true
+        }
+      ]
+    }
+  },
+  "processing_rules": {
+    "case_sensitive": false,
+    "require_word_boundaries": true,
+    "context_window": 10,
+    "negation_processing": "apply_after_detection",
+    "multiple_matches": "cumulative_scoring",
+    "max_pattern_boost": 0.50
+  },
+  "escalation_rules": {
+    "auto_escalation_patterns": ["hopelessness_patterns", "planning_indicators", "method_references"],
+    "staff_notification_required": true,
+    "emergency_response_threshold": 0.80,
+    "immediate_review_required": true
+  },
+  "usage_instructions": {
+    "integration": "Load via ConfigManager.get_crisis_patterns('enhanced_crisis_patterns')",
+    "access_method": "CrisisPatternManager.get_enhanced_patterns()",
+    "environment_override_example": "NLP_CONFIG_ENHANCED_CRISIS_WEIGHT=1.5",
+    "implementation_notes": [
+      "Critical patterns should trigger immediate staff notification",
+      "Method references require careful context validation to avoid false positives",
+      "Negation patterns should be processed after initial crisis detection",
+      "Planning indicators are among the highest risk signals and require urgent response",
+      "All critical patterns should bypass normal escalation delays"
+    ]
+  }
+}
