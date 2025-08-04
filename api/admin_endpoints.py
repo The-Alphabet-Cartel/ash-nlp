@@ -80,7 +80,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
             model_status = {}
             if model_manager.models_loaded():
                 try:
-                    model_status = await model_manager.get_model_status()
+                    model_status = model_manager.get_model_status()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model status: {e}")
                     model_status = {"error": str(e)}
