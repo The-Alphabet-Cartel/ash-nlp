@@ -475,7 +475,7 @@ async def lifespan(app: FastAPI):
                 add_enhanced_learning_endpoints(
                     app, 
                     learning_manager=learning_manager,
-                    model_manager=model_manager,
+                    #model_manager=model_manager,
                     pydantic_manager=pydantic_manager
                 )
                 logger.info("🎓 Enhanced learning endpoints added - Clean v3.1!")
