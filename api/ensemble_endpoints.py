@@ -296,13 +296,13 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
             # Get configuration from model manager - Direct usage
             if model_manager:
                 try:
-                    config_info["configuration"] = await model_manager.get_configuration_status()
+                    config_info["configuration"] = model_manager.get_configuration_status()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model manager configuration: {e}")
                     config_info["configuration"] = {"error": str(e)}
                 
                 try:
-                    config_info["models"] = await model_manager.get_model_info()
+                    config_info["models"] = model_manager.get_model_info()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model info: {e}")
                     config_info["models"] = {"error": str(e)}
