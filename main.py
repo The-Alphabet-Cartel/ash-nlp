@@ -305,7 +305,11 @@ async def initialize_components_clean_v3_1():
         # ========================================================================
         if LEARNING_AVAILABLE:
             try:
-                learning_manager = EnhancedLearningManager()
+                # Pass required arguments: model_manager and config_manager
+                learning_manager = EnhancedLearningManager(
+                    model_manager=model_manager,
+                    config_manager=config_manager
+                )
                 logger.info("✅ Enhanced Learning Manager initialized")
             except Exception as e:
                 logger.warning(f"⚠️  Could not initialize Enhanced Learning Manager: {e}")
