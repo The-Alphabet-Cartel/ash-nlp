@@ -40,7 +40,7 @@ class ConfigManager:
         logger.info(f"✅ ConfigManager initialized with config directory: {config_dir}")
         
         # DEBUG: Log key environment variables
-        logger.debug("🔍 DEBUG: Key Environment Variables:")
+        logger.debug("🔍 Key Environment Variables:")
         env_vars_to_check = [
             'NLP_DEPRESSION_MODEL',
             'NLP_SENTIMENT_MODEL', 
@@ -71,7 +71,7 @@ class ConfigManager:
                 env_var = match.group(1)
                 env_value = os.getenv(env_var)
                 
-                logger.debug(f"🔄 DEBUG: Substituting ${{{env_var}}} = {env_value}")
+                logger.debug(f"🔄 Substituting ${{{env_var}}} = {env_value}")
                 
                 if env_value is not None:
                     # Try to convert to appropriate type
@@ -122,7 +122,7 @@ class ConfigManager:
             Parsed configuration dictionary
         """
         if config_name in self.config_cache:
-            logger.debug(f"📋 DEBUG: Using cached config for {config_name}")
+            logger.debug(f"📋 Using cached config for {config_name}")
             return self.config_cache[config_name]
         
         config_file = self.config_files.get(config_name)
@@ -137,26 +137,26 @@ class ConfigManager:
             return {}
         
         try:
-            logger.debug(f"📁 DEBUG: Loading config file: {config_path}")
+            logger.debug(f"📁 Loading config file: {config_path}")
             
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
             
-            logger.debug(f"✅ DEBUG: JSON loaded successfully")
+            logger.debug(f"✅ JSON loaded successfully")
             
             # DEBUG: Log before substitution
             model_defs = raw_config.get('model_definitions', {})
-            logger.debug("🔍 DEBUG: Model definitions BEFORE substitution:")
+            logger.debug("🔍 Model definitions BEFORE substitution:")
             for model_type, model_config in model_defs.items():
                 logger.debug(f"   {model_type}: {model_config.get('name', 'NO_NAME')}")
             
             # Substitute environment variables
-            logger.debug("🔄 DEBUG: Starting environment variable substitution...")
+            logger.debug("🔄 Starting environment variable substitution...")
             processed_config = self.substitute_environment_variables(raw_config)
             
             # DEBUG: Log after substitution
             processed_model_defs = processed_config.get('model_definitions', {})
-            logger.debug("🔍 DEBUG: Model definitions AFTER substitution:")
+            logger.debug("🔍 Model definitions AFTER substitution:")
             for model_type, model_config in processed_model_defs.items():
                 logger.debug(f"   {model_type}: {model_config.get('name', 'NO_NAME')}")
             
@@ -175,7 +175,7 @@ class ConfigManager:
     
     def get_model_configuration(self) -> Dict[str, Any]:
         """Get model ensemble configuration with environment overrides"""
-        logger.debug("🔍 DEBUG: Getting model configuration...")
+        logger.debug("🔍 Getting model configuration...")
         
         config = self.load_config_file('model_ensemble')
         
@@ -187,10 +187,10 @@ class ConfigManager:
         model_defs = config.get('model_definitions', {})
         processed_models = {}
         
-        logger.debug("🔧 DEBUG: Processing model definitions...")
+        logger.debug("🔧 Processing model definitions...")
         
         for model_type, model_config in model_defs.items():
-            logger.debug(f"🔍 DEBUG: Processing {model_type} model...")
+            logger.debug(f"🔍 Processing {model_type} model...")
             
             # Get model name with environment override
             env_var = model_config.get('environment_variable')
@@ -228,7 +228,7 @@ class ConfigManager:
         
         # Validate weights sum to 1.0
         total_weight = sum(model['weight'] for model in processed_models.values())
-        logger.debug(f"🔍 DEBUG: Total weight: {total_weight}")
+        logger.debug(f"🔍 Total weight: {total_weight}")
         
         if abs(total_weight - 1.0) > 0.001:
             logger.warning(f"⚠️ Model weights sum to {total_weight}, should be 1.0")
@@ -242,12 +242,12 @@ class ConfigManager:
             'validation_rules': config.get('validation_rules', {})
         }
         
-        logger.debug("✅ DEBUG: Model configuration processing complete")
+        logger.debug("✅ Model configuration processing complete")
         return result
     
     def _get_fallback_model_config(self) -> Dict[str, Any]:
         """Fallback configuration using only environment variables"""
-        logger.debug("🔄 DEBUG: Using fallback environment configuration")
+        logger.debug("🔄 Using fallback environment configuration")
         
         config = {
             'models': {
