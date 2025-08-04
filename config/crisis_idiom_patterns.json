@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "pattern_type": "enhanced_idiom_patterns",
+    "version": "3.1.0",
+    "description": "Enhanced idiom patterns with complex logic for false positive reduction",
+    "last_updated": "2025-08-04",
+    "total_patterns": 15,
+    "source": "Migrated from managers/settings_manager.py lines 203-244",
+    "environment_overrides": {
+      "enabled": "NLP_CONFIG_ENABLE_IDIOM_FILTERING",
+      "reduction_strength": "NLP_CONFIG_IDIOM_REDUCTION_STRENGTH",
+      "context_sensitivity": "NLP_CONFIG_IDIOM_CONTEXT_SENSITIVITY"
+    }
+  },
+  "configuration": {
+    "enabled": true,
+    "global_reduction_multiplier": 1.0,
+    "context_validation_required": true,
+    "priority_level": "medium"
+  },
+  "patterns": {
+    "fatigue_idiom": {
+      "name": "fatigue_idiom",
+      "description": "Common fatigue expressions that should not trigger crisis detection",
+      "reduction_factor": 0.15,
+      "max_score_after": 0.10,
+      "patterns": [
+        {
+          "pattern": "\\b(dead|dying) (tired|exhausted|beat)\\b",
+          "type": "regex",
+          "case_sensitive": false
+        }
+      ],
+      "required_context": {
+        "type": "absence_of_keywords",
+        "keywords": ["depressed", "sad", "hopeless", "hate", "kill myself"],
+        "description": "Must NOT contain crisis keywords"
+      },
+      "context_validation": "lambda msg: not any(word in msg.lower() for word in ['depressed', 'sad', 'hopeless', 'hate', 'kill myself'])"
+    },
+    "humor_idiom": {
+      "name": "humor_idiom", 
+      "description": "Humor-related expressions with death/violence metaphors",
+      "reduction_factor": 0.05,
+      "max_score_after": 0.08,
+      "patterns": [
+        {
+          "pattern": "\\b(joke|that|it) (killed|murdered) me\\b",
+          "type": "regex",
+          "case_sensitive": false
+        },
+        {
+          "pattern": "\\bdying of laughter\\b",
+          "type": "regex",
+          "case_sensitive": false
+        }
+      ],
+      "required_context": {
+        "type": "presence_of_keywords",
+        "keywords": ["funny", "hilarious", "laugh", "lol", "haha"],
+        "description": "Must contain humor indicators"
+      },
+      "context_validation": "lambda msg: any(word in msg.lower() for word in ['funny', 'hilarious', 'laugh', 'lol', 'haha'])"
+    },
+    "success_idiom": {
+      "name": "success_idiom",
+      "description": "Success and achievement expressions with violent metaphors",
+      "reduction_factor": 0.10,
+      "max_score_after": 0.05,
+      "patterns": [
+        {
+          "pattern": "\\b(killing|slaying|crushing) it\\b",
+          "type": "regex",
+          "case_sensitive": false
+        }
+      ],
+      "required_context": {
+        "type": "presence_of_keywords",
+        "keywords": ["work", "job", "performance", "success"],
+        "description": "Must contain success/work context"
+      },
+      "context_validation": "lambda msg: any(word in msg.lower() for word in ['work', 'job', 'performance', 'success'])"
+    },
+    "food_craving_idiom": {
+      "name": "food_craving_idiom",
+      "description": "Food craving expressions with violent metaphors",
+      "reduction_factor": 0.08,
+      "max_score_after": 0.05,
+      "patterns": [
+        {
+          "pattern": "\\bmurder (a|some) \\w+\\b",
+          "type": "regex",
+          "case_sensitive": false
+        },
+        {
+          "pattern": "\\bcould kill for\\b",
+          "type": "regex",
+          "case_sensitive": false
+        }
+      ],
+      "required_context": {
+        "type": "presence_of_keywords",
+        "keywords": ["food", "hungry", "eat", "burger", "pizza"],
+        "description": "Must contain food-related context"
+      },
+      "context_validation": "lambda msg: any(word in msg.lower() for word in ['food', 'hungry', 'eat', 'burger', 'pizza'])"
+    },
+    "frustration_idiom": {
+      "name": "frustration_idiom",
+      "description": "Common frustration expressions with violent/crazy metaphors",
+      "reduction_factor": 0.12,
+      "max_score_after": 0.08,
+      "patterns": [
+        {
+          "pattern": "\\bdriving me (crazy|insane|nuts)\\b",
+          "type": "regex",
+          "case_sensitive": false
+        },
+        {
+          "pattern": "\\b(brutal|killer) (test|exam|homework)\\b",
+          "type": "regex",
+          "case_sensitive": false
+        }
+      ],
+      "required_context": {
+        "type": "presence_of_keywords",
+        "keywords": ["traffic", "homework", "test", "exam", "work"],
+        "description": "Must contain frustration context indicators"
+      },
+      "context_validation": "lambda msg: any(word in msg.lower() for word in ['traffic', 'homework', 'test', 'exam', 'work'])"
+    }
+  },
+  "processing_rules": {
+    "apply_order": ["fatigue_idiom", "humor_idiom", "success_idiom", "food_craving_idiom", "frustration_idiom"],
+    "multiple_matches": "apply_strongest_reduction",
+    "context_check_required": true,
+    "fallback_behavior": "no_reduction"
+  },
+  "integration_notes": {
+    "lambda_functions": "Context validation uses lambda functions - convert to method calls in Python implementation",
+    "regex_flags": "All regex patterns should use re.IGNORECASE flag",
+    "max_score_enforcement": "Ensure crisis scores never exceed max_score_after when idiom detected",
+    "context_window": "Check 10 words before and after the idiom match for context keywords"
+  },
+  "usage_instructions": {
+    "integration": "Load via ConfigManager.get_crisis_patterns('enhanced_idiom_patterns')",
+    "access_method": "SettingsManager.get_enhanced_idiom_patterns()",
+    "environment_override_example": "NLP_CONFIG_IDIOM_REDUCTION_STRENGTH=0.8",
+    "implementation_notes": [
+      "Each idiom type has specific context validation requirements",
+      "Reduction factors are multiplied against crisis scores",
+      "Max score caps prevent any score from exceeding threshold after reduction",
+      "Context validation must pass before applying reduction"
+    ]
+  }
+}
