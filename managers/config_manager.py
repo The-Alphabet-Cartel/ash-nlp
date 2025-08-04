@@ -173,6 +173,51 @@ class ConfigManager:
             logger.error(f"❌ Error loading {config_file}: {e}")
             return {}
     
+    def _apply_environment_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Apply environment variable overrides to configuration
+        
+        Args:
+            config: Configuration dictionary to process
+            
+        Returns:
+            Configuration with environment overrides applied
+        """
+        if not isinstance(config, dict):
+            return config
+        
+        # Look for environment override specifications in metadata
+        metadata = config.get('metadata', {})
+        env_overrides = metadata.get('environment_overrides', {})
+        
+        if not env_overrides:
+            return config
+        
+        # Apply environment overrides
+        overridden_config = config.copy()
+        
+        for config_key, env_var in env_overrides.items():
+            env_value = os.getenv(env_var)
+            if env_value is not None:
+                try:
+                    # Try to convert to appropriate type
+                    if env_value.lower() in ['true', 'false']:
+                        env_value = env_value.lower() == 'true'
+                    elif '.' in env_value:
+                        env_value = float(env_value)
+                    elif env_value.isdigit():
+                        env_value = int(env_value)
+                    
+                    # Apply the override to the configuration section
+                    if 'configuration' in overridden_config:
+                        overridden_config['configuration'][config_key] = env_value
+                        logger.debug(f"🔄 Applied environment override {env_var}={env_value} to {config_key}")
+                    
+                except (ValueError, TypeError) as e:
+                    logger.warning(f"⚠️ Invalid environment override {env_var}={env_value}: {e}")
+        
+        return overridden_config
+
     def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
         """
         Get crisis pattern configuration by type
