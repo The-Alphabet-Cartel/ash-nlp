@@ -173,12 +173,63 @@ class ConfigManager:
             logger.error(f"❌ Error loading {config_file}: {e}")
             return {}
     
-    def _apply_environment_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
+        """
+        Get crisis pattern configuration by type
+        
+        Args:
+            pattern_type: Type of crisis pattern to load (e.g., 'crisis_context_patterns')
+            
+        Returns:
+            Dictionary containing the crisis pattern configuration
+        """
+        logger.debug(f"🔍 Getting crisis patterns: {pattern_type}")
+        
+        try:
+            # Check if we have a cached version first
+            cache_key = f"crisis_patterns_{pattern_type}"
+            if cache_key in self.config_cache:
+                logger.debug(f"📋 Using cached config for {pattern_type}")
+                return self.config_cache[cache_key]
+            
+            # Load the specific pattern configuration file
+            config_file_path = self.config_dir / f"{pattern_type}.json"
+            
+            if not config_file_path.exists():
+                logger.warning(f"⚠️ Crisis pattern file not found: {config_file_path}")
+                return {}
+            
+            logger.debug(f"📁 Loading config file: {config_file_path}")
+            
+            with open(config_file_path, 'r', encoding='utf-8') as f:
+                raw_config = json.load(f)
+            
+            logger.debug("✅ JSON loaded successfully")
+            
+            # Apply environment variable substitutions
+            processed_config = self.substitute_environment_variables(raw_config)
+            
+            # Apply environment overrides
+            final_config = self._apply_environment_overrides(processed_config, pattern_type)
+            
+            # Cache the processed configuration
+            self.config_cache[cache_key] = final_config
+            
+            logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
+            
+            return final_config
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to load crisis patterns {pattern_type}: {e}")
+            return {}
+
+    def _apply_environment_overrides(self, config: Dict[str, Any], pattern_type: str = None) -> Dict[str, Any]:
         """
         Apply environment variable overrides to configuration
         
         Args:
-            config: Configuration dictionary to process
+            config: Base configuration dictionary
+            pattern_type: Optional pattern type for specific overrides
             
         Returns:
             Configuration with environment overrides applied
@@ -186,80 +237,56 @@ class ConfigManager:
         if not isinstance(config, dict):
             return config
         
-        # Look for environment override specifications in metadata
-        metadata = config.get('metadata', {})
-        env_overrides = metadata.get('environment_overrides', {})
+        # Create a copy to avoid modifying the original
+        result_config = config.copy()
         
-        if not env_overrides:
-            return config
+        # Define environment variable mappings for crisis patterns
+        env_mappings = {
+            'crisis_context_patterns': {
+                'boost_multiplier': 'NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER'
+            },
+            'positive_context_patterns': {
+                'enabled': 'NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS'
+            },
+            'enhanced_crisis_patterns': {
+                'weight_multiplier': 'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT'
+            },
+            'crisis_burden_patterns': {
+                'weight_multiplier': 'NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER'
+            },
+            'crisis_lgbtqia_patterns': {
+                'weight_multiplier': 'NLP_CONFIG_LGBTQIA_WEIGHT_MULTIPLIER',
+                'enabled': 'NLP_CONFIG_ENABLE_LGBTQIA_PATTERNS'
+            }
+        }
         
-        # Apply environment overrides
-        overridden_config = config.copy()
-        
-        for config_key, env_var in env_overrides.items():
-            env_value = os.getenv(env_var)
-            if env_value is not None:
-                try:
-                    # Try to convert to appropriate type
-                    if env_value.lower() in ['true', 'false']:
-                        env_value = env_value.lower() == 'true'
-                    elif '.' in env_value:
-                        env_value = float(env_value)
-                    elif env_value.isdigit():
-                        env_value = int(env_value)
+        # Apply pattern-specific overrides if pattern_type is provided
+        if pattern_type and pattern_type in env_mappings:
+            pattern_overrides = env_mappings[pattern_type]
+            
+            for config_key, env_var in pattern_overrides.items():
+                env_value = os.getenv(env_var)
+                if env_value is not None:
+                    # Convert environment value to appropriate type
+                    try:
+                        if env_value.lower() in ('true', 'false'):
+                            converted_value = env_value.lower() == 'true'
+                        elif '.' in env_value:
+                            converted_value = float(env_value)
+                        else:
+                            converted_value = int(env_value)
+                    except (ValueError, AttributeError):
+                        converted_value = env_value
                     
-                    # Apply the override to the configuration section
-                    if 'configuration' in overridden_config:
-                        overridden_config['configuration'][config_key] = env_value
-                        logger.debug(f"🔄 Applied environment override {env_var}={env_value} to {config_key}")
-                    
-                except (ValueError, TypeError) as e:
-                    logger.warning(f"⚠️ Invalid environment override {env_var}={env_value}: {e}")
+                    result_config[config_key] = converted_value
+                    logger.debug(f"🔄 Applied environment override {env_var}={converted_value} to {config_key}")
         
-        return overridden_config
-
-    def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
-        """
-        Get crisis pattern configuration by type
+        # Apply generic overrides recursively to nested structures
+        for key, value in result_config.items():
+            if isinstance(value, dict):
+                result_config[key] = self._apply_environment_overrides(value, pattern_type)
         
-        Args:
-            pattern_type: Type of crisis patterns to load
-            
-        Returns:
-            Crisis pattern configuration dictionary
-        """
-        cache_key = f"crisis_patterns_{pattern_type}"
-        
-        if cache_key in self.config_cache:
-            logger.debug(f"🎯 Using cached crisis patterns: {pattern_type}")
-            return self.config_cache[cache_key]
-        
-        config_file = f"{pattern_type}.json"
-        config_path = self.config_dir / config_file
-        
-        try:
-            if not config_path.exists():
-                logger.warning(f"Crisis pattern file not found: {config_path}")
-                return {}
-            
-            with open(config_path, 'r', encoding='utf-8') as f:
-                config = json.load(f)
-            
-            # Apply environment variable overrides if specified
-            config = self._apply_environment_overrides(config)
-            
-            # Cache the configuration
-            self.config_cache[cache_key] = config
-            
-            logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
-            return config
-            
-        except json.JSONDecodeError as e:
-            logger.error(f"❌ Invalid JSON in {config_path}: {e}")
-            return {}
-        except Exception as e:
-            logger.error(f"❌ Error loading crisis patterns {pattern_type}: {e}")
-            return {}
+        return result_config
 
     def get_model_configuration(self) -> Dict[str, Any]:
         """Get model ensemble configuration with environment overrides"""
