@@ -20,7 +20,7 @@ log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
 # Configure the proper logging system:
 logging.basicConfig(
     level=getattr(logging, log_level),
-    format='%(asctime)s - %(levelname)s: %(name)s - %(message)s',
+    format='%(asctime)s %(levelname)s: %(name)s - %(message)s',
     handlers=[
         logging.FileHandler(log_file, encoding='utf-8'),
         logging.StreamHandler()
