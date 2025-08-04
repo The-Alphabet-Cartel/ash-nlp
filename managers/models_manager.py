@@ -787,3 +787,27 @@ class ModelsManager:
                 'disagreement_threshold': self.model_config.get('disagreement_threshold', 2)
             }
         }
+
+# ============================================================================
+# FACTORY FUNCTION FOR CLEAN ARCHITECTURE
+# ============================================================================
+
+def create_model_manager(config_manager, settings_manager=None, zero_shot_manager=None):
+    """
+    Factory function to create ModelsManager instance with clean architecture
+    
+    Args:
+        config_manager: ConfigManager instance (required)
+        settings_manager: SettingsManager instance (optional)
+        zero_shot_manager: ZeroShotManager instance (optional)
+        
+    Returns:
+        ModelsManager instance
+    """
+    return ModelsManager(config_manager, settings_manager, zero_shot_manager)
+
+# Export for clean architecture
+__all__ = [
+    'ModelsManager',
+    'create_model_manager'
+]
