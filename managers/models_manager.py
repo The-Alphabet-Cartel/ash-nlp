@@ -6,13 +6,18 @@ FIXED VERSION: Robust cache directory handling with multiple fallbacks
 """
 
 import logging
+logger = logging.getLogger(__name__)
+
 import os
 import torch
+
+logger.info(f"🔍 About to import transformers - working directory: {os.getcwd()}")
+logger.info(f"🔍 Temp directory permissions: {os.access('/tmp', os.W_OK)}")
+logger.info(f"🔍 Current user: {os.getuid() if hasattr(os, 'getuid') else 'unknown'}")
 from transformers import pipeline, AutoConfig
 from typing import Optional, Dict, Any, Union, List, Tuple
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
 
 class ModelsManager:
     """
