@@ -11,7 +11,7 @@ from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
+def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis_pattern_manager=None):
     """
     Add Three Zero-Shot Model Ensemble endpoints to FastAPI app
     Clean v3.1 implementation - Direct manager usage only
@@ -119,7 +119,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
                     detail=f"Ensemble analysis failed: {str(e)}"
                 )
             
-            # STEP 2: PATTERN ANALYSIS INTEGRATION (Phase 3a Fix)
+            # STEP 2: CRISIS PATTERN ANALYSIS INTEGRATION (Phase 3a Fix)
             pattern_analysis = {}
             if crisis_pattern_manager:
                 try:
@@ -149,7 +149,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager):
                     "analysis_available": False
                 }
             
-            # STEP 3: COMBINE ENSEMBLE AND PATTERN RESULTS (Fix #4)
+            # STEP 3: COMBINE ENSEMBLE AND PATTERN RESULTS
             combined_analysis = integrate_pattern_and_ensemble_analysis(
                 ensemble_analysis, pattern_analysis
             )
