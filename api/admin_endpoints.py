@@ -88,7 +88,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
             # Get zero-shot manager status
             zero_shot_status = {}
             try:
-                zero_shot_status = zero_shot_manager.get_current_status()
+                zero_shot_status = zero_shot_manager.get_manager_status()
             except Exception as e:
                 logger.warning(f"⚠️ Could not get zero-shot status: {e}")
                 zero_shot_status = {"error": str(e)}
