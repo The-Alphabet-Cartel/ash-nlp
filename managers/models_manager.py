@@ -325,6 +325,69 @@ class ModelsManager:
             self.emotional_distress_model is not None
         ])
     
+    def get_ensemble_status(self) -> Dict[str, Any]:
+        """Get ensemble status information"""
+        return {
+            'models_loaded': self.models_loaded(),
+            'device': self.device,
+            'precision': self.hardware_config.get('precision'),
+            'ensemble_mode': self.model_config.get('ensemble_mode'),
+            'model_count': 3,
+            'models': {
+                'depression': {
+                    'name': self.model_config.get('depression_model', 'Unknown'),
+                    'loaded': self.depression_model is not None,
+                    'purpose': 'Primary crisis classification',
+                    'weight': self.model_config.get('depression_weight', 0.5)
+                },
+                'sentiment': {
+                    'name': self.model_config.get('sentiment_model', 'Unknown'),
+                    'loaded': self.sentiment_model is not None,
+                    'purpose': 'Contextual validation',
+                    'weight': self.model_config.get('sentiment_weight', 0.2)
+                },
+                'emotional_distress': {
+                    'name': self.model_config.get('emotional_distress_model', 'Unknown'),
+                    'loaded': self.emotional_distress_model is not None,
+                    'purpose': 'Emotional distress detection',
+                    'weight': self.model_config.get('emotional_distress_weight', 0.3)
+                }
+            }
+        }
+
+    def get_model_status(self) -> Dict[str, Any]:
+        """Get model status information - NOT async"""
+        return {
+            'models_loaded': self.models_loaded(),
+            'device': self.device,
+            'precision': self.hardware_config.get('precision'),
+            'ensemble_mode': self.model_config.get('ensemble_mode'),
+            'models': {
+                'depression': {
+                    'name': self.model_config.get('depression_model', 'Unknown'),
+                    'loaded': self.depression_model is not None,
+                    'purpose': 'Primary crisis classification',
+                    'weight': self.model_config.get('depression_weight', 0.5)
+                },
+                'sentiment': {
+                    'name': self.model_config.get('sentiment_model', 'Unknown'),
+                    'loaded': self.sentiment_model is not None,
+                    'purpose': 'Contextual validation',
+                    'weight': self.model_config.get('sentiment_weight', 0.2)
+                },
+                'emotional_distress': {
+                    'name': self.model_config.get('emotional_distress_model', 'Unknown'),
+                    'loaded': self.emotional_distress_model is not None,
+                    'purpose': 'Emotional distress detection',
+                    'weight': self.model_config.get('emotional_distress_weight', 0.3)
+                }
+            },
+            'gap_detection': {
+                'enabled': self.model_config.get('gap_detection_enabled', True),
+                'disagreement_threshold': self.model_config.get('disagreement_threshold', 2)
+            }
+        }
+
     async def _load_depression_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the depression detection model"""
         model_name = self.model_config.get('depression_model', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0')
