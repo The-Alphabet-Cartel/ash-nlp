@@ -21,35 +21,32 @@ class ModelsManager:
     FIXED: Robust cache directory handling and configuration extraction
     """
     
-    def __init__(self, config_manager=None, model_config: Dict[str, Any] = None, hardware_config: Dict[str, Any] = None):
+    def __init__(self, config_manager, settings_manager=None, zero_shot_manager=None):
         """
-        Initialize ModelsManager with clean manager architecture
+        Initialize ModelsManager with clean architecture
         
         Args:
-            config_manager: ConfigManager instance for JSON + ENV configuration
-            model_config: Processed model configuration from ConfigManager  
-            hardware_config: Hardware configuration (device, precision, etc.)
-            
-        Note: For compatibility with existing main.py, this can also be called with just config_manager
-        and will extract model_config and hardware_config automatically.
+            config_manager: ConfigManager instance (required)
+            settings_manager: SettingsManager instance (optional)
+            zero_shot_manager: ZeroShotManager instance (optional)
         """
-        logger.debug("🔧 Initializing ModelsManager with provided parameters...")
-        
-        if config_manager and model_config is None and hardware_config is None:
-            logger.debug("🔄 Compatibility mode: extracting configs from ConfigManager")
-            # Compatibility mode: extract configs from ConfigManager
-            model_config = self._extract_model_config_from_manager(config_manager)
-            hardware_config = self._extract_hardware_config_from_manager(config_manager)
-        elif model_config is None or hardware_config is None:
-            raise ValueError("Must provide either config_manager alone OR both model_config and hardware_config")
+        logger.debug("🔧 Initializing ModelsManager with clean v3.1 architecture...")
         
         self.config_manager = config_manager
-        self.model_config = model_config or {}
-        self.hardware_config = hardware_config or {}
+        self.settings_manager = settings_manager
+        self.zero_shot_manager = zero_shot_manager
         
-        # Debug logging to see what we received
-        logger.debug(f"ModelsManager model_config keys: {list(self.model_config.keys())}")
-        logger.debug(f"ModelsManager hardware_config keys: {list(self.hardware_config.keys())}")
+        # Extract configurations from managers
+        try:
+            self.model_config = self._extract_model_config_from_manager(config_manager)
+            self.hardware_config = self._extract_hardware_config_from_manager(config_manager)
+            
+            logger.debug(f"ModelsManager model_config keys: {list(self.model_config.keys())}")
+            logger.debug(f"ModelsManager hardware_config keys: {list(self.hardware_config.keys())}")
+            
+        except Exception as e:
+            logger.error(f"Failed to extract configuration from managers: {e}")
+            raise ValueError(f"ModelsManager initialization failed: {e}")
         
         # Model instances - THREE MODELS
         self.depression_model = None
