@@ -108,13 +108,16 @@ class ModelsManager:
             # Extract gap detection settings
             gap_detection_config = full_model_config.get('ensemble_config', {}).get('gap_detection', {})
             
+            # FIXED: Properly read HuggingFace token from file or environment
+            hf_token = self._get_huggingface_token()
+            
             config = {
                 # Flatten the models structure
                 'depression_model': models.get('depression', {}).get('name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                 'sentiment_model': models.get('sentiment', {}).get('name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_model': models.get('emotional_distress', {}).get('name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                 'cache_dir': cache_dir,
-                'huggingface_token': os.getenv('GLOBAL_HUGGINGFACE_TOKEN'),
+                'huggingface_token': hf_token,
                 'ensemble_mode': ensemble_mode,
                 'depression_weight': models.get('depression', {}).get('weight', 0.5),
                 'sentiment_weight': models.get('sentiment', {}).get('weight', 0.2),
@@ -129,6 +132,7 @@ class ModelsManager:
             logger.debug(f"   emotional_distress_model: {config['emotional_distress_model']}")
             logger.debug(f"   cache_dir: {config['cache_dir']}")
             logger.debug(f"   ensemble_mode: {config['ensemble_mode']}")
+            logger.debug(f"   huggingface_token: {'***PRESENT***' if hf_token else 'NOT FOUND'}")
             
             return config
             
@@ -137,12 +141,14 @@ class ModelsManager:
             logger.debug("🔄 Falling back to environment variables")
             
             # Fallback to environment variables
+            hf_token = self._get_huggingface_token()
+            
             return {
                 'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                 'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                 'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR') or os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or './models/cache',
-                'huggingface_token': os.getenv('GLOBAL_HUGGINGFACE_TOKEN'),
+                'huggingface_token': hf_token,
                 'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
                 'depression_weight': float(os.getenv('NLP_DEPRESSION_MODEL_WEIGHT', '0.5')),
                 'sentiment_weight': float(os.getenv('NLP_SENTIMENT_MODEL_WEIGHT', '0.2')),
@@ -151,6 +157,47 @@ class ModelsManager:
                 'disagreement_threshold': int(os.getenv('NLP_DISAGREEMENT_THRESHOLD', '2'))
             }
     
+    def _get_huggingface_token(self) -> Optional[str]:
+        """
+        Get HuggingFace token from environment variable or secret file
+        
+        Returns:
+            str: The actual token content, or None if not found
+        """
+        # Check environment variable first
+        token_path_or_value = os.getenv('GLOBAL_HUGGINGFACE_TOKEN')
+        
+        if not token_path_or_value:
+            logger.debug("No GLOBAL_HUGGINGFACE_TOKEN environment variable found")
+            return None
+        
+        # Check if it's a file path (Docker secret)
+        if token_path_or_value.startswith('/') and os.path.isfile(token_path_or_value):
+            logger.debug(f"Reading HuggingFace token from secret file: {token_path_or_value}")
+            try:
+                with open(token_path_or_value, 'r') as f:
+                    token = f.read().strip()
+                
+                if token:
+                    logger.debug(f"✅ Token loaded from file: {token[:10]}... (length: {len(token)})")
+                    return token
+                else:
+                    logger.warning(f"⚠️ Secret file {token_path_or_value} is empty")
+                    return None
+                    
+            except Exception as e:
+                logger.error(f"❌ Failed to read token from secret file {token_path_or_value}: {e}")
+                return None
+        
+        # Check if it looks like a token (starts with hf_)
+        elif token_path_or_value.startswith('hf_'):
+            logger.debug("Using HuggingFace token from environment variable")
+            return token_path_or_value
+        
+        else:
+            logger.warning(f"⚠️ GLOBAL_HUGGINGFACE_TOKEN doesn't look like a token or valid file path: {token_path_or_value[:20]}...")
+            return None
+
     def _extract_hardware_config_from_manager(self, config_manager) -> Dict[str, Any]:
         """Extract hardware configuration from existing ConfigManager (compatibility)"""
         logger.debug("🔍 Extracting hardware configuration from ConfigManager...")
