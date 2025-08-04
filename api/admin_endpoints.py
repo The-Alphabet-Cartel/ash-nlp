@@ -571,31 +571,6 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
             logger.error(f"❌ Error triggering comprehensive test: {e}")
             raise HTTPException(status_code=500, detail=f"Clean v3.1 test trigger error: {str(e)}")
     
-    def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager):
-        """
-        Add admin endpoints to FastAPI app - Clean v3.1 Architecture
-        
-        Args:
-            app: FastAPI application instance
-            config_manager: ConfigManager instance (required)
-            settings_manager: SettingsManager instance (required)
-            zero_shot_manager: ZeroShotManager instance (required)
-            crisis_pattern_manager: CrisisPatternManager instance (required)
-        """
-        logger.info("🔧 Adding admin endpoints with clean v3.1 manager architecture...")
-        
-        # Call the existing setup function with proper manager references
-        setup_admin_endpoints(
-            app=app,
-            model_manager=None,  # Not needed for current admin endpoints
-            zero_shot_manager=zero_shot_manager
-        )
-        
-        # Include the admin router
-        app.include_router(admin_router)
-        
-        logger.info("✅ Admin endpoints added successfully - Clean v3.1")
-
     # ========================================================================
     # ENDPOINT REGISTRATION COMPLETE
     # ========================================================================
@@ -615,3 +590,28 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
     logger.info("   POST /admin/labels/test/mapping - Test label mapping")
     logger.info("   POST /admin/labels/test/comprehensive - Trigger comprehensive test")
     logger.info("✅ Phase 2C: All admin endpoints using direct manager access - No fallback code")
+
+def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager):
+    """
+    Add admin endpoints to FastAPI app - Clean v3.1 Architecture
+    
+    Args:
+        app: FastAPI application instance
+        config_manager: ConfigManager instance (required)
+        settings_manager: SettingsManager instance (required)
+        zero_shot_manager: ZeroShotManager instance (required)
+        crisis_pattern_manager: CrisisPatternManager instance (required)
+    """
+    logger.info("🔧 Adding admin endpoints with clean v3.1 manager architecture...")
+    
+    # Call the existing setup function with proper manager references
+    setup_admin_endpoints(
+        app=app,
+        model_manager=None,  # Not needed for current admin endpoints
+        zero_shot_manager=zero_shot_manager
+    )
+    
+    # Include the admin router
+    app.include_router(admin_router)
+    
+    logger.info("✅ Admin endpoints added successfully - Clean v3.1")
