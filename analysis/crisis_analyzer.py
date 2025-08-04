@@ -1,12 +1,15 @@
 """
 CRITICAL FIXES for Crisis Analyzer - Three Zero-Shot Model Ensemble INTEGRATION
+Phase 3a: Updated to use CrisisPatternManager instead of hardcoded patterns
+
 These changes fix the dangerous under-response bug and integrate ensemble analysis
+with clean v3.1 architecture and JSON-based crisis patterns.
 """
 
 import logging
 import time
 import re
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 from utils.context_helpers import extract_context_signals, analyze_sentiment_context, process_sentiment_with_flip
 from utils.scoring_helpers import (
     extract_depression_score,
@@ -14,20 +17,65 @@ from utils.scoring_helpers import (
     advanced_idiom_detection, 
     enhanced_crisis_level_mapping
 )
-from managers.settings_manager import CRISIS_THRESHOLDS
+from managers.crisis_pattern_manager import CrisisPatternManager
+from utils.community_patterns import CommunityPatternExtractor
 
 logger = logging.getLogger(__name__)
 
 class CrisisAnalyzer:
-    """UPDATED: Three Zero-Shot Model Ensemble crisis analysis with proper crisis level mapping"""
+    """
+    UPDATED: Three Zero-Shot Model Ensemble crisis analysis with CrisisPatternManager integration
+    Phase 3a: Clean v3.1 architecture with JSON-based patterns
+    """
     
-    def __init__(self, model_manager, learning_manager=None):
+    def __init__(self, model_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None):
+        """
+        Initialize CrisisAnalyzer with managers
+        
+        Args:
+            model_manager: ML model manager for ensemble analysis
+            crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
+            learning_manager: Optional learning manager for feedback
+        """
         self.model_manager = model_manager
+        self.crisis_pattern_manager = crisis_pattern_manager
         self.learning_manager = learning_manager
+        
+        # Initialize community pattern extractor if crisis pattern manager available
+        if self.crisis_pattern_manager:
+            self.community_extractor = CommunityPatternExtractor(self.crisis_pattern_manager)
+            logger.info("CrisisAnalyzer v3.1 initialized with CrisisPatternManager")
+        else:
+            self.community_extractor = None
+            logger.warning("CrisisAnalyzer initialized without CrisisPatternManager - pattern analysis limited")
+        
+        # Load crisis thresholds from pattern manager or use defaults
+        self.crisis_thresholds = self._load_crisis_thresholds()
+
+    def _load_crisis_thresholds(self) -> Dict[str, float]:
+        """Load crisis thresholds from configuration or use defaults"""
+        try:
+            if self.crisis_pattern_manager:
+                # Try to get thresholds from enhanced crisis patterns configuration
+                enhanced_patterns = self.crisis_pattern_manager.get_enhanced_crisis_patterns()
+                if enhanced_patterns and enhanced_patterns.get('configuration'):
+                    # Extract thresholds if available in configuration
+                    pass
+            
+            # Use default thresholds
+            return {
+                "high": 0.55,    # Reduced from 0.50 - matches new systematic approach
+                "medium": 0.28,  # Reduced from 0.22 - more selective for medium alerts
+                "low": 0.16      # Reduced from 0.12 - avoids very mild expressions
+            }
+        except Exception as e:
+            logger.error(f"Error loading crisis thresholds: {e}")
+            return {"high": 0.55, "medium": 0.28, "low": 0.16}
 
     async def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict:
         """
         UPDATED: Three Zero-Shot Model Ensemble analysis with FIXED crisis level mapping
+        Phase 3a: Enhanced with CrisisPatternManager integration
         """
         
         start_time = time.time()
@@ -38,7 +86,11 @@ class CrisisAnalyzer:
             context = extract_context_signals(message)
             reasoning_steps.append(f"Context: {context}")
             
-            # Step 2: Three Zero-Shot Model Ensemble ANALYSIS
+            # Step 2: Crisis Pattern Analysis (Phase 3a)
+            pattern_analysis = await self._analyze_with_crisis_patterns(message)
+            reasoning_steps.append(f"Pattern Analysis: {pattern_analysis.get('summary', 'none')}")
+            
+            # Step 3: Three Zero-Shot Model Ensemble ANALYSIS
             if hasattr(self.model_manager, 'analyze_with_ensemble'):
                 # Use the new Three Zero-Shot Model Ensemble if available
                 ensemble_result = self.model_manager.analyze_with_ensemble(message)
@@ -50,46 +102,28 @@ class CrisisAnalyzer:
                 
                 # CRITICAL FIX: Map consensus prediction to crisis level
                 crisis_level = self._map_consensus_to_crisis_level(consensus_prediction, consensus_confidence)
-                needs_response = crisis_level != 'none'
                 
-                # Extract detected categories from all three models
-                detected_categories = []
-                individual_results = ensemble_result.get('individual_results', {})
+                # Apply pattern-based adjustments
+                if pattern_analysis.get('adjustments'):
+                    crisis_level, consensus_confidence = self._apply_pattern_adjustments(
+                        crisis_level, consensus_confidence, pattern_analysis['adjustments']
+                    )
                 
-                for model_name, results in individual_results.items():
-                    if results and isinstance(results, list):
-                        top_result = max(results, key=lambda x: x.get('score', 0))
-                        detected_categories.append(f"{model_name}_{top_result.get('label', 'unknown')}")
-                
-                processing_time = (time.time() - start_time) * 1000
-                
-                # Enhanced result with ensemble data
+                # Build final result with ensemble data
                 result = {
-                    'message_analyzed': message,
-                    'user_id': user_id,
-                    'channel_id': channel_id,
-                    'ensemble_analysis': ensemble_result,  # Full ensemble details
-                    'processing_time_ms': processing_time,
-                    'model_info': 'three_model_ensemble',
-                    'timestamp': time.time(),
-                    
-                    # FIXED: Crisis level determination
-                    'requires_staff_review': self._requires_staff_review(crisis_level, consensus_confidence),
-                    'consensus_prediction': consensus_prediction,
-                    'consensus_confidence': consensus_confidence,
-                    'consensus_method': consensus.get('method', 'unknown'),
-                    
-                    # CRITICAL: Proper crisis level and response determination
+                    'needs_response': crisis_level != 'none',
                     'crisis_level': crisis_level,
-                    'needs_response': needs_response,
-                    
-                    # Legacy compatibility
                     'confidence_score': consensus_confidence,
-                    'detected_categories': detected_categories,
-                    'method': 'three_model_ensemble_v2'
+                    'detected_categories': ensemble_result.get('detected_categories', []),
+                    'method': 'three_model_ensemble_with_patterns',
+                    'processing_time_ms': (time.time() - start_time) * 1000,
+                    'model_info': f"Ensemble: {ensemble_result.get('model_info', 'unknown')}",
+                    'reasoning': ' | '.join(reasoning_steps),
+                    'ensemble_details': ensemble_result,
+                    'pattern_analysis': pattern_analysis
                 }
                 
-                logger.info(f"Three Zero-Shot Model Ensemble analysis: {crisis_level} confidence={consensus_confidence:.3f} consensus={consensus_prediction}")
+                logger.debug(f"✅ ENSEMBLE+PATTERNS: {crisis_level} (conf={consensus_confidence:.3f}) consensus={consensus_prediction}")
                 return result
                 
             else:
@@ -110,6 +144,151 @@ class CrisisAnalyzer:
                 'model_info': 'Error fallback',
                 'reasoning': f"Analysis failed: {str(e)}"
             }
+
+    async def _analyze_with_crisis_patterns(self, message: str) -> Dict[str, Any]:
+        """
+        Analyze message using CrisisPatternManager patterns
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            Dictionary with pattern analysis results and adjustments
+        """
+        if not self.crisis_pattern_manager:
+            return {'summary': 'no_pattern_manager', 'adjustments': {}}
+        
+        try:
+            pattern_results = {
+                'community_patterns': [],
+                'context_phrases': [],
+                'temporal_indicators': {},
+                'enhanced_patterns': {},
+                'adjustments': {
+                    'crisis_boost': 0.0,
+                    'confidence_adjustment': 0.0,
+                    'escalation_required': False,
+                    'staff_alert': False
+                }
+            }
+            
+            # Extract community patterns
+            if self.community_extractor:
+                pattern_results['community_patterns'] = self.community_extractor.extract_community_patterns(message)
+                pattern_results['context_phrases'] = self.community_extractor.extract_crisis_context_phrases(message)
+                pattern_results['temporal_indicators'] = self.community_extractor.analyze_temporal_indicators(message)
+            
+            # Check enhanced crisis patterns
+            pattern_results['enhanced_patterns'] = self.crisis_pattern_manager.check_enhanced_crisis_patterns(message)
+            
+            # Calculate adjustments based on pattern findings
+            adjustments = self._calculate_pattern_adjustments(pattern_results)
+            pattern_results['adjustments'] = adjustments
+            
+            # Create summary
+            total_patterns = (
+                len(pattern_results['community_patterns']) +
+                len(pattern_results['context_phrases']) +
+                len(pattern_results['temporal_indicators'].get('found_indicators', [])) +
+                len(pattern_results['enhanced_patterns'].get('matches', []))
+            )
+            
+            pattern_results['summary'] = f"{total_patterns} patterns found"
+            
+            return pattern_results
+            
+        except Exception as e:
+            logger.error(f"Error in crisis pattern analysis: {e}")
+            return {'summary': f'pattern_error: {str(e)}', 'adjustments': {}}
+
+    def _calculate_pattern_adjustments(self, pattern_results: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Calculate crisis level and confidence adjustments based on pattern findings
+        
+        Args:
+            pattern_results: Results from pattern analysis
+            
+        Returns:
+            Dictionary with adjustment values
+        """
+        adjustments = {
+            'crisis_boost': 0.0,
+            'confidence_adjustment': 0.0,
+            'escalation_required': False,
+            'staff_alert': False
+        }
+        
+        try:
+            # Community pattern adjustments
+            for pattern in pattern_results.get('community_patterns', []):
+                if pattern.get('crisis_level') == 'high':
+                    adjustments['crisis_boost'] += 0.15
+                    adjustments['escalation_required'] = True
+                elif pattern.get('crisis_level') == 'medium':
+                    adjustments['crisis_boost'] += 0.08
+            
+            # Temporal indicator adjustments
+            temporal = pattern_results.get('temporal_indicators', {})
+            if temporal.get('auto_escalate'):
+                adjustments['escalation_required'] = True
+                adjustments['crisis_boost'] += temporal.get('total_boost', 0.0)
+            if temporal.get('staff_alert'):
+                adjustments['staff_alert'] = True
+            
+            # Enhanced pattern adjustments
+            enhanced = pattern_results.get('enhanced_patterns', {})
+            if enhanced.get('requires_immediate_attention'):
+                adjustments['escalation_required'] = True
+                adjustments['staff_alert'] = True
+                adjustments['crisis_boost'] += 0.20
+            elif enhanced.get('auto_escalate'):
+                adjustments['escalation_required'] = True
+                adjustments['crisis_boost'] += enhanced.get('total_weight', 0.0) * 0.1
+            
+            # Cap maximum boost
+            adjustments['crisis_boost'] = min(adjustments['crisis_boost'], 0.40)
+            
+        except Exception as e:
+            logger.error(f"Error calculating pattern adjustments: {e}")
+        
+        return adjustments
+
+    def _apply_pattern_adjustments(self, crisis_level: str, confidence: float, adjustments: Dict[str, Any]) -> Tuple[str, float]:
+        """
+        Apply pattern-based adjustments to crisis level and confidence
+        
+        Args:
+            crisis_level: Current crisis level
+            confidence: Current confidence score
+            adjustments: Pattern-based adjustments to apply
+            
+        Returns:
+            Tuple of (adjusted_crisis_level, adjusted_confidence)
+        """
+        try:
+            adjusted_confidence = confidence + adjustments.get('confidence_adjustment', 0.0)
+            adjusted_confidence = max(0.0, min(1.0, adjusted_confidence))
+            
+            crisis_boost = adjustments.get('crisis_boost', 0.0)
+            
+            # If significant pattern boost, consider upgrading crisis level
+            if crisis_boost >= 0.15:
+                if crisis_level == 'none' and adjusted_confidence > 0.15:
+                    crisis_level = 'low'
+                elif crisis_level == 'low' and adjusted_confidence > 0.25:
+                    crisis_level = 'medium'
+                elif crisis_level == 'medium' and adjusted_confidence > 0.50:
+                    crisis_level = 'high'
+            
+            # Handle escalation requirements
+            if adjustments.get('escalation_required') and crisis_level == 'none':
+                crisis_level = 'low'  # Minimum escalation level
+            
+            return crisis_level, adjusted_confidence
+            
+        except Exception as e:
+            logger.error(f"Error applying pattern adjustments: {e}")
+            return crisis_level, confidence
 
     def _map_consensus_to_crisis_level(self, consensus_prediction: str, confidence: float) -> str:
         """
@@ -141,148 +320,99 @@ class CrisisAnalyzer:
         # UNKNOWN or error cases - be conservative
         else:
             logger.warning(f"Unknown consensus prediction: {consensus_prediction}")
-            if confidence > 0.50:  # If we're confident but don't know what it means, be safe
+            if confidence > 0.50:  # If we're confident about something unknown, be cautious
                 return 'low'
             else:
                 return 'none'
 
-    def _requires_staff_review(self, crisis_level: str, confidence: float) -> bool:
-        """Determine if staff review is required"""
-        # High crisis always requires review
-        if crisis_level == 'high':
-            return True
-        
-        # Medium crisis with good confidence requires review
-        if crisis_level == 'medium' and confidence >= 0.60:
-            return True
-        
-        # Low crisis with very high confidence might need review
-        if crisis_level == 'low' and confidence >= 0.80:
-            return True
-        
-        return False
-
     async def _legacy_two_model_analysis(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
         """
-        Fallback to legacy two-model analysis if ensemble not available
-        UPDATED: Fixed message parameter passing
-        """
-        reasoning_steps = []
-        
-        # Step 1: Extract context signals
-        context = extract_context_signals(message)
-        reasoning_steps.append(f"Context: {context}")
-        
-        # Step 2: Run both ML models
-        depression_result = self.model_manager.analyze_with_depression_model(message)
-        sentiment_result = self.model_manager.analyze_with_sentiment_model(message)
-        
-        # Step 3: Analyze sentiment for context
-        raw_sentiment = analyze_sentiment_context(sentiment_result)
-        sentiment_scores = process_sentiment_with_flip(raw_sentiment)
-        reasoning_steps.append(f"Sentiment: {sentiment_scores}")
-        
-        # Step 4: Enhanced depression model analysis with MESSAGE PARAMETER
-        depression_score, depression_categories = enhanced_depression_analysis(
-            depression_result, sentiment_scores, context, message=message
-        )
-        reasoning_steps.append(f"Depression model: {depression_score:.3f}")
-        
-        # Step 4.5: Apply learning adjustments if available
-        if self.learning_manager:
-            adjusted_score = self.learning_manager.apply_learning_adjustments(message, depression_score)
-            if abs(adjusted_score - depression_score) > 0.01:
-                reasoning_steps.append(f"Learning adjustment: {depression_score:.3f} → {adjusted_score:.3f}")
-                depression_score = adjusted_score
-
-        # Step 5: Apply context adjustments and advanced idiom detection
-        adjusted_score = advanced_idiom_detection(message, context, depression_score)
-        reasoning_steps.append(f"Context-adjusted: {adjusted_score:.3f}")
-        
-        # Step 6: Final score
-        final_score = adjusted_score
-        
-        # Step 7: FIXED crisis level mapping
-        crisis_level = self._map_score_to_crisis_level(final_score)
-        needs_response = crisis_level != 'none'
-        
-        # Step 8: Collect all detected categories
-        detected_categories = []
-        if depression_categories:
-            detected_categories.extend([cat.get('category', 'unknown') for cat in depression_categories])
-        
-        # Add sentiment categories if significant
-        if sentiment_scores:
-            for sentiment_type, score in sentiment_scores.items():
-                if score > 0.6:
-                    detected_categories.append(f"{sentiment_type}_sentiment")
-        
-        processing_time = (time.time() - start_time) * 1000
-        full_reasoning = " | ".join(reasoning_steps)
-        
-        result = {
-            'needs_response': needs_response,
-            'crisis_level': crisis_level,
-            'confidence_score': final_score,
-            'detected_categories': detected_categories,
-            'method': 'enhanced_ml_analysis_with_false_positive_reduction',
-            'processing_time_ms': processing_time,
-            'model_info': 'DeBERTa + RoBERTa with Enhanced Learning + False Positive Reduction',
-            'reasoning': full_reasoning,
-            'analysis': {
-                'depression_score': extract_depression_score(depression_result),
-                'sentiment_scores': sentiment_scores,
-                'context_signals': context,
-                'crisis_indicators': [cat.get('category', 'unknown') for cat in detected_categories if isinstance(cat, dict)]
-            }
-        }
-        
-        logger.info(f"Legacy analysis complete: {result['crisis_level']} confidence={result['confidence_score']:.3f}")
-        return result
-
-    def _map_score_to_crisis_level(self, score: float) -> str:
-        """
-        FIXED: Legacy score-based crisis level mapping
-        Uses proper thresholds for crisis classification
-        """
-        if score >= 0.65:    # Very high confidence crisis
-            return 'high'
-        elif score >= 0.40:  # Medium confidence crisis
-            return 'medium'
-        elif score >= 0.20:  # Low confidence crisis
-            return 'low'
-        else:
-            return 'none'
-
-    def analyze_with_context(self, message: str, context: Dict, message_text: str = None) -> Tuple[float, List[Dict]]:
-        """
-        UPDATED: Compatibility method with proper message parameter passing
+        Fallback to legacy two-model analysis when ensemble not available
+        Enhanced with pattern analysis if available
         """
         try:
-            text_to_analyze = message_text if message_text else message
+            # Extract context and phrase analysis
+            context = extract_context_signals(message)
+            depression_score = extract_depression_score(message, self.model_manager.get_model('depression'))
             
-            # Run the models
-            depression_result = self.model_manager.analyze_with_depression_model(text_to_analyze)
-            sentiment_result = self.model_manager.analyze_with_sentiment_model(text_to_analyze)
+            # Apply pattern-based enhancements if available
+            base_score = depression_score
+            pattern_analysis = await self._analyze_with_crisis_patterns(message)
             
-            # Analyze sentiment for context
-            raw_sentiment = analyze_sentiment_context(sentiment_result)
-            sentiment_scores = process_sentiment_with_flip(raw_sentiment)
+            if pattern_analysis.get('adjustments'):
+                # Apply context weights if pattern manager available
+                if self.community_extractor:
+                    modified_score, weight_details = self.community_extractor.apply_context_weights(message, base_score)
+                    depression_score = modified_score
             
-            # Enhanced depression analysis with MESSAGE PARAMETER
-            depression_score, depression_categories = enhanced_depression_analysis(
-                depression_result, sentiment_scores, context, message=text_to_analyze
+            # Enhanced analysis
+            enhanced_result = enhanced_depression_analysis(
+                message, 
+                depression_score, 
+                self.model_manager.get_model('depression'),
+                self.model_manager.get_model('sentiment')
             )
             
-            # Apply learning adjustments if available
-            if self.learning_manager:
-                depression_score = self.learning_manager.apply_learning_adjustments(text_to_analyze, depression_score)
+            crisis_level = enhanced_crisis_level_mapping(enhanced_result['final_score'], self.crisis_thresholds)
             
-            # Apply context adjustments
-            final_score = advanced_idiom_detection(text_to_analyze, context, depression_score)
-            
-            return final_score, depression_categories
+            return {
+                'needs_response': crisis_level != 'none',
+                'crisis_level': crisis_level,
+                'confidence_score': enhanced_result['final_score'],
+                'detected_categories': enhanced_result.get('detected_categories', []),
+                'method': 'legacy_two_model_with_patterns',
+                'processing_time_ms': (time.time() - start_time) * 1000,
+                'model_info': 'Legacy two-model analysis with pattern enhancement',
+                'reasoning': enhanced_result.get('reasoning', 'Legacy analysis'),
+                'pattern_analysis': pattern_analysis
+            }
             
         except Exception as e:
-            logger.error(f"Error in analyze_with_context: {e}")
-            return 0.0, []
+            logger.error(f"Error in legacy analysis: {e}")
+            return {
+                'needs_response': False,
+                'crisis_level': 'none',
+                'confidence_score': 0.0,
+                'detected_categories': [],
+                'method': 'error_fallback',
+                'processing_time_ms': (time.time() - start_time) * 1000,
+                'model_info': 'Error fallback',
+                'reasoning': f"Legacy analysis failed: {str(e)}"
+            }
+
+    def get_status(self) -> Dict[str, Any]:
+        """Get CrisisAnalyzer status information"""
+        return {
+            'analyzer': 'CrisisAnalyzer',
+            'version': '3.1.0',
+            'architecture': 'v3.1_clean_with_patterns',
+            'model_manager_available': self.model_manager is not None,
+            'crisis_pattern_manager_available': self.crisis_pattern_manager is not None,
+            'community_extractor_available': self.community_extractor is not None,
+            'learning_manager_available': self.learning_manager is not None,
+            'crisis_thresholds': self.crisis_thresholds,
+            'ensemble_analysis_available': hasattr(self.model_manager, 'analyze_with_ensemble') if self.model_manager else False
+        }
+
+
+# Factory function for clean architecture
+def create_crisis_analyzer(model_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None) -> CrisisAnalyzer:
+    """
+    Factory function to create CrisisAnalyzer instance with dependency injection
+    
+    Args:
+        model_manager: ML model manager for ensemble analysis
+        crisis_pattern_manager: Optional CrisisPatternManager for pattern analysis
+        learning_manager: Optional learning manager for feedback
+        
+    Returns:
+        CrisisAnalyzer instance
+    """
+    return CrisisAnalyzer(model_manager, crisis_pattern_manager, learning_manager)
+
+
+# Export for clean architecture
+__all__ = [
+    'CrisisAnalyzer',
+    'create_crisis_analyzer'
+]
