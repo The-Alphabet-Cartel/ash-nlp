@@ -72,6 +72,37 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
     # LABEL STATUS ENDPOINT - Clean v3.1
     # ========================================================================
     
+    @app.get("/admin/status")
+    async def admin_status():
+        """Get admin status information"""
+        try:
+            status = {
+                "admin_available": True,
+                "endpoints": [
+                    "/admin/status",
+                    "/admin/labels/status",
+                    "/admin/models/status"
+                ],
+                "managers": {
+                    "config_manager": config_manager is not None,
+                    "crisis_pattern_manager": crisis_pattern_manager is not None,
+                    "model_manager": model_manager is not None
+                }
+            }
+            
+            if crisis_pattern_manager:
+                pattern_status = crisis_pattern_manager.get_status()
+                status["crisis_patterns"] = {
+                    "loaded_patterns": pattern_status.get('loaded_pattern_sets', 0),
+                    "available": True
+                }
+            
+            return status
+            
+        except Exception as e:
+            logger.error(f"❌ Admin status error: {e}")
+            return {"error": str(e), "admin_available": False}
+
     @app.get("/admin/labels/status")
     async def get_label_status():
         """Get current label configuration status - Clean v3.1 Implementation"""
