@@ -822,30 +822,30 @@ class ModelsManager:
                                  emotional_distress_pred: Dict) -> bool:
         """Detect significant disagreement between models for gap detection"""
         
-        # Map predictions to risk levels for comparison
+        # Map predictions to risk levels for comparison (0.0 to 1.0 scale)
         risk_levels = {
-            'crisis': 4, 'mild_crisis': 3, 'high_distress': 4, 'medium_distress': 3,
-            'very_negative': 3, 'negative': 2, 'low_distress': 1, 'minimal_distress': 0,
-            'neutral': 1, 'positive': 0, 'very_positive': 0, 'unknown': 1
+            'crisis': 1.0, 'mild_crisis': 0.75, 'high_distress': 1.0, 'medium_distress': 0.75,
+            'very_negative': 0.75, 'negative': 0.5, 'low_distress': 0.25, 'minimal_distress': 0.0,
+            'neutral': 0.25, 'positive': 0.0, 'very_positive': 0.0, 'unknown': 0.25
         }
         
-        dep_risk = risk_levels.get(depression_pred['label'], 1)
-        sent_risk = risk_levels.get(sentiment_pred['label'], 1)
-        dist_risk = risk_levels.get(emotional_distress_pred['label'], 1)
+        dep_risk = risk_levels.get(depression_pred['label'], 0.25)
+        sent_risk = risk_levels.get(sentiment_pred['label'], 0.25)
+        dist_risk = risk_levels.get(emotional_distress_pred['label'], 0.25)
         
         risks = [dep_risk, sent_risk, dist_risk]
         risk_range = max(risks) - min(risks)
         
-        # Configure disagreement threshold
-        disagreement_threshold = self.model_config.get('disagreement_threshold', 2)
-
-        # Convert to int if it's a string (from environment variables)
+        # Configure disagreement threshold (0.0-1.0 scale)
+        disagreement_threshold = self.model_config.get('disagreement_threshold', 0.35)
+        
+        # Convert to float if it's a string (from environment variables)
         if isinstance(disagreement_threshold, str):
             try:
-                disagreement_threshold = int(disagreement_threshold)
+                disagreement_threshold = float(disagreement_threshold)
             except ValueError:
-                logger.warning(f"⚠️ Invalid disagreement_threshold '{disagreement_threshold}', using default 2")
-                disagreement_threshold = 2
+                logger.warning(f"⚠️ Invalid disagreement_threshold '{disagreement_threshold}', using default 0.35")
+                disagreement_threshold = 0.35
         
         return risk_range >= disagreement_threshold
     
