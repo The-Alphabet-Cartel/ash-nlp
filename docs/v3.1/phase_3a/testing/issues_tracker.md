@@ -297,14 +297,16 @@ Logs show some warnings about "Skipping non-dict pattern" but this doesn't affec
 - **10:50 AM**: **ROOT CAUSE CONFIRMED**: Method mismatches and wrong manager usage
 - **Ready**: Begin implementing specific fixes
 
-### **Fixes Applied** (To be updated as we work)
-- [ ] **Fix 1**: Method name corrections (`get_current_label_set_name` → `get_current_label_set`)
-- [ ] **Fix 2**: Manager corrections (use `zero_shot_manager` for label operations)
-- [ ] **Fix 3**: Remove incorrect async/await usage  
-- [ ] **Fix 4**: Add missing methods to ZeroShotManager
-- [ ] **Fix 5**: Fix variable scope issues in admin endpoints
-- [ ] **Fix 6**: Fix learning endpoint validation (HTTP 422)
-- [ ] **Testing**: Re-run comprehensive test to verify fixes
+### **Fixes Applied** (Updated as we work)
+- [x] ✅ **Fix 1**: Method name corrections (`get_current_label_set_name` → `get_current_label_set`)
+- [x] ✅ **Fix 2**: Manager corrections (use `zero_shot_manager` for label operations)  
+- [x] ✅ **Fix 3**: Remove incorrect async/await usage
+- [x] ✅ **Fix 4**: Simplified missing methods using existing ZeroShotManager functionality
+- [x] ✅ **Fix 5**: Fixed variable scope issues in admin endpoints
+- [x] ✅ **MILESTONE**: **Admin label switching functionality RESTORED**
+- [ ] 🔧 **Next**: Fix remaining endpoint accessibility issues (4 dead endpoints)
+- [ ] 🔧 **Next**: Fix Phase 3a integration reporting 
+- [ ] ✅ **Final**: Re-run comprehensive test to verify all fixes
 
 ---
 
