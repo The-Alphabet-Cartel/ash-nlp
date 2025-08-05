@@ -5,6 +5,7 @@ Manages all crisis pattern configurations from JSON files with ENV overrides
 
 import logging
 import re
+import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
 from managers.config_manager import ConfigManager
@@ -186,6 +187,158 @@ class CrisisPatternManager:
         
         return phrases
     
+    def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
+        """
+        Comprehensive message analysis using all available crisis pattern methods
+        
+        Args:
+            message: Message text to analyze
+            user_id: User ID (for context)
+            channel_id: Channel ID (for context)
+            
+        Returns:
+            Dictionary containing comprehensive pattern analysis results
+        """
+        try:
+            analysis_result = {
+                'patterns_triggered': [],
+                'analysis_available': True,
+                'error': None,
+                'details': {}
+            }
+            
+            # 1. Extract community patterns
+            try:
+                community_patterns = self.extract_community_patterns(message)
+                if community_patterns:
+                    for pattern in community_patterns:
+                        analysis_result['patterns_triggered'].append({
+                            'pattern_name': f"community_{pattern.get('pattern_type', 'unknown')}",
+                            'pattern_type': 'community',
+                            'crisis_level': pattern.get('crisis_level', 'low'),
+                            'confidence': pattern.get('confidence', 0.5),
+                            'details': pattern
+                        })
+                analysis_result['details']['community_patterns'] = community_patterns
+            except Exception as e:
+                logger.warning(f"Community patterns analysis failed: {e}")
+                analysis_result['details']['community_patterns'] = []
+            
+            # 2. Extract crisis context phrases
+            try:
+                context_phrases = self.extract_crisis_context_phrases(message)
+                if context_phrases:
+                    for phrase in context_phrases:
+                        analysis_result['patterns_triggered'].append({
+                            'pattern_name': f"context_{phrase.get('phrase_type', 'unknown')}",
+                            'pattern_type': 'context_phrase',
+                            'crisis_level': phrase.get('crisis_level', 'low'),
+                            'confidence': phrase.get('confidence', 0.5),
+                            'details': phrase
+                        })
+                analysis_result['details']['context_phrases'] = context_phrases
+            except Exception as e:
+                logger.warning(f"Context phrases analysis failed: {e}")
+                analysis_result['details']['context_phrases'] = []
+            
+            # 3. Analyze temporal indicators
+            try:
+                temporal_analysis = self.analyze_temporal_indicators(message)
+                if temporal_analysis and temporal_analysis.get('found_indicators'):
+                    for indicator in temporal_analysis.get('found_indicators', []):
+                        analysis_result['patterns_triggered'].append({
+                            'pattern_name': f"temporal_{indicator.get('indicator_type', 'unknown')}",
+                            'pattern_type': 'temporal',
+                            'crisis_level': indicator.get('crisis_level', 'medium'),
+                            'confidence': indicator.get('confidence', 0.6),
+                            'details': indicator
+                        })
+                analysis_result['details']['temporal_indicators'] = temporal_analysis
+            except Exception as e:
+                logger.warning(f"Temporal indicators analysis failed: {e}")
+                analysis_result['details']['temporal_indicators'] = {}
+            
+            # 4. Check enhanced crisis patterns
+            try:
+                enhanced_patterns = self.check_enhanced_crisis_patterns(message)
+                if enhanced_patterns and enhanced_patterns.get('matches'):
+                    for match in enhanced_patterns.get('matches', []):
+                        analysis_result['patterns_triggered'].append({
+                            'pattern_name': f"enhanced_{match.get('pattern_name', 'unknown')}",
+                            'pattern_type': 'enhanced',
+                            'crisis_level': match.get('crisis_level', 'high'),
+                            'confidence': match.get('confidence', 0.7),
+                            'details': match
+                        })
+                analysis_result['details']['enhanced_patterns'] = enhanced_patterns
+            except Exception as e:
+                logger.warning(f"Enhanced patterns analysis failed: {e}")
+                analysis_result['details']['enhanced_patterns'] = {}
+            
+            # 5. Apply context weights if patterns were found
+            if analysis_result['patterns_triggered']:
+                try:
+                    # Use a base score for weight calculation
+                    base_score = 0.5
+                    weighted_score, weight_details = self.apply_context_weights(message, base_score)
+                    analysis_result['details']['context_weights'] = {
+                        'original_score': base_score,
+                        'weighted_score': weighted_score,
+                        'weight_details': weight_details
+                    }
+                except Exception as e:
+                    logger.warning(f"Context weights application failed: {e}")
+                    analysis_result['details']['context_weights'] = {}
+            
+            # 6. Calculate summary statistics
+            pattern_count = len(analysis_result['patterns_triggered'])
+            crisis_levels = [p.get('crisis_level', 'low') for p in analysis_result['patterns_triggered']]
+            
+            # Determine highest crisis level
+            level_priority = {'high': 3, 'medium': 2, 'low': 1}
+            highest_level = 'none'
+            if crisis_levels:
+                highest_level = max(crisis_levels, key=lambda x: level_priority.get(x, 0))
+            
+            analysis_result.update({
+                'summary': {
+                    'total_patterns': pattern_count,
+                    'highest_crisis_level': highest_level,
+                    'pattern_types': list(set([p.get('pattern_type', 'unknown') for p in analysis_result['patterns_triggered']])),
+                    'requires_attention': highest_level in ['high', 'medium'] or pattern_count >= 3
+                },
+                'metadata': {
+                    'user_id': user_id,
+                    'channel_id': channel_id,
+                    'analysis_timestamp': time.time(),
+                    'methods_used': ['community_patterns', 'context_phrases', 'temporal_indicators', 'enhanced_patterns']
+                }
+            })
+            
+            logger.debug(f"✅ Crisis pattern analysis complete: {pattern_count} patterns found, highest level: {highest_level}")
+            return analysis_result
+            
+        except Exception as e:
+            logger.error(f"❌ Crisis pattern analysis failed: {e}")
+            return {
+                'patterns_triggered': [],
+                'analysis_available': False,
+                'error': str(e),
+                'details': {},
+                'summary': {
+                    'total_patterns': 0,
+                    'highest_crisis_level': 'none',
+                    'pattern_types': [],
+                    'requires_attention': False
+                },
+                'metadata': {
+                    'user_id': user_id,
+                    'channel_id': channel_id,
+                    'analysis_timestamp': time.time(),
+                    'error': str(e)
+                }
+            }
+
     def analyze_temporal_indicators(self, message: str) -> Dict[str, Any]:
         """
         Analyze temporal indicators in message for crisis urgency assessment
