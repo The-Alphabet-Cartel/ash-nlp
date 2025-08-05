@@ -435,30 +435,17 @@ async def lifespan(app: FastAPI):
     try:
         await initialize_components_clean_v3_1()
         
-        # Import and add ensemble endpoints - CLEAN v3.1
-        try:
-            logger.info("🔧 Adding Three Zero-Shot Model Ensemble endpoints - Clean v3.1...")
-            from api.ensemble_endpoints import add_ensemble_endpoints
-            
-            # Direct manager usage - no fallbacks
-            add_ensemble_endpoints(app, model_manager, pydantic_manager)
-            logger.info("🎯 Three Zero-Shot Model Ensemble endpoints added - Clean v3.1!")
-            
-        except Exception as e:
-            logger.error(f"❌ Could not add ensemble endpoints: {e}")
-            raise
-        
         # Import and add ensemble endpoints - CLEAN v3.1 + Phase 3a
         try:
             logger.info("🎯 Adding Three Zero-Shot Model Ensemble endpoints - Clean v3.1...")
             from api.ensemble_endpoints import add_ensemble_endpoints
             
-            # UPDATED: Pass crisis_pattern_manager for Pattern Integration (Phase 3a)
+            # Pass crisis_pattern_manager for Pattern Integration (Phase 3a)
             add_ensemble_endpoints(
                 app, 
                 model_manager=model_manager, 
                 pydantic_manager=pydantic_manager,
-                crisis_pattern_manager=crisis_pattern_manager  # ← ADD THIS LINE
+                crisis_pattern_manager=crisis_pattern_manager
             )
             logger.info("🚀 Ensemble endpoints added - Clean v3.1 + Pattern Integration!")
             
@@ -471,13 +458,13 @@ async def lifespan(app: FastAPI):
             logger.info("🔧 Adding admin endpoints - Clean v3.1...")
             from api.admin_endpoints import add_admin_endpoints
             
-            # Direct manager usage with all managers (ALREADY CORRECT)
+            # Direct manager usage with all managers
             add_admin_endpoints(
                 app, 
                 config_manager=config_manager,
                 settings_manager=settings_manager,
                 zero_shot_manager=zero_shot_manager,
-                crisis_pattern_manager=crisis_pattern_manager,  # ← This should already be here
+                crisis_pattern_manager=crisis_pattern_manager,
                 model_manager=model_manager
             )
             logger.info("🎯 Admin endpoints added - Clean v3.1!")
@@ -493,7 +480,6 @@ async def lifespan(app: FastAPI):
                 add_enhanced_learning_endpoints(
                     app, 
                     learning_manager=learning_manager
-                    # Remove pydantic_manager parameter - not expected by the function
                 )
                 logger.info("🎓 Enhanced learning endpoints added - Clean v3.1!")
                 
