@@ -860,8 +860,6 @@ class ComprehensiveEndpointTester:
         
         # Common endpoint patterns to check
         potential_endpoints = [
-            ("/analyze_message", "Alternative analysis endpoint"),
-            ("/batch_analysis", "Batch analysis endpoint"),
             ("/model/status", "Model status endpoint"),
             ("/config", "General configuration endpoint"),
             ("/version", "Version information endpoint"),
