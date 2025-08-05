@@ -26,7 +26,6 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 | `/health` | GET | System health check | ~1ms |
 | `/stats` | GET | Service statistics | ~2ms |
 | `/analyze` | POST | Three Zero-Shot Model Ensemble analysis | ~63ms |
-| `/extract_phrases` | POST | Crisis keyword extraction | ~200ms |
 | `/learning_statistics` | GET | Learning system metrics | ~3ms |
 
 ---
@@ -296,80 +295,6 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 
 ## 🔍 Analysis Tools
 
-### POST `/extract_phrases`
-
-**Purpose**: Extract potential crisis keywords and phrases using model scoring
-
-**Request Body**:
-```json
-{
-  "message": "I am struggling with severe depression and anxiety",
-  "user_id": "test_user_phrases",
-  "channel_id": "test_channel",
-  "parameters": {
-    "min_phrase_length": 2,
-    "max_phrase_length": 6,
-    "crisis_focus": true,
-    "community_specific": true,
-    "min_confidence": 0.3,
-    "max_results": 20
-  }
-}
-```
-
-**Parameters**:
-- `message` (string, required): Text to analyze for crisis phrases
-- `user_id` (string, required): User identifier
-- `channel_id` (string, required): Channel identifier
-- `parameters` (object, optional): Analysis configuration
-  - `min_phrase_length` (integer): Minimum words in extracted phrases
-  - `max_phrase_length` (integer): Maximum words in extracted phrases
-  - `crisis_focus` (boolean): Focus on crisis-related phrases
-  - `community_specific` (boolean): Include LGBTQIA+ specific patterns
-  - `min_confidence` (float): Minimum confidence threshold
-  - `max_results` (integer): Maximum phrases to return
-
-**Response**:
-```json
-{
-  "phrases": [
-    {
-      "text": "severe depression",
-      "confidence": 0.85,
-      "type": "ngram",
-      "category": "mental_health",
-      "source_position": 5,
-      "context_score": 0.92
-    },
-    {
-      "text": "struggling with",
-      "confidence": 0.73,
-      "type": "crisis_context", 
-      "category": "difficulty_expression",
-      "source_position": 2,
-      "context_score": 0.67
-    }
-  ],
-  "total_extracted": 15,
-  "total_scored": 12,
-  "filtered_count": 10,
-  "processing_time_ms": 185.4,
-  "extraction_methods": [
-    "ngrams",
-    "community_patterns", 
-    "crisis_context",
-    "model_scoring"
-  ]
-}
-```
-
-**Status Codes**:
-- `200`: Phrase extraction completed
-- `400`: Invalid parameters
-- `503`: Phrase extraction not available
-
----
-
 ## 📈 Learning & Analytics
 
 ### GET `/learning_statistics` (Work in Progress)
@@ -583,21 +508,6 @@ curl -X POST http://localhost:8881/analyze \
   }'
 ```
 
-#### Phrase Extraction (Not Yet Implemented)
-```bash
-curl -X POST http://localhost:8881/extract_phrases \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "I am struggling with severe depression and anxiety",
-    "user_id": "test_user",
-    "channel_id": "test_channel",
-    "parameters": {
-      "crisis_focus": true,
-      "max_results": 10
-    }
-  }'
-```
-
 ### Test Messages for Different Scenarios
 
 #### High Crisis (Should detect)
@@ -631,7 +541,6 @@ curl -X POST http://localhost:8881/extract_phrases \
 | `/health` | <2ms | ~1ms | Any |
 | `/stats` | <5ms | ~2ms | Any |
 | `/analyze` | <100ms | ~25ms | GPU Recommended |
-| `/extract_phrases` | <250ms | ~185ms | GPU Recommended |
 
 ### Hardware Recommendations
 
@@ -1065,23 +974,6 @@ class AshNLPSDK:
         ) as response:
             return await response.json()
     
-    async def extract_phrases(self, message: str, user_id: str, channel_id: str,
-                            **params) -> Dict:
-        """Extract crisis-related phrases"""
-        payload = {
-            'message': message,
-            'user_id': user_id,
-            'channel_id': channel_id,
-            'parameters': params
-        }
-        
-        async with self.session.post(
-            f"{self.base_url}/extract_phrases",
-            json=payload,
-            headers=self._get_headers()
-        ) as response:
-            return await response.json()
-
 # Usage example
 async def main():
     async with AshNLPSDK() as nlp:
@@ -1180,7 +1072,6 @@ def handle_response_v2_to_v3(response_data):
 - ✅ Added comprehensive error handling
 
 ### v2.1.0 (Previous)
-- Added `/extract_phrases` endpoint
 - Enhanced learning system
 - Improved false positive reduction
 
