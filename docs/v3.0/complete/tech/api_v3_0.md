@@ -103,12 +103,12 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
         "purpose": "Primary crisis classification"
       },
       "sentiment": {
-        "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+        "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
         "loaded": true,
         "purpose": "Contextual validation"
       },
       "emotional_distress": {
-        "name": "facebook/bart-large-mnli",
+        "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
         "loaded": true,
         "purpose": "Emotional distress detection"
       }
@@ -430,8 +430,8 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
 ```bash
 # Model Selection
 NLP_DEPRESSION_MODEL=MoritzLaurer/deberta-v3-base-zeroshot-v2.0
-NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment  
-NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
+NLP_SENTIMENT_MODEL=MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+NLP_EMOTIONAL_DISTRESS_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
 
 # Ensemble Settings
 NLP_ENSEMBLE_MODE=weighted              # consensus, majority, weighted
