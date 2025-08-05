@@ -25,14 +25,14 @@ Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designe
 - **Labels**: `[Dynamic Zero-Shot Labels]`
 
 ### Model 2: Sentiment Analysis 💭
-- **Model**: `Lowerated/lm6-deberta-v3-topic-sentiment`
+- **Model**: `MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`
 - **Architecture**: DeBERTa-based sentiment analysis
 - **Purpose**: Contextual validation and emotional tone analysis
 - **Labels**: `[Dynamic Zero-Shot Labels]`
 
 ### Model 3: Emotional Distress Detection 😰
-- **Model**: `facebook/bart-large-mnli`
-- **Architecture**: BART-based emotional analysis
+- **Model**: `Lowerated/lm6-deberta-v3-topic-sentiment`
+- **Architecture**: DeBERTa-based emotional analysis
 - **Purpose**: Additional emotional state detection and validation
 - **Labels**: `[Dynamic Zero-Shot]`
 

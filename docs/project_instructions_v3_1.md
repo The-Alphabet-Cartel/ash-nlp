@@ -20,7 +20,8 @@ https://github.com/the-alphabet-cartel
     - NVIDIA RTX 3060 with 12Gb VRAM GPU
     - 64Gb of RAM
     - Docker
-      - We use a Docker first philosophy, always containerize the code!
+      - We use a Docker first philosophy
+        - Always containerize the code!
     - The server has an IP of 10.20.30.253
 
 ## Source Code and GitHub Repository Locations
@@ -37,6 +38,8 @@ https://github.com/the-alphabet-cartel
 ### Coding Philosophy
 - Modular Python Code
   - Separate the code into associated functions and methods as separate files based on the job that particular code class, or set of functions / methods is doing.
+  - Python is only accessible from within the Docker container
+    - `docker exec ash-nlp python *script_to_run.py*`
 - **No Bash Scripting!**
 - Configuration Variables and Settings
   - All default configuration variables and settings need to be defined in JSON files that are located in a directory named  `ash-nlp/config/`
