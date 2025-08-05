@@ -44,7 +44,7 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, model_manager, zero_shot_manager):
+def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_manager=None):
     """
     Setup admin endpoints with clean v3.1 manager architecture - FIXED
     
@@ -52,6 +52,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
         app: FastAPI application instance
         model_manager: ModelsManager v3.1 instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
+        crisis_pattern_manager: CrisisPatternManager instance (optional)
     """
     
     # ========================================================================
@@ -69,12 +70,12 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
     logger.info("✅ Clean v3.1: Admin endpoints using direct manager access - FIXED")
     
     # ========================================================================
-    # ADMIN STATUS ENDPOINT - Clean v3.1 FIXED
+    # ADMIN STATUS ENDPOINT - FIXED: Add crisis_pattern_manager access
     # ========================================================================
     
     @app.get("/admin/status")
     async def admin_status():
-        """Get admin status information - FIXED: Removed config_manager dependency"""
+        """Get admin status information - FIXED: Added crisis pattern manager reporting"""
         try:
             status = {
                 "admin_available": True,
@@ -87,20 +88,31 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager):
                 ],
                 "managers": {
                     "zero_shot_manager": zero_shot_manager is not None,
-                    "model_manager": model_manager is not None
+                    "model_manager": model_manager is not None,
+                    "crisis_pattern_manager": crisis_pattern_manager is not None
                 }
             }
             
-            # Add crisis pattern info if available
-            try:
-                # Note: crisis_pattern_manager not in scope here, but that's ok
-                # We'll get pattern info from other sources if needed
+            # FIXED: Add crisis pattern info if available
+            if crisis_pattern_manager:
+                try:
+                    pattern_status = crisis_pattern_manager.get_status()
+                    status["crisis_patterns"] = {
+                        "loaded_patterns": pattern_status.get('loaded_pattern_sets', 0),
+                        "available": True,
+                        "phase_3a_integrated": True
+                    }
+                except Exception as e:
+                    logger.warning(f"⚠️ Could not get crisis pattern status: {e}")
+                    status["crisis_patterns"] = {
+                        "available": False,
+                        "error": str(e)
+                    }
+            else:
                 status["crisis_patterns"] = {
-                    "admin_integration": "available",
-                    "note": "Crisis pattern info available via other admin endpoints"
+                    "available": False,
+                    "note": "Crisis pattern manager not provided"
                 }
-            except Exception as e:
-                logger.debug(f"Crisis pattern info not available in admin status: {e}")
             
             return status
             
@@ -570,12 +582,13 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
     """Add admin endpoints to FastAPI app - Clean v3.1 Architecture FIXED"""
     logger.info("🔧 Adding admin endpoints with FIXED v3.1 manager architecture...")
     
-    # Call the existing setup function with the model_manager
+    # Call the existing setup function with ALL managers
     try:
         setup_admin_endpoints(
             app=app,
             model_manager=model_manager,
-            zero_shot_manager=zero_shot_manager
+            zero_shot_manager=zero_shot_manager,
+            crisis_pattern_manager=crisis_pattern_manager  # FIXED: Pass crisis_pattern_manager
         )
         
         # Include the admin router
