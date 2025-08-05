@@ -21,6 +21,76 @@
     "staff_notification_required": true
   },
   "patterns": {
+    "suicide_expressions": {
+      "crisis_level": "critical",
+      "category": "direct_suicide_expression",
+      "description": "Direct expressions of suicidal intent requiring immediate intervention",
+      "patterns": [
+        {
+          "pattern": "want to kill myself",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "going to kill myself",
+          "type": "exact_match", 
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "want to die",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "going to end my life",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "end my life",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "commit suicide",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "take my own life",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "don't want to live",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "ready to die",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        }
+      ]
+    },
     "hopelessness_patterns": {
       "crisis_level": "critical",
       "category": "hopelessness",
