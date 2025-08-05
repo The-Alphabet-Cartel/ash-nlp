@@ -84,9 +84,7 @@ class EndpointDiscoveryAnalyzer:
             
             # Documentation & Metadata
             'documentation': [
-                ('GET', '/docs', 'API documentation'),
                 ('GET', '/openapi.json', 'OpenAPI specification'),
-                ('GET', '/redoc', 'ReDoc documentation'),
             ]
         }
 
