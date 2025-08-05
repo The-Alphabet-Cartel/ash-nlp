@@ -46,8 +46,6 @@ class EndpointDiscoveryAnalyzer:
             # Health & Status Endpoints
             'health_status': [
                 ('GET', '/health', 'System health check'),
-                ('GET', '/stats', 'Service statistics'),
-                ('GET', '/status', 'Basic status (potential duplicate)')
             ],
             
             # Admin Label Management Endpoints
@@ -63,8 +61,6 @@ class EndpointDiscoveryAnalyzer:
                 ('POST', '/admin/labels/reload', 'Reload from JSON configuration'),
                 ('GET', '/admin/labels/validate', 'Validate current configuration'),
                 ('GET', '/admin/labels/export/{name}', 'Export specific label set'),
-                ('POST', '/admin/labels/test/mapping', 'Test label mapping'),
-                ('POST', '/admin/labels/test/comprehensive', 'Trigger comprehensive test')
             ],
             
             # Ensemble Configuration Endpoints
@@ -84,10 +80,6 @@ class EndpointDiscoveryAnalyzer:
             
             # Potential Admin System Endpoints
             'admin_system': [
-                ('GET', '/admin/models/status', 'Admin model status (potential)'),
-                ('GET', '/admin/system/status', 'Admin system status (potential)'),
-                ('POST', '/admin/system/restart', 'System restart (potential)'),
-                ('GET', '/admin/logs', 'System logs (potential)')
             ],
             
             # Documentation & Metadata
@@ -95,8 +87,6 @@ class EndpointDiscoveryAnalyzer:
                 ('GET', '/docs', 'API documentation'),
                 ('GET', '/openapi.json', 'OpenAPI specification'),
                 ('GET', '/redoc', 'ReDoc documentation'),
-                ('GET', '/version', 'Version information'),
-                ('GET', '/metrics', 'Prometheus metrics (potential)')
             ]
         }
 
