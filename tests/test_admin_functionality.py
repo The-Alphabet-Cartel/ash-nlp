@@ -385,11 +385,9 @@ class AdminFunctionalityValidator:
             ("GET", "/admin/labels/current", "Current label set information"),
             ("GET", "/admin/labels/list", "List all available label sets"),
             ("GET", "/admin/labels/validate", "Validate current configuration"),
-            ("GET", "/admin/labels/details/crisis_mental_health", "Label details (test set)"),
-            ("GET", "/admin/labels/export/crisis_mental_health", "Export label set"),
+            ("GET", "/admin/labels/details/enhanced_crisis", "Label details (test set)"),
+            ("GET", "/admin/labels/export/enhanced_crisis", "Export label set"),
             ("POST", "/admin/labels/reload", "Reload configuration"),
-            ("POST", "/admin/labels/test/mapping", "Test label mapping"),
-            ("POST", "/admin/labels/test/comprehensive", "Comprehensive test trigger")
         ]
         
         results = {}
