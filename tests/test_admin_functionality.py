@@ -567,7 +567,7 @@ class AdminFunctionalityValidator:
                 return True
             
             # Test export of first available set
-            test_set = sets[0].get('name', 'crisis_mental_health')
+            test_set = sets[0].get('name', 'safety_first')  # FIXED: Use safety_first as fallback
             export_endpoint = f"/admin/labels/export/{test_set}"
             
             logger.info(f"🧪 Testing export of {test_set}...")
