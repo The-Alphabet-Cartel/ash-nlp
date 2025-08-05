@@ -41,8 +41,6 @@ class EndpointDiscoveryAnalyzer:
             # Core Analysis Endpoints
             'core_analysis': [
                 ('POST', '/analyze', 'Three-model ensemble analysis'),
-                ('POST', '/analyze_message', 'Alternative analysis endpoint (potential)'),
-                ('POST', '/batch_analysis', 'Batch analysis endpoint (potential)')
             ],
             
             # Health & Status Endpoints
