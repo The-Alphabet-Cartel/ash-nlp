@@ -96,96 +96,86 @@ class CrisisPatternManager:
         return self._patterns_cache.get('crisis_lgbtqia_patterns', {})
     
     def extract_community_patterns(self, message: str) -> List[Dict[str, Any]]:
-        """
-        Extract LGBTQIA+ community-specific patterns from message
+        """Extract community-specific crisis patterns from message"""
+        if not message or not isinstance(message, str):
+            return []
         
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            List of matched community patterns with metadata
-        """
-        phrases = []
         message_lower = message.lower()
+        found_patterns = []
         
-        lgbtqia_patterns = self.get_lgbtqia_patterns()
-        if not lgbtqia_patterns.get('patterns'):
-            logger.warning("No LGBTQIA patterns available")
-            return phrases
-        
-        for pattern_name, pattern_group in lgbtqia_patterns['patterns'].items():
-            if not pattern_group.get('patterns'):
-                continue
+        try:
+            # Get LGBTQIA+ patterns
+            lgbtqia_patterns = self.get_lgbtqia_patterns()
+            if lgbtqia_patterns and isinstance(lgbtqia_patterns, dict):
+                pattern_groups = lgbtqia_patterns.get('patterns', {})
                 
-            for pattern_config in pattern_group['patterns']:
-                pattern = pattern_config.get('pattern', '')
-                pattern_type = pattern_config.get('type', 'exact_match')
-                
-                matches = self._find_pattern_matches(message_lower, pattern, pattern_type)
-                
-                for match_text in matches:
-                    phrases.append({
-                        'text': match_text,
-                        'type': 'community_pattern',
-                        'crisis_level': pattern_group.get('crisis_level', 'medium'),
-                        'category': pattern_group.get('category', pattern_name),
-                        'matched_pattern': pattern,
-                        'weight': pattern_config.get('weight', 1.0),
-                        'urgency': pattern_config.get('urgency', 'medium')
-                    })
-        
-        return phrases
+                for group_name, pattern_group in pattern_groups.items():
+                    # FIXED: Skip non-dictionary values (like weight_multiplier floats)
+                    if not isinstance(pattern_group, dict):
+                        logger.debug(f"⚠️ Skipping non-dict pattern group: {group_name} ({type(pattern_group).__name__})")
+                        continue
+                    
+                    if not pattern_group.get('patterns'):
+                        continue
+                    
+                    patterns = pattern_group['patterns']
+                    for pattern_item in patterns:
+                        if isinstance(pattern_item, dict):
+                            pattern_text = pattern_item.get('pattern', '')
+                            if pattern_text and pattern_text.lower() in message_lower:
+                                found_patterns.append({
+                                    'pattern_type': 'lgbtqia',
+                                    'pattern_name': group_name,
+                                    'matched_text': pattern_text,
+                                    'crisis_level': pattern_item.get('crisis_level', 'medium'),
+                                    'confidence': pattern_item.get('confidence', 0.7),
+                                    'context': pattern_item.get('context', [])
+                                })
+            
+            return found_patterns
+            
+        except Exception as e:
+            logger.error(f"Error extracting community patterns: {e}")
+            return []
     
     def extract_crisis_context_phrases(self, message: str) -> List[Dict[str, Any]]:
-        """
-        Extract phrases with crisis context indicators
+        """Extract crisis context phrases from message"""
+        if not message or not isinstance(message, str):
+            return []
         
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            List of matched context phrases with metadata
-        """
-        phrases = []
         message_lower = message.lower()
-        words = message_lower.split()
+        found_phrases = []
         
-        context_patterns = self.get_crisis_context_patterns()
-        if not context_patterns.get('patterns'):
-            logger.warning("No crisis context patterns available")
-            return phrases
-        
-        for context_name, context_data in context_patterns['patterns'].items():
-            indicators = context_data.get('indicators', [])
-            
-            for indicator in indicators:
-                if indicator in message_lower:
-                    # Find phrases around the indicator
-                    indicator_words = indicator.split()
+        try:
+            # Get crisis context patterns
+            context_patterns = self.get_crisis_context_patterns()
+            if context_patterns and isinstance(context_patterns, dict):
+                pattern_groups = context_patterns.get('patterns', {})
+                
+                for context_type, context_data in pattern_groups.items():
+                    # FIXED: Skip non-dictionary values (like configuration floats)
+                    if not isinstance(context_data, dict):
+                        logger.debug(f"⚠️ Skipping non-dict context data: {context_type} ({type(context_data).__name__})")
+                        continue
                     
-                    for i, word in enumerate(words):
-                        if word == indicator_words[0]:
-                            # Check if full indicator matches
-                            if ' '.join(words[i:i+len(indicator_words)]) == indicator:
-                                # Extract context phrases around the indicator
-                                window = context_patterns.get('configuration', {}).get('context_window', 5)
-                                start = max(0, i - window//2)
-                                end = min(len(words), i + len(indicator_words) + window//2)
-                                
-                                context_phrase = ' '.join(words[start:end])
-                                
-                                phrases.append({
-                                    'text': context_phrase,
-                                    'type': 'crisis_context',
-                                    'context_type': context_data.get('context_type', context_name),
-                                    'crisis_boost': context_data.get('crisis_boost', 'medium'),
-                                    'boost_factor': context_data.get('boost_factor', 0.1),
-                                    'indicator': indicator,
-                                    'weight': context_data.get('weight', 1.0),
-                                    'priority': context_data.get('priority', 'medium')
+                    indicators = context_data.get('indicators', [])
+                    for indicator in indicators:
+                        if isinstance(indicator, dict):
+                            phrase = indicator.get('phrase', '')
+                            if phrase and phrase.lower() in message_lower:
+                                found_phrases.append({
+                                    'phrase_type': context_type,
+                                    'matched_phrase': phrase,
+                                    'crisis_level': indicator.get('crisis_level', 'low'),
+                                    'confidence': indicator.get('confidence', 0.6),
+                                    'boost_multiplier': indicator.get('boost_multiplier', 1.0)
                                 })
-        
-        return phrases
+            
+            return found_phrases
+            
+        except Exception as e:
+            logger.error(f"Error extracting crisis context phrases: {e}")
+            return []
     
     def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
         """
@@ -490,82 +480,58 @@ class CrisisPatternManager:
         return modified_score, analysis_details
     
     def check_enhanced_crisis_patterns(self, message: str) -> Dict[str, Any]:
-        """
-        Check for enhanced crisis patterns (hopelessness, planning, methods, etc.)
+        """Check message against enhanced crisis patterns"""
+        if not message or not isinstance(message, str):
+            return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
         
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            Dictionary with enhanced pattern analysis results
-        """
         message_lower = message.lower()
-        enhanced_patterns = self.get_enhanced_crisis_patterns()
-        
-        if not enhanced_patterns.get('patterns'):
-            return {
-                'matches': [],
-                'highest_urgency': 'none',
-                'auto_escalate': False,
-                'total_weight': 0.0,
-                'requires_immediate_attention': False
-            }
-        
         matches = []
-        highest_urgency = 'none'
-        auto_escalate = False
         total_weight = 0.0
-        requires_immediate_attention = False
         
-        urgency_levels = {'none': 0, 'low': 1, 'medium': 2, 'high': 3, 'critical': 4}
-        max_urgency_score = 0
-        
-        for pattern_category, pattern_data in enhanced_patterns['patterns'].items():
-            category_patterns = pattern_data.get('patterns', [])
+        try:
+            enhanced_patterns = self.get_enhanced_crisis_patterns()
+            if not enhanced_patterns or not isinstance(enhanced_patterns, dict):
+                return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
             
-            for pattern_config in category_patterns:
-                pattern = pattern_config.get('pattern', '')
-                pattern_type = pattern_config.get('type', 'exact_match')
-                weight = pattern_config.get('weight', 0.0)
-                urgency = pattern_config.get('urgency', 'medium')
+            pattern_categories = enhanced_patterns.get('patterns', {})
+            
+            for category_name, pattern_data in pattern_categories.items():
+                # FIXED: Skip non-dictionary values (like configuration floats/bools)
+                if not isinstance(pattern_data, dict):
+                    logger.debug(f"⚠️ Skipping non-dict pattern data: {category_name} ({type(pattern_data).__name__})")
+                    continue
                 
-                if pattern_config.get('context_required', False):
-                    # For context-required patterns, do additional validation
-                    pattern_matches = self._find_pattern_matches_with_context(message_lower, pattern, pattern_type)
-                else:
-                    pattern_matches = self._find_pattern_matches(message_lower, pattern, pattern_type)
+                category_patterns = pattern_data.get('patterns', [])
                 
-                if pattern_matches:
-                    match_info = {
-                        'category': pattern_category,
-                        'pattern': pattern,
-                        'weight': weight,
-                        'urgency': urgency,
-                        'auto_escalate': pattern_config.get('auto_escalate', False),
-                        'matches': pattern_matches
-                    }
-                    
-                    matches.append(match_info)
-                    total_weight += abs(weight)  # Use absolute value for total weight calculation
-                    
-                    if pattern_config.get('auto_escalate', False):
-                        auto_escalate = True
-                    
-                    if urgency in ['critical']:
-                        requires_immediate_attention = True
-                    
-                    urgency_score = urgency_levels.get(urgency, 0)
-                    if urgency_score > max_urgency_score:
-                        max_urgency_score = urgency_score
-                        highest_urgency = urgency
-        
-        return {
-            'matches': matches,
-            'highest_urgency': highest_urgency,
-            'auto_escalate': auto_escalate,
-            'total_weight': total_weight,
-            'requires_immediate_attention': requires_immediate_attention
-        }
+                for pattern_item in category_patterns:
+                    if isinstance(pattern_item, dict):
+                        pattern_text = pattern_item.get('pattern', '')
+                        if pattern_text and pattern_text.lower() in message_lower:
+                            weight = pattern_item.get('weight', 1.0)
+                            matches.append({
+                                'category': category_name,
+                                'pattern': pattern_text,
+                                'weight': weight,
+                                'crisis_level': pattern_item.get('crisis_level', 'high'),
+                                'confidence': pattern_item.get('confidence', 0.8)
+                            })
+                            total_weight += weight
+            
+            # Check for auto-escalation
+            config = enhanced_patterns.get('configuration', {})
+            escalation_threshold = config.get('auto_escalation_weight', 2.0)
+            auto_escalate = total_weight >= escalation_threshold
+            
+            return {
+                'matches': matches,
+                'total_weight': total_weight,
+                'auto_escalate': auto_escalate,
+                'requires_immediate_attention': auto_escalate and total_weight >= 3.0
+            }
+            
+        except Exception as e:
+            logger.error(f"Error checking enhanced crisis patterns: {e}")
+            return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
     
     def _find_pattern_matches(self, text: str, pattern: str, pattern_type: str) -> List[str]:
         """Find pattern matches in text based on pattern type"""
