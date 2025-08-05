@@ -1,10 +1,11 @@
 """
 Analysis Package for Ash NLP Service
-Contains all analysis components for crisis detection
+Contains all analysis components for crisis detection and keyword discovery
 """
 
 # Core analysis components
 from .crisis_analyzer import CrisisAnalyzer
+from .phrase_extractor import PhraseExtractor
 
 # Analysis capabilities metadata
 ANALYSIS_CAPABILITIES = {
@@ -20,7 +21,21 @@ ANALYSIS_CAPABILITIES = {
         ],
         "processing_time": "<80ms",
         "accuracy_target": "75%+"
-    }
+    },
+    
+    "phrase_extractor": {
+        "description": "Extract potential crisis keywords using model scoring",
+        "input": "text_message_with_parameters",
+        "output": "scored_phrase_candidates", 
+        "methods": [
+            "ngram_extraction_with_scoring",
+            "community_pattern_matching",
+            "crisis_context_extraction",
+            "model_based_scoring"
+        ],
+        "processing_time": "<200ms",
+        "max_phrases": 20
+    },
 }
 
 # Analysis workflow metadata
@@ -35,7 +50,18 @@ ANALYSIS_WORKFLOWS = {
             "map_to_crisis_level"
         ],
         "primary_component": "CrisisAnalyzer"
-    }
+    },
+    
+    "keyword_discovery": {
+        "steps": [
+            "extract_candidate_phrases",
+            "score_with_models",
+            "filter_by_confidence",
+            "rank_by_relevance",
+            "format_suggestions"
+        ],
+        "primary_component": "PhraseExtractor"
+    },
 }
 
 def get_analysis_capabilities():
@@ -50,7 +76,7 @@ def get_available_analyzers():
     """Get list of available analyzer classes"""
     return {
         "CrisisAnalyzer": "Enhanced crisis detection with multi-model approach",
-        "PatternLearner": "Community pattern learning (planned)"
+        "PatternLearner": "Community pattern learning (planned)",
     }
 
 def get_implemented_features():
@@ -58,6 +84,7 @@ def get_implemented_features():
     return {
         "implemented": [
             "crisis_analysis",
+            "phrase_extraction", 
             "multi_model_detection",
             "context_analysis",
             "idiom_filtering",
@@ -74,10 +101,14 @@ def create_crisis_analyzer(model_manager):
     """Create and return a CrisisAnalyzer instance"""
     return CrisisAnalyzer(model_manager)
 
+def create_phrase_extractor(model_manager):
+    """Create and return a PhraseExtractor instance"""
+    return PhraseExtractor(model_manager)
+
 __all__ = [
     # Core analyzer classes
     "CrisisAnalyzer",
-    
+    "PhraseExtractor", 
     # Metadata
     "ANALYSIS_CAPABILITIES",
     "ANALYSIS_WORKFLOWS",
@@ -90,4 +121,5 @@ __all__ = [
     
     # Factory functions
     "create_crisis_analyzer",
+    "create_phrase_extractor",
 ]
