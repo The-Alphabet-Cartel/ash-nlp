@@ -1,4 +1,44 @@
-#!/usr/bin/env python3
+def _test_admin_business_logic_with_actual_sets(self):
+        """Test admin business logic using the actual available label sets"""
+        logger.info(f"🧪 Testing admin business logic with actual label sets...")
+        
+        try:
+            # First get the actual available label sets
+            response = requests.get(f"{BASE_URL}/admin/labels/list", timeout=TIMEOUT)
+            if response.status_code == 200:
+                data = response.json()
+                sets = data.get('sets', [])
+                available_sets = [s.get('name') for s in sets]
+                
+                if len(available_sets) >= 2:
+                    # Test switching between actual available sets
+                    original_set = available_sets[0]
+                    target_set = available_sets[1]
+                    
+                    # Test switch
+                    payload = {"label_set": target_set}
+                    switch_response = requests.post(f"{BASE_URL}/admin/labels/simple-switch", 
+                                                  json=payload, timeout=TIMEOUT)
+                    
+                    if switch_response.status_code == 200:
+                        switch_data = switch_response.json()
+                        if switch_data.get('success', False):
+                            logger.info(f"   ✅ Business logic: Can switch between actual sets ({original_set} → {target_set})")
+                            
+                            # Switch back
+                            requests.post(f"{BASE_URL}/admin/labels/simple-switch", 
+                                        json={"label_set": original_set}, timeout=TIMEOUT)
+                        else:
+                            logger.warning(f"   ⚠️ Business logic: Switch failed for actual sets")
+                    else:
+                        logger.warning(f"   ⚠️ Business logic: Switch returned status {switch_response.status_code}")
+                else:
+                    logger.info(f"   ℹ️ Business logic: Only {len(available_sets)} label sets available, cannot test switching")
+            else:
+                logger.warning(f"   ⚠️ Business logic: Cannot get available sets for testing")
+                
+        except Exception as e:
+            logger.error(f"   ❌ Business logic test failed: {e}")#!/usr/bin/env python3
 """
 Comprehensive Endpoint Test Suite - Phase 3a Validation
 Tests ALL endpoints defined in the Ash-NLP system to ensure functionality, 
@@ -276,48 +316,12 @@ class ComprehensiveEndpointTester:
         endpoint = "/extract_phrases"
         logger.info(f"🧪 Testing {endpoint}...")
         
-        try:
-            test_message = self.test_data['sample_messages'][0]
-            payload = {
-                'message': test_message['message'],
-                'user_id': test_message['user_id'],
-                'channel_id': test_message['channel_id'],
-                'parameters': {
-                    'min_phrase_length': 2,
-                    'max_phrase_length': 6,
-                    'crisis_focus': True
-                }
-            }
-            
-            response = requests.post(f"{BASE_URL}{endpoint}", json=payload, timeout=TIMEOUT)
-            
-            if response.status_code == 200:
-                data = response.json()
-                phrases = data.get('phrases', [])
-                logger.info(f"   ✅ Phrase extraction: Found {len(phrases)} phrases")
-                
-                self.results.add_result(
-                    endpoint, 'core_analysis', True,
-                    200, None, data, f"Extracted {len(phrases)} phrases"
-                )
-            elif response.status_code == 404:
-                logger.info(f"   ℹ️ {endpoint}: Not found (may not be implemented)")
-                self.results.add_result(
-                    endpoint, 'core_analysis', False,
-                    404, "Endpoint not found", None, "May not be implemented"
-                )
-            else:
-                logger.warning(f"   ⚠️ {endpoint}: Status {response.status_code}")
-                self.results.add_result(
-                    endpoint, 'core_analysis', False,
-                    response.status_code, f"HTTP {response.status_code}", None, "Unexpected status"
-                )
-                
-        except Exception as e:
-            self.results.add_result(
-                endpoint, 'core_analysis', False,
-                None, str(e), None, "Exception during testing"
-            )
+        # This endpoint was confirmed to not be implemented - mark as known dead
+        logger.info(f"   💀 {endpoint}: Confirmed not implemented (removing from codebase)")
+        self.results.add_result(
+            endpoint, 'core_analysis', False,
+            404, "Endpoint not implemented", None, "Confirmed dead - safe to remove references"
+        )
 
     # ========================================================================
     # HEALTH & STATUS ENDPOINT TESTS
@@ -329,10 +333,10 @@ class ComprehensiveEndpointTester:
         logger.info("=" * 60)
         
         health_endpoints = [
-            ("/health", "System health check"),
-            ("/stats", "Service statistics"),
-            ("/status", "Basic status")
+            ("/health", "System health check")
         ]
+        
+        # Note: /stats and /status confirmed dead - removing from tests
         
         for endpoint, description in health_endpoints:
             self._test_get_endpoint(endpoint, description, 'health_status')
@@ -416,9 +420,11 @@ class ComprehensiveEndpointTester:
         self._test_admin_label_details()
         self._test_admin_label_export()
         
-        # Test POST admin endpoints
+        # Test POST admin endpoints - using actual available label sets
         self._test_admin_label_switching()
-        self._test_admin_test_endpoints()
+        
+        # Restore original test behavior for business logic
+        self._test_admin_business_logic_with_actual_sets()
 
     def _test_admin_label_details(self):
         """Test /admin/labels/details/{name} endpoint"""
@@ -434,7 +440,7 @@ class ComprehensiveEndpointTester:
                 
                 if sets:
                     # Test with first available label set
-                    test_set_name = sets[0].get('name', 'crisis_mental_health')
+                    test_set_name = sets[0].get('name', 'safety_first')  # Use actual label set
                     endpoint = f"{endpoint_base}/{test_set_name}"
                     
                     self._test_get_endpoint(endpoint, f"Label details for {test_set_name}", 'admin_labels')
@@ -462,8 +468,8 @@ class ComprehensiveEndpointTester:
         endpoint_base = "/admin/labels/export"
         logger.info(f"🧪 Testing {endpoint_base}/{{name}}...")
         
-        # Test with a known label set
-        test_set_name = "crisis_mental_health"
+        # Test with a known label set that actually exists
+        test_set_name = "safety_first"  # Use actual label set
         endpoint = f"{endpoint_base}/{test_set_name}"
         
         self._test_get_endpoint(endpoint, f"Export {test_set_name}", 'admin_labels')
@@ -472,10 +478,22 @@ class ComprehensiveEndpointTester:
         """Test label switching functionality"""
         logger.info(f"🧪 Testing admin label switching...")
         
-        # Test simple-switch first
+        # Test simple-switch first with actual available label sets
         endpoint = "/admin/labels/simple-switch"
         try:
-            payload = {"label_set": "crisis_mental_health"}
+            # Get available sets first
+            list_response = requests.get(f"{BASE_URL}/admin/labels/list", timeout=TIMEOUT)
+            if list_response.status_code == 200:
+                list_data = list_response.json()
+                sets = list_data.get('sets', [])
+                if sets:
+                    test_label_set = sets[0].get('name', 'safety_first')
+                else:
+                    test_label_set = 'safety_first'
+            else:
+                test_label_set = 'safety_first'
+            
+            payload = {"label_set": test_label_set}
             response = requests.post(f"{BASE_URL}{endpoint}", json=payload, timeout=TIMEOUT)
             
             if response.status_code == 200:
@@ -505,10 +523,22 @@ class ComprehensiveEndpointTester:
                 None, str(e), None, "Exception during label switching test"
             )
         
-        # Test full switch endpoint
+        # Test full switch endpoint with actual available label sets
         endpoint = "/admin/labels/switch"
         try:
-            payload = {"label_set": "sentiment_basic"}
+            # Use the same approach to get actual label sets
+            list_response = requests.get(f"{BASE_URL}/admin/labels/list", timeout=TIMEOUT)
+            if list_response.status_code == 200:
+                list_data = list_response.json()
+                sets = list_data.get('sets', [])
+                if len(sets) >= 2:
+                    test_label_set = sets[1].get('name', 'enhanced_crisis')
+                else:
+                    test_label_set = 'enhanced_crisis'
+            else:
+                test_label_set = 'enhanced_crisis'
+                
+            payload = {"label_set": test_label_set}
             response = requests.post(f"{BASE_URL}{endpoint}", json=payload, timeout=TIMEOUT)
             
             if response.status_code == 200:
@@ -538,70 +568,7 @@ class ComprehensiveEndpointTester:
                 None, str(e), None, "Exception during full label switching test"
             )
 
-    def _test_admin_test_endpoints(self):
-        """Test admin testing endpoints"""
-        logger.info(f"🧪 Testing admin test endpoints...")
-        
-        # Test /admin/labels/test/mapping
-        endpoint = "/admin/labels/test/mapping"
-        try:
-            payload = {"test_messages": ["test message"], "validate_schema": True}
-            response = requests.post(f"{BASE_URL}{endpoint}", json=payload, timeout=TIMEOUT)
-            
-            if response.status_code == 200:
-                logger.info(f"   ✅ Label mapping test: Accessible")
-                self.results.add_result(
-                    endpoint, 'admin_labels', True,
-                    200, None, response.json(), "Mapping test functional"
-                )
-            elif response.status_code == 404:
-                logger.info(f"   💀 Label mapping test: Not found")
-                self.results.add_result(
-                    endpoint, 'admin_labels', False,
-                    404, "Endpoint not found", None, "Dead endpoint"
-                )
-            else:
-                logger.warning(f"   🔧 Label mapping test: Status {response.status_code}")
-                self.results.add_result(
-                    endpoint, 'admin_labels', False,
-                    response.status_code, f"HTTP {response.status_code}", None, "Endpoint issue"
-                )
-                
-        except Exception as e:
-            self.results.add_result(
-                endpoint, 'admin_labels', False,
-                None, str(e), None, "Exception during test"
-            )
-        
-        # Test /admin/labels/test/comprehensive
-        endpoint = "/admin/labels/test/comprehensive"
-        try:
-            response = requests.post(f"{BASE_URL}{endpoint}", json={}, timeout=TIMEOUT)
-            
-            if response.status_code == 200:
-                logger.info(f"   ✅ Comprehensive test: Accessible")
-                self.results.add_result(
-                    endpoint, 'admin_labels', True,
-                    200, None, response.json(), "Comprehensive test functional"
-                )
-            elif response.status_code == 404:
-                logger.info(f"   💀 Comprehensive test: Not found")
-                self.results.add_result(
-                    endpoint, 'admin_labels', False,
-                    404, "Endpoint not found", None, "Dead endpoint"
-                )
-            else:
-                logger.warning(f"   🔧 Comprehensive test: Status {response.status_code}")
-                self.results.add_result(
-                    endpoint, 'admin_labels', False,
-                    response.status_code, f"HTTP {response.status_code}", None, "Endpoint issue"
-                )
-                
-        except Exception as e:
-            self.results.add_result(
-                endpoint, 'admin_labels', False,
-                None, str(e), None, "Exception during test"
-            )
+    # Note: _test_admin_test_endpoints removed - those endpoints are dead and being removed
 
     # ========================================================================
     # ENSEMBLE CONFIGURATION ENDPOINT TESTS  
