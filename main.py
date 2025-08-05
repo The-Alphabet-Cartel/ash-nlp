@@ -304,7 +304,8 @@ async def initialize_components_clean_v3_1():
         if CRISIS_ANALYZER_AVAILABLE and model_manager:
             try:
                 crisis_analyzer = CrisisAnalyzer(
-                    model_manager=model_manager
+                    model_manager=model_manager,
+                    crisis_pattern_manager=crisis_pattern_manager
                 )
                 logger.info("✅ CrisisAnalyzer initialized")
             except Exception as e:
