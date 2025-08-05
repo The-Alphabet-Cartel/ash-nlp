@@ -483,52 +483,59 @@ class CrisisPatternManager:
         """Check message against enhanced crisis patterns"""
         if not message or not isinstance(message, str):
             return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
-        
+
         message_lower = message.lower()
         matches = []
         total_weight = 0.0
-        
+
         try:
             enhanced_patterns = self.get_enhanced_crisis_patterns()
             if not enhanced_patterns or not isinstance(enhanced_patterns, dict):
                 return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
-            
+
             pattern_categories = enhanced_patterns.get('patterns', {})
-            
+
             for category_name, pattern_data in pattern_categories.items():
                 # FIXED: Skip non-dictionary values (like configuration floats/bools)
                 if not isinstance(pattern_data, dict):
                     logger.debug(f"⚠️ Skipping non-dict pattern data: {category_name} ({type(pattern_data).__name__})")
                     continue
-                
+
                 category_patterns = pattern_data.get('patterns', [])
-                
+
                 for pattern_item in category_patterns:
                     if isinstance(pattern_item, dict):
                         pattern_text = pattern_item.get('pattern', '')
-                        if pattern_text and pattern_text.lower() in message_lower:
+                        pattern_type = pattern_item.get('type', 'exact_match')
+                        
+                        # FIXED: Use proper pattern matching instead of simple string search
+                        pattern_matches = self._find_pattern_matches(message_lower, pattern_text, pattern_type)
+                        
+                        if pattern_matches:
                             weight = pattern_item.get('weight', 1.0)
                             matches.append({
                                 'category': category_name,
                                 'pattern': pattern_text,
+                                'pattern_type': pattern_type,
+                                'matches': pattern_matches,
                                 'weight': weight,
                                 'crisis_level': pattern_item.get('crisis_level', 'high'),
                                 'confidence': pattern_item.get('confidence', 0.8)
                             })
                             total_weight += weight
-            
+
             # Check for auto-escalation
             config = enhanced_patterns.get('configuration', {})
             escalation_threshold = config.get('auto_escalation_weight', 2.0)
             auto_escalate = total_weight >= escalation_threshold
-            
+
             return {
                 'matches': matches,
                 'total_weight': total_weight,
                 'auto_escalate': auto_escalate,
                 'requires_immediate_attention': auto_escalate and total_weight >= 3.0
             }
-            
+
         except Exception as e:
             logger.error(f"Error checking enhanced crisis patterns: {e}")
             return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}

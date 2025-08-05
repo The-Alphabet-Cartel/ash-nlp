@@ -98,15 +98,6 @@ except ImportError as e:
     CRISIS_ANALYZER_AVAILABLE = False
     logger.warning(f"⚠️ CrisisAnalyzer import failed: {e}")
 
-try:
-    logger.info("📝 Importing PhraseExtractor...")
-    from analysis.phrase_extractor import PhraseExtractor
-    PHRASE_EXTRACTOR_AVAILABLE = True
-    logger.info("✅ PhraseExtractor import successful")
-except ImportError as e:
-    PHRASE_EXTRACTOR_AVAILABLE = False
-    logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
-
 # Import Learning System (Optional)
 try:
     logger.info("🧠 Importing Learning System...")
@@ -131,7 +122,6 @@ crisis_pattern_manager = None  # Phase 3a addition
 model_manager = None
 pydantic_manager = None
 crisis_analyzer = None
-phrase_extractor = None
 learning_manager = None
 
 # ============================================================================
@@ -221,7 +211,7 @@ def validate_centralized_thresholds():
 async def initialize_components_clean_v3_1():
     """Initialize all components with clean v3.1 architecture - Phase 3a Complete"""
     global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
-    global model_manager, pydantic_manager, crisis_analyzer, phrase_extractor, learning_manager
+    global model_manager, pydantic_manager, crisis_analyzer, learning_manager
     
     try:
         logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3a Complete...")
@@ -338,20 +328,6 @@ async def initialize_components_clean_v3_1():
             logger.info("ℹ️ CrisisAnalyzer not available")
             crisis_analyzer = None
         
-        # Initialize PhraseExtractor
-        if PHRASE_EXTRACTOR_AVAILABLE:
-            try:
-                phrase_extractor = PhraseExtractor(
-                    model_manager=model_manager
-                )
-                logger.info("✅ PhraseExtractor initialized")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
-                phrase_extractor = None
-        else:
-            logger.info("ℹ️ PhraseExtractor not available")
-            phrase_extractor = None
-        
         # ========================================================================
         # STEP 7: Final Status Report - Clean v3.1 Phase 3a
         # ========================================================================
@@ -371,7 +347,6 @@ async def initialize_components_clean_v3_1():
             },
             'analysis_components': {
                 'crisis_analyzer_with_patterns': crisis_analyzer is not None,  # Phase 3a enhanced
-                'phrase_extractor': phrase_extractor is not None,
                 'learning_manager': learning_manager is not None
             }
         }
@@ -526,7 +501,6 @@ async def enhanced_health_check():
         "models_manager_v3_1": model_manager is not None,
         "pydantic_manager_v3_1": pydantic_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
-        "phrase_extractor": phrase_extractor is not None,
         "learning_manager": learning_manager is not None
     }
     

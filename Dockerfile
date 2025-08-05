@@ -76,8 +76,8 @@ ENV NLP_MODEL_REVISION="main"
 
 ## Three-Model Configuration
 ENV NLP_DEPRESSION_MODEL="MoritzLaurer/deberta-v3-base-zeroshot-v2.0"
-ENV NLP_SENTIMENT_MODEL="Lowerated/lm6-deberta-v3-topic-sentiment"
-ENV NLP_EMOTIONAL_DISTRESS_MODEL="facebook/bart-large-mnli"
+ENV NLP_SENTIMENT_MODEL="MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
+ENV NLP_EMOTIONAL_DISTRESS_MODEL="Lowerated/lm6-deberta-v3-topic-sentiment"
 ENV NLP_MODEL_CACHE_DIR="./models/cache"
 
 ## Ensemble Configuration
