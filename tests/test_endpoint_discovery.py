@@ -246,7 +246,8 @@ class EndpointDiscoveryAnalyzer:
                 'record_type': 'false_negative',
                 'message_data': {'content': 'test message', 'user_id': 'test', 'channel_id': 'test'},
                 'correction_data': {'should_detect_level': 'high', 'actually_detected': 'low'},
-                'context_data': {'channel': 'support'}
+                'context_data': {'channel': 'support'},
+                "timestamp": "2025-08-05T12:00:00Z"
             }
         
         # Default empty payload
