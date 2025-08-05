@@ -37,6 +37,7 @@ https://github.com/the-alphabet-cartel
 ### Coding Philosophy
 - Modular Python Code
   - Separate the code into associated functions and methods as separate files based on the job that particular code class, or set of functions / methods is doing.
+- **No Bash Scripting!**
 - Configuration Variables and Settings
   - All default configuration variables and settings need to be defined in JSON files that are located in a directory named  `ash-nlp/config/`
   - All associated managers for these JSON configuration files need to be located in a directory named `ash-nlp/managers/`
