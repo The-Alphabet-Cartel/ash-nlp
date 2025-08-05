@@ -12,7 +12,7 @@ import sys
 import json
 import requests
 import subprocess
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 BASE_URL = "http://localhost:8881"
 DEFAULT_CONTAINER_NAME = "ash-nlp"
