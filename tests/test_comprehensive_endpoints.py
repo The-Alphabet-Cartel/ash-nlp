@@ -961,7 +961,7 @@ class ComprehensiveEndpointTester:
         # Generate recommendations
         self._generate_recommendations()
         
-        return self.total_failed == 0
+        return self.results.total_failed == 0
 
     def _generate_recommendations(self):
         """Generate recommendations based on test results"""
@@ -991,8 +991,9 @@ class ComprehensiveEndpointTester:
             for endpoint in missing_essential:
                 logger.warning(f"   - {endpoint}")
         
-        # Overall health assessment
-        success_rate = (self.total_passed / (self.total_passed + self.total_failed)) * 100
+        # Overall health assessment - Fix: Use self.results properties
+        total_tests = self.results.total_passed + self.results.total_failed
+        success_rate = (self.results.total_passed / total_tests * 100) if total_tests > 0 else 0
         
         if success_rate >= 90:
             logger.info(f"🎉 SYSTEM HEALTH: Excellent ({success_rate:.1f}%)")
