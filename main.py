@@ -29,7 +29,7 @@ log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
 # Create formatters
 file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(name)s - %(message)s')
 console_formatter = colorlog.ColoredFormatter(
-    '%(blue)s%(asctime)s%(reset)s %(log_color)s%(levelname)s%(reset)s: %(orange)s%(name)s%(reset)s - %(message)s',
+    '%(blue)s%(asctime)s%(reset)s %(log_color)s%(levelname)s%(reset)s: %(purple)s%(name)s%(reset)s - %(message)s',
     log_colors={
         'DEBUG':    'cyan',
         'INFO':     'green',
