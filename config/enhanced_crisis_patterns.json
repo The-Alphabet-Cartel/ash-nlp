@@ -27,6 +27,55 @@
       "description": "Direct expressions of suicidal intent requiring immediate intervention",
       "patterns": [
         {
+          "pattern": "don't want to be here",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "don't want to exist",
+          "type": "exact_match",
+          "weight": 1.0,
+          "urgency": "critical",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "wish I was dead",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "wish I wasn't alive",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "don't want to wake up",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
+          "pattern": "want to disappear",
+          "type": "exact_match",
+          "weight": 0.7,
+          "urgency": "medium",
+          "auto_escalate": false
+        },
+        {
+          "pattern": "better off dead",
+          "type": "exact_match",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
           "pattern": "want to kill myself",
           "type": "exact_match",
           "weight": 1.0,
