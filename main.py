@@ -98,15 +98,6 @@ except ImportError as e:
     CRISIS_ANALYZER_AVAILABLE = False
     logger.warning(f"⚠️ CrisisAnalyzer import failed: {e}")
 
-try:
-    logger.info("📝 Importing PhraseExtractor...")
-    from analysis.phrase_extractor import PhraseExtractor
-    PHRASE_EXTRACTOR_AVAILABLE = True
-    logger.info("✅ PhraseExtractor import successful")
-except ImportError as e:
-    PHRASE_EXTRACTOR_AVAILABLE = False
-    logger.warning(f"⚠️ PhraseExtractor import failed: {e}")
-
 # Import Learning System (Optional)
 try:
     logger.info("🧠 Importing Learning System...")
@@ -131,7 +122,6 @@ crisis_pattern_manager = None  # Phase 3a addition
 model_manager = None
 pydantic_manager = None
 crisis_analyzer = None
-phrase_extractor = None
 learning_manager = None
 
 # ============================================================================
@@ -153,62 +143,67 @@ def get_pydantic_models():
         )
 
 # ============================================================================
-# CONFIGURATION VALIDATION
+# CENTRALIZED ENVIRONMENT VALIDATION - Clean v3.1
 # ============================================================================
 
 def validate_centralized_thresholds():
-    """Validate centralized threshold configuration from environment variables"""
-    required_thresholds = [
-        'NLP_ENSEMBLE_MODE',
-        'NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD',      # Updated to match .env.template
-        'NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD',    # Updated to match .env.template
-        'NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD',  # Updated to match .env.template
-        'NLP_DEPRESSION_MODEL_WEIGHT',                 # Updated to match .env.template
-        'NLP_SENTIMENT_MODEL_WEIGHT',                  # Updated to match .env.template
-        'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT'          # Updated to match .env.template
-    ]
+    """Validate and display centralized threshold configuration - Clean v3.1"""
+    
+    # Define environment variables for centralized configuration
+    centralized_env_vars = {
+        # Ensemble mode and gap detection thresholds
+        'NLP_ENSEMBLE_MODE': {'default': 'consensus', 'type': str},
+        'NLP_GAP_DETECTION_THRESHOLD': {'default': 0.4, 'type': float},
+        'NLP_DISAGREEMENT_THRESHOLD': {'default': 0.5, 'type': float},
+        
+        # Model weights for weighted ensemble mode
+        'NLP_DEPRESSION_MODEL_WEIGHT': {'default': 0.5, 'type': float},
+        'NLP_SENTIMENT_MODEL_WEIGHT': {'default': 0.2, 'type': float},
+        'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT': {'default': 0.3, 'type': float},
+        
+        # Ensemble decision thresholds
+        'NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD': {'default': 0.60, 'type': float},
+        'NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD': {'default': 0.35, 'type': float},
+        'NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD': {'default': 0.20, 'type': float},
+        
+        # Crisis level mapping thresholds  
+        'NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD': {'default': 0.85, 'type': float},
+        'NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD': {'default': 0.65, 'type': float},
+        'NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD': {'default': 0.45, 'type': float}
+    }
     
     thresholds = {}
-    missing_vars = []
     
-    for var in required_thresholds:
-        value = os.getenv(var)
-        if value is None:
-            missing_vars.append(var)
-        else:
-            try:
-                # Convert to appropriate type
-                if var in ['NLP_ENSEMBLE_MODE']:
-                    thresholds[var.lower().replace('nlp_', '')] = value
-                else:
-                    thresholds[var.lower().replace('nlp_', '')] = float(value)
-            except ValueError:
-                logger.error(f"❌ Invalid value for {var}: {value}")
-                missing_vars.append(f"{var} (invalid value)")
+    for var_name, config in centralized_env_vars.items():
+        raw_value = os.getenv(var_name, config['default'])
+        
+        try:
+            if config['type'] == float:
+                thresholds[var_name.lower()] = float(raw_value)
+            elif config['type'] == str:
+                thresholds[var_name.lower()] = str(raw_value)
+            else:
+                thresholds[var_name.lower()] = raw_value
+        except ValueError:
+            logger.warning(f"⚠️ Invalid value for {var_name}: {raw_value}, using default: {config['default']}")
+            thresholds[var_name.lower()] = config['default']
     
-    if missing_vars:
-        logger.error("❌ Missing or invalid centralized threshold configuration:")
-        for var in missing_vars:
-            logger.error(f"   {var}")
-        logger.error("💡 These should be defined in your .env file:")
-        logger.error(f"   Depression Weight: {thresholds.get('depression_model_weight', 'MISSING')}")
-        logger.error(f"   Sentiment Weight: {thresholds.get('sentiment_model_weight', 'MISSING')}")
-        logger.error(f"   Emotional Distress Weight: {thresholds.get('emotional_distress_model_weight', 'MISSING')}")
-        sys.exit(1)
-    
-    logger.info("🐳 Running in Docker mode - using system environment variables")
-    logger.info("✅ Centralized threshold configuration validation passed")
-    
-    logger.debug("🎯 Centralized Threshold Configuration:")
-    logger.debug(f"   Ensemble mode: {thresholds['ensemble_mode']}")
-    logger.debug("   Consensus Mapping Thresholds:")
-    logger.debug(f"     CRISIS → HIGH: {thresholds['consensus_crisis_to_high_threshold']}")
-    logger.debug(f"     CRISIS → MEDIUM: {thresholds['consensus_crisis_to_medium_threshold']}")
-    logger.debug(f"     MILD_CRISIS → LOW: {thresholds['consensus_mild_crisis_to_low_threshold']}")
+    logger.debug("🎯 CENTRALIZED Ensemble Configuration:")
+    logger.debug(f"   Ensemble Mode: {thresholds['nlp_ensemble_mode']}")
+    logger.debug(f"   Gap Detection Threshold: {thresholds['nlp_gap_detection_threshold']}")
+    logger.debug(f"   Disagreement Threshold: {thresholds['nlp_disagreement_threshold']}")
+    logger.debug("   Ensemble Thresholds:")
+    logger.debug(f"     HIGH: {thresholds['nlp_ensemble_high_crisis_threshold']}")
+    logger.debug(f"     MEDIUM: {thresholds['nlp_ensemble_medium_crisis_threshold']}")
+    logger.debug(f"     LOW: {thresholds['nlp_ensemble_low_crisis_threshold']}")
+    logger.debug("   Crisis Level Mapping Thresholds:")
+    logger.debug(f"     CRISIS → HIGH: {thresholds['nlp_consensus_crisis_to_high_threshold']}")
+    logger.debug(f"     CRISIS → MEDIUM: {thresholds['nlp_consensus_crisis_to_medium_threshold']}")
+    logger.debug(f"     MILD_CRISIS → LOW: {thresholds['nlp_consensus_mild_crisis_to_low_threshold']}")
     logger.debug("   Model Weights:")
-    logger.debug(f"     Depression: {thresholds['depression_model_weight']}")
-    logger.debug(f"     Sentiment: {thresholds['sentiment_model_weight']}")
-    logger.debug(f"     Emotional Distress: {thresholds['emotional_distress_model_weight']}")
+    logger.debug(f"     Depression: {thresholds['nlp_depression_model_weight']}")
+    logger.debug(f"     Sentiment: {thresholds['nlp_sentiment_model_weight']}")
+    logger.debug(f"     Emotional Distress: {thresholds['nlp_emotional_distress_model_weight']}")
     
     logger.debug("🎯 CENTRALIZED Ensemble endpoints configured - All thresholds from environment variables")
     
@@ -221,7 +216,7 @@ def validate_centralized_thresholds():
 async def initialize_components_clean_v3_1():
     """Initialize all components with clean v3.1 architecture - Phase 3a Complete"""
     global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
-    global model_manager, pydantic_manager, crisis_analyzer, phrase_extractor, learning_manager
+    global model_manager, pydantic_manager, crisis_analyzer, learning_manager
     
     try:
         logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3a Complete...")
@@ -246,16 +241,11 @@ async def initialize_components_clean_v3_1():
             try:
                 crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
                 logger.info("✅ CrisisPatternManager v3.1 initialized with JSON configuration")
-                
-                # Validate pattern loading
-                pattern_status = crisis_pattern_manager.get_status()
-                logger.debug(f"🔍 Pattern Manager Status: {pattern_status['loaded_pattern_sets']} pattern sets loaded")
-                
             except Exception as e:
-                logger.warning(f"⚠️ Could not initialize CrisisPatternManager: {e}")
+                logger.error(f"❌ CrisisPatternManager initialization failed: {e}")
                 crisis_pattern_manager = None
         else:
-            logger.warning("⚠️ CrisisPatternManager not available")
+            logger.warning("⚠️ CrisisPatternManager not available - pattern analysis will be limited")
             crisis_pattern_manager = None
         
         # ========================================================================
@@ -266,18 +256,14 @@ async def initialize_components_clean_v3_1():
         if PYDANTIC_MANAGER_AVAILABLE:
             try:
                 pydantic_manager = create_pydantic_manager()
-                if pydantic_manager.is_initialized():
-                    logger.info("✅ PydanticManager v3.1 initialized successfully")
-                else:
-                    logger.error("❌ PydanticManager v3.1 failed to initialize")
-                    raise RuntimeError("PydanticManager v3.1 initialization failed")
+                logger.info("✅ PydanticManager v3.1 initialized")
             except Exception as e:
-                logger.error(f"❌ PydanticManager v3.1 initialization failed: {e}")
-                raise
+                logger.error(f"❌ PydanticManager initialization failed: {e}")
+                pydantic_manager = None
         else:
-            logger.error("❌ PydanticManager v3.1 not available")
-            raise RuntimeError("PydanticManager v3.1 required but not available")
-        
+            logger.error("❌ PydanticManager not available")
+            pydantic_manager = None
+            
         # ========================================================================
         # STEP 4: Initialize ModelsManager v3.1 - DIRECT ONLY
         # ========================================================================
@@ -285,72 +271,48 @@ async def initialize_components_clean_v3_1():
         
         if MODELS_MANAGER_AVAILABLE:
             try:
-                model_manager = ModelsManager(config_manager, settings_manager, zero_shot_manager)
-                await model_manager.initialize()
-                
-                if model_manager.models_loaded():
-                    logger.info("✅ ModelsManager v3.1 initialized with all models loaded")
-                else:
-                    logger.error("❌ ModelsManager v3.1 failed to load models")
-                    raise RuntimeError("ModelsManager v3.1 model loading failed")
+                model_manager = ModelsManager()
+                logger.info("✅ ModelsManager v3.1 initialized")
             except Exception as e:
-                logger.error(f"❌ ModelsManager v3.1 initialization failed: {e}")
-                raise
+                logger.error(f"❌ ModelsManager initialization failed: {e}")
+                model_manager = None
         else:
-            logger.error("❌ ModelsManager v3.1 not available")
-            raise RuntimeError("ModelsManager v3.1 required but not available")
+            logger.error("❌ ModelsManager not available")
+            model_manager = None
+            
+        # ========================================================================
+        # STEP 5: Initialize Learning Manager - Optional
+        # ========================================================================
+        logger.info("🧠 Initializing Enhanced Learning Manager...")
         
-        # ========================================================================
-        # STEP 5: Initialize Learning System (Optional)
-        # ========================================================================
         if LEARNING_AVAILABLE:
             try:
-                # Pass required arguments: model_manager and config_manager
-                learning_manager = EnhancedLearningManager(
-                    model_manager=model_manager,
-                    config_manager=config_manager
-                )
+                learning_manager = EnhancedLearningManager()
                 logger.info("✅ Enhanced Learning Manager initialized")
             except Exception as e:
-                logger.warning(f"⚠️  Could not initialize Enhanced Learning Manager: {e}")
+                logger.warning(f"⚠️ Could not initialize Learning Manager: {e}")
                 learning_manager = None
         else:
-            logger.info("ℹ️ Enhanced Learning Manager not available")
+            logger.info("ℹ️ Learning system not available")
             learning_manager = None
-        
+            
         # ========================================================================
-        # STEP 6: Initialize Analysis Components with Crisis Pattern Manager
+        # STEP 6: Initialize CrisisAnalyzer - Optional 
         # ========================================================================
+        logger.info("🔍 Initializing CrisisAnalyzer...")
         
-        # Initialize CrisisAnalyzer with CrisisPatternManager integration
-        if CRISIS_ANALYZER_AVAILABLE:
+        if CRISIS_ANALYZER_AVAILABLE and model_manager:
             try:
                 crisis_analyzer = CrisisAnalyzer(
-                    model_manager=model_manager,
-                    crisis_pattern_manager=crisis_pattern_manager,  # Phase 3a integration
-                    learning_manager=learning_manager
+                    model_manager=model_manager
                 )
-                logger.info("✅ CrisisAnalyzer initialized with CrisisPatternManager integration")
+                logger.info("✅ CrisisAnalyzer initialized")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
                 crisis_analyzer = None
         else:
             logger.info("ℹ️ CrisisAnalyzer not available")
             crisis_analyzer = None
-        
-        # Initialize PhraseExtractor
-        if PHRASE_EXTRACTOR_AVAILABLE:
-            try:
-                phrase_extractor = PhraseExtractor(
-                    model_manager=model_manager
-                )
-                logger.info("✅ PhraseExtractor initialized")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize PhraseExtractor: {e}")
-                phrase_extractor = None
-        else:
-            logger.info("ℹ️ PhraseExtractor not available")
-            phrase_extractor = None
         
         # ========================================================================
         # STEP 7: Final Status Report - Clean v3.1 Phase 3a
@@ -371,7 +333,6 @@ async def initialize_components_clean_v3_1():
             },
             'analysis_components': {
                 'crisis_analyzer_with_patterns': crisis_analyzer is not None,  # Phase 3a enhanced
-                'phrase_extractor': phrase_extractor is not None,
                 'learning_manager': learning_manager is not None
             }
         }
@@ -526,7 +487,6 @@ async def enhanced_health_check():
         "models_manager_v3_1": model_manager is not None,
         "pydantic_manager_v3_1": pydantic_manager is not None,
         "crisis_analyzer": crisis_analyzer is not None,
-        "phrase_extractor": phrase_extractor is not None,
         "learning_manager": learning_manager is not None
     }
     

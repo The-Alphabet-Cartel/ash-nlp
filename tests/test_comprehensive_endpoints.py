@@ -873,18 +873,21 @@ class ComprehensiveEndpointTester:
         logger.info("\n🔍 TESTING FOR UNDOCUMENTED ENDPOINTS")
         logger.info("=" * 60)
         
-        # Common endpoint patterns to check
+        # Common endpoint patterns to check - CLEANED: Removed confirmed dead endpoints
         potential_endpoints = [
-            ("/analyze_message", "Alternative analysis endpoint"),
-            ("/batch_analysis", "Batch analysis endpoint"),
-            ("/model/status", "Model status endpoint"),
-            ("/config", "General configuration endpoint"),
-            ("/version", "Version information endpoint"),
-            ("/metrics", "Metrics endpoint"),
-            ("/docs", "API documentation endpoint"),
-            ("/openapi.json", "OpenAPI specification"),
-            ("/admin/models/status", "Admin model status"),
-            ("/admin/system/status", "Admin system status")
+            # REMOVED DEAD ENDPOINTS (confirmed 404 by comprehensive testing):
+            # ("/analyze_message", "Alternative analysis endpoint"),    # DEAD - use /analyze
+            # ("/batch_analysis", "Batch analysis endpoint"),          # DEAD - not implemented  
+            # ("/model/status", "Model status endpoint"),              # DEAD - 404
+            # ("/config", "General configuration endpoint"),           # DEAD - use /ensemble/config
+            # ("/version", "Version information endpoint"),            # DEAD - 404
+            # ("/metrics", "Metrics endpoint"),                        # DEAD - 404
+            # ("/docs", "API documentation endpoint"),                 # DEPRECATED - use /openapi.json
+            # ("/admin/models/status", "Admin model status"),          # DEAD - 404
+            # ("/admin/system/status", "Admin system status"),         # DEAD - use /admin/status
+            
+            # Keep only functional endpoints:
+            ("/openapi.json", "OpenAPI specification")
         ]
         
         for endpoint, description in potential_endpoints:
