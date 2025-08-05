@@ -23,6 +23,10 @@ from pydantic import BaseModel
 import logging
 import colorlog
 
+log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
+log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
+
+# Create formatters
 file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(name)s - %(message)s')
 console_formatter = colorlog.ColoredFormatter(
     '%(asctime)s %(log_color)s%(levelname)s%(reset)s: %(blue)s%(name)s%(reset)s - %(message)s',
