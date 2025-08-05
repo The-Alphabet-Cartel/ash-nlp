@@ -1,44 +1,3 @@
-def _test_admin_business_logic_with_actual_sets(self):
-        """Test admin business logic using the actual available label sets"""
-        logger.info(f"🧪 Testing admin business logic with actual label sets...")
-        
-        try:
-            # First get the actual available label sets
-            response = requests.get(f"{BASE_URL}/admin/labels/list", timeout=TIMEOUT)
-            if response.status_code == 200:
-                data = response.json()
-                sets = data.get('sets', [])
-                available_sets = [s.get('name') for s in sets]
-                
-                if len(available_sets) >= 2:
-                    # Test switching between actual available sets
-                    original_set = available_sets[0]
-                    target_set = available_sets[1]
-                    
-                    # Test switch
-                    payload = {"label_set": target_set}
-                    switch_response = requests.post(f"{BASE_URL}/admin/labels/simple-switch", 
-                                                  json=payload, timeout=TIMEOUT)
-                    
-                    if switch_response.status_code == 200:
-                        switch_data = switch_response.json()
-                        if switch_data.get('success', False):
-                            logger.info(f"   ✅ Business logic: Can switch between actual sets ({original_set} → {target_set})")
-                            
-                            # Switch back
-                            requests.post(f"{BASE_URL}/admin/labels/simple-switch", 
-                                        json={"label_set": original_set}, timeout=TIMEOUT)
-                        else:
-                            logger.warning(f"   ⚠️ Business logic: Switch failed for actual sets")
-                    else:
-                        logger.warning(f"   ⚠️ Business logic: Switch returned status {switch_response.status_code}")
-                else:
-                    logger.info(f"   ℹ️ Business logic: Only {len(available_sets)} label sets available, cannot test switching")
-            else:
-                logger.warning(f"   ⚠️ Business logic: Cannot get available sets for testing")
-                
-        except Exception as e:
-            logger.error(f"   ❌ Business logic test failed: {e}")#!/usr/bin/env python3
 """
 Comprehensive Endpoint Test Suite - Phase 3a Validation
 Tests ALL endpoints defined in the Ash-NLP system to ensure functionality, 
@@ -567,6 +526,48 @@ class ComprehensiveEndpointTester:
                 endpoint, 'admin_labels', False,
                 None, str(e), None, "Exception during full label switching test"
             )
+
+    def _test_admin_business_logic_with_actual_sets(self):
+            """Test admin business logic using the actual available label sets"""
+            logger.info(f"🧪 Testing admin business logic with actual label sets...")
+            
+            try:
+                # First get the actual available label sets
+                response = requests.get(f"{BASE_URL}/admin/labels/list", timeout=TIMEOUT)
+                if response.status_code == 200:
+                    data = response.json()
+                    sets = data.get('sets', [])
+                    available_sets = [s.get('name') for s in sets]
+                    
+                    if len(available_sets) >= 2:
+                        # Test switching between actual available sets
+                        original_set = available_sets[0]
+                        target_set = available_sets[1]
+                        
+                        # Test switch
+                        payload = {"label_set": target_set}
+                        switch_response = requests.post(f"{BASE_URL}/admin/labels/simple-switch", 
+                                                      json=payload, timeout=TIMEOUT)
+                        
+                        if switch_response.status_code == 200:
+                            switch_data = switch_response.json()
+                            if switch_data.get('success', False):
+                                logger.info(f"   ✅ Business logic: Can switch between actual sets ({original_set} → {target_set})")
+                                
+                                # Switch back
+                                requests.post(f"{BASE_URL}/admin/labels/simple-switch", 
+                                            json={"label_set": original_set}, timeout=TIMEOUT)
+                            else:
+                                logger.warning(f"   ⚠️ Business logic: Switch failed for actual sets")
+                        else:
+                            logger.warning(f"   ⚠️ Business logic: Switch returned status {switch_response.status_code}")
+                    else:
+                        logger.info(f"   ℹ️ Business logic: Only {len(available_sets)} label sets available, cannot test switching")
+                else:
+                    logger.warning(f"   ⚠️ Business logic: Cannot get available sets for testing")
+                    
+            except Exception as e:
+                logger.error(f"   ❌ Business logic test failed: {e}")#!/usr/bin/env python3
 
     # Note: _test_admin_test_endpoints removed - those endpoints are dead and being removed
 
