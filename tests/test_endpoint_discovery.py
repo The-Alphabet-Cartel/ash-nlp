@@ -129,7 +129,7 @@ class EndpointDiscoveryAnalyzer:
         # Handle parameterized endpoints with test values
         test_endpoint = endpoint
         if '{name}' in endpoint:
-            test_endpoint = endpoint.replace('{name}', 'crisis_mental_health')
+            test_endpoint = endpoint.replace('{name}', 'safety_first')  # FIXED: Use actual label set
         
         result = {
             'method': method,
@@ -225,7 +225,7 @@ class EndpointDiscoveryAnalyzer:
         
         # Label switching
         elif '/labels/switch' in endpoint or '/simple-switch' in endpoint:
-            return {'label_set': 'crisis_mental_health'}
+            return {'label_set': 'safety_first'}  # FIXED: Use actual label set
         
         # Label mapping test
         elif '/test/mapping' in endpoint:
