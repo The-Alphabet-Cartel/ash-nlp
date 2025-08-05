@@ -696,7 +696,8 @@ class ComprehensiveEndpointTester:
                 "context_data": {
                     "channel": "support",
                     "time_of_day": "late_night"
-                }
+                },
+                "timestamp": "2025-08-05T12:00:00Z"
             }
             
             response = requests.post(f"{BASE_URL}{endpoint}", json=payload, timeout=TIMEOUT)
