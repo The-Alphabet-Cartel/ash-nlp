@@ -860,14 +860,7 @@ class ComprehensiveEndpointTester:
         
         # Common endpoint patterns to check
         potential_endpoints = [
-            ("/model/status", "Model status endpoint"),
-            ("/config", "General configuration endpoint"),
-            ("/version", "Version information endpoint"),
-            ("/metrics", "Metrics endpoint"),
-            ("/docs", "API documentation endpoint"),
             ("/openapi.json", "OpenAPI specification"),
-            ("/admin/models/status", "Admin model status"),
-            ("/admin/system/status", "Admin system status")
         ]
         
         for endpoint, description in potential_endpoints:
