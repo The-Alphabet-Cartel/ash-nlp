@@ -9,6 +9,7 @@ Repository: https://github.com/the-alphabet-cartel/ash-nlp
 
 import sys
 import logging
+import colorlog
 import time
 import os
 from contextlib import asynccontextmanager
@@ -16,23 +17,34 @@ from typing import Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-# ============================================================================
-# LOGGING SETUP
-# ============================================================================
-## Set up logging FIRST to catch any import errors
-## !!!Leave this block alone during development!!!
-log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
-log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
+# Create formatters
+file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(name)s - %(message)s')
+console_formatter = colorlog.ColoredFormatter(
+    '%(asctime)s %(log_color)s%(levelname)s%(reset)s: %(blue)s%(name)s%(reset)s - %(message)s',
+    log_colors={
+        'DEBUG':    'cyan',
+        'INFO':     'green',
+        'WARNING':  'yellow',
+        'ERROR':    'red',
+        'CRITICAL': 'red,bg_white',
+    }
+)
+
+# Create handlers
+file_handler = logging.FileHandler(log_file, encoding='utf-8')
+file_handler.setFormatter(file_formatter)
+
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(console_formatter)
+
+# Configure root logger
 logging.basicConfig(
     level=getattr(logging, log_level),
-    format='%(asctime)s %(levelname)s: %(name)s - %(message)s',
-    handlers=[
-        logging.FileHandler(log_file, encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+    handlers=[file_handler, console_handler]
 )
+
 logger = logging.getLogger(__name__)
-logger.info("🚀 Starting Ash NLP Service v3.1 - Clean Architecture (Phase 2C Complete)")
+logger.info("🚀 Starting Ash NLP Service v3.1 - Clean Architecture (Phase 3a Complete)")
 
 # ============================================================================
 # CLEAN V3.1 IMPORTS - Phase 3a Updated with CrisisPatternManager
