@@ -47,8 +47,7 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
 ash/ash-nlp/
 ├── analysis/                                # Analysis components
 │   ├── __init__.py
-│   ├── crisis_analyzer.py
-│   └── phrase_extractor.py
+│   └── crisis_analyzer.py
 ├── api/                                     # API endpoints
 │   ├── __init__.py
 │   ├── admin_endpoints.py

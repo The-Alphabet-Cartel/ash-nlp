@@ -50,7 +50,6 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
     "components_available": {
       "model_manager": true,
       "crisis_analyzer": true,
-      "phrase_extractor": true,
       "enhanced_learning": true,
       "three_model_ensemble": true
     },
@@ -139,7 +138,6 @@ Ash NLP v3.0 provides a RESTful API for mental health crisis detection using a s
   "components_available": {
     "model_manager": true,
     "crisis_analyzer": true,
-    "phrase_extractor": true,
     "enhanced_learning": true,
     "three_model_ensemble": true
   },

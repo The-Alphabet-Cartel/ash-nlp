@@ -120,7 +120,6 @@ curl -X POST http://localhost:8881/analyze \
   "components_available": {
     "model_manager": true,
     "crisis_analyzer": true,
-    "phrase_extractor": true,
     "enhanced_learning": true
   },
   "secrets_status": {
