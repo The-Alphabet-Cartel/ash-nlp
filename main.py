@@ -8,8 +8,6 @@ Repository: https://github.com/the-alphabet-cartel/ash-nlp
 """
 
 import sys
-import logging
-import colorlog
 import time
 import os
 from contextlib import asynccontextmanager
@@ -17,7 +15,14 @@ from typing import Dict, Any, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-# Create formatters
+# ============================================================================
+# LOGGING SETUP
+# ============================================================================
+## Set up logging FIRST to catch any import errors
+## !!!Leave this block alone during development!!!
+import logging
+import colorlog
+
 file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(name)s - %(message)s')
 console_formatter = colorlog.ColoredFormatter(
     '%(asctime)s %(log_color)s%(levelname)s%(reset)s: %(blue)s%(name)s%(reset)s - %(message)s',
@@ -33,7 +38,6 @@ console_formatter = colorlog.ColoredFormatter(
 # Create handlers
 file_handler = logging.FileHandler(log_file, encoding='utf-8')
 file_handler.setFormatter(file_formatter)
-
 console_handler = logging.StreamHandler()
 console_handler.setFormatter(console_formatter)
 
