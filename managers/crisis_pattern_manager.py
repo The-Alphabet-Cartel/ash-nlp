@@ -644,6 +644,13 @@ class CrisisPatternManager:
             'pattern_counts': {}
         }
         
+        # Known configuration keys that might accidentally appear in patterns section
+        config_keys_to_skip = {
+            'weight_multiplier', 'boost_multiplier', 'enabled', 'threshold',
+            'confidence_threshold', 'priority_level', 'escalation_enabled',
+            'auto_escalate', 'staff_alert', 'requires_attention'
+        }
+        
         for pattern_type, patterns in self._patterns_cache.items():
             try:
                 if not patterns:
@@ -653,24 +660,58 @@ class CrisisPatternManager:
                 pattern_groups = patterns.get('patterns', {})
                 total_patterns = 0
                 
+                if not pattern_groups:
+                    validation_result['warnings'].append(f"No patterns found in {pattern_type}")
+                    validation_result['pattern_counts'][pattern_type] = 0
+                    continue
+                
+                # FIXED: Skip configuration values that leaked into patterns section
                 for group_name, group_data in pattern_groups.items():
+                    # Skip known configuration keys
+                    if group_name in config_keys_to_skip:
+                        logger.debug(f"⚠️ Skipping config value in patterns: {group_name} = {group_data}")
+                        continue
+                    
+                    # Only process actual pattern groups (dictionaries)
+                    if not isinstance(group_data, dict):
+                        logger.warning(f"⚠️ Skipping non-dict pattern group: {group_name} ({type(group_data).__name__})")
+                        continue
+                    
+                    # Count patterns in this group
                     group_patterns = group_data.get('patterns', [])
                     if isinstance(group_patterns, list):
                         total_patterns += len(group_patterns)
                     elif isinstance(group_patterns, dict):
                         total_patterns += len(group_patterns)
+                    elif group_patterns:  # Non-empty value
+                        total_patterns += 1
                 
                 validation_result['pattern_counts'][pattern_type] = total_patterns
                 
                 if total_patterns == 0:
                     validation_result['warnings'].append(f"No patterns found in {pattern_type}")
+                else:
+                    logger.debug(f"✅ {pattern_type}: {total_patterns} patterns validated")
                 
             except Exception as e:
-                validation_result['errors'].append(f"Validation error in {pattern_type}: {e}")
+                error_msg = f"Validation error in {pattern_type}: {e}"
+                validation_result['errors'].append(error_msg)
                 validation_result['valid'] = False
+                logger.error(f"❌ {error_msg}")
+        
+        # Log summary
+        total_errors = len(validation_result['errors'])
+        total_warnings = len(validation_result['warnings'])
+        total_patterns = sum(validation_result['pattern_counts'].values())
+        
+        if total_errors == 0:
+            logger.info(f"✅ Pattern validation successful: {total_patterns} patterns across {len(validation_result['pattern_counts'])} sets")
+            if total_warnings > 0:
+                logger.info(f"⚠️ {total_warnings} warnings (non-critical)")
+        else:
+            logger.error(f"❌ Pattern validation failed: {total_errors} errors, {total_warnings} warnings")
         
         return validation_result
-
 
 def create_crisis_pattern_manager(config_manager: ConfigManager) -> CrisisPatternManager:
     """
