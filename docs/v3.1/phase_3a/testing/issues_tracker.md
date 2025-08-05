@@ -303,10 +303,13 @@ Logs show some warnings about "Skipping non-dict pattern" but this doesn't affec
 - [x] ✅ **Fix 3**: Remove incorrect async/await usage
 - [x] ✅ **Fix 4**: Simplified missing methods using existing ZeroShotManager functionality
 - [x] ✅ **Fix 5**: Fixed variable scope issues in admin endpoints
-- [x] ✅ **MILESTONE**: **Admin label switching functionality RESTORED**
-- [ ] 🔧 **Next**: Fix remaining endpoint accessibility issues (4 dead endpoints)
-- [ ] 🔧 **Next**: Fix Phase 3a integration reporting 
-- [ ] ✅ **Final**: Re-run comprehensive test to verify all fixes
+- [x] ✅ **Fix 6**: Fixed crisis pattern manager reporting in admin status
+- [x] ✅ **Fix 7**: Updated test endpoints to use correct label set names
+- [x] ✅ **MILESTONE**: **Admin functionality RESTORED - 83.3% success rate!**
+- [x] ✅ **MILESTONE**: **Crisis pattern integration confirmed - 9 patterns loaded**
+- [ ] 🧹 **Next**: Clean up 13-14 dead endpoints from codebase  
+- [ ] 🔧 **Next**: Fix remaining label switching test issues
+- [ ] ✅ **Final**: System health improved from 32.4% to 47.1% overall
 
 ---
 
