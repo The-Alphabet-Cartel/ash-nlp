@@ -21,46 +21,74 @@
     "staff_notification_required": true
   },
   "patterns": {
+    "suicidal_ideation_regex": {
+      "crisis_level": "high",
+      "category": "suicidal_ideation_flexible",
+      "description": "Regex-based suicidal ideation patterns that handle apostrophe variations",
+      "patterns": [
+        {
+          "pattern": "\\bdon'?t want to be here\\b",
+          "type": "regex",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true,
+          "description": "Matches both 'don't' and 'dont'"
+        },
+        {
+          "pattern": "\\bdon'?t want to exist\\b",
+          "type": "regex",
+          "weight": 1.0,
+          "urgency": "critical", 
+          "auto_escalate": true,
+          "description": "Matches both 'don't' and 'dont'"
+        },
+        {
+          "pattern": "\\bdon'?t want to wake up\\b",
+          "type": "regex",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true,
+          "description": "Matches both 'don't' and 'dont'"
+        },
+        {
+          "pattern": "\\bcan'?t take it anymore\\b",
+          "type": "regex",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true,
+          "description": "Matches both 'can't' and 'cant'"
+        },
+        {
+          "pattern": "\\bwon'?t be able\\b",
+          "type": "regex",
+          "weight": 0.7,
+          "urgency": "medium",
+          "auto_escalate": false,
+          "description": "Matches both 'won't' and 'wont'"
+        },
+        {
+          "pattern": "\\bisn'?t worth it\\b",
+          "type": "regex",
+          "weight": 0.8,
+          "urgency": "high",
+          "auto_escalate": true,
+          "description": "Matches both 'isn't' and 'isnt'"
+        },
+        {
+          "pattern": "\\baren'?t better off\\b",
+          "type": "regex",
+          "weight": 0.7,
+          "urgency": "medium",
+          "auto_escalate": false,
+          "description": "Matches both 'aren't' and 'arent'"
+        }
+      ]
+    },
     "suicide_expressions": {
       "crisis_level": "critical",
       "category": "direct_suicide_expression",
       "description": "Direct expressions of suicidal intent requiring immediate intervention",
       "patterns": [
-        {
-          "pattern": "don't want to be here",
-          "type": "exact_match",
-          "weight": 0.9,
-          "urgency": "high",
-          "auto_escalate": true
-        },
-        {
-          "pattern": "don't want to exist",
-          "type": "exact_match",
-          "weight": 1.0,
-          "urgency": "critical",
-          "auto_escalate": true
-        },
-        {
-          "pattern": "wish I was dead",
-          "type": "exact_match",
-          "weight": 0.9,
-          "urgency": "high",
-          "auto_escalate": true
-        },
-        {
-          "pattern": "wish I wasn't alive",
-          "type": "exact_match",
-          "weight": 0.9,
-          "urgency": "high",
-          "auto_escalate": true
-        },
-        {
-          "pattern": "don't want to wake up",
-          "type": "exact_match",
-          "weight": 0.8,
-          "urgency": "high",
-          "auto_escalate": true
-        },
         {
           "pattern": "want to disappear",
           "type": "exact_match",
