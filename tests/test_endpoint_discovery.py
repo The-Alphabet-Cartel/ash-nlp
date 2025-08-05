@@ -41,7 +41,6 @@ class EndpointDiscoveryAnalyzer:
             # Core Analysis Endpoints
             'core_analysis': [
                 ('POST', '/analyze', 'Three-model ensemble analysis'),
-                ('POST', '/extract_phrases', 'Crisis phrase extraction'),
                 ('POST', '/analyze_message', 'Alternative analysis endpoint (potential)'),
                 ('POST', '/batch_analysis', 'Batch analysis endpoint (potential)')
             ],
@@ -212,15 +211,6 @@ class EndpointDiscoveryAnalyzer:
                 'message': 'Test message for analysis',
                 'user_id': 'test_user',
                 'channel_id': 'test_channel'
-            }
-        
-        # Extract phrases
-        elif '/extract_phrases' in endpoint:
-            return {
-                'message': 'Test message for phrase extraction',
-                'user_id': 'test_user',
-                'channel_id': 'test_channel',
-                'parameters': {'min_phrase_length': 2, 'max_phrase_length': 6}
             }
         
         # Label switching
