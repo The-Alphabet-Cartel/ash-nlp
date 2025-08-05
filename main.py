@@ -7,6 +7,7 @@ CRITICAL UPDATE: Three Zero-Shot Model Ensemble Integration with Crisis Pattern 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 """
 
+import logging
 import sys
 import time
 import os
@@ -20,7 +21,6 @@ from pydantic import BaseModel
 # ============================================================================
 ## Set up logging FIRST to catch any import errors
 ## !!!Leave this block alone during development!!!
-import logging
 import colorlog
 
 log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
@@ -36,7 +36,7 @@ console_formatter = colorlog.ColoredFormatter(
         'WARNING':  'yellow',
         'ERROR':    'red',
         'CRITICAL': 'red,bg_white',
-    }
+    },
 )
 
 # Create handlers
