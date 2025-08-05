@@ -90,6 +90,13 @@
       "description": "Direct expressions of suicidal intent requiring immediate intervention",
       "patterns": [
         {
+          "pattern": "dont want to be here",
+          "type": "exact_match",
+          "weight": 0.9,
+          "urgency": "high",
+          "auto_escalate": true
+        },
+        {
           "pattern": "want to disappear",
           "type": "exact_match",
           "weight": 0.7,
