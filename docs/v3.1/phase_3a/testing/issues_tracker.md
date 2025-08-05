@@ -57,17 +57,16 @@ The core concern about losing admin functionality is **CONFIRMED**. Almost all a
 ### 💀 **DEAD ENDPOINTS** (Remove from Codebase)
 > **Action**: Safe to remove - these don't exist in the current implementation
 
-1. `POST /extract_phrases` - Not implemented
-2. `GET /stats` - Dead (use `/admin/labels/status` instead)
-3. `GET /status` - Dead (use `/health` instead)  
-4. `POST /analyze_message` - Dead (use `/analyze` instead)
-5. `POST /batch_analysis` - Not implemented
-6. `GET /model/status` - Dead
-7. `GET /config` - Dead (use `/ensemble/config` or `/admin/labels/config`)
-8. `GET /version` - Dead 
-9. `GET /metrics` - Dead
-10. `GET /admin/models/status` - Dead
-11. `GET /admin/system/status` - Dead (use `/admin/status`)
+1. `GET /stats` - Dead (use `/admin/labels/status` instead)
+2. `GET /status` - Dead (use `/health` instead)  
+3. `POST /analyze_message` - Dead (use `/analyze` instead)
+4. `POST /batch_analysis` - Not implemented
+5. `GET /model/status` - Dead
+6. `GET /config` - Dead (use `/ensemble/config` or `/admin/labels/config`)
+7. `GET /version` - Dead 
+8. `GET /metrics` - Dead
+9. `GET /admin/models/status` - Dead
+10. `GET /admin/system/status` - Dead (use `/admin/status`)
 
 ---
 
