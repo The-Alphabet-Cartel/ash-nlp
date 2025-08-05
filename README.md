@@ -110,8 +110,8 @@ Key configuration options in `.env`:
 ```bash
 # Three-Model Configuration
 NLP_DEPRESSION_MODEL=MoritzLaurer/deberta-v3-base-zeroshot-v2.0
-NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
-NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
+NLP_SENTIMENT_MODEL=MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
+NLP_EMOTIONAL_DISTRESS_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
 
 # Ensemble Configuration
 NLP_ENSEMBLE_MODE=weighted  # consensus, majority, weighted
