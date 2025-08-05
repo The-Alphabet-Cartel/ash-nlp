@@ -33,13 +33,13 @@ Version 3.0 introduces a groundbreaking **Three Zero-Shot Model Ensemble system*
    - Primary crisis assessment engine
 
 2. **Sentiment Analysis Model** 💭
-   - `Lowerated/lm6-deberta-v3-topic-sentiment`
+   - `MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`
    - DeBERTa-based contextual sentiment analysis
    - Validates and enhances primary detection
 
 3. **Emotional Distress Model** 😰
-   - `facebook/bart-large-mnli`
-   - BART-based emotional state detection
+   - `Lowerated/lm6-deberta-v3-topic-sentiment`
+   - DeBERTa-based emotional state detection
    - Additional validation and edge case detection
 
 ---
@@ -140,7 +140,7 @@ Add these to your `.env` file:
 
 ```bash
 # Three-Model Configuration
-NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
+NLP_EMOTIONAL_DISTRESS_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
 
 # Ensemble Configuration
 NLP_ENSEMBLE_MODE=weighted
