@@ -30,7 +30,7 @@
       }
     },
     "sentiment": {
-      "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+      "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
       "type": "DeBERTa-based sentiment analysis",
       "architecture": "deberta-v3-base",
       "purpose": "Contextual validation and emotional tone analysis",
@@ -50,9 +50,9 @@
       }
     },
     "emotional_distress": {
-      "name": "facebook/bart-large-mnli",
-      "type": "BART-based emotional classification",
-      "architecture": "bart-large",
+      "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+      "type": "DeBERTa-based emotional classification",
+      "architecture": "deberta-v3-base",
       "purpose": "Emotional distress and stress detection",
       "specialization": "General emotional distress and mental strain",
       "weight": "${NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT}",
