@@ -92,7 +92,7 @@ deploy:
 docker exec ash-nlp env | grep NLP_
 
 # Common missing variables:
-NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
+NLP_EMOTIONAL_DISTRESS_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
 NLP_ENSEMBLE_MODE=weighted
 ```
 
@@ -454,7 +454,7 @@ print(model('I am feeling down'))
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('sentiment-analysis',
-                model='Lowerated/lm6-deberta-v3-topic-sentiment',
+                model='MoritzLaurer/mDeBERTa-v3-base-mnli-xnli',
                 device=0)
 print(model('I am feeling down'))
 "
@@ -463,7 +463,7 @@ print(model('I am feeling down'))
 docker exec ash-nlp python -c "
 from transformers import pipeline
 model = pipeline('sentiment-analysis',
-                model='facebook/bart-large-mnli',
+                model='Lowerated/lm6-deberta-v3-topic-sentiment',
                 device=0)
 print(model('I am feeling down'))
 "
