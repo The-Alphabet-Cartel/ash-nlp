@@ -554,19 +554,6 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_
             raise HTTPException(status_code=500, detail=f"Fixed v3.1 reload error: {str(e)}")
 
     # ========================================================================
-    # REMOVED DEAD ENDPOINTS
-    # These endpoints were calling non-existent methods and aren't essential
-    # ========================================================================
-    
-    # REMOVED: @app.post("/admin/labels/test/mapping") 
-    # - Called zero_shot_manager.map_depression_label() which doesn't exist
-    # - Not essential for core admin functionality
-    
-    # REMOVED: @app.post("/admin/labels/test/comprehensive")
-    # - Called zero_shot_manager.get_current_label_set_name() (wrong method name)
-    # - Test functionality can be handled by external test scripts
-    
-    # ========================================================================
     # ENDPOINT REGISTRATION COMPLETE - FIXED
     # ========================================================================
     
