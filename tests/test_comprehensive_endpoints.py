@@ -15,7 +15,7 @@ This test validates:
 7. Integration between components functions properly
 
 Categories tested:
-- Core Analysis (analyze, extract_phrases)
+- Core Analysis (analyze)
 - Health & Status (health, stats, status)
 - Admin/Label Management (all admin/* endpoints)
 - Ensemble Configuration (ensemble/* endpoints)
@@ -205,9 +205,6 @@ class ComprehensiveEndpointTester:
         # Test /analyze endpoint
         self._test_analyze_endpoint()
         
-        # Test /extract_phrases endpoint (if exists)
-        self._test_extract_phrases_endpoint()
-
     def _test_analyze_endpoint(self):
         """Test the main /analyze endpoint with various message types"""
         endpoint = "/analyze"
@@ -269,18 +266,6 @@ class ComprehensiveEndpointTester:
                 endpoint, 'core_analysis', False,
                 None, str(e), None, "Exception during testing"
             )
-
-    def _test_extract_phrases_endpoint(self):
-        """Test the /extract_phrases endpoint if it exists"""
-        endpoint = "/extract_phrases"
-        logger.info(f"🧪 Testing {endpoint}...")
-        
-        # This endpoint was confirmed to not be implemented - mark as known dead
-        logger.info(f"   💀 {endpoint}: Confirmed not implemented (removing from codebase)")
-        self.results.add_result(
-            endpoint, 'core_analysis', False,
-            404, "Endpoint not implemented", None, "Confirmed dead - safe to remove references"
-        )
 
     # ========================================================================
     # HEALTH & STATUS ENDPOINT TESTS
