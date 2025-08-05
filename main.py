@@ -271,7 +271,7 @@ async def initialize_components_clean_v3_1():
         
         if MODELS_MANAGER_AVAILABLE:
             try:
-                model_manager = ModelsManager()
+                model_manager = ModelsManager(config_manager)
                 logger.info("✅ ModelsManager v3.1 initialized")
             except Exception as e:
                 logger.error(f"❌ ModelsManager initialization failed: {e}")
@@ -285,9 +285,9 @@ async def initialize_components_clean_v3_1():
         # ========================================================================
         logger.info("🧠 Initializing Enhanced Learning Manager...")
         
-        if LEARNING_AVAILABLE:
+        if LEARNING_AVAILABLE and model_manager:
             try:
-                learning_manager = EnhancedLearningManager()
+                learning_manager = EnhancedLearningManager(model_manager, config_manager)
                 logger.info("✅ Enhanced Learning Manager initialized")
             except Exception as e:
                 logger.warning(f"⚠️ Could not initialize Learning Manager: {e}")
