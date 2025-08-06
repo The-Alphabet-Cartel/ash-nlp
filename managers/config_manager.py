@@ -464,7 +464,7 @@ class ConfigManager:
             'learning_system': {
                 'enabled': os.getenv('GLOBAL_ENABLE_LEARNING_SYSTEM', 'true').lower() == 'true',
                 'learning_rate': float(os.getenv('NLP_LEARNING_RATE', '0.1')),
-                'max_adjustments_per_day': int(os.getenv('NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'))
+                'max_adjustments_per_day': int(os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', '50'))
             }
         }
     
