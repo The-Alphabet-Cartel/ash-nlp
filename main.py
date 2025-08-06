@@ -293,18 +293,22 @@ async def initialize_components_clean_v3_1():
             raise
         
         # ========================================================================
-        # STEP 4: Initialize CrisisPatternManager - Phase 3a
+        # STEP 4: Initialize CrisisPatternManager - Phase 3a (FIXED)
         # ========================================================================
         logger.info("🔍 Initializing CrisisPatternManager - Phase 3a...")
-        
+
         try:
             from managers.crisis_pattern_manager import create_crisis_pattern_manager
             crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
             
-            # Test pattern loading
+            # Test pattern loading - FIXED: Use pattern_status correctly
             pattern_status = crisis_pattern_manager.get_status()
             if pattern_status:
-                logger.info(f"✅ CrisisPatternManager v3.1 initialized with {len(available_patterns)} pattern categories")
+                # FIXED: Use pattern_status data instead of undefined available_patterns
+                pattern_count = pattern_status.get('loaded_pattern_sets', 0)
+                available_types = pattern_status.get('available_pattern_types', [])
+                logger.info(f"✅ CrisisPatternManager v3.1 initialized with {pattern_count} pattern sets")
+                logger.debug(f"📋 Available pattern types: {available_types}")
             else:
                 logger.warning("⚠️ CrisisPatternManager initialized but no patterns loaded")
                 
