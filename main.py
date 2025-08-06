@@ -155,10 +155,17 @@ async def initialize_components_clean_v3_1():
             # Validate patterns loaded using correct methods
             pattern_status = crisis_pattern_manager.get_status()
             validation_result = crisis_pattern_manager.validate_patterns()
-            
-            logger.info(f"✅ CrisisPatternManager initialized with {len(available_patterns)} patterns")
-            logger.debug(f"📋 Pattern categories: {pattern_categories}")
-            
+
+            loaded_sets = pattern_status.get('loaded_pattern_sets', 0)
+            total_patterns = sum(validation_result.get('pattern_counts', {}).values())
+            pattern_types = list(validation_result.get('pattern_counts', {}).keys())
+
+            logger.info(f"✅ CrisisPatternManager initialized with {total_patterns} patterns across {loaded_sets} pattern sets")
+            logger.debug(f"📋 Pattern types: {pattern_types}")
+
+            if not validation_result.get('valid', False):
+                logger.warning(f"⚠️ Pattern validation issues: {validation_result.get('errors', [])}")
+
         except Exception as e:
             logger.error(f"❌ Failed to initialize CrisisPatternManager: {e}")
             raise RuntimeError(f"CrisisPatternManager v3.1 initialization failed: {e}")
@@ -343,10 +350,14 @@ def _log_phase_3c_status_summary():
         
         # Report Pattern Manager Status
         if crisis_pattern_manager:
-            available_patterns = crisis_pattern_manager.get_available_patterns()
-            pattern_categories = crisis_pattern_manager.get_pattern_categories()
-            logger.info(f"🔍 Crisis Patterns: {len(available_patterns)} patterns across {len(pattern_categories)} categories")
-        
+            pattern_status = crisis_pattern_manager.get_status()
+            validation_result = crisis_pattern_manager.validate_patterns()
+            
+            loaded_sets = pattern_status.get('loaded_pattern_sets', 0)
+            total_patterns = sum(validation_result.get('pattern_counts', {}).values())
+            
+            logger.info(f"🔍 Crisis Patterns: {total_patterns} patterns across {loaded_sets} pattern sets")
+
         # Report CrisisAnalyzer Status
         if crisis_analyzer:
             config_summary = crisis_analyzer.get_configuration_summary()
