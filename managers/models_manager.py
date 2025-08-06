@@ -150,11 +150,11 @@ class ModelsManager:
                 'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR') or os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or './models/cache',
                 'huggingface_token': hf_token,
                 'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
-                'depression_weight': float(os.getenv('NLP_DEPRESSION_MODEL_WEIGHT', '0.5')),
-                'sentiment_weight': float(os.getenv('NLP_SENTIMENT_MODEL_WEIGHT', '0.2')),
-                'emotional_distress_weight': float(os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT', '0.3')),
+                'depression_weight': float(os.getenv('NLP_MODEL_WEIGHT_DEPRESSION', '0.5')),
+                'sentiment_weight': float(os.getenv('NLP_MODEL_WEIGHT_SENTIMENT', '0.2')),
+                'emotional_distress_weight': float(os.getenv('NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS', '0.3')),
                 'gap_detection_enabled': os.getenv('NLP_GAP_DETECTION_ENABLED', 'true').lower() == 'true',
-                'disagreement_threshold': int(os.getenv('NLP_DISAGREEMENT_THRESHOLD', '2'))
+                'disagreement_threshold': int(os.getenv('NLP_THRESHOLD_GAP_DISAGREEMENT', '2'))
             }
     
     def _get_huggingface_token(self) -> Optional[str]:
