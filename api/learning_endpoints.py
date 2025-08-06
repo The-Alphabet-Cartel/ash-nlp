@@ -74,11 +74,11 @@ class EnhancedLearningManager:
                 ls_config = learning_config_raw.get("learning_system", {})
                 
                 # Load basic parameters from environment (with JSON fallbacks)
-                self.learning_data_path = os.getenv('NLP_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
+                self.learning_data_path = os.getenv('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
                 self.learning_rate = float(os.getenv('NLP_LEARNING_RATE', str(ls_config.get('learning_rate', 0.1))))
-                self.min_adjustment = float(os.getenv('NLP_MIN_CONFIDENCE_ADJUSTMENT', str(ls_config.get('min_confidence_adjustment', 0.05))))
-                self.max_adjustment = float(os.getenv('NLP_MAX_CONFIDENCE_ADJUSTMENT', str(ls_config.get('max_confidence_adjustment', 0.30))))
-                self.max_adjustments_per_day = int(os.getenv('NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', str(ls_config.get('max_adjustments_per_day', 50))))
+                self.min_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', str(ls_config.get('min_confidence_adjustment', 0.05))))
+                self.max_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', str(ls_config.get('max_confidence_adjustment', 0.30))))
+                self.max_adjustments_per_day = int(os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', str(ls_config.get('max_adjustments_per_day', 50))))
                 
                 # Load sensitivity bounds from JSON with environment overrides
                 sensitivity_bounds = ls_config.get('sensitivity_bounds', {})
@@ -110,11 +110,11 @@ class EnhancedLearningManager:
     
     def _load_from_environment_only(self):
         """Load configuration from environment variables only - Clean v3.1 fallback"""
-        self.learning_data_path = os.getenv('NLP_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
+        self.learning_data_path = os.getenv('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
         self.learning_rate = float(os.getenv('NLP_LEARNING_RATE', '0.1'))
-        self.min_adjustment = float(os.getenv('NLP_MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
-        self.max_adjustment = float(os.getenv('NLP_MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
-        self.max_adjustments_per_day = int(os.getenv('NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'))
+        self.min_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
+        self.max_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
+        self.max_adjustments_per_day = int(os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', '50'))
         
         # Clean v3.1 defaults
         self.min_global_sensitivity = float(os.getenv('NLP_MIN_GLOBAL_SENSITIVITY', '0.5'))
