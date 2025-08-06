@@ -17,12 +17,20 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
 ### 🎯 **Configuration Management Philosophy**
 - **GitHub Is The Central Source Of Everything!**
   - ALL project knowledge, files, and directory structures are found here.
-  - We are working from the `ash` repository
-    - We are working from the `v3.0` branch for `ash`
+  - We are working from the `ash` repository.
+    - We are working from the `v3.0` branch for `ash`.
     - https://github.com/The-Alphabet-Cartel/ash/tree/v3.0
-  - We are working from the `ash-nlp` repository
-    - We are working from the `v3.1` branch for `ash-nlp`
+  - We are working from the `ash-nlp` repository.
+    - We are working from the `v3.1` branch for `ash-nlp`.
     - https://github.com/The-Alphabet-Cartel/ash-nlp/tree/v3.1
+  - We keep track of progress for each phase in the associated tracker document.
+    - These files are to be kept up to date with each milestone reached so that future work can be continued from them as needed.
+    - For phase 3b we are working with the documentation files:
+      - `docs/project_instructions_v3_1.md`
+      - `docs/v3.1/migration_guide_v3_1.md`
+      - `docs/v3.1/3b/3b_tracker.md`
+      - `docs/v3.1/3b/3b_issues_tracker.md`
+      - `docs/v3.1/3b/testing/3b_testing_tracker.md`
 
 ### 🏗️ **Clean v3.1 Architecture Principles**
 - **Dependency Injection**
@@ -74,18 +82,20 @@ ash/ash-nlp/
 │   └── __init__.py
 ├── docs/                                    # Documentation
 │   ├── v3.1/
-│   │   ├── phase_3a/
+│   │   ├── 3a/
 │   │   │   ├── testing/
 │   │   │   |   └── 3a_testing_tracker.md
 │   │   │   └── 3a_issue_tracker.md
-│   │   ├── phase_3b/
+│   │   ├── 3b/
 │   │   │   ├── testing/
 │   │   │   |   └── 3b_testing_tracker.md
-│   │   │   └── 3b_issue_tracker.md
-│   │   ├── phase_3c/
+│   │   │   ├── 3b_issue_tracker.md
+│   │   │   └── 3b_tracker.md
+│   │   ├── 3c/
 │   │   │   ├── testing/
 │   │   │   |   └── 3c_testing_tracker.md
-│   │   │   └── 3c_issue_tracker.md
+│   │   │   ├── 3b_issue_tracker.md
+│   │   │   └── 3c_tracker.md
 │   │   └── migration_guide_v3_1.md
 │   └── project_instructions_v3_1.md
 ├── learning_data/                           # Learning Data Storage
