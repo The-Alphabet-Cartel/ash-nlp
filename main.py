@@ -26,6 +26,44 @@ from managers.pydantic_manager import PydanticManager
 from managers.models_manager import ModelsManager
 from analysis.crisis_analyzer import CrisisAnalyzer
 
+# ============================================================================
+# LOGGING SETUP
+# ============================================================================
+# DO NOT CHANGE THIS CODE BLOCK!
+## Set up logging FIRST to catch any import errors
+import colorlog
+
+log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
+log_file = os.getenv('NLP_LOG_FILE', 'nlp_service.log')
+
+# Create formatters
+file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(name)s - %(message)s')
+console_formatter = colorlog.ColoredFormatter(
+    '%(blue)s%(asctime)s%(reset)s %(log_color)s%(levelname)s%(reset)s: %(purple)s%(name)s%(reset)s - %(message)s',
+    log_colors={
+        'DEBUG':    'cyan',
+        'INFO':     'green',
+        'WARNING':  'yellow',
+        'ERROR':    'red',
+        'CRITICAL': 'red,bg_white',
+    },
+)
+
+# Create handlers
+file_handler = logging.FileHandler(log_file, encoding='utf-8')
+file_handler.setFormatter(file_formatter)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(console_formatter)
+
+# Configure root logger
+logging.basicConfig(
+    level=getattr(logging, log_level),
+    handlers=[file_handler, console_handler]
+)
+
+logger = logging.getLogger(__name__)
+logger.info("🚀 Starting Ash NLP Service v3.1 - Clean Architecture (Phase 3a Complete)")
+
 # Global manager instances - Clean v3.1 only
 config_manager: Optional[ConfigManager] = None
 settings_manager: Optional[SettingsManager] = None
@@ -37,10 +75,6 @@ models_manager: Optional[ModelsManager] = None
 pydantic_manager: Optional[PydanticManager] = None
 crisis_analyzer: Optional[CrisisAnalyzer] = None
 learning_manager = None
-
-# Initialize logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 async def initialize_components_clean_v3_1():
     """Initialize all components with clean v3.1 architecture - Phase 3c Complete"""
