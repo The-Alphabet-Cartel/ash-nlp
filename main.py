@@ -152,9 +152,9 @@ async def initialize_components_clean_v3_1():
             from managers.crisis_pattern_manager import create_crisis_pattern_manager
             crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
             
-            # Validate patterns loaded
-            available_patterns = crisis_pattern_manager.get_available_patterns()
-            pattern_categories = crisis_pattern_manager.get_pattern_categories()
+            # Validate patterns loaded using correct methods
+            pattern_status = crisis_pattern_manager.get_status()
+            validation_result = crisis_pattern_manager.validate_patterns()
             
             logger.info(f"✅ CrisisPatternManager initialized with {len(available_patterns)} patterns")
             logger.debug(f"📋 Pattern categories: {pattern_categories}")
