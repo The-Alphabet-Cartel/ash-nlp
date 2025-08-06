@@ -25,12 +25,12 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
     - https://github.com/The-Alphabet-Cartel/ash-nlp/tree/v3.1
   - We keep track of progress for each phase in the associated tracker document.
     - These files are to be kept up to date with each milestone reached so that future work can be continued from them as needed.
-    - For phase 3b we are working with the documentation files:
+    - We are working with the documentation files:
       - `docs/project_instructions_v3_1.md`
       - `docs/v3.1/migration_guide_v3_1.md`
-      - `docs/v3.1/3b/3b_tracker.md`
-      - `docs/v3.1/3b/3b_issues_tracker.md`
-      - `docs/v3.1/3b/testing/3b_testing_tracker.md`
+      - `docs/v3.1/*phase*/tracker.md`
+      - `docs/v3.1/*phase*/issues_tracker.md`
+      - `docs/v3.1/*phase*/testing_tracker.md`
 
 ### 🏗️ **Clean v3.1 Architecture Principles**
 - **Dependency Injection**
@@ -83,19 +83,16 @@ ash/ash-nlp/
 ├── docs/                                    # Documentation
 │   ├── v3.1/
 │   │   ├── 3a/
-│   │   │   ├── testing/
-│   │   │   |   └── 3a_testing_tracker.md
-│   │   │   └── 3a_issue_tracker.md
+│   │   │   ├── issue_tracker.md
+│   │   |   └── testing_tracker.md
 │   │   ├── 3b/
-│   │   │   ├── testing/
-│   │   │   |   └── 3b_testing_tracker.md
-│   │   │   ├── 3b_issue_tracker.md
-│   │   │   └── 3b_tracker.md
+│   │   │   ├── issue_tracker.md
+│   │   |   ├── testing_tracker.md
+│   │   │   └── tracker.md
 │   │   ├── 3c/
-│   │   │   ├── testing/
-│   │   │   |   └── 3c_testing_tracker.md
-│   │   │   ├── 3b_issue_tracker.md
-│   │   │   └── 3c_tracker.md
+│   │   │   ├── issue_tracker.md
+│   │   |   ├── testing_tracker.md
+│   │   │   └── tracker.md
 │   │   └── migration_guide_v3_1.md
 │   └── project_instructions_v3_1.md
 ├── learning_data/                           # Learning Data Storage
