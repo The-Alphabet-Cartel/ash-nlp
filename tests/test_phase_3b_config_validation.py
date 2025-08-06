@@ -11,7 +11,7 @@ import json
 import pytest
 import tempfile
 import logging
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock, mock_open
 from pathlib import Path
 from typing import Dict, Any
 
@@ -198,30 +198,35 @@ class TestAnalysisParametersJSONValidation:
             }
         }
         
-        # Create mock config manager that would process this configuration
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = valid_config
-        
-        # Test that AnalysisParametersManager can load this configuration
-        manager = AnalysisParametersManager(mock_config_manager)
-        
-        # Verify all parameter categories are accessible
-        assert manager.get_crisis_thresholds() is not None
-        assert manager.get_phrase_extraction_parameters() is not None
-        assert manager.get_pattern_learning_parameters() is not None
-        assert manager.get_semantic_analysis_parameters() is not None
-        assert manager.get_advanced_parameters() is not None
-        assert manager.get_integration_settings() is not None
-        assert manager.get_performance_settings() is not None
-        assert manager.get_debugging_settings() is not None
-        assert manager.get_experimental_features() is not None
-        
-        # Verify validation passes
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is True
-        assert len(validation_result['errors']) == 0
-        
-        logger.info("✅ Valid complete configuration test passed")
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(valid_config))), \
+             patch('json.load', return_value=valid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = valid_config
+            
+            # Test that AnalysisParametersManager can load this configuration
+            manager = AnalysisParametersManager(mock_config_manager)
+            
+            # Verify all parameter categories are accessible
+            assert manager.get_crisis_thresholds() is not None
+            assert manager.get_phrase_extraction_parameters() is not None
+            assert manager.get_pattern_learning_parameters() is not None
+            assert manager.get_semantic_analysis_parameters() is not None
+            assert manager.get_advanced_parameters() is not None
+            assert manager.get_integration_settings() is not None
+            assert manager.get_performance_settings() is not None
+            assert manager.get_debugging_settings() is not None
+            assert manager.get_experimental_features() is not None
+            
+            # Verify validation passes
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is True
+            assert len(validation_result['errors']) == 0
+            
+            logger.info("✅ Valid complete configuration test passed")
     
     def test_missing_configuration_sections(self):
         """Test handling of missing configuration sections"""
@@ -241,18 +246,24 @@ class TestAnalysisParametersJSONValidation:
             # Missing other sections
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = incomplete_config
-        
-        # Should still work with fallbacks to defaults
-        manager = AnalysisParametersManager(mock_config_manager)
-        
-        # Should get default values for missing sections
-        phrase_params = manager.get_phrase_extraction_parameters()
-        assert phrase_params['min_phrase_length'] == 2  # Default value
-        assert phrase_params['max_phrase_length'] == 6   # Default value
-        
-        logger.info("✅ Missing configuration sections test passed")
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(incomplete_config))), \
+             patch('json.load', return_value=incomplete_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = incomplete_config
+            
+            # Should still work with fallbacks to defaults
+            manager = AnalysisParametersManager(mock_config_manager)
+            
+            # Should get default values for missing sections
+            phrase_params = manager.get_phrase_extraction_parameters()
+            assert phrase_params['min_phrase_length'] == 2  # Default value
+            assert phrase_params['max_phrase_length'] == 6   # Default value
+            
+            logger.info("✅ Missing configuration sections test passed")
     
     def test_invalid_json_structure(self):
         """Test handling of invalid JSON structure"""
@@ -264,14 +275,20 @@ class TestAnalysisParametersJSONValidation:
             "random_data": "invalid"
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = invalid_config
-        
-        # Should fail gracefully
-        with pytest.raises(ValueError):
-            AnalysisParametersManager(mock_config_manager)
-        
-        logger.info("✅ Invalid JSON structure test passed")
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(invalid_config))), \
+             patch('json.load', return_value=invalid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = invalid_config
+            
+            # Should fail gracefully
+            with pytest.raises(ValueError):
+                AnalysisParametersManager(mock_config_manager)
+            
+            logger.info("✅ Invalid JSON structure test passed")
 
 
 class TestEnvironmentVariableValidation:
@@ -336,37 +353,43 @@ class TestEnvironmentVariableValidation:
                 }
             }
             
-            mock_config_manager = Mock()
-            mock_config_manager.get_configuration.return_value = processed_config
-            
-            manager = AnalysisParametersManager(mock_config_manager)
-            
-            # Verify data types are correct
-            thresholds = manager.get_crisis_thresholds()
-            assert isinstance(thresholds['high'], float)
-            assert thresholds['high'] == 0.75
-            
-            phrase_params = manager.get_phrase_extraction_parameters()
-            assert isinstance(phrase_params['min_phrase_length'], int)
-            assert phrase_params['min_phrase_length'] == 3
-            assert isinstance(phrase_params['crisis_focus'], bool)
-            assert phrase_params['crisis_focus'] is True
-            
-            performance_settings = manager.get_performance_settings()
-            assert isinstance(performance_settings['analysis_timeout_ms'], int)
-            assert performance_settings['analysis_timeout_ms'] == 7000
-            
-            debugging_settings = manager.get_debugging_settings()
-            assert isinstance(debugging_settings['enable_detailed_logging'], bool)
-            assert debugging_settings['enable_detailed_logging'] is False
-            
-            experimental_features = manager.get_experimental_features()
-            assert isinstance(experimental_features['enable_advanced_context_analysis'], bool)
-            assert experimental_features['enable_advanced_context_analysis'] is True
-            
-            integration_settings = manager.get_integration_settings()
-            assert isinstance(integration_settings['integration_mode'], str)
-            assert integration_settings['integration_mode'] == 'enhanced'
+            # FIXED: Create proper mock with file system patches
+            with patch('pathlib.Path.exists', return_value=True), \
+                 patch('builtins.open', mock_open(read_data=json.dumps(processed_config))), \
+                 patch('json.load', return_value=processed_config):
+                
+                mock_config_manager = Mock()
+                mock_config_manager.config_dir = Path("/app/config")
+                mock_config_manager.substitute_environment_variables.return_value = processed_config
+                
+                manager = AnalysisParametersManager(mock_config_manager)
+                
+                # Verify data types are correct
+                thresholds = manager.get_crisis_thresholds()
+                assert isinstance(thresholds['high'], float)
+                assert thresholds['high'] == 0.75
+                
+                phrase_params = manager.get_phrase_extraction_parameters()
+                assert isinstance(phrase_params['min_phrase_length'], int)
+                assert phrase_params['min_phrase_length'] == 3
+                assert isinstance(phrase_params['crisis_focus'], bool)
+                assert phrase_params['crisis_focus'] is True
+                
+                performance_settings = manager.get_performance_settings()
+                assert isinstance(performance_settings['analysis_timeout_ms'], int)
+                assert performance_settings['analysis_timeout_ms'] == 7000
+                
+                debugging_settings = manager.get_debugging_settings()
+                assert isinstance(debugging_settings['enable_detailed_logging'], bool)
+                assert debugging_settings['enable_detailed_logging'] is False
+                
+                experimental_features = manager.get_experimental_features()
+                assert isinstance(experimental_features['enable_advanced_context_analysis'], bool)
+                assert experimental_features['enable_advanced_context_analysis'] is True
+                
+                integration_settings = manager.get_integration_settings()
+                assert isinstance(integration_settings['integration_mode'], str)
+                assert integration_settings['integration_mode'] == 'enhanced'
         
         logger.info("✅ Environment variable data type conversion test passed")
     
@@ -401,15 +424,21 @@ class TestEnvironmentVariableValidation:
                 }
             }
             
-            mock_config_manager = Mock()
-            mock_config_manager.get_configuration.return_value = invalid_config
-            
-            manager = AnalysisParametersManager(mock_config_manager)
-            
-            # Validation should catch these issues
-            validation_result = manager.validate_parameters()
-            assert validation_result['valid'] is False
-            assert len(validation_result['errors']) > 0
+            # FIXED: Create proper mock with file system patches
+            with patch('pathlib.Path.exists', return_value=True), \
+                 patch('builtins.open', mock_open(read_data=json.dumps(invalid_config))), \
+                 patch('json.load', return_value=invalid_config):
+                
+                mock_config_manager = Mock()
+                mock_config_manager.config_dir = Path("/app/config")
+                mock_config_manager.substitute_environment_variables.return_value = invalid_config
+                
+                manager = AnalysisParametersManager(mock_config_manager)
+                
+                # Validation should catch these issues
+                validation_result = manager.validate_parameters()
+                assert validation_result['valid'] is False
+                assert len(validation_result['errors']) > 0
         
         logger.info("✅ Environment variable range validation test passed")
     
@@ -432,8 +461,6 @@ class TestEnvironmentVariableValidation:
             ('off', False)
         ]
         
-        mock_config_manager = Mock()
-        
         for env_value, expected_bool in boolean_test_cases:
             config = {
                 "debugging_settings": {
@@ -442,12 +469,20 @@ class TestEnvironmentVariableValidation:
                 }
             }
             
-            mock_config_manager.get_configuration.return_value = config
-            manager = AnalysisParametersManager(mock_config_manager)
-            
-            # Test the _parse_bool method directly
-            parsed_value = manager._parse_bool(env_value)
-            assert parsed_value == expected_bool, f"Failed to parse '{env_value}' as {expected_bool}"
+            # FIXED: Create proper mock with file system patches
+            with patch('pathlib.Path.exists', return_value=True), \
+                 patch('builtins.open', mock_open(read_data=json.dumps(config))), \
+                 patch('json.load', return_value=config):
+                
+                mock_config_manager = Mock()
+                mock_config_manager.config_dir = Path("/app/config")
+                mock_config_manager.substitute_environment_variables.return_value = config
+                
+                manager = AnalysisParametersManager(mock_config_manager)
+                
+                # Test the _parse_bool method directly
+                parsed_value = manager._parse_bool(env_value)
+                assert parsed_value == expected_bool, f"Failed to parse '{env_value}' as {expected_bool}"
         
         logger.info("✅ Boolean environment variable parsing test passed")
 
@@ -469,12 +504,18 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = valid_config
-        
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is True
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(valid_config))), \
+             patch('json.load', return_value=valid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = valid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is True
         
         # Invalid ordering: high < medium
         invalid_config = {
@@ -486,11 +527,19 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager.get_configuration.return_value = invalid_config
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is False
-        assert any('high > medium > low' in error for error in validation_result['errors'])
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(invalid_config))), \
+             patch('json.load', return_value=invalid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = invalid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is False
+            assert any('high > medium > low' in error for error in validation_result['errors'])
         
         logger.info("✅ Crisis threshold ordering validation test passed")
     
@@ -507,12 +556,18 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = valid_config
-        
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is True
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(valid_config))), \
+             patch('json.load', return_value=valid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = valid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is True
         
         # Invalid phrase lengths: min >= max
         invalid_config = {
@@ -523,11 +578,19 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager.get_configuration.return_value = invalid_config
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is False
-        assert any('min_phrase_length must be < max_phrase_length' in error for error in validation_result['errors'])
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(invalid_config))), \
+             patch('json.load', return_value=invalid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = invalid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is False
+            assert any('min_phrase_length must be < max_phrase_length' in error for error in validation_result['errors'])
         
         logger.info("✅ Phrase length validation test passed")
     
@@ -552,12 +615,18 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = valid_config
-        
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is True
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(valid_config))), \
+             patch('json.load', return_value=valid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = valid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is True
         
         # Invalid confidence thresholds: wrong ordering
         invalid_config = {
@@ -576,11 +645,19 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager.get_configuration.return_value = invalid_config
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is False
-        assert any('high > medium > low' in error for error in validation_result['errors'])
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(invalid_config))), \
+             patch('json.load', return_value=invalid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = invalid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is False
+            assert any('high > medium > low' in error for error in validation_result['errors'])
         
         logger.info("✅ Pattern confidence threshold validation test passed")
     
@@ -602,12 +679,18 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = valid_config
-        
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        assert validation_result['valid'] is True
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(valid_config))), \
+             patch('json.load', return_value=valid_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = valid_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            assert validation_result['valid'] is True
         
         # Test that very low timeout generates warning
         warning_config = {
@@ -617,11 +700,19 @@ class TestParameterValidationRules:
             }
         }
         
-        mock_config_manager.get_configuration.return_value = warning_config
-        manager = AnalysisParametersManager(mock_config_manager)
-        validation_result = manager.validate_parameters()
-        # Should still be valid but with warnings
-        assert len(validation_result['warnings']) > 0
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(warning_config))), \
+             patch('json.load', return_value=warning_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = warning_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            validation_result = manager.validate_parameters()
+            # Should still be valid but with warnings
+            assert len(validation_result['warnings']) > 0
         
         logger.info("✅ Performance parameter validation test passed")
 
@@ -648,11 +739,17 @@ class TestConfigurationCompatibility:
             }
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = current_version_config
-        
-        manager = AnalysisParametersManager(mock_config_manager)
-        assert manager.analysis_config['version'] == '3.1'
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(current_version_config))), \
+             patch('json.load', return_value=current_version_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = current_version_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            assert manager.analysis_config['version'] == '3.1'
         
         # Test older version (should still work)
         older_version_config = {
@@ -669,9 +766,17 @@ class TestConfigurationCompatibility:
             }
         }
         
-        mock_config_manager.get_configuration.return_value = older_version_config
-        manager = AnalysisParametersManager(mock_config_manager)
-        assert manager.analysis_config['version'] == '3.0'
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(older_version_config))), \
+             patch('json.load', return_value=older_version_config):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = older_version_config
+            
+            manager = AnalysisParametersManager(mock_config_manager)
+            assert manager.analysis_config['version'] == '3.0'
         
         logger.info("✅ Configuration version compatibility test passed")
     
@@ -694,20 +799,26 @@ class TestConfigurationCompatibility:
             }
         }
         
-        mock_config_manager = Mock()
-        mock_config_manager.get_configuration.return_value = config_without_defaults
-        
-        # Should still work by using the provided values
-        manager = AnalysisParametersManager(mock_config_manager)
-        
-        thresholds = manager.get_crisis_thresholds()
-        assert thresholds['high'] == 0.60
-        assert thresholds['medium'] == 0.30
-        assert thresholds['low'] == 0.18
-        
-        phrase_params = manager.get_phrase_extraction_parameters()
-        assert phrase_params['min_phrase_length'] == 3
-        assert phrase_params['max_phrase_length'] == 7
+        # FIXED: Create proper mock with file system patches
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(config_without_defaults))), \
+             patch('json.load', return_value=config_without_defaults):
+            
+            mock_config_manager = Mock()
+            mock_config_manager.config_dir = Path("/app/config")
+            mock_config_manager.substitute_environment_variables.return_value = config_without_defaults
+            
+            # Should still work by using the provided values
+            manager = AnalysisParametersManager(mock_config_manager)
+            
+            thresholds = manager.get_crisis_thresholds()
+            assert thresholds['high'] == 0.60
+            assert thresholds['medium'] == 0.30
+            assert thresholds['low'] == 0.18
+            
+            phrase_params = manager.get_phrase_extraction_parameters()
+            assert phrase_params['min_phrase_length'] == 3
+            assert phrase_params['max_phrase_length'] == 7
         
         logger.info("✅ Missing defaults handling test passed")
 
