@@ -116,7 +116,7 @@ NLP_EMOTIONAL_DISTRESS_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
 # Ensemble Configuration
 NLP_ENSEMBLE_MODE=weighted  # consensus, majority, weighted
 NLP_GAP_DETECTION_THRESHOLD=0.4
-NLP_DISAGREEMENT_THRESHOLD=0.5
+NLP_THRESHOLD_GAP_DISAGREEMENT=0.5
 
 # Hardware Optimization
 NLP_MAX_BATCH_SIZE=32
