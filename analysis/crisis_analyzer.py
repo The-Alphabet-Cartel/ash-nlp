@@ -24,22 +24,26 @@ logger = logging.getLogger(__name__)
 
 class CrisisAnalyzer:
     """
-    UPDATED: Three Zero-Shot Model Ensemble crisis analysis with CrisisPatternManager integration
+    UPDATED: Three Zero-Shot Model Ensemble crisis analysis with Phase 3b integration
     Phase 3a: Clean v3.1 architecture with JSON-based patterns
+    Phase 3b: Analysis parameters from AnalysisParametersManager
     """
     
-    def __init__(self, models_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None):
+    def __init__(self, models_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, 
+                 learning_manager=None, analysis_parameters_manager=None):
         """
         Initialize CrisisAnalyzer with managers
         
         Args:
             models_manager: ML model manager for ensemble analysis
-            crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
+            crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
             learning_manager: Optional learning manager for feedback
+            analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
         """
         self.models_manager = models_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.learning_manager = learning_manager
+        self.analysis_parameters_manager = analysis_parameters_manager  # Phase 3b
         
         # Initialize community pattern extractor if crisis pattern manager available
         if self.crisis_pattern_manager:
@@ -49,28 +53,39 @@ class CrisisAnalyzer:
             self.community_extractor = None
             logger.warning("CrisisAnalyzer initialized without CrisisPatternManager - pattern analysis limited")
         
-        # Load crisis thresholds from pattern manager or use defaults
+        # Load crisis thresholds from analysis parameters manager or use defaults
         self.crisis_thresholds = self._load_crisis_thresholds()
 
     def _load_crisis_thresholds(self) -> Dict[str, float]:
-        """Load crisis thresholds from configuration or use defaults"""
+        """Load crisis thresholds from AnalysisParametersManager or use defaults (Phase 3b)"""
         try:
-            if self.crisis_pattern_manager:
-                # Try to get thresholds from enhanced crisis patterns configuration
-                enhanced_patterns = self.crisis_pattern_manager.get_enhanced_crisis_patterns()
-                if enhanced_patterns and enhanced_patterns.get('configuration'):
-                    # Extract thresholds if available in configuration
-                    pass
+            # Phase 3b: Try to get thresholds from AnalysisParametersManager first
+            if self.analysis_parameters_manager:
+                thresholds = self.analysis_parameters_manager.get_crisis_thresholds()
+                logger.debug(f"✅ Crisis thresholds loaded from AnalysisParametersManager: {thresholds}")
+                return thresholds
             
-            # Use default thresholds
-            return {
-                "high": 0.55,    # Reduced from 0.50 - matches new systematic approach
-                "medium": 0.28,  # Reduced from 0.22 - more selective for medium alerts
-                "low": 0.16      # Reduced from 0.12 - avoids very mild expressions
+            # Fallback to pattern manager (Phase 3a compatibility)
+            elif self.crisis_pattern_manager:
+                enhanced_patterns = self.crisis_pattern_manager.get_enhanced_crisis_patterns()
+                if enhanced_patterns and 'crisis_thresholds' in enhanced_patterns:
+                    thresholds = enhanced_patterns['crisis_thresholds']
+                    logger.debug(f"✅ Crisis thresholds loaded from CrisisPatternManager: {thresholds}")
+                    return thresholds
+            
+            # Final fallback to hardcoded defaults
+            default_thresholds = {
+                'high': 0.55,
+                'medium': 0.28, 
+                'low': 0.16
             }
+            logger.warning(f"⚠️ Using default crisis thresholds (no managers available): {default_thresholds}")
+            return default_thresholds
+            
         except Exception as e:
-            logger.error(f"Error loading crisis thresholds: {e}")
-            return {"high": 0.55, "medium": 0.28, "low": 0.16}
+            logger.error(f"❌ Error loading crisis thresholds: {e}")
+            # Return safe defaults
+            return {'high': 0.55, 'medium': 0.28, 'low': 0.16}
 
     async def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict:
         """
