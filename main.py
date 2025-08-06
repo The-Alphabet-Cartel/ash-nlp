@@ -302,8 +302,8 @@ async def initialize_components_clean_v3_1():
             crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
             
             # Test pattern loading
-            available_patterns = crisis_pattern_manager.get_all_available_patterns()
-            if available_patterns:
+            pattern_status = crisis_pattern_manager.get_status()
+            if pattern_status:
                 logger.info(f"✅ CrisisPatternManager v3.1 initialized with {len(available_patterns)} pattern categories")
             else:
                 logger.warning("⚠️ CrisisPatternManager initialized but no patterns loaded")
@@ -337,8 +337,8 @@ async def initialize_components_clean_v3_1():
         logger.info("🤖 Initializing ModelsManager - Clean v3.1...")
         
         try:
-            from managers.models_manager import create_models_manager
-            model_manager = create_models_manager(config_manager, settings_manager)
+            from managers.models_manager import create_model_manager
+            model_manager = create_model_manager(config_manager, settings_manager)
             
             # Initialize models
             await model_manager.initialize()
