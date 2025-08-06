@@ -38,9 +38,6 @@ class TestPhase3bIntegration:
         mock_manager = Mock()
         mock_manager.config_dir = Path("/app/config")  # Real Path object
         
-        # Your analysis config here...
-        analysis_config = { /* your config */ }
-        
         # Complete analysis parameters configuration
         analysis_config = {
             "analysis_system": {
