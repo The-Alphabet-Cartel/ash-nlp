@@ -327,10 +327,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     
     # Get Pydantic models
     try:
-        models = {
-            'MessageRequest': pydantic_manager.get_message_request_model(),
-            'CrisisResponse': pydantic_manager.get_crisis_response_model()
-        }
+        models = pydantic_manager.get_core_models()
         logger.info("✅ Pydantic models loaded for ensemble endpoints")
     except Exception as e:
         logger.error(f"❌ Failed to load Pydantic models: {e}")
