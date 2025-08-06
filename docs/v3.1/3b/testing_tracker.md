@@ -84,27 +84,20 @@ mock_manager.substitute_environment_variables.return_value = config_data
 **Error**: `name 'available_patterns' is not defined`
 **Status**: ✅ Resolved - Fixed to use pattern_status data properly
 
-### **Issue 3: Test Suite Mock Incompatibility** 🔧 **NEEDS FIX IN ALL TEST FILES**
-**Error**: `TypeError: unsupported operand type(s) for /: 'Mock' and 'str'`
-**Root Cause**: All test files use incorrect mock pattern
-**Files Affected**:
-- `tests/test_analysis_parameters_manager.py` - ❌ Uses `mock.get_configuration()` 
-- `tests/test_phase_3b_integration.py` - ❌ Uses `mock.get_configuration()`
-- `tests/test_phase_3b_config_validation.py` - ❌ Uses `mock.get_configuration()`
+### **Issue 3: Test Suite Mock Incompatibility** ⚠️ **IN PROGRESS**
+**Error**: Multiple issues in test files:
+1. `TypeError: unsupported operand type(s) for /: 'Mock' and 'str'` ✅ **FIXED in config_validation**
+2. `invalid method signature` ❌ **NEW ERROR in test_analysis_parameters_manager.py**
 
-**Problem Pattern**: 
-```python
-# WRONG (all test files use this)
-mock_manager.get_configuration.return_value = config_data
-```
+**Current Status**:
+- ✅ `test_phase_3b_config_validation.py` - **FIXED** 
+- ❌ `test_analysis_parameters_manager.py` - **NEEDS FIXTURE SYNTAX FIX**
+- ❌ `test_phase_3b_integration.py` - **NEEDS SAME FIX**
 
-**Required Fix**:
-```python  
-# CORRECT (what AnalysisParametersManager actually expects)
-mock_manager.config_dir = Path("/app/config")  # Real Path object
-mock_manager.substitute_environment_variables.return_value = config_data
-# + Create actual analysis_parameters.json file or patch file operations
-```
+**New Error Details**:
+- **File**: `test_analysis_parameters_manager.py`
+- **Issue**: Fixture `mock_config_manager` has invalid method signature
+- **Root Cause**: Likely incorrect fixture definition (missing `self` or wrong decorator)
 
 ### **⏳ In Progress**
 - [ ] Fix undefined variable in main.py CrisisPatternManager initialization
