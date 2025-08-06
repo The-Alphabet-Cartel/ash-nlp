@@ -399,6 +399,11 @@ The system now intelligently combines:
 - **Objective**: Complete configuration externalization for analysis pipeline
 - **Components**: Crisis level mappings, ensemble decision rules, output formatting
 
+### Phase 3d: Environmental Variables Cleanup (Future)
+- **Scope**: Ensure Environmental Variables are as streamlined as possible
+- **Objective**: Identify, update, and/or remove all duplicate and/or similarly functioning environmental variables
+- **Components**: All Project Components
+
 ### Phase 4: Advanced Features (Future)
 - **Advanced analytics and reporting features**
 - **Advanced feature flags and A/B testing**
