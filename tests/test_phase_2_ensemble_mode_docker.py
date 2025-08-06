@@ -167,11 +167,11 @@ class InternalEnsembleTest:
             'NLP_DEPRESSION_MODEL',
             'NLP_SENTIMENT_MODEL', 
             'NLP_EMOTIONAL_DISTRESS_MODEL',
-            'NLP_DEPRESSION_MODEL_WEIGHT',
-            'NLP_SENTIMENT_MODEL_WEIGHT',
-            'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT',
+            'NLP_MODEL_WEIGHT_DEPRESSION',
+            'NLP_MODEL_WEIGHT_SENTIMENT',
+            'NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS',
             'NLP_GAP_DETECTION_THRESHOLD',
-            'NLP_DISAGREEMENT_THRESHOLD'
+            'NLP_THRESHOLD_GAP_DISAGREEMENT'
         ]
         
         env_vars = {}
