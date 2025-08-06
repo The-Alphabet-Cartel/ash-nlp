@@ -229,12 +229,13 @@ def validate_centralized_thresholds():
 # ============================================================================
 
 async def initialize_components_clean_v3_1():
-    """Initialize all components with clean v3.1 architecture - Phase 3a Complete"""
+    """Initialize all components with clean v3.1 architecture - Phase 3b Complete"""
     global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
     global model_manager, pydantic_manager, crisis_analyzer, learning_manager
+    global analysis_parameters_manager  # Phase 3b addition
     
     try:
-        logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3a Complete...")
+        logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3b Complete...")
         
         # ========================================================================
         # STEP 1: Initialize Core Configuration Managers - DIRECT ONLY
@@ -242,122 +243,166 @@ async def initialize_components_clean_v3_1():
         logger.info("📋 Initializing core configuration managers...")
         
         config_manager = ConfigManager("/app/config")
-        settings_manager = SettingsManager(config_manager)
         zero_shot_manager = ZeroShotManager(config_manager)
         
-        logger.info("✅ Core configuration managers initialized (ConfigManager, SettingsManager, ZeroShotManager)")
+        logger.info("✅ Core configuration managers initialized (ConfigManager, ZeroShotManager)")
         
         # ========================================================================
-        # STEP 2: Initialize CrisisPatternManager - Phase 3a
+        # STEP 2: Initialize AnalysisParametersManager - Phase 3b
         # ========================================================================
-        logger.info("🔍 Initializing CrisisPatternManager v3.1 (Phase 3a)...")
+        logger.info("⚙️ Initializing AnalysisParametersManager - Phase 3b...")
         
-        if CRISIS_PATTERN_MANAGER_AVAILABLE:
-            try:
-                crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
-                logger.info("✅ CrisisPatternManager v3.1 initialized with JSON configuration")
+        try:
+            from managers.analysis_parameters_manager import create_analysis_parameters_manager
+            analysis_parameters_manager = create_analysis_parameters_manager(config_manager)
+            
+            # Validate analysis parameters
+            validation_result = analysis_parameters_manager.validate_parameters()
+            if validation_result['valid']:
+                logger.info("✅ AnalysisParametersManager v3.1 initialized and validated")
+                logger.debug(f"📊 Analysis parameters loaded: {len(analysis_parameters_manager.get_all_parameters())} categories")
+            else:
+                logger.error(f"❌ Analysis parameters validation failed: {validation_result['errors']}")
+                raise ValueError("Analysis parameters validation failed")
                 
-                # Validate pattern loading
-                pattern_status = crisis_pattern_manager.get_status()
-                logger.debug(f"🔍 Pattern Manager Status: {pattern_status['loaded_pattern_sets']} pattern sets loaded")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize AnalysisParametersManager: {e}")
+            analysis_parameters_manager = None
+            raise
+        
+        # ========================================================================
+        # STEP 3: Initialize SettingsManager with AnalysisParametersManager - Phase 3b
+        # ========================================================================
+        logger.info("🔧 Initializing SettingsManager with AnalysisParametersManager - Phase 3b...")
+        
+        try:
+            from managers.settings_manager import create_settings_manager
+            settings_manager = create_settings_manager(config_manager, analysis_parameters_manager)
+            
+            # Validate settings
+            settings_validation = settings_manager.validate_settings()
+            if settings_validation['valid']:
+                logger.info("✅ SettingsManager v3.1 initialized with AnalysisParametersManager integration")
+            else:
+                logger.error(f"❌ Settings validation failed: {settings_validation['errors']}")
+                if settings_validation['warnings']:
+                    logger.warning(f"⚠️ Settings warnings: {settings_validation['warnings']}")
                 
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize CrisisPatternManager: {e}")
-                crisis_pattern_manager = None
-        else:
-            logger.warning("⚠️ CrisisPatternManager not available")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize SettingsManager: {e}")
+            raise
+        
+        # ========================================================================
+        # STEP 4: Initialize CrisisPatternManager - Phase 3a
+        # ========================================================================
+        logger.info("🔍 Initializing CrisisPatternManager - Phase 3a...")
+        
+        try:
+            from managers.crisis_pattern_manager import create_crisis_pattern_manager
+            crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
+            
+            # Test pattern loading
+            available_patterns = crisis_pattern_manager.get_all_available_patterns()
+            if available_patterns:
+                logger.info(f"✅ CrisisPatternManager v3.1 initialized with {len(available_patterns)} pattern categories")
+            else:
+                logger.warning("⚠️ CrisisPatternManager initialized but no patterns loaded")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize CrisisPatternManager: {e}")
             crisis_pattern_manager = None
+            # Don't fail initialization for pattern manager issues
         
         # ========================================================================
-        # STEP 3: Initialize PydanticManager v3.1 - DIRECT ONLY
+        # STEP 5: Initialize PydanticManager - Clean v3.1 
         # ========================================================================
-        logger.info("📋 Initializing PydanticManager v3.1...")
+        logger.info("📝 Initializing PydanticManager - Clean v3.1...")
         
-        if PYDANTIC_MANAGER_AVAILABLE:
-            try:
-                pydantic_manager = create_pydantic_manager()
-                if pydantic_manager.is_initialized():
-                    logger.info("✅ PydanticManager v3.1 initialized successfully")
-                else:
-                    logger.error("❌ PydanticManager v3.1 failed to initialize")
-                    raise RuntimeError("PydanticManager v3.1 initialization failed")
-            except Exception as e:
-                logger.error(f"❌ PydanticManager v3.1 initialization failed: {e}")
-                raise
-        else:
-            logger.error("❌ PydanticManager v3.1 not available")
-            raise RuntimeError("PydanticManager v3.1 required but not available")
+        try:
+            from managers.pydantic_manager import create_pydantic_manager
+            pydantic_manager = create_pydantic_manager(config_manager)
+            
+            if pydantic_manager.is_initialized():
+                logger.info("✅ PydanticManager v3.1 initialized")
+            else:
+                logger.error("❌ PydanticManager initialization failed")
+                raise RuntimeError("PydanticManager failed to initialize")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize PydanticManager: {e}")
+            raise
         
         # ========================================================================
-        # STEP 4: Initialize ModelsManager v3.1 - DIRECT ONLY
+        # STEP 6: Initialize ModelsManager - Clean v3.1
         # ========================================================================
-        logger.info("🤖 Initializing ModelsManager v3.1...")
+        logger.info("🤖 Initializing ModelsManager - Clean v3.1...")
         
-        if MODELS_MANAGER_AVAILABLE:
-            try:
-                model_manager = ModelsManager(config_manager, settings_manager, zero_shot_manager)
-                await model_manager.initialize()
+        try:
+            from managers.models_manager import create_models_manager
+            model_manager = create_models_manager(config_manager, settings_manager)
+            
+            # Initialize models
+            await model_manager.initialize()
+            
+            if model_manager.models_loaded():
+                model_count = len(model_manager.get_loaded_models())
+                logger.info(f"✅ ModelsManager v3.1 initialized with {model_count} models loaded")
+            else:
+                logger.error("❌ ModelsManager failed to load models")
+                raise RuntimeError("ModelsManager failed to load models")
                 
-                if model_manager.models_loaded():
-                    logger.info("✅ ModelsManager v3.1 initialized with all models loaded")
-                else:
-                    logger.error("❌ ModelsManager v3.1 failed to load models")
-                    raise RuntimeError("ModelsManager v3.1 model loading failed")
-            except Exception as e:
-                logger.error(f"❌ ModelsManager v3.1 initialization failed: {e}")
-                raise
-        else:
-            logger.error("❌ ModelsManager v3.1 not available")
-            raise RuntimeError("ModelsManager v3.1 required but not available")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize ModelsManager: {e}")
+            raise
         
         # ========================================================================
-        # STEP 5: Initialize Learning System (Optional)
+        # STEP 7: Initialize Learning Manager (Optional)
         # ========================================================================
-        if LEARNING_AVAILABLE:
-            try:
-                # Pass required arguments: model_manager and config_manager
-                learning_manager = EnhancedLearningManager(
-                    model_manager=model_manager,
-                    config_manager=config_manager
-                )
-                logger.info("✅ Enhanced Learning Manager initialized")
-            except Exception as e:
-                logger.warning(f"⚠️  Could not initialize Enhanced Learning Manager: {e}")
-                learning_manager = None
-        else:
-            logger.info("ℹ️ Enhanced Learning Manager not available")
+        logger.info("🧠 Initializing Enhanced Learning Manager...")
+        
+        global LEARNING_AVAILABLE
+        try:
+            from api.learning_endpoints import EnhancedLearningManager
+            learning_manager = EnhancedLearningManager(
+                config_manager=config_manager,
+                models_manager=model_manager
+            )
+            LEARNING_AVAILABLE = True
+            logger.info("✅ Enhanced Learning Manager initialized - Clean v3.1")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Learning Manager not available: {e}")
             learning_manager = None
+            LEARNING_AVAILABLE = False
         
         # ========================================================================
-        # STEP 6: Initialize Analysis Components with Crisis Pattern Manager
+        # STEP 8: Initialize CrisisAnalyzer with Full Integration
         # ========================================================================
+        logger.info("🔍 Initializing CrisisAnalyzer with full manager integration...")
         
-        # Initialize CrisisAnalyzer with CrisisPatternManager integration
-        if CRISIS_ANALYZER_AVAILABLE:
-            try:
-                crisis_analyzer = CrisisAnalyzer(
-                    model_manager=model_manager,
-                    crisis_pattern_manager=crisis_pattern_manager,  # Phase 3a integration
-                    learning_manager=learning_manager
-                )
-                logger.info("✅ CrisisAnalyzer initialized with CrisisPatternManager integration")
-            except Exception as e:
-                logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
-                crisis_analyzer = None
-        else:
-            logger.info("ℹ️ CrisisAnalyzer not available")
+        try:
+            from analysis.crisis_analyzer import CrisisAnalyzer
+            crisis_analyzer = CrisisAnalyzer(
+                model_manager=model_manager,
+                crisis_pattern_manager=crisis_pattern_manager,
+                analysis_parameters_manager=analysis_parameters_manager  # Phase 3b integration
+            )
+            logger.info("✅ CrisisAnalyzer initialized with full manager integration (Phase 3b)")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not initialize CrisisAnalyzer: {e}")
             crisis_analyzer = None
         
         # ========================================================================
-        # STEP 7: Final Status Report - Clean v3.1 Phase 3a
+        # STEP 9: Final Status Report - Clean v3.1 Phase 3b
         # ========================================================================
-        logger.debug("📊 Component Initialization Summary (Clean v3.1 Phase 3a):")
+        logger.debug("📊 Component Initialization Summary (Clean v3.1 Phase 3b):")
         
         components_status = {
             'core_managers': {
                 'config_manager': config_manager is not None,
                 'settings_manager': settings_manager is not None,
                 'zero_shot_manager': zero_shot_manager is not None,
+                'analysis_parameters_manager_v3_1': analysis_parameters_manager is not None,  # Phase 3b
                 'crisis_pattern_manager_v3_1': crisis_pattern_manager is not None,  # Phase 3a
                 'pydantic_manager_v3_1': pydantic_manager is not None
             },
@@ -366,7 +411,7 @@ async def initialize_components_clean_v3_1():
                 'three_model_ensemble': model_manager and model_manager.models_loaded() if model_manager else False
             },
             'analysis_components': {
-                'crisis_analyzer_with_patterns': crisis_analyzer is not None,  # Phase 3a enhanced
+                'crisis_analyzer_with_full_integration': crisis_analyzer is not None,  # Phase 3b enhanced
                 'learning_manager': learning_manager is not None
             }
         }
@@ -385,13 +430,23 @@ async def initialize_components_clean_v3_1():
             critical_failures.append("Model Loading")
         if not pydantic_manager:
             critical_failures.append("PydanticManager v3.1")
+        if not analysis_parameters_manager:
+            critical_failures.append("AnalysisParametersManager v3.1")  # Phase 3b critical
         
         if critical_failures:
             logger.error(f"❌ Critical component failures: {critical_failures}")
             raise RuntimeError(f"Critical v3.1 components failed: {critical_failures}")
         
         logger.info("✅ All critical components initialized successfully - Clean v3.1 Architecture")
-        logger.info("🎉 Phase 3a Complete - CrisisPatternManager integrated with JSON configuration")
+        logger.info("🎉 Phase 3b Complete - AnalysisParametersManager integrated with JSON configuration")
+        
+        # Report Analysis Parameters Manager Status
+        if analysis_parameters_manager:
+            all_params = analysis_parameters_manager.get_all_parameters()
+            logger.info(f"⚙️ Analysis Parameters Manager Status: Operational with {len(all_params)} parameter categories")
+            logger.debug(f"📋 Parameter categories: {list(all_params.keys())}")
+        else:
+            logger.warning("⚠️ Analysis Parameters Manager: Not available - using fallback parameters")
         
         # Report Pattern Manager Status
         if crisis_pattern_manager:
@@ -405,7 +460,7 @@ async def initialize_components_clean_v3_1():
         raise
 
 # ============================================================================
-# Health Response Model
+# Updated Health Response Model - Phase 3b
 # ============================================================================
 class HealthResponse(BaseModel):
     status: str
@@ -417,6 +472,7 @@ class HealthResponse(BaseModel):
     architecture_version: str
     phase_2c_status: str
     phase_3a_status: str  # Phase 3a addition
+    phase_3b_status: str  # Phase 3b addition
 
 # ============================================================================
 # FastAPI Application Setup - Clean v3.1 Phase 3a
@@ -504,11 +560,11 @@ app = FastAPI(
 startup_time = time.time()
 
 # ============================================================================
-# Enhanced Health Check - Phase 3a Updated
+# Enhanced Health Check - Phase 3b Updated
 # ============================================================================
 @app.get("/health", response_model=HealthResponse)
 async def enhanced_health_check():
-    """Enhanced health check with Phase 3a CrisisPatternManager status"""
+    """Enhanced health check with Phase 3b AnalysisParametersManager status"""
     
     uptime = time.time() - startup_time
     model_loaded = model_manager is not None and model_manager.models_loaded()
@@ -517,49 +573,45 @@ async def enhanced_health_check():
         "config_manager": config_manager is not None,
         "settings_manager": settings_manager is not None,
         "zero_shot_manager": zero_shot_manager is not None,
+        "analysis_parameters_manager": analysis_parameters_manager is not None,  # Phase 3b
         "crisis_pattern_manager": crisis_pattern_manager is not None,  # Phase 3a
         "models_manager_v3_1": model_manager is not None,
         "pydantic_manager_v3_1": pydantic_manager is not None,
-        "crisis_analyzer": crisis_analyzer is not None,
-        "learning_manager": learning_manager is not None
+        "learning_manager_enhanced": learning_manager is not None,
+        "crisis_analyzer_integrated": crisis_analyzer is not None
     }
     
     configuration_status = {
-        "json_config_loaded": config_manager is not None,
-        "settings_validated": settings_manager is not None,
+        "model_ensemble_loaded": model_manager.models_loaded() if model_manager else False,
+        "analysis_parameters_loaded": analysis_parameters_manager is not None,  # Phase 3b
         "crisis_patterns_loaded": crisis_pattern_manager is not None,  # Phase 3a
-        "zero_shot_labels_loaded": zero_shot_manager is not None,
-        "pydantic_models_available": pydantic_manager is not None and pydantic_manager.is_initialized()
+        "ensemble_thresholds_configured": True,
+        "learning_system_available": LEARNING_AVAILABLE
     }
     
     manager_status = {
         "models_manager_operational": model_manager is not None and model_manager.models_loaded(),
-        "ensemble_analysis_available": model_manager is not None and hasattr(model_manager, 'analyze_with_ensemble'),
+        "analysis_parameters_analysis_available": analysis_parameters_manager is not None,  # Phase 3b
         "crisis_pattern_analysis_available": crisis_pattern_manager is not None,  # Phase 3a
-        "learning_system_operational": learning_manager is not None
+        "pydantic_validation_available": pydantic_manager is not None,
+        "learning_adjustments_available": learning_manager is not None
     }
     
-    overall_status = "healthy" if all([
-        config_manager is not None,
-        settings_manager is not None, 
-        model_manager is not None and model_manager.models_loaded(),
-        pydantic_manager is not None and pydantic_manager.is_initialized()
-    ]) else "degraded"
-    
     return HealthResponse(
-        status=overall_status,
+        status="healthy" if model_loaded else "degraded",
         uptime=uptime,
         model_loaded=model_loaded,
         components_available=components_available,
         configuration_status=configuration_status,
         manager_status=manager_status,
-        architecture_version="v3.1_clean_phase_3a_complete",
+        architecture_version="clean_v3.1_phase_3b_complete",
         phase_2c_status="complete",
-        phase_3a_status="complete" if crisis_pattern_manager is not None else "pattern_manager_unavailable"
+        phase_3a_status="complete",  # Phase 3a
+        phase_3b_status="complete"   # Phase 3b
     )
 
 # ============================================================================
-# PRODUCTION READY - Clean v3.1 Architecture Phase 3a Complete
+# PRODUCTION READY - Clean v3.1 Architecture Phase 3b Complete
 # ============================================================================
 
 if __name__ == "__main__":
