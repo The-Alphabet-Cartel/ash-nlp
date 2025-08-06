@@ -21,21 +21,26 @@
 
 ## 🔧 Required Fixes
 
-### **Fix 1: Update CrisisAnalyzer Constructor**
-**File**: `analysis/crisis_analyzer.py`
-**Action**: Add `analysis_parameters_manager` parameter to `__init__` method
-**Details**:
-- Update constructor signature to accept `analysis_parameters_manager` parameter
-- Store the manager as instance variable for parameter access
-- Update parameter loading to use AnalysisParametersManager instead of hardcoded values
+### **Fix 3: Update Test Mocks to Match AnalysisParametersManager Interface**
+**Files**: `tests/test_analysis_parameters_manager.py`, `tests/test_phase_3b_integration.py`
+**Action**: Replace Mock configuration pattern to match actual implementation
+**Current Issue**: 
+```python
+# Current (BROKEN) - Uses method that doesn't exist
+mock_manager.get_configuration.return_value = config_data
+```
+**Required Fix**:
+```python  
+# Fixed - Matches actual AnalysisParametersManager expectations
+mock_manager.config_dir = Path("/app/config")
+mock_manager.substitute_environment_variables.return_value = config_data
+# + Create actual analysis_parameters.json file or patch file operations
+```
 
-### **Fix 2: Update Crisis Threshold Loading**
-**File**: `analysis/crisis_analyzer.py`  
-**Method**: `_load_crisis_thresholds()`
-**Action**: Use AnalysisParametersManager for threshold access
-**Details**:
-- Replace pattern manager threshold access with analysis parameters manager
-- Ensure fallback to defaults if manager not available
+### **Alternative Fix Options**:
+1. **Patch File Operations**: Mock `pathlib.Path.exists()`, `open()`, `json.load()`
+2. **Use Temporary Files**: Create real temporary config files for testing
+3. **Update AnalysisParametersManager**: Make it more test-friendly (not recommended)
 
 ## 🧪 Testing Plan
 
@@ -66,12 +71,40 @@
 - [x] Analyzed current codebase to understand parameter flow
 - [x] Created testing tracker for issue tracking
 - [x] Fixed CrisisAnalyzer constructor to accept analysis_parameters_manager
+- [x] Fixed undefined variable in main.py CrisisPatternManager initialization
+- [x] System starts successfully without initialization errors
 
-### **🚨 New Issue Identified**
-**Issue 2: Undefined Variable in main.py**
+## 🚨 Current Issues Identified
+
+### **Issue 1: CrisisAnalyzer Initialization Error** ✅ **FIXED**
+**Error**: `CrisisAnalyzer.init() got an unexpected keyword argument 'analysis_parameters_manager'`
+**Status**: ✅ Resolved - Constructor updated to accept analysis_parameters_manager parameter
+
+### **Issue 2: Undefined Variable in main.py** ✅ **FIXED** 
 **Error**: `name 'available_patterns' is not defined`
-**Line**: `logger.info(f"✅ CrisisPatternManager v3.1 initialized with {len(available_patterns)} pattern categories")`
-**Root Cause**: Variable `available_patterns` doesn't exist, should use data from `pattern_status`
+**Status**: ✅ Resolved - Fixed to use pattern_status data properly
+
+### **Issue 3: Test Suite Mock Incompatibility** 🔧 **NEEDS FIX IN ALL TEST FILES**
+**Error**: `TypeError: unsupported operand type(s) for /: 'Mock' and 'str'`
+**Root Cause**: All test files use incorrect mock pattern
+**Files Affected**:
+- `tests/test_analysis_parameters_manager.py` - ❌ Uses `mock.get_configuration()` 
+- `tests/test_phase_3b_integration.py` - ❌ Uses `mock.get_configuration()`
+- `tests/test_phase_3b_config_validation.py` - ❌ Uses `mock.get_configuration()`
+
+**Problem Pattern**: 
+```python
+# WRONG (all test files use this)
+mock_manager.get_configuration.return_value = config_data
+```
+
+**Required Fix**:
+```python  
+# CORRECT (what AnalysisParametersManager actually expects)
+mock_manager.config_dir = Path("/app/config")  # Real Path object
+mock_manager.substitute_environment_variables.return_value = config_data
+# + Create actual analysis_parameters.json file or patch file operations
+```
 
 ### **⏳ In Progress**
 - [ ] Fix undefined variable in main.py CrisisPatternManager initialization
