@@ -344,7 +344,8 @@ async def initialize_components_clean_v3_1():
             await model_manager.initialize()
             
             if model_manager.models_loaded():
-                model_count = len(model_manager.get_loaded_models())
+                ensemble_status = model_manager.get_ensemble_status()
+                model_count = ensemble_status.get('model_count', 3)
                 logger.info(f"✅ ModelsManager v3.1 initialized with {model_count} models loaded")
             else:
                 logger.error("❌ ModelsManager failed to load models")
