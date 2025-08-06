@@ -18,17 +18,17 @@ logger = logging.getLogger(__name__)
 class EnhancedLearningManager:
     """Enhanced learning manager with clean v3.1 manager architecture - NO FALLBACKS"""
     
-    def __init__(self, model_manager, config_manager):
+    def __init__(self, models_manager, config_manager):
         """
         Initialize with clean v3.1 manager architecture - Direct Manager Access Only
         
         Args:
-            model_manager: ModelsManager v3.1 instance (required)
+            models_manager: ModelsManager v3.1 instance (required)
             config_manager: ConfigManager instance (required)
         """
         
         # Validate required managers - NO FALLBACKS
-        if not model_manager:
+        if not models_manager:
             logger.error("❌ ModelsManager v3.1 is required for learning system")
             raise RuntimeError("ModelsManager v3.1 required for Enhanced Learning Manager")
         
@@ -36,7 +36,7 @@ class EnhancedLearningManager:
             logger.error("❌ ConfigManager is required for learning system")
             raise RuntimeError("ConfigManager required for Enhanced Learning Manager")
         
-        self.model_manager = model_manager
+        self.models_manager = models_manager
         self.config_manager = config_manager
         
         # Load configuration using clean v3.1 manager architecture

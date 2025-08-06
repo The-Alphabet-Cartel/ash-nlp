@@ -251,11 +251,11 @@ def test_crisis_analyzer_integration():
         
         config_manager = ConfigManager("./config" if os.path.exists("./config") else "/app/config")
         crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
-        mock_model_manager = MockModelManager()
+        mock_models_manager = MockModelManager()
         
         # Test CrisisAnalyzer initialization with pattern manager
         crisis_analyzer = CrisisAnalyzer(
-            model_manager=mock_model_manager,
+            models_manager=mock_models_manager,
             crisis_pattern_manager=crisis_pattern_manager
         )
         

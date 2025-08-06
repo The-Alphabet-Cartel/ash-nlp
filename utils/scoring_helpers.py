@@ -283,12 +283,12 @@ def determine_crisis_level_from_context(phrase_data: Dict, confidence: float) ->
     # Default mapping with balanced thresholds
     return map_confidence_to_crisis_level(confidence)
 
-async def score_phrases_with_models(model_manager, phrases: List[str], original_message: str) -> List[Dict]:
+async def score_phrases_with_models(models_manager, phrases: List[str], original_message: str) -> List[Dict]:
     """
     Score extracted phrases using the ML models
     
     Args:
-        model_manager: ML model manager
+        models_manager: ML model manager
         phrases: List of phrases to score
         original_message: Original message for context
         
@@ -296,14 +296,14 @@ async def score_phrases_with_models(model_manager, phrases: List[str], original_
         List of phrases with scores
     """
     
-    if not model_manager or not phrases:
+    if not models_manager or not phrases:
         return []
     
     scored_phrases = []
     
     try:
         # Get models
-        depression_model = model_manager.get_model('depression') if hasattr(model_manager, 'get_model') else None
+        depression_model = models_manager.get_model('depression') if hasattr(models_manager, 'get_model') else None
         
         for phrase in phrases:
             if isinstance(phrase, dict):

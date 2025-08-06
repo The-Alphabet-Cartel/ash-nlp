@@ -972,7 +972,7 @@ class ModelsManager:
 # FACTORY FUNCTION FOR CLEAN ARCHITECTURE
 # ============================================================================
 
-def create_model_manager(config_manager, settings_manager=None, zero_shot_manager=None):
+def create_models_manager(config_manager, settings_manager=None, zero_shot_manager=None):
     """
     Factory function to create ModelsManager instance with clean architecture
     
@@ -989,5 +989,5 @@ def create_model_manager(config_manager, settings_manager=None, zero_shot_manage
 # Export for clean architecture
 __all__ = [
     'ModelsManager',
-    'create_model_manager'
+    'create_models_manager'
 ]

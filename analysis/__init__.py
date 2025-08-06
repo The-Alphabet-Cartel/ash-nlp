@@ -80,10 +80,23 @@ def get_implemented_features():
         ]
     }
 
-# Component factory functions
-def create_crisis_analyzer(model_manager):
-    """Create and return a CrisisAnalyzer instance"""
-    return CrisisAnalyzer(model_manager)
+# Component factory functions - Updated for Phase 3b
+def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning_manager=None, analysis_parameters_manager=None):
+    """
+    Create and return a CrisisAnalyzer instance with Phase 3b support
+    
+    Args:
+        models_manager: ML model manager for ensemble analysis
+        crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
+        learning_manager: Optional learning manager for feedback
+        analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
+    """
+    return CrisisAnalyzer(
+        models_manager=models_manager,
+        crisis_pattern_manager=crisis_pattern_manager,
+        learning_manager=learning_manager,
+        analysis_parameters_manager=analysis_parameters_manager
+    )
 
 __all__ = [
     # Core analyzer classes

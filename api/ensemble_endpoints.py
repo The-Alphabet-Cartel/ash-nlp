@@ -147,14 +147,14 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
             'integration_error': str(e)
         }
 
-def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis_pattern_manager=None):
+def add_ensemble_endpoints(app: FastAPI, models_manager, pydantic_manager, crisis_pattern_manager=None):
     """
     Add Three Zero-Shot Model Ensemble endpoints to FastAPI app
     Clean v3.1 implementation - Direct manager usage only
     
     Args:
         app: FastAPI application instance
-        model_manager: ModelsManager v3.1 instance (required)
+        models_manager: ModelsManager v3.1 instance (required)
         pydantic_manager: PydanticManager v3.1 instance (required)
     """
     
@@ -162,7 +162,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
-    if not model_manager:
+    if not models_manager:
         logger.error("❌ ModelsManager v3.1 is required but not provided")
         raise RuntimeError("ModelsManager v3.1 required for ensemble endpoints")
     
@@ -233,7 +233,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
             logger.debug(f"🔍 Clean v3.1: Analyzing message from user {request.user_id}")
             
             # Validate models are loaded - Direct manager check
-            if not model_manager.models_loaded():
+            if not models_manager.models_loaded():
                 logger.error("❌ Three Zero-Shot Model Ensemble not loaded")
                 raise HTTPException(
                     status_code=503, 
@@ -242,7 +242,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
             
             # STEP 1: Perform ensemble analysis - Direct manager usage
             try:
-                ensemble_analysis = await model_manager.analyze_message_ensemble(
+                ensemble_analysis = await models_manager.analyze_message_ensemble(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
@@ -343,14 +343,14 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
         """
         try:
             # Direct manager status checks - No fallbacks
-            models_loaded = model_manager.models_loaded() if model_manager else False
+            models_loaded = models_manager.models_loaded() if models_manager else False
             pydantic_available = pydantic_manager.is_initialized() if pydantic_manager else False
             
             # Get ensemble information - Direct manager usage
             ensemble_info = {}
-            if model_manager and models_loaded:
+            if models_manager and models_loaded:
                 try:
-                    ensemble_info = model_manager.get_ensemble_status()
+                    ensemble_info = models_manager.get_ensemble_status()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get ensemble status: {e}")
                     ensemble_info = {"error": str(e)}
@@ -377,7 +377,7 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
                     "summary": pydantic_info
                 },
                 "manager_integration": {
-                    "models_manager_v3_1": model_manager is not None,
+                    "models_manager_v3_1": models_manager is not None,
                     "pydantic_manager_v3_1": pydantic_manager is not None,
                     "direct_access_only": True,
                     "fallback_code": "removed"
@@ -410,12 +410,12 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
                 "architecture": "v3.1_clean",
                 "phase_2c_complete": True,
                 "managers": {
-                    "models_manager_v3_1": model_manager is not None,
+                    "models_manager_v3_1": models_manager is not None,
                     "pydantic_manager_v3_1": pydantic_manager is not None and pydantic_manager.is_initialized()
                 },
                 "models": {
-                    "loaded": model_manager.models_loaded() if model_manager else False,
-                    "count": 3 if model_manager and model_manager.models_loaded() else 0
+                    "loaded": models_manager.models_loaded() if models_manager else False,
+                    "count": 3 if models_manager and models_manager.models_loaded() else 0
                 },
                 "integration": {
                     "backward_compatibility": "removed",
@@ -469,15 +469,15 @@ def add_ensemble_endpoints(app: FastAPI, model_manager, pydantic_manager, crisis
             }
             
             # Get configuration from model manager - Direct usage
-            if model_manager:
+            if models_manager:
                 try:
-                    config_info["configuration"] = model_manager.get_configuration_status()
+                    config_info["configuration"] = models_manager.get_configuration_status()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model manager configuration: {e}")
                     config_info["configuration"] = {"error": str(e)}
                 
                 try:
-                    config_info["models"] = model_manager.get_model_info()
+                    config_info["models"] = models_manager.get_model_info()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model info: {e}")
                     config_info["models"] = {"error": str(e)}

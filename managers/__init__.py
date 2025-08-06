@@ -32,13 +32,13 @@ except ImportError as e:
 
 # ML Model Managers (Phase 2A)
 try:
-    from .models_manager import ModelsManager, create_model_manager
+    from .models_manager import ModelsManager, create_models_manager
     MODELS_MANAGER_AVAILABLE = True
     logger.debug("✅ ModelsManager v3.1 imported (Phase 2A)")
 except ImportError as e:
     logger.error(f"❌ ModelsManager v3.1 import failed: {e}")
     ModelsManager = None
-    create_model_manager = None
+    create_models_manager = None
     MODELS_MANAGER_AVAILABLE = False
 
 # Pydantic Model Managers (Phase 2B)
@@ -158,7 +158,7 @@ __all__ = [
     
     # ML Model Managers (Phase 2A)
     "ModelsManager",
-    "create_model_manager",
+    "create_models_manager",
     
     # Pydantic Model Managers (Phase 2B) 
     "PydanticManager",

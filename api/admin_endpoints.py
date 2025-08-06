@@ -44,13 +44,13 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_manager=None):
+def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern_manager=None):
     """
     Setup admin endpoints with clean v3.1 manager architecture - FIXED
     
     Args:
         app: FastAPI application instance
-        model_manager: ModelsManager v3.1 instance (required)
+        models_manager: ModelsManager v3.1 instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
         crisis_pattern_manager: CrisisPatternManager instance (optional)
     """
@@ -59,7 +59,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
-    if not model_manager:
+    if not models_manager:
         logger.error("❌ ModelsManager v3.1 is required for admin endpoints")
         raise RuntimeError("ModelsManager v3.1 required for admin endpoints")
     
@@ -88,7 +88,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_
                 ],
                 "managers": {
                     "zero_shot_manager": zero_shot_manager is not None,
-                    "model_manager": model_manager is not None,
+                    "models_manager": models_manager is not None,
                     "crisis_pattern_manager": crisis_pattern_manager is not None
                 }
             }
@@ -130,9 +130,9 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_
         try:
             # Direct manager access - no fallbacks
             model_status = {}
-            if model_manager.models_loaded():
+            if models_manager.models_loaded():
                 try:
-                    model_status = model_manager.get_model_status()
+                    model_status = models_manager.get_model_status()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model status: {e}")
                     model_status = {"error": str(e)}
@@ -152,7 +152,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_
                 "current_label_set": zero_shot_status.get('current_label_set', 'unknown'),
                 "available_sets": zero_shot_status.get('available_sets', []),
                 "label_stats": zero_shot_status.get('label_stats', {}),
-                "models_loaded": model_manager.models_loaded(),
+                "models_loaded": models_manager.models_loaded(),
                 "model_status": model_status,
                 "admin_endpoints_available": True,
                 "manager_integration": {
@@ -570,7 +570,7 @@ def setup_admin_endpoints(app, model_manager, zero_shot_manager, crisis_pattern_
     logger.info("   POST /admin/labels/reload - Configuration reload status")
     logger.info("✅ Fixed: All admin endpoints using correct manager methods")
 
-def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, model_manager=None):
+def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, models_manager=None):
     """Add admin endpoints to FastAPI app - Clean v3.1 Architecture FIXED"""
     logger.info("🔧 Adding admin endpoints with FIXED v3.1 manager architecture...")
     
@@ -578,7 +578,7 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
     try:
         setup_admin_endpoints(
             app=app,
-            model_manager=model_manager,
+            models_manager=models_manager,
             zero_shot_manager=zero_shot_manager,
             crisis_pattern_manager=crisis_pattern_manager  # FIXED: Pass crisis_pattern_manager
         )

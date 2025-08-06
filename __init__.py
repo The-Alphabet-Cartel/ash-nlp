@@ -84,7 +84,7 @@ def get_pydantic_models():
             "Check configuration and dependencies."
         )
 
-def create_model_manager():
+def create_models_manager():
     """
     Create ModelsManager instance with proper dependency injection
     
@@ -101,8 +101,8 @@ def create_model_manager():
         )
     
     # Import factory function
-    from .managers import create_model_manager as _create_model_manager
-    return _create_model_manager()
+    from .managers import create_models_manager as _create_models_manager
+    return _create_models_manager()
 
 def create_crisis_pattern_manager_instance(config_manager=None):
     """
@@ -207,7 +207,7 @@ def get_manager_status():
             "phase_3a_crisis_patterns": CrisisPatternManager is not None
         },
         "usage_notes": {
-            "manager_initialization": "Use create_pydantic_manager(), create_model_manager(), and create_crisis_pattern_manager_instance()",
+            "manager_initialization": "Use create_pydantic_manager(), create_models_manager(), and create_crisis_pattern_manager_instance()",
             "direct_access_only": "No global functions or legacy imports",
             "fail_fast_design": "Clear errors when managers unavailable",
             "crisis_patterns": "Crisis patterns now managed via CrisisPatternManager with JSON configuration"
@@ -239,7 +239,7 @@ __all__ = [
     
     # Manager creation functions
     "get_pydantic_models",
-    "create_model_manager",
+    "create_models_manager",
     "create_crisis_pattern_manager_instance",  # Phase 3a
     
     # Service info functions
