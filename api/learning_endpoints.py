@@ -58,6 +58,50 @@ class EnhancedLearningManager:
         logger.debug(f"   Sensitivity bounds: {self.min_global_sensitivity} to {self.max_global_sensitivity}")
         logger.debug(f"   Data file: {self.learning_data_path}")
     
+    # ========================================================================
+    # GET PYDANTIC MODELS - Direct Manager Access Only
+    # ========================================================================
+    def get_pydantic_models():
+        """Get Pydantic models - assumes they're available through PydanticManager"""
+        # This will be handled by the main application's PydanticManager
+        # For now, we'll import directly since we know they exist
+        try:
+            # These should be accessible through the application's PydanticManager
+            # but for simplicity in endpoints, we'll use a local function
+            from pydantic import BaseModel
+            from typing import Dict, Any, Optional, Union
+            
+            class FalsePositiveAnalysisRequest(BaseModel):
+                message: str
+                detected_level: str
+                correct_level: str
+                context: Optional[Dict[str, Any]] = {}
+                severity_score: Optional[Union[int, float]] = 1
+            
+            class FalseNegativeAnalysisRequest(BaseModel):
+                message: str
+                should_detect_level: str
+                actually_detected: str
+                context: Optional[Dict[str, Any]] = {}
+                severity_score: Optional[Union[int, float]] = 1
+            
+            class LearningUpdateRequest(BaseModel):
+                learning_record_id: str
+                record_type: str
+                message_data: Dict[str, Any]
+                correction_data: Dict[str, Any]
+                context_data: Optional[Dict[str, Any]] = {}
+                timestamp: str
+            
+            return {
+                'FalsePositiveAnalysisRequest': FalsePositiveAnalysisRequest,
+                'FalseNegativeAnalysisRequest': FalseNegativeAnalysisRequest,
+                'LearningUpdateRequest': LearningUpdateRequest
+            }
+        except Exception as e:
+            logger.error(f"❌ Could not access Pydantic models: {e}")
+            raise RuntimeError(f"Pydantic models not available: {e}")
+
     def _load_configuration_from_managers(self):
         """Load configuration using clean v3.1 manager architecture - NO FALLBACKS"""
         try:
@@ -566,14 +610,17 @@ class EnhancedLearningManager:
                 'error': str(e)
             }
 
-def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None):
+def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
+                                  analysis_parameters_manager=None, threshold_mapping_manager=None):
     """
-    Add enhanced learning endpoints to FastAPI app - Clean v3.1 Architecture
+    Add enhanced learning endpoints to FastAPI app - Phase 3c Enhanced
     
     Args:
         app: FastAPI application instance
         learning_manager: EnhancedLearningManager instance (required)
         config_manager: ConfigManager instance (optional, for compatibility)
+        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b) - NEW
+        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c) - NEW
     """
     
     # ========================================================================
@@ -584,59 +631,200 @@ def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None):
         logger.error("❌ EnhancedLearningManager is required for learning endpoints")
         raise RuntimeError("EnhancedLearningManager required for learning endpoints")
     
-    logger.info("✅ Clean v3.1: Learning endpoints using direct manager access")
+    logger.info("✅ Phase 3c: Learning endpoints using enhanced manager access")
     
-    # ========================================================================
-    # GET PYDANTIC MODELS - Direct Manager Access Only
-    # ========================================================================
-    
-    def get_pydantic_models():
-        """Get Pydantic models - assumes they're available through PydanticManager"""
-        # This will be handled by the main application's PydanticManager
-        # For now, we'll import directly since we know they exist
-        try:
-            # These should be accessible through the application's PydanticManager
-            # but for simplicity in endpoints, we'll use a local function
-            from pydantic import BaseModel
-            from typing import Dict, Any, Optional, Union
-            
-            class FalsePositiveAnalysisRequest(BaseModel):
-                message: str
-                detected_level: str
-                correct_level: str
-                context: Optional[Dict[str, Any]] = {}
-                severity_score: Optional[Union[int, float]] = 1
-            
-            class FalseNegativeAnalysisRequest(BaseModel):
-                message: str
-                should_detect_level: str
-                actually_detected: str
-                context: Optional[Dict[str, Any]] = {}
-                severity_score: Optional[Union[int, float]] = 1
-            
-            class LearningUpdateRequest(BaseModel):
-                learning_record_id: str
-                record_type: str
-                message_data: Dict[str, Any]
-                correction_data: Dict[str, Any]
-                context_data: Optional[Dict[str, Any]] = {}
-                timestamp: str
-            
-            return {
-                'FalsePositiveAnalysisRequest': FalsePositiveAnalysisRequest,
-                'FalseNegativeAnalysisRequest': FalseNegativeAnalysisRequest,
-                'LearningUpdateRequest': LearningUpdateRequest
-            }
-        except Exception as e:
-            logger.error(f"❌ Could not access Pydantic models: {e}")
-            raise RuntimeError(f"Pydantic models not available: {e}")
-    
-    # Get models for endpoint type hints
+    # Get Pydantic models (keep existing function)
     models = get_pydantic_models()
     
     # ========================================================================
-    # LEARNING ENDPOINTS - Clean v3.1 Implementation
+    # NEW Phase 3c Learning System Status Endpoint - ADD THIS
     # ========================================================================
+    
+    @app.get("/learning/status")
+    async def learning_system_status():
+        """Get comprehensive learning system status - Phase 3c Enhanced"""
+        try:
+            # Basic learning manager status
+            stats = learning_manager.get_learning_statistics()
+            
+            status = {
+                "learning_system_available": True,
+                "phase": "3c",
+                "architecture": "clean_v3.1_with_phase_3c_integration",
+                "manager_integration": "direct_access_enhanced",
+                "configuration_externalized": True,
+                "statistics": stats
+            }
+            
+            # Phase 3b - Analysis Parameters Integration - NEW
+            if analysis_parameters_manager:
+                try:
+                    learning_params = analysis_parameters_manager.get_pattern_learning_parameters()
+                    status["analysis_parameters"] = {
+                        "available": True,
+                        "learning_rate": learning_params.get('learning_rate'),
+                        "confidence_adjustments": {
+                            "min": learning_params.get('min_confidence_adjustment'),
+                            "max": learning_params.get('max_confidence_adjustment')
+                        },
+                        "daily_limits": learning_params.get('max_adjustments_per_day'),
+                        "phase_3b_integrated": True
+                    }
+                except Exception as e:
+                    status["analysis_parameters"] = {"available": False, "error": str(e)}
+            else:
+                status["analysis_parameters"] = {"available": False, "reason": "AnalysisParametersManager not provided"}
+            
+            # Phase 3c - Threshold Mapping Integration - NEW
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_thresholds()
+                    status["threshold_mapping"] = {
+                        "available": True,
+                        "current_mode": current_mode,
+                        "learning_integration": "threshold_adjustment_capable",
+                        "crisis_thresholds": crisis_thresholds,
+                        "phase_3c_integrated": True
+                    }
+                except Exception as e:
+                    status["threshold_mapping"] = {"available": False, "error": str(e)}
+            else:
+                status["threshold_mapping"] = {"available": False, "reason": "ThresholdMappingManager not provided"}
+            
+            return status
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting learning system status: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Learning system status error: {str(e)}"
+            )
+
+    # ========================================================================
+    # NEW Phase 3c Threshold-Aware Learning Analysis - ADD THIS
+    # ========================================================================
+    
+    @app.post("/learning/analyze_with_thresholds")
+    async def analyze_with_threshold_awareness(request: dict):
+        """
+        Analyze learning patterns with threshold awareness - Phase 3c
+        Integrates learning analysis with current threshold configuration
+        """
+        try:
+            if not threshold_mapping_manager:
+                return {
+                    "status": "threshold_manager_not_available",
+                    "message": "ThresholdMappingManager required for threshold-aware learning",
+                    "basic_analysis": "Use standard learning endpoints instead"
+                }
+            
+            # Get current threshold context
+            current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+            crisis_thresholds = threshold_mapping_manager.get_crisis_level_thresholds()
+            
+            # Analyze learning pattern with threshold context
+            learning_analysis = {
+                "threshold_context": {
+                    "current_mode": current_mode,
+                    "crisis_thresholds": crisis_thresholds
+                },
+                "learning_recommendations": [],
+                "threshold_adjustments": []
+            }
+            
+            # Basic learning pattern analysis
+            message = request.get('message', '')
+            user_feedback = request.get('user_feedback', {})
+            
+            # Analyze if learning should adjust thresholds for current mode
+            if user_feedback.get('type') == 'false_positive':
+                threshold_suggestion = {
+                    "mode": current_mode,
+                    "adjustment_type": "increase_threshold",
+                    "severity": user_feedback.get('severity', 'medium'),
+                    "reason": "False positive indicates threshold may be too low"
+                }
+                learning_analysis["threshold_adjustments"].append(threshold_suggestion)
+                learning_analysis["learning_recommendations"].append(
+                    f"Consider increasing {current_mode} mode thresholds to reduce false positives"
+                )
+            
+            elif user_feedback.get('type') == 'false_negative':
+                threshold_suggestion = {
+                    "mode": current_mode,
+                    "adjustment_type": "decrease_threshold", 
+                    "severity": user_feedback.get('severity', 'medium'),
+                    "reason": "False negative indicates threshold may be too high"
+                }
+                learning_analysis["threshold_adjustments"].append(threshold_suggestion)
+                learning_analysis["learning_recommendations"].append(
+                    f"Consider decreasing {current_mode} mode thresholds to catch more cases"
+                )
+            
+            learning_analysis["phase_3c_complete"] = True
+            learning_analysis["threshold_aware"] = True
+            
+            return learning_analysis
+            
+        except Exception as e:
+            logger.error(f"❌ Error in threshold-aware learning analysis: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Threshold-aware learning analysis failed: {str(e)}"
+            )
+
+    # ========================================================================
+    # NEW Enhanced Learning Statistics with Phase 3c Context - ADD THIS
+    # ========================================================================
+    
+    @app.get("/learning/statistics_enhanced")
+    async def get_enhanced_learning_statistics():
+        """Get learning statistics with Phase 3c context"""
+        try:
+            # Get base statistics
+            base_stats = learning_manager.get_learning_statistics()
+            
+            enhanced_stats = {
+                **base_stats,
+                "phase_3c_enhancements": {
+                    "threshold_aware": threshold_mapping_manager is not None,
+                    "analysis_parameter_integration": analysis_parameters_manager is not None,
+                    "configuration_externalized": True
+                }
+            }
+            
+            # Add threshold context if available
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    enhanced_stats["threshold_context"] = {
+                        "current_ensemble_mode": current_mode,
+                        "threshold_source": "JSON + environment configuration"
+                    }
+                except Exception as e:
+                    enhanced_stats["threshold_context"] = {"error": str(e)}
+            
+            # Add analysis parameter context if available
+            if analysis_parameters_manager:
+                try:
+                    learning_params = analysis_parameters_manager.get_pattern_learning_parameters()
+                    enhanced_stats["analysis_parameter_context"] = {
+                        "source": "AnalysisParametersManager",
+                        "externalized": True,
+                        "learning_rate": learning_params.get('learning_rate')
+                    }
+                except Exception as e:
+                    enhanced_stats["analysis_parameter_context"] = {"error": str(e)}
+            
+            return enhanced_stats
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting enhanced learning statistics: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Enhanced learning statistics failed: {str(e)}"
+            )
     
     @app.post("/analyze_false_negative")
     async def analyze_false_negative(request: models['FalseNegativeAnalysisRequest']):
