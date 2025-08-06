@@ -1,0 +1,269 @@
+{
+  "analysis_system": {
+    "version": "3.1",
+    "phase": "3b",
+    "description": "Analysis algorithm parameters for Ash NLP Service",
+    "architecture": "clean_v3.1_phase_3b",
+    "repository": "https://github.com/the-alphabet-cartel/ash-nlp"
+  },
+  "crisis_thresholds": {
+    "description": "Core crisis level mapping thresholds for analysis algorithms",
+    "high": "${NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH}",
+    "medium": "${NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM}",
+    "low": "${NLP_ANALYSIS_CRISIS_THRESHOLD_LOW}",
+    "defaults": {
+      "high": 0.55,
+      "medium": 0.28,
+      "low": 0.16
+    },
+    "validation": {
+      "range": {
+        "min": 0.0,
+        "max": 1.0
+      },
+      "ordering": "high > medium > low",
+      "notes": "Thresholds adjusted from original values to match systematic approach"
+    }
+  },
+  "phrase_extraction": {
+    "description": "Parameters for crisis phrase extraction from messages",
+    "min_phrase_length": "${NLP_ANALYSIS_MIN_PHRASE_LENGTH}",
+    "max_phrase_length": "${NLP_ANALYSIS_MAX_PHRASE_LENGTH}",
+    "crisis_focus": "${NLP_ANALYSIS_PHRASE_CRISIS_FOCUS}",
+    "community_specific": "${NLP_ANALYSIS_PHRASE_COMMUNITY_SPECIFIC}",
+    "min_confidence": "${NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE}",
+    "max_results": "${NLP_ANALYSIS_PHRASE_MAX_RESULTS}",
+    "defaults": {
+      "min_phrase_length": 2,
+      "max_phrase_length": 6,
+      "crisis_focus": true,
+      "community_specific": true,
+      "min_confidence": 0.3,
+      "max_results": 20
+    },
+    "validation": {
+      "min_phrase_length": {
+        "range": [1, 10],
+        "type": "integer"
+      },
+      "max_phrase_length": {
+        "range": [2, 20],
+        "type": "integer"
+      },
+      "min_confidence": {
+        "range": [0.0, 1.0],
+        "type": "float"
+      },
+      "max_results": {
+        "range": [1, 100],
+        "type": "integer"
+      }
+    }
+  },
+  "pattern_learning": {
+    "description": "Parameters for learning distinctive crisis patterns from community messages",
+    "min_crisis_messages": "${NLP_ANALYSIS_PATTERN_MIN_CRISIS_MESSAGES}",
+    "max_phrases_to_analyze": "${NLP_ANALYSIS_PATTERN_MAX_PHRASES_TO_ANALYZE}",
+    "min_distinctiveness_ratio": "${NLP_ANALYSIS_PATTERN_MIN_DISTINCTIVENESS_RATIO}",
+    "min_frequency": "${NLP_ANALYSIS_PATTERN_MIN_FREQUENCY}",
+    "confidence_thresholds": {
+      "high_confidence": "${NLP_ANALYSIS_PATTERN_HIGH_CONFIDENCE}",
+      "medium_confidence": "${NLP_ANALYSIS_PATTERN_MEDIUM_CONFIDENCE}",
+      "low_confidence": "${NLP_ANALYSIS_PATTERN_LOW_CONFIDENCE}",
+      "defaults": {
+        "high_confidence": 0.7,
+        "medium_confidence": 0.4,
+        "low_confidence": 0.1
+      }
+    },
+    "defaults": {
+      "min_crisis_messages": 10,
+      "max_phrases_to_analyze": 200,
+      "min_distinctiveness_ratio": 2.0,
+      "min_frequency": 3,
+      "confidence_thresholds": {
+        "high_confidence": 0.7,
+        "medium_confidence": 0.4,
+        "low_confidence": 0.1
+      }
+    },
+    "validation": {
+      "min_crisis_messages": {
+        "range": [1, 1000],
+        "type": "integer"
+      },
+      "max_phrases_to_analyze": {
+        "range": [10, 10000],
+        "type": "integer"
+      },
+      "min_distinctiveness_ratio": {
+        "range": [1.0, 10.0],
+        "type": "float"
+      },
+      "min_frequency": {
+        "range": [1, 100],
+        "type": "integer"
+      },
+      "confidence_thresholds": {
+        "range": [0.0, 1.0],
+        "type": "float",
+        "ordering": "high_confidence > medium_confidence > low_confidence"
+      }
+    }
+  },
+  "semantic_analysis": {
+    "description": "Parameters for semantic analysis and context understanding",
+    "context_window": "${NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW}",
+    "boost_weights": {
+      "description": "Weight adjustments for different types of semantic signals",
+      "high_relevance": "${NLP_ANALYSIS_SEMANTIC_HIGH_RELEVANCE_BOOST}",
+      "medium_relevance": "${NLP_ANALYSIS_SEMANTIC_MEDIUM_RELEVANCE_BOOST}",
+      "family_rejection": "${NLP_ANALYSIS_SEMANTIC_FAMILY_REJECTION_BOOST}",
+      "discrimination_fear": "${NLP_ANALYSIS_SEMANTIC_DISCRIMINATION_FEAR_BOOST}",
+      "support_seeking": "${NLP_ANALYSIS_SEMANTIC_SUPPORT_SEEKING_BOOST}",
+      "defaults": {
+        "high_relevance": 0.1,
+        "medium_relevance": 0.05,
+        "family_rejection": 0.15,
+        "discrimination_fear": 0.15,
+        "support_seeking": -0.05
+      }
+    },
+    "defaults": {
+      "context_window": 3,
+      "boost_weights": {
+        "high_relevance": 0.1,
+        "medium_relevance": 0.05,
+        "family_rejection": 0.15,
+        "discrimination_fear": 0.15,
+        "support_seeking": -0.05
+      }
+    },
+    "validation": {
+      "context_window": {
+        "range": [1, 10],
+        "type": "integer"
+      },
+      "boost_weights": {
+        "range": [-1.0, 1.0],
+        "type": "float",
+        "notes": "Negative values reduce crisis level (positive context), positive values increase crisis level"
+      }
+    }
+  },
+  "advanced_parameters": {
+    "description": "Advanced analysis parameters for fine-tuning algorithm behavior",
+    "pattern_confidence_boost": "${NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST}",
+    "model_confidence_boost": "${NLP_ANALYSIS_MODEL_CONFIDENCE_BOOST}",
+    "context_signal_weight": "${NLP_ANALYSIS_CONTEXT_SIGNAL_WEIGHT}",
+    "temporal_urgency_multiplier": "${NLP_ANALYSIS_TEMPORAL_URGENCY_MULTIPLIER}",
+    "community_awareness_boost": "${NLP_ANALYSIS_COMMUNITY_AWARENESS_BOOST}",
+    "defaults": {
+      "pattern_confidence_boost": 0.05,
+      "model_confidence_boost": 0.0,
+      "context_signal_weight": 1.0,
+      "temporal_urgency_multiplier": 1.2,
+      "community_awareness_boost": 0.1
+    },
+    "validation": {
+      "pattern_confidence_boost": {
+        "range": [0.0, 0.5],
+        "type": "float"
+      },
+      "model_confidence_boost": {
+        "range": [-0.5, 0.5],
+        "type": "float"
+      },
+      "context_signal_weight": {
+        "range": [0.0, 2.0],
+        "type": "float"
+      },
+      "temporal_urgency_multiplier": {
+        "range": [1.0, 3.0],
+        "type": "float"
+      },
+      "community_awareness_boost": {
+        "range": [0.0, 0.5],
+        "type": "float"
+      }
+    }
+  },
+  "integration_settings": {
+    "description": "Settings for integrating analysis components",
+    "enable_pattern_analysis": "${NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS}",
+    "enable_semantic_analysis": "${NLP_ANALYSIS_ENABLE_SEMANTIC_ANALYSIS}",
+    "enable_phrase_extraction": "${NLP_ANALYSIS_ENABLE_PHRASE_EXTRACTION}",
+    "enable_pattern_learning": "${NLP_ANALYSIS_ENABLE_PATTERN_LEARNING}",
+    "integration_mode": "${NLP_ANALYSIS_INTEGRATION_MODE}",
+    "defaults": {
+      "enable_pattern_analysis": true,
+      "enable_semantic_analysis": true,
+      "enable_phrase_extraction": true,
+      "enable_pattern_learning": true,
+      "integration_mode": "full"
+    },
+    "available_integration_modes": {
+      "minimal": "Basic crisis detection only",
+      "standard": "Crisis detection + pattern analysis",
+      "enhanced": "Standard + semantic analysis",
+      "full": "All analysis components enabled"
+    }
+  },
+  "performance_settings": {
+    "description": "Performance-related parameters for analysis algorithms",
+    "analysis_timeout_ms": "${NLP_ANALYSIS_TIMEOUT_MS}",
+    "max_concurrent_analyses": "${NLP_ANALYSIS_MAX_CONCURRENT}",
+    "cache_analysis_results": "${NLP_ANALYSIS_ENABLE_CACHING}",
+    "cache_ttl_seconds": "${NLP_ANALYSIS_CACHE_TTL_SECONDS}",
+    "enable_parallel_processing": "${NLP_ANALYSIS_ENABLE_PARALLEL_PROCESSING}",
+    "defaults": {
+      "analysis_timeout_ms": 5000,
+      "max_concurrent_analyses": 10,
+      "cache_analysis_results": true,
+      "cache_ttl_seconds": 300,
+      "enable_parallel_processing": true
+    },
+    "validation": {
+      "analysis_timeout_ms": {
+        "range": [1000, 30000],
+        "type": "integer"
+      },
+      "max_concurrent_analyses": {
+        "range": [1, 100],
+        "type": "integer"
+      },
+      "cache_ttl_seconds": {
+        "range": [60, 3600],
+        "type": "integer"
+      }
+    }
+  },
+  "debugging_settings": {
+    "description": "Parameters for debugging and development",
+    "enable_detailed_logging": "${NLP_ANALYSIS_ENABLE_DETAILED_LOGGING}",
+    "log_analysis_steps": "${NLP_ANALYSIS_LOG_ANALYSIS_STEPS}",
+    "include_reasoning_in_response": "${NLP_ANALYSIS_INCLUDE_REASONING}",
+    "enable_performance_metrics": "${NLP_ANALYSIS_ENABLE_PERFORMANCE_METRICS}",
+    "defaults": {
+      "enable_detailed_logging": false,
+      "log_analysis_steps": false,
+      "include_reasoning_in_response": true,
+      "enable_performance_metrics": true
+    }
+  },
+  "feature_flags": {
+    "description": "Feature flags for experimental analysis features",
+    "experimental_analysis_features": {
+      "enable_advanced_context_analysis": "${NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT}",
+      "enable_community_vocabulary_boost": "${NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB}",
+      "enable_temporal_pattern_detection": "${NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS}",
+      "enable_multi_language_support": "${NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE}",
+      "defaults": {
+        "enable_advanced_context_analysis": false,
+        "enable_community_vocabulary_boost": false,
+        "enable_temporal_pattern_detection": false,
+        "enable_multi_language_support": false
+      }
+    }
+  }
+}
