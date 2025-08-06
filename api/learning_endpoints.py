@@ -679,7 +679,7 @@ def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
             if threshold_mapping_manager:
                 try:
                     current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_thresholds()
+                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
                     status["threshold_mapping"] = {
                         "available": True,
                         "current_mode": current_mode,
