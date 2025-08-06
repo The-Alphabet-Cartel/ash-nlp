@@ -8,6 +8,7 @@ Repository: https://github.com/the-alphabet-cartel/ash-nlp
 """
 
 import os
+import json
 import logging
 from typing import Dict, Any, Optional, Union, List
 from pathlib import Path
@@ -40,8 +41,20 @@ class AnalysisParametersManager:
     def _load_analysis_parameters(self):
         """Load analysis parameters from JSON configuration with environment overrides"""
         try:
-            # Load analysis parameters configuration
-            analysis_config_raw = self.config_manager.get_configuration('analysis_parameters')
+            # Load analysis parameters configuration using the ConfigManager's method
+            # Since ConfigManager doesn't have get_configuration(), we'll load the file directly
+            config_file_path = self.config_manager.config_dir / "analysis_parameters.json"
+            
+            if not config_file_path.exists():
+                logger.error(f"❌ Analysis parameters configuration file not found: {config_file_path}")
+                raise ValueError("Analysis parameters configuration file not available")
+            
+            # Load raw JSON
+            with open(config_file_path, 'r', encoding='utf-8') as f:
+                raw_config = json.load(f)
+            
+            # Apply environment variable substitutions using ConfigManager's method
+            analysis_config_raw = self.config_manager.substitute_environment_variables(raw_config)
             
             if not analysis_config_raw:
                 logger.error("❌ Failed to load analysis_parameters.json configuration")
@@ -49,6 +62,9 @@ class AnalysisParametersManager:
             
             # Extract analysis system configuration
             self.analysis_config = analysis_config_raw.get("analysis_system", {})
+            
+            # Store the full configuration for access by parameter methods
+            self._full_config = analysis_config_raw
             
             logger.info("✅ Analysis parameters loaded from JSON configuration with environment overrides")
             logger.debug(f"📋 Configuration version: {self.analysis_config.get('version', 'unknown')}")
@@ -70,9 +86,7 @@ class AnalysisParametersManager:
             Dictionary with high, medium, low thresholds
         """
         try:
-            # Load from configuration
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            thresholds_config = config_raw.get('crisis_thresholds', {})
+            thresholds_config = self._full_config.get('crisis_thresholds', {})
             
             # Extract thresholds with environment variable support
             thresholds = {
@@ -107,8 +121,7 @@ class AnalysisParametersManager:
             Dictionary with phrase extraction configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            phrase_config = config_raw.get('phrase_extraction', {})
+            phrase_config = self._full_config.get('phrase_extraction', {})
             
             parameters = {
                 'min_phrase_length': int(phrase_config.get('min_phrase_length', 
@@ -152,8 +165,7 @@ class AnalysisParametersManager:
             Dictionary with pattern learning configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            pattern_config = config_raw.get('pattern_learning', {})
+            pattern_config = self._full_config.get('pattern_learning', {})
             defaults = pattern_config.get('defaults', {})
             
             parameters = {
@@ -224,8 +236,7 @@ class AnalysisParametersManager:
             Dictionary with semantic analysis configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            semantic_config = config_raw.get('semantic_analysis', {})
+            semantic_config = self._full_config.get('semantic_analysis', {})
             defaults = semantic_config.get('defaults', {})
             
             parameters = {
@@ -295,8 +306,7 @@ class AnalysisParametersManager:
             Dictionary with advanced analysis configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            advanced_config = config_raw.get('advanced_parameters', {})
+            advanced_config = self._full_config.get('advanced_parameters', {})
             defaults = advanced_config.get('defaults', {})
             
             parameters = {
@@ -338,8 +348,7 @@ class AnalysisParametersManager:
             Dictionary with integration configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            integration_config = config_raw.get('integration_settings', {})
+            integration_config = self._full_config.get('integration_settings', {})
             defaults = integration_config.get('defaults', {})
             
             settings = {
@@ -381,8 +390,7 @@ class AnalysisParametersManager:
             Dictionary with performance configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            performance_config = config_raw.get('performance_settings', {})
+            performance_config = self._full_config.get('performance_settings', {})
             defaults = performance_config.get('defaults', {})
             
             settings = {
@@ -424,8 +432,7 @@ class AnalysisParametersManager:
             Dictionary with debugging configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            debug_config = config_raw.get('debugging_settings', {})
+            debug_config = self._full_config.get('debugging_settings', {})
             defaults = debug_config.get('defaults', {})
             
             settings = {
@@ -464,8 +471,7 @@ class AnalysisParametersManager:
             Dictionary with experimental feature configuration
         """
         try:
-            config_raw = self.config_manager.get_configuration('analysis_parameters')
-            feature_config = config_raw.get('feature_flags', {})
+            feature_config = self._full_config.get('feature_flags', {})
             experimental_config = feature_config.get('experimental_analysis_features', {})
             defaults = experimental_config.get('defaults', {})
             
