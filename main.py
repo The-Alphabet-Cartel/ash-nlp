@@ -429,9 +429,9 @@ async def lifespan(app: FastAPI):
             logger.error(f"❌ Failed to add ensemble endpoints: {e}")
             raise RuntimeError(f"Ensemble endpoints setup failed: {e}")
         
-        # 2. Add admin endpoints - Using actual signature
+        # 2. Add admin endpoints - Phase 3c Enhanced
         try:
-            logger.info("🛠️ Adding admin endpoints...")
+            logger.info("🛠️ Adding admin endpoints with Phase 3c integration...")
             from api.admin_endpoints import add_admin_endpoints
             
             add_admin_endpoints(
@@ -439,10 +439,12 @@ async def lifespan(app: FastAPI):
                 config_manager=config_manager,
                 settings_manager=settings_manager, 
                 zero_shot_manager=zero_shot_manager,
-                crisis_pattern_manager=crisis_pattern_manager,
-                models_manager=models_manager
+                crisis_pattern_manager=crisis_pattern_manager,  # Phase 3a
+                models_manager=models_manager,
+                analysis_parameters_manager=analysis_parameters_manager,  # Phase 3b - NEW
+                threshold_mapping_manager=threshold_mapping_manager  # Phase 3c - NEW
             )
-            logger.info("✅ Admin endpoints added successfully!")
+            logger.info("✅ Admin endpoints added with complete Phase 3c integration!")
             
         except ImportError as e:
             logger.warning(f"⚠️ Admin endpoints not available - module not found: {e}")
@@ -450,17 +452,19 @@ async def lifespan(app: FastAPI):
             logger.error(f"❌ Admin endpoints failed to load: {e}")
             # Don't raise - admin endpoints are not critical for core functionality
         
-        # 3. Add learning endpoints - Using actual signature  
+        # 3. Add learning endpoints - Phase 3c Enhanced
         try:
-            logger.info("🧠 Adding enhanced learning system endpoints...")
+            logger.info("🧠 Adding enhanced learning system endpoints with Phase 3c integration...")
             from api.learning_endpoints import add_enhanced_learning_endpoints
             
             add_enhanced_learning_endpoints(
                 app,
                 learning_manager=learning_manager,
-                config_manager=config_manager
+                config_manager=config_manager,
+                analysis_parameters_manager=analysis_parameters_manager,  # Phase 3b - NEW
+                threshold_mapping_manager=threshold_mapping_manager  # Phase 3c - NEW
             )
-            logger.info("✅ Enhanced learning endpoints added successfully!")
+            logger.info("✅ Enhanced learning endpoints added with complete Phase 3c integration!")
             
         except ImportError as e:
             logger.warning(f"⚠️ Learning endpoints not available - module not found: {e}")
