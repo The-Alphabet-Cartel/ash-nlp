@@ -17,12 +17,20 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
 ### 🎯 **Configuration Management Philosophy**
 - **GitHub Is The Central Source Of Everything!**
   - ALL project knowledge, files, and directory structures are found here.
-  - We are working from the `ash` repository
-    - We are working from the `v3.0` branch for `ash`
+  - We are working from the `ash` repository.
+    - We are working from the `v3.0` branch for `ash`.
     - https://github.com/The-Alphabet-Cartel/ash/tree/v3.0
-  - We are working from the `ash-nlp` repository
-    - We are working from the `v3.1` branch for `ash-nlp`
+  - We are working from the `ash-nlp` repository.
+    - We are working from the `v3.1` branch for `ash-nlp`.
     - https://github.com/The-Alphabet-Cartel/ash-nlp/tree/v3.1
+  - We keep track of progress for each phase in the associated tracker document.
+    - These files are to be kept up to date with each milestone reached so that future work can be continued from them as needed.
+    - We are working with the documentation files:
+      - `docs/project_instructions_v3_1.md`
+      - `docs/v3.1/migration_guide_v3_1.md`
+      - `docs/v3.1/*phase*/tracker.md`
+      - `docs/v3.1/*phase*/issues_tracker.md`
+      - `docs/v3.1/*phase*/testing_tracker.md`
 
 ### 🏗️ **Clean v3.1 Architecture Principles**
 - **Dependency Injection**
@@ -74,18 +82,17 @@ ash/ash-nlp/
 │   └── __init__.py
 ├── docs/                                    # Documentation
 │   ├── v3.1/
-│   │   ├── phase_3a/
-│   │   │   ├── testing/
-│   │   │   |   └── 3a_testing_tracker.md
-│   │   │   └── 3a_issue_tracker.md
-│   │   ├── phase_3b/
-│   │   │   ├── testing/
-│   │   │   |   └── 3b_testing_tracker.md
-│   │   │   └── 3b_issue_tracker.md
-│   │   ├── phase_3c/
-│   │   │   ├── testing/
-│   │   │   |   └── 3c_testing_tracker.md
-│   │   │   └── 3c_issue_tracker.md
+│   │   ├── 3a/
+│   │   │   ├── issue_tracker.md
+│   │   |   └── testing_tracker.md
+│   │   ├── 3b/
+│   │   │   ├── issue_tracker.md
+│   │   |   ├── testing_tracker.md
+│   │   │   └── tracker.md
+│   │   ├── 3c/
+│   │   │   ├── issue_tracker.md
+│   │   |   ├── testing_tracker.md
+│   │   │   └── tracker.md
 │   │   └── migration_guide_v3_1.md
 │   └── project_instructions_v3_1.md
 ├── learning_data/                           # Learning Data Storage
@@ -391,6 +398,11 @@ The system now intelligently combines:
 - **Scope**: Migrate threshold and mapping logic to JSON configuration  
 - **Objective**: Complete configuration externalization for analysis pipeline
 - **Components**: Crisis level mappings, ensemble decision rules, output formatting
+
+### Phase 3d: Environmental Variables Cleanup (Future)
+- **Scope**: Ensure Environmental Variables are as streamlined as possible
+- **Objective**: Identify, update, and/or remove all duplicate and/or similarly functioning environmental variables
+- **Components**: All Project Components
 
 ### Phase 4: Advanced Features (Future)
 - **Advanced analytics and reporting features**

@@ -1,4 +1,4 @@
-# Ash NLP Service v3.0 - Three-Model Crisis Detection Ensemble
+# Ash NLP Service v3.1 - Three-Model Crisis Detection Ensemble
 
 **Revolutionary mental health crisis detection using advanced AI ensemble methods**
 
@@ -6,9 +6,9 @@
 [![Website](https://img.shields.io/badge/Website-alphabetcartel.org-blue)](http://alphabetcartel.org)
 [![GitHub](https://img.shields.io/badge/Branch-Main-green)](https://github.com/the-alphabet-cartel/ash-nlp)
 
-## 🚀 What is Ash NLP v3.0?
+## 🚀 What is Ash NLP v3.1?
 
-Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
+Ash NLP v3.1 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
 
 - **🧠 Enhanced accuracy** through model consensus and disagreement detection
 - **⚡ Sub-35ms response times** optimized for real-time Discord interactions
@@ -41,7 +41,7 @@ Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designe
 ### Ensemble Decision Making
 - **Consensus Mode**: All models must agree for high confidence
 - **Majority Mode**: Democratic voting with confidence weighting
-- **Weighted Mode**: Configurable model importance (Depression: 50%, Sentiment: 20%, Distress: 30%)
+- **Weighted Mode**: Configurable model importance (Depression: 75%, Sentiment: 10%, Distress: 15%)
 
 ### Gap Detection System
 - **Meaningful Disagreement Detection**: Identifies when models fundamentally disagree
@@ -130,7 +130,7 @@ NLP_MAX_CONCURRENT_REQUESTS=20
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Depression    │    │    Sentiment     │    │ Emotional       │
 │     Model       │    │     Model        │    │ Distress Model  │
-│   (DeBERTa)     │    │   (DeBERTa)      │    │ (BART)          │
+│   (DeBERTa)     │    │   (DeBERTa)      │    │ (DeBERTa)       │
 └─────────────────┘    └──────────────────┘    └─────────────────┘
          │                       │                       │
          └───────────────────────┼───────────────────────┘
@@ -150,16 +150,16 @@ NLP_MAX_CONCURRENT_REQUESTS=20
                     └─────────────────────────┘
 ```
 
-## 📚 Documentation
-
-- **[API Documentation](docs/tech/api_v3_0.md)** - Complete API reference
-- **[Team Guide](docs/team/team_guide_v3_0.md)** - Guide for crisis response teams
-- **[Troubleshooting](docs/troubleshooting_v3_0.md)** - Common issues and solutions
-- **[GitHub Release Notes](docs/github/github_release_v3_0.md)** - Version 3.0 details
-
+> ## 📚 Documentation
+>
+>- **[API Documentation](docs/tech/api_v3_0.md)** - Complete API reference
+>- **[Team Guide](docs/team/team_guide_v3_0.md)** - Guide for crisis response teams
+>- **[Troubleshooting](docs/troubleshooting_v3_0.md)** - Common issues and solutions
+>- **[GitHub Release Notes](docs/github/github_release_v3_0.md)** - Version 3.0 details
+>
 ## 🤝 Integration with Ash Ecosystem
 
-Ash NLP v3.0 integrates seamlessly with:
+Ash NLP v3.1 integrates seamlessly with:
 
 - **[Ash Bot](https://github.com/the-alphabet-cartel/ash-bot)** - Discord crisis response bot
 - **[Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash)** - Analytics and monitoring (Not Yet Implemented)
@@ -174,7 +174,7 @@ Ash NLP v3.0 integrates seamlessly with:
 
 ## 🧪 Experimental Features
 
-Version 3.0 includes cutting-edge features:
+Version 3.1 includes cutting-edge features:
 
 - **Confidence Spreading**: Dynamic threshold adjustment based on model agreement
 - **Community Pattern Learning**: Adaptive recognition of LGBTQIA+ specific language
