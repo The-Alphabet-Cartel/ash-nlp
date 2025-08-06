@@ -141,7 +141,6 @@ class TestPhase3cSystemIntegration:
         assert config_summary['phase'] == '3c'
         assert 'threshold_configuration' in config_summary
     
-    @asyncio.coroutine
     async def test_crisis_analyzer_message_analysis_integration(self, mock_threshold_manager, mock_crisis_pattern_manager, mock_analysis_parameters_manager):
         """Test complete message analysis with Phase 3c integration"""
         # Create mock models manager with ensemble capability
