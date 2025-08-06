@@ -23,7 +23,7 @@ from managers.config_manager import ConfigManager
 from managers.settings_manager import SettingsManager 
 from managers.zero_shot_manager import ZeroShotManager
 from managers.pydantic_manager import PydanticManager
-from managers.models_manager import ModelsManager
+from managers.models_manager import ModelsManager,create_models_manager
 from analysis.crisis_analyzer import CrisisAnalyzer
 
 # ============================================================================
@@ -190,7 +190,7 @@ async def initialize_components_clean_v3_1():
         
         # Initialize ModelsManager
         try:
-            models_manager = ModelsManager()
+            models_manager = create_models_manager(config_manager)
             
             # Load models (this may take time)
             logger.info("🔄 Loading Three Zero-Shot Model Ensemble...")
