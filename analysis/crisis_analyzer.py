@@ -28,16 +28,16 @@ class CrisisAnalyzer:
     Phase 3a: Clean v3.1 architecture with JSON-based patterns
     """
     
-    def __init__(self, model_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None):
+    def __init__(self, models_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None):
         """
         Initialize CrisisAnalyzer with managers
         
         Args:
-            model_manager: ML model manager for ensemble analysis
+            models_manager: ML model manager for ensemble analysis
             crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
             learning_manager: Optional learning manager for feedback
         """
-        self.model_manager = model_manager
+        self.models_manager = models_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.learning_manager = learning_manager
         
@@ -91,9 +91,9 @@ class CrisisAnalyzer:
             reasoning_steps.append(f"Pattern Analysis: {pattern_analysis.get('summary', 'none')}")
             
             # Step 3: Three Zero-Shot Model Ensemble ANALYSIS
-            if hasattr(self.model_manager, 'analyze_with_ensemble'):
+            if hasattr(self.models_manager, 'analyze_with_ensemble'):
                 # Use the new Three Zero-Shot Model Ensemble if available
-                ensemble_result = self.model_manager.analyze_with_ensemble(message)
+                ensemble_result = self.models_manager.analyze_with_ensemble(message)
                 
                 # Extract consensus prediction for crisis level mapping
                 consensus = ensemble_result.get('consensus', {})
@@ -333,7 +333,7 @@ class CrisisAnalyzer:
         try:
             # Extract context and phrase analysis
             context = extract_context_signals(message)
-            depression_score = extract_depression_score(message, self.model_manager.get_model('depression'))
+            depression_score = extract_depression_score(message, self.models_manager.get_model('depression'))
             
             # Apply pattern-based enhancements if available
             base_score = depression_score
@@ -349,8 +349,8 @@ class CrisisAnalyzer:
             enhanced_result = enhanced_depression_analysis(
                 message, 
                 depression_score, 
-                self.model_manager.get_model('depression'),
-                self.model_manager.get_model('sentiment')
+                self.models_manager.get_model('depression'),
+                self.models_manager.get_model('sentiment')
             )
             
             crisis_level = enhanced_crisis_level_mapping(enhanced_result['final_score'], self.crisis_thresholds)
@@ -386,29 +386,29 @@ class CrisisAnalyzer:
             'analyzer': 'CrisisAnalyzer',
             'version': '3.1.0',
             'architecture': 'v3.1_clean_with_patterns',
-            'model_manager_available': self.model_manager is not None,
+            'models_manager_available': self.models_manager is not None,
             'crisis_pattern_manager_available': self.crisis_pattern_manager is not None,
             'community_extractor_available': self.community_extractor is not None,
             'learning_manager_available': self.learning_manager is not None,
             'crisis_thresholds': self.crisis_thresholds,
-            'ensemble_analysis_available': hasattr(self.model_manager, 'analyze_with_ensemble') if self.model_manager else False
+            'ensemble_analysis_available': hasattr(self.models_manager, 'analyze_with_ensemble') if self.models_manager else False
         }
 
 
 # Factory function for clean architecture
-def create_crisis_analyzer(model_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None) -> CrisisAnalyzer:
+def create_crisis_analyzer(models_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None) -> CrisisAnalyzer:
     """
     Factory function to create CrisisAnalyzer instance with dependency injection
     
     Args:
-        model_manager: ML model manager for ensemble analysis
+        models_manager: ML model manager for ensemble analysis
         crisis_pattern_manager: Optional CrisisPatternManager for pattern analysis
         learning_manager: Optional learning manager for feedback
         
     Returns:
         CrisisAnalyzer instance
     """
-    return CrisisAnalyzer(model_manager, crisis_pattern_manager, learning_manager)
+    return CrisisAnalyzer(models_manager, crisis_pattern_manager, learning_manager)
 
 
 # Export for clean architecture

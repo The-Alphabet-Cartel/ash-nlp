@@ -139,7 +139,7 @@ zero_shot_manager = None
 crisis_pattern_manager = None  # Phase 3a addition
 
 # ML and analysis managers
-model_manager = None
+models_manager = None
 pydantic_manager = None
 crisis_analyzer = None
 learning_manager = None
@@ -231,7 +231,7 @@ def validate_centralized_thresholds():
 async def initialize_components_clean_v3_1():
     """Initialize all components with clean v3.1 architecture - Phase 3b Complete"""
     global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
-    global model_manager, pydantic_manager, crisis_analyzer, learning_manager
+    global models_manager, pydantic_manager, crisis_analyzer, learning_manager
     global analysis_parameters_manager  # Phase 3b addition
     
     try:
@@ -337,14 +337,14 @@ async def initialize_components_clean_v3_1():
         logger.info("🤖 Initializing ModelsManager - Clean v3.1...")
         
         try:
-            from managers.models_manager import create_model_manager
-            model_manager = create_model_manager(config_manager, settings_manager)
+            from managers.models_manager import create_models_manager
+            models_manager = create_models_manager(config_manager, settings_manager)
             
             # Initialize models
-            await model_manager.initialize()
+            await models_manager.initialize()
             
-            if model_manager.models_loaded():
-                ensemble_status = model_manager.get_ensemble_status()
+            if models_manager.models_loaded():
+                ensemble_status = models_manager.get_ensemble_status()
                 model_count = ensemble_status.get('model_count', 3)
                 logger.info(f"✅ ModelsManager v3.1 initialized with {model_count} models loaded")
             else:
@@ -364,8 +364,8 @@ async def initialize_components_clean_v3_1():
         try:
             from api.learning_endpoints import EnhancedLearningManager
             learning_manager = EnhancedLearningManager(
-                config_manager=config_manager,
-                models_manager=model_manager
+                models_manager=models_manager,
+                config_manager=config_manager
             )
             LEARNING_AVAILABLE = True
             logger.info("✅ Enhanced Learning Manager initialized - Clean v3.1")
@@ -383,8 +383,9 @@ async def initialize_components_clean_v3_1():
         try:
             from analysis.crisis_analyzer import CrisisAnalyzer
             crisis_analyzer = CrisisAnalyzer(
-                model_manager=model_manager,
+                models_manager=models_manager,
                 crisis_pattern_manager=crisis_pattern_manager,
+                learning_manager=learning_manager,
                 analysis_parameters_manager=analysis_parameters_manager  # Phase 3b integration
             )
             logger.info("✅ CrisisAnalyzer initialized with full manager integration (Phase 3b)")
@@ -408,8 +409,8 @@ async def initialize_components_clean_v3_1():
                 'pydantic_manager_v3_1': pydantic_manager is not None
             },
             'ml_components': {
-                'models_manager_v3_1': model_manager is not None,
-                'three_model_ensemble': model_manager and model_manager.models_loaded() if model_manager else False
+                'models_manager_v3_1': models_manager is not None,
+                'three_model_ensemble': models_manager and models_manager.models_loaded() if models_manager else False
             },
             'analysis_components': {
                 'crisis_analyzer_with_full_integration': crisis_analyzer is not None,  # Phase 3b enhanced
@@ -425,9 +426,9 @@ async def initialize_components_clean_v3_1():
         
         # Check for critical failures
         critical_failures = []
-        if not model_manager:
+        if not models_manager:
             critical_failures.append("ModelsManager v3.1")
-        if model_manager and not model_manager.models_loaded():
+        if models_manager and not models_manager.models_loaded():
             critical_failures.append("Model Loading")
         if not pydantic_manager:
             critical_failures.append("PydanticManager v3.1")
@@ -495,7 +496,7 @@ async def lifespan(app: FastAPI):
             # Pass crisis_pattern_manager for Pattern Integration (Phase 3a)
             add_ensemble_endpoints(
                 app, 
-                model_manager=model_manager, 
+                models_manager=models_manager, 
                 pydantic_manager=pydantic_manager,
                 crisis_pattern_manager=crisis_pattern_manager
             )
@@ -517,7 +518,7 @@ async def lifespan(app: FastAPI):
                 settings_manager=settings_manager,
                 zero_shot_manager=zero_shot_manager,
                 crisis_pattern_manager=crisis_pattern_manager,
-                model_manager=model_manager
+                models_manager=models_manager
             )
             logger.info("🎯 Admin endpoints added - Clean v3.1!")
             
@@ -568,7 +569,7 @@ async def enhanced_health_check():
     """Enhanced health check with Phase 3b AnalysisParametersManager status"""
     
     uptime = time.time() - startup_time
-    model_loaded = model_manager is not None and model_manager.models_loaded()
+    model_loaded = models_manager is not None and models_manager.models_loaded()
     
     components_available = {
         "config_manager": config_manager is not None,
@@ -576,14 +577,14 @@ async def enhanced_health_check():
         "zero_shot_manager": zero_shot_manager is not None,
         "analysis_parameters_manager": analysis_parameters_manager is not None,  # Phase 3b
         "crisis_pattern_manager": crisis_pattern_manager is not None,  # Phase 3a
-        "models_manager_v3_1": model_manager is not None,
+        "models_manager_v3_1": models_manager is not None,
         "pydantic_manager_v3_1": pydantic_manager is not None,
         "learning_manager_enhanced": learning_manager is not None,
         "crisis_analyzer_integrated": crisis_analyzer is not None
     }
     
     configuration_status = {
-        "model_ensemble_loaded": model_manager.models_loaded() if model_manager else False,
+        "model_ensemble_loaded": models_manager.models_loaded() if models_manager else False,
         "analysis_parameters_loaded": analysis_parameters_manager is not None,  # Phase 3b
         "crisis_patterns_loaded": crisis_pattern_manager is not None,  # Phase 3a
         "ensemble_thresholds_configured": True,
@@ -591,7 +592,7 @@ async def enhanced_health_check():
     }
     
     manager_status = {
-        "models_manager_operational": model_manager is not None and model_manager.models_loaded(),
+        "models_manager_operational": models_manager is not None and models_manager.models_loaded(),
         "analysis_parameters_analysis_available": analysis_parameters_manager is not None,  # Phase 3b
         "crisis_pattern_analysis_available": crisis_pattern_manager is not None,  # Phase 3a
         "pydantic_validation_available": pydantic_manager is not None,

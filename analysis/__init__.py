@@ -81,9 +81,9 @@ def get_implemented_features():
     }
 
 # Component factory functions
-def create_crisis_analyzer(model_manager):
+def create_crisis_analyzer(models_manager):
     """Create and return a CrisisAnalyzer instance"""
-    return CrisisAnalyzer(model_manager)
+    return CrisisAnalyzer(models_manager)
 
 __all__ = [
     # Core analyzer classes
