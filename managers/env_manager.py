@@ -97,7 +97,7 @@ class EnvConfigManager:
             'NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS': {'type': bool, 'default': True},
             'NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE': {'type': float, 'default': 0.45, 'min': 0.1, 'max': 1.0},
             'NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE': {'type': float, 'default': 0.75, 'min': 0.1, 'max': 1.0},
-            'NLP_THRESHOLD_STAFF_REVIEW_ON_MODEL_DISAGREEMENT': {'type': bool, 'default': True},
+            'NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT': {'type': bool, 'default': True},
             
             # =================================================================
             # SAFETY AND BIAS CONTROLS
@@ -323,7 +323,7 @@ class EnvConfigManager:
             'high_always': self.config['NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS'],
             'medium_confidence': self.config['NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE'],
             'low_confidence': self.config['NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE'],
-            'on_disagreement': self.config['NLP_THRESHOLD_STAFF_REVIEW_ON_MODEL_DISAGREEMENT'],
+            'on_disagreement': self.config['NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT'],
         }
     
     def print_config(self):
