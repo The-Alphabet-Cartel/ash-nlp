@@ -447,20 +447,20 @@ class SettingsManager:
 # ============================================================================
 # FACTORY FUNCTION
 # ============================================================================
-
-def create_settings_manager(config_manager, analysis_parameters_manager=None) -> SettingsManager:
+def create_settings_manager(config_manager, analysis_parameters_manager=None, crisis_pattern_manager=None, threshold_mapping_manager=None) -> SettingsManager:
     """
-    Factory function to create SettingsManager instance
+    Factory function to create SettingsManager instance - Phase 3c Complete
     
     Args:
         config_manager: ConfigManager instance for dependency injection
-        analysis_parameters_manager: AnalysisParametersManager instance for analysis parameters
+        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b)
+        crisis_pattern_manager: CrisisPatternManager instance (Phase 3a) 
+        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
         
     Returns:
         SettingsManager instance
     """
-    return SettingsManager(config_manager, analysis_parameters_manager)
-
+    return SettingsManager(config_manager, crisis_pattern_manager, analysis_parameters_manager, threshold_mapping_manager)
 
 # ============================================================================
 # CLEAN ARCHITECTURE EXPORTS (Phase 3b Complete)
