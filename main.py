@@ -249,17 +249,25 @@ async def initialize_components_clean_v3_1():
             raise RuntimeError(f"CrisisAnalyzer initialization failed: {e}")
         
         # ========================================================================
-        # STEP 8: Initialize Learning Manager (Optional)
+        # STEP 8: Initialize Learning Manager - FIXED VERSION
         # ========================================================================
-        logger.info("🎓 Initializing LearningManager...")
-        
+        logger.info("🎓 Initializing EnhancedLearningManager...")
+
         try:
-            # Learning manager is optional
-            learning_manager = None  # Placeholder for future implementation
-            logger.debug("📋 LearningManager: Placeholder (future implementation)")
+            from api.learning_endpoints import EnhancedLearningManager
+            
+            # Initialize with required managers
+            learning_manager = EnhancedLearningManager(
+                models_manager=models_manager,
+                config_manager=config_manager
+            )
+            
+            logger.info("✅ EnhancedLearningManager initialized successfully")
+            logger.debug("🧠 Learning system ready with clean v3.1 architecture")
             
         except Exception as e:
-            logger.warning(f"⚠️ LearningManager initialization failed (non-critical): {e}")
+            logger.warning(f"⚠️ EnhancedLearningManager initialization failed (non-critical): {e}")
+            logger.debug("📋 Learning endpoints will be skipped due to initialization failure")
             learning_manager = None
         
         # ========================================================================
