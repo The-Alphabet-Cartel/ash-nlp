@@ -30,9 +30,16 @@ class TestPhase3bIntegration:
     """Integration tests for Phase 3b analysis parameter migration"""
     
     @pytest.fixture
-    def mock_config_manager(self):
-        """Create a comprehensive mock ConfigManager"""
+    def mock_config_manager():
+        """FIXED: Mock ConfigManager with patched file operations"""
+        from pathlib import Path
+        import json
+        
         mock_manager = Mock()
+        mock_manager.config_dir = Path("/app/config")  # Real Path object
+        
+        # Your analysis config here...
+        analysis_config = { /* your config */ }
         
         # Complete analysis parameters configuration
         analysis_config = {
@@ -179,8 +186,13 @@ class TestPhase3bIntegration:
             }
         }
         
-        mock_manager.get_configuration.return_value = analysis_config
-        return mock_manager
+        mock_manager.substitute_environment_variables.return_value = analysis_config
+        
+        # Patch file operations to avoid actual file system
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(analysis_config))), \
+             patch('json.load', return_value=analysis_config):
+            yield mock_manager
     
     @pytest.fixture
     def analysis_parameters_manager(self, mock_config_manager):
