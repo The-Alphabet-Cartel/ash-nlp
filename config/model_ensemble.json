@@ -183,7 +183,7 @@
       "high_always": "${NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS}",
       "medium_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE}",
       "low_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE}",
-      "on_model_disagreement": "${NLP_THRESHOLD_STAFF_REVIEW_ON_MODEL_DISAGREEMENT}",
+      "on_model_disagreement": "${NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT}",
       "defaults": {
         "high_always": true,
         "medium_confidence_threshold": 0.45,
