@@ -17,8 +17,8 @@ services:
         ipv4_address: 172.20.0.11
     ports:
       - 8881:8881
-    environment:
-      - TZ=America/Los_Angeles
+    env_file:
+      - .env
     volumes:
       - ./ash-nlp/data:/app/data
       - ./ash-nlp/models/cache:/app/models/cache
