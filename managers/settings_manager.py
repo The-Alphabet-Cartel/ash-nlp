@@ -52,16 +52,21 @@ class SettingsManager:
     Phase 3b: Analysis parameters now managed by AnalysisParametersManager
     """
     
-    def __init__(self, config_manager, analysis_parameters_manager=None):
+    def __init__(self, config_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None):
         """
-        Initialize SettingsManager with ConfigManager and AnalysisParametersManager dependency injection
+        Initialize SettingsManager with ConfigManager and all Phase 3c managers
         
         Args:
             config_manager: ConfigManager instance for dependency injection
-            analysis_parameters_manager: AnalysisParametersManager instance for analysis parameters
+            crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
+            analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b)
+            threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
         """
         self.config_manager = config_manager
+        self.crisis_pattern_manager = crisis_pattern_manager
         self.analysis_parameters_manager = analysis_parameters_manager
+        self.threshold_mapping_manager = threshold_mapping_manager  # Phase 3c
+
         self.setting_overrides = {}
         self.runtime_settings = {}
         
