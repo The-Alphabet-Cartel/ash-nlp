@@ -2,7 +2,7 @@
   "learning_system": {
     "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
     "persistence_file": "${NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE}",
-    "learning_rate": "${NLP_LEARNING_RATE}",
+    "learning_rate": "${NLP_THRESHOLD_LEARNING_RATE}",
     "min_adjustment": "${NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
     "max_adjustment": "${NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
     "max_adjustments_per_day": "${NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
