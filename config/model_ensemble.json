@@ -226,10 +226,10 @@
     "learning_system": {
       "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
       "learning_rate": "${NLP_LEARNING_RATE}",
-      "max_adjustments_per_day": "${NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY}",
-      "persistence_file": "${NLP_LEARNING_PERSISTENCE_FILE}",
-      "min_confidence_adjustment": "${NLP_MIN_CONFIDENCE_ADJUSTMENT}",
-      "max_confidence_adjustment": "${NLP_MAX_CONFIDENCE_ADJUSTMENT}",
+      "max_adjustments_per_day": "${NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
+      "persistence_file": "${NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE}",
+      "min_confidence_adjustment": "${NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
+      "max_confidence_adjustment": "${NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
       "defaults": {
         "enabled": true,
         "learning_rate": 0.1,
