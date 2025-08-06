@@ -49,10 +49,10 @@ class EnvConfigManager:
             # =================================================================
             'GLOBAL_ENABLE_LEARNING_SYSTEM': {'type': bool, 'default': True},
             'NLP_LEARNING_RATE': {'type': float, 'default': 0.1, 'min': 0.01, 'max': 1.0},
-            'NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY': {'type': int, 'default': 50, 'min': 1},
-            'NLP_LEARNING_PERSISTENCE_FILE': {'type': str, 'default': './learning_data/adjustments.json'},
-            'NLP_MIN_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.05, 'min': 0.01, 'max': 0.5},
-            'NLP_MAX_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.30, 'min': 0.05, 'max': 1.0},
+            'NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY': {'type': int, 'default': 50, 'min': 1},
+            'NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE': {'type': str, 'default': './learning_data/adjustments.json'},
+            'NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.05, 'min': 0.01, 'max': 0.5},
+            'NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT': {'type': float, 'default': 0.30, 'min': 0.05, 'max': 1.0},
             
             # =================================================================
             # THREE-MODEL CONFIGURATION
@@ -299,7 +299,7 @@ class EnvConfigManager:
             self.config['NLP_LOGS_DIR'],
             self.config['NLP_LEARNING_DATA_DIR'],
             os.path.dirname(self.config['NLP_MODEL_CACHE_DIR']),
-            os.path.dirname(self.config['NLP_LEARNING_PERSISTENCE_FILE']),
+            os.path.dirname(self.config['NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE']),
         ]
         
         for directory in directories:
