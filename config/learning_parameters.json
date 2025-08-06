@@ -1,11 +1,11 @@
 {
   "learning_system": {
     "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
-    "persistence_file": "${NLP_LEARNING_PERSISTENCE_FILE}",
+    "persistence_file": "${NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE}",
     "learning_rate": "${NLP_LEARNING_RATE}",
-    "min_adjustment": "${NLP_MIN_CONFIDENCE_ADJUSTMENT}",
-    "max_adjustment": "${NLP_MAX_CONFIDENCE_ADJUSTMENT}",
-    "max_adjustments_per_day": "${NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY}",
+    "min_adjustment": "${NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
+    "max_adjustment": "${NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
+    "max_adjustments_per_day": "${NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
     "sensitivity_bounds": {
       "min_global_sensitivity": 0.5,
       "max_global_sensitivity": 1.5
