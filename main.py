@@ -20,10 +20,10 @@ from pydantic import BaseModel
 
 # Clean v3.1 Managers - NO backward compatibility imports
 from managers.config_manager import ConfigManager
-from managers.settings_manager import SettingsManager 
+from managers.settings_manager import SettingsManager, create_settings_manager
 from managers.zero_shot_manager import ZeroShotManager
 from managers.pydantic_manager import PydanticManager
-from managers.models_manager import ModelsManager,create_models_manager
+from managers.models_manager import ModelsManager, create_models_manager
 from analysis.crisis_analyzer import CrisisAnalyzer
 
 # ============================================================================
@@ -211,14 +211,14 @@ async def initialize_components_clean_v3_1():
         logger.info("⚙️ Initializing SettingsManager with all dependencies - Phase 3c...")
         
         try:
-            settings_manager = SettingsManager(
+            settings_manager = create_settings_manager(
                 config_manager=config_manager,
-                crisis_pattern_manager=crisis_pattern_manager,
                 analysis_parameters_manager=analysis_parameters_manager,
-                threshold_mapping_manager=threshold_mapping_manager  # Phase 3c
+                crisis_pattern_manager=crisis_pattern_manager,
+                threshold_mapping_manager=threshold_mapping_manager
             )
             
-            logger.info("✅ SettingsManager initialized with full Phase 3c integration")
+            logger.info("✅ SettingsManager initialized with full Phase 3c integration via factory function")
             
         except Exception as e:
             logger.error(f"❌ SettingsManager initialization failed: {e}")
@@ -398,7 +398,11 @@ async def lifespan(app: FastAPI):
     try:
         await initialize_components_clean_v3_1()
         
-        # Import and add ensemble endpoints - CLEAN v3.1 + Phase 3c
+        # ========================================================================
+        # ADD ALL ENDPOINT FILES - USING ACTUAL SIGNATURES
+        # ========================================================================
+        
+        # 1. Add ensemble endpoints - CLEAN v3.1 + Phase 3c
         try:
             logger.info("🎯 Adding Three Zero-Shot Model Ensemble endpoints - Clean v3.1 Phase 3c...")
             from api.ensemble_endpoints import add_ensemble_endpoints_v3c
@@ -411,11 +415,50 @@ async def lifespan(app: FastAPI):
                 crisis_pattern_manager=crisis_pattern_manager,  # Phase 3a
                 threshold_mapping_manager=threshold_mapping_manager  # Phase 3c
             )
-            logger.info("🚀 Ensemble endpoints added - Clean v3.1 + Complete Phase 3c Integration!")
+            logger.info("✅ Ensemble endpoints added - Clean v3.1 + Complete Phase 3c Integration!")
             
         except Exception as e:
             logger.error(f"❌ Failed to add ensemble endpoints: {e}")
             raise RuntimeError(f"Ensemble endpoints setup failed: {e}")
+        
+        # 2. Add admin endpoints - Using actual signature
+        try:
+            logger.info("🛠️ Adding admin endpoints...")
+            from api.admin_endpoints import add_admin_endpoints
+            
+            add_admin_endpoints(
+                app,
+                config_manager=config_manager,
+                settings_manager=settings_manager, 
+                zero_shot_manager=zero_shot_manager,
+                crisis_pattern_manager=crisis_pattern_manager,
+                models_manager=models_manager
+            )
+            logger.info("✅ Admin endpoints added successfully!")
+            
+        except ImportError as e:
+            logger.warning(f"⚠️ Admin endpoints not available - module not found: {e}")
+        except Exception as e:
+            logger.error(f"❌ Admin endpoints failed to load: {e}")
+            # Don't raise - admin endpoints are not critical for core functionality
+        
+        # 3. Add learning endpoints - Using actual signature  
+        try:
+            logger.info("🧠 Adding enhanced learning system endpoints...")
+            from api.learning_endpoints import add_enhanced_learning_endpoints
+            
+            add_enhanced_learning_endpoints(
+                app,
+                learning_manager=learning_manager,
+                config_manager=config_manager
+            )
+            logger.info("✅ Enhanced learning endpoints added successfully!")
+            
+        except ImportError as e:
+            logger.warning(f"⚠️ Learning endpoints not available - module not found: {e}")
+        except Exception as e:
+            logger.error(f"❌ Learning endpoints failed to load: {e}")
+            # Don't raise - learning endpoints are optional
         
         logger.info("✅ FastAPI application startup complete - Phase 3c Ready")
         
