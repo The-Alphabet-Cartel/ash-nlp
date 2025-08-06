@@ -198,7 +198,7 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
             if threshold_mapping_manager:
                 try:
                     current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_thresholds()
+                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
                     summary["components"]["threshold_mapping"] = {
                         "source": "JSON configuration + environment overrides",
                         "status": "externalized",
@@ -231,7 +231,7 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
                 }
             
             current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-            crisis_thresholds = threshold_mapping_manager.get_crisis_level_thresholds()
+            crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
             staff_review_config = threshold_mapping_manager.get_staff_review_config()
             
             return {
