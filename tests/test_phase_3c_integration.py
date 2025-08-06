@@ -19,6 +19,7 @@ from managers.config_manager import ConfigManager
 
 class TestPhase3cSystemIntegration:
     """Test complete system integration with Phase 3c components"""
+    pytestmark = pytest.mark.asyncio
     
     @pytest.fixture
     def mock_threshold_manager(self):
@@ -141,7 +142,7 @@ class TestPhase3cSystemIntegration:
         assert 'threshold_configuration' in config_summary
     
     @asyncio.coroutine
-    def test_crisis_analyzer_message_analysis_integration(self, mock_threshold_manager, mock_crisis_pattern_manager, mock_analysis_parameters_manager):
+    async def test_crisis_analyzer_message_analysis_integration(self, mock_threshold_manager, mock_crisis_pattern_manager, mock_analysis_parameters_manager):
         """Test complete message analysis with Phase 3c integration"""
         # Create mock models manager with ensemble capability
         mock_models_manager = Mock()
@@ -187,7 +188,7 @@ class TestPhase3cSystemIntegration:
         )
         
         # Run analysis
-        result = yield from analyzer.analyze_message("I feel hopeless and want to give up")
+        result = await analyzer.analyze_message("I feel hopeless and want to give up")
         
         # Verify Phase 3c integration
         assert result['method'] == 'three_model_ensemble_with_patterns_v3c'
