@@ -29,9 +29,13 @@ class TestAnalysisParametersManager:
     """Test suite for AnalysisParametersManager"""
     
     @pytest.fixture
-    def mock_config_manager(self):
-        """Create a mock ConfigManager for testing"""
+    def mock_config_manager():
+        """FIXED: Mock ConfigManager with patched file operations"""
+        from pathlib import Path
+        import json
+        
         mock_manager = Mock()
+        mock_manager.config_dir = Path("/app/config")  # Real Path object
         
         # Mock valid analysis parameters configuration
         mock_config = {
@@ -178,8 +182,13 @@ class TestAnalysisParametersManager:
             }
         }
         
-        mock_manager.get_configuration.return_value = mock_config
-        return mock_manager
+        mock_manager.substitute_environment_variables.return_value = analysis_config
+        
+        # Patch file operations to avoid actual file system
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(analysis_config))), \
+             patch('json.load', return_value=analysis_config):
+            yield mock_manager
     
     @pytest.fixture
     def analysis_manager(self, mock_config_manager):
@@ -476,9 +485,16 @@ class TestAnalysisParametersManagerEnvironmentOverrides:
     """Test environment variable overrides for AnalysisParametersManager"""
     
     @pytest.fixture
-    def mock_config_manager_with_env_vars(self):
-        """Create a mock ConfigManager that includes environment variable placeholders"""
+    def mock_config_manager():
+        """FIXED: Mock ConfigManager with patched file operations"""
+        from pathlib import Path
+        import json
+        
         mock_manager = Mock()
+        mock_manager.config_dir = Path("/app/config")  # Real Path object
+        
+        # Your analysis config here...
+        analysis_config = { /* your config */ }
         
         # Configuration with environment variable placeholders
         mock_config = {
@@ -502,8 +518,13 @@ class TestAnalysisParametersManagerEnvironmentOverrides:
             }
         }
         
-        mock_manager.get_configuration.return_value = mock_config
-        return mock_manager
+        mock_manager.substitute_environment_variables.return_value = analysis_config
+        
+        # Patch file operations to avoid actual file system
+        with patch('pathlib.Path.exists', return_value=True), \
+             patch('builtins.open', mock_open(read_data=json.dumps(analysis_config))), \
+             patch('json.load', return_value=analysis_config):
+            yield mock_manager
     
     def test_environment_variable_override_integration(self, mock_config_manager_with_env_vars):
         """Test that the manager can handle environment variable placeholders"""
