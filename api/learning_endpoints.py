@@ -58,50 +58,6 @@ class EnhancedLearningManager:
         logger.debug(f"   Sensitivity bounds: {self.min_global_sensitivity} to {self.max_global_sensitivity}")
         logger.debug(f"   Data file: {self.learning_data_path}")
     
-    # ========================================================================
-    # GET PYDANTIC MODELS - Direct Manager Access Only
-    # ========================================================================
-    def get_pydantic_models():
-        """Get Pydantic models - assumes they're available through PydanticManager"""
-        # This will be handled by the main application's PydanticManager
-        # For now, we'll import directly since we know they exist
-        try:
-            # These should be accessible through the application's PydanticManager
-            # but for simplicity in endpoints, we'll use a local function
-            from pydantic import BaseModel
-            from typing import Dict, Any, Optional, Union
-            
-            class FalsePositiveAnalysisRequest(BaseModel):
-                message: str
-                detected_level: str
-                correct_level: str
-                context: Optional[Dict[str, Any]] = {}
-                severity_score: Optional[Union[int, float]] = 1
-            
-            class FalseNegativeAnalysisRequest(BaseModel):
-                message: str
-                should_detect_level: str
-                actually_detected: str
-                context: Optional[Dict[str, Any]] = {}
-                severity_score: Optional[Union[int, float]] = 1
-            
-            class LearningUpdateRequest(BaseModel):
-                learning_record_id: str
-                record_type: str
-                message_data: Dict[str, Any]
-                correction_data: Dict[str, Any]
-                context_data: Optional[Dict[str, Any]] = {}
-                timestamp: str
-            
-            return {
-                'FalsePositiveAnalysisRequest': FalsePositiveAnalysisRequest,
-                'FalseNegativeAnalysisRequest': FalseNegativeAnalysisRequest,
-                'LearningUpdateRequest': LearningUpdateRequest
-            }
-        except Exception as e:
-            logger.error(f"❌ Could not access Pydantic models: {e}")
-            raise RuntimeError(f"Pydantic models not available: {e}")
-
     def _load_configuration_from_managers(self):
         """Load configuration using clean v3.1 manager architecture - NO FALLBACKS"""
         try:
@@ -609,6 +565,50 @@ class EnhancedLearningManager:
                 'architecture': 'clean_v3.1_phase_2c_complete',
                 'error': str(e)
             }
+
+# ========================================================================
+# GET PYDANTIC MODELS - Direct Manager Access Only
+# ========================================================================
+def get_pydantic_models():
+    """Get Pydantic models - assumes they're available through PydanticManager"""
+    # This will be handled by the main application's PydanticManager
+    # For now, we'll import directly since we know they exist
+    try:
+        # These should be accessible through the application's PydanticManager
+        # but for simplicity in endpoints, we'll use a local function
+        from pydantic import BaseModel
+        from typing import Dict, Any, Optional, Union
+        
+        class FalsePositiveAnalysisRequest(BaseModel):
+            message: str
+            detected_level: str
+            correct_level: str
+            context: Optional[Dict[str, Any]] = {}
+            severity_score: Optional[Union[int, float]] = 1
+        
+        class FalseNegativeAnalysisRequest(BaseModel):
+            message: str
+            should_detect_level: str
+            actually_detected: str
+            context: Optional[Dict[str, Any]] = {}
+            severity_score: Optional[Union[int, float]] = 1
+        
+        class LearningUpdateRequest(BaseModel):
+            learning_record_id: str
+            record_type: str
+            message_data: Dict[str, Any]
+            correction_data: Dict[str, Any]
+            context_data: Optional[Dict[str, Any]] = {}
+            timestamp: str
+        
+        return {
+            'FalsePositiveAnalysisRequest': FalsePositiveAnalysisRequest,
+            'FalseNegativeAnalysisRequest': FalseNegativeAnalysisRequest,
+            'LearningUpdateRequest': LearningUpdateRequest
+        }
+    except Exception as e:
+        logger.error(f"❌ Could not access Pydantic models: {e}")
+        raise RuntimeError(f"Pydantic models not available: {e}")
 
 def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
                                   analysis_parameters_manager=None, threshold_mapping_manager=None):
