@@ -191,75 +191,75 @@ ENV NLP_CONFIG_ENHANCED_CRISIS_WEIGHT="1.2"
 # Phase 3b - Analysis Parameters Configuration
 # ============== CRISIS THRESHOLDS ==========================================
 # Core crisis level mapping thresholds for analysis algorithms
-ENV NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH="0.55"    # Reduced from 0.50 - matches systematic approach
-ENV NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM="0.28"  # Reduced from 0.22 - more selective for medium alerts
-ENV NLP_ANALYSIS_CRISIS_THRESHOLD_LOW="0.16"     # Reduced from 0.12 - avoids very mild expressions
+ENV NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH="0.55"
+ENV NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM="0.28"
+ENV NLP_ANALYSIS_CRISIS_THRESHOLD_LOW="0.16"
 
 # ============== PHRASE EXTRACTION PARAMETERS ===============================
 # Parameters for crisis phrase extraction from messages
-ENV NLP_ANALYSIS_MIN_PHRASE_LENGTH="2"           # Minimum length for extracted phrases
-ENV NLP_ANALYSIS_MAX_PHRASE_LENGTH="6"           # Maximum length for extracted phrases
-ENV NLP_ANALYSIS_PHRASE_CRISIS_FOCUS="true"      # Focus on crisis-related phrases
-ENV NLP_ANALYSIS_PHRASE_COMMUNITY_SPECIFIC="true" # Use community-specific patterns
-ENV NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE="0.3"     # Minimum confidence for phrase extraction
-ENV NLP_ANALYSIS_PHRASE_MAX_RESULTS=20         # Maximum number of phrases to return
+ENV NLP_ANALYSIS_MIN_PHRASE_LENGTH="2"
+ENV NLP_ANALYSIS_MAX_PHRASE_LENGTH="6"
+ENV NLP_ANALYSIS_PHRASE_CRISIS_FOCUS="true"
+ENV NLP_ANALYSIS_PHRASE_COMMUNITY_SPECIFIC="true"
+ENV NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE="0.3"
+ENV NLP_ANALYSIS_PHRASE_MAX_RESULTS=20
 
 # ============== PATTERN LEARNING PARAMETERS ================================
 # Parameters for learning distinctive crisis patterns from community messages
-ENV NLP_ANALYSIS_PATTERN_MIN_CRISIS_MESSAGES="10"      # Minimum crisis messages for pattern learning
-ENV NLP_ANALYSIS_PATTERN_MAX_PHRASES_TO_ANALYZE="200"  # Maximum phrases to analyze
-ENV NLP_ANALYSIS_PATTERN_MIN_DISTINCTIVENESS_RATIO="2.0" # Minimum distinctiveness ratio
-ENV NLP_ANALYSIS_PATTERN_MIN_FREQUENCY="3"             # Minimum frequency for pattern detection
-ENV NLP_ANALYSIS_PATTERN_HIGH_CONFIDENCE="0.7"         # High confidence threshold for patterns
-ENV NLP_ANALYSIS_PATTERN_MEDIUM_CONFIDENCE="0.4"       # Medium confidence threshold for patterns
-ENV NLP_ANALYSIS_PATTERN_LOW_CONFIDENCE="0.1"          # Low confidence threshold for patterns
+ENV NLP_ANALYSIS_PATTERN_MIN_CRISIS_MESSAGES="10"
+ENV NLP_ANALYSIS_PATTERN_MAX_PHRASES_TO_ANALYZE="200"
+ENV NLP_ANALYSIS_PATTERN_MIN_DISTINCTIVENESS_RATIO="2.0"
+ENV NLP_ANALYSIS_PATTERN_MIN_FREQUENCY="3"
+ENV NLP_ANALYSIS_PATTERN_HIGH_CONFIDENCE="0.7"
+ENV NLP_ANALYSIS_PATTERN_MEDIUM_CONFIDENCE="0.4"
+ENV NLP_ANALYSIS_PATTERN_LOW_CONFIDENCE="0.1"
 
 # ============== SEMANTIC ANALYSIS PARAMETERS ===============================
 # Parameters for semantic analysis and context understanding
-ENV NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW="3"           # Words around community terms
-ENV NLP_ANALYSIS_SEMANTIC_HIGH_RELEVANCE_BOOST="0.1"   # Boost for high relevance context
-ENV NLP_ANALYSIS_SEMANTIC_MEDIUM_RELEVANCE_BOOST="0.05" # Boost for medium relevance context
-ENV NLP_ANALYSIS_SEMANTIC_FAMILY_REJECTION_BOOST="0.15" # Boost for family rejection indicators
-ENV NLP_ANALYSIS_SEMANTIC_DISCRIMINATION_FEAR_BOOST="0.15" # Boost for discrimination fear
-ENV NLP_ANALYSIS_SEMANTIC_SUPPORT_SEEKING_BOOST="-0.05"    # Reduces crisis level (positive context)
+ENV NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW="3"
+ENV NLP_ANALYSIS_SEMANTIC_HIGH_RELEVANCE_BOOST="0.1"
+ENV NLP_ANALYSIS_SEMANTIC_MEDIUM_RELEVANCE_BOOST="0.05"
+ENV NLP_ANALYSIS_SEMANTIC_FAMILY_REJECTION_BOOST="0.15"
+ENV NLP_ANALYSIS_SEMANTIC_DISCRIMINATION_FEAR_BOOST="0.15"
+ENV NLP_ANALYSIS_SEMANTIC_SUPPORT_SEEKING_BOOST="-0.05"
 
 # ============== ADVANCED ANALYSIS PARAMETERS ===============================
 # Advanced analysis parameters for fine-tuning algorithm behavior
-ENV NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST="0.05"       # Additional confidence boost from patterns
-ENV NLP_ANALYSIS_MODEL_CONFIDENCE_BOOST="0.0"          # Additional confidence boost from models
-ENV NLP_ANALYSIS_CONTEXT_SIGNAL_WEIGHT="1.0"           # Weight for context signals
-ENV NLP_ANALYSIS_TEMPORAL_URGENCY_MULTIPLIER="1.2"     # Multiplier for temporal urgency
-ENV NLP_ANALYSIS_COMMUNITY_AWARENESS_BOOST="0.1"       # Boost for community-aware analysis
+ENV NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST="0.05"
+ENV NLP_ANALYSIS_MODEL_CONFIDENCE_BOOST="0.0"
+ENV NLP_ANALYSIS_CONTEXT_SIGNAL_WEIGHT="1.0"
+ENV NLP_ANALYSIS_TEMPORAL_URGENCY_MULTIPLIER="1.2"
+ENV NLP_ANALYSIS_COMMUNITY_AWARENESS_BOOST="0.1"
 
 # ============== INTEGRATION SETTINGS =======================================
 # Settings for integrating analysis components
-ENV NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS="true"        # Enable pattern-based analysis
-ENV NLP_ANALYSIS_ENABLE_SEMANTIC_ANALYSIS="true"       # Enable semantic analysis
-ENV NLP_ANALYSIS_ENABLE_PHRASE_EXTRACTION="true"       # Enable phrase extraction
-ENV NLP_ANALYSIS_ENABLE_PATTERN_LEARNING="true"        # Enable pattern learning
-ENV NLP_ANALYSIS_INTEGRATION_MODE="full"               # Integration mode: minimal/standard/enhanced/full
+ENV NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS="true"
+ENV NLP_ANALYSIS_ENABLE_SEMANTIC_ANALYSIS="true"
+ENV NLP_ANALYSIS_ENABLE_PHRASE_EXTRACTION="true"
+ENV NLP_ANALYSIS_ENABLE_PATTERN_LEARNING="true"
+ENV NLP_ANALYSIS_INTEGRATION_MODE="full"
 
 # ============== PERFORMANCE SETTINGS =======================================
 # Performance-related parameters for analysis algorithms
-ENV NLP_ANALYSIS_TIMEOUT_MS="5000"                     # Analysis timeout in milliseconds
-ENV NLP_ANALYSIS_MAX_CONCURRENT="10"                   # Maximum concurrent analyses
-ENV NLP_ANALYSIS_ENABLE_CACHING="true"                 # Enable analysis result caching
-ENV NLP_ANALYSIS_CACHE_TTL_SECONDS="300"               # Cache TTL in seconds
-ENV NLP_ANALYSIS_ENABLE_PARALLEL_PROCESSING="true"     # Enable parallel processing
+ENV NLP_ANALYSIS_TIMEOUT_MS="5000"
+ENV NLP_ANALYSIS_MAX_CONCURRENT="10"
+ENV NLP_ANALYSIS_ENABLE_CACHING="true"
+ENV NLP_ANALYSIS_CACHE_TTL_SECONDS="300"
+ENV NLP_ANALYSIS_ENABLE_PARALLEL_PROCESSING="true"
 
 # ============== DEBUGGING SETTINGS =========================================
 # Parameters for debugging and development
-ENV NLP_ANALYSIS_ENABLE_DETAILED_LOGGING="true"       # Enable detailed logging
-ENV NLP_ANALYSIS_LOG_ANALYSIS_STEPS="false"            # Log individual analysis steps
-ENV NLP_ANALYSIS_INCLUDE_REASONING="true"              # Include reasoning in responses
-ENV NLP_ANALYSIS_ENABLE_PERFORMANCE_METRICS="true"     # Enable performance metrics
+ENV NLP_ANALYSIS_ENABLE_DETAILED_LOGGING="true"
+ENV NLP_ANALYSIS_LOG_ANALYSIS_STEPS="false"
+ENV NLP_ANALYSIS_INCLUDE_REASONING="true"
+ENV NLP_ANALYSIS_ENABLE_PERFORMANCE_METRICS="true"
 
 # ============== EXPERIMENTAL FEATURES ======================================
 # Feature flags for experimental analysis features
-ENV NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT="false"    # Advanced context analysis
-ENV NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB="true"     # Community vocabulary boost
-ENV NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS="true"   # Temporal pattern detection
-ENV NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE="false"      # Multi-language support
+ENV NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT="false"
+ENV NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB="true"
+ENV NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS="true"
+ENV NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE="false"
 
 # Expose port
 EXPOSE 8881
