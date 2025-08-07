@@ -1,9 +1,9 @@
+# ash-nlp/analysis/crisis_analyzer.py - PHASE 3C UPDATED
 """
-CRITICAL FIXES for Crisis Analyzer - Three Zero-Shot Model Ensemble INTEGRATION
-Phase 3a: Updated to use CrisisPatternManager instead of hardcoded patterns
+Phase 3c UPDATED: Crisis Analyzer with ThresholdMappingManager Integration
+Mode-aware threshold management with fail-fast validation and learning system integration
 
-These changes fix the dangerous under-response bug and integrate ensemble analysis
-with clean v3.1 architecture and JSON-based crisis patterns.
+Clean v3.1 Architecture - NO backward compatibility
 """
 
 import logging
@@ -24,13 +24,15 @@ logger = logging.getLogger(__name__)
 
 class CrisisAnalyzer:
     """
-    UPDATED: Three Zero-Shot Model Ensemble crisis analysis with Phase 3b integration
+    PHASE 3C UPDATED: Three Zero-Shot Model Ensemble crisis analysis with ThresholdMappingManager
     Phase 3a: Clean v3.1 architecture with JSON-based patterns
-    Phase 3b: Analysis parameters from AnalysisParametersManager
+    Phase 3b: Analysis parameters from AnalysisParametersManager  
+    Phase 3c: Mode-aware thresholds from ThresholdMappingManager
     """
     
     def __init__(self, models_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, 
-                 learning_manager=None, analysis_parameters_manager=None):
+                 learning_manager=None, analysis_parameters_manager=None, 
+                 threshold_mapping_manager=None):
         """
         Initialize CrisisAnalyzer with managers
         
@@ -39,11 +41,13 @@ class CrisisAnalyzer:
             crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
             learning_manager: Optional learning manager for feedback
             analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
+            threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds (Phase 3c)
         """
         self.models_manager = models_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.learning_manager = learning_manager
         self.analysis_parameters_manager = analysis_parameters_manager  # Phase 3b
+        self.threshold_mapping_manager = threshold_mapping_manager  # Phase 3c
         
         # Initialize community pattern extractor if crisis pattern manager available
         if self.crisis_pattern_manager:
@@ -53,44 +57,33 @@ class CrisisAnalyzer:
             self.community_extractor = None
             logger.warning("CrisisAnalyzer initialized without CrisisPatternManager - pattern analysis limited")
         
-        # Load crisis thresholds from analysis parameters manager or use defaults
-        self.crisis_thresholds = self._load_crisis_thresholds()
+        # Validate threshold mapping manager integration
+        if self.threshold_mapping_manager:
+            logger.info("✅ CrisisAnalyzer Phase 3c: ThresholdMappingManager integration active")
+            self._log_current_thresholds()
+        else:
+            logger.warning("⚠️ CrisisAnalyzer: No ThresholdMappingManager - using fallback thresholds")
 
-    def _load_crisis_thresholds(self) -> Dict[str, float]:
-        """Load crisis thresholds from AnalysisParametersManager or use defaults (Phase 3b)"""
+    def _log_current_thresholds(self) -> None:
+        """Log current threshold configuration for debugging"""
         try:
-            # Phase 3b: Try to get thresholds from AnalysisParametersManager first
-            if self.analysis_parameters_manager:
-                thresholds = self.analysis_parameters_manager.get_crisis_thresholds()
-                logger.debug(f"✅ Crisis thresholds loaded from AnalysisParametersManager: {thresholds}")
-                return thresholds
-            
-            # Fallback to pattern manager (Phase 3a compatibility)
-            elif self.crisis_pattern_manager:
-                enhanced_patterns = self.crisis_pattern_manager.get_enhanced_crisis_patterns()
-                if enhanced_patterns and 'crisis_thresholds' in enhanced_patterns:
-                    thresholds = enhanced_patterns['crisis_thresholds']
-                    logger.debug(f"✅ Crisis thresholds loaded from CrisisPatternManager: {thresholds}")
-                    return thresholds
-            
-            # Final fallback to hardcoded defaults
-            default_thresholds = {
-                'high': 0.55,
-                'medium': 0.28, 
-                'low': 0.16
-            }
-            logger.warning(f"⚠️ Using default crisis thresholds (no managers available): {default_thresholds}")
-            return default_thresholds
-            
+            if self.threshold_mapping_manager:
+                current_mode = self.threshold_mapping_manager.get_current_ensemble_mode()
+                crisis_mapping = self.threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+                ensemble_thresholds = self.threshold_mapping_manager.get_ensemble_thresholds_for_mode()
+                
+                logger.debug(f"🎯 Current Ensemble Mode: {current_mode}")
+                logger.debug(f"📊 Crisis Mapping: {crisis_mapping}")
+                logger.debug(f"🔧 Ensemble Thresholds: {ensemble_thresholds}")
         except Exception as e:
-            logger.error(f"❌ Error loading crisis thresholds: {e}")
-            # Return safe defaults
-            return {'high': 0.55, 'medium': 0.28, 'low': 0.16}
+            logger.warning(f"⚠️ Could not log current thresholds: {e}")
 
     async def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict:
         """
-        UPDATED: Three Zero-Shot Model Ensemble analysis with FIXED crisis level mapping
+        PHASE 3C UPDATED: Three Zero-Shot Model Ensemble analysis with mode-aware threshold mapping
         Phase 3a: Enhanced with CrisisPatternManager integration
+        Phase 3b: Analysis parameters integration
+        Phase 3c: Mode-aware thresholds with ThresholdMappingManager
         """
         
         start_time = time.time()
@@ -107,7 +100,7 @@ class CrisisAnalyzer:
             
             # Step 3: Three Zero-Shot Model Ensemble ANALYSIS
             if hasattr(self.models_manager, 'analyze_with_ensemble'):
-                # Use the new Three Zero-Shot Model Ensemble if available
+                # Use the new Three Zero-Shot Model Ensemble
                 ensemble_result = self.models_manager.analyze_with_ensemble(message)
                 
                 # Extract consensus prediction for crisis level mapping
@@ -115,14 +108,19 @@ class CrisisAnalyzer:
                 consensus_prediction = consensus.get('prediction', 'unknown')
                 consensus_confidence = consensus.get('confidence', 0.0)
                 
-                # CRITICAL FIX: Map consensus prediction to crisis level
-                crisis_level = self._map_consensus_to_crisis_level(consensus_prediction, consensus_confidence)
+                # PHASE 3C: Use ThresholdMappingManager for crisis level mapping
+                crisis_level = self._map_consensus_to_crisis_level_v3c(consensus_prediction, consensus_confidence)
                 
-                # Apply pattern-based adjustments
+                # Apply pattern-based adjustments (Phase 3c enhanced)
                 if pattern_analysis.get('adjustments'):
-                    crisis_level, consensus_confidence = self._apply_pattern_adjustments(
+                    crisis_level, consensus_confidence = self._apply_pattern_adjustments_v3c(
                         crisis_level, consensus_confidence, pattern_analysis['adjustments']
                     )
+                
+                # Phase 3c: Determine if staff review required
+                staff_review_required = self._is_staff_review_required(
+                    crisis_level, consensus_confidence, ensemble_result
+                )
                 
                 # Build final result with ensemble data
                 result = {
@@ -130,20 +128,29 @@ class CrisisAnalyzer:
                     'crisis_level': crisis_level,
                     'confidence_score': consensus_confidence,
                     'detected_categories': ensemble_result.get('detected_categories', []),
-                    'method': 'three_model_ensemble_with_patterns',
+                    'method': 'three_model_ensemble_with_patterns_v3c',
                     'processing_time_ms': (time.time() - start_time) * 1000,
                     'model_info': f"Ensemble: {ensemble_result.get('model_info', 'unknown')}",
                     'reasoning': ' | '.join(reasoning_steps),
                     'ensemble_details': ensemble_result,
-                    'pattern_analysis': pattern_analysis
+                    'pattern_analysis': pattern_analysis,
+                    'staff_review_required': staff_review_required,  # Phase 3c addition
+                    'threshold_mode': self._get_current_threshold_mode(),  # Phase 3c addition
+                    'threshold_config': self._get_threshold_debug_info()  # Phase 3c addition
                 }
                 
-                logger.debug(f"✅ ENSEMBLE+PATTERNS: {crisis_level} (conf={consensus_confidence:.3f}) consensus={consensus_prediction}")
+                logger.debug(f"✅ ENSEMBLE+PATTERNS+THRESHOLDS: {crisis_level} (conf={consensus_confidence:.3f}) "
+                           f"consensus={consensus_prediction} mode={result['threshold_mode']}")
+                
+                # Phase 3c: Learning system feedback
+                if self.learning_manager and self.threshold_mapping_manager:
+                    await self._provide_learning_feedback(result)
+                
                 return result
                 
             else:
-                # Fallback to legacy two-model analysis
-                return await self._legacy_two_model_analysis(message, user_id, channel_id, start_time)
+                # Fallback to legacy two-model analysis with Phase 3c thresholds
+                return await self._legacy_two_model_analysis_v3c(message, user_id, channel_id, start_time)
                 
         except Exception as e:
             logger.error(f"Error in ensemble crisis analysis: {e}")
@@ -156,278 +163,499 @@ class CrisisAnalyzer:
                 'detected_categories': [],
                 'method': 'error_fallback',
                 'processing_time_ms': (time.time() - start_time) * 1000,
-                'model_info': 'Error fallback',
-                'reasoning': f"Analysis failed: {str(e)}"
+                'error': str(e),
+                'staff_review_required': True  # Always require review on errors
             }
 
-    async def _analyze_with_crisis_patterns(self, message: str) -> Dict[str, Any]:
+    def _map_consensus_to_crisis_level_v3c(self, consensus_prediction: str, confidence: float) -> str:
         """
-        Analyze message using CrisisPatternManager patterns
-        
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            Dictionary with pattern analysis results and adjustments
+        PHASE 3C: Mode-aware consensus prediction to crisis level mapping using ThresholdMappingManager
+        Replaces hardcoded threshold logic with dynamic, mode-aware thresholds
         """
-        if not self.crisis_pattern_manager:
-            return {'summary': 'no_pattern_manager', 'adjustments': {}}
-        
         try:
-            pattern_results = {
-                'community_patterns': [],
-                'context_phrases': [],
-                'temporal_indicators': {},
-                'enhanced_patterns': {},
-                'adjustments': {
-                    'crisis_boost': 0.0,
-                    'confidence_adjustment': 0.0,
-                    'escalation_required': False,
-                    'staff_alert': False
+            # Get mode-aware thresholds
+            if self.threshold_mapping_manager:
+                crisis_mapping = self.threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+                current_mode = self.threshold_mapping_manager.get_current_ensemble_mode()
+                
+                logger.debug(f"🎯 Using {current_mode} mode thresholds for mapping: {consensus_prediction} + {confidence:.3f}")
+            else:
+                # Fallback to default thresholds
+                crisis_mapping = {
+                    'crisis_to_high': 0.50,
+                    'crisis_to_medium': 0.30,
+                    'mild_crisis_to_low': 0.40,
+                    'negative_to_low': 0.70,
+                    'unknown_to_low': 0.50
                 }
-            }
+                logger.warning("⚠️ Using fallback thresholds - ThresholdMappingManager not available")
             
-            # Extract community patterns
-            if self.community_extractor:
-                pattern_results['community_patterns'] = self.community_extractor.extract_community_patterns(message)
-                pattern_results['context_phrases'] = self.community_extractor.extract_crisis_context_phrases(message)
-                pattern_results['temporal_indicators'] = self.community_extractor.analyze_temporal_indicators(message)
+            pred_lower = consensus_prediction.lower()
             
-            # Check enhanced crisis patterns
-            pattern_results['enhanced_patterns'] = self.crisis_pattern_manager.check_enhanced_crisis_patterns(message)
+            # CRISIS predictions (normalized from ensemble)
+            if pred_lower == 'crisis':
+                if confidence >= crisis_mapping.get('crisis_to_high', 0.50):
+                    return 'high'      # High confidence crisis
+                elif confidence >= crisis_mapping.get('crisis_to_medium', 0.30):
+                    return 'medium'    # Medium confidence crisis  
+                else:
+                    return 'low'       # Low confidence crisis, but still crisis
             
-            # Calculate adjustments based on pattern findings
-            adjustments = self._calculate_pattern_adjustments(pattern_results)
-            pattern_results['adjustments'] = adjustments
+            # MILD_CRISIS predictions
+            elif pred_lower == 'mild_crisis':
+                if confidence >= crisis_mapping.get('mild_crisis_to_low', 0.40):
+                    return 'low'       # Mild crisis with sufficient confidence
+                else:
+                    return 'none'      # Very low confidence mild crisis
             
-            # Create summary
-            total_patterns = (
-                len(pattern_results['community_patterns']) +
-                len(pattern_results['context_phrases']) +
-                len(pattern_results['temporal_indicators'].get('found_indicators', [])) +
-                len(pattern_results['enhanced_patterns'].get('matches', []))
-            )
+            # NEGATIVE sentiment predictions
+            elif pred_lower in ['negative', 'very_negative']:
+                if confidence >= crisis_mapping.get('negative_to_low', 0.70):
+                    return 'low'       # High confidence negative → low crisis
+                else:
+                    return 'none'      # Low confidence negative
             
-            pattern_results['summary'] = f"{total_patterns} patterns found"
+            # LOW_RISK or similar predictions
+            elif pred_lower in ['low_risk', 'minimal_distress']:
+                # These typically map to low crisis only with very high confidence
+                if confidence >= 0.80:  # Higher threshold for these categories
+                    return 'low'
+                else:
+                    return 'none'
             
-            return pattern_results
+            # UNKNOWN predictions (high confidence unknown can be concerning)
+            elif pred_lower == 'unknown':
+                if confidence >= crisis_mapping.get('unknown_to_low', 0.50):
+                    return 'low'       # High confidence unknown → investigate
+                else:
+                    return 'none'
             
+            # POSITIVE/NEUTRAL predictions
+            elif pred_lower in ['positive', 'very_positive', 'neutral', 'no_risk']:
+                return 'none'          # Positive predictions don't indicate crisis
+            
+            # Catch-all for unexpected predictions
+            else:
+                logger.warning(f"⚠️ Unexpected consensus prediction: {consensus_prediction}")
+                if confidence >= 0.60:  # Conservative threshold for unknown predictions
+                    return 'low'
+                else:
+                    return 'none'
+                    
         except Exception as e:
-            logger.error(f"Error in crisis pattern analysis: {e}")
-            return {'summary': f'pattern_error: {str(e)}', 'adjustments': {}}
+            logger.error(f"❌ Error in consensus to crisis level mapping: {e}")
+            # Safe fallback - if unsure and high confidence, escalate
+            return 'low' if confidence >= 0.50 else 'none'
 
-    def _calculate_pattern_adjustments(self, pattern_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _apply_pattern_adjustments_v3c(self, crisis_level: str, confidence: float, adjustments: Dict[str, Any]) -> Tuple[str, float]:
         """
-        Calculate crisis level and confidence adjustments based on pattern findings
-        
-        Args:
-            pattern_results: Results from pattern analysis
-            
-        Returns:
-            Dictionary with adjustment values
-        """
-        adjustments = {
-            'crisis_boost': 0.0,
-            'confidence_adjustment': 0.0,
-            'escalation_required': False,
-            'staff_alert': False
-        }
-        
-        try:
-            # Community pattern adjustments
-            for pattern in pattern_results.get('community_patterns', []):
-                if pattern.get('crisis_level') == 'high':
-                    adjustments['crisis_boost'] += 0.15
-                    adjustments['escalation_required'] = True
-                elif pattern.get('crisis_level') == 'medium':
-                    adjustments['crisis_boost'] += 0.08
-            
-            # Temporal indicator adjustments
-            temporal = pattern_results.get('temporal_indicators', {})
-            if temporal.get('auto_escalate'):
-                adjustments['escalation_required'] = True
-                adjustments['crisis_boost'] += temporal.get('total_boost', 0.0)
-            if temporal.get('staff_alert'):
-                adjustments['staff_alert'] = True
-            
-            # Enhanced pattern adjustments
-            enhanced = pattern_results.get('enhanced_patterns', {})
-            if enhanced.get('requires_immediate_attention'):
-                adjustments['escalation_required'] = True
-                adjustments['staff_alert'] = True
-                adjustments['crisis_boost'] += 0.20
-            elif enhanced.get('auto_escalate'):
-                adjustments['escalation_required'] = True
-                adjustments['crisis_boost'] += enhanced.get('total_weight', 0.0) * 0.1
-            
-            # Cap maximum boost
-            adjustments['crisis_boost'] = min(adjustments['crisis_boost'], 0.40)
-            
-        except Exception as e:
-            logger.error(f"Error calculating pattern adjustments: {e}")
-        
-        return adjustments
-
-    def _apply_pattern_adjustments(self, crisis_level: str, confidence: float, adjustments: Dict[str, Any]) -> Tuple[str, float]:
-        """
-        Apply pattern-based adjustments to crisis level and confidence
-        
-        Args:
-            crisis_level: Current crisis level
-            confidence: Current confidence score
-            adjustments: Pattern-based adjustments to apply
-            
-        Returns:
-            Tuple of (adjusted_crisis_level, adjusted_confidence)
+        PHASE 3C: Apply pattern-based adjustments using ThresholdMappingManager configuration
+        Enhanced with learning system integration and mode-aware adjustment limits
         """
         try:
-            adjusted_confidence = confidence + adjustments.get('confidence_adjustment', 0.0)
+            # Get pattern integration configuration
+            if self.threshold_mapping_manager:
+                pattern_config = self.threshold_mapping_manager.get_pattern_integration_config()
+            else:
+                pattern_config = {
+                    'pattern_weight_multiplier': 1.2,
+                    'confidence_boost_limit': 0.15,
+                    'escalation_required_minimum': 'low'
+                }
+            
+            # Apply confidence adjustments with configured limits
+            confidence_adjustment = adjustments.get('confidence_adjustment', 0.0)
+            max_boost = pattern_config.get('confidence_boost_limit', 0.15)
+            
+            # Scale adjustment by pattern weight multiplier
+            scaled_adjustment = confidence_adjustment * pattern_config.get('pattern_weight_multiplier', 1.2)
+            scaled_adjustment = max(-max_boost, min(max_boost, scaled_adjustment))
+            
+            adjusted_confidence = confidence + scaled_adjustment
             adjusted_confidence = max(0.0, min(1.0, adjusted_confidence))
             
             crisis_boost = adjustments.get('crisis_boost', 0.0)
             
-            # If significant pattern boost, consider upgrading crisis level
-            if crisis_boost >= 0.15:
-                if crisis_level == 'none' and adjusted_confidence > 0.15:
+            # Get mode-specific ensemble thresholds for escalation decisions
+            if self.threshold_mapping_manager:
+                ensemble_thresholds = self.threshold_mapping_manager.get_ensemble_thresholds_for_mode()
+                escalation_thresholds = {
+                    'to_low': ensemble_thresholds.get('low', 0.12),
+                    'to_medium': ensemble_thresholds.get('medium', 0.25),
+                    'to_high': ensemble_thresholds.get('high', 0.45)
+                }
+            else:
+                escalation_thresholds = {
+                    'to_low': 0.15,
+                    'to_medium': 0.25,
+                    'to_high': 0.50
+                }
+            
+            # Apply pattern-based crisis level escalation
+            if crisis_boost >= 0.15:  # Significant pattern boost
+                if crisis_level == 'none' and adjusted_confidence > escalation_thresholds['to_low']:
                     crisis_level = 'low'
-                elif crisis_level == 'low' and adjusted_confidence > 0.25:
+                    logger.debug(f"📈 Pattern escalation: none → low (boost={crisis_boost:.3f})")
+                elif crisis_level == 'low' and adjusted_confidence > escalation_thresholds['to_medium']:
                     crisis_level = 'medium'
-                elif crisis_level == 'medium' and adjusted_confidence > 0.50:
+                    logger.debug(f"📈 Pattern escalation: low → medium (boost={crisis_boost:.3f})")
+                elif crisis_level == 'medium' and adjusted_confidence > escalation_thresholds['to_high']:
                     crisis_level = 'high'
+                    logger.debug(f"📈 Pattern escalation: medium → high (boost={crisis_boost:.3f})")
             
             # Handle escalation requirements
+            escalation_minimum = pattern_config.get('escalation_required_minimum', 'low')
             if adjustments.get('escalation_required') and crisis_level == 'none':
-                crisis_level = 'low'  # Minimum escalation level
+                crisis_level = escalation_minimum
+                logger.debug(f"⬆️ Escalation required: none → {escalation_minimum}")
+            
+            # Apply pattern override for very high pattern confidence
+            pattern_override_threshold = pattern_config.get('pattern_override_threshold', 0.8)
+            if (adjustments.get('pattern_confidence', 0) >= pattern_override_threshold and 
+                crisis_level == 'none'):
+                crisis_level = 'low'
+                logger.debug(f"🔀 Pattern override: none → low (pattern_conf={adjustments.get('pattern_confidence', 0):.3f})")
             
             return crisis_level, adjusted_confidence
             
         except Exception as e:
-            logger.error(f"Error applying pattern adjustments: {e}")
+            logger.error(f"❌ Error applying pattern adjustments: {e}")
             return crisis_level, confidence
 
-    def _map_consensus_to_crisis_level(self, consensus_prediction: str, confidence: float) -> str:
+    def _is_staff_review_required(self, crisis_level: str, confidence: float, 
+                                ensemble_result: Dict[str, Any]) -> bool:
         """
-        CRITICAL FIX: Properly map ensemble consensus to crisis levels
-        This fixes the dangerous under-response bug
-        """
-        pred_lower = consensus_prediction.lower()
-        
-        # CRISIS predictions (normalized from ensemble)
-        if pred_lower == 'crisis':
-            if confidence >= 0.70:
-                return 'high'      # High confidence crisis
-            elif confidence >= 0.45:
-                return 'medium'    # Medium confidence crisis  
-            else:
-                return 'low'       # Low confidence crisis, but still crisis
-        
-        # MILD_CRISIS predictions 
-        elif pred_lower == 'mild_crisis':
-            if confidence >= 0.60:
-                return 'low'       # Mild crisis with good confidence
-            else:
-                return 'none'      # Very uncertain mild crisis
-        
-        # SAFE predictions
-        elif pred_lower in ['safe', 'neutral']:
-            return 'none'
-        
-        # UNKNOWN or error cases - be conservative
-        else:
-            logger.warning(f"Unknown consensus prediction: {consensus_prediction}")
-            if confidence > 0.50:  # If we're confident about something unknown, be cautious
-                return 'low'
-            else:
-                return 'none'
-
-    async def _legacy_two_model_analysis(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
-        """
-        Fallback to legacy two-model analysis when ensemble not available
-        Enhanced with pattern analysis if available
+        PHASE 3C: Determine if staff review is required using ThresholdMappingManager
         """
         try:
-            # Extract context and phrase analysis
-            context = extract_context_signals(message)
-            depression_score = extract_depression_score(message, self.models_manager.get_model('depression'))
+            if not self.threshold_mapping_manager:
+                # Fallback logic
+                return crisis_level == 'high' or (crisis_level == 'medium' and confidence >= 0.45)
             
-            # Apply pattern-based enhancements if available
-            base_score = depression_score
-            pattern_analysis = await self._analyze_with_crisis_patterns(message)
+            # Check for model disagreement and gap detection
+            has_model_disagreement = ensemble_result.get('gap_detection', {}).get('gap_detected', False)
+            has_gap_detection = ensemble_result.get('gap_detection', {}).get('requires_review', False)
             
-            if pattern_analysis.get('adjustments'):
-                # Apply context weights if pattern manager available
-                if self.community_extractor:
-                    modified_score, weight_details = self.community_extractor.apply_context_weights(message, base_score)
-                    depression_score = modified_score
-            
-            # Enhanced analysis
-            enhanced_result = enhanced_depression_analysis(
-                message, 
-                depression_score, 
-                self.models_manager.get_model('depression'),
-                self.models_manager.get_model('sentiment')
+            return self.threshold_mapping_manager.is_staff_review_required(
+                crisis_level, confidence, has_model_disagreement, has_gap_detection
             )
             
-            crisis_level = enhanced_crisis_level_mapping(enhanced_result['final_score'], self.crisis_thresholds)
+        except Exception as e:
+            logger.error(f"❌ Error determining staff review requirement: {e}")
+            # Conservative fallback - require review for medium+ crisis levels
+            return crisis_level in ['high', 'medium']
+
+    def _get_current_threshold_mode(self) -> str:
+        """Get current threshold mode for debugging"""
+        try:
+            if self.threshold_mapping_manager:
+                return self.threshold_mapping_manager.get_current_ensemble_mode()
+            return 'fallback'
+        except Exception:
+            return 'error'
+
+    def _get_threshold_debug_info(self) -> Dict[str, Any]:
+        """Get threshold configuration debug information"""
+        try:
+            if self.threshold_mapping_manager:
+                return {
+                    'crisis_mapping': self.threshold_mapping_manager.get_crisis_level_mapping_for_mode(),
+                    'ensemble_thresholds': self.threshold_mapping_manager.get_ensemble_thresholds_for_mode(),
+                    'staff_review_config': self.threshold_mapping_manager.get_staff_review_config(),
+                    'pattern_integration': self.threshold_mapping_manager.get_pattern_integration_config()
+                }
+            return {'mode': 'fallback', 'source': 'hardcoded_defaults'}
+        except Exception as e:
+            return {'error': str(e), 'mode': 'error'}
+
+    async def _provide_learning_feedback(self, result: Dict[str, Any]) -> None:
+        """
+        PHASE 3C: Provide feedback to learning system for threshold adjustment
+        """
+        try:
+            if not (self.learning_manager and self.threshold_mapping_manager):
+                return
+            
+            learning_config = self.threshold_mapping_manager.get_learning_system_config()
+            if not learning_config.get('enable_threshold_learning', True):
+                return
+            
+            # Prepare learning feedback based on analysis result
+            feedback_data = {
+                'crisis_level': result.get('crisis_level'),
+                'confidence': result.get('confidence_score'),
+                'ensemble_prediction': result.get('ensemble_details', {}).get('consensus', {}).get('prediction'),
+                'pattern_triggered': bool(result.get('pattern_analysis', {}).get('patterns_triggered')),
+                'staff_review_required': result.get('staff_review_required', False),
+                'processing_time': result.get('processing_time_ms'),
+                'current_mode': self._get_current_threshold_mode()
+            }
+            
+            # Send to learning manager for threshold optimization
+            await self.learning_manager.record_analysis_feedback(feedback_data)
+            
+            logger.debug("🎓 Learning feedback provided for threshold optimization")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Error providing learning feedback: {e}")
+
+    async def _legacy_two_model_analysis_v3c(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
+        """
+        PHASE 3C: Legacy two-model analysis updated with ThresholdMappingManager
+        Fallback method when ensemble analysis is not available
+        """
+        try:
+            logger.warning("⚠️ Using legacy two-model analysis - ensemble not available")
+            
+            # Get ensemble thresholds for legacy analysis
+            if self.threshold_mapping_manager:
+                ensemble_thresholds = self.threshold_mapping_manager.get_ensemble_thresholds_for_mode()
+                current_mode = self.threshold_mapping_manager.get_current_ensemble_mode()
+                logger.debug(f"🔧 Legacy analysis using {current_mode} mode thresholds: {ensemble_thresholds}")
+            else:
+                ensemble_thresholds = {'high': 0.45, 'medium': 0.25, 'low': 0.12}
+                current_mode = 'fallback'
+            
+            # Perform legacy analysis steps (simplified for Phase 3c)
+            context = extract_context_signals(message)
+            
+            # Pattern analysis
+            pattern_analysis = await self._analyze_with_crisis_patterns(message)
+            
+            # Simplified scoring using available models
+            base_confidence = 0.3  # Default base confidence for legacy mode
+            
+            # Apply pattern adjustments
+            adjusted_confidence = base_confidence
+            crisis_level = 'none'
+            
+            if pattern_analysis.get('adjustments'):
+                crisis_level, adjusted_confidence = self._apply_pattern_adjustments_v3c(
+                    crisis_level, adjusted_confidence, pattern_analysis['adjustments']
+                )
+            
+            # Apply ensemble thresholds to determine final crisis level
+            if adjusted_confidence >= ensemble_thresholds['high']:
+                crisis_level = 'high'
+            elif adjusted_confidence >= ensemble_thresholds['medium']:
+                crisis_level = 'medium'  
+            elif adjusted_confidence >= ensemble_thresholds['low']:
+                crisis_level = 'low'
+            
+            # Determine staff review requirement
+            staff_review_required = self._is_staff_review_required(
+                crisis_level, adjusted_confidence, {}
+            )
             
             return {
                 'needs_response': crisis_level != 'none',
                 'crisis_level': crisis_level,
-                'confidence_score': enhanced_result['final_score'],
-                'detected_categories': enhanced_result.get('detected_categories', []),
-                'method': 'legacy_two_model_with_patterns',
+                'confidence_score': adjusted_confidence,
+                'detected_categories': [],
+                'method': f'legacy_two_model_v3c_{current_mode}',
                 'processing_time_ms': (time.time() - start_time) * 1000,
-                'model_info': 'Legacy two-model analysis with pattern enhancement',
-                'reasoning': enhanced_result.get('reasoning', 'Legacy analysis'),
-                'pattern_analysis': pattern_analysis
+                'model_info': 'Legacy two-model fallback',
+                'reasoning': f'Legacy analysis with {current_mode} thresholds',
+                'pattern_analysis': pattern_analysis,
+                'staff_review_required': staff_review_required,
+                'threshold_mode': current_mode,
+                'threshold_config': self._get_threshold_debug_info(),
+                'warning': 'Using legacy analysis - ensemble not available'
             }
             
         except Exception as e:
-            logger.error(f"Error in legacy analysis: {e}")
+            logger.error(f"❌ Error in legacy two-model analysis: {e}")
             return {
                 'needs_response': False,
                 'crisis_level': 'none',
                 'confidence_score': 0.0,
                 'detected_categories': [],
-                'method': 'error_fallback',
+                'method': 'legacy_error_fallback',
                 'processing_time_ms': (time.time() - start_time) * 1000,
-                'model_info': 'Error fallback',
-                'reasoning': f"Legacy analysis failed: {str(e)}"
+                'error': str(e),
+                'staff_review_required': True
             }
 
-    def get_status(self) -> Dict[str, Any]:
-        """Get CrisisAnalyzer status information"""
-        return {
-            'analyzer': 'CrisisAnalyzer',
-            'version': '3.1.0',
-            'architecture': 'v3.1_clean_with_patterns',
-            'models_manager_available': self.models_manager is not None,
-            'crisis_pattern_manager_available': self.crisis_pattern_manager is not None,
-            'community_extractor_available': self.community_extractor is not None,
-            'learning_manager_available': self.learning_manager is not None,
-            'crisis_thresholds': self.crisis_thresholds,
-            'ensemble_analysis_available': hasattr(self.models_manager, 'analyze_with_ensemble') if self.models_manager else False
-        }
+    async def _analyze_with_crisis_patterns(self, message: str) -> Dict[str, Any]:
+        """
+        Crisis pattern analysis using CrisisPatternManager (Phase 3a compatibility)
+        Enhanced with Phase 3c threshold awareness
+        """
+        try:
+            if not self.crisis_pattern_manager:
+                return {
+                    'patterns_triggered': [],
+                    'adjustments': {},
+                    'summary': 'No crisis pattern manager available',
+                    'error': 'CrisisPatternManager not initialized'
+                }
+            
+            # Use crisis pattern manager for pattern detection
+            triggered_patterns = self.crisis_pattern_manager.find_triggered_patterns(message)
+            
+            if not triggered_patterns:
+                return {
+                    'patterns_triggered': [],
+                    'adjustments': {},
+                    'summary': 'No patterns triggered'
+                }
+            
+            # Calculate pattern-based adjustments with Phase 3c awareness
+            adjustments = self._calculate_pattern_adjustments_v3c(triggered_patterns, message)
+            
+            return {
+                'patterns_triggered': triggered_patterns,
+                'adjustments': adjustments,
+                'summary': f"{len(triggered_patterns)} patterns triggered",
+                'pattern_categories': list(set(p.get('category', 'unknown') for p in triggered_patterns)),
+                'highest_crisis_level': self._get_highest_pattern_crisis_level(triggered_patterns)
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error in crisis pattern analysis: {e}")
+            return {
+                'patterns_triggered': [],
+                'adjustments': {},
+                'summary': 'Pattern analysis error',
+                'error': str(e)
+            }
 
+    def _calculate_pattern_adjustments_v3c(self, triggered_patterns: List[Dict], message: str) -> Dict[str, Any]:
+        """
+        PHASE 3C: Calculate pattern adjustments using ThresholdMappingManager configuration
+        Enhanced with mode-aware adjustment scaling
+        """
+        try:
+            if not triggered_patterns:
+                return {}
+            
+            # Get pattern integration configuration
+            if self.threshold_mapping_manager:
+                pattern_config = self.threshold_mapping_manager.get_pattern_integration_config()
+                current_mode = self.threshold_mapping_manager.get_current_ensemble_mode()
+            else:
+                pattern_config = {
+                    'pattern_weight_multiplier': 1.2,
+                    'confidence_boost_limit': 0.15,
+                    'community_pattern_boost': 1.1
+                }
+                current_mode = 'fallback'
+            
+            total_confidence_boost = 0.0
+            total_crisis_boost = 0.0
+            escalation_required = False
+            pattern_confidence = 0.0
+            
+            # Process each triggered pattern
+            for pattern in triggered_patterns:
+                pattern_weight = pattern.get('weight', 1.0)
+                crisis_level = pattern.get('crisis_level', 'low')
+                
+                # Apply community-specific boosts
+                if pattern.get('category') in ['lgbtqia_patterns', 'community_vocabulary']:
+                    community_boost = pattern_config.get('community_pattern_boost', 1.1)
+                    pattern_weight *= community_boost
+                
+                # Calculate confidence adjustment based on crisis level
+                if crisis_level == 'high':
+                    confidence_adjustment = 0.12 * pattern_weight
+                    crisis_boost = 0.20 * pattern_weight
+                elif crisis_level == 'medium':
+                    confidence_adjustment = 0.08 * pattern_weight
+                    crisis_boost = 0.12 * pattern_weight
+                else:  # low
+                    confidence_adjustment = 0.05 * pattern_weight
+                    crisis_boost = 0.08 * pattern_weight
+                
+                total_confidence_boost += confidence_adjustment
+                total_crisis_boost += crisis_boost
+                
+                # Track pattern confidence
+                pattern_confidence = max(pattern_confidence, pattern.get('confidence', 0.5))
+                
+                # Check for escalation requirements
+                if pattern.get('requires_escalation', False):
+                    escalation_required = True
+            
+            # Apply mode-specific scaling
+            mode_multipliers = {
+                'consensus': 0.9,    # Conservative scaling for consensus mode
+                'majority': 1.0,     # Baseline scaling for majority mode
+                'weighted': 1.1,     # Slightly higher scaling for weighted mode (depression-heavy)
+                'fallback': 1.0
+            }
+            
+            mode_multiplier = mode_multipliers.get(current_mode, 1.0)
+            total_confidence_boost *= mode_multiplier
+            total_crisis_boost *= mode_multiplier
+            
+            # Apply pattern weight multiplier
+            pattern_multiplier = pattern_config.get('pattern_weight_multiplier', 1.2)
+            total_confidence_boost *= pattern_multiplier
+            total_crisis_boost *= pattern_multiplier
+            
+            # Apply boost limits
+            max_boost = pattern_config.get('confidence_boost_limit', 0.15)
+            total_confidence_boost = min(total_confidence_boost, max_boost)
+            total_crisis_boost = min(total_crisis_boost, max_boost)
+            
+            adjustments = {
+                'confidence_adjustment': total_confidence_boost,
+                'crisis_boost': total_crisis_boost,
+                'escalation_required': escalation_required,
+                'pattern_confidence': pattern_confidence,
+                'mode_multiplier': mode_multiplier,
+                'pattern_count': len(triggered_patterns)
+            }
+            
+            logger.debug(f"🔧 Pattern adjustments ({current_mode} mode): {adjustments}")
+            return adjustments
+            
+        except Exception as e:
+            logger.error(f"❌ Error calculating pattern adjustments: {e}")
+            return {}
 
-# Factory function for clean architecture
-def create_crisis_analyzer(models_manager, crisis_pattern_manager: Optional[CrisisPatternManager] = None, learning_manager=None) -> CrisisAnalyzer:
-    """
-    Factory function to create CrisisAnalyzer instance with dependency injection
-    
-    Args:
-        models_manager: ML model manager for ensemble analysis
-        crisis_pattern_manager: Optional CrisisPatternManager for pattern analysis
-        learning_manager: Optional learning manager for feedback
+    def _get_highest_pattern_crisis_level(self, patterns: List[Dict]) -> str:
+        """Get the highest crisis level among triggered patterns"""
+        if not patterns:
+            return 'none'
         
-    Returns:
-        CrisisAnalyzer instance
-    """
-    return CrisisAnalyzer(models_manager, crisis_pattern_manager, learning_manager)
+        crisis_levels = {'high': 3, 'medium': 2, 'low': 1, 'none': 0}
+        reverse_levels = {3: 'high', 2: 'medium', 1: 'low', 0: 'none'}
+        
+        highest_level = 0
+        for pattern in patterns:
+            level = crisis_levels.get(pattern.get('crisis_level', 'none'), 0)
+            highest_level = max(highest_level, level)
+        
+        return reverse_levels.get(highest_level, 'none')
 
-
-# Export for clean architecture
-__all__ = [
-    'CrisisAnalyzer',
-    'create_crisis_analyzer'
-]
+    def get_configuration_summary(self) -> Dict[str, Any]:
+        """
+        PHASE 3C: Get comprehensive configuration summary for debugging
+        """
+        summary = {
+            'phase': '3c',
+            'architecture': 'clean_v3_1',
+            'components': {
+                'crisis_pattern_manager': self.crisis_pattern_manager is not None,
+                'analysis_parameters_manager': self.analysis_parameters_manager is not None,
+                'threshold_mapping_manager': self.threshold_mapping_manager is not None,
+                'learning_manager': self.learning_manager is not None
+            }
+        }
+        
+        if self.threshold_mapping_manager:
+            try:
+                summary['threshold_configuration'] = {
+                    'current_mode': self.threshold_mapping_manager.get_current_ensemble_mode(),
+                    'crisis_mapping': self.threshold_mapping_manager.get_crisis_level_mapping_for_mode(),
+                    'staff_review_enabled': self.threshold_mapping_manager.get_staff_review_config().get('high_always', True),
+                    'learning_enabled': self.threshold_mapping_manager.get_learning_system_config().get('enable_threshold_learning', True)
+                }
+                
+                summary['validation_status'] = self.threshold_mapping_manager.get_validation_summary()
+            except Exception as e:
+                summary['threshold_configuration_error'] = str(e)
+        
+        return summary

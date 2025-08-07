@@ -15,7 +15,7 @@
       "architecture": "deberta-v3-base",
       "purpose": "Primary crisis classification with clinical depression focus",
       "specialization": "Depression and suicidal ideation detection",
-      "weight": "${NLP_DEPRESSION_MODEL_WEIGHT}",
+      "weight": "${NLP_MODEL_WEIGHT_DEPRESSION}",
       "default_weight": 0.6,
       "environment_variable": "NLP_DEPRESSION_MODEL",
       "pipeline_task": "zero-shot-classification",
@@ -35,7 +35,7 @@
       "architecture": "deberta-v3-base",
       "purpose": "Contextual validation and emotional tone analysis",
       "specialization": "Emotional tone and context analysis",
-      "weight": "${NLP_SENTIMENT_MODEL_WEIGHT}",
+      "weight": "${NLP_MODEL_WEIGHT_SENTIMENT}",
       "default_weight": 0.15,
       "environment_variable": "NLP_SENTIMENT_MODEL",
       "pipeline_task": "zero-shot-classification",
@@ -55,7 +55,7 @@
       "architecture": "deberta-v3-base",
       "purpose": "Emotional distress and stress detection",
       "specialization": "General emotional distress and mental strain",
-      "weight": "${NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT}",
+      "weight": "${NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS}",
       "default_weight": 0.25,
       "environment_variable": "NLP_EMOTIONAL_DISTRESS_MODEL",
       "pipeline_task": "zero-shot-classification",
@@ -94,9 +94,9 @@
       }
     },
     "model_weights": {
-      "depression": "${NLP_DEPRESSION_MODEL_WEIGHT}",
-      "sentiment": "${NLP_SENTIMENT_MODEL_WEIGHT}",
-      "emotional_distress": "${NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT}",
+      "depression": "${NLP_MODEL_WEIGHT_DEPRESSION}",
+      "sentiment": "${NLP_MODEL_WEIGHT_SENTIMENT}",
+      "emotional_distress": "${NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS}",
       "validation": {
         "weights_must_sum_to": 1.0,
         "minimum_weight": 0.0,
@@ -107,9 +107,9 @@
       "enabled": true,
       "threshold": "${NLP_GAP_DETECTION_THRESHOLD}",
       "default_threshold": 0.25,
-      "disagreement_threshold": "${NLP_DISAGREEMENT_THRESHOLD}",
+      "disagreement_threshold": "${NLP_THRESHOLD_GAP_DISAGREEMENT}",
       "default_disagreement_threshold": 0.35,
-      "auto_flag_disagreements": "${NLP_AUTO_FLAG_DISAGREEMENTS}",
+      "auto_flag_disagreements": "${NLP_THRESHOLD_GAP_AUTO_ESCALATION}",
       "description": "Identifies disagreements between models for manual review"
     },
     "consensus_features": {
@@ -117,7 +117,7 @@
       "confidence_spreading": "Analyzes confidence distribution across models",
       "disagreement_flagging": "Auto-flags staff review when models disagree",
       "safety_override": {
-        "enabled": "${NLP_ENABLE_SAFETY_OVERRIDE}",
+        "enabled": "${NLP_THRESHOLD_ENABLE_SAFETY_OVERRIDE}",
         "description": "Allow severe individual results to override consensus"
       }
     }
@@ -155,11 +155,11 @@
   "threshold_configuration": {
     "crisis_level_mapping": {
       "consensus_mapping": {
-        "crisis_to_high": "${NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD}",
-        "crisis_to_medium": "${NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD}",
-        "mild_crisis_to_low": "${NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD}",
-        "negative_to_low": "${NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD}",
-        "unknown_to_low": "${NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD}"
+        "crisis_to_high": "${NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH}",
+        "crisis_to_medium": "${NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM}",
+        "mild_crisis_to_low": "${NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW}",
+        "negative_to_low": "${NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW}",
+        "unknown_to_low": "${NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW}"
       },
       "defaults": {
         "crisis_to_high": 0.50,
@@ -170,30 +170,20 @@
       }
     },
     "ensemble_thresholds": {
-      "high": "${NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD}",
-      "medium": "${NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD}",
-      "low": "${NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD}",
+      "high": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_HIGH}",
+      "medium": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_MEDIUM}",
+      "low": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_LOW}",
       "defaults": {
         "high": 0.45,
         "medium": 0.25,
         "low": 0.12
       }
     },
-    "individual_model_thresholds": {
-      "high": "${NLP_HIGH_CRISIS_THRESHOLD}",
-      "medium": "${NLP_MEDIUM_CRISIS_THRESHOLD}",
-      "low": "${NLP_LOW_CRISIS_THRESHOLD}",
-      "defaults": {
-        "high": 0.45,
-        "medium": 0.25,
-        "low": 0.15
-      }
-    },
     "staff_review_thresholds": {
-      "high_always": "${NLP_STAFF_REVIEW_HIGH_ALWAYS}",
-      "medium_confidence_threshold": "${NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD}",
-      "low_confidence_threshold": "${NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD}",
-      "on_model_disagreement": "${NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT}",
+      "high_always": "${NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS}",
+      "medium_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE}",
+      "low_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE}",
+      "on_model_disagreement": "${NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT}",
       "defaults": {
         "high_always": true,
         "medium_confidence_threshold": 0.45,
@@ -202,8 +192,8 @@
       }
     },
     "safety_controls": {
-      "consensus_safety_bias": "${NLP_CONSENSUS_SAFETY_BIAS}",
-      "enable_safety_override": "${NLP_ENABLE_SAFETY_OVERRIDE}",
+      "consensus_safety_bias": "${NLP_THRESHOLD_SAFETY_BIAS}",
+      "enable_safety_override": "${NLP_THRESHOLD_ENABLE_SAFETY_OVERRIDE}",
       "defaults": {
         "consensus_safety_bias": 0.03,
         "enable_safety_override": true
@@ -214,22 +204,20 @@
     "experimental_features": {
       "enable_ensemble_analysis": "${NLP_ENABLE_ENSEMBLE_ANALYSIS}",
       "enable_gap_detection": "${NLP_ENABLE_GAP_DETECTION}",
-      "enable_confidence_spreading": "${NLP_ENABLE_CONFIDENCE_SPREADING}",
       "log_model_disagreements": "${NLP_LOG_MODEL_DISAGREEMENTS}",
       "defaults": {
         "enable_ensemble_analysis": true,
         "enable_gap_detection": true,
-        "enable_confidence_spreading": true,
         "log_model_disagreements": true
       }
     },
     "learning_system": {
       "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
-      "learning_rate": "${NLP_LEARNING_RATE}",
-      "max_adjustments_per_day": "${NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY}",
-      "persistence_file": "${NLP_LEARNING_PERSISTENCE_FILE}",
-      "min_confidence_adjustment": "${NLP_MIN_CONFIDENCE_ADJUSTMENT}",
-      "max_confidence_adjustment": "${NLP_MAX_CONFIDENCE_ADJUSTMENT}",
+      "learning_rate": "${NLP_THRESHOLD_LEARNING_RATE}",
+      "max_adjustments_per_day": "${NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
+      "persistence_file": "${NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE}",
+      "min_confidence_adjustment": "${NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
+      "max_confidence_adjustment": "${NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
       "defaults": {
         "enabled": true,
         "learning_rate": 0.1,

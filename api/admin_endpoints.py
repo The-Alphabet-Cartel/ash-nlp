@@ -44,15 +44,18 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern_manager=None):
+def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern_manager=None,
+                         analysis_parameters_manager=None, threshold_mapping_manager=None):
     """
-    Setup admin endpoints with clean v3.1 manager architecture - FIXED
+    Setup admin endpoints with complete Phase 3c manager architecture
     
     Args:
         app: FastAPI application instance
         models_manager: ModelsManager v3.1 instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
-        crisis_pattern_manager: CrisisPatternManager instance (optional)
+        crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
+        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b) - NEW
+        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c) - NEW
     """
     
     # ========================================================================
@@ -67,20 +70,25 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
         logger.error("❌ ZeroShotManager is required for admin endpoints")
         raise RuntimeError("ZeroShotManager required for admin endpoints")
     
-    logger.info("✅ Clean v3.1: Admin endpoints using direct manager access - FIXED")
+    logger.info("✅ Clean v3.1: Admin endpoints using direct manager access - Phase 3c Enhanced")
     
     # ========================================================================
-    # ADMIN STATUS ENDPOINT - FIXED: Add crisis_pattern_manager access
+    # ENHANCED ADMIN STATUS ENDPOINT - REPLACE EXISTING @app.get("/admin/status")
     # ========================================================================
     
     @app.get("/admin/status")
     async def admin_status():
-        """Get admin status information - FIXED: Added crisis pattern manager reporting"""
+        """Get comprehensive admin status - Phase 3c Enhanced"""
         try:
             status = {
                 "admin_available": True,
+                "phase": "3c",
+                "architecture": "clean_v3.1_with_phase_3c_integration",
                 "endpoints": [
                     "/admin/status",
+                    "/admin/configuration/summary",  # New Phase 3c endpoint
+                    "/admin/thresholds/status",      # New Phase 3c endpoint
+                    "/admin/analysis/parameters",    # New Phase 3b endpoint
                     "/admin/labels/status",
                     "/admin/labels/current",
                     "/admin/labels/list",
@@ -89,11 +97,13 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
                 "managers": {
                     "zero_shot_manager": zero_shot_manager is not None,
                     "models_manager": models_manager is not None,
-                    "crisis_pattern_manager": crisis_pattern_manager is not None
+                    "crisis_pattern_manager": crisis_pattern_manager is not None,
+                    "analysis_parameters_manager": analysis_parameters_manager is not None,
+                    "threshold_mapping_manager": threshold_mapping_manager is not None
                 }
             }
             
-            # FIXED: Add crisis pattern info if available
+            # Phase 3a - Crisis Pattern Manager Status
             if crisis_pattern_manager:
                 try:
                     pattern_status = crisis_pattern_manager.get_status()
@@ -103,22 +113,169 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
                         "phase_3a_integrated": True
                     }
                 except Exception as e:
-                    logger.warning(f"⚠️ Could not get crisis pattern status: {e}")
-                    status["crisis_patterns"] = {
-                        "available": False,
-                        "error": str(e)
-                    }
+                    status["crisis_patterns"] = {"available": False, "error": str(e)}
             else:
-                status["crisis_patterns"] = {
-                    "available": False,
-                    "note": "Crisis pattern manager not provided"
-                }
+                status["crisis_patterns"] = {"available": False, "note": "Crisis pattern manager not provided"}
+            
+            # Phase 3b - Analysis Parameters Manager Status - NEW
+            if analysis_parameters_manager:
+                try:
+                    all_params = analysis_parameters_manager.get_all_parameters()
+                    status["analysis_parameters"] = {
+                        "categories": len(all_params),
+                        "available": True,
+                        "phase_3b_integrated": True,
+                        "externalized": True
+                    }
+                except Exception as e:
+                    status["analysis_parameters"] = {"available": False, "error": str(e)}
+            else:
+                status["analysis_parameters"] = {"available": False, "note": "Analysis parameters manager not provided"}
+            
+            # Phase 3c - Threshold Mapping Manager Status - NEW
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    status["threshold_mapping"] = {
+                        "current_mode": current_mode,
+                        "available": True,
+                        "phase_3c_integrated": True,
+                        "mode_aware": True
+                    }
+                except Exception as e:
+                    status["threshold_mapping"] = {"available": False, "error": str(e)}
+            else:
+                status["threshold_mapping"] = {"available": False, "note": "Threshold mapping manager not provided"}
             
             return status
             
         except Exception as e:
-            logger.error(f"❌ Admin status error: {e}")
-            return {"error": str(e), "admin_available": False}
+            logger.error(f"❌ Error getting admin status: {e}")
+            return {"error": str(e), "admin_available": False, "phase": "3c"}
+
+    # ========================================================================
+    # NEW Phase 3c Configuration Summary Endpoint - ADD THIS
+    # ========================================================================
+    
+    @app.get("/admin/configuration/summary")
+    async def configuration_summary():
+        """Get complete configuration summary - Phase 3c"""
+        try:
+            summary = {
+                "phase": "3c",
+                "architecture": "clean_v3.1",
+                "configuration_externalized": True,
+                "components": {}
+            }
+            
+            # Phase 3a - Crisis Patterns
+            if crisis_pattern_manager:
+                try:
+                    pattern_status = crisis_pattern_manager.get_status()
+                    summary["components"]["crisis_patterns"] = {
+                        "source": "JSON configuration",
+                        "status": "externalized",
+                        "manager": "CrisisPatternManager",
+                        "loaded_patterns": pattern_status.get('loaded_pattern_sets', 0)
+                    }
+                except Exception as e:
+                    summary["components"]["crisis_patterns"] = {"error": str(e)}
+            
+            # Phase 3b - Analysis Parameters
+            if analysis_parameters_manager:
+                try:
+                    all_params = analysis_parameters_manager.get_all_parameters()
+                    summary["components"]["analysis_parameters"] = {
+                        "source": "JSON configuration + environment overrides",
+                        "status": "externalized",
+                        "categories": list(all_params.keys()),
+                        "manager": "AnalysisParametersManager"
+                    }
+                except Exception as e:
+                    summary["components"]["analysis_parameters"] = {"error": str(e)}
+            
+            # Phase 3c - Threshold Mapping
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+                    summary["components"]["threshold_mapping"] = {
+                        "source": "JSON configuration + environment overrides",
+                        "status": "externalized",
+                        "current_mode": current_mode,
+                        "crisis_levels": list(crisis_thresholds.keys()),
+                        "manager": "ThresholdMappingManager"
+                    }
+                except Exception as e:
+                    summary["components"]["threshold_mapping"] = {"error": str(e)}
+            
+            return summary
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting configuration summary: {e}")
+            raise HTTPException(status_code=500, detail=f"Configuration summary error: {str(e)}")
+
+    # ========================================================================
+    # NEW Phase 3c Threshold Status Endpoint - ADD THIS
+    # ========================================================================
+    
+    @app.get("/admin/thresholds/status")
+    async def threshold_status():
+        """Get detailed threshold configuration status - Phase 3c"""
+        try:
+            if not threshold_mapping_manager:
+                return {
+                    "status": "not_available",
+                    "message": "ThresholdMappingManager not provided",
+                    "phase_3c_integrated": False
+                }
+            
+            current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+            crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+            staff_review_config = threshold_mapping_manager.get_staff_review_config()
+            
+            return {
+                "status": "available",
+                "current_mode": current_mode,
+                "crisis_thresholds": crisis_thresholds,
+                "staff_review": staff_review_config,
+                "mode_aware": True,
+                "configuration_source": "JSON + environment overrides",
+                "phase_3c_complete": True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting threshold status: {e}")
+            raise HTTPException(status_code=500, detail=f"Threshold status error: {str(e)}")
+
+    # ========================================================================
+    # NEW Phase 3b Analysis Parameters Endpoint - ADD THIS
+    # ========================================================================
+    
+    @app.get("/admin/analysis/parameters")
+    async def analysis_parameters():
+        """Get analysis parameters configuration - Phase 3b"""
+        try:
+            if not analysis_parameters_manager:
+                return {
+                    "status": "not_available",
+                    "message": "AnalysisParametersManager not provided",
+                    "phase_3b_integrated": False
+                }
+            
+            all_params = analysis_parameters_manager.get_all_parameters()
+            
+            return {
+                "status": "available",
+                "parameters": all_params,
+                "configuration_source": "JSON + environment overrides",
+                "externalized": True,
+                "phase_3b_complete": True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting analysis parameters: {e}")
+            raise HTTPException(status_code=500, detail=f"Analysis parameters error: {str(e)}")
 
     # ========================================================================
     # LABEL STATUS ENDPOINT - Clean v3.1 (Keep - This one works)
@@ -570,23 +727,30 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
     logger.info("   POST /admin/labels/reload - Configuration reload status")
     logger.info("✅ Fixed: All admin endpoints using correct manager methods")
 
-def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, models_manager=None):
-    """Add admin endpoints to FastAPI app - Clean v3.1 Architecture FIXED"""
-    logger.info("🔧 Adding admin endpoints with FIXED v3.1 manager architecture...")
+# ========================================================================
+# Enhanced Admin Endpoints Function Signature
+# ========================================================================
+def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, 
+                       models_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None):
+    """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
+    logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
     
-    # Call the existing setup function with ALL managers
+    # Call the enhanced setup function with ALL managers
     try:
         setup_admin_endpoints(
             app=app,
             models_manager=models_manager,
             zero_shot_manager=zero_shot_manager,
-            crisis_pattern_manager=crisis_pattern_manager  # FIXED: Pass crisis_pattern_manager
+            crisis_pattern_manager=crisis_pattern_manager,
+            analysis_parameters_manager=analysis_parameters_manager,  # Phase 3b - NEW
+            threshold_mapping_manager=threshold_mapping_manager  # Phase 3c - NEW
         )
         
         # Include the admin router
         app.include_router(admin_router)
         
-        logger.info("✅ Admin endpoints added successfully - FIXED v3.1")
+        logger.info("✅ Admin endpoints added successfully - Phase 3c Enhanced")
+        logger.info("🆕 New endpoints: /admin/configuration/summary, /admin/thresholds/status, /admin/analysis/parameters")
         
     except Exception as e:
         logger.error(f"❌ Failed to setup admin endpoints: {e}")
