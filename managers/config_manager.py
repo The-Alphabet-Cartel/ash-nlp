@@ -259,13 +259,13 @@ class ConfigManager:
                     'cache_dir': os.getenv('NLP_STORAGE_MODELS_DIR', './models/cache')
                 },
                 'sentiment': {
-                    'name': os.getenv('NLP_MODEL_SENTIMENT_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
+                    'name': os.getenv('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                     'weight': float(os.getenv('NLP_MODEL_SENTIMENT_WEIGHT', '0.3')),
                     'type': 'sentiment-analysis',
                     'cache_dir': os.getenv('NLP_STORAGE_MODELS_DIR', './models/cache')
                 },
                 'emotional_distress': {
-                    'name': os.getenv('NLP_MODEL_DISTRESS_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                    'name': os.getenv('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                     'weight': float(os.getenv('NLP_MODEL_DISTRESS_WEIGHT', '0.3')),
                     'type': 'natural-language-inference',
                     'cache_dir': os.getenv('NLP_STORAGE_MODELS_DIR', './models/cache')
