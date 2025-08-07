@@ -1,4 +1,4 @@
-# Ash NLP Service v3.1 - Three-Model Crisis Detection Ensemble
+# Ash NLP Service v3.0 - Three-Model Crisis Detection Ensemble
 
 **Revolutionary mental health crisis detection using advanced AI ensemble methods**
 
@@ -6,9 +6,9 @@
 [![Website](https://img.shields.io/badge/Website-alphabetcartel.org-blue)](http://alphabetcartel.org)
 [![GitHub](https://img.shields.io/badge/Branch-Main-green)](https://github.com/the-alphabet-cartel/ash-nlp)
 
-## 🚀 What is Ash NLP v3.1?
+## 🚀 What is Ash NLP v3.0?
 
-Ash NLP v3.1 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
+Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
 
 - **🧠 Enhanced accuracy** through model consensus and disagreement detection
 - **⚡ Sub-35ms response times** optimized for real-time Discord interactions
@@ -159,7 +159,7 @@ NLP_MAX_CONCURRENT_REQUESTS=20
 >
 ## 🤝 Integration with Ash Ecosystem
 
-Ash NLP v3.1 integrates seamlessly with:
+Ash NLP v3.0 integrates seamlessly with:
 
 - **[Ash Bot](https://github.com/the-alphabet-cartel/ash-bot)** - Discord crisis response bot
 - **[Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash)** - Analytics and monitoring (Not Yet Implemented)
