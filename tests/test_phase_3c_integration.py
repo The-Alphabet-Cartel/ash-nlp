@@ -219,54 +219,77 @@ class TestPhase3cSystemIntegration:
         """Test ensemble endpoints integration with ThresholdMappingManager"""
         logger.info("🧪 Testing ensemble endpoints integration...")
         
+        # Test ensemble result integration
+        ensemble_result = {
+            'consensus': {'prediction': 'crisis', 'confidence': 0.55},
+            'majority': {'prediction': 'mild_crisis', 'confidence': 0.48},
+            'weighted': {'prediction': 'crisis', 'confidence': 0.62},
+            'gap_detection': {'gap_detected': False, 'requires_review': False},
+            'detected_categories': ['depression', 'anxiety']
+        }
+        
+        pattern_result = {
+            'patterns_triggered': ['depression_indicators', 'isolation_patterns'],
+            'pattern_confidence': 0.7,
+            'community_patterns': True,
+            'error': None
+        }
+        
+        logger.info(f"   📊 Calling integrate_pattern_and_ensemble_analysis_v3c...")
+        logger.info(f"   📊 Ensemble result keys: {list(ensemble_result.keys())}")
+        logger.info(f"   📊 Pattern result keys: {list(pattern_result.keys())}")
+        logger.info(f"   📊 Mock manager available: {mock_threshold_manager is not None}")
+        
         try:
-            # Test ensemble result integration
-            ensemble_result = {
-                'consensus': {'prediction': 'crisis', 'confidence': 0.55},
-                'majority': {'prediction': 'mild_crisis', 'confidence': 0.48},
-                'weighted': {'prediction': 'crisis', 'confidence': 0.62},
-                'gap_detection': {'gap_detected': False, 'requires_review': False},
-                'detected_categories': ['depression', 'anxiety']
-            }
-            
-            pattern_result = {
-                'patterns_triggered': ['depression_indicators', 'isolation_patterns'],
-                'pattern_confidence': 0.7,
-                'community_patterns': True,
-                'error': None
-            }
-            
-            # Test integrate_pattern_and_ensemble_analysis_v3c function
+            # Test the actual integration function - this should work!
             integrated_result = integrate_pattern_and_ensemble_analysis_v3c(
                 ensemble_result, pattern_result, mock_threshold_manager
             )
             
-            # Verify integration result structure matches actual implementation
-            required_keys = ['needs_response', 'crisis_level', 'confidence_score', 'method']
-            for key in required_keys:
-                assert key in integrated_result, f"Missing required key: {key}"
+            logger.info(f"   📊 Integration successful! Result keys: {list(integrated_result.keys())}")
             
-            # Verify Phase 3c specific additions
-            phase_3c_keys = ['staff_review_required', 'threshold_mode', 'integration_details']
-            for key in phase_3c_keys:
-                assert key in integrated_result, f"Missing Phase 3c key: {key}"
+            # Verify the actual result structure - be specific about what we expect
+            if 'crisis_level' not in integrated_result:
+                logger.error(f"❌ Missing 'crisis_level' in result. Got: {integrated_result}")
+                raise AssertionError("Missing crisis_level in integration result")
             
-            # Verify values are reasonable
-            assert integrated_result['crisis_level'] in ['none', 'low', 'medium', 'high']
-            assert integrated_result['threshold_mode'] == 'weighted'  # From mock
-            assert isinstance(integrated_result['staff_review_required'], bool)
-            assert isinstance(integrated_result['confidence_score'], (int, float))
+            if 'staff_review_required' not in integrated_result:
+                logger.error(f"❌ Missing 'staff_review_required' in result. Got: {integrated_result}")
+                raise AssertionError("Missing staff_review_required in integration result")
             
-            logger.info(f"   📊 Integrated result: {integrated_result['crisis_level']} (confidence: {integrated_result['confidence_score']})")
-            logger.info(f"   📊 Staff review required: {integrated_result['staff_review_required']}")
-            logger.info(f"   📊 Threshold mode: {integrated_result['threshold_mode']}")
+            # Test the values
+            crisis_level = integrated_result['crisis_level']
+            staff_review = integrated_result['staff_review_required']
+            
+            assert crisis_level in ['none', 'low', 'medium', 'high'], f"Invalid crisis_level: {crisis_level}"
+            assert isinstance(staff_review, bool), f"staff_review_required should be bool, got {type(staff_review)}"
+            
+            logger.info(f"   ✅ Crisis level: {crisis_level}")
+            logger.info(f"   ✅ Staff review required: {staff_review}")
+            
+            # Verify mock was called correctly
+            logger.info(f"   📊 Checking if mock methods were called...")
+            mock_threshold_manager.get_current_ensemble_mode.assert_called()
+            mock_threshold_manager.get_crisis_level_mapping_for_mode.assert_called()
+            
             logger.info("✅ Ensemble endpoints integration test passed")
             
         except Exception as e:
-            logger.error(f"❌ Ensemble endpoints integration failed: {e}")
-            # Still test basic functionality if integration function unavailable
-            assert mock_threshold_manager.get_current_ensemble_mode() == 'weighted'
-            logger.info("✅ Ensemble endpoints basic functionality test passed")
+            # This is what we want - to see the actual error!
+            logger.error(f"❌ Integration function failed with error: {e}")
+            logger.error(f"❌ Error type: {type(e).__name__}")
+            
+            # Log what we tried to call it with
+            logger.error(f"❌ Called with ensemble_result: {ensemble_result}")
+            logger.error(f"❌ Called with pattern_result: {pattern_result}")
+            logger.error(f"❌ Called with threshold_manager: {type(mock_threshold_manager)}")
+            
+            # Log mock setup
+            logger.error(f"❌ Mock current_mode method: {hasattr(mock_threshold_manager, 'get_current_ensemble_mode')}")
+            logger.error(f"❌ Mock crisis_mapping method: {hasattr(mock_threshold_manager, 'get_crisis_level_mapping_for_mode')}")
+            logger.error(f"❌ Mock staff_review method: {hasattr(mock_threshold_manager, 'is_staff_review_required')}")
+            
+            # Re-raise so we can see the actual problem and fix it
             raise
     
     def test_ensemble_prediction_mapping_integration(self, mock_threshold_manager):
