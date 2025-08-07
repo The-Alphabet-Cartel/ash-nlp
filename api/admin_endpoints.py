@@ -320,8 +320,8 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
                 },
                 "models_in_use": {
                     "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-                    "sentiment": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-                    "distress": "Lowerated/lm6-deberta-v3-topic-sentiment"
+                    "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment",
+                    "distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
                 }
             }
         except Exception as e:
