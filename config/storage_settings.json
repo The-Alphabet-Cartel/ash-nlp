@@ -1,0 +1,47 @@
+{
+  "storage_configuration": {
+    "version": "3.1d",
+    "architecture": "clean-v3.1-unified",
+    "description": "Unified storage configuration - consolidates multiple duplicate directory variables",
+    "directories": {
+      "data_directory": "${NLP_STORAGE_DATA_DIR}",
+      "models_directory": "${NLP_STORAGE_MODELS_DIR}",
+      "logs_directory": "${NLP_STORAGE_LOGS_DIR}", 
+      "learning_directory": "${NLP_STORAGE_LEARNING_DIR}"
+    },
+    "file_paths": {
+      "log_file": "${NLP_STORAGE_LOG_FILE}",
+      "learning_persistence_file": "${NLP_STORAGE_LEARNING_FILE}"
+    },
+    "cache_settings": {
+      "huggingface_cache": "${NLP_STORAGE_MODELS_DIR}",
+      "enable_model_caching": true,
+      "cache_cleanup_on_startup": false,
+      "model_cache_size_limit": "10GB"
+    },
+    "defaults": {
+      "directories": {
+        "data_directory": "./data",
+        "models_directory": "./models/cache",
+        "logs_directory": "./logs",
+        "learning_directory": "./learning_data"
+      },
+      "file_paths": {
+        "log_file": "nlp_service.log",
+        "learning_persistence_file": "./learning_data/adjustments.json"
+      },
+      "cache_settings": {
+        "huggingface_cache": "./models/cache",
+        "enable_model_caching": true,
+        "cache_cleanup_on_startup": false,
+        "model_cache_size_limit": "10GB"
+      }
+    },
+    "validation": {
+      "create_directories_on_startup": true,
+      "validate_write_permissions": true,
+      "fail_on_inaccessible_directories": false,
+      "required_directories": ["data_directory", "models_directory", "logs_directory", "learning_directory"]
+    }
+  }
+}
