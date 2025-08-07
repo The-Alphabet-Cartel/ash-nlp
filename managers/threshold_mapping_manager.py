@@ -76,52 +76,56 @@ class ThresholdMappingManager:
         # Use deep copy to prevent mutation of original config
         processed_config = copy.deepcopy(config)
         
-        # Mode-specific overrides
-        for mode in ['consensus', 'majority', 'weighted']:
-            if 'threshold_mapping_by_mode' in processed_config:
-                mode_config = processed_config['threshold_mapping_by_mode'].get(mode, {})
-                
-                # Crisis level mapping overrides
-                if 'crisis_level_mapping' in mode_config:
-                    mapping = mode_config['crisis_level_mapping']
-                    mapping['crisis_to_high'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_CRISIS_TO_HIGH', 
-                        mapping.get('crisis_to_high', 0.5)
-                    ))
-                    mapping['crisis_to_medium'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_CRISIS_TO_MEDIUM', 
-                        mapping.get('crisis_to_medium', 0.3)
-                    ))
-                    mapping['mild_crisis_to_low'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_MILD_CRISIS_TO_LOW', 
-                        mapping.get('mild_crisis_to_low', 0.4)
-                    ))
-                    mapping['negative_to_low'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_NEGATIVE_TO_LOW', 
-                        mapping.get('negative_to_low', 0.7)
-                    ))
-                    mapping['unknown_to_low'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_UNKNOWN_TO_LOW', 
-                        mapping.get('unknown_to_low', 0.5)
-                    ))
-                
-                # Ensemble threshold overrides
-                if 'ensemble_thresholds' in mode_config:
-                    thresholds = mode_config['ensemble_thresholds']
-                    thresholds['high'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_ENSEMBLE_HIGH', 
-                        thresholds.get('high', 0.45)
-                    ))
-                    thresholds['medium'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_ENSEMBLE_MEDIUM', 
-                        thresholds.get('medium', 0.25)
-                    ))
-                    thresholds['low'] = float(os.getenv(
-                        f'NLP_THRESHOLD_{mode.upper()}_ENSEMBLE_LOW', 
-                        thresholds.get('low', 0.12)
-                    ))
+        # Mode-specific overrides - only process modes that exist in config
+        available_modes = []
+        if 'threshold_mapping_by_mode' in processed_config:
+            available_modes = list(processed_config['threshold_mapping_by_mode'].keys())
         
-        # Shared configuration overrides with proper boolean parsing
+        # Apply overrides to available modes (don't create new modes)
+        for mode in available_modes:
+            mode_config = processed_config['threshold_mapping_by_mode'][mode]
+            
+            # Crisis level mapping overrides
+            if 'crisis_level_mapping' in mode_config:
+                mapping = mode_config['crisis_level_mapping']
+                mapping['crisis_to_high'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_CRISIS_TO_HIGH', 
+                    mapping.get('crisis_to_high', 0.5)
+                ))
+                mapping['crisis_to_medium'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_CRISIS_TO_MEDIUM', 
+                    mapping.get('crisis_to_medium', 0.3)
+                ))
+                mapping['mild_crisis_to_low'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_MILD_CRISIS_TO_LOW', 
+                    mapping.get('mild_crisis_to_low', 0.4)
+                ))
+                mapping['negative_to_low'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_NEGATIVE_TO_LOW', 
+                    mapping.get('negative_to_low', 0.7)
+                ))
+                mapping['unknown_to_low'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_UNKNOWN_TO_LOW', 
+                    mapping.get('unknown_to_low', 0.5)
+                ))
+            
+            # Ensemble threshold overrides
+            if 'ensemble_thresholds' in mode_config:
+                thresholds = mode_config['ensemble_thresholds']
+                thresholds['high'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_ENSEMBLE_HIGH', 
+                    thresholds.get('high', 0.45)
+                ))
+                thresholds['medium'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_ENSEMBLE_MEDIUM', 
+                    thresholds.get('medium', 0.25)
+                ))
+                thresholds['low'] = float(os.getenv(
+                    f'NLP_THRESHOLD_{mode.upper()}_ENSEMBLE_LOW', 
+                    thresholds.get('low', 0.12)
+                ))
+        
+        # Shared configuration overrides (same as before)
         if 'shared_configuration' in processed_config:
             shared = processed_config['shared_configuration']
             
@@ -136,7 +140,6 @@ class ThresholdMappingManager:
                     'NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE',
                     staff_review.get('low_confidence_threshold', 0.75)
                 ))
-                # Use proper boolean parsing
                 staff_review['high_always'] = self._parse_boolean_env_var(
                     'NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS', 
                     staff_review.get('high_always', True)
@@ -347,19 +350,24 @@ class ThresholdMappingManager:
                 self._validation_errors.append(f"Safety controls minimum_response_threshold ({min_response}) must be between 0.0 and 0.5")
     
     def _validate_cross_mode_consistency(self) -> None:
-        """Validate consistency across ensemble modes"""
+        """Validate consistency across ensemble modes (only validates modes that are present)"""
         if not self._processed_config or 'threshold_mapping_by_mode' not in self._processed_config:
             return
         
         modes = self._processed_config['threshold_mapping_by_mode']
         
-        # Check that all required modes are present
-        required_modes = ['consensus', 'majority', 'weighted']
-        for mode in required_modes:
-            if mode not in modes:
-                self._validation_errors.append(f"Missing configuration for required mode: {mode}")
+        # DO NOT require all modes - server runs single mode at startup
+        # Only validate whatever modes are actually present in the configuration
         
-        # Validate reasonable consistency between modes
+        # Get the current/expected mode
+        current_mode = self.get_current_ensemble_mode()
+        
+        # Validate that the current mode has configuration (if we can determine it)
+        if current_mode and current_mode not in modes:
+            logger.warning(f"⚠️ Current ensemble mode '{current_mode}' not found in configuration, will use defaults")
+        
+        # Only validate consistency between modes if multiple modes are present
+        # This is for deployments that have multiple mode configurations
         if len(modes) >= 2:
             crisis_high_values = []
             crisis_medium_values = []
@@ -375,19 +383,22 @@ class ThresholdMappingManager:
                     if isinstance(medium_val, (int, float)):
                         crisis_medium_values.append(medium_val)
             
-            # Check for reasonable consistency (not more than 0.3 difference)
+            # Warn (don't error) if there's too much variation between modes
+            # This is informational for multi-mode deployments
             if len(crisis_high_values) >= 2:
                 high_range = max(crisis_high_values) - min(crisis_high_values)
                 if high_range > 0.3:
-                    self._validation_errors.append(
-                        f"Crisis high thresholds vary too much across modes: range = {high_range:.3f} (max = 0.3)"
+                    logger.warning(
+                        f"⚠️ Crisis high thresholds vary significantly across modes: range = {high_range:.3f} "
+                        f"(this may be intentional for different ensemble strategies)"
                     )
             
             if len(crisis_medium_values) >= 2:
                 medium_range = max(crisis_medium_values) - min(crisis_medium_values)
                 if medium_range > 0.3:
-                    self._validation_errors.append(
-                        f"Crisis medium thresholds vary too much across modes: range = {medium_range:.3f} (max = 0.3)"
+                    logger.warning(
+                        f"⚠️ Crisis medium thresholds vary significantly across modes: range = {medium_range:.3f} "
+                        f"(this may be intentional for different ensemble strategies)"
                     )
     
     def _should_fail_fast(self) -> bool:
