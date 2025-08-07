@@ -77,6 +77,9 @@ class TestPhase3cSystemIntegration:
             'gap_detection_review': True
         }
         
+        # ADDED: Mock is_staff_review_required method - this was missing!
+        mock_manager.is_staff_review_required.return_value = True
+        
         # Mock pattern integration config
         mock_manager.get_pattern_integration_config.return_value = {
             'pattern_weight_multiplier': 1.2,
