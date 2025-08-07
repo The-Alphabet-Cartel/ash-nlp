@@ -478,13 +478,11 @@ class Phase3cEndpointTester:
                     logger.info(f"   ❌ {test_name}: {error or 'Unknown error'}")
             return False
 
-
 def main():
     """Main test execution function"""
     tester = Phase3cEndpointTester()
     success = tester.run_all_tests()
     return success
-
 
 if __name__ == "__main__":
     import sys
