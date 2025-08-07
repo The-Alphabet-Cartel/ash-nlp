@@ -18,13 +18,14 @@ logger = logging.getLogger(__name__)
 class EnhancedLearningManager:
     """Enhanced learning manager with clean v3.1 manager architecture - NO FALLBACKS"""
     
-    def __init__(self, models_manager, config_manager):
+    def __init__(self, models_manager, config_manager, analysis_parameters_manager=None):
         """
-        Initialize with clean v3.1 manager architecture - Direct Manager Access Only
+        Initialize with clean v3.1 manager architecture + Phase 3d Step 4 integration
         
         Args:
             models_manager: ModelsManager v3.1 instance (required)
             config_manager: ConfigManager instance (required)
+            analysis_parameters_manager: AnalysisParametersManager instance (Phase 3d Step 4)
         """
         
         # Validate required managers - NO FALLBACKS
@@ -38,11 +39,17 @@ class EnhancedLearningManager:
         
         self.models_manager = models_manager
         self.config_manager = config_manager
+        self.analysis_parameters_manager = analysis_parameters_manager  # NEW in Step 4
         
-        # Load configuration using clean v3.1 manager architecture
+        # Load configuration using clean v3.1 manager architecture + Phase 3d integration
         try:
-            self._load_configuration_from_managers()
-            logger.info("🔧 Learning configuration loaded from clean v3.1 managers")
+            if self.analysis_parameters_manager:
+                logger.info("🎯 Loading learning configuration from AnalysisParametersManager (Phase 3d Step 4)")
+                self._load_from_analysis_parameters_manager()
+            else:
+                logger.warning("⚠️ AnalysisParametersManager not available, using legacy configuration")
+                self._load_configuration_from_managers()
+                
         except Exception as e:
             logger.error(f"❌ Failed to load learning configuration: {e}")
             raise RuntimeError(f"Learning configuration failed: {e}")
@@ -50,14 +57,64 @@ class EnhancedLearningManager:
         # Initialize learning data
         self._initialize_enhanced_learning_data()
         
-        logger.info("🧠 Enhanced learning manager initialized with clean v3.1 architecture")
-        logger.info("✅ Phase 2C: Direct manager access only - No backward compatibility")
-        logger.debug(f"   Learning rate: {self.learning_rate}")
-        logger.debug(f"   Adjustment range: {self.min_adjustment} to {self.max_adjustment}")
-        logger.debug(f"   Max adjustments per day: {self.max_adjustments_per_day}")
-        logger.debug(f"   Sensitivity bounds: {self.min_global_sensitivity} to {self.max_global_sensitivity}")
-        logger.debug(f"   Data file: {self.learning_data_path}")
+        logger.info("🧠 Enhanced learning manager initialized with Phase 3d Step 4 integration")
     
+    def _load_from_analysis_parameters_manager(self):
+        """
+        PHASE 3D STEP 4: Load configuration from AnalysisParametersManager
+        """
+        try:
+            # Get learning system parameters from manager
+            learning_params = self.analysis_parameters_manager.get_learning_system_parameters()
+            
+            # Core parameters with standardized NLP_ANALYSIS_LEARNING_* naming
+            self.learning_data_path = learning_params.get('persistence_file', './learning_data/adjustments.json')
+            self.learning_rate = learning_params.get('learning_rate', 0.01)
+            self.min_adjustment = learning_params.get('min_confidence_adjustment', 0.05)
+            self.max_adjustment = learning_params.get('max_confidence_adjustment', 0.30)
+            self.max_adjustments_per_day = learning_params.get('max_adjustments_per_day', 50)
+            
+            # Sensitivity bounds
+            sensitivity_bounds = learning_params.get('sensitivity_bounds', {})
+            self.min_global_sensitivity = sensitivity_bounds.get('min_global_sensitivity', 0.5)
+            self.max_global_sensitivity = sensitivity_bounds.get('max_global_sensitivity', 1.5)
+            
+            # Adjustment factors
+            adjustment_factors = learning_params.get('adjustment_factors', {})
+            self.false_positive_factor = adjustment_factors.get('false_positive_factor', -0.1)
+            self.false_negative_factor = adjustment_factors.get('false_negative_factor', 0.1)
+            
+            # Severity multipliers
+            severity_multipliers = learning_params.get('severity_multipliers', {})
+            self.severity_multipliers = {
+                'high': severity_multipliers.get('high_severity', 3.0),
+                'medium': severity_multipliers.get('medium_severity', 2.0),
+                'low': severity_multipliers.get('low_severity', 1.0)
+            }
+            
+            # Default pattern indicators (these should eventually move to JSON configuration)
+            self.false_positive_indicators = [
+                'just tired', 'dead tired', 'dying of laughter', 'killing it',
+                'murder a burger', 'joke killed me', 'that\'s brutal', 'insane workout',
+                'crazy day', 'driving me nuts', 'killing time', 'dead serious',
+                'movie about', 'studying', 'research', 'class', 'homework',
+                'character died', 'boss fight', 'video game', 'fictional',
+                'embarrassment', 'figurative', 'metaphor', 'expression'
+            ]
+            
+            self.false_negative_indicators = [
+                'don\'t want to be here', 'tired of everything', 'can\'t go on',
+                'no point', 'what\'s the use', 'giving up', 'had enough',
+                'everyone better without me', 'burden', 'waste of space',
+                'failed at everything', 'hopeless', 'pointless', 'empty inside'
+            ]
+            
+            logger.info("✅ Learning configuration loaded from AnalysisParametersManager (Phase 3d Step 4)")
+            
+        except Exception as e:
+            logger.error(f"❌ Error loading from AnalysisParametersManager: {e}")
+            raise
+
     def _load_configuration_from_managers(self):
         """Load configuration using clean v3.1 manager architecture - NO FALLBACKS"""
         try:
@@ -109,32 +166,56 @@ class EnhancedLearningManager:
             self._load_from_environment_only()
     
     def _load_from_environment_only(self):
-        """Load configuration from environment variables only - Clean v3.1 fallback"""
-        self.learning_data_path = os.getenv('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
-        self.learning_rate = float(os.getenv('NLP_THRESHOLD_LEARNING_RATE', '0.1'))
-        self.min_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', '0.05'))
-        self.max_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', '0.30'))
-        self.max_adjustments_per_day = int(os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', '50'))
+        """Load configuration from environment variables only - Phase 3d Step 4 Updated"""
+        # NEW VARIABLE NAMES - Phase 3d Step 4
+        self.learning_data_path = os.getenv('NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE', 
+                                           os.getenv('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', 
+                                                    './learning_data/enhanced_learning_adjustments.json'))
         
-        # Clean v3.1 defaults
-        self.min_global_sensitivity = float(os.getenv('NLP_MIN_GLOBAL_SENSITIVITY', '0.5'))
-        self.max_global_sensitivity = float(os.getenv('NLP_MAX_GLOBAL_SENSITIVITY', '1.5'))
+        self.learning_rate = float(os.getenv('NLP_ANALYSIS_LEARNING_RATE', 
+                                            os.getenv('NLP_THRESHOLD_LEARNING_RATE', '0.01')))
         
-        # Default pattern indicators for clean v3.1
+        self.min_adjustment = float(os.getenv('NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', 
+                                             os.getenv('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', '0.05')))
+        
+        self.max_adjustment = float(os.getenv('NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', 
+                                             os.getenv('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', '0.30')))
+        
+        self.max_adjustments_per_day = int(os.getenv('NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY', 
+                                                    os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', '50')))
+        
+        # Phase 3d Step 4 - Updated variable names with fallbacks
+        self.min_global_sensitivity = float(os.getenv('NLP_ANALYSIS_LEARNING_MIN_SENSITIVITY', 
+                                                      os.getenv('NLP_MIN_GLOBAL_SENSITIVITY', '0.5')))
+        
+        self.max_global_sensitivity = float(os.getenv('NLP_ANALYSIS_LEARNING_MAX_SENSITIVITY', 
+                                                      os.getenv('NLP_MAX_GLOBAL_SENSITIVITY', '1.5')))
+        
+        self.false_positive_factor = float(os.getenv('NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR', 
+                                                    os.getenv('NLP_FALSE_POSITIVE_FACTOR', '-0.1')))
+        
+        self.false_negative_factor = float(os.getenv('NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR', 
+                                                    os.getenv('NLP_FALSE_NEGATIVE_FACTOR', '0.1')))
+        
+        # Severity multipliers with new naming
+        self.severity_multipliers = {
+            'high': float(os.getenv('NLP_ANALYSIS_LEARNING_SEVERITY_HIGH', '3.0')),
+            'medium': float(os.getenv('NLP_ANALYSIS_LEARNING_SEVERITY_MEDIUM', '2.0')),
+            'low': float(os.getenv('NLP_ANALYSIS_LEARNING_SEVERITY_LOW', '1.0'))
+        }
+        
+        # Default pattern indicators (unchanged)
         self.false_positive_indicators = [
             'just tired', 'dead tired', 'dying of laughter', 'killing it',
             'murder a burger', 'joke killed me', 'that\'s brutal', 'insane workout'
         ]
+        
         self.false_negative_indicators = [
             'don\'t want to be here', 'tired of everything', 'can\'t go on',
             'no point', 'what\'s the use', 'giving up', 'had enough'
         ]
         
-        self.false_positive_factor = float(os.getenv('NLP_FALSE_POSITIVE_FACTOR', '-0.1'))
-        self.false_negative_factor = float(os.getenv('NLP_FALSE_NEGATIVE_FACTOR', '0.1'))
-        self.severity_multipliers = {'high': 3.0, 'medium': 2.0, 'low': 1.0}
-        
-        logger.info("🔧 Learning configuration loaded from environment variables (clean v3.1)")
+        logger.info("🔧 Learning configuration loaded from environment variables (Phase 3d Step 4)")
     
     def _initialize_enhanced_learning_data(self):
         """Initialize enhanced learning data structure - Clean v3.1"""
@@ -613,25 +694,22 @@ def get_pydantic_models():
 def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
                                   analysis_parameters_manager=None, threshold_mapping_manager=None):
     """
-    Add enhanced learning endpoints to FastAPI app - Phase 3c Enhanced
+    Add enhanced learning endpoints to FastAPI app - Phase 3d Step 4 Enhanced
     
     Args:
         app: FastAPI application instance
         learning_manager: EnhancedLearningManager instance (required)
         config_manager: ConfigManager instance (optional, for compatibility)
-        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b) - NEW
-        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c) - NEW
+        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3d Step 4)
+        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
     """
     
-    # ========================================================================
-    # CLEAN V3.1 VALIDATION - No Fallbacks
-    # ========================================================================
-    
+    # Validation remains the same
     if not learning_manager:
         logger.error("❌ EnhancedLearningManager is required for learning endpoints")
         raise RuntimeError("EnhancedLearningManager required for learning endpoints")
     
-    logger.info("✅ Phase 3c: Learning endpoints using enhanced manager access")
+    logger.info("✅ Phase 3d Step 4: Learning endpoints with AnalysisParametersManager integration")
     
     # Get Pydantic models (keep existing function)
     models = get_pydantic_models()
