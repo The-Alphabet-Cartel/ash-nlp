@@ -68,38 +68,56 @@ ash/ash-nlp/
 │   └── learning_endpoints.py
 ├── config/                                  # JSON configuration files
 │   ├── __init__.py
-│   ├── crisis_context_patterns.json
-│   ├── positive_context_patterns.json
-│   ├── temporal_indicators_patterns.json
+│   ├── analysis_parameters.json
 │   ├── community_vocabulary_patterns.json
 │   ├── context_weights_patterns.json
-│   ├── enhanced_crisis_patterns.json
-│   ├── crisis_idiom_patterns.json
 │   ├── crisis_burden_patterns.json
+│   ├── crisis_community_vocabulary.json
+│   ├── crisis_context_patterns.json
+│   ├── crisis_idiom_patterns.json
 │   ├── crisis_lgbtqia_patterns.json
-│   ├── analysis_parameters.json
+│   ├── crisis_patterns.json
+│   ├── enhanced_crisis_patterns.json
 │   ├── label_config.json
 │   ├── learning_parameters.json
 │   ├── model_ensemble.json
 │   ├── performance_settings.json
+│   ├── positive_context_patterns.json
+│   ├── temporal_indicators_patterns.json
 │   └── threshold_mapping.json
 ├── data/                                    # DATA Storage
 │   └── __init__.py
 ├── docs/                                    # Documentation
 │   ├── v3.1/
-│   │   ├── 3a/
-│   │   │   ├── issue_tracker.md
-│   │   |   └── testing_tracker.md
-│   │   ├── 3b/
-│   │   │   ├── issue_tracker.md
-│   │   |   ├── testing_tracker.md
-│   │   │   └── tracker.md
-│   │   ├── 3c/
-│   │   │   ├── issue_tracker.md
-│   │   |   ├── testing_tracker.md
-│   │   │   ├── status_testing.md
-│   │   │   ├── status_update.md
-│   │   │   └── tracker.md
+│   │   ├── phase/
+|   │   │   ├── 3/
+|   |   │   │   ├── a/
+|   |   │   │   │   ├── status_testing.md
+|   |   │   │   |   └── tracker.md
+|   │   │   ├── 3/
+|   |   │   │   ├── b/
+|   |   │   │   |   ├── status_testing.md
+|   |   │   │   │   └── tracker.md
+|   │   │   ├── 3/
+|   |   │   │   ├── c/
+|   |   │   │   |   ├── status_testing.md
+|   |   │   │   |   ├── status_update.md
+|   |   │   │   │   └── tracker.md
+|   │   │   ├── 3/
+|   |   │   │   ├── d/
+|   |   │   │   |   ├── status_testing.md
+|   |   │   │   |   ├── status_update.md
+|   |   │   │   │   └── tracker.md
+|   │   │   └── 4/
+|   |   │       ├── a/
+|   |   │       |   ├── status_testing.md
+|   |   │       |   ├── status_update.md
+|   |   │       │   └── tracker.md
+|   |   │       └── b/
+|   |   │           ├── status_testing.md
+|   |   │           ├── status_update.md
+|   |   │           └── tracker.md
+│   │   ├── 3_1_clean_architecture_charter.md
 │   │   └── migration_guide_v3_1.md
 │   └── project_instructions_v3_1.md
 ├── learning_data/                           # Learning Data Storage
@@ -120,20 +138,26 @@ ash/ash-nlp/
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
 │   ├── cache/                               # Models Cache
-|   │   └── __init__.py
 │   └── __init__.py
 ├── tests/                                   # Testing Scripts
-│   ├── __init__.py
-│   ├── test_ensemble_mode_docker.py
-│   ├── test_phase_3a_crisis_patterns.py
-│   ├── test_phase_3a_endpoints.py
-│   ├── test_phase_3b_integration.py
-│   ├── test_phase_3b_config_validation.py
-│   ├── test_phase_3c_analysis_parameters_manager.py
-│   ├── test_phase_3c_config_validation.py
-│   ├── test_phase_3c_endpoints.py
-│   ├── test_phase_3c_integration.py
-│   └── test_phase_3c_threshold_mapping_manager.py
+│   └── phase/
+|       ├── 3/
+|       │   ├── a/
+|       |   │   └── test_crisis_patterns.py
+|       │   ├── b/
+|       |   │   ├── test_admin_functionality.py
+|       |   │   ├── test_config_validation.py
+|       |   │   └── test_integration.py
+|       │   ├── c/
+|       |   │   ├── test_analysis_parameters_manager.py
+|       |   │   ├── test_config_validation.py
+|       |   │   ├── test_endpoints.py
+|       |   │   ├── test_integration.py
+|       |   │   └── test_threshold_mapping_manager.py
+|       │   └── d/
+|       └── 4/
+|           ├── a/
+|           └── b/
 ├── utils/                                   # Utility and Helper Files
 │   ├── __init__.py
 │   ├── community_patterns.py
@@ -144,7 +168,9 @@ ash/ash-nlp/
 ├── .env.template
 ├── docker-compose.yml                       # Docker Compose Startup File
 ├── Dockerfile                               # Docker Build File
+├── LICENSE
 ├── main.py
+├── README.md
 └── requirements.txt
 ```
 
@@ -238,11 +264,17 @@ Migrate threshold and mapping logic from hardcoded constants to JSON configurati
 - **Objective**: Remove duplicates and simplify configuration
 - **Components**: All project components environment variable audit and cleanup
 
-### Phase 4: Audit of Crisis Detection and Learning System Features (Future)
-- **Crisis Detection Functionality Audit**
-- **Learning System Functionality Audit**
+### Phase 4a: Crisis Detection Audit (Future)
+- **Objective**: 
+- **Scope**: 
+- **Components**:
 
-### Phase 5: Advanced Features Additions (Future)**
+### Phase 4b: Learning System Audit (Future)
+- **Objective**: 
+- **Scope**: 
+- **Components**:
+
+### Phase 5: Advanced Features Additions (Future)
 - **Advanced analytics and reporting features**
 - **Advanced feature flags and A/B testing**
 - **Monitoring and telemetry configuration**
