@@ -1,10 +1,13 @@
 {
   "analysis_system": {
-    "version": "3.1",
-    "phase": "3b",
-    "description": "Analysis algorithm parameters for Ash NLP Service",
-    "architecture": "clean_v3.1_phase_3b",
-    "repository": "https://github.com/the-alphabet-cartel/ash-nlp"
+    "version": "3.1d-step4",
+    "architecture": "clean-v3.1-unified",
+    "description": "Enhanced analysis parameters configuration with learning system integration",
+    "phase_3d_changes": {
+      "step_4": "Added learning system parameters section",
+      "consolidated": "Learning parameters from learning_parameters.json and threshold variables",
+      "standardized": "All learning variables use NLP_ANALYSIS_LEARNING_* naming"
+    }
   },
   "crisis_thresholds": {
     "description": "Core crisis level mapping thresholds for analysis algorithms",
@@ -17,16 +20,32 @@
       "low": 0.16
     },
     "validation": {
-      "range": {
-        "min": 0.0,
-        "max": 1.0
-      },
-      "ordering": "high > medium > low",
-      "notes": "Thresholds adjusted from original values to match systematic approach"
+      "range": [0.0, 1.0],
+      "type": "float",
+      "ordering": "high > medium > low"
+    }
+  },
+  "confidence_boost": {
+    "description": "Confidence adjustment parameters for different crisis severity levels",
+    "high_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_BOOST_HIGH}",
+    "medium_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_BOOST_MEDIUM}",
+    "low_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_BOOST_LOW}",
+    "pattern_confidence_boost": "${NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST}",
+    "model_confidence_boost": "${NLP_ANALYSIS_MODEL_CONFIDENCE_BOOST}",
+    "defaults": {
+      "high_confidence_boost": 0.15,
+      "medium_confidence_boost": 0.10,
+      "low_confidence_boost": 0.05,
+      "pattern_confidence_boost": 0.05,
+      "model_confidence_boost": 0.0
+    },
+    "validation": {
+      "range": [0.0, 1.0],
+      "type": "float"
     }
   },
   "phrase_extraction": {
-    "description": "Parameters for crisis phrase extraction from messages",
+    "description": "Parameters for extracting significant phrases from crisis messages",
     "min_phrase_length": "${NLP_ANALYSIS_MIN_PHRASE_LENGTH}",
     "max_phrase_length": "${NLP_ANALYSIS_MAX_PHRASE_LENGTH}",
     "crisis_focus": "${NLP_ANALYSIS_PHRASE_CRISIS_FOCUS}",
@@ -167,29 +186,29 @@
     },
     "validation": {
       "pattern_confidence_boost": {
-        "range": [0.0, 0.5],
+        "range": [0.0, 1.0],
         "type": "float"
       },
       "model_confidence_boost": {
-        "range": [-0.5, 0.5],
+        "range": [-1.0, 1.0],
         "type": "float"
       },
       "context_signal_weight": {
-        "range": [0.0, 2.0],
+        "range": [0.1, 5.0],
         "type": "float"
       },
       "temporal_urgency_multiplier": {
-        "range": [1.0, 3.0],
+        "range": [0.5, 3.0],
         "type": "float"
       },
       "community_awareness_boost": {
-        "range": [0.0, 0.5],
+        "range": [0.0, 1.0],
         "type": "float"
       }
     }
   },
   "integration_settings": {
-    "description": "Settings for integrating analysis components",
+    "description": "Configuration for analysis component integration",
     "enable_pattern_analysis": "${NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS}",
     "enable_semantic_analysis": "${NLP_ANALYSIS_ENABLE_SEMANTIC_ANALYSIS}",
     "enable_phrase_extraction": "${NLP_ANALYSIS_ENABLE_PHRASE_EXTRACTION}",
@@ -202,15 +221,15 @@
       "enable_pattern_learning": true,
       "integration_mode": "full"
     },
-    "available_integration_modes": {
-      "minimal": "Basic crisis detection only",
-      "standard": "Crisis detection + pattern analysis",
-      "enhanced": "Standard + semantic analysis",
-      "full": "All analysis components enabled"
+    "validation": {
+      "integration_mode": {
+        "choices": ["full", "enhanced", "basic", "minimal"],
+        "type": "string"
+      }
     }
   },
   "performance_settings": {
-    "description": "Performance-related parameters for analysis algorithms",
+    "description": "Performance and resource management parameters",
     "analysis_timeout_ms": "${NLP_ANALYSIS_TIMEOUT_MS}",
     "max_concurrent_analyses": "${NLP_ANALYSIS_MAX_CONCURRENT}",
     "cache_analysis_results": "${NLP_ANALYSIS_ENABLE_CACHING}",
@@ -251,19 +270,130 @@
       "enable_performance_metrics": true
     }
   },
-  "feature_flags": {
-    "description": "Feature flags for experimental analysis features",
-    "experimental_analysis_features": {
-      "enable_advanced_context_analysis": "${NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT}",
-      "enable_community_vocabulary_boost": "${NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB}",
-      "enable_temporal_pattern_detection": "${NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS}",
-      "enable_multi_language_support": "${NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE}",
+  "learning_system": {
+    "description": "PHASE 3D STEP 4: Learning system parameters for adaptive threshold adjustment",
+    "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
+    "learning_rate": "${NLP_ANALYSIS_LEARNING_RATE}",
+    "min_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
+    "max_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
+    "max_adjustments_per_day": "${NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
+    "persistence_file": "${NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE}",
+    "feedback_weight": "${NLP_ANALYSIS_LEARNING_FEEDBACK_WEIGHT}",
+    "min_samples": "${NLP_ANALYSIS_LEARNING_MIN_SAMPLES}",
+    "adjustment_limit": "${NLP_ANALYSIS_LEARNING_ADJUSTMENT_LIMIT}",
+    "max_drift": "${NLP_ANALYSIS_LEARNING_MAX_DRIFT}",
+    "sensitivity_bounds": {
+      "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_SENSITIVITY}",
+      "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_SENSITIVITY}",
       "defaults": {
-        "enable_advanced_context_analysis": false,
-        "enable_community_vocabulary_boost": false,
-        "enable_temporal_pattern_detection": false,
-        "enable_multi_language_support": false
+        "min_global_sensitivity": 0.5,
+        "max_global_sensitivity": 1.5
       }
+    },
+    "adjustment_factors": {
+      "false_positive_factor": "${NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR}",
+      "false_negative_factor": "${NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR}",
+      "defaults": {
+        "false_positive_factor": -0.1,
+        "false_negative_factor": 0.1
+      }
+    },
+    "severity_multipliers": {
+      "high_severity": "${NLP_ANALYSIS_LEARNING_SEVERITY_HIGH}",
+      "medium_severity": "${NLP_ANALYSIS_LEARNING_SEVERITY_MEDIUM}",
+      "low_severity": "${NLP_ANALYSIS_LEARNING_SEVERITY_LOW}",
+      "defaults": {
+        "high_severity": 3.0,
+        "medium_severity": 2.0,
+        "low_severity": 1.0
+      }
+    },
+    "defaults": {
+      "enabled": true,
+      "learning_rate": 0.01,
+      "min_confidence_adjustment": 0.05,
+      "max_confidence_adjustment": 0.30,
+      "max_adjustments_per_day": 50,
+      "persistence_file": "./learning_data/adjustments.json",
+      "feedback_weight": 0.1,
+      "min_samples": 5,
+      "adjustment_limit": 0.05,
+      "max_drift": 0.1,
+      "sensitivity_bounds": {
+        "min_global_sensitivity": 0.5,
+        "max_global_sensitivity": 1.5
+      },
+      "adjustment_factors": {
+        "false_positive_factor": -0.1,
+        "false_negative_factor": 0.1
+      },
+      "severity_multipliers": {
+        "high_severity": 3.0,
+        "medium_severity": 2.0,
+        "low_severity": 1.0
+      }
+    },
+    "validation": {
+      "learning_rate": {
+        "range": [0.001, 1.0],
+        "type": "float"
+      },
+      "min_confidence_adjustment": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "max_confidence_adjustment": {
+        "range": [0.05, 1.0],
+        "type": "float"
+      },
+      "max_adjustments_per_day": {
+        "range": [1, 1000],
+        "type": "integer"
+      },
+      "feedback_weight": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "min_samples": {
+        "range": [1, 100],
+        "type": "integer"
+      },
+      "adjustment_limit": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "max_drift": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "sensitivity_bounds": {
+        "range": [0.1, 5.0],
+        "type": "float"
+      },
+      "adjustment_factors": {
+        "range": [-1.0, 1.0],
+        "type": "float"
+      },
+      "severity_multipliers": {
+        "range": [0.1, 10.0],
+        "type": "float"
+      }
+    }
+  },
+  "experimental_features": {
+    "description": "Feature flags for experimental analysis features",
+    "advanced_context": "${NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT}",
+    "community_vocab": "${NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB}",
+    "temporal_patterns": "${NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS}",
+    "multi_language": "${NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE}",
+    "defaults": {
+      "advanced_context": false,
+      "community_vocab": true,
+      "temporal_patterns": true,
+      "multi_language": false
+    },
+    "validation": {
+      "type": "boolean"
     }
   }
 }
