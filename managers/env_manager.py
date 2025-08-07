@@ -58,8 +58,8 @@ class EnvConfigManager:
             # THREE-MODEL CONFIGURATION
             # =================================================================
             'NLP_DEPRESSION_MODEL': {'type': str, 'default': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'},
-            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'},
-            'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'Lowerated/lm6-deberta-v3-topic-sentiment'},
+            'NLP_SENTIMENT_MODEL': {'type': str, 'default': 'Lowerated/lm6-deberta-v3-topic-sentiment'},
+            'NLP_EMOTIONAL_DISTRESS_MODEL': {'type': str, 'default': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'},
             'NLP_MODEL_CACHE_DIR': {'type': str, 'default': './models/cache'},
             
             # =================================================================
