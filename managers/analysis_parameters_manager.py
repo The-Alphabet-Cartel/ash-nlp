@@ -402,24 +402,31 @@ class AnalysisParametersManager:
     def get_all_parameters(self) -> Dict[str, Any]:
         """
         Get all analysis parameters in organized structure
+        PHASE 3D STEP 4: Enhanced to include learning system parameters
         
         Returns:
             Dictionary containing all parameter categories
         """
         return {
-            'version': '3.1d-cleaned',
+            'version': '3.1d-step4',
             'architecture': 'clean-v3.1-unified',
-            'phase_3d_changes': 'Removed duplicate ensemble weight variables',
+            'phase_3d_changes': {
+                'step_4': 'Added learning system parameters support',
+                'consolidated': 'Learning parameters from multiple locations',
+                'standardized': 'All learning variables use NLP_ANALYSIS_LEARNING_* naming'
+            },
             'crisis_thresholds': self.get_crisis_thresholds(),
             'confidence_boost': self.get_confidence_boost_parameters(),
             'phrase_extraction': self.get_phrase_extraction_parameters(),
             'pattern_learning': self.get_pattern_learning_parameters(),
             'semantic_analysis': self.get_semantic_analysis_parameters(),
-            'performance': self.get_performance_parameters(),
-            'integration': self.get_integration_settings(),
-            'debugging': self.get_debugging_settings(),
-            'experimental': self.get_experimental_features(),
-            'ensemble_weights': self.get_ensemble_weights()  # Shows where to get them now
+            'advanced_parameters': self.get_advanced_parameters(),
+            'integration_settings': self.get_integration_settings(),
+            'performance_settings': self.get_performance_settings(),
+            'debugging_settings': self.get_debugging_settings(),
+            'experimental_features': self.get_experimental_features(),
+            'learning_system': self.get_learning_system_parameters(),  # NEW in Step 4
+            'ensemble_weights_info': self.get_ensemble_weights()  # Phase 3d reference info
         }
     
     def validate_parameters(self) -> Dict[str, Any]:
@@ -464,6 +471,167 @@ class AnalysisParametersManager:
                 'errors': [f"Validation error: {str(e)}"],
                 'warnings': warnings,
                 'parameters_validated': 'partial'
+            }
+
+    # ========================================================================
+    # LEARNING SYSTEM PARAMETERS - PHASE 3D STEP 4 NEW FUNCTIONALITY
+    # ========================================================================
+
+    def get_learning_system_parameters(self) -> Dict[str, Any]:
+        """
+        PHASE 3D STEP 4: Get learning system parameters for adaptive threshold adjustment
+        
+        Returns:
+            Dictionary with learning system configuration
+        """
+        try:
+            learning_config = self._full_config.get('learning_system', {})
+            defaults = learning_config.get('defaults', {})
+            
+            # Core learning parameters
+            core_params = {
+                'enabled': learning_config.get('enabled', defaults.get('enabled', True)),
+                'learning_rate': float(learning_config.get('learning_rate', defaults.get('learning_rate', 0.01))),
+                'min_confidence_adjustment': float(learning_config.get('min_confidence_adjustment', defaults.get('min_confidence_adjustment', 0.05))),
+                'max_confidence_adjustment': float(learning_config.get('max_confidence_adjustment', defaults.get('max_confidence_adjustment', 0.30))),
+                'max_adjustments_per_day': int(learning_config.get('max_adjustments_per_day', defaults.get('max_adjustments_per_day', 50))),
+                'persistence_file': learning_config.get('persistence_file', defaults.get('persistence_file', './learning_data/adjustments.json')),
+                'feedback_weight': float(learning_config.get('feedback_weight', defaults.get('feedback_weight', 0.1))),
+                'min_samples': int(learning_config.get('min_samples', defaults.get('min_samples', 5))),
+                'adjustment_limit': float(learning_config.get('adjustment_limit', defaults.get('adjustment_limit', 0.05))),
+                'max_drift': float(learning_config.get('max_drift', defaults.get('max_drift', 0.1)))
+            }
+            
+            # Sensitivity bounds
+            sensitivity_bounds = learning_config.get('sensitivity_bounds', {})
+            sensitivity_defaults = defaults.get('sensitivity_bounds', {})
+            core_params['sensitivity_bounds'] = {
+                'min_global_sensitivity': float(sensitivity_bounds.get('min_global_sensitivity', sensitivity_defaults.get('min_global_sensitivity', 0.5))),
+                'max_global_sensitivity': float(sensitivity_bounds.get('max_global_sensitivity', sensitivity_defaults.get('max_global_sensitivity', 1.5)))
+            }
+            
+            # Adjustment factors
+            adjustment_factors = learning_config.get('adjustment_factors', {})
+            adjustment_defaults = defaults.get('adjustment_factors', {})
+            core_params['adjustment_factors'] = {
+                'false_positive_factor': float(adjustment_factors.get('false_positive_factor', adjustment_defaults.get('false_positive_factor', -0.1))),
+                'false_negative_factor': float(adjustment_factors.get('false_negative_factor', adjustment_defaults.get('false_negative_factor', 0.1)))
+            }
+            
+            # Severity multipliers
+            severity_multipliers = learning_config.get('severity_multipliers', {})
+            severity_defaults = defaults.get('severity_multipliers', {})
+            core_params['severity_multipliers'] = {
+                'high_severity': float(severity_multipliers.get('high_severity', severity_defaults.get('high_severity', 3.0))),
+                'medium_severity': float(severity_multipliers.get('medium_severity', severity_defaults.get('medium_severity', 2.0))),
+                'low_severity': float(severity_multipliers.get('low_severity', severity_defaults.get('low_severity', 1.0)))
+            }
+            
+            return core_params
+            
+        except Exception as e:
+            logger.error(f"❌ Error loading learning system parameters: {e}")
+            return {
+                'enabled': True,
+                'learning_rate': 0.01,
+                'min_confidence_adjustment': 0.05,
+                'max_confidence_adjustment': 0.30,
+                'max_adjustments_per_day': 50,
+                'persistence_file': './learning_data/adjustments.json',
+                'feedback_weight': 0.1,
+                'min_samples': 5,
+                'adjustment_limit': 0.05,
+                'max_drift': 0.1,
+                'sensitivity_bounds': {
+                    'min_global_sensitivity': 0.5,
+                    'max_global_sensitivity': 1.5
+                },
+                'adjustment_factors': {
+                    'false_positive_factor': -0.1,
+                    'false_negative_factor': 0.1
+                },
+                'severity_multipliers': {
+                    'high_severity': 3.0,
+                    'medium_severity': 2.0,
+                    'low_severity': 1.0
+                }
+            }
+
+    def validate_learning_system_parameters(self) -> Dict[str, Any]:
+        """
+        PHASE 3D STEP 4: Validate learning system parameter ranges and types
+        
+        Returns:
+            Dictionary with validation results
+        """
+        try:
+            params = self.get_learning_system_parameters()
+            errors = []
+            warnings = []
+            
+            # Validate learning rate
+            if not 0.001 <= params['learning_rate'] <= 1.0:
+                errors.append(f"Learning rate {params['learning_rate']} outside valid range [0.001, 1.0]")
+            
+            # Validate confidence adjustments
+            if not 0.01 <= params['min_confidence_adjustment'] <= 1.0:
+                errors.append(f"Min confidence adjustment {params['min_confidence_adjustment']} outside valid range [0.01, 1.0]")
+            
+            if not 0.05 <= params['max_confidence_adjustment'] <= 1.0:
+                errors.append(f"Max confidence adjustment {params['max_confidence_adjustment']} outside valid range [0.05, 1.0]")
+            
+            if params['min_confidence_adjustment'] >= params['max_confidence_adjustment']:
+                errors.append(f"Min confidence adjustment {params['min_confidence_adjustment']} must be less than max {params['max_confidence_adjustment']}")
+            
+            # Validate adjustments per day
+            if not 1 <= params['max_adjustments_per_day'] <= 1000:
+                errors.append(f"Max adjustments per day {params['max_adjustments_per_day']} outside valid range [1, 1000]")
+            
+            # Validate sensitivity bounds
+            sensitivity = params['sensitivity_bounds']
+            if not 0.1 <= sensitivity['min_global_sensitivity'] <= 5.0:
+                errors.append(f"Min global sensitivity {sensitivity['min_global_sensitivity']} outside valid range [0.1, 5.0]")
+            
+            if not 0.1 <= sensitivity['max_global_sensitivity'] <= 5.0:
+                errors.append(f"Max global sensitivity {sensitivity['max_global_sensitivity']} outside valid range [0.1, 5.0]")
+            
+            if sensitivity['min_global_sensitivity'] >= sensitivity['max_global_sensitivity']:
+                errors.append(f"Min global sensitivity {sensitivity['min_global_sensitivity']} must be less than max {sensitivity['max_global_sensitivity']}")
+            
+            # Validate adjustment factors
+            factors = params['adjustment_factors']
+            if not -1.0 <= factors['false_positive_factor'] <= 1.0:
+                errors.append(f"False positive factor {factors['false_positive_factor']} outside valid range [-1.0, 1.0]")
+            
+            if not -1.0 <= factors['false_negative_factor'] <= 1.0:
+                errors.append(f"False negative factor {factors['false_negative_factor']} outside valid range [-1.0, 1.0]")
+            
+            # Validate severity multipliers
+            multipliers = params['severity_multipliers']
+            for severity, multiplier in multipliers.items():
+                if not 0.1 <= multiplier <= 10.0:
+                    errors.append(f"Severity multiplier {severity} value {multiplier} outside valid range [0.1, 10.0]")
+            
+            # Check logical ordering of severity multipliers
+            if not (multipliers['high_severity'] >= multipliers['medium_severity'] >= multipliers['low_severity']):
+                warnings.append("Severity multipliers should follow pattern: high >= medium >= low")
+            
+            return {
+                'valid': len(errors) == 0,
+                'errors': errors,
+                'warnings': warnings,
+                'parameters_validated': len(params),
+                'validation_timestamp': str(datetime.now())
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error validating learning system parameters: {e}")
+            return {
+                'valid': False,
+                'errors': [f"Validation failed: {str(e)}"],
+                'warnings': [],
+                'parameters_validated': 0,
+                'validation_timestamp': str(datetime.now())
             }
 
 # ============================================================================
