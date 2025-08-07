@@ -631,6 +631,35 @@ class AnalysisParametersManager:
                 'validation_timestamp': str(datetime.now())
             }
 
+    def get_advanced_parameters(self) -> Dict[str, Any]:
+        """
+        Get advanced analysis parameters
+        
+        Returns:
+            Dictionary with advanced analysis parameters
+        """
+        try:
+            advanced_config = self._full_config.get('advanced_parameters', {})
+            defaults = advanced_config.get('defaults', {})
+            
+            return {
+                'pattern_confidence_boost': float(advanced_config.get('pattern_confidence_boost', defaults.get('pattern_confidence_boost', 0.05))),
+                'model_confidence_boost': float(advanced_config.get('model_confidence_boost', defaults.get('model_confidence_boost', 0.0))),
+                'context_signal_weight': float(advanced_config.get('context_signal_weight', defaults.get('context_signal_weight', 1.0))),
+                'temporal_urgency_multiplier': float(advanced_config.get('temporal_urgency_multiplier', defaults.get('temporal_urgency_multiplier', 1.2))),
+                'community_awareness_boost': float(advanced_config.get('community_awareness_boost', defaults.get('community_awareness_boost', 0.1)))
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error loading advanced parameters: {e}")
+            return {
+                'pattern_confidence_boost': 0.05,
+                'model_confidence_boost': 0.0,
+                'context_signal_weight': 1.0,
+                'temporal_urgency_multiplier': 1.2,
+                'community_awareness_boost': 0.1
+            }
+
 # ============================================================================
 # Factory Function - Clean v3.1 Architecture Compliance
 # ============================================================================
