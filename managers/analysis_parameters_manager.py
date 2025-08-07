@@ -403,9 +403,6 @@ class AnalysisParametersManager:
         """
         Get all analysis parameters in organized structure
         PHASE 3D STEP 4: Enhanced to include learning system parameters
-        
-        Returns:
-            Dictionary containing all parameter categories
         """
         return {
             'version': '3.1d-step4',
@@ -420,15 +417,15 @@ class AnalysisParametersManager:
             'phrase_extraction': self.get_phrase_extraction_parameters(),
             'pattern_learning': self.get_pattern_learning_parameters(),
             'semantic_analysis': self.get_semantic_analysis_parameters(),
-            'advanced_parameters': self.get_advanced_parameters(),
+            'advanced_parameters': self.get_advanced_analysis_parameters(),
             'integration_settings': self.get_integration_settings(),
             'performance_settings': self.get_performance_settings(),
             'debugging_settings': self.get_debugging_settings(),
             'experimental_features': self.get_experimental_features(),
-            'learning_system': self.get_learning_system_parameters(),  # NEW in Step 4
-            'ensemble_weights_info': self.get_ensemble_weights()  # Phase 3d reference info
+            'learning_system': self.get_learning_system_parameters() if hasattr(self, 'get_learning_system_parameters') else {},
+            'ensemble_weights_info': self.get_ensemble_weights()
         }
-    
+        
     def validate_parameters(self) -> Dict[str, Any]:
         """
         Validate all analysis parameters
