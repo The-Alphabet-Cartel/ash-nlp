@@ -1,0 +1,122 @@
+{
+  "_metadata": {
+    "configuration_version": "3c.1",
+    "description": "Phase 3c: Mode-aware threshold mapping configuration",
+    "created_date": "2025-08-06",
+    "ensemble_modes_supported": ["consensus", "majority", "weighted"],
+    "migration_phase": "3c"
+  },
+  "threshold_mapping_by_mode": {
+    "consensus": {
+      "crisis_level_mapping": {
+        "crisis_to_high": 0.50,
+        "crisis_to_medium": 0.30,
+        "mild_crisis_to_low": 0.40,
+        "negative_to_low": 0.70,
+        "unknown_to_low": 0.50
+      },
+      "ensemble_thresholds": {
+        "high": 0.45,
+        "medium": 0.25,
+        "low": 0.12
+      },
+      "description": "Conservative thresholds for consensus mode - requires model agreement"
+    },
+    "majority": {
+      "crisis_level_mapping": {
+        "crisis_to_high": 0.45,
+        "crisis_to_medium": 0.28,
+        "mild_crisis_to_low": 0.35,
+        "negative_to_low": 0.65,
+        "unknown_to_low": 0.45
+      },
+      "ensemble_thresholds": {
+        "high": 0.42,
+        "medium": 0.23,
+        "low": 0.11
+      },
+      "description": "Balanced thresholds for majority vote - democratic decision making"
+    },
+    "weighted": {
+      "crisis_level_mapping": {
+        "crisis_to_high": 0.55,
+        "crisis_to_medium": 0.32,
+        "mild_crisis_to_low": 0.42,
+        "negative_to_low": 0.72,
+        "unknown_to_low": 0.52
+      },
+      "ensemble_thresholds": {
+        "high": 0.48,
+        "medium": 0.27,
+        "low": 0.13
+      },
+      "description": "Higher thresholds for weighted mode - accounts for depression model dominance"
+    }
+  },
+  "shared_configuration": {
+    "pattern_integration": {
+      "pattern_weight_multiplier": 1.2,
+      "confidence_boost_limit": 0.15,
+      "escalation_required_minimum": "low",
+      "pattern_override_threshold": 0.8,
+      "community_pattern_boost": 1.1,
+      "description": "Controls how crisis patterns adjust ensemble results"
+    },
+    "staff_review": {
+      "high_always": true,
+      "medium_confidence_threshold": 0.45,
+      "low_confidence_threshold": 0.75,
+      "on_model_disagreement": true,
+      "gap_detection_review": true,
+      "pattern_mismatch_review": true,
+      "description": "Determines when cases require human staff review"
+    },
+    "learning_system": {
+      "feedback_weight": 0.1,
+      "min_samples_for_update": 5,
+      "confidence_adjustment_limit": 0.05,
+      "enable_threshold_learning": true,
+      "learning_rate": 0.01,
+      "max_threshold_drift": 0.1,
+      "description": "Learning system threshold adjustment parameters"
+    },
+    "safety_controls": {
+      "consensus_safety_bias": 0.03,
+      "enable_safety_override": true,
+      "minimum_response_threshold": 0.10,
+      "fail_safe_escalation": true,
+      "maximum_confidence_cap": 0.95,
+      "minimum_confidence_floor": 0.05,
+      "description": "Safety mechanisms and bias controls"
+    },
+    "gap_detection": {
+      "threshold": 0.25,
+      "disagreement_threshold": 0.30,
+      "enable_automatic_escalation": true,
+      "max_confidence_spread": 0.4,
+      "minimum_agreement_score": 0.6,
+      "description": "Model disagreement and gap detection settings"
+    }
+  },
+  "validation_rules": {
+    "threshold_consistency": {
+      "crisis_to_high_minimum": 0.3,
+      "crisis_to_high_maximum": 0.8,
+      "crisis_to_medium_minimum": 0.15,
+      "crisis_to_medium_maximum": 0.6,
+      "high_greater_than_medium": true,
+      "medium_greater_than_low": true
+    },
+    "safety_constraints": {
+      "minimum_crisis_threshold": 0.05,
+      "maximum_crisis_threshold": 0.9,
+      "confidence_range_validation": true,
+      "staff_review_threshold_validation": true
+    },
+    "mode_specific_validation": {
+      "weighted_mode_higher_thresholds": true,
+      "consensus_mode_stricter_thresholds": true,
+      "majority_mode_balanced_thresholds": true
+    }
+  }
+}

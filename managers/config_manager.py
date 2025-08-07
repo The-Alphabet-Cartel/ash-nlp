@@ -45,9 +45,9 @@ class ConfigManager:
             'NLP_DEPRESSION_MODEL',
             'NLP_SENTIMENT_MODEL', 
             'NLP_EMOTIONAL_DISTRESS_MODEL',
-            'NLP_DEPRESSION_MODEL_WEIGHT',
-            'NLP_SENTIMENT_MODEL_WEIGHT',
-            'NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT',
+            'NLP_MODEL_WEIGHT_DEPRESSION',
+            'NLP_MODEL_WEIGHT_SENTIMENT',
+            'NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS',
             'NLP_ENSEMBLE_MODE'
         ]
         
@@ -370,17 +370,17 @@ class ConfigManager:
             'models': {
                 'depression': {
                     'name': os.getenv('NLP_DEPRESSION_MODEL', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-                    'weight': float(os.getenv('NLP_DEPRESSION_MODEL_WEIGHT', '0.75')),
+                    'weight': float(os.getenv('NLP_MODEL_WEIGHT_DEPRESSION', '0.75')),
                     'type': 'DeBERTa-based classification'
                 },
                 'sentiment': {
                     'name': os.getenv('NLP_SENTIMENT_MODEL', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-                    'weight': float(os.getenv('NLP_SENTIMENT_MODEL_WEIGHT', '0.10')),
+                    'weight': float(os.getenv('NLP_MODEL_WEIGHT_SENTIMENT', '0.10')),
                     'type': 'DeBERTa-based sentiment'
                 },
                 'emotional_distress': {
                     'name': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
-                    'weight': float(os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT', '0.15')),
+                    'weight': float(os.getenv('NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS', '0.15')),
                     'type': 'Topic sentiment analysis'
                 }
             },
@@ -408,16 +408,16 @@ class ConfigManager:
         # Fallback to environment variables
         return {
             'consensus_mapping': {
-                'crisis_to_high': float(os.getenv('NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD', '0.25')),
-                'crisis_to_medium': float(os.getenv('NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD', '0.15')),
-                'mild_crisis_to_low': float(os.getenv('NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD', '0.10')),
-                'negative_to_low': float(os.getenv('NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD', '0.55')),
-                'unknown_to_low': float(os.getenv('NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD', '0.50'))
+                'crisis_to_high': float(os.getenv('NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH', '0.25')),
+                'crisis_to_medium': float(os.getenv('NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM', '0.15')),
+                'mild_crisis_to_low': float(os.getenv('NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW', '0.10')),
+                'negative_to_low': float(os.getenv('NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW', '0.55')),
+                'unknown_to_low': float(os.getenv('NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW', '0.50'))
             },
             'ensemble_thresholds': {
-                'high': float(os.getenv('NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD', '0.45')),
-                'medium': float(os.getenv('NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD', '0.25')),
-                'low': float(os.getenv('NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD', '0.12'))
+                'high': float(os.getenv('NLP_THRESHOLD_CONSENSUS_ENSEMBLE_HIGH', '0.45')),
+                'medium': float(os.getenv('NLP_THRESHOLD_CONSENSUS_ENSEMBLE_MEDIUM', '0.25')),
+                'low': float(os.getenv('NLP_THRESHOLD_CONSENSUS_ENSEMBLE_LOW', '0.12'))
             }
         }
     
@@ -458,13 +458,12 @@ class ConfigManager:
             'experimental_features': {
                 'enable_ensemble_analysis': os.getenv('NLP_ENABLE_ENSEMBLE_ANALYSIS', 'true').lower() == 'true',
                 'enable_gap_detection': os.getenv('NLP_ENABLE_GAP_DETECTION', 'true').lower() == 'true',
-                'enable_confidence_spreading': os.getenv('NLP_ENABLE_CONFIDENCE_SPREADING', 'true').lower() == 'true',
                 'log_model_disagreements': os.getenv('NLP_LOG_MODEL_DISAGREEMENTS', 'true').lower() == 'true'
             },
             'learning_system': {
                 'enabled': os.getenv('GLOBAL_ENABLE_LEARNING_SYSTEM', 'true').lower() == 'true',
-                'learning_rate': float(os.getenv('NLP_LEARNING_RATE', '0.1')),
-                'max_adjustments_per_day': int(os.getenv('NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY', '50'))
+                'learning_rate': float(os.getenv('NLP_THRESHOLD_LEARNING_RATE', '0.1')),
+                'max_adjustments_per_day': int(os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', '50'))
             }
         }
     
