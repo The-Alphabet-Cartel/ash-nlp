@@ -1,9 +1,145 @@
 {
+  "ensemble_info": {
+    "version": "3.1d-transition",
+    "architecture": "clean-v3.1-unified-compatible",
+    "description": "Transition-compatible model ensemble configuration",
+    "migration_notes": "Phase 3d: Includes both old and new structures for compatibility"
+  },
+  "model_definitions": {
+    "depression": {
+      "name": "${NLP_MODEL_DEPRESSION_NAME}",
+      "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
+      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+      "type": "zero-shot-classification",
+      "purpose": "Depression and mental health crisis detection using zero-shot classification",
+      "pipeline_task": "zero-shot-classification",
+      "environment_variable": "NLP_MODEL_DEPRESSION_NAME",
+      "default_name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+      "default_weight": 0.4
+    },
+    "sentiment": {
+      "name": "${NLP_MODEL_SENTIMENT_NAME}",
+      "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
+      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+      "type": "sentiment-analysis", 
+      "purpose": "Topic-based sentiment analysis",
+      "pipeline_task": "zero-shot-classification",
+      "environment_variable": "NLP_MODEL_SENTIMENT_NAME",
+      "default_name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+      "default_weight": 0.3
+    },
+    "emotional_distress": {
+      "name": "${NLP_MODEL_DISTRESS_NAME}",
+      "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
+      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+      "type": "natural-language-inference",
+      "purpose": "Emotional distress detection using multilingual NLI",
+      "pipeline_task": "zero-shot-classification",
+      "environment_variable": "NLP_MODEL_DISTRESS_NAME",
+      "default_name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+      "default_weight": 0.3
+    }
+  },
+  "ensemble_configuration": {
+    "default_mode": "${NLP_ENSEMBLE_MODE}",
+    "available_modes": {
+      "consensus": {
+        "description": "All models must agree for high confidence"
+      },
+      "majority": {
+        "description": "Democratic voting with confidence weighting"
+      },
+      "weighted": {
+        "description": "Configurable model importance weighting"
+      }
+    },
+    "model_weights": {
+      "depression": "${NLP_MODEL_DEPRESSION_WEIGHT}",
+      "sentiment": "${NLP_MODEL_SENTIMENT_WEIGHT}",
+      "emotional_distress": "${NLP_MODEL_DISTRESS_WEIGHT}"
+    },
+    "defaults": {
+      "default_mode": "consensus",
+      "model_weights": {
+        "depression": 0.4,
+        "sentiment": 0.3,
+        "emotional_distress": 0.3
+      }
+    }
+  },
+  "threshold_configuration": {
+    "ensemble_thresholds": {
+      "high": "${NLP_THRESHOLD_ENSEMBLE_HIGH}",
+      "medium": "${NLP_THRESHOLD_ENSEMBLE_MEDIUM}",
+      "low": "${NLP_THRESHOLD_ENSEMBLE_LOW}"
+    },
+    "defaults": {
+      "ensemble_thresholds": {
+        "high": 0.45,
+        "medium": 0.25,
+        "low": 0.12
+      }
+    }
+  },
+  "hardware_optimization": {
+    "device": "${NLP_HARDWARE_DEVICE}",
+    "precision": "${NLP_HARDWARE_PRECISION}",
+    "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
+    "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}",
+    "performance_settings": {
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT}",
+      "request_timeout": "${NLP_PERFORMANCE_REQUEST_TIMEOUT}",
+      "memory_optimization": true,
+      "batch_processing": true
+    },
+    "defaults": {
+      "device": "auto",
+      "precision": "float16",
+      "max_batch_size": 32,
+      "inference_threads": 16,
+      "performance_settings": {
+        "max_concurrent_requests": 20,
+        "request_timeout": 40,
+        "memory_optimization": true,
+        "batch_processing": true
+      }
+    }
+  },
+  "feature_flags": {
+    "experimental_features": {
+      "enable_ensemble_analysis": "${NLP_ENABLE_ENSEMBLE_ANALYSIS}",
+      "enable_gap_detection": "${NLP_ENABLE_GAP_DETECTION}",
+      "log_model_disagreements": "${NLP_LOG_MODEL_DISAGREEMENTS}",
+      "enable_model_parallelism": "${NLP_ENABLE_MODEL_PARALLELISM}"
+    },
+    "defaults": {
+      "experimental_features": {
+        "enable_ensemble_analysis": true,
+        "enable_gap_detection": true,
+        "log_model_disagreements": true,
+        "enable_model_parallelism": false
+      }
+    }
+  },
+  "validation_rules": {
+    "model_weights": {
+      "ensure_sum_to_one": true,
+      "tolerance": 0.01,
+      "fail_on_invalid": true
+    },
+    "model_accessibility": {
+      "validate_on_startup": true,
+      "timeout_seconds": 30
+    },
+    "ensemble_modes": {
+      "validate_mode_support": true,
+      "required_modes": ["consensus", "majority", "weighted"]
+    }
+  },
   "model_ensemble": {
     "version": "3.1d-enhanced",
     "architecture": "clean-v3.1-unified",
     "description": "Enhanced model ensemble configuration with standardized variable naming",
-    "migration_notes": "Phase 3d: Eliminated duplicate variables and standardized naming patterns",
     "model_definitions": {
       "depression": {
         "name": "${NLP_MODEL_DEPRESSION_NAME}",
@@ -11,8 +147,7 @@
         "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
         "type": "zero-shot-classification",
         "purpose": "Depression and mental health crisis detection using zero-shot classification",
-        "pipeline_task": "zero-shot-classification",
-        "environment_variable": "NLP_MODEL_DEPRESSION_NAME"
+        "pipeline_task": "zero-shot-classification"
       },
       "sentiment": {
         "name": "${NLP_MODEL_SENTIMENT_NAME}",
@@ -20,8 +155,7 @@
         "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
         "type": "sentiment-analysis", 
         "purpose": "Topic-based sentiment analysis",
-        "pipeline_task": "zero-shot-classification",
-        "environment_variable": "NLP_MODEL_SENTIMENT_NAME"
+        "pipeline_task": "zero-shot-classification"
       },
       "emotional_distress": {
         "name": "${NLP_MODEL_DISTRESS_NAME}",
@@ -29,8 +163,7 @@
         "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
         "type": "natural-language-inference",
         "purpose": "Emotional distress detection using multilingual NLI",
-        "pipeline_task": "zero-shot-classification",
-        "environment_variable": "NLP_MODEL_DISTRESS_NAME"
+        "pipeline_task": "zero-shot-classification"
       }
     },
     "ensemble_settings": {
@@ -40,11 +173,6 @@
         "fail_on_invalid_weights": true,
         "validate_model_accessibility": true,
         "weight_tolerance": 0.01
-      },
-      "performance": {
-        "enable_model_parallelism": false,
-        "batch_processing": true,
-        "memory_optimization": true
       }
     },
     "hardware_settings": {
@@ -61,7 +189,7 @@
           "cache_dir": "./models/cache"
         },
         "sentiment": {
-          "name": "Lowerated/lm6-deberta-v3-topic-sentiment", 
+          "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
           "weight": 0.3,
           "cache_dir": "./models/cache"
         },
@@ -72,17 +200,11 @@
         }
       },
       "ensemble_settings": {
-        "mode": "consensus",
-        "validation": {
-          "ensure_weights_sum_to_one": true,
-          "fail_on_invalid_weights": true,
-          "validate_model_accessibility": true,
-          "weight_tolerance": 0.01
-        }
+        "mode": "consensus"
       },
       "hardware_settings": {
         "device": "auto",
-        "precision": "float16", 
+        "precision": "float16",
         "max_batch_size": 32,
         "inference_threads": 16
       }
