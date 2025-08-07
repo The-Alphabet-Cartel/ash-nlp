@@ -222,7 +222,8 @@ class TestPhase3cSystemIntegration:
                 'consensus': {'prediction': 'crisis', 'confidence': 0.55},
                 'majority': {'prediction': 'mild_crisis', 'confidence': 0.48},
                 'weighted': {'prediction': 'crisis', 'confidence': 0.62},
-                'gap_detection': {'gap_detected': False, 'requires_review': False}
+                'gap_detection': {'gap_detected': False, 'requires_review': False},
+                'detected_categories': ['depression', 'anxiety']
             }
             
             pattern_result = {
@@ -233,26 +234,36 @@ class TestPhase3cSystemIntegration:
             }
             
             # Test integrate_pattern_and_ensemble_analysis_v3c function
-            if 'integrate_pattern_and_ensemble_analysis_v3c' in globals():
-                integrated_result = integrate_pattern_and_ensemble_analysis_v3c(
-                    ensemble_result, pattern_result, mock_threshold_manager
-                )
-                
-                # Verify integration result structure
-                required_keys = ['crisis_level', 'confidence', 'staff_review_required', 'threshold_mode']
-                for key in required_keys:
-                    assert key in integrated_result, f"Missing required key: {key}"
-                
-                logger.info(f"   📊 Integrated result: {integrated_result['crisis_level']} (confidence: {integrated_result['confidence']})")
-                logger.info("✅ Ensemble endpoints integration test passed")
-            else:
-                logger.warning("⚠️ integrate_pattern_and_ensemble_analysis_v3c not available, testing structure only")
-                # Test that mock provides expected data structure
-                assert mock_threshold_manager.get_current_ensemble_mode() == 'weighted'
-                logger.info("✅ Ensemble endpoints structure test passed")
+            integrated_result = integrate_pattern_and_ensemble_analysis_v3c(
+                ensemble_result, pattern_result, mock_threshold_manager
+            )
+            
+            # Verify integration result structure matches actual implementation
+            required_keys = ['needs_response', 'crisis_level', 'confidence_score', 'method']
+            for key in required_keys:
+                assert key in integrated_result, f"Missing required key: {key}"
+            
+            # Verify Phase 3c specific additions
+            phase_3c_keys = ['staff_review_required', 'threshold_mode', 'integration_details']
+            for key in phase_3c_keys:
+                assert key in integrated_result, f"Missing Phase 3c key: {key}"
+            
+            # Verify values are reasonable
+            assert integrated_result['crisis_level'] in ['none', 'low', 'medium', 'high']
+            assert integrated_result['threshold_mode'] == 'weighted'  # From mock
+            assert isinstance(integrated_result['staff_review_required'], bool)
+            assert isinstance(integrated_result['confidence_score'], (int, float))
+            
+            logger.info(f"   📊 Integrated result: {integrated_result['crisis_level']} (confidence: {integrated_result['confidence_score']})")
+            logger.info(f"   📊 Staff review required: {integrated_result['staff_review_required']}")
+            logger.info(f"   📊 Threshold mode: {integrated_result['threshold_mode']}")
+            logger.info("✅ Ensemble endpoints integration test passed")
             
         except Exception as e:
             logger.error(f"❌ Ensemble endpoints integration failed: {e}")
+            # Still test basic functionality if integration function unavailable
+            assert mock_threshold_manager.get_current_ensemble_mode() == 'weighted'
+            logger.info("✅ Ensemble endpoints basic functionality test passed")
             raise
     
     def test_ensemble_prediction_mapping_integration(self, mock_threshold_manager):
