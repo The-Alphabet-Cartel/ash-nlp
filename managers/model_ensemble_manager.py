@@ -1,471 +1,360 @@
+# ash/ash-nlp/managers/model_ensemble_manager.py - Phase 3d Updated
 """
-Model Ensemble Configuration Manager for Ash NLP Service v3.1
-Handles loading and parsing of model_ensemble.json with environment variable substitution
-Located in managers/ directory for organized configuration management
+Model Ensemble Manager for Ash NLP Service v3.1d - Updated for Standardized Variables
+Phase 3d: Uses enhanced ConfigManager with standardized variable naming
+
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 """
 
-import json
 import os
+import json
 import logging
 import re
+from typing import Dict, Any, List, Union, Optional
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List
 
 logger = logging.getLogger(__name__)
 
 class ModelEnsembleManager:
     """
-    Manages model ensemble configuration from JSON with environment variable substitution
-    Part of the managers/ directory architecture for centralized configuration management
+    Model Ensemble Manager with Phase 3d standardized variable support
+    Updated to use enhanced ConfigManager with unified configuration approach
     """
     
-    def __init__(self, config_file: Optional[str] = None):
+    def __init__(self, config_manager):
         """
-        Initialize the model ensemble manager
+        Initialize Model Ensemble Manager
         
         Args:
-            config_file: Path to the JSON config file. If None, uses default location.
+            config_manager: Enhanced ConfigManager instance (Phase 3d)
         """
-        self.config_file = config_file or self._find_config_file()
-        self._raw_config = None
-        self._processed_config = None
-        self._load_timestamp = None
+        if config_manager is None:
+            raise ValueError("ConfigManager is required for ModelEnsembleManager")
         
-        # Load the configuration
-        self.reload()
+        self.config_manager = config_manager
+        self.config = None
+        
+        logger.info("✅ ModelEnsembleManager v3.1d initialized with enhanced ConfigManager")
+        
+        # Load configuration using enhanced ConfigManager
+        self._load_configuration()
+        
+        # Validate configuration
+        self._validate_configuration()
     
-    def _find_config_file(self) -> str:
-        """Find the model ensemble config file in various possible locations"""
-        possible_paths = [
-            # First check relative to managers directory
-            Path(__file__).parent.parent / "config" / "model_ensemble.json",
-            # Then check standard config locations
-            Path("config/model_ensemble.json"),
-            Path("./config/model_ensemble.json"),
-            Path.cwd() / "config" / "model_ensemble.json",
-            # Check if running from project root
-            Path("ash-nlp/config/model_ensemble.json"),
-            # Check absolute paths relative to this file
-            Path(__file__).resolve().parent.parent / "config" / "model_ensemble.json"
-        ]
-        
-        for path in possible_paths:
-            if path.exists():
-                logger.info(f"✅ Found model ensemble config at: {path}")
-                return str(path)
-        
-        # If not found, use the default location relative to managers directory
-        default_path = Path(__file__).parent.parent / "config" / "model_ensemble.json"
-        logger.warning(f"⚠️ Model ensemble config not found, using default location: {default_path}")
-        return str(default_path)
-    
-    def reload(self) -> None:
-        """Reload the configuration from file"""
+    def _load_configuration(self):
+        """Load model ensemble configuration using enhanced ConfigManager"""
         try:
-            with open(self.config_file, 'r', encoding='utf-8') as f:
-                self._raw_config = json.load(f)
+            # Use enhanced ConfigManager's get_model_configuration method
+            self.config = self.config_manager.get_model_configuration()
             
-            self._processed_config = self._process_config(self._raw_config)
-            self._load_timestamp = os.path.getmtime(self.config_file)
+            if not self.config:
+                raise ValueError("Model configuration could not be loaded")
             
-            # Validate the configuration
-            self._validate_config()
+            logger.info(f"✅ Model ensemble configuration loaded via enhanced ConfigManager")
+            logger.debug(f"🔍 Loaded {len(self.config.get('models', {}))} model definitions")
             
-            logger.info(f"✅ Model ensemble configuration loaded from {self.config_file}")
-            
-        except FileNotFoundError:
-            logger.error(f"❌ Model ensemble config file not found: {self.config_file}")
-            logger.error(f"💡 Please ensure model_ensemble.json exists in the config/ directory")
-            raise
-        except json.JSONDecodeError as e:
-            logger.error(f"❌ Invalid JSON in model ensemble config: {e}")
-            raise
+            # Log standardized variables being used
+            models = self.config.get('models', {})
+            for model_type, model_config in models.items():
+                logger.debug(f"   {model_type}: {model_config.get('name')} (weight: {model_config.get('weight')})")
+        
         except Exception as e:
-            logger.error(f"❌ Error loading model ensemble config: {e}")
+            logger.error(f"❌ Failed to load model configuration: {e}")
             raise
     
-    def _process_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """Process the configuration, substituting environment variables"""
-        return self._substitute_env_vars(config.copy())
-    
-    def _substitute_env_vars(self, obj: Any) -> Any:
-        """
-        Recursively substitute environment variables in the configuration
-        Supports ${VAR_NAME} syntax with fallback to defaults
-        """
-        if isinstance(obj, dict):
-            return {key: self._substitute_env_vars(value) for key, value in obj.items()}
-        elif isinstance(obj, list):
-            return [self._substitute_env_vars(item) for item in obj]
-        elif isinstance(obj, str):
-            return self._substitute_string_vars(obj)
-        else:
-            return obj
-    
-    def _substitute_string_vars(self, text: str) -> Union[str, int, float, bool]:
-        """
-        Substitute environment variables in a string and convert to appropriate type
-        Supports fallback to defaults defined in JSON
-        """
-        # Pattern to match ${VAR_NAME}
-        pattern = r'\$\{([A-Z_][A-Z0-9_]*)\}'
-        
-        def replace_var(match):
-            var_name = match.group(1)
-            env_value = os.getenv(var_name)
-            
-            if env_value is None:
-                # Try to get from env_config if available
-                try:
-                    from .config_manager import get_config
-                    env_config = get_config()
-                    env_value = env_config.get(var_name)
-                except ImportError:
-                    logger.debug(f"config_manager not available, using direct environment lookup for {var_name}")
-                except Exception:
-                    logger.debug(f"Could not access config_manager for {var_name}")
-            
-            if env_value is None:
-                logger.debug(f"Environment variable {var_name} not found, keeping placeholder")
-                return match.group(0)  # Keep the placeholder
-            
-            return str(env_value)
-        
-        # Substitute variables
-        result = re.sub(pattern, replace_var, text)
-        
-        # If the entire string was a variable substitution and was successful, convert to appropriate type
-        if not re.search(pattern, result) and result != text:
-            return self._convert_type(result)
-        
-        return result
-    
-    def _convert_type(self, value: str) -> Union[str, int, float, bool]:
-        """Convert string value to appropriate Python type"""
-        # Handle None/null values
-        if value.lower() in ('none', 'null', ''):
-            return None
-        
-        # Boolean conversion
-        if value.lower() in ('true', '1', 'yes', 'on', 'enabled'):
-            return True
-        elif value.lower() in ('false', '0', 'no', 'off', 'disabled'):
-            return False
-        
-        # Number conversion
+    def _validate_configuration(self):
+        """Validate model ensemble configuration with Phase 3d standards"""
         try:
-            if '.' in value:
-                return float(value)
-            else:
-                return int(value)
-        except ValueError:
-            pass
-        
-        # Return as string if no conversion possible
-        return value
+            models = self.config.get('models', {})
+            
+            if not models:
+                raise ValueError("No model definitions found")
+            
+            # Validate required models
+            required_models = ['depression', 'sentiment', 'emotional_distress']
+            for model_type in required_models:
+                if model_type not in models:
+                    raise ValueError(f"Required model '{model_type}' not found in configuration")
+            
+            # Validate model weights sum to approximately 1.0
+            total_weight = sum(model.get('weight', 0) for model in models.values())
+            weight_tolerance = self.config.get('validation', {}).get('weight_tolerance', 0.01)
+            
+            if abs(total_weight - 1.0) > weight_tolerance:
+                logger.warning(f"⚠️ Model weights sum to {total_weight}, should be ~1.0 (tolerance: {weight_tolerance})")
+                if self.config.get('validation', {}).get('fail_on_invalid_weights', False):
+                    raise ValueError(f"Model weights sum to {total_weight}, must be ~1.0")
+            
+            # Validate model names are not empty
+            for model_type, model_config in models.items():
+                if not model_config.get('name'):
+                    raise ValueError(f"Model '{model_type}' has empty name")
+            
+            logger.info("✅ Model ensemble configuration validation passed")
+            
+        except Exception as e:
+            logger.error(f"❌ Model configuration validation failed: {e}")
+            raise
     
-    def _validate_config(self) -> None:
-        """Validate the loaded configuration"""
-        if not self._processed_config:
-            raise ValueError("No configuration loaded")
-        
-        # Validate model weights sum to 1.0
-        self._validate_model_weights()
-        
-        # Validate threshold consistency
-        self._validate_thresholds()
-        
-        # Validate required sections
-        self._validate_required_sections()
-        
-        # Validate model definitions
-        self._validate_model_definitions()
-        
-        logger.info("✅ Model ensemble configuration validation passed")
-    
-    def _validate_model_weights(self) -> None:
-        """Validate that model weights sum to approximately 1.0"""
-        try:
-            weights = self._processed_config['ensemble_configuration']['model_weights']
-            weight_values = []
-            
-            for model in ['depression', 'sentiment', 'emotional_distress']:
-                weight = weights[model]
-                if isinstance(weight, (int, float)):
-                    weight_values.append(weight)
-                else:
-                    logger.warning(f"⚠️ Model weight for {model} is not numeric: {weight}")
-                    return
-            
-            total_weight = sum(weight_values)
-            tolerance = self._processed_config.get('validation_rules', {}).get('model_weights', {}).get('tolerance', 0.001)
-            
-            if abs(total_weight - 1.0) > tolerance:
-                logger.warning(f"⚠️ Model weights sum to {total_weight}, expected ~1.0 (tolerance: {tolerance})")
-            else:
-                logger.info(f"✅ Model weights validation passed: {total_weight}")
-                
-        except KeyError as e:
-            logger.warning(f"⚠️ Missing model weight configuration: {e}")
-    
-    def _validate_thresholds(self) -> None:
-        """Validate threshold consistency"""
-        try:
-            consensus = self._processed_config['threshold_configuration']['crisis_level_mapping']['consensus_mapping']
-            
-            # Check that crisis_to_high >= crisis_to_medium
-            crisis_high = consensus.get('crisis_to_high')
-            crisis_medium = consensus.get('crisis_to_medium')
-            
-            if isinstance(crisis_high, (int, float)) and isinstance(crisis_medium, (int, float)):
-                if crisis_high < crisis_medium:
-                    logger.warning(f"⚠️ Threshold inconsistency: crisis_to_high ({crisis_high}) < crisis_to_medium ({crisis_medium})")
-                else:
-                    logger.info(f"✅ Crisis threshold consistency validated")
-            
-            # Check gap detection vs disagreement thresholds
-            gap_threshold = self._processed_config['ensemble_configuration']['gap_detection'].get('threshold')
-            disagreement_threshold = self._processed_config['ensemble_configuration']['gap_detection'].get('disagreement_threshold')
-            
-            if isinstance(gap_threshold, (int, float)) and isinstance(disagreement_threshold, (int, float)):
-                if gap_threshold >= disagreement_threshold:
-                    logger.warning(f"⚠️ Gap detection threshold ({gap_threshold}) should be < disagreement threshold ({disagreement_threshold})")
-                else:
-                    logger.info(f"✅ Gap detection threshold consistency validated")
-                    
-        except KeyError as e:
-            logger.warning(f"⚠️ Missing threshold configuration for validation: {e}")
-    
-    def _validate_required_sections(self) -> None:
-        """Validate that all required configuration sections are present"""
-        required_sections = [
-            'ensemble_info',
-            'model_definitions',
-            'ensemble_configuration',
-            'threshold_configuration',
-            'hardware_optimization',
-            'feature_flags',
-            'validation_rules'
-        ]
-        
-        missing_sections = []
-        for section in required_sections:
-            if section not in self._processed_config:
-                missing_sections.append(section)
-        
-        if missing_sections:
-            raise ValueError(f"Missing required configuration sections: {missing_sections}")
-        
-        logger.info("✅ All required configuration sections present")
-    
-    def _validate_model_definitions(self) -> None:
-        """Validate model definitions are complete"""
-        models = self._processed_config.get('model_definitions', {})
-        required_models = ['depression', 'sentiment', 'emotional_distress']
-        
-        for model_name in required_models:
-            if model_name not in models:
-                raise ValueError(f"Missing model definition: {model_name}")
-            
-            model_config = models[model_name]
-            required_fields = ['name', 'type', 'purpose', 'specialization']
-            
-            for field in required_fields:
-                if field not in model_config:
-                    logger.warning(f"⚠️ Missing field '{field}' in {model_name} model definition")
-        
-        logger.info("✅ Model definitions validation passed")
-    
-    def get_config(self) -> Dict[str, Any]:
-        """Get the complete processed configuration"""
-        return self._processed_config.copy() if self._processed_config else {}
+    # ========================================================================
+    # Model Configuration Access - Phase 3d Enhanced
+    # ========================================================================
     
     def get_model_definitions(self) -> Dict[str, Any]:
-        """Get model definitions"""
-        return self._processed_config.get('model_definitions', {})
+        """Get all model definitions with standardized variable support"""
+        return self.config.get('models', {})
     
-    def get_ensemble_configuration(self) -> Dict[str, Any]:
-        """Get ensemble configuration"""
-        return self._processed_config.get('ensemble_configuration', {})
-    
-    def get_threshold_configuration(self) -> Dict[str, Any]:
-        """Get threshold configuration"""
-        return self._processed_config.get('threshold_configuration', {})
-    
-    def get_hardware_optimization(self) -> Dict[str, Any]:
-        """Get hardware optimization settings"""
-        return self._processed_config.get('hardware_optimization', {})
-    
-    def get_feature_flags(self) -> Dict[str, Any]:
-        """Get feature flags"""
-        return self._processed_config.get('feature_flags', {})
-    
-    def get_validation_rules(self) -> Dict[str, Any]:
-        """Get validation rules"""
-        return self._processed_config.get('validation_rules', {})
-    
-    def get_metadata(self) -> Dict[str, Any]:
-        """Get configuration metadata"""
-        return self._processed_config.get('metadata', {})
-    
-    def get_model_config(self, model_name: str) -> Dict[str, Any]:
-        """
-        Get configuration for a specific model
-        
-        Args:
-            model_name: Name of the model ('depression', 'sentiment', 'emotional_distress')
-            
-        Returns:
-            Model configuration dictionary
-        """
+    def get_model_config(self, model_type: str) -> Dict[str, Any]:
+        """Get configuration for specific model type"""
         models = self.get_model_definitions()
-        if model_name not in models:
-            raise ValueError(f"Model '{model_name}' not found in configuration. Available models: {list(models.keys())}")
-        
-        return models[model_name]
+        return models.get(model_type, {})
     
-    def get_ensemble_mode_config(self, mode: str) -> Dict[str, Any]:
-        """Get configuration for a specific ensemble mode"""
-        ensemble_config = self.get_ensemble_configuration()
-        available_modes = ensemble_config.get('available_modes', {})
-        
-        if mode not in available_modes:
-            raise ValueError(f"Ensemble mode '{mode}' not available. Available modes: {list(available_modes.keys())}")
-        
-        return available_modes[mode]
+    def get_model_name(self, model_type: str) -> str:
+        """Get model name for specific model type"""
+        model_config = self.get_model_config(model_type)
+        return model_config.get('name', '')
     
-    def is_config_modified(self) -> bool:
-        """Check if the configuration file has been modified since last load"""
-        try:
-            current_timestamp = os.path.getmtime(self.config_file)
-            return current_timestamp != self._load_timestamp
-        except OSError:
-            return False
+    def get_model_weight(self, model_type: str) -> float:
+        """Get model weight for specific model type"""
+        model_config = self.get_model_config(model_type)
+        return model_config.get('weight', 0.0)
     
-    def get_summary(self) -> Dict[str, Any]:
-        """Get a summary of the configuration for logging/debugging"""
-        if not self._processed_config:
-            return {"status": "not_loaded"}
-        
-        ensemble_config = self.get_ensemble_configuration()
-        models = self.get_model_definitions()
-        
-        summary = {
-            "status": "loaded",
-            "config_file": self.config_file,
-            "ensemble_mode": ensemble_config.get('default_mode', 'unknown'),
-            "models_count": len(models),
-            "model_names": list(models.keys()),
-            "gap_detection_enabled": ensemble_config.get('gap_detection', {}).get('enabled', False),
-            "learning_system_enabled": self.get_feature_flags().get('learning_system', {}).get('enabled', False),
-            "hardware_device": self.get_hardware_optimization().get('device', 'unknown'),
-            "configuration_version": self.get_metadata().get('configuration_version', 'unknown')
+    def get_model_cache_dir(self, model_type: str) -> str:
+        """Get cache directory for specific model type"""
+        model_config = self.get_model_config(model_type)
+        return model_config.get('cache_dir', './models/cache')
+    
+    def get_model_pipeline_task(self, model_type: str) -> str:
+        """Get pipeline task for specific model type"""
+        model_config = self.get_model_config(model_type)
+        return model_config.get('pipeline_task', 'text-classification')
+    
+    # ========================================================================
+    # Ensemble Configuration - Phase 3d Enhanced  
+    # ========================================================================
+    
+    def get_ensemble_mode(self) -> str:
+        """Get current ensemble mode"""
+        return self.config.get('ensemble_mode', 'consensus')
+    
+    def get_ensemble_settings(self) -> Dict[str, Any]:
+        """Get ensemble settings including validation and performance"""
+        return {
+            'mode': self.get_ensemble_mode(),
+            'validation': self.config.get('validation', {}),
+            'performance': self.config.get('performance', {})
         }
+    
+    def get_current_ensemble_mode(self) -> str:
+        """Get the currently configured ensemble mode - alias for compatibility"""
+        return self.get_ensemble_mode()
+    
+    # ========================================================================
+    # Hardware Configuration - Phase 3d Enhanced
+    # ========================================================================
+    
+    def get_hardware_settings(self) -> Dict[str, Any]:
+        """Get hardware configuration settings"""
+        return self.config.get('hardware_settings', {})
+    
+    def get_device_setting(self) -> str:
+        """Get device setting (auto/cpu/cuda)"""
+        hardware = self.get_hardware_settings()
+        return hardware.get('device', 'auto')
+    
+    def get_precision_setting(self) -> str:
+        """Get precision setting (float16/float32)"""
+        hardware = self.get_hardware_settings()
+        return hardware.get('precision', 'float16')
+    
+    def get_max_batch_size(self) -> int:
+        """Get maximum batch size"""
+        hardware = self.get_hardware_settings()
+        return hardware.get('max_batch_size', 32)
+    
+    def get_inference_threads(self) -> int:
+        """Get inference thread count"""
+        hardware = self.get_hardware_settings()
+        return hardware.get('inference_threads', 16)
+    
+    # ========================================================================
+    # Model Weight Management - Phase 3d Enhanced
+    # ========================================================================
+    
+    def get_model_weights(self) -> Dict[str, float]:
+        """Get all model weights as dictionary"""
+        models = self.get_model_definitions()
+        return {model_type: model.get('weight', 0.0) for model_type, model in models.items()}
+    
+    def get_normalized_weights(self) -> Dict[str, float]:
+        """Get normalized model weights (sum to 1.0)"""
+        weights = self.get_model_weights()
+        total_weight = sum(weights.values())
         
-        # Calculate weights sum if available
-        try:
-            weights_sum = sum(
-                ensemble_config.get('model_weights', {}).get(model, 0) 
-                for model in ['depression', 'sentiment', 'emotional_distress']
-                if isinstance(ensemble_config.get('model_weights', {}).get(model), (int, float))
-            )
-            summary["weights_sum"] = weights_sum
-        except Exception:
-            summary["weights_sum"] = "unknown"
+        if total_weight <= 0:
+            # Equal weights if all are zero
+            equal_weight = 1.0 / len(weights) if weights else 0.0
+            return {model_type: equal_weight for model_type in weights.keys()}
         
-        return summary
+        # Normalize to sum to 1.0
+        return {model_type: weight / total_weight for model_type, weight in weights.items()}
+    
+    # ========================================================================
+    # Validation and Utility Methods - Phase 3d Enhanced
+    # ========================================================================
+    
+    def validate_ensemble_mode(self, mode: str) -> bool:
+        """Validate if an ensemble mode is supported"""
+        available_modes = ['consensus', 'majority', 'weighted']
+        return mode in available_modes
     
     def get_model_names(self) -> List[str]:
         """Get list of configured model names"""
         return list(self.get_model_definitions().keys())
     
-    def get_ensemble_modes(self) -> List[str]:
-        """Get list of available ensemble modes"""
-        ensemble_config = self.get_ensemble_configuration()
-        return list(ensemble_config.get('available_modes', {}).keys())
+    def get_validation_settings(self) -> Dict[str, Any]:
+        """Get validation settings"""
+        return self.config.get('validation', {})
     
-    def get_current_ensemble_mode(self) -> str:
-        """Get the currently configured ensemble mode"""
-        ensemble_config = self.get_ensemble_configuration()
-        return ensemble_config.get('default_mode', 'weighted')
+    def is_weights_validation_enabled(self) -> bool:
+        """Check if weight validation is enabled"""
+        validation = self.get_validation_settings()
+        return validation.get('ensure_weights_sum_to_one', True)
     
-    def get_model_weights(self) -> Dict[str, float]:
-        """Get current model weights"""
-        ensemble_config = self.get_ensemble_configuration()
-        return ensemble_config.get('model_weights', {})
+    def should_fail_on_invalid_weights(self) -> bool:
+        """Check if system should fail on invalid weights"""
+        validation = self.get_validation_settings()
+        return validation.get('fail_on_invalid_weights', True)
     
-    def validate_ensemble_mode(self, mode: str) -> bool:
-        """Validate if an ensemble mode is supported"""
-        return mode in self.get_ensemble_modes()
+    # ========================================================================
+    # Storage Configuration - Phase 3d Enhanced  
+    # ========================================================================
     
-    def get_crisis_thresholds(self) -> Dict[str, float]:
-        """Get crisis level thresholds"""
-        threshold_config = self.get_threshold_configuration()
-        ensemble_thresholds = threshold_config.get('ensemble_thresholds', {})
+    def get_storage_configuration(self) -> Dict[str, Any]:
+        """Get storage configuration via enhanced ConfigManager"""
+        try:
+            return self.config_manager.get_storage_configuration()
+        except Exception as e:
+            logger.warning(f"⚠️ Could not get storage configuration: {e}")
+            return {
+                'directories': {
+                    'models_directory': './models/cache'
+                }
+            }
+    
+    def get_models_directory(self) -> str:
+        """Get models directory from storage configuration"""
+        storage_config = self.get_storage_configuration()
+        directories = storage_config.get('directories', {})
+        return directories.get('models_directory', './models/cache')
+    
+    # ========================================================================
+    # Status and Information Methods - Phase 3d Enhanced
+    # ========================================================================
+    
+    def get_manager_status(self) -> Dict[str, Any]:
+        """Get comprehensive manager status"""
+        try:
+            models = self.get_model_definitions()
+            weights = self.get_model_weights()
+            
+            return {
+                'version': '3.1d-enhanced',
+                'architecture': 'clean-v3.1-unified',
+                'config_source': 'enhanced_config_manager',
+                'ensemble_mode': self.get_ensemble_mode(),
+                'models_configured': len(models),
+                'model_types': list(models.keys()),
+                'total_weight': sum(weights.values()),
+                'weights_normalized': abs(sum(weights.values()) - 1.0) < 0.01,
+                'hardware_device': self.get_device_setting(),
+                'storage_directory': self.get_models_directory(),
+                'validation_enabled': self.is_weights_validation_enabled()
+            }
+        except Exception as e:
+            logger.error(f"❌ Error getting manager status: {e}")
+            return {
+                'version': '3.1d-enhanced',
+                'status': 'error',
+                'error': str(e)
+            }
+    
+    def print_configuration_summary(self):
+        """Print detailed configuration summary for debugging"""
+        logger.info("=== ModelEnsembleManager v3.1d Configuration Summary ===")
         
-        # Return with defaults if not found
-        return {
-            'high': ensemble_thresholds.get('high', 0.45),
-            'medium': ensemble_thresholds.get('medium', 0.25), 
-            'low': ensemble_thresholds.get('low', 0.12)
-        }
-    
-    def get_gap_detection_config(self) -> Dict[str, Any]:
-        """Get gap detection configuration"""
-        ensemble_config = self.get_ensemble_configuration()
-        return ensemble_config.get('gap_detection', {})
+        status = self.get_manager_status()
+        for key, value in status.items():
+            logger.info(f"{key}: {value}")
+        
+        logger.info("--- Model Details ---")
+        models = self.get_model_definitions()
+        for model_type, model_config in models.items():
+            logger.info(f"{model_type}:")
+            logger.info(f"  Name: {model_config.get('name')}")
+            logger.info(f"  Weight: {model_config.get('weight')}")
+            logger.info(f"  Type: {model_config.get('type')}")
+            logger.info(f"  Pipeline Task: {model_config.get('pipeline_task')}")
+        
+        logger.info("=== End Configuration Summary ===")
 
-# Global instance for singleton pattern
+# ============================================================================
+# Global Instance Management - Singleton Pattern
+# ============================================================================
+
 _model_ensemble_manager = None
 
-def get_model_ensemble_manager() -> ModelEnsembleManager:
-    """Get the global model ensemble manager instance"""
+def get_model_ensemble_manager(config_manager=None) -> ModelEnsembleManager:
+    """
+    Get the global model ensemble manager instance - TRANSITION COMPATIBLE
+    
+    Args:
+        config_manager: Enhanced ConfigManager instance (optional for compatibility)
+        
+    Returns:
+        ModelEnsembleManager instance
+    """
     global _model_ensemble_manager
+    
     if _model_ensemble_manager is None:
-        _model_ensemble_manager = ModelEnsembleManager()
+        # If no config_manager provided, create one (for backward compatibility)
+        if config_manager is None:
+            logger.info("🔄 Creating ConfigManager for ModelEnsembleManager compatibility")
+            from managers.config_manager import ConfigManager
+            config_manager = ConfigManager("/app/config")
+        
+        _model_ensemble_manager = ModelEnsembleManager(config_manager)
+    
     return _model_ensemble_manager
 
-def reload_model_ensemble_config() -> None:
-    """Force reload of the model ensemble configuration"""
+def reset_model_ensemble_manager():
+    """Reset the global manager instance - for testing"""
     global _model_ensemble_manager
-    if _model_ensemble_manager:
-        _model_ensemble_manager.reload()
-    else:
-        _model_ensemble_manager = ModelEnsembleManager()
+    _model_ensemble_manager = None
 
-# Convenience functions for backward compatibility and easy access
-def get_model_definitions() -> Dict[str, Any]:
-    """Get model definitions from JSON config"""
-    return get_model_ensemble_manager().get_model_definitions()
+# ============================================================================
+# Factory Function - Clean v3.1 Architecture Compliance
+# ============================================================================
 
-def get_ensemble_configuration() -> Dict[str, Any]:
-    """Get ensemble configuration from JSON config"""
-    return get_model_ensemble_manager().get_ensemble_configuration()
+def create_model_ensemble_manager(config_manager) -> ModelEnsembleManager:
+    """
+    Factory function to create ModelEnsembleManager instance
+    
+    Args:
+        config_manager: Enhanced ConfigManager instance
+        
+    Returns:
+        ModelEnsembleManager instance
+    """
+    return ModelEnsembleManager(config_manager)
 
-def get_threshold_configuration() -> Dict[str, Any]:
-    """Get threshold configuration from JSON config"""
-    return get_model_ensemble_manager().get_threshold_configuration()
+__all__ = [
+    'ModelEnsembleManager', 
+    'get_model_ensemble_manager', 
+    'create_model_ensemble_manager',
+    'reset_model_ensemble_manager'
+]
 
-def get_hardware_optimization() -> Dict[str, Any]:
-    """Get hardware optimization settings from JSON config"""
-    return get_model_ensemble_manager().get_hardware_optimization()
-
-def get_feature_flags() -> Dict[str, Any]:
-    """Get feature flags from JSON config"""
-    return get_model_ensemble_manager().get_feature_flags()
-
-def get_model_config(model_name: str) -> Dict[str, Any]:
-    """Get configuration for a specific model"""
-    return get_model_ensemble_manager().get_model_config(model_name)
-
-def get_ensemble_mode_config(mode: str) -> Dict[str, Any]:
-    """Get configuration for a specific ensemble mode"""
-    return get_model_ensemble_manager().get_ensemble_mode_config(mode)
-
-def get_crisis_thresholds() -> Dict[str, float]:
-    """Get crisis level thresholds"""
-    return get_model_ensemble_manager().get_crisis_thresholds()
-
-def get_gap_detection_config() -> Dict[str, Any]:
-    """Get gap detection configuration"""
-    return get_model_ensemble_manager().get_gap_detection_config()
+logger.info("✅ Enhanced ModelEnsembleManager v3.1d loaded - Phase 3d standardized variables supported")
