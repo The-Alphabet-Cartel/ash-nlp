@@ -555,6 +555,179 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
                 "architecture": "clean_v3_1"
             }
     
+    # ========================================================================
+    # MISSING ENSEMBLE CONFIGURATION ENDPOINTS - ADD THESE
+    # ========================================================================
+    
+    @app.get("/ensemble/config")
+    async def get_ensemble_configuration():
+        """Get current ensemble configuration - Phase 3c"""
+        try:
+            config = {
+                "ensemble_method": "three_zero_shot_models",
+                "models_loaded": models_manager.models_loaded() if models_manager else False,
+                "phase": "3c",
+                "architecture": "clean_v3_1"
+            }
+            
+            # Add model info if available
+            if models_manager:
+                try:
+                    model_info = models_manager.get_model_info()
+                    config["model_details"] = model_info
+                except:
+                    config["model_details"] = "unavailable"
+            
+            # Add threshold configuration if available
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+                    config["threshold_configuration"] = {
+                        "current_mode": current_mode,
+                        "crisis_levels": list(crisis_mapping.keys()),
+                        "threshold_count": len(crisis_mapping)
+                    }
+                except Exception as e:
+                    config["threshold_configuration"] = {"error": str(e)}
+            
+            # Add pattern configuration if available
+            if crisis_pattern_manager:
+                try:
+                    patterns = crisis_pattern_manager.get_available_patterns()
+                    config["pattern_configuration"] = {
+                        "patterns_loaded": len(patterns),
+                        "categories": crisis_pattern_manager.get_pattern_categories()
+                    }
+                except Exception as e:
+                    config["pattern_configuration"] = {"error": str(e)}
+            
+            return config
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting ensemble configuration: {e}")
+            raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
+    
+    @app.get("/ensemble/health")
+    async def get_ensemble_health():
+        """Get ensemble system health status - Phase 3c"""
+        try:
+            start_time = time.time()
+            
+            # Check core components
+            models_status = models_manager.models_loaded() if models_manager else False
+            pattern_status = crisis_pattern_manager is not None
+            threshold_status = threshold_mapping_manager is not None
+            
+            # Detailed health info
+            health = {
+                "status": "healthy" if all([models_status, pattern_status, threshold_status]) else "degraded",
+                "timestamp": time.time(),
+                "components": {
+                    "models": models_status,
+                    "patterns": pattern_status,
+                    "thresholds": threshold_status
+                },
+                "phase": "3c",
+                "processing_time_ms": (time.time() - start_time) * 1000
+            }
+            
+            # Add detailed component info
+            if models_manager and models_status:
+                try:
+                    model_info = models_manager.get_model_info()
+                    health["model_details"] = model_info
+                except:
+                    health["model_details"] = "unavailable"
+            
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    validation = threshold_mapping_manager.get_validation_summary()
+                    health["threshold_details"] = {
+                        "mode": current_mode,
+                        "validation_errors": validation.get('validation_errors', 0),
+                        "operational": validation.get('validation_errors', 0) == 0
+                    }
+                except Exception as e:
+                    health["threshold_details"] = {"error": str(e)}
+            
+            return health
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting ensemble health: {e}")
+            raise HTTPException(status_code=500, detail=f"Health check error: {str(e)}")
+    
+    @app.get("/ensemble/status")
+    async def get_ensemble_status():
+        """Get detailed ensemble system status - Phase 3c"""
+        try:
+            status = {
+                "ensemble_operational": False,
+                "phase": "3c",
+                "architecture": "clean_v3_1",
+                "timestamp": time.time()
+            }
+            
+            # Check all components
+            components = {}
+            
+            # Models status
+            if models_manager:
+                try:
+                    models_loaded = models_manager.models_loaded()
+                    model_info = models_manager.get_model_info() if models_loaded else {}
+                    components["models"] = {
+                        "status": "operational" if models_loaded else "unavailable",
+                        "loaded": models_loaded,
+                        "info": model_info
+                    }
+                except Exception as e:
+                    components["models"] = {"status": "error", "error": str(e)}
+            
+            # Pattern manager status
+            if crisis_pattern_manager:
+                try:
+                    patterns = crisis_pattern_manager.get_available_patterns()
+                    components["patterns"] = {
+                        "status": "operational",
+                        "pattern_count": len(patterns),
+                        "categories": crisis_pattern_manager.get_pattern_categories()
+                    }
+                except Exception as e:
+                    components["patterns"] = {"status": "error", "error": str(e)}
+            
+            # Threshold manager status (Phase 3c)
+            if threshold_mapping_manager:
+                try:
+                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
+                    crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+                    validation = threshold_mapping_manager.get_validation_summary()
+                    
+                    components["thresholds"] = {
+                        "status": "operational" if validation.get('validation_errors', 0) == 0 else "warning",
+                        "current_mode": current_mode,
+                        "crisis_levels": list(crisis_mapping.keys()),
+                        "validation_summary": validation
+                    }
+                except Exception as e:
+                    components["thresholds"] = {"status": "error", "error": str(e)}
+            
+            status["components"] = components
+            
+            # Determine overall operational status
+            operational_components = [
+                comp.get("status") == "operational" 
+                for comp in components.values()
+            ]
+            status["ensemble_operational"] = len(operational_components) > 0 and all(operational_components)
+            
+            return status
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting ensemble status: {e}")
+            raise HTTPException(status_code=500, detail=f"Status error: {str(e)}")
+
     logger.info("✅ Clean v3.1 Phase 3c Three Zero-Shot Model Ensemble endpoints configured successfully")
     
     # Phase 3c: Log configuration summary
