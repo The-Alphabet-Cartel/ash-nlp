@@ -17,7 +17,6 @@ from typing import Dict, Any
 from managers.threshold_mapping_manager import ThresholdMappingManager
 from managers.config_manager import ConfigManager
 
-
 class TestThresholdConfigurationValidation:
     """Test configuration validation logic and error handling"""
     
