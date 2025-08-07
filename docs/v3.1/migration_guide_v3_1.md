@@ -8,6 +8,8 @@
 ## Phase 3c
 - **Implementation**
   - **✅ COMPLETE**
+## Phase 3d
+- **In Progress**
 
 ## Overview
 This guide outlines the complete recode of the configuration system for clean JSON + environment variable management without backward compatibility concerns.
@@ -15,7 +17,7 @@ This guide outlines the complete recode of the configuration system for clean JS
 ## Project Scope
 This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** configuration system.
 
-**Current Status**: 🎉 **PHASE 3C 100% COMPLETE**
+**Current Status**: 🎉 **PHASE 3D IN PROGRESS**
   - Clean v3.1 architecture with comprehensive threshold mapping configuration operational
 
 ## Design Philosophies and Core Principles
@@ -27,16 +29,15 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
     - We are working from the `v3.0` branch for `ash`.
     - https://github.com/The-Alphabet-Cartel/ash/tree/v3.0
   - We are working from the `ash-nlp` repository.
-    - We are working from the `v3.1` branch for `ash-nlp`.
-    - https://github.com/The-Alphabet-Cartel/ash-nlp/tree/v3.1
+    - We are working from the `v3.1-3d` branch for `ash-nlp`.
+    - https://github.com/The-Alphabet-Cartel/ash-nlp/tree/v3.1-3d
   - We keep track of progress for each phase in the associated tracker document.
     - These files are to be kept up to date with each milestone reached so that future work can be continued from them as needed.
     - We are working with the documentation files:
       - `docs/project_instructions_v3_1.md`
       - `docs/v3.1/migration_guide_v3_1.md`
-      - `docs/v3.1/*phase*/tracker.md`
-      - `docs/v3.1/*phase*/issues_tracker.md`
-      - `docs/v3.1/*phase*/testing_tracker.md`
+      - `docs/v3.1/phase/*phase*/*subPhase*/tracker.md`
+      - `docs/v3.1/phase/*phase*/*subPhase*/step_*step#*.md`
 
 ### 🏗️ **Clean v3.1 Architecture Principles**
 - **Dependency Injection**
@@ -53,6 +54,7 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
   - Centralized access to all system components
 - **Ongoing Documentation Updates**
   - Continuous updates to the documentation to allow for tracking of changes and accomplishments easily
+- **Refer To the `3_1_clean_architecture_charter.md` for further information**
 
 ## Technical Architecture
 ### 📁 **Final File Organization** (Phase 3c Complete)
@@ -105,8 +107,9 @@ ash/ash-nlp/
 |   |   │   │   │   └── tracker.md
 |   │   │   ├── 3/
 |   |   │   │   ├── d/
-|   |   │   │   |   ├── status_testing.md
-|   |   │   │   |   ├── status_update.md
+|   |   │   │   |   ├── step_1.md
+|   |   │   │   |   ├── step_2.md
+|   |   │   │   |   ├── step_3.md
 |   |   │   │   │   └── tracker.md
 |   │   │   └── 4/
 |   |   │       ├── a/
@@ -258,12 +261,13 @@ Migrate threshold and mapping logic from hardcoded constants to JSON configurati
 - **Learning System Integration**: Threshold optimization capabilities built-in
 - **Complete Configuration Externalization**: Zero hardcoded thresholds remaining
 
-## Future Phases
+## Current Phase
 ### Phase 3d: Environmental Variables Cleanup (Next)
 - **Scope**: Streamline and consolidate environment variables  
 - **Objective**: Remove duplicates and simplify configuration
 - **Components**: All project components environment variable audit and cleanup
 
+## Future Phases
 ### Phase 4a: Crisis Detection Audit (Future)
 - **Objective**: 
 - **Scope**: 
@@ -281,18 +285,7 @@ Migrate threshold and mapping logic from hardcoded constants to JSON configurati
 - **Performance optimization and caching**
 
 ## Conclusion
-**Phase 3c - ✅ COMPLETE AND OPERATIONAL**
-
-🎉 **MAJOR MILESTONE ACHIEVED**: Complete configuration externalization accomplished! The Alphabet Cartel's mental health crisis detection system now has fully configurable, mode-aware threshold management that can be tuned for optimal performance in production.
-
-### **System Capabilities Now Active:**
-- **Mode-Aware Crisis Detection**: Optimized thresholds for each ensemble approach (consensus, majority, weighted)
-- **Dynamic Staff Review**: Configurable review triggers ensuring appropriate human oversight
-- **Complete Configuration Control**: All crisis detection behavior configurable via JSON + environment variables
-- **Production-Ready Reliability**: Comprehensive validation ensuring system stability
-- **Learning System Integration**: Foundation for continuous threshold optimization
-
-**Ready for Phase 3d** 🚀
+**Phase 3d - IN PROGRESS**
 
 ---
 
