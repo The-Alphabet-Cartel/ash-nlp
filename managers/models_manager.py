@@ -114,8 +114,8 @@ class ModelsManager:
             config = {
                 # Flatten the models structure
                 'depression_model': models.get('depression', {}).get('name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-                'sentiment_model': models.get('sentiment', {}).get('name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-                'emotional_distress_model': models.get('emotional_distress', {}).get('name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'sentiment_model': models.get('sentiment', {}).get('name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'emotional_distress_model': models.get('emotional_distress', {}).get('name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'cache_dir': cache_dir,
                 'huggingface_token': hf_token,
                 'ensemble_mode': ensemble_mode,
@@ -145,8 +145,8 @@ class ModelsManager:
             
             return {
                 'depression_model': os.getenv('NLP_DEPRESSION_MODEL', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-                'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'sentiment_model': os.getenv('NLP_SENTIMENT_MODEL', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'emotional_distress_model': os.getenv('NLP_EMOTIONAL_DISTRESS_MODEL', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'cache_dir': os.getenv('NLP_MODEL_CACHE_DIR') or os.getenv('NLP_HUGGINGFACE_CACHE_DIR') or './models/cache',
                 'huggingface_token': hf_token,
                 'ensemble_mode': os.getenv('NLP_ENSEMBLE_MODE', 'majority'),
@@ -490,7 +490,7 @@ class ModelsManager:
 
     async def _load_sentiment_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the sentiment analysis model"""
-        model_name = self.model_config.get('sentiment_model', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli')
+        model_name = self.model_config.get('sentiment_model', 'Lowerated/lm6-deberta-v3-topic-sentiment')
         logger.info(f"📦 Loading Sentiment Model: {model_name}")
         
         try:
@@ -516,7 +516,7 @@ class ModelsManager:
 
     async def _load_emotional_distress_model(self, model_kwargs: Dict, loading_kwargs: Dict):
         """Load the emotional distress detection model"""
-        model_name = self.model_config.get('emotional_distress_model', 'Lowerated/lm6-deberta-v3-topic-sentiment')
+        model_name = self.model_config.get('emotional_distress_model', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli')
         logger.info(f"📦 Loading Emotional Distress Model: {model_name}")
         
         try:
