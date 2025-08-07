@@ -66,8 +66,8 @@
       "recommended": true,
       "models_used": {
         "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-        "sentiment": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli", 
-        "emotional_distress": "Lowerated/lm6-deberta-v3-topic-sentiment"
+        "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment", 
+        "emotional_distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
       },
       "labels": {
         "depression": [
