@@ -189,10 +189,12 @@ class ThresholdMappingManager:
             return default_value
 
     def _validate_configuration(self) -> None:
-        """Validate threshold configuration with fail-fast checking - DIAGNOSTIC VERSION"""
-        logger.debug(f"🔍 Starting validation. Processed config exists: {self._processed_config is not None}")
+        """Validate threshold configuration with fail-fast checking"""
+        logger.debug("🔍 _validate_configuration method called")
+        logger.debug(f"🔍 _processed_config exists: {self._processed_config is not None}")
         
         if not self._processed_config:
+            logger.debug("🔍 No processed config found, adding validation error")
             self._validation_errors.append("No configuration to validate")
             return
         
@@ -201,26 +203,27 @@ class ThresholdMappingManager:
         # Validate mode-specific thresholds
         if 'threshold_mapping_by_mode' in self._processed_config:
             modes = self._processed_config['threshold_mapping_by_mode']
-            logger.debug(f"🔍 Found modes: {list(modes.keys())}")
+            logger.debug(f"🔍 Found {len(modes)} modes to validate: {list(modes.keys())}")
             
             for mode, mode_config in modes.items():
-                logger.debug(f"🔍 Validating mode {mode}")
+                logger.debug(f"🔍 About to validate mode: {mode}")
                 self._validate_mode_thresholds(mode, mode_config)
         else:
-            logger.debug("🔍 No threshold_mapping_by_mode found")
+            logger.debug("🔍 No threshold_mapping_by_mode section found in config")
         
         # Validate shared configuration
         if 'shared_configuration' in self._processed_config:
-            logger.debug(f"🔍 Validating shared configuration")
+            logger.debug("🔍 Validating shared configuration section")
             self._validate_shared_configuration(self._processed_config['shared_configuration'])
         else:
-            logger.debug("🔍 No shared_configuration found")
+            logger.debug("🔍 No shared_configuration section found")
         
         # Cross-mode validation
+        logger.debug("🔍 Running cross-mode validation")
         self._validate_cross_mode_consistency()
         
         total_errors = len(self._validation_errors)
-        logger.debug(f"🔍 Validation complete. Total errors: {total_errors}")
+        logger.debug(f"🔍 Validation complete. Total errors found: {total_errors}")
         logger.debug(f"🔍 Error details: {self._validation_errors}")
         
         if self._validation_errors:
@@ -229,48 +232,55 @@ class ThresholdMappingManager:
             logger.info("✅ All threshold validation checks passed")
     
     def _validate_mode_thresholds(self, mode: str, mode_config: Dict[str, Any]) -> None:
-        """Validate thresholds for a specific ensemble mode with strict checking - DIAGNOSTIC VERSION"""
+        """Validate thresholds for a specific ensemble mode with strict checking"""
         mode_name = mode.upper()
-        logger.debug(f"🔍 Validating mode: {mode_name}, config: {mode_config}")
+        logger.debug(f"🔍 Validating mode: {mode_name}")
+        logger.debug(f"🔍 Mode config structure: {list(mode_config.keys()) if isinstance(mode_config, dict) else 'Not a dict'}")
         
         # Validate crisis level mapping
         if 'crisis_level_mapping' in mode_config:
             mapping = mode_config['crisis_level_mapping']
-            logger.debug(f"🔍 Validating crisis mapping: {mapping}")
+            logger.debug(f"🔍 Crisis level mapping found: {mapping}")
             
             # Validate each threshold individually
             for threshold_name, value in mapping.items():
-                logger.debug(f"🔍 Checking {threshold_name} = {value} (type: {type(value)})")
+                logger.debug(f"🔍 Validating {threshold_name} = {value} (type: {type(value).__name__})")
                 
                 # Type validation
                 if not isinstance(value, (int, float)):
                     error_msg = f"{mode_name} {threshold_name}: must be numeric, got {type(value).__name__}"
-                    logger.debug(f"❌ Type error: {error_msg}")
+                    logger.debug(f"❌ Type validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
                     continue
                 
                 # Range validation
                 if value < 0.0 or value > 1.0:
                     error_msg = f"{mode_name} {threshold_name}: {value} not in valid range [0.0, 1.0]"
-                    logger.debug(f"❌ Range error: {error_msg}")
+                    logger.debug(f"❌ Range validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
+                else:
+                    logger.debug(f"✅ {threshold_name} = {value} passed validation")
             
             # Ordering validation for crisis thresholds
             crisis_high = mapping.get('crisis_to_high')
             crisis_medium = mapping.get('crisis_to_medium')
             
-            logger.debug(f"🔍 Checking ordering: high={crisis_high}, medium={crisis_medium}")
+            logger.debug(f"🔍 Checking crisis threshold ordering: high={crisis_high}, medium={crisis_medium}")
             
             if (isinstance(crisis_high, (int, float)) and isinstance(crisis_medium, (int, float)) and 
                 crisis_high <= crisis_medium):
                 error_msg = f"{mode_name} crisis_to_high ({crisis_high}) must be > crisis_to_medium ({crisis_medium})"
-                logger.debug(f"❌ Ordering error: {error_msg}")
+                logger.debug(f"❌ Ordering validation failed: {error_msg}")
                 self._validation_errors.append(error_msg)
+            else:
+                logger.debug("✅ Crisis threshold ordering is valid")
+        else:
+            logger.debug(f"🔍 No crisis_level_mapping found in {mode_name} config")
         
         # Validate ensemble thresholds
         if 'ensemble_thresholds' in mode_config:
             thresholds = mode_config['ensemble_thresholds']
-            logger.debug(f"🔍 Validating ensemble thresholds: {thresholds}")
+            logger.debug(f"🔍 Ensemble thresholds found: {thresholds}")
             
             high = thresholds.get('high')
             medium = thresholds.get('medium')
@@ -279,17 +289,20 @@ class ThresholdMappingManager:
             # Type and range validation
             for name, value in [('high', high), ('medium', medium), ('low', low)]:
                 if value is not None:
-                    logger.debug(f"🔍 Checking ensemble {name} = {value} (type: {type(value)})")
+                    logger.debug(f"🔍 Validating ensemble {name} = {value} (type: {type(value).__name__})")
                     
                     if not isinstance(value, (int, float)):
                         error_msg = f"{mode_name} ensemble {name}: must be numeric, got {type(value).__name__}"
-                        logger.debug(f"❌ Ensemble type error: {error_msg}")
+                        logger.debug(f"❌ Ensemble type validation failed: {error_msg}")
                         self._validation_errors.append(error_msg)
                         continue
+                        
                     if value < 0.0 or value > 1.0:
                         error_msg = f"{mode_name} ensemble {name}: {value} not in valid range [0.0, 1.0]"
-                        logger.debug(f"❌ Ensemble range error: {error_msg}")
+                        logger.debug(f"❌ Ensemble range validation failed: {error_msg}")
                         self._validation_errors.append(error_msg)
+                    else:
+                        logger.debug(f"✅ Ensemble {name} = {value} passed validation")
             
             # Ordering validation: high > medium > low
             if (isinstance(high, (int, float)) and isinstance(medium, (int, float)) and isinstance(low, (int, float))):
@@ -297,87 +310,88 @@ class ThresholdMappingManager:
                 
                 if high <= medium:
                     error_msg = f"{mode_name} ensemble: high ({high}) must be > medium ({medium})"
-                    logger.debug(f"❌ Ensemble ordering error: {error_msg}")
+                    logger.debug(f"❌ Ensemble ordering validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
                 if medium <= low:
                     error_msg = f"{mode_name} ensemble: medium ({medium}) must be > low ({low})"
-                    logger.debug(f"❌ Ensemble ordering error: {error_msg}")
+                    logger.debug(f"❌ Ensemble ordering validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
+        else:
+            logger.debug(f"🔍 No ensemble_thresholds found in {mode_name} config")
         
-        logger.debug(f"🔍 Mode validation complete. Current errors: {len(self._validation_errors)}")
+        current_error_count = len(self._validation_errors)
+        logger.debug(f"🔍 Mode {mode_name} validation complete. Current total errors: {current_error_count}")
     
     def _validate_shared_configuration(self, shared_config: Dict[str, Any]) -> None:
-        """Validate shared configuration parameters with strict checking - DIAGNOSTIC VERSION"""
-        logger.debug(f"🔍 Validating shared config: {shared_config}")
+        """Validate shared configuration parameters with strict checking"""
+        logger.debug(f"🔍 Validating shared configuration: {list(shared_config.keys()) if isinstance(shared_config, dict) else 'Not a dict'}")
         
         # Validate staff review thresholds
         if 'staff_review' in shared_config:
             staff = shared_config['staff_review']
-            logger.debug(f"🔍 Validating staff review: {staff}")
+            logger.debug(f"🔍 Staff review config found: {staff}")
             
             medium_threshold = staff.get('medium_confidence_threshold')
             low_threshold = staff.get('low_confidence_threshold')
-            high_always = staff.get('high_always')
             
-            # Type and range validation
+            # Validate medium threshold
             if medium_threshold is not None:
-                logger.debug(f"🔍 Checking medium_threshold = {medium_threshold} (type: {type(medium_threshold)})")
+                logger.debug(f"🔍 Validating medium_confidence_threshold = {medium_threshold} (type: {type(medium_threshold).__name__})")
                 if not isinstance(medium_threshold, (int, float)):
                     error_msg = f"Staff review medium_confidence_threshold must be numeric, got {type(medium_threshold).__name__}"
-                    logger.debug(f"❌ Staff review type error: {error_msg}")
+                    logger.debug(f"❌ Staff review type validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
                 elif medium_threshold < 0.0 or medium_threshold > 1.0:
                     error_msg = f"Staff review medium_confidence_threshold ({medium_threshold}) must be between 0.0 and 1.0"
-                    logger.debug(f"❌ Staff review range error: {error_msg}")
+                    logger.debug(f"❌ Staff review range validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
             
+            # Validate low threshold
             if low_threshold is not None:
-                logger.debug(f"🔍 Checking low_threshold = {low_threshold} (type: {type(low_threshold)})")
+                logger.debug(f"🔍 Validating low_confidence_threshold = {low_threshold} (type: {type(low_threshold).__name__})")
                 if not isinstance(low_threshold, (int, float)):
                     error_msg = f"Staff review low_confidence_threshold must be numeric, got {type(low_threshold).__name__}"
-                    logger.debug(f"❌ Staff review type error: {error_msg}")
+                    logger.debug(f"❌ Staff review type validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
                 elif low_threshold < 0.0 or low_threshold > 1.0:
                     error_msg = f"Staff review low_confidence_threshold ({low_threshold}) must be between 0.0 and 1.0"
-                    logger.debug(f"❌ Staff review range error: {error_msg}")
+                    logger.debug(f"❌ Staff review range validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
             
             # Ordering validation
             if (isinstance(medium_threshold, (int, float)) and isinstance(low_threshold, (int, float)) and 
                 low_threshold <= medium_threshold):
                 error_msg = f"Staff review: low_confidence_threshold ({low_threshold}) must be > medium_confidence_threshold ({medium_threshold})"
-                logger.debug(f"❌ Staff review ordering error: {error_msg}")
+                logger.debug(f"❌ Staff review ordering validation failed: {error_msg}")
                 self._validation_errors.append(error_msg)
         
         # Validate learning system parameters
         if 'learning_system' in shared_config:
             learning = shared_config['learning_system']
-            logger.debug(f"🔍 Validating learning system: {learning}")
+            logger.debug(f"🔍 Learning system config found: {learning}")
             
             feedback_weight = learning.get('feedback_weight')
-            
             if feedback_weight is not None:
-                logger.debug(f"🔍 Checking feedback_weight = {feedback_weight} (type: {type(feedback_weight)})")
+                logger.debug(f"🔍 Validating feedback_weight = {feedback_weight} (type: {type(feedback_weight).__name__})")
                 if not isinstance(feedback_weight, (int, float)) or feedback_weight < 0.0 or feedback_weight > 1.0:
                     error_msg = f"Learning system feedback_weight ({feedback_weight}) must be between 0.0 and 1.0"
-                    logger.debug(f"❌ Learning system error: {error_msg}")
+                    logger.debug(f"❌ Learning system validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
         
         # Validate safety controls
         if 'safety_controls' in shared_config:
             safety = shared_config['safety_controls']
-            logger.debug(f"🔍 Validating safety controls: {safety}")
+            logger.debug(f"🔍 Safety controls config found: {safety}")
             
             safety_bias = safety.get('consensus_safety_bias')
-            
             if safety_bias is not None:
-                logger.debug(f"🔍 Checking safety_bias = {safety_bias} (type: {type(safety_bias)})")
+                logger.debug(f"🔍 Validating consensus_safety_bias = {safety_bias} (type: {type(safety_bias).__name__})")
                 if not isinstance(safety_bias, (int, float)) or safety_bias < 0.0 or safety_bias > 0.2:
                     error_msg = f"Safety controls consensus_safety_bias ({safety_bias}) must be between 0.0 and 0.2"
-                    logger.debug(f"❌ Safety controls error: {error_msg}")
+                    logger.debug(f"❌ Safety controls validation failed: {error_msg}")
                     self._validation_errors.append(error_msg)
         
-        logger.debug(f"🔍 Shared config validation complete. Current errors: {len(self._validation_errors)}")
+        logger.debug(f"🔍 Shared configuration validation complete. Current total errors: {len(self._validation_errors)}")
     
     def _validate_cross_mode_consistency(self) -> None:
         """Validate consistency across ensemble modes (only validates modes that are present)"""
