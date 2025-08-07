@@ -9,6 +9,7 @@ Clean v3.1 Architecture - NO backward compatibility
 import os
 import json
 import logging
+import copy
 from typing import Dict, Any, Optional, List
 from managers.config_manager import ConfigManager
 
@@ -72,7 +73,8 @@ class ThresholdMappingManager:
     
     def _apply_environment_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Apply environment variable overrides to configuration"""
-        processed_config = config.copy()
+        # Use deep copy to prevent mutation of original config
+        processed_config = copy.deepcopy(config)
         
         # Mode-specific overrides
         for mode in ['consensus', 'majority', 'weighted']:
@@ -119,7 +121,7 @@ class ThresholdMappingManager:
                         thresholds.get('low', 0.12)
                     ))
         
-        # Shared configuration overrides
+        # Shared configuration overrides with proper boolean parsing
         if 'shared_configuration' in processed_config:
             shared = processed_config['shared_configuration']
             
@@ -134,10 +136,11 @@ class ThresholdMappingManager:
                     'NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE',
                     staff_review.get('low_confidence_threshold', 0.75)
                 ))
-                staff_review['high_always'] = os.getenv(
+                # Use proper boolean parsing
+                staff_review['high_always'] = self._parse_boolean_env_var(
                     'NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS', 
-                    str(staff_review.get('high_always', True))
-                ).lower() == 'true'
+                    staff_review.get('high_always', True)
+                )
             
             # Learning system overrides
             if 'learning_system' in shared:
@@ -146,10 +149,10 @@ class ThresholdMappingManager:
                     'NLP_THRESHOLD_LEARNING_FEEDBACK_WEIGHT',
                     learning.get('feedback_weight', 0.1)
                 ))
-                learning['enable_threshold_learning'] = os.getenv(
+                learning['enable_threshold_learning'] = self._parse_boolean_env_var(
                     'NLP_THRESHOLD_LEARNING_ENABLED',
-                    str(learning.get('enable_threshold_learning', True))
-                ).lower() == 'true'
+                    learning.get('enable_threshold_learning', True)
+                )
             
             # Safety controls overrides
             if 'safety_controls' in shared:
@@ -158,13 +161,30 @@ class ThresholdMappingManager:
                     'NLP_THRESHOLD_SAFETY_BIAS',
                     safety.get('consensus_safety_bias', 0.03)
                 ))
-                safety['enable_safety_override'] = os.getenv(
+                safety['enable_safety_override'] = self._parse_boolean_env_var(
                     'NLP_THRESHOLD_ENABLE_SAFETY_OVERRIDE',
-                    str(safety.get('enable_safety_override', True))
-                ).lower() == 'true'
+                    safety.get('enable_safety_override', True)
+                )
         
         return processed_config
     
+    def _parse_boolean_env_var(self, env_var: str, default_value: bool) -> bool:
+        """Parse boolean environment variable with proper validation"""
+        env_value = os.getenv(env_var)
+        if env_value is None:
+            return default_value
+        
+        # Handle various boolean representations
+        env_lower = env_value.lower().strip()
+        if env_lower in ('true', '1', 'yes', 'on', 'enabled'):
+            return True
+        elif env_lower in ('false', '0', 'no', 'off', 'disabled'):
+            return False
+        else:
+            # Invalid boolean value should cause validation error
+            self._validation_errors.append(f"Invalid boolean value for {env_var}: '{env_value}' (expected true/false)")
+            return default_value
+
     def _validate_configuration(self) -> None:
         """Validate threshold configuration with fail-fast checking"""
         if not self._processed_config:
@@ -189,52 +209,109 @@ class ThresholdMappingManager:
             logger.info("✅ All threshold validation checks passed")
     
     def _validate_mode_thresholds(self, mode: str, mode_config: Dict[str, Any]) -> None:
-        """Validate thresholds for a specific ensemble mode"""
+        """Validate thresholds for a specific ensemble mode with strict checking"""
         mode_name = mode.upper()
         
         # Validate crisis level mapping
         if 'crisis_level_mapping' in mode_config:
             mapping = mode_config['crisis_level_mapping']
             
-            # Range validation
+            # Validate each threshold individually
             for threshold_name, value in mapping.items():
-                if not isinstance(value, (int, float)) or not (0.0 <= value <= 1.0):
+                # Type validation
+                if not isinstance(value, (int, float)):
+                    self._validation_errors.append(
+                        f"{mode_name} {threshold_name}: must be numeric, got {type(value).__name__}"
+                    )
+                    continue
+                
+                # Range validation
+                if value < 0.0 or value > 1.0:
                     self._validation_errors.append(
                         f"{mode_name} {threshold_name}: {value} not in valid range [0.0, 1.0]"
                     )
             
-            # Consistency validation
-            crisis_high = mapping.get('crisis_to_high', 0)
-            crisis_medium = mapping.get('crisis_to_medium', 0)
+            # Ordering validation for crisis thresholds
+            crisis_high = mapping.get('crisis_to_high', 0.5)
+            crisis_medium = mapping.get('crisis_to_medium', 0.3)
             
-            if crisis_high <= crisis_medium:
-                self._validation_errors.append(
-                    f"{mode_name} crisis_to_high ({crisis_high}) must be > crisis_to_medium ({crisis_medium})"
-                )
+            if isinstance(crisis_high, (int, float)) and isinstance(crisis_medium, (int, float)):
+                if crisis_high <= crisis_medium:
+                    self._validation_errors.append(
+                        f"{mode_name} crisis_to_high ({crisis_high}) must be > crisis_to_medium ({crisis_medium})"
+                    )
+            
+            # Validate mild crisis threshold reasonable range
+            mild_crisis_low = mapping.get('mild_crisis_to_low', 0.4)
+            if isinstance(mild_crisis_low, (int, float)):
+                if mild_crisis_low <= 0.1 or mild_crisis_low >= 0.8:
+                    self._validation_errors.append(
+                        f"{mode_name} mild_crisis_to_low ({mild_crisis_low}) should be between 0.1 and 0.8"
+                    )
+            
+            # Validate negative sentiment threshold
+            negative_low = mapping.get('negative_to_low', 0.7)
+            if isinstance(negative_low, (int, float)):
+                if negative_low <= 0.5 or negative_low >= 0.9:
+                    self._validation_errors.append(
+                        f"{mode_name} negative_to_low ({negative_low}) should be between 0.5 and 0.9"
+                    )
         
         # Validate ensemble thresholds
         if 'ensemble_thresholds' in mode_config:
             thresholds = mode_config['ensemble_thresholds']
             
-            high = thresholds.get('high', 0)
-            medium = thresholds.get('medium', 0)
-            low = thresholds.get('low', 0)
+            high = thresholds.get('high', 0.45)
+            medium = thresholds.get('medium', 0.25)
+            low = thresholds.get('low', 0.12)
             
-            if not (high > medium > low):
-                self._validation_errors.append(
-                    f"{mode_name} ensemble thresholds must be high > medium > low, got {high} > {medium} > {low}"
-                )
+            # Type and range validation
+            for name, value in [('high', high), ('medium', medium), ('low', low)]:
+                if not isinstance(value, (int, float)):
+                    self._validation_errors.append(f"{mode_name} ensemble {name}: must be numeric, got {type(value).__name__}")
+                    continue
+                if value < 0.0 or value > 1.0:
+                    self._validation_errors.append(f"{mode_name} ensemble {name}: {value} not in valid range [0.0, 1.0]")
+            
+            # Ordering validation: high > medium > low
+            if isinstance(high, (int, float)) and isinstance(medium, (int, float)) and isinstance(low, (int, float)):
+                if high <= medium:
+                    self._validation_errors.append(
+                        f"{mode_name} ensemble: high ({high}) must be > medium ({medium})"
+                    )
+                if medium <= low:
+                    self._validation_errors.append(
+                        f"{mode_name} ensemble: medium ({medium}) must be > low ({low})"
+                    )
     
     def _validate_shared_configuration(self, shared_config: Dict[str, Any]) -> None:
-        """Validate shared configuration parameters"""
+        """Validate shared configuration parameters with strict checking"""
         
         # Validate staff review thresholds
         if 'staff_review' in shared_config:
             staff = shared_config['staff_review']
-            medium_threshold = staff.get('medium_confidence_threshold', 0)
-            low_threshold = staff.get('low_confidence_threshold', 0)
             
-            if medium_threshold >= low_threshold:
+            medium_threshold = staff.get('medium_confidence_threshold', 0.45)
+            low_threshold = staff.get('low_confidence_threshold', 0.75)
+            high_always = staff.get('high_always', True)
+            
+            # Type validation
+            if not isinstance(medium_threshold, (int, float)):
+                self._validation_errors.append(f"Staff review medium_confidence_threshold must be numeric, got {type(medium_threshold).__name__}")
+            elif medium_threshold < 0.0 or medium_threshold > 1.0:
+                self._validation_errors.append(f"Staff review medium_confidence_threshold ({medium_threshold}) must be between 0.0 and 1.0")
+            
+            if not isinstance(low_threshold, (int, float)):
+                self._validation_errors.append(f"Staff review low_confidence_threshold must be numeric, got {type(low_threshold).__name__}")
+            elif low_threshold < 0.0 or low_threshold > 1.0:
+                self._validation_errors.append(f"Staff review low_confidence_threshold ({low_threshold}) must be between 0.0 and 1.0")
+            
+            if not isinstance(high_always, bool):
+                self._validation_errors.append(f"Staff review high_always must be boolean, got {type(high_always).__name__}")
+            
+            # Ordering validation
+            if (isinstance(medium_threshold, (int, float)) and isinstance(low_threshold, (int, float)) and 
+                low_threshold <= medium_threshold):
                 self._validation_errors.append(
                     f"Staff review: low_confidence_threshold ({low_threshold}) must be > medium_confidence_threshold ({medium_threshold})"
                 )
@@ -242,44 +319,90 @@ class ThresholdMappingManager:
         # Validate learning system parameters
         if 'learning_system' in shared_config:
             learning = shared_config['learning_system']
-            feedback_weight = learning.get('feedback_weight', 0)
             
-            if not (0.0 <= feedback_weight <= 1.0):
-                self._validation_errors.append(
-                    f"Learning system feedback_weight ({feedback_weight}) must be in range [0.0, 1.0]"
-                )
+            feedback_weight = learning.get('feedback_weight', 0.1)
+            min_samples = learning.get('min_samples_for_update', 5)
+            adjustment_limit = learning.get('confidence_adjustment_limit', 0.05)
+            
+            if not isinstance(feedback_weight, (int, float)) or feedback_weight < 0.0 or feedback_weight > 1.0:
+                self._validation_errors.append(f"Learning system feedback_weight ({feedback_weight}) must be between 0.0 and 1.0")
+            
+            if not isinstance(min_samples, int) or min_samples < 1 or min_samples > 100:
+                self._validation_errors.append(f"Learning system min_samples_for_update ({min_samples}) must be between 1 and 100")
+            
+            if not isinstance(adjustment_limit, (int, float)) or adjustment_limit < 0.0 or adjustment_limit > 0.5:
+                self._validation_errors.append(f"Learning system confidence_adjustment_limit ({adjustment_limit}) must be between 0.0 and 0.5")
         
         # Validate safety controls
         if 'safety_controls' in shared_config:
             safety = shared_config['safety_controls']
-            safety_bias = safety.get('consensus_safety_bias', 0)
             
-            if not (0.0 <= safety_bias <= 0.1):
-                self._validation_errors.append(
-                    f"Safety bias ({safety_bias}) should be in range [0.0, 0.1]"
-                )
+            safety_bias = safety.get('consensus_safety_bias', 0.03)
+            min_response = safety.get('minimum_response_threshold', 0.10)
+            
+            if not isinstance(safety_bias, (int, float)) or safety_bias < 0.0 or safety_bias > 0.2:
+                self._validation_errors.append(f"Safety controls consensus_safety_bias ({safety_bias}) must be between 0.0 and 0.2")
+            
+            if not isinstance(min_response, (int, float)) or min_response < 0.0 or min_response > 0.5:
+                self._validation_errors.append(f"Safety controls minimum_response_threshold ({min_response}) must be between 0.0 and 0.5")
     
     def _validate_cross_mode_consistency(self) -> None:
         """Validate consistency across ensemble modes"""
-        if 'threshold_mapping_by_mode' not in self._processed_config:
+        if not self._processed_config or 'threshold_mapping_by_mode' not in self._processed_config:
             return
         
         modes = self._processed_config['threshold_mapping_by_mode']
         
-        # Validate that weighted mode has higher thresholds (it should be more conservative)
-        if 'weighted' in modes and 'consensus' in modes:
-            weighted_high = modes['weighted'].get('crisis_level_mapping', {}).get('crisis_to_high', 0)
-            consensus_high = modes['consensus'].get('crisis_level_mapping', {}).get('crisis_to_high', 0)
+        # Check that all required modes are present
+        required_modes = ['consensus', 'majority', 'weighted']
+        for mode in required_modes:
+            if mode not in modes:
+                self._validation_errors.append(f"Missing configuration for required mode: {mode}")
+        
+        # Validate reasonable consistency between modes
+        if len(modes) >= 2:
+            crisis_high_values = []
+            crisis_medium_values = []
             
-            if weighted_high <= consensus_high:
-                logger.warning(
-                    f"⚠️ Weighted mode crisis_to_high ({weighted_high}) should typically be > "
-                    f"consensus mode ({consensus_high}) due to depression model dominance"
-                )
+            for mode, config in modes.items():
+                if 'crisis_level_mapping' in config:
+                    crisis_mapping = config['crisis_level_mapping']
+                    high_val = crisis_mapping.get('crisis_to_high')
+                    medium_val = crisis_mapping.get('crisis_to_medium')
+                    
+                    if isinstance(high_val, (int, float)):
+                        crisis_high_values.append(high_val)
+                    if isinstance(medium_val, (int, float)):
+                        crisis_medium_values.append(medium_val)
+            
+            # Check for reasonable consistency (not more than 0.3 difference)
+            if len(crisis_high_values) >= 2:
+                high_range = max(crisis_high_values) - min(crisis_high_values)
+                if high_range > 0.3:
+                    self._validation_errors.append(
+                        f"Crisis high thresholds vary too much across modes: range = {high_range:.3f} (max = 0.3)"
+                    )
+            
+            if len(crisis_medium_values) >= 2:
+                medium_range = max(crisis_medium_values) - min(crisis_medium_values)
+                if medium_range > 0.3:
+                    self._validation_errors.append(
+                        f"Crisis medium thresholds vary too much across modes: range = {medium_range:.3f} (max = 0.3)"
+                    )
     
     def _should_fail_fast(self) -> bool:
         """Determine if configuration errors should cause startup failure"""
-        return os.getenv('NLP_THRESHOLD_VALIDATION_FAIL_ON_INVALID', 'true').lower() == 'true'
+        fail_fast_env = os.getenv('NLP_THRESHOLD_VALIDATION_FAIL_ON_INVALID')
+        if fail_fast_env is not None:
+            # Use proper boolean parsing
+            env_lower = fail_fast_env.lower().strip()
+            if env_lower in ('true', '1', 'yes', 'on', 'enabled'):
+                return True
+            elif env_lower in ('false', '0', 'no', 'off', 'disabled'):
+                return False
+        
+        # Default to True (fail-fast enabled by default)
+        return True
     
     def get_current_ensemble_mode(self) -> str:
         """Get the current ensemble mode from ModelEnsembleManager"""
