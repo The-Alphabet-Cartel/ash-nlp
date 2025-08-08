@@ -1,0 +1,93 @@
+{
+  "_metadata": {
+    "version": "3.1d-step5",
+    "description": "Phase 3d Step 5: Server & Infrastructure Configuration",
+    "phase": "3d",
+    "step": "5",
+    "clean_architecture_version": "v3.1",
+    "last_updated": "2025-08-07",
+    "consolidation_notes": "Eliminates 5+ duplicate server variables, standardizes naming"
+  },
+  "server_configuration": {
+    "network_settings": {
+      "host": "${NLP_SERVER_HOST}",
+      "workers": "${NLP_SERVER_WORKERS}",
+      "reload_on_changes": "${NLP_SERVER_RELOAD_ON_CHANGES}",
+      "port_note": "Port managed by GLOBAL_NLP_API_PORT (ecosystem requirement)"
+    },
+    "performance_settings": {
+      "max_concurrent_requests": "${NLP_SERVER_MAX_CONCURRENT_REQUESTS}",
+      "request_timeout": "${NLP_SERVER_REQUEST_TIMEOUT}",
+      "worker_timeout": "${NLP_SERVER_WORKER_TIMEOUT}"
+    },
+    "security_settings": {
+      "rate_limiting": {
+        "requests_per_minute": "${NLP_SECURITY_REQUESTS_PER_MINUTE}",
+        "requests_per_hour": "${NLP_SECURITY_REQUESTS_PER_HOUR}",
+        "burst_limit": "${NLP_SECURITY_BURST_LIMIT}"
+      },
+      "access_control": {
+        "allowed_ips_note": "Managed by GLOBAL_ALLOWED_IPS (ecosystem requirement)",
+        "cors_enabled_note": "Managed by GLOBAL_ENABLE_CORS (ecosystem requirement)"
+      }
+    },
+    "operational_settings": {
+      "health_check_interval": "${NLP_SERVER_HEALTH_CHECK_INTERVAL}",
+      "graceful_shutdown_timeout": "${NLP_SERVER_SHUTDOWN_TIMEOUT}",
+      "startup_timeout": "${NLP_SERVER_STARTUP_TIMEOUT}"
+    }
+  },
+  "defaults": {
+    "network_settings": {
+      "host": "0.0.0.0",
+      "workers": 1,
+      "reload_on_changes": false
+    },
+    "performance_settings": {
+      "max_concurrent_requests": 20,
+      "request_timeout": 40,
+      "worker_timeout": 60
+    },
+    "security_settings": {
+      "rate_limiting": {
+        "requests_per_minute": 120,
+        "requests_per_hour": 2000,
+        "burst_limit": 150
+      }
+    },
+    "operational_settings": {
+      "health_check_interval": 30,
+      "graceful_shutdown_timeout": 10,
+      "startup_timeout": 120
+    }
+  },
+  "variable_consolidation": {
+    "eliminated_duplicates": [
+      "NLP_SERVICE_HOST -> NLP_SERVER_HOST",
+      "NLP_HOST -> NLP_SERVER_HOST", 
+      "NLP_SERVICE_PORT -> Use GLOBAL_NLP_API_PORT",
+      "NLP_PORT -> Use GLOBAL_NLP_API_PORT",
+      "NLP_UVICORN_WORKERS -> NLP_SERVER_WORKERS",
+      "NLP_MAX_CONCURRENT_REQUESTS -> NLP_SERVER_MAX_CONCURRENT_REQUESTS"
+    ],
+    "preserved_globals": [
+      "GLOBAL_NLP_API_PORT",
+      "GLOBAL_ALLOWED_IPS", 
+      "GLOBAL_ENABLE_CORS"
+    ],
+    "new_standardized_variables": [
+      "NLP_SERVER_HOST",
+      "NLP_SERVER_WORKERS",
+      "NLP_SERVER_RELOAD_ON_CHANGES",
+      "NLP_SERVER_MAX_CONCURRENT_REQUESTS",
+      "NLP_SERVER_REQUEST_TIMEOUT",
+      "NLP_SERVER_WORKER_TIMEOUT",
+      "NLP_SECURITY_REQUESTS_PER_MINUTE",
+      "NLP_SECURITY_REQUESTS_PER_HOUR",
+      "NLP_SECURITY_BURST_LIMIT",
+      "NLP_SERVER_HEALTH_CHECK_INTERVAL",
+      "NLP_SERVER_SHUTDOWN_TIMEOUT",
+      "NLP_SERVER_STARTUP_TIMEOUT"
+    ]
+  }
+}
