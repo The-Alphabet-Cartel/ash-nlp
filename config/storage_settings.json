@@ -2,8 +2,8 @@
   "storage_configuration": {
     "version": "3.1d",
     "architecture": "clean-v3.1-unified",
-    "description": "Enhanced unified storage configuration - consolidates ALL storage directory variables",
-    "documentation": "Phase 3d Step 6: Enhanced with additional storage paths and comprehensive validation",
+    "description": "Enhanced unified storage configuration - includes HuggingFace cache management",
+    "documentation": "Phase 3d Step 6: Added HuggingFace cache configuration following NLP_STORAGE_* naming convention",
     "directories": {
       "description": "Primary storage directories - consolidated from multiple duplicate variables",
       "data_directory": "${NLP_STORAGE_DATA_DIR}",
@@ -24,7 +24,7 @@
     },
     "cache_settings": {
       "description": "Caching configuration and storage management",
-      "huggingface_cache": "${NLP_STORAGE_MODELS_DIR}",
+      "huggingface_cache": "${NLP_STORAGE_HUGGINGFACE_CACHE}",
       "analysis_cache": "${NLP_STORAGE_CACHE_DIR}",
       "enable_model_caching": "${NLP_STORAGE_ENABLE_MODEL_CACHE}",
       "enable_analysis_caching": "${NLP_STORAGE_ENABLE_ANALYSIS_CACHE}",
@@ -119,6 +119,7 @@
     },
     "phase_3d_enhancements": {
       "step_6_additions": [
+        "huggingface_cache - Clean v3.1 compliant HuggingFace cache configuration",
         "cache_directory - Consolidates analysis cache paths",
         "temp_directory - Consolidates temporary file storage",
         "backup_directory - New backup functionality",
@@ -127,11 +128,12 @@
         "Enhanced validation - Disk space and permission checks"
       ],
       "variables_consolidated": [
+        "Multiple HF_* variables → NLP_STORAGE_HUGGINGFACE_CACHE",
         "NLP_ANALYSIS_CACHE_DIR → NLP_STORAGE_CACHE_DIR",
         "NLP_TEMP_DIR → NLP_STORAGE_TEMP_DIR",
         "Added comprehensive backup and cleanup variables"
       ],
-      "architecture_compliance": "Clean v3.1 - Factory functions and dependency injection"
+      "architecture_compliance": "Clean v3.1 - Single variable per function, unified naming convention"
     }
   }
 }
