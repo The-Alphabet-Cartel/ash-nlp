@@ -393,7 +393,8 @@ class HealthResponse(BaseModel):
     phase_2c_status: str
     phase_3a_status: str
     phase_3b_status: str
-    phase_3c_status: str  # Phase 3c addition
+    phase_3c_status: str
+    phase_3d_status: str
 
 # ============================================================================
 # FastAPI Application Setup - Clean v3.1 Phase 3c
