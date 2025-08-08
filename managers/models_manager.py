@@ -409,14 +409,6 @@ class ModelsManager:
             logger.info("✅ Models already loaded")
             return
 
-        # NOW import transformers, after cache is set up
-        try:
-            from transformers import pipeline, AutoConfig
-            logger.debug("📦 Transformers imported successfully after cache setup")
-        except ImportError as e:
-            logger.error(f"❌ Failed to import transformers: {e}")
-            raise
-
         try:
             # Get the arguments that the model loading methods expect
             model_kwargs = self._get_model_kwargs()
@@ -517,6 +509,14 @@ class ModelsManager:
         model_name = self.model_config.get('depression_model', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0')
         logger.info(f"📦 Loading Depression Model: {model_name}")
         
+        # NOW import transformers, after cache is set up
+        try:
+            from transformers import pipeline, AutoConfig
+            logger.debug("📦 Transformers imported successfully after cache setup")
+        except ImportError as e:
+            logger.error(f"❌ Failed to import transformers: {e}")
+            raise
+
         try:
             # Ensure authentication is set up before loading
             self._setup_huggingface_auth()
@@ -543,6 +543,14 @@ class ModelsManager:
         model_name = self.model_config.get('sentiment_model', 'Lowerated/lm6-deberta-v3-topic-sentiment')
         logger.info(f"📦 Loading Sentiment Model: {model_name}")
         
+        # NOW import transformers, after cache is set up
+        try:
+            from transformers import pipeline, AutoConfig
+            logger.debug("📦 Transformers imported successfully after cache setup")
+        except ImportError as e:
+            logger.error(f"❌ Failed to import transformers: {e}")
+            raise
+
         try:
             # Ensure authentication is set up before loading
             self._setup_huggingface_auth()
@@ -569,6 +577,14 @@ class ModelsManager:
         model_name = self.model_config.get('emotional_distress_model', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli')
         logger.info(f"📦 Loading Emotional Distress Model: {model_name}")
         
+        # NOW import transformers, after cache is set up
+        try:
+            from transformers import pipeline, AutoConfig
+            logger.debug("📦 Transformers imported successfully after cache setup")
+        except ImportError as e:
+            logger.error(f"❌ Failed to import transformers: {e}")
+            raise
+
         try:
             # Ensure authentication is set up before loading
             self._setup_huggingface_auth()
