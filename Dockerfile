@@ -29,11 +29,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY --chown=1001:1001 . .
+COPY --chown=nlp:nlp . .
 
 # Set proper permissions on working directories
 RUN chmod -R 755 /app && \
-    chmod -R 775 ./logs ./data ./learning_data ./cache ./tmp ./backups
+    chmod -R 775 ./models ./logs ./data ./learning_data ./cache ./tmp ./backups
 
 # Switch to non-root user
 USER nlp
