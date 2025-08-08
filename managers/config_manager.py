@@ -60,6 +60,27 @@ class ConfigManager:
             value = os.getenv(env_var)
             logger.debug(f"   {env_var}: {value}")
     
+    def get_ensemble_mode(self) -> str:
+        """
+        Get current ensemble mode setting
+        Phase 3d: Standardized ensemble mode access
+        """
+        logger.debug("🔍 Getting ensemble mode...")
+        
+        config = self.load_config_file('model_ensemble')
+        
+        if config:
+            # Try to get from model ensemble configuration
+            ensemble_mode = config.get('model_ensemble', {}).get('ensemble_settings', {}).get('mode')
+            if ensemble_mode:
+                logger.debug(f"✅ Ensemble mode from JSON: {ensemble_mode}")
+                return ensemble_mode
+        
+        # Fallback to environment variable
+        ensemble_mode = os.getenv('NLP_ENSEMBLE_MODE', 'consensus')
+        logger.debug(f"🔧 Ensemble mode from environment: {ensemble_mode}")
+        return ensemble_mode
+
     def get_hardware_configuration(self) -> Dict[str, Any]:
         """
         Get hardware configuration settings
