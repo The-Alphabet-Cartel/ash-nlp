@@ -117,12 +117,28 @@ class LoggingConfigManager:
             }
         }
     
-    def _parse_bool(self, value: str) -> bool:
-        """Parse boolean values from environment variables"""
+    def _parse_bool(self, value) -> bool:
+        """
+        Enhanced boolean parser to handle various input types
+        """
+        if value is None:
+            return False
         if isinstance(value, bool):
             return value
         if isinstance(value, str):
-            return value.lower() in ('true', '1', 'yes', 'on')
+            # Handle string representations
+            lower_val = value.lower().strip()
+            if lower_val in ('true', '1', 'yes', 'on', 'enabled'):
+                return True
+            elif lower_val in ('false', '0', 'no', 'off', 'disabled'):
+                return False
+            else:
+                # For any other string, try to convert to bool
+                return bool(value) if value else False
+        if isinstance(value, (int, float)):
+            return bool(value)
+        
+        # For any other type, convert to bool
         return bool(value)
     
     def _validate_configuration(self):
@@ -205,47 +221,46 @@ class LoggingConfigManager:
         Get detailed logging settings for enhanced system monitoring
         
         Returns:
-            Dictionary with detailed logging configuration
+            Dictionary with detailed logging configuration (with proper boolean values)
         """
         try:
             if not self._logging_config:
                 logger.warning("⚠️ No logging configuration available, using defaults")
                 return {
-                    'enable_detailed': self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true')),
-                    'include_raw_labels': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true')),
-                    'analysis_steps': self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false')),
-                    'performance_metrics': self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true')),
-                    'include_reasoning': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true'))
+                    'enable_detailed': True,
+                    'include_raw_labels': True,
+                    'analysis_steps': False,
+                    'performance_metrics': True,
+                    'include_reasoning': True
                 }
             
             logging_config = self._logging_config.get('logging_configuration', {})
             detailed_settings = logging_config.get('detailed_logging', {})
             
-            result = {
-                'enable_detailed': detailed_settings.get('enable_detailed', 
-                                                       self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true'))),
-                'include_raw_labels': detailed_settings.get('include_raw_labels', 
-                                                           self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true'))),
-                'analysis_steps': detailed_settings.get('analysis_steps', 
-                                                       self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false'))),
-                'performance_metrics': detailed_settings.get('performance_metrics', 
-                                                            self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true'))),
-                'include_reasoning': detailed_settings.get('include_reasoning', 
-                                                          self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true')))
-            }
+            # Ensure all values are properly converted to booleans
+            result = {}
+            for key, default_value in [
+                ('enable_detailed', True),
+                ('include_raw_labels', True),
+                ('analysis_steps', False),
+                ('performance_metrics', True),
+                ('include_reasoning', True)
+            ]:
+                raw_value = detailed_settings.get(key, default_value)
+                result[key] = self._parse_bool(raw_value)
             
             logger.debug(f"🔍 Detailed logging settings: {result}")
             return result
             
         except Exception as e:
             logger.error(f"❌ Error getting detailed logging settings: {e}")
-            # Return safe defaults with environment fallbacks
+            # Return safe defaults with proper booleans
             return {
-                'enable_detailed': self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true')),
-                'include_raw_labels': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true')),
-                'analysis_steps': self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false')),
-                'performance_metrics': self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true')),
-                'include_reasoning': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true'))
+                'enable_detailed': True,
+                'include_raw_labels': True,
+                'analysis_steps': False,
+                'performance_metrics': True,
+                'include_reasoning': True
             }
 
     def get_component_logging_settings(self) -> Dict[str, Any]:
@@ -253,59 +268,50 @@ class LoggingConfigManager:
         Get component-specific logging settings for different system parts
         
         Returns:
-            Dictionary with component logging configuration
+            Dictionary with component logging configuration (with proper boolean values)
         """
         try:
             if not self._logging_config:
                 logger.warning("⚠️ No logging configuration available, using defaults")
                 return {
-                    'threshold_changes': self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true')),
-                    'model_disagreements': self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true')),
-                    'staff_review_triggers': self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true')),
-                    'pattern_adjustments': self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true')),
-                    'learning_updates': self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true')),
-                    'label_mappings': self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true')),
-                    'ensemble_decisions': self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true')),
-                    'crisis_detection': self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true'))
+                    'threshold_changes': True,
+                    'model_disagreements': True,
+                    'staff_review_triggers': True,
+                    'pattern_adjustments': True,
+                    'learning_updates': True,
+                    'label_mappings': True,
+                    'ensemble_decisions': True,
+                    'crisis_detection': True
                 }
             
             logging_config = self._logging_config.get('logging_configuration', {})
             component_settings = logging_config.get('component_logging', {})
             
-            result = {
-                'threshold_changes': component_settings.get('threshold_changes', 
-                                                           self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true'))),
-                'model_disagreements': component_settings.get('model_disagreements', 
-                                                             self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true'))),
-                'staff_review_triggers': component_settings.get('staff_review_triggers', 
-                                                               self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true'))),
-                'pattern_adjustments': component_settings.get('pattern_adjustments', 
-                                                             self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true'))),
-                'learning_updates': component_settings.get('learning_updates', 
-                                                          self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true'))),
-                'label_mappings': component_settings.get('label_mappings', 
-                                                        self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true'))),
-                'ensemble_decisions': component_settings.get('ensemble_decisions', 
-                                                            self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true'))),
-                'crisis_detection': component_settings.get('crisis_detection', 
-                                                          self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true')))
-            }
+            # Ensure all values are properly converted to booleans
+            result = {}
+            for key in [
+                'threshold_changes', 'model_disagreements', 'staff_review_triggers',
+                'pattern_adjustments', 'learning_updates', 'label_mappings',
+                'ensemble_decisions', 'crisis_detection'
+            ]:
+                raw_value = component_settings.get(key, True)
+                result[key] = self._parse_bool(raw_value)
             
             logger.debug(f"🔍 Component logging settings: {result}")
             return result
             
         except Exception as e:
             logger.error(f"❌ Error getting component logging settings: {e}")
-            # Return safe defaults with environment fallbacks
+            # Return safe defaults with proper booleans
             return {
-                'threshold_changes': self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true')),
-                'model_disagreements': self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true')),
-                'staff_review_triggers': self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true')),
-                'pattern_adjustments': self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true')),
-                'learning_updates': self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true')),
-                'label_mappings': self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true')),
-                'ensemble_decisions': self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true')),
-                'crisis_detection': self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true'))
+                'threshold_changes': True,
+                'model_disagreements': True,
+                'staff_review_triggers': True,
+                'pattern_adjustments': True,
+                'learning_updates': True,
+                'label_mappings': True,
+                'ensemble_decisions': True,
+                'crisis_detection': True
             }
     
     def get_development_logging_settings(self) -> Dict[str, Any]:
@@ -356,8 +362,10 @@ class LoggingConfigManager:
         """
         try:
             component_settings = self.get_component_logging_settings()
-            result = component_settings.get(component_name, True)  # Default to True
-            logger.debug(f"🔍 Component logging check for '{component_name}': {result}")
+            raw_value = component_settings.get(component_name, True)
+            result = self._parse_bool(raw_value)
+            
+            logger.debug(f"🔍 Component logging check for '{component_name}': {raw_value} -> {result} (type: {type(result)})")
             return result
         except Exception as e:
             logger.warning(f"⚠️ Error checking component logging for '{component_name}': {e}")
@@ -372,8 +380,10 @@ class LoggingConfigManager:
         """
         try:
             detailed_settings = self.get_detailed_logging_settings()
-            result = detailed_settings.get('enable_detailed', True)  # Default to True
-            logger.debug(f"🔍 Detailed logging check: {result}")
+            raw_value = detailed_settings.get('enable_detailed', True)
+            result = self._parse_bool(raw_value)
+            
+            logger.debug(f"🔍 Detailed logging check: {raw_value} -> {result} (type: {type(result)})")
             return result
         except Exception as e:
             logger.warning(f"⚠️ Error checking detailed logging: {e}")
@@ -388,8 +398,10 @@ class LoggingConfigManager:
         """
         try:
             detailed_settings = self.get_detailed_logging_settings()
-            result = detailed_settings.get('include_reasoning', True)  # Default to True
-            logger.debug(f"🔍 Include reasoning check: {result}")
+            raw_value = detailed_settings.get('include_reasoning', True)
+            result = self._parse_bool(raw_value)
+            
+            logger.debug(f"🔍 Include reasoning check: {raw_value} -> {result} (type: {type(result)})")
             return result
         except Exception as e:
             logger.warning(f"⚠️ Error checking include reasoning: {e}")
@@ -465,6 +477,30 @@ class LoggingConfigManager:
             'configuration_source': 'JSON with ENV overrides' if self._logging_config else 'ENV fallback'
         }
 
+    def debug_convenience_methods(self):
+        """Debug function to check what convenience methods are returning"""
+        logger = logging.getLogger(__name__)
+        
+        try:
+            detailed_settings = self.get_detailed_logging_settings()
+            logger.info(f"🔍 detailed_settings type: {type(detailed_settings)}")
+            logger.info(f"🔍 detailed_settings content: {detailed_settings}")
+            
+            enable_detailed = detailed_settings.get('enable_detailed', True)
+            logger.info(f"🔍 enable_detailed type: {type(enable_detailed)}")
+            logger.info(f"🔍 enable_detailed value: {enable_detailed}")
+            
+            # The issue is likely that the configuration is returning strings instead of booleans
+            if isinstance(enable_detailed, str):
+                result = enable_detailed.lower() in ('true', '1', 'yes', 'on')
+                logger.info(f"🔍 Converted string '{enable_detailed}' to boolean: {result}")
+                return result
+            else:
+                return bool(enable_detailed)
+                
+        except Exception as e:
+            logger.error(f"❌ Debug error: {e}")
+            return True
 
 # ========================================================================
 # FACTORY FUNCTION - CLEAN V3.1 ARCHITECTURE REQUIREMENT
