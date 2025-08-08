@@ -25,6 +25,7 @@ from managers.zero_shot_manager import ZeroShotManager
 from managers.pydantic_manager import PydanticManager
 from managers.models_manager import ModelsManager, create_models_manager
 from analysis.crisis_analyzer import CrisisAnalyzer
+from managers.server_config_manager import create_server_config_manager
 
 # ============================================================================
 # LOGGING SETUP
@@ -75,12 +76,13 @@ models_manager: Optional[ModelsManager] = None
 pydantic_manager: Optional[PydanticManager] = None
 crisis_analyzer: Optional[CrisisAnalyzer] = None
 learning_manager = None
+server_config_manager = None  # Phase 3d Step 5
 
 async def initialize_components_clean_v3_1():
     """Initialize all components with clean v3.1 architecture - Phase 3c Complete"""
     global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
     global models_manager, pydantic_manager, crisis_analyzer, learning_manager
-    global analysis_parameters_manager, threshold_mapping_manager  # Phase 3b & 3c
+    global analysis_parameters_manager, threshold_mapping_manager, server_config_manager  # Phase 3b & 3c
     
     try:
         logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3c Complete...")
@@ -224,6 +226,27 @@ async def initialize_components_clean_v3_1():
             logger.error(f"❌ SettingsManager initialization failed: {e}")
             raise RuntimeError(f"SettingsManager initialization failed: {e}")
         
+        # ========================================================================
+        # STEP 6.5: Initialize ServerConfigManager - Phase 3d Step 5 (Simple Integration)
+        # ========================================================================
+        logger.info("🖥️ Initializing ServerConfigManager - Phase 3d Step 5...")
+        
+        try:
+            server_config_manager = create_server_config_manager(config_manager)
+            
+            # Basic validation (don't fail startup on warnings)
+            validation = server_config_manager.validate_server_configuration()
+            if validation['warnings']:
+                logger.warning("⚠️ Server configuration warnings:")
+                for warning in validation['warnings']:
+                    logger.warning(f"   - {warning}")
+            
+            logger.info("✅ ServerConfigManager initialized (available for health checks and API endpoints)")
+            
+        except Exception as e:
+            logger.warning(f"⚠️ ServerConfigManager initialization failed (non-critical): {e}")
+            server_config_manager = None
+
         # ========================================================================
         # STEP 7: Initialize CrisisAnalyzer with ALL Managers - Phase 3c Complete
         # ========================================================================
@@ -530,7 +553,8 @@ async def health_check():
             'pydantic_manager': pydantic_manager is not None,
             'crisis_pattern_manager': crisis_pattern_manager is not None,
             'analysis_parameters_manager': analysis_parameters_manager is not None,
-            'threshold_mapping_manager': threshold_mapping_manager is not None  # Phase 3c key indicator
+            'threshold_mapping_manager': threshold_mapping_manager is not None,
+            'server_config_manager': server_config_manager is not None  # NEW Phase 3d Step 5
         }
         
         # Configuration status - Phase 3c enhanced with expected test indicators
@@ -574,7 +598,8 @@ async def health_check():
         manager_status = {
             'pattern_analysis_available': crisis_pattern_manager is not None,
             'parameter_analysis_available': analysis_parameters_manager is not None,
-            'threshold_aware_analysis': threshold_mapping_manager is not None,  # Test expects this key indicator
+            'threshold_aware_analysis': threshold_mapping_manager is not None,
+            'server_config_available': server_config_manager is not None,  # NEW Phase 3d Step 5
             'three_model_ensemble': model_loaded,
             'crisis_detection_operational': all([
                 crisis_pattern_manager is not None,
@@ -766,24 +791,29 @@ async def debug_threshold_modes():
 if __name__ == "__main__":
     import uvicorn
     
-    logger.info("🚀 Starting Ash-NLP Crisis Detection API - Phase 3c Complete")
+    logger.info("🚀 Starting Ash-NLP Crisis Detection API - Phase 3d Step 5")
     logger.info("🎯 Features: Three Zero-Shot Model Ensemble + Crisis Patterns + Mode-Aware Thresholds")
     
-    # Get configuration from environment
-    host = os.getenv("NLP_HOST", "0.0.0.0")
-    port = int(os.getenv("NLP_PORT", "8881"))
+    # Phase 3d Step 5: Use standardized server variables (SIMPLE APPROACH)
+    # OLD VARIABLES ELIMINATED: NLP_HOST, NLP_SERVICE_HOST, NLP_PORT, NLP_SERVICE_PORT, NLP_UVICORN_WORKERS
+    host = os.getenv("NLP_SERVER_HOST", "0.0.0.0")  # STANDARDIZED (was NLP_HOST)
+    port = int(os.getenv("GLOBAL_NLP_API_PORT", "8881"))  # PRESERVED GLOBAL (was NLP_PORT duplicate)
+    workers = int(os.getenv("NLP_SERVER_WORKERS", "1"))  # STANDARDIZED (was NLP_UVICORN_WORKERS)
+    reload_on_changes = os.getenv("NLP_SERVER_RELOAD_ON_CHANGES", "false").lower() == "true"  # NEW
     log_level = os.getenv("NLP_LOG_LEVEL", "info").lower()
     
-    logger.info(f"🌐 Server configuration: {host}:{port} (log_level={log_level})")
+    logger.info(f"🌐 Server configuration: {host}:{port} workers={workers} reload={reload_on_changes}")
+    logger.info("📊 Phase 3d Step 5: Duplicate variables eliminated and standardized")
     
     try:
         uvicorn.run(
             app,
             host=host,
             port=port,
+            workers=workers,
+            reload=reload_on_changes,  # NEW configurable option
             log_level=log_level,
-            access_log=True,
-            reload=False  # Disable in production
+            access_log=True
         )
     except Exception as e:
         logger.error(f"❌ Server startup failed: {e}")
@@ -796,3 +826,12 @@ if __name__ == "__main__":
 logger.info("✅ Main application module loaded - Phase 3c Complete")
 logger.info("🎉 Configuration externalization complete: Patterns + Parameters + Thresholds")
 logger.info("🚀 Ready for production deployment with mode-aware crisis detection")
+
+# NOTE FOR PHASE 6: 
+# During Phase 6, we will convert the simple server startup approach to use 
+# the full manager-based approach for consistency with Clean v3.1 architecture.
+# This will involve:
+# - Converting direct os.getenv() calls to server_config_manager methods
+# - Using server_config_manager.get_network_settings() etc.
+# - Full integration with the manager-based configuration pattern
+# - This deferred approach keeps Step 5 simple while maintaining functionality
