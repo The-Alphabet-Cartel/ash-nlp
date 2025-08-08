@@ -259,7 +259,8 @@ async def initialize_components_clean_v3_1():
             # Initialize with required managers
             learning_manager = EnhancedLearningManager(
                 models_manager=models_manager,
-                config_manager=config_manager
+                config_manager=config_manager,
+                analysis_parameters_manager=analysis_parameters_manager
             )
             
             logger.info("✅ EnhancedLearningManager initialized successfully")
