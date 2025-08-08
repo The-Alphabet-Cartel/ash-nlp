@@ -150,9 +150,9 @@ class LoggingConfigManager:
         logger.debug(f"🔍 Logging configuration validation complete. Errors: {len(self._validation_errors)}")
     
     # ========================================================================
-    # PUBLIC CONFIGURATION ACCESS METHODS
+    # ENHANCED PUBLIC CONFIGURATION ACCESS METHODS - BETTER ERROR HANDLING
     # ========================================================================
-    
+
     def get_global_logging_settings(self) -> Dict[str, Any]:
         """
         Get global logging settings including GLOBAL_LOG_LEVEL preservation
@@ -160,18 +160,46 @@ class LoggingConfigManager:
         Returns:
             Dictionary with global logging configuration
         """
-        logging_config = self._logging_config.get('logging_configuration', {})
-        global_settings = logging_config.get('global_settings', {})
-        
-        return {
-            'log_level': global_settings.get('log_level', 'INFO'),
-            'log_file': global_settings.get('log_file', 'nlp_service.log'),
-            'log_directory': global_settings.get('log_directory', './logs'),
-            'enable_console_output': global_settings.get('enable_console_output', True),
-            'enable_file_output': global_settings.get('enable_file_output', True),
-            'log_format': global_settings.get('log_format', '%(asctime)s %(levelname)s: %(name)s - %(message)s')
-        }
-    
+        try:
+            if not self._logging_config:
+                logger.warning("⚠️ No logging configuration available, using defaults")
+                return {
+                    'log_level': os.getenv('GLOBAL_LOG_LEVEL', 'INFO'),
+                    'log_file': os.getenv('NLP_STORAGE_LOG_FILE', 'nlp_service.log'),
+                    'log_directory': os.getenv('NLP_STORAGE_LOGS_DIR', './logs'),
+                    'enable_console_output': True,
+                    'enable_file_output': True,
+                    'log_format': '%(asctime)s %(levelname)s: %(name)s - %(message)s'
+                }
+            
+            logging_config = self._logging_config.get('logging_configuration', {})
+            global_settings = logging_config.get('global_settings', {})
+            
+            # Provide safe defaults for all settings
+            result = {
+                'log_level': global_settings.get('log_level', os.getenv('GLOBAL_LOG_LEVEL', 'INFO')),
+                'log_file': global_settings.get('log_file', os.getenv('NLP_STORAGE_LOG_FILE', 'nlp_service.log')),
+                'log_directory': global_settings.get('log_directory', os.getenv('NLP_STORAGE_LOGS_DIR', './logs')),
+                'enable_console_output': global_settings.get('enable_console_output', True),
+                'enable_file_output': global_settings.get('enable_file_output', True),
+                'log_format': global_settings.get('log_format', '%(asctime)s %(levelname)s: %(name)s - %(message)s')
+            }
+            
+            logger.debug(f"🔍 Global logging settings: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting global logging settings: {e}")
+            # Return safe defaults
+            return {
+                'log_level': os.getenv('GLOBAL_LOG_LEVEL', 'INFO'),
+                'log_file': 'nlp_service.log',
+                'log_directory': './logs',
+                'enable_console_output': True,
+                'enable_file_output': True,
+                'log_format': '%(asctime)s %(levelname)s: %(name)s - %(message)s'
+            }
+
     def get_detailed_logging_settings(self) -> Dict[str, Any]:
         """
         Get detailed logging settings for enhanced system monitoring
@@ -179,17 +207,47 @@ class LoggingConfigManager:
         Returns:
             Dictionary with detailed logging configuration
         """
-        logging_config = self._logging_config.get('logging_configuration', {})
-        detailed_settings = logging_config.get('detailed_logging', {})
-        
-        return {
-            'enable_detailed': detailed_settings.get('enable_detailed', True),
-            'include_raw_labels': detailed_settings.get('include_raw_labels', True),
-            'analysis_steps': detailed_settings.get('analysis_steps', False),
-            'performance_metrics': detailed_settings.get('performance_metrics', True),
-            'include_reasoning': detailed_settings.get('include_reasoning', True)
-        }
-    
+        try:
+            if not self._logging_config:
+                logger.warning("⚠️ No logging configuration available, using defaults")
+                return {
+                    'enable_detailed': self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true')),
+                    'include_raw_labels': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true')),
+                    'analysis_steps': self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false')),
+                    'performance_metrics': self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true')),
+                    'include_reasoning': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true'))
+                }
+            
+            logging_config = self._logging_config.get('logging_configuration', {})
+            detailed_settings = logging_config.get('detailed_logging', {})
+            
+            result = {
+                'enable_detailed': detailed_settings.get('enable_detailed', 
+                                                       self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true'))),
+                'include_raw_labels': detailed_settings.get('include_raw_labels', 
+                                                           self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true'))),
+                'analysis_steps': detailed_settings.get('analysis_steps', 
+                                                       self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false'))),
+                'performance_metrics': detailed_settings.get('performance_metrics', 
+                                                            self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true'))),
+                'include_reasoning': detailed_settings.get('include_reasoning', 
+                                                          self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true')))
+            }
+            
+            logger.debug(f"🔍 Detailed logging settings: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting detailed logging settings: {e}")
+            # Return safe defaults with environment fallbacks
+            return {
+                'enable_detailed': self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true')),
+                'include_raw_labels': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true')),
+                'analysis_steps': self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false')),
+                'performance_metrics': self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true')),
+                'include_reasoning': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true'))
+            }
+
     def get_component_logging_settings(self) -> Dict[str, Any]:
         """
         Get component-specific logging settings for different system parts
@@ -197,19 +255,58 @@ class LoggingConfigManager:
         Returns:
             Dictionary with component logging configuration
         """
-        logging_config = self._logging_config.get('logging_configuration', {})
-        component_settings = logging_config.get('component_logging', {})
-        
-        return {
-            'threshold_changes': component_settings.get('threshold_changes', True),
-            'model_disagreements': component_settings.get('model_disagreements', True),
-            'staff_review_triggers': component_settings.get('staff_review_triggers', True),
-            'pattern_adjustments': component_settings.get('pattern_adjustments', True),
-            'learning_updates': component_settings.get('learning_updates', True),
-            'label_mappings': component_settings.get('label_mappings', True),
-            'ensemble_decisions': component_settings.get('ensemble_decisions', True),
-            'crisis_detection': component_settings.get('crisis_detection', True)
-        }
+        try:
+            if not self._logging_config:
+                logger.warning("⚠️ No logging configuration available, using defaults")
+                return {
+                    'threshold_changes': self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true')),
+                    'model_disagreements': self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true')),
+                    'staff_review_triggers': self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true')),
+                    'pattern_adjustments': self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true')),
+                    'learning_updates': self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true')),
+                    'label_mappings': self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true')),
+                    'ensemble_decisions': self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true')),
+                    'crisis_detection': self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true'))
+                }
+            
+            logging_config = self._logging_config.get('logging_configuration', {})
+            component_settings = logging_config.get('component_logging', {})
+            
+            result = {
+                'threshold_changes': component_settings.get('threshold_changes', 
+                                                           self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true'))),
+                'model_disagreements': component_settings.get('model_disagreements', 
+                                                             self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true'))),
+                'staff_review_triggers': component_settings.get('staff_review_triggers', 
+                                                               self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true'))),
+                'pattern_adjustments': component_settings.get('pattern_adjustments', 
+                                                             self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true'))),
+                'learning_updates': component_settings.get('learning_updates', 
+                                                          self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true'))),
+                'label_mappings': component_settings.get('label_mappings', 
+                                                        self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true'))),
+                'ensemble_decisions': component_settings.get('ensemble_decisions', 
+                                                            self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true'))),
+                'crisis_detection': component_settings.get('crisis_detection', 
+                                                          self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true')))
+            }
+            
+            logger.debug(f"🔍 Component logging settings: {result}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting component logging settings: {e}")
+            # Return safe defaults with environment fallbacks
+            return {
+                'threshold_changes': self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true')),
+                'model_disagreements': self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true')),
+                'staff_review_triggers': self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true')),
+                'pattern_adjustments': self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true')),
+                'learning_updates': self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true')),
+                'label_mappings': self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true')),
+                'ensemble_decisions': self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true')),
+                'crisis_detection': self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true'))
+            }
     
     def get_development_logging_settings(self) -> Dict[str, Any]:
         """
@@ -244,9 +341,9 @@ class LoggingConfigManager:
         }
     
     # ========================================================================
-    # CONVENIENCE METHODS FOR COMPONENT INTEGRATION
+    # CONVENIENCE METHODS FOR COMPONENT INTEGRATION - ENHANCED ERROR HANDLING
     # ========================================================================
-    
+
     def should_log_component(self, component_name: str) -> bool:
         """
         Check if logging is enabled for a specific component
@@ -257,9 +354,15 @@ class LoggingConfigManager:
         Returns:
             Boolean indicating if component logging is enabled
         """
-        component_settings = self.get_component_logging_settings()
-        return component_settings.get(component_name, True)
-    
+        try:
+            component_settings = self.get_component_logging_settings()
+            result = component_settings.get(component_name, True)  # Default to True
+            logger.debug(f"🔍 Component logging check for '{component_name}': {result}")
+            return result
+        except Exception as e:
+            logger.warning(f"⚠️ Error checking component logging for '{component_name}': {e}")
+            return True  # Safe default - enable logging
+
     def should_log_detailed(self) -> bool:
         """
         Check if detailed logging is enabled
@@ -267,9 +370,15 @@ class LoggingConfigManager:
         Returns:
             Boolean indicating if detailed logging is enabled
         """
-        detailed_settings = self.get_detailed_logging_settings()
-        return detailed_settings.get('enable_detailed', True)
-    
+        try:
+            detailed_settings = self.get_detailed_logging_settings()
+            result = detailed_settings.get('enable_detailed', True)  # Default to True
+            logger.debug(f"🔍 Detailed logging check: {result}")
+            return result
+        except Exception as e:
+            logger.warning(f"⚠️ Error checking detailed logging: {e}")
+            return True  # Safe default - enable detailed logging
+
     def should_include_reasoning(self) -> bool:
         """
         Check if reasoning should be included in logs
@@ -277,9 +386,15 @@ class LoggingConfigManager:
         Returns:
             Boolean indicating if reasoning should be logged
         """
-        detailed_settings = self.get_detailed_logging_settings()
-        return detailed_settings.get('include_reasoning', True)
-    
+        try:
+            detailed_settings = self.get_detailed_logging_settings()
+            result = detailed_settings.get('include_reasoning', True)  # Default to True
+            logger.debug(f"🔍 Include reasoning check: {result}")
+            return result
+        except Exception as e:
+            logger.warning(f"⚠️ Error checking include reasoning: {e}")
+            return True  # Safe default - include reasoning
+
     def get_log_level(self) -> str:
         """
         Get the current log level (preserves GLOBAL_LOG_LEVEL)
@@ -287,9 +402,22 @@ class LoggingConfigManager:
         Returns:
             String log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         """
-        global_settings = self.get_global_logging_settings()
-        return global_settings.get('log_level', 'INFO')
-    
+        try:
+            global_settings = self.get_global_logging_settings()
+            log_level = global_settings.get('log_level', 'INFO')
+            logger.debug(f"🔍 Current log level: {log_level}")
+            
+            # Validate log level
+            valid_levels = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
+            if log_level not in valid_levels:
+                logger.warning(f"⚠️ Invalid log level '{log_level}', using INFO")
+                return 'INFO'
+            
+            return log_level
+        except Exception as e:
+            logger.warning(f"⚠️ Error getting log level: {e}")
+            return 'INFO'  # Safe default
+
     def get_log_file_path(self) -> str:
         """
         Get the complete log file path
@@ -297,11 +425,23 @@ class LoggingConfigManager:
         Returns:
             String path to log file
         """
-        global_settings = self.get_global_logging_settings()
-        log_dir = global_settings.get('log_directory', './logs')
-        log_file = global_settings.get('log_file', 'nlp_service.log')
-        
-        return str(Path(log_dir) / log_file)
+        try:
+            global_settings = self.get_global_logging_settings()
+            log_dir = global_settings.get('log_directory', './logs')
+            log_file = global_settings.get('log_file', 'nlp_service.log')
+            
+            # Ensure we have valid values
+            if not log_dir:
+                log_dir = './logs'
+            if not log_file:
+                log_file = 'nlp_service.log'
+            
+            full_path = str(Path(log_dir) / log_file)
+            logger.debug(f"🔍 Log file path: {full_path}")
+            return full_path
+        except Exception as e:
+            logger.warning(f"⚠️ Error getting log file path: {e}")
+            return './logs/nlp_service.log'  # Safe default
     
     # ========================================================================
     # CONFIGURATION STATUS AND HEALTH
