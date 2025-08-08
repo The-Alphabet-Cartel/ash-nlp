@@ -299,7 +299,7 @@ class ModelsManager:
             # This happens BEFORE any transformers imports
             os.environ['HF_HOME'] = hf_cache_dir
             os.environ['HUGGINGFACE_HUB_CACHE'] = hf_cache_dir
-            os.environ['TRANSFORMERS_CACHE'] = hf_cache_dir
+            #os.environ['TRANSFORMERS_CACHE'] = hf_cache_dir
             os.environ['XDG_CACHE_HOME'] = hf_cache_dir
             
             logger.debug(f"🏠 HuggingFace cache configured via NLP_STORAGE_HUGGINGFACE_CACHE: {hf_cache_dir}")
