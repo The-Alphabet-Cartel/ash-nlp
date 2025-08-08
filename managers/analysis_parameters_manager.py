@@ -11,6 +11,7 @@ import os
 import logging
 from typing import Dict, Any, Optional
 from pathlib import Path
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -417,9 +418,9 @@ class AnalysisParametersManager:
             'phrase_extraction': self.get_phrase_extraction_parameters(),
             'pattern_learning': self.get_pattern_learning_parameters(),
             'semantic_analysis': self.get_semantic_analysis_parameters(),
-            'advanced_parameters': self.get_advanced_analysis_parameters(),
+            'advanced_parameters': self.get_advanced_parameters(),
             'integration_settings': self.get_integration_settings(),
-            'performance_settings': self.get_performance_settings(),
+            'performance_settings': self.get_performance_parameters(),
             'debugging_settings': self.get_debugging_settings(),
             'experimental_features': self.get_experimental_features(),
             'learning_system': self.get_learning_system_parameters() if hasattr(self, 'get_learning_system_parameters') else {},
