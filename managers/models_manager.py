@@ -283,20 +283,62 @@ class ModelsManager:
         logger.debug(f"✅ Model cache directory ready: {cache_dir}")
     
     def _setup_huggingface_auth(self):
-        """Set up Hugging Face authentication with multiple environment variable names"""
-        hf_token = self.model_config.get('huggingface_token')
-        if hf_token:
-            # Set multiple environment variable names that different libraries may check
-            os.environ['HF_TOKEN'] = hf_token
-            os.environ['HUGGING_FACE_HUB_TOKEN'] = hf_token  # Alternative name
-            os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token   # Another alternative
-            os.environ['HF_HOME'] = self.model_config.get('cache_dir', './models/cache')
+        """
+        Set up HuggingFace authentication and cache configuration
+        Phase 3d Step 6: Clean v3.1 compliant cache configuration
+        """
+        try:
+            # Get HuggingFace cache directory from our unified storage configuration
+            # This respects our NLP_STORAGE_* naming convention
+            hf_cache_dir = os.getenv('NLP_STORAGE_HUGGINGFACE_CACHE', './models/cache')
             
-            logger.info("🔑 Hugging Face authentication configured with multiple token variables")
-            logger.debug(f"Token variables set: HF_TOKEN, HUGGING_FACE_HUB_TOKEN, HUGGINGFACE_HUB_TOKEN")
-            logger.debug(f"HF_HOME set to: {os.environ['HF_HOME']}")
-        else:
-            logger.warning("⚠️ No Hugging Face token provided - this may cause authentication errors")
+            # Convert relative path to absolute path to ensure HuggingFace uses it
+            if not os.path.isabs(hf_cache_dir):
+                hf_cache_dir = os.path.abspath(hf_cache_dir)
+            
+            # Create cache directory if it doesn't exist
+            Path(hf_cache_dir).mkdir(parents=True, exist_ok=True)
+            
+            # CRITICAL: Set HuggingFace environment variables using our configured path
+            # This happens BEFORE any transformers imports
+            os.environ['HF_HOME'] = hf_cache_dir
+            os.environ['HUGGINGFACE_HUB_CACHE'] = hf_cache_dir
+            os.environ['TRANSFORMERS_CACHE'] = hf_cache_dir
+            os.environ['XDG_CACHE_HOME'] = hf_cache_dir
+            
+            logger.debug(f"🏠 HuggingFace cache configured via NLP_STORAGE_HUGGINGFACE_CACHE: {hf_cache_dir}")
+            
+            # Set HuggingFace token if available (using our GLOBAL_* preservation)
+            hf_token = os.getenv('GLOBAL_HUGGINGFACE_TOKEN')
+            if hf_token and hf_token != "/run/secrets/huggingface":
+                os.environ['HUGGINGFACE_HUB_TOKEN'] = hf_token
+                logger.debug("🔑 HuggingFace token configured from GLOBAL_HUGGINGFACE_TOKEN")
+            elif hf_token == "/run/secrets/huggingface":
+                # Try to read from Docker secrets
+                try:
+                    with open('/run/secrets/huggingface', 'r') as f:
+                        token = f.read().strip()
+                        if token:
+                            os.environ['HUGGINGFACE_HUB_TOKEN'] = token
+                            logger.debug("🔑 HuggingFace token loaded from Docker secrets")
+                except FileNotFoundError:
+                    logger.warning("⚠️ HuggingFace token secret file not found")
+                except Exception as e:
+                    logger.warning(f"⚠️ Failed to read HuggingFace token from secrets: {e}")
+            
+            # Verify cache directory is writable
+            test_file = Path(hf_cache_dir) / '.test_write'
+            try:
+                test_file.touch()
+                test_file.unlink()
+                logger.debug(f"✅ HuggingFace cache directory writable: {hf_cache_dir}")
+            except PermissionError:
+                logger.error(f"❌ HuggingFace cache directory not writable: {hf_cache_dir}")
+                raise PermissionError(f"Cannot write to HuggingFace cache directory: {hf_cache_dir}")
+                
+        except Exception as e:
+            logger.error(f"❌ Failed to configure HuggingFace environment: {e}")
+            raise
     
     def _get_model_kwargs(self) -> Dict[str, Any]:
         """Get arguments for pipeline creation"""
