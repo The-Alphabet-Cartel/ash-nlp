@@ -60,6 +60,28 @@ class ConfigManager:
             value = os.getenv(env_var)
             logger.debug(f"   {env_var}: {value}")
     
+    def get_hardware_configuration(self) -> Dict[str, Any]:
+        """
+        Get hardware configuration settings
+        NEW in Phase 3d: Standardized hardware configuration access
+        """
+        logger.debug("🔍 Getting hardware configuration...")
+        
+        config = self.load_config_file('model_ensemble')
+        
+        if config:
+            hardware_config = config.get('model_ensemble', {}).get('hardware_settings', {})
+        else:
+            hardware_config = {}
+        
+        # Return standardized hardware configuration
+        return {
+            'device': hardware_config.get('device', os.getenv('NLP_HARDWARE_DEVICE', 'auto')),
+            'precision': hardware_config.get('precision', os.getenv('NLP_HARDWARE_PRECISION', 'float16')),
+            'max_batch_size': int(hardware_config.get('max_batch_size', os.getenv('NLP_HARDWARE_MAX_BATCH_SIZE', '32'))),
+            'inference_threads': int(hardware_config.get('inference_threads', os.getenv('NLP_HARDWARE_INFERENCE_THREADS', '16')))
+        }
+
     def substitute_environment_variables(self, value: Any) -> Any:
         """
         Recursively substitute environment variables in configuration values
