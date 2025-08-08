@@ -38,9 +38,10 @@ class ConfigManager:
             'analysis_parameters': 'analysis_parameters.json',
             'threshold_mapping': 'threshold_mapping.json',
             'performance_settings': 'performance_settings.json',
-            'server_settings': 'server_settings.json',  # NEW for Step 5
+            'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
-            'learning_parameters': 'learning_parameters.json'
+            'learning_parameters': 'learning_parameters.json',
+            'logging_settings': 'logging_settings.json',   # NEW - Phase 3d Step 6
         }
         
         logger.info(f"✅ ConfigManager v3.1d initialized with config directory: {config_dir}")
@@ -62,6 +63,72 @@ class ConfigManager:
             value = os.getenv(env_var)
             logger.debug(f"   {env_var}: {value}")
     
+    def get_logging_configuration(self) -> Dict[str, Any]:
+        """
+        Get logging configuration with Phase 3d unified variables
+        NEW in Phase 3d Step 6: Consolidates multiple logging variables
+        """
+        logger.debug("📝 Getting logging configuration (Phase 3d Step 6)...")
+        
+        config = self.load_config_file('logging_settings')
+        
+        if not config:
+            logger.warning("⚠️ Logging configuration not found, using environment fallback")
+            return self._get_fallback_logging_config()
+        
+        logging_config = config.get('logging_configuration', {})
+        
+        processed_logging = {
+            'global_settings': logging_config.get('global_settings', {}),
+            'detailed_logging': logging_config.get('detailed_logging', {}),
+            'component_logging': logging_config.get('component_logging', {}),
+            'development_logging': logging_config.get('development_logging', {}),
+            'validation': logging_config.get('validation', {})
+        }
+        
+        logger.debug(f"✅ Logging configuration loaded")
+        return processed_logging
+
+    def _get_fallback_logging_config(self) -> Dict[str, Any]:
+        """
+        Fallback logging configuration using Phase 3d standardized environment variables
+        """
+        logger.info("🔧 Using Phase 3d standardized environment variables for logging configuration")
+        
+        return {
+            'global_settings': {
+                'log_level': os.getenv('GLOBAL_LOG_LEVEL', 'INFO'),  # PRESERVED GLOBAL
+                'log_file': os.getenv('NLP_STORAGE_LOG_FILE', 'nlp_service.log'),
+                'log_directory': os.getenv('NLP_STORAGE_LOGS_DIR', './logs'),
+                'enable_console_output': self._parse_bool(os.getenv('GLOBAL_LOGGING_ENABLE_CONSOLE', 'true')),
+                'enable_file_output': self._parse_bool(os.getenv('GLOBAL_LOGGING_ENABLE_FILE', 'true'))
+            },
+            'detailed_logging': {
+                'enable_detailed': self._parse_bool(os.getenv('NLP_LOGGING_ENABLE_DETAILED', 'true')),
+                'include_raw_labels': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_RAW_LABELS', 'true')),
+                'analysis_steps': self._parse_bool(os.getenv('NLP_LOGGING_ANALYSIS_STEPS', 'false')),
+                'performance_metrics': self._parse_bool(os.getenv('NLP_LOGGING_PERFORMANCE_METRICS', 'true')),
+                'include_reasoning': self._parse_bool(os.getenv('NLP_LOGGING_INCLUDE_REASONING', 'true'))
+            },
+            'component_logging': {
+                'threshold_changes': self._parse_bool(os.getenv('NLP_LOGGING_THRESHOLD_CHANGES', 'true')),
+                'model_disagreements': self._parse_bool(os.getenv('NLP_LOGGING_MODEL_DISAGREEMENTS', 'true')),
+                'staff_review_triggers': self._parse_bool(os.getenv('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', 'true')),
+                'pattern_adjustments': self._parse_bool(os.getenv('NLP_LOGGING_PATTERN_ADJUSTMENTS', 'true')),
+                'learning_updates': self._parse_bool(os.getenv('NLP_LOGGING_LEARNING_UPDATES', 'true')),
+                'label_mappings': self._parse_bool(os.getenv('NLP_LOGGING_LABEL_MAPPINGS', 'true')),
+                'ensemble_decisions': self._parse_bool(os.getenv('NLP_LOGGING_ENSEMBLE_DECISIONS', 'true')),
+                'crisis_detection': self._parse_bool(os.getenv('NLP_LOGGING_CRISIS_DETECTION', 'true'))
+            },
+            'development_logging': {
+                'debug_mode': self._parse_bool(os.getenv('NLP_LOGGING_DEBUG_MODE', 'false')),
+                'trace_requests': self._parse_bool(os.getenv('NLP_LOGGING_TRACE_REQUESTS', 'false')),
+                'log_configuration_loading': self._parse_bool(os.getenv('NLP_LOGGING_CONFIG_LOADING', 'false')),
+                'log_manager_initialization': self._parse_bool(os.getenv('NLP_LOGGING_MANAGER_INIT', 'true')),
+                'log_environment_variables': self._parse_bool(os.getenv('NLP_LOGGING_ENV_VARS', 'false'))
+            }
+        }
+
     def get_server_configuration(self) -> Dict[str, Any]:
         """
         Get server configuration settings (NEW in Phase 3d Step 5)
@@ -405,23 +472,40 @@ class ConfigManager:
         }
     
     def _get_fallback_storage_config(self) -> Dict[str, Any]:
-        """Fallback storage configuration using Phase 3d unified environment variables"""
-        logger.info("🔧 Using Phase 3d unified environment variables for storage configuration")
+        """Fallback storage configuration using Phase 3d standardized environment variables"""
+        logger.info("🔧 Using Phase 3d standardized environment variables for storage configuration")
         
         return {
             'directories': {
                 'data_directory': os.getenv('NLP_STORAGE_DATA_DIR', './data'),
                 'models_directory': os.getenv('NLP_STORAGE_MODELS_DIR', './models/cache'),
                 'logs_directory': os.getenv('NLP_STORAGE_LOGS_DIR', './logs'),
-                'learning_directory': os.getenv('NLP_STORAGE_LEARNING_DIR', './learning_data')
+                'learning_directory': os.getenv('NLP_STORAGE_LEARNING_DIR', './learning_data'),
+                'cache_directory': os.getenv('NLP_STORAGE_CACHE_DIR', './cache'),
+                'temp_directory': os.getenv('NLP_STORAGE_TEMP_DIR', './tmp'),
+                'backup_directory': os.getenv('NLP_STORAGE_BACKUP_DIR', './backups')
             },
             'file_paths': {
                 'log_file': os.getenv('NLP_STORAGE_LOG_FILE', 'nlp_service.log'),
-                'learning_persistence_file': os.getenv('NLP_STORAGE_LEARNING_FILE', './learning_data/adjustments.json')
+                'learning_persistence_file': os.getenv('NLP_STORAGE_LEARNING_FILE', './learning_data/adjustments.json'),
+                'pid_file': os.getenv('NLP_STORAGE_PID_FILE', './tmp/nlp_service.pid'),
+                'health_check_file': os.getenv('NLP_STORAGE_HEALTH_FILE', './tmp/health_check.json'),
+                'config_backup_file': os.getenv('NLP_STORAGE_CONFIG_BACKUP_FILE', './backups/config_backup.json')
             },
             'cache_settings': {
                 'huggingface_cache': os.getenv('NLP_STORAGE_MODELS_DIR', './models/cache'),
-                'enable_model_caching': True
+                'analysis_cache': os.getenv('NLP_STORAGE_CACHE_DIR', './cache'),
+                'enable_model_caching': self._parse_bool(os.getenv('NLP_STORAGE_ENABLE_MODEL_CACHE', 'true')),
+                'enable_analysis_caching': self._parse_bool(os.getenv('NLP_STORAGE_ENABLE_ANALYSIS_CACHE', 'true')),
+                'cache_cleanup_on_startup': self._parse_bool(os.getenv('NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP', 'false')),
+                'model_cache_size_limit': os.getenv('NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT', '10GB'),
+                'analysis_cache_size_limit': os.getenv('NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT', '2GB'),
+                'cache_expiry_hours': int(os.getenv('NLP_STORAGE_CACHE_EXPIRY_HOURS', '24'))
+            },
+            'validation': {
+                'create_directories_on_startup': self._parse_bool(os.getenv('NLP_STORAGE_CREATE_DIRS_ON_STARTUP', 'true')),
+                'validate_write_permissions': self._parse_bool(os.getenv('NLP_STORAGE_VALIDATE_PERMISSIONS', 'true')),
+                'fail_on_inaccessible_directories': self._parse_bool(os.getenv('NLP_STORAGE_FAIL_ON_INACCESSIBLE', 'false'))
             }
         }
     
