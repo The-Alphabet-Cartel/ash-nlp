@@ -609,11 +609,12 @@ async def health_check():
             components_available=components_available,
             configuration_status=configuration_status,
             manager_status=manager_status,
-            architecture_version="clean_v3_1_phase_3c",  # Update to show Phase 3c clearly
+            architecture_version="clean_v3_1_phase_3d",
             phase_2c_status="complete",
             phase_3a_status="complete",
-            phase_3b_status="complete", 
-            phase_3c_status="complete"  # Phase 3c
+            phase_3b_status="complete",
+            phase_3c_status="complete",
+            phase_3d_status="complete"
         )
         
     except Exception as e:
@@ -625,11 +626,12 @@ async def health_check():
             components_available={},
             configuration_status={'error': str(e)},
             manager_status={'error': str(e)},
-            architecture_version="clean_v3_1_phase_3c",
+            architecture_version="clean_v3_1_phase_3d",
             phase_2c_status="unknown",
             phase_3a_status="unknown",
             phase_3b_status="unknown",
-            phase_3c_status="error"
+            phase_3c_status="unknown",
+            phase_3d_status="error"
         )
 # ============================================================================
 # Development/Debug Endpoints - Phase 3c Enhanced
