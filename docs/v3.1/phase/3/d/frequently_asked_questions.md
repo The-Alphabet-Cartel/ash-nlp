@@ -36,3 +36,9 @@
     - Not really.
       - The only backwards compatibility we need is within the same phase of implementation.
     - We are ripping off the band-aids with a "break and fix" mentality.
+
+9. **Migration / Configuration Scripting**
+  - *Should we create migration and/or confirugation scripts to help with changes?*
+    - No.
+    - I work on one rig, and test on another.
+    - Migration / configuration scripting will only break the server rig.
