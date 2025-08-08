@@ -129,9 +129,9 @@ class EnvConfigManager:
             # =================================================================
             # SERVER CONFIGURATION
             # =================================================================
-            'NLP_SERVICE_HOST': {'type': str, 'default': '0.0.0.0'},
-            'NLP_SERVICE_PORT': {'type': int, 'default': 8881, 'min': 1024, 'max': 65535},
-            'NLP_UVICORN_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
+            'NLP_SERVER_HOST': {'type': str, 'default': '0.0.0.0'},
+            'GLOBAL_NLP_API_PORT': {'type': int, 'default': 8881, 'min': 1024, 'max': 65535},
+            'NLP_SERVER_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
             'NLP_RELOAD_ON_CHANGES': {'type': bool, 'default': False},
             
             # =================================================================

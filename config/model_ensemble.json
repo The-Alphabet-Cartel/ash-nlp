@@ -73,7 +73,7 @@
     "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
     "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}",
     "performance_settings": {
-      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "max_concurrent_requests": "${NLP_SERVER_MAX_CONCURRENT_REQUESTS}",
       "request_timeout": "${NLP_PERFORMANCE_REQUEST_TIMEOUT}",
       "memory_optimization": true,
       "batch_processing": true

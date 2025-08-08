@@ -36,9 +36,11 @@ class ConfigManager:
             'model_ensemble': 'model_ensemble.json',
             'crisis_patterns': 'crisis_patterns.json',
             'analysis_parameters': 'analysis_parameters.json',
-            'performance_settings': 'performance_settings.json',
             'threshold_mapping': 'threshold_mapping.json',
-            'storage_settings': 'storage_settings.json',    # NEW in Phase 3d
+            'performance_settings': 'performance_settings.json',
+            'server_settings': 'server_settings.json',  # NEW for Step 5
+            'storage_settings': 'storage_settings.json',
+            'learning_parameters': 'learning_parameters.json'
         }
         
         logger.info(f"✅ ConfigManager v3.1d initialized with config directory: {config_dir}")
@@ -60,6 +62,86 @@ class ConfigManager:
             value = os.getenv(env_var)
             logger.debug(f"   {env_var}: {value}")
     
+    def get_server_configuration(self) -> Dict[str, Any]:
+        """
+        Get server configuration settings (NEW in Phase 3d Step 5)
+        Consolidates duplicate server variables into standardized configuration
+        """
+        logger.debug("🖥️ Getting server configuration (Phase 3d Step 5)...")
+        
+        config = self.load_config_file('server_settings')
+        
+        if config:
+            server_config = config.get('server_configuration', {})
+            defaults = config.get('defaults', {})
+        else:
+            logger.warning("⚠️ No server_settings.json found, using environment fallbacks")
+            server_config = {}
+            defaults = {}
+        
+        # Return consolidated server configuration with environment overrides
+        return {
+            'network_settings': {
+                'host': os.getenv('NLP_SERVER_HOST', 
+                                 server_config.get('network_settings', {}).get('host', 
+                                 defaults.get('network_settings', {}).get('host', '0.0.0.0'))),
+                'port': int(os.getenv('GLOBAL_NLP_API_PORT', '8881')),  # PRESERVED GLOBAL
+                'workers': int(os.getenv('NLP_SERVER_WORKERS', 
+                                       server_config.get('network_settings', {}).get('workers', 
+                                       defaults.get('network_settings', {}).get('workers', 1)))),
+                'reload_on_changes': self._parse_bool(os.getenv('NLP_SERVER_RELOAD_ON_CHANGES', 
+                                                              server_config.get('network_settings', {}).get('reload_on_changes', 
+                                                              defaults.get('network_settings', {}).get('reload_on_changes', False))))
+            },
+            'performance_settings': {
+                'max_concurrent_requests': int(os.getenv('NLP_SERVER_MAX_CONCURRENT_REQUESTS', 
+                                                       server_config.get('performance_settings', {}).get('max_concurrent_requests', 
+                                                       defaults.get('performance_settings', {}).get('max_concurrent_requests', 20)))),
+                'request_timeout': int(os.getenv('NLP_SERVER_REQUEST_TIMEOUT', 
+                                               server_config.get('performance_settings', {}).get('request_timeout', 
+                                               defaults.get('performance_settings', {}).get('request_timeout', 40)))),
+                'worker_timeout': int(os.getenv('NLP_SERVER_WORKER_TIMEOUT', 
+                                              server_config.get('performance_settings', {}).get('worker_timeout', 
+                                              defaults.get('performance_settings', {}).get('worker_timeout', 60))))
+            },
+            'security_settings': {
+                'rate_limiting': {
+                    'requests_per_minute': int(os.getenv('NLP_SECURITY_REQUESTS_PER_MINUTE', 
+                                                       server_config.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_minute', 
+                                                       defaults.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_minute', 120)))),
+                    'requests_per_hour': int(os.getenv('NLP_SECURITY_REQUESTS_PER_HOUR', 
+                                                     server_config.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_hour', 
+                                                     defaults.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_hour', 2000)))),
+                    'burst_limit': int(os.getenv('NLP_SECURITY_BURST_LIMIT', 
+                                               server_config.get('security_settings', {}).get('rate_limiting', {}).get('burst_limit', 
+                                               defaults.get('security_settings', {}).get('rate_limiting', {}).get('burst_limit', 150))))
+                },
+                'access_control': {
+                    'allowed_ips': os.getenv('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),  # PRESERVED GLOBAL
+                    'cors_enabled': self._parse_bool(os.getenv('GLOBAL_ENABLE_CORS', 'true'))  # PRESERVED GLOBAL
+                }
+            },
+            'operational_settings': {
+                'health_check_interval': int(os.getenv('NLP_SERVER_HEALTH_CHECK_INTERVAL', 
+                                                     server_config.get('operational_settings', {}).get('health_check_interval', 
+                                                     defaults.get('operational_settings', {}).get('health_check_interval', 30)))),
+                'graceful_shutdown_timeout': int(os.getenv('NLP_SERVER_SHUTDOWN_TIMEOUT', 
+                                                         server_config.get('operational_settings', {}).get('graceful_shutdown_timeout', 
+                                                         defaults.get('operational_settings', {}).get('graceful_shutdown_timeout', 10)))),
+                'startup_timeout': int(os.getenv('NLP_SERVER_STARTUP_TIMEOUT', 
+                                               server_config.get('operational_settings', {}).get('startup_timeout', 
+                                               defaults.get('operational_settings', {}).get('startup_timeout', 120))))
+            }
+        }
+
+    def _parse_bool(self, value: Union[str, bool]) -> bool:
+        """Parse boolean value from string or bool"""
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ('true', '1', 'yes', 'on')
+        return False
+
     def get_ensemble_mode(self) -> str:
         """
         Get current ensemble mode setting
