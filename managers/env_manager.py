@@ -166,7 +166,7 @@ class EnvConfigManager:
             # =================================================================
             'NLP_ENABLE_ENSEMBLE_ANALYSIS': {'type': bool, 'default': True},
             'NLP_ENABLE_GAP_DETECTION': {'type': bool, 'default': True},
-            'NLP_LOG_MODEL_DISAGREEMENTS': {'type': bool, 'default': True},
+            'NLP_LOGGING_MODEL_DISAGREEMENTS': {'type': bool, 'default': True},
         }
         
         # Process each configuration item
