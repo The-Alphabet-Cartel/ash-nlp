@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 import os
 import torch
-import time
 from typing import Optional, Dict, Any, Union, List, Tuple
 from pathlib import Path
 
@@ -419,41 +418,21 @@ class ModelsManager:
             raise
 
         try:
-            if self._loading_lock:
-                async with self._loading_lock:
-                    if self._models_loaded:
-                        return
-                    await self._load_models_internal(pipeline, AutoConfig)
-            else:
-                await self._load_models_internal(pipeline, AutoConfig)
-            
-        except Exception as e:
-            logger.error(f"❌ Model loading failed: {e}")
-            self._models_loaded = False
-            raise
-
-    async def _load_models_internal(self, pipeline, AutoConfig):
-        """Internal model loading with transformers already imported"""
-        try:
-            logger.info("🔄 Loading Three Zero-Shot Model Ensemble...")
-            start_time = time.time()
-            
             # Get the arguments that the model loading methods expect
             model_kwargs = self._get_model_kwargs()
             loading_kwargs = self._get_model_loading_kwargs()
             
-            # Load models in sequence
-            await self._load_depression_model(pipeline, model_kwargs, loading_kwargs)
-            await self._load_sentiment_model(pipeline, model_kwargs, loading_kwargs)
-            await self._load_emotional_distress_model(pipeline, model_kwargs, loading_kwargs)
+            # Load all three models with proper arguments
+            await self._load_depression_model(model_kwargs, loading_kwargs)
+            await self._load_sentiment_model(model_kwargs, loading_kwargs)  
+            await self._load_emotional_distress_model(model_kwargs, loading_kwargs)
             
             self._models_loaded = True
-            load_time = time.time() - start_time
-            
-            logger.info(f"✅ Three Zero-Shot Model Ensemble loaded successfully in {load_time:.2f}s")
+            logger.info("✅ All three models loaded successfully")
             
         except Exception as e:
             logger.error(f"❌ Model loading failed: {e}")
+            self._models_loaded = False
             raise
 
     def get_ensemble_status(self) -> Dict[str, Any]:
