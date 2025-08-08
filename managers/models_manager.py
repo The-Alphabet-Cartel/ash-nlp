@@ -438,8 +438,9 @@ class ModelsManager:
             logger.info("🔄 Loading Three Zero-Shot Model Ensemble...")
             start_time = time.time()
             
-            # Load configuration
-            model_kwargs, loading_kwargs = self._prepare_model_loading()
+            # Get the arguments that the model loading methods expect
+            model_kwargs = self._get_model_kwargs()
+            loading_kwargs = self._get_model_loading_kwargs()
             
             # Load models in sequence
             await self._load_depression_model(pipeline, model_kwargs, loading_kwargs)
