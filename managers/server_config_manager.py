@@ -67,10 +67,10 @@ class ServerConfigManager:
                              config_settings.get('host', 
                              defaults.get('host', '0.0.0.0'))),
             'port': int(os.getenv('GLOBAL_NLP_API_PORT', '8881')),  # PRESERVED GLOBAL
-            'workers': int(os.getenv('NLP_SERVER_WORKERS', 
+            'workers': int(os.getenv('NLP_PERFORMANCE_WORKERS', 
                                    config_settings.get('workers', 
                                    defaults.get('workers', 1)))),
-            'reload_on_changes': self._parse_bool(os.getenv('NLP_SERVER_RELOAD_ON_CHANGES', 
+            'reload_on_changes': self._parse_bool(os.getenv('NLP_FEATURE_RELOAD_ON_CHANGES', 
                                                           config_settings.get('reload_on_changes', 
                                                           defaults.get('reload_on_changes', False))))
         }
@@ -78,8 +78,8 @@ class ServerConfigManager:
     def get_performance_settings(self) -> Dict[str, Any]:
         """
         Get server performance settings
-        Consolidates: NLP_MAX_CONCURRENT_REQUESTS -> NLP_SERVER_MAX_CONCURRENT_REQUESTS
-        Distinguishes: NLP_REQUEST_TIMEOUT -> NLP_SERVER_REQUEST_TIMEOUT (vs NLP_ANALYSIS_TIMEOUT)
+        Consolidates: NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS -> NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS
+        Distinguishes: NLP_PERFORMANCE_REQUEST_TIMEOUT -> NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS (vs NLP_ANALYSIS_TIMEOUT)
         """
         logger.debug("⚡ Getting performance settings...")
         
@@ -87,13 +87,13 @@ class ServerConfigManager:
         config_settings = self.server_config.get('server_configuration', {}).get('performance_settings', {})
         
         return {
-            'max_concurrent_requests': int(os.getenv('NLP_SERVER_MAX_CONCURRENT_REQUESTS', 
+            'max_concurrent_requests': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
                                                    config_settings.get('max_concurrent_requests', 
                                                    defaults.get('max_concurrent_requests', 20)))),
-            'request_timeout': int(os.getenv('NLP_SERVER_REQUEST_TIMEOUT', 
+            'request_timeout': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
                                            config_settings.get('request_timeout', 
                                            defaults.get('request_timeout', 40)))),
-            'worker_timeout': int(os.getenv('NLP_SERVER_WORKER_TIMEOUT', 
+            'worker_timeout': int(os.getenv('NLP_PERFORMANCE_WORKER_TIMEOUT', 
                                           config_settings.get('worker_timeout', 
                                           defaults.get('worker_timeout', 60))))
         }
@@ -111,10 +111,10 @@ class ServerConfigManager:
         
         return {
             'rate_limiting': {
-                'requests_per_minute': int(os.getenv('NLP_SECURITY_REQUESTS_PER_MINUTE', 
+                'requests_per_minute': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 
                                                    config_settings.get('requests_per_minute', 
                                                    defaults.get('requests_per_minute', 120)))),
-                'requests_per_hour': int(os.getenv('NLP_SECURITY_REQUESTS_PER_HOUR', 
+                'requests_per_hour': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 
                                                  config_settings.get('requests_per_hour', 
                                                  defaults.get('requests_per_hour', 2000)))),
                 'burst_limit': int(os.getenv('NLP_SECURITY_BURST_LIMIT', 
