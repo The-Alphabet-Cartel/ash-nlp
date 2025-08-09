@@ -242,6 +242,23 @@ class ConfigManager:
             }
         }
 
+    def get_workers(self) -> int:
+        """Get number of server workers"""
+        return self._get_performance_setting('server_performance', 'workers', 1, int)
+
+    def get_server_performance_settings(self) -> Dict[str, Any]:
+        """Get all server performance settings"""
+        return {
+            'max_concurrent_requests': self.get_max_concurrent_requests(),
+            'worker_timeout': self.get_worker_timeout(),
+            'keepalive_timeout': self.get_keepalive_timeout(),
+            'workers': self.get_workers()
+        }
+
+    def get_keepalive_timeout(self) -> int:
+        """Get keepalive timeout in seconds"""
+        return self._get_performance_setting('server_performance', 'keepalive_timeout', 5, int)
+
     def get_logging_configuration(self) -> Dict[str, Any]:
         """
         Get logging configuration with Phase 3d unified variables
