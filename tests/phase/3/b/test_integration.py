@@ -409,10 +409,10 @@ class TestPhase3bEnvironmentVariableIntegration:
             'NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE': '0.25',
             'NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW': '5',
             'NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST': '0.10',
-            'NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS': 'true',
+            'NLP_FEATURE_PATTERN_ANALYSIS': 'true',
             'NLP_ANALYSIS_INTEGRATION_MODE': 'enhanced',
-            'NLP_ANALYSIS_TIMEOUT_MS': '7000',
-            'NLP_ANALYSIS_ENABLE_DETAILED_LOGGING': 'true'
+            'NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS': '7000',
+            'NLP_FEATURE_DETAILED_LOGGING': 'true'
         }
         
         with patch.dict(os.environ, env_vars):
