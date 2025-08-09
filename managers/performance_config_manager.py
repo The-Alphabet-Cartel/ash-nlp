@@ -246,11 +246,15 @@ class PerformanceConfigManager:
     
     def get_rate_limit_requests_per_minute(self) -> int:
         """Get rate limit requests per minute"""
-        return self._get_performance_setting('rate_limiting_performance', 'requests_per_minute', 1000, int)
+        return self._get_performance_setting('rate_limiting_performance', 'rate_limit_per_minute', 120, int)
     
+    def get_rate_limit_requests_per_hour(self) -> int:
+        """Get rate limit requests per hour"""
+        return self._get_performance_setting('rate_limiting_performance', 'rate_limit_per_hour', 2000, int)
+
     def get_rate_limit_burst_size(self) -> int:
         """Get rate limit burst size"""
-        return self._get_performance_setting('rate_limiting_performance', 'burst_size', 50, int)
+        return self._get_performance_setting('rate_limiting_performance', 'rate_limit_burst', 150, int)
     
     def get_rate_limit_per_user_per_minute(self) -> int:
         """Get rate limit per user per minute"""
@@ -259,9 +263,9 @@ class PerformanceConfigManager:
     def get_rate_limiting_performance_settings(self) -> Dict[str, Any]:
         """Get all rate limiting performance settings"""
         return {
-            'requests_per_minute': self.get_rate_limit_requests_per_minute(),
-            'burst_size': self.get_rate_limit_burst_size(),
-            'per_user_per_minute': self.get_rate_limit_per_user_per_minute()
+            'rate_limit_per_minute': self.get_rate_limit_requests_per_minute(),  # Changed key name
+            'rate_limit_per_hour': self.get_rate_limit_requests_per_hour(),      # Added this line
+            'rate_limit_burst': self.get_rate_limit_burst_size()                 # Changed key name
         }
     
     # ========================================================================
