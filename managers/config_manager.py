@@ -1,8 +1,8 @@
-# ash/ash-nlp/managers/config_manager.py - Phase 3d Enhanced
+# ash/ash-nlp/managers/config_manager.py - Phase 3d Step 7 Enhanced
 """
-Enhanced Configuration Manager for Ash NLP Service v3.1d
+Enhanced Configuration Manager for Ash NLP Service v3.1d - Phase 3d Step 7 Complete
 Handles JSON configuration with environment variable overrides
-Phase 3d: Unified configuration with standardized variable naming
+Phase 3d Step 7: Added feature_flags and performance_settings configuration support
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
@@ -18,11 +18,11 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 class ConfigManager:
-    """Enhanced configuration manager with unified variable support - Phase 3d"""
+    """Enhanced configuration manager with unified variable support - Phase 3d Step 7 Complete"""
     
     def __init__(self, config_dir: str = "/app/config"):
         """
-        Initialize configuration manager with Phase 3d enhancements
+        Initialize configuration manager with Phase 3d Step 7 enhancements
         
         Args:
             config_dir: Directory containing JSON configuration files
@@ -31,23 +31,25 @@ class ConfigManager:
         self.config_cache = {}
         self.env_override_pattern = re.compile(r'\$\{([^}]+)\}')
         
-        # Enhanced configuration files mapping - Phase 3d
+        # Enhanced configuration files mapping - Phase 3d Step 7 Complete
         self.config_files = {
             'model_ensemble': 'model_ensemble.json',
             'crisis_patterns': 'crisis_patterns.json',
             'analysis_parameters': 'analysis_parameters.json',
             'threshold_mapping': 'threshold_mapping.json',
-            'performance_settings': 'performance_settings.json',
             'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
             'learning_parameters': 'learning_parameters.json',
-            'logging_settings': 'logging_settings.json',   # NEW - Phase 3d Step 6
+            'logging_settings': 'logging_settings.json',     # Phase 3d Step 6
+            'feature_flags': 'feature_flags.json',           # Phase 3d Step 7 - ADDED
+            'performance_settings': 'performance_settings.json'  # Phase 3d Step 7 - ADDED
         }
         
-        logger.info(f"✅ ConfigManager v3.1d initialized with config directory: {config_dir}")
+        logger.info(f"✅ ConfigManager v3.1d Step 7 initialized with config directory: {config_dir}")
+        logger.debug(f"📋 Registered configuration files: {list(self.config_files.keys())}")
         
         # DEBUG: Log standardized environment variables
-        logger.debug("🔍 Phase 3d Standardized Environment Variables:")
+        logger.debug("🔍 Phase 3d Step 7 Standardized Environment Variables:")
         standardized_vars = [
             'NLP_MODEL_DEPRESSION_NAME',
             'NLP_MODEL_DEPRESSION_WEIGHT',
@@ -56,13 +58,16 @@ class ConfigManager:
             'NLP_MODEL_DISTRESS_NAME',
             'NLP_MODEL_DISTRESS_WEIGHT',
             'NLP_STORAGE_MODELS_DIR',
-            'NLP_ENSEMBLE_MODE'
+            'NLP_ENSEMBLE_MODE',
+            'NLP_FEATURE_ENSEMBLE_ANALYSIS',      # Phase 3d Step 7
+            'NLP_PERFORMANCE_ANALYSIS_TIMEOUT'   # Phase 3d Step 7
         ]
         
         for env_var in standardized_vars:
             value = os.getenv(env_var)
-            logger.debug(f"   {env_var}: {value}")
-    
+            if value:
+                logger.debug(f"   {env_var}: {value}")
+
     def get_feature_configuration(self) -> Dict[str, Any]:
         """
         Get feature flags configuration (NEW in Phase 3d Step 7)
@@ -485,7 +490,7 @@ class ConfigManager:
     def load_config_file(self, config_name: str) -> Dict[str, Any]:
         """
         Load and parse a configuration file with environment variable substitution
-        Enhanced in Phase 3d for new configuration files
+        Enhanced in Phase 3d Step 7 for feature flags and performance settings
         
         Args:
             config_name: Name of the configuration (key from self.config_files)
@@ -500,12 +505,14 @@ class ConfigManager:
         config_file = self.config_files.get(config_name)
         if not config_file:
             logger.error(f"❌ Unknown configuration: {config_name}")
+            logger.debug(f"🔍 Available configurations: {list(self.config_files.keys())}")
             return {}
         
         config_path = self.config_dir / config_file
         
         if not config_path.exists():
             logger.warning(f"⚠️ Configuration file not found: {config_path}")
+            logger.debug(f"🔍 Config directory contents: {list(self.config_dir.glob('*.json')) if self.config_dir.exists() else 'Directory does not exist'}")
             return {}
         
         try:
@@ -532,6 +539,10 @@ class ConfigManager:
         except Exception as e:
             logger.error(f"❌ Error loading {config_file}: {e}")
             return {}
+
+    # ========================================================================
+    # EXISTING METHODS PRESERVED (Phase 3a-3c compatibility)
+    # ========================================================================
 
     def get_model_configuration(self) -> Dict[str, Any]:
         """
@@ -683,10 +694,6 @@ class ConfigManager:
             }
         }
     
-    # ========================================================================
-    # EXISTING METHODS PRESERVED (Phase 3a-3c compatibility)
-    # ========================================================================
-    
     def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
         """
         Get crisis pattern configuration by type - PRESERVED from Phase 3a
@@ -747,4 +754,4 @@ def create_config_manager(config_dir: str = "/app/config") -> ConfigManager:
 
 __all__ = ['ConfigManager', 'create_config_manager']
 
-logger.info("✅ Enhanced ConfigManager v3.1d loaded - Phase 3d standardized variables supported")
+logger.info("✅ Enhanced ConfigManager v3.1d Step 7 loaded - Phase 3d standardized variables supported")
