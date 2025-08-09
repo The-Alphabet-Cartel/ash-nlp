@@ -1,0 +1,247 @@
+{
+  "performance_settings": {
+    "description": "Performance optimization configuration for Ash-NLP v3.1d",
+    "version": "3.1d",
+    "last_updated": "2025-08-08",
+    
+    "analysis_performance": {
+      "description": "Performance settings for analysis pipeline operations",
+      "analysis_timeout_ms": "${NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS}",
+      "analysis_max_concurrent": "${NLP_PERFORMANCE_ANALYSIS_MAX_CONCURRENT}",
+      "analysis_cache_ttl": "${NLP_PERFORMANCE_ANALYSIS_CACHE_TTL}",
+      "request_timeout": "${NLP_PERFORMANCE_REQUEST_TIMEOUT}",
+      "defaults": {
+        "analysis_timeout_ms": 5000,
+        "analysis_max_concurrent": 10,
+        "analysis_cache_ttl": 300,
+        "request_timeout": 40
+      },
+      "validation": {
+        "analysis_timeout_ms": {
+          "type": "integer",
+          "range": [1000, 30000],
+          "unit": "milliseconds"
+        },
+        "analysis_max_concurrent": {
+          "type": "integer",
+          "range": [1, 100],
+          "unit": "concurrent_operations"
+        },
+        "analysis_cache_ttl": {
+          "type": "integer",
+          "range": [60, 3600],
+          "unit": "seconds"
+        },
+        "request_timeout": {
+          "type": "integer",
+          "range": [5, 300],
+          "unit": "seconds"
+        }
+      }
+    },
+    
+    "server_performance": {
+      "description": "Server-level performance and concurrency settings",
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
+      "workers": "${NLP_PERFORMANCE_WORKERS}",
+      "defaults": {
+        "max_concurrent_requests": 20,
+        "worker_timeout": 60,
+        "workers": 1
+      },
+      "validation": {
+        "max_concurrent_requests": {
+          "type": "integer",
+          "range": [1, 100],
+          "unit": "concurrent_requests"
+        },
+        "worker_timeout": {
+          "type": "integer",
+          "range": [30, 300],
+          "unit": "seconds"
+        },
+        "workers": {
+          "type": "integer",
+          "range": [1, 8],
+          "unit": "worker_processes"
+        }
+      }
+    },
+    
+    "model_performance": {
+      "description": "ML model performance and hardware optimization settings",
+      "max_batch_size": "${NLP_PERFORMANCE_MAX_BATCH_SIZE}",
+      "inference_threads": "${NLP_PERFORMANCE_INFERENCE_THREADS}",
+      "model_precision": "${NLP_PERFORMANCE_MODEL_PRECISION}",
+      "device": "${NLP_PERFORMANCE_DEVICE}",
+      "max_memory": "${NLP_PERFORMANCE_MAX_MEMORY}",
+      "offload_folder": "${NLP_PERFORMANCE_OFFLOAD_FOLDER}",
+      "defaults": {
+        "max_batch_size": 32,
+        "inference_threads": 16,
+        "model_precision": "float16",
+        "device": "auto",
+        "max_memory": null,
+        "offload_folder": null
+      },
+      "validation": {
+        "max_batch_size": {
+          "type": "integer",
+          "range": [1, 128],
+          "unit": "batch_size"
+        },
+        "inference_threads": {
+          "type": "integer",
+          "range": [1, 32],
+          "unit": "threads"
+        },
+        "model_precision": {
+          "type": "string",
+          "choices": ["float32", "float16", "bfloat16", "auto"],
+          "unit": "precision_format"
+        },
+        "device": {
+          "type": "string",
+          "choices": ["auto", "cpu", "cuda", "cuda:0", "cuda:1"],
+          "unit": "device_identifier"
+        },
+        "max_memory": {
+          "type": "string",
+          "optional": true,
+          "pattern": "^\\d+[GMK]B?$",
+          "unit": "memory_limit"
+        },
+        "offload_folder": {
+          "type": "string",
+          "optional": true,
+          "unit": "directory_path"
+        }
+      }
+    },
+    
+    "rate_limiting_performance": {
+      "description": "Rate limiting and traffic management settings",
+      "rate_limit_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
+      "rate_limit_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
+      "rate_limit_burst": "${NLP_PERFORMANCE_RATE_LIMIT_BURST}",
+      "defaults": {
+        "rate_limit_per_minute": 120,
+        "rate_limit_per_hour": 2000,
+        "rate_limit_burst": 150
+      },
+      "validation": {
+        "rate_limit_per_minute": {
+          "type": "integer",
+          "range": [10, 1000],
+          "unit": "requests_per_minute"
+        },
+        "rate_limit_per_hour": {
+          "type": "integer",
+          "range": [100, 10000],
+          "unit": "requests_per_hour"
+        },
+        "rate_limit_burst": {
+          "type": "integer",
+          "range": [10, 500],
+          "unit": "burst_requests"
+        }
+      }
+    },
+    
+    "cache_performance": {
+      "description": "Cache performance and memory management settings",
+      "model_cache_size_limit": "${NLP_PERFORMANCE_MODEL_CACHE_SIZE_LIMIT}",
+      "analysis_cache_size_limit": "${NLP_PERFORMANCE_ANALYSIS_CACHE_SIZE_LIMIT}",
+      "cache_expiry_hours": "${NLP_PERFORMANCE_CACHE_EXPIRY_HOURS}",
+      "defaults": {
+        "model_cache_size_limit": "10GB",
+        "analysis_cache_size_limit": "2GB",
+        "cache_expiry_hours": 24
+      },
+      "validation": {
+        "model_cache_size_limit": {
+          "type": "string",
+          "pattern": "^\\d+[GMK]B$",
+          "unit": "storage_size"
+        },
+        "analysis_cache_size_limit": {
+          "type": "string",
+          "pattern": "^\\d+[GMK]B$",
+          "unit": "storage_size"
+        },
+        "cache_expiry_hours": {
+          "type": "integer",
+          "range": [1, 168],
+          "unit": "hours"
+        }
+      }
+    }
+  },
+  
+  "performance_profiles": {
+    "description": "Pre-configured performance profiles for different deployment scenarios",
+    "development": {
+      "description": "Optimized for development with debugging enabled",
+      "analysis_timeout_ms": 10000,
+      "analysis_max_concurrent": 5,
+      "max_concurrent_requests": 10,
+      "workers": 1,
+      "max_batch_size": 16,
+      "inference_threads": 8,
+      "model_precision": "float32",
+      "cache_expiry_hours": 1
+    },
+    "production": {
+      "description": "Optimized for production performance",
+      "analysis_timeout_ms": 5000,
+      "analysis_max_concurrent": 20,
+      "max_concurrent_requests": 50,
+      "workers": 4,
+      "max_batch_size": 64,
+      "inference_threads": 16,
+      "model_precision": "float16",
+      "cache_expiry_hours": 24
+    },
+    "high_throughput": {
+      "description": "Maximum throughput configuration",
+      "analysis_timeout_ms": 3000,
+      "analysis_max_concurrent": 50,
+      "max_concurrent_requests": 100,
+      "workers": 8,
+      "max_batch_size": 128,
+      "inference_threads": 32,
+      "model_precision": "float16",
+      "cache_expiry_hours": 48
+    },
+    "low_resource": {
+      "description": "Optimized for constrained resource environments",
+      "analysis_timeout_ms": 8000,
+      "analysis_max_concurrent": 3,
+      "max_concurrent_requests": 5,
+      "workers": 1,
+      "max_batch_size": 8,
+      "inference_threads": 4,
+      "model_precision": "float32",
+      "cache_expiry_hours": 6
+    }
+  },
+  
+  "performance_monitoring": {
+    "description": "Performance monitoring and alerting thresholds",
+    "warning_thresholds": {
+      "analysis_timeout_rate": 0.05,
+      "memory_usage_percent": 80,
+      "cpu_usage_percent": 85,
+      "request_queue_size": 50,
+      "cache_hit_rate_minimum": 0.7
+    },
+    "critical_thresholds": {
+      "analysis_timeout_rate": 0.15,
+      "memory_usage_percent": 95,
+      "cpu_usage_percent": 95,
+      "request_queue_size": 100,
+      "cache_hit_rate_minimum": 0.5
+    }
+  }
+}

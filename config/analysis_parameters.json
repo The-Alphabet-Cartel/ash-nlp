@@ -209,10 +209,10 @@
   },
   "integration_settings": {
     "description": "Configuration for analysis component integration",
-    "enable_pattern_analysis": "${NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS}",
-    "enable_semantic_analysis": "${NLP_ANALYSIS_ENABLE_SEMANTIC_ANALYSIS}",
-    "enable_phrase_extraction": "${NLP_ANALYSIS_ENABLE_PHRASE_EXTRACTION}",
-    "enable_pattern_learning": "${NLP_ANALYSIS_ENABLE_PATTERN_LEARNING}",
+    "enable_pattern_analysis": "${NLP_FEATURE_PATTERN_ANALYSIS}",
+    "enable_semantic_analysis": "${NLP_FEATURE_SEMANTIC_ANALYSIS}",
+    "enable_phrase_extraction": "${NLP_FEATURE_PHRASE_EXTRACTION}",
+    "enable_pattern_learning": "${NLP_FEATURE_PATTERN_LEARNING}",
     "integration_mode": "${NLP_ANALYSIS_INTEGRATION_MODE}",
     "defaults": {
       "enable_pattern_analysis": true,
@@ -230,11 +230,11 @@
   },
   "performance_settings": {
     "description": "Performance and resource management parameters",
-    "analysis_timeout_ms": "${NLP_ANALYSIS_TIMEOUT_MS}",
-    "max_concurrent_analyses": "${NLP_ANALYSIS_MAX_CONCURRENT}",
-    "cache_analysis_results": "${NLP_ANALYSIS_ENABLE_CACHING}",
-    "cache_ttl_seconds": "${NLP_ANALYSIS_CACHE_TTL_SECONDS}",
-    "enable_parallel_processing": "${NLP_ANALYSIS_ENABLE_PARALLEL_PROCESSING}",
+    "analysis_timeout_ms": "${NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS}",
+    "max_concurrent_analyses": "${NLP_PERFORMANCE_ANALYSIS_MAX_CONCURRENT}",
+    "cache_analysis_results": "${NLP_FEATURE_ANALYSIS_CACHING}",
+    "cache_ttl_seconds": "${NLP_PERFORMANCE_ANALYSIS_CACHE_TTL}",
+    "enable_parallel_processing": "${NLP_FEATURE_PARALLEL_PROCESSING}",
     "defaults": {
       "analysis_timeout_ms": 5000,
       "max_concurrent_analyses": 10,
@@ -259,10 +259,10 @@
   },
   "debugging_settings": {
     "description": "Parameters for debugging and development",
-    "enable_detailed_logging": "${NLP_ANALYSIS_ENABLE_DETAILED_LOGGING}",
+    "enable_detailed_logging": "${NLP_FEATURE_DETAILED_LOGGING}",
     "log_analysis_steps": "${NLP_ANALYSIS_LOG_ANALYSIS_STEPS}",
     "include_reasoning_in_response": "${NLP_ANALYSIS_INCLUDE_REASONING}",
-    "enable_performance_metrics": "${NLP_ANALYSIS_ENABLE_PERFORMANCE_METRICS}",
+    "enable_performance_metrics": "${NLP_FEATURE_PERFORMANCE_METRICS}",
     "defaults": {
       "enable_detailed_logging": false,
       "log_analysis_steps": false,
@@ -382,10 +382,10 @@
   },
   "experimental_features": {
     "description": "Feature flags for experimental analysis features",
-    "advanced_context": "${NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT}",
-    "community_vocab": "${NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB}",
-    "temporal_patterns": "${NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS}",
-    "multi_language": "${NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE}",
+    "advanced_context": "${NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT}",
+    "community_vocab": "${NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB}",
+    "temporal_patterns": "${NLP_FEATURE_EXPERIMENTAL_TEMPORAL_PATTERNS}",
+    "multi_language": "${NLP_FEATURE_EXPERIMENTAL_MULTI_LANGUAGE}",
     "defaults": {
       "advanced_context": false,
       "community_vocab": true,

@@ -371,7 +371,7 @@ NLP_ENABLE_PATTERN_INTEGRATION
     },
     "security_settings": {
       "rate_limiting": {
-        "requests_per_minute": "${NLP_SECURITY_REQUESTS_PER_MINUTE}",
+        "requests_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
         "requests_per_hour": "${NLP_SECURITY_REQUESTS_PER_HOUR}"
       }
     },

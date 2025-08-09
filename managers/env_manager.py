@@ -115,23 +115,23 @@ class EnvConfigManager:
             # =================================================================
             # HARDWARE CONFIGURATION
             # =================================================================
-            'NLP_DEVICE': {'type': str, 'default': 'auto', 'choices': ['auto', 'cpu', 'cuda', 'cuda:0', 'cuda:1']},
-            'NLP_MODEL_PRECISION': {'type': str, 'default': 'float16', 'choices': ['float32', 'float16', 'bfloat16']},
+            'NLP_PERFORMANCE_DEVICE': {'type': str, 'default': 'auto', 'choices': ['auto', 'cpu', 'cuda', 'cuda:0', 'cuda:1']},
+            'NLP_PERFORMANCE_MODEL_PRECISION': {'type': str, 'default': 'float16', 'choices': ['float32', 'float16', 'bfloat16']},
             
             # =================================================================
             # PERFORMANCE TUNING
             # =================================================================
-            'NLP_MAX_BATCH_SIZE': {'type': int, 'default': 32, 'min': 1, 'max': 128},
-            'NLP_INFERENCE_THREADS': {'type': int, 'default': 16, 'min': 1, 'max': 32},
-            'NLP_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 20, 'min': 1, 'max': 100},
-            'NLP_REQUEST_TIMEOUT': {'type': int, 'default': 40, 'min': 5, 'max': 300},
+            'NLP_PERFORMANCE_MAX_BATCH_SIZE': {'type': int, 'default': 32, 'min': 1, 'max': 128},
+            'NLP_PERFORMANCE_INFERENCE_THREADS': {'type': int, 'default': 16, 'min': 1, 'max': 32},
+            'NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS': {'type': int, 'default': 20, 'min': 1, 'max': 100},
+            'NLP_PERFORMANCE_REQUEST_TIMEOUT': {'type': int, 'default': 40, 'min': 5, 'max': 300},
             
             # =================================================================
             # SERVER CONFIGURATION
             # =================================================================
             'NLP_SERVER_HOST': {'type': str, 'default': '0.0.0.0'},
             'GLOBAL_NLP_API_PORT': {'type': int, 'default': 8881, 'min': 1024, 'max': 65535},
-            'NLP_SERVER_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
+            'NLP_PERFORMANCE_WORKERS': {'type': int, 'default': 1, 'min': 1, 'max': 8},
             'NLP_RELOAD_ON_CHANGES': {'type': bool, 'default': False},
             
             # =================================================================
@@ -139,7 +139,7 @@ class EnvConfigManager:
             # =================================================================
             'GLOBAL_LOG_LEVEL': {'type': str, 'default': 'INFO', 'choices': ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']},
             'NLP_LOG_FILE': {'type': str, 'default': 'nlp_service.log'},
-            'NLP_FLIP_SENTIMENT_LOGIC': {'type': bool, 'default': False},
+            'NLP_FEATURE_FLIP_SENTIMENT_LOGIC': {'type': bool, 'default': False},
             
             # =================================================================
             # STORAGE PATHS
@@ -164,7 +164,7 @@ class EnvConfigManager:
             # =================================================================
             # EXPERIMENTAL FEATURES
             # =================================================================
-            'NLP_ENABLE_ENSEMBLE_ANALYSIS': {'type': bool, 'default': True},
+            'NLP_FEATURE_ENSEMBLE_ANALYSIS': {'type': bool, 'default': True},
             'NLP_ENABLE_GAP_DETECTION': {'type': bool, 'default': True},
             'NLP_LOGGING_MODEL_DISAGREEMENTS': {'type': bool, 'default': True},
         }
