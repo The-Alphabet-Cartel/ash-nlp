@@ -62,12 +62,9 @@ class PerformanceConfigManager:
                 logger.error("❌ Could not load performance_settings.json configuration")
                 raise ValueError("Performance settings configuration not available")
             
-            # Extract performance settings configuration
-            if 'performance_settings' in performance_config_raw:
-                self.config_cache = performance_config_raw['performance_settings']
-            else:
-                # Direct configuration format
-                self.config_cache = performance_config_raw
+            # Load the ENTIRE configuration, not just performance_settings section
+            # This ensures performance_profiles section is available for get_available_profiles()
+            self.config_cache = performance_config_raw
                 
             logger.debug("✅ Performance settings configuration loaded successfully")
             logger.debug(f"🔍 Configuration keys loaded: {list(self.config_cache.keys())}")
@@ -76,39 +73,22 @@ class PerformanceConfigManager:
             logger.error(f"❌ Failed to load performance settings configuration: {e}")
             # Initialize with safe defaults to prevent system failure
             self.config_cache = {
-                'analysis_performance': {
-                    'defaults': {
+                'performance_settings': {
+                    'analysis_performance': {
+                        'defaults': {
+                            'analysis_timeout_ms': 5000,
+                            'analysis_max_concurrent': 10
+                        }
+                    }
+                },
+                'performance_profiles': {
+                    'balanced': {
+                        'description': 'Default balanced profile',
                         'analysis_timeout_ms': 5000,
-                        'analysis_max_concurrent': 10,
-                        'analysis_cache_ttl': 300,
-                        'request_timeout': 40
-                    }
-                },
-                'server_performance': {
-                    'defaults': {
-                        'max_concurrent_requests': 100,
-                        'worker_timeout': 60,
-                        'keepalive_timeout': 5
-                    }
-                },
-                'model_performance': {
-                    'defaults': {
-                        'max_batch_size': 32,
-                        'inference_threads': 16,
-                        'model_precision': 'float16',
-                        'device': 'auto'
-                    }
-                },
-                'cache_performance': {
-                    'defaults': {
-                        'model_cache_size_limit': '2GB',
-                        'analysis_cache_size_limit': '1GB',
-                        'cache_expiry_hours': 24
+                        'analysis_max_concurrent': 10
                     }
                 }
             }
-            logger.warning("⚠️ Using fallback performance settings configuration")
-            raise
     
     def _validate_performance_settings(self):
         """Validate performance settings for consistency and ranges"""
@@ -401,11 +381,13 @@ class PerformanceConfigManager:
             Converted setting value
         """
         try:
-            category_config = self.config_cache.get(category, {})
+            # Look inside performance_settings section first, then fall back to top level
+            performance_settings = self.config_cache.get('performance_settings', {})
+            category_config = performance_settings.get(category, {})
             value = category_config.get(setting)
             
             if value is None:
-                # Fall back to defaults
+                # Fall back to defaults inside the category
                 defaults = category_config.get('defaults', {})
                 value = defaults.get(setting, default)
             
