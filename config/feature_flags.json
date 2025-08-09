@@ -1,0 +1,208 @@
+{
+  "feature_flags": {
+    "description": "Feature toggle configuration for Ash-NLP v3.1d",
+    "version": "3.1d",
+    "last_updated": "2025-08-08",
+    
+    "core_system_features": {
+      "description": "Core system functionality toggles",
+      "ensemble_analysis": "${NLP_FEATURE_ENSEMBLE_ANALYSIS}",
+      "pattern_integration": "${NLP_FEATURE_PATTERN_INTEGRATION}",
+      "threshold_learning": "${NLP_FEATURE_THRESHOLD_LEARNING}",
+      "staff_review_logic": "${NLP_FEATURE_STAFF_REVIEW_LOGIC}",
+      "safety_controls": "${NLP_FEATURE_SAFETY_CONTROLS}",
+      "defaults": {
+        "ensemble_analysis": true,
+        "pattern_integration": true,
+        "threshold_learning": true,
+        "staff_review_logic": true,
+        "safety_controls": true
+      },
+      "validation": {
+        "ensemble_analysis": {
+          "type": "boolean",
+          "required": true
+        },
+        "pattern_integration": {
+          "type": "boolean",
+          "required": true
+        },
+        "threshold_learning": {
+          "type": "boolean",
+          "required": false
+        },
+        "staff_review_logic": {
+          "type": "boolean",
+          "required": true
+        },
+        "safety_controls": {
+          "type": "boolean",
+          "required": true
+        }
+      }
+    },
+    
+    "analysis_component_features": {
+      "description": "Analysis pipeline component toggles",
+      "pattern_analysis": "${NLP_FEATURE_PATTERN_ANALYSIS}",
+      "semantic_analysis": "${NLP_FEATURE_SEMANTIC_ANALYSIS}",
+      "phrase_extraction": "${NLP_FEATURE_PHRASE_EXTRACTION}",
+      "pattern_learning": "${NLP_FEATURE_PATTERN_LEARNING}",
+      "analysis_caching": "${NLP_FEATURE_ANALYSIS_CACHING}",
+      "parallel_processing": "${NLP_FEATURE_PARALLEL_PROCESSING}",
+      "defaults": {
+        "pattern_analysis": true,
+        "semantic_analysis": true,
+        "phrase_extraction": true,
+        "pattern_learning": true,
+        "analysis_caching": true,
+        "parallel_processing": true
+      },
+      "validation": {
+        "pattern_analysis": {
+          "type": "boolean",
+          "required": true
+        },
+        "semantic_analysis": {
+          "type": "boolean",
+          "required": true
+        },
+        "phrase_extraction": {
+          "type": "boolean",
+          "required": true
+        },
+        "pattern_learning": {
+          "type": "boolean",
+          "required": false
+        },
+        "analysis_caching": {
+          "type": "boolean",
+          "required": false
+        },
+        "parallel_processing": {
+          "type": "boolean",
+          "required": false
+        }
+      }
+    },
+    
+    "experimental_features": {
+      "description": "Experimental and research features - use with caution",
+      "advanced_context": "${NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT}",
+      "community_vocab": "${NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB}",
+      "temporal_patterns": "${NLP_FEATURE_EXPERIMENTAL_TEMPORAL_PATTERNS}",
+      "multi_language": "${NLP_FEATURE_EXPERIMENTAL_MULTI_LANGUAGE}",
+      "defaults": {
+        "advanced_context": false,
+        "community_vocab": true,
+        "temporal_patterns": true,
+        "multi_language": false
+      },
+      "validation": {
+        "advanced_context": {
+          "type": "boolean",
+          "required": false
+        },
+        "community_vocab": {
+          "type": "boolean",
+          "required": false
+        },
+        "temporal_patterns": {
+          "type": "boolean",
+          "required": false
+        },
+        "multi_language": {
+          "type": "boolean",
+          "required": false
+        }
+      }
+    },
+    
+    "development_debug_features": {
+      "description": "Development and debugging feature toggles",
+      "detailed_logging": "${NLP_FEATURE_DETAILED_LOGGING}",
+      "performance_metrics": "${NLP_FEATURE_PERFORMANCE_METRICS}",
+      "reload_on_changes": "${NLP_FEATURE_RELOAD_ON_CHANGES}",
+      "flip_sentiment_logic": "${NLP_FEATURE_FLIP_SENTIMENT_LOGIC}",
+      "defaults": {
+        "detailed_logging": true,
+        "performance_metrics": true,
+        "reload_on_changes": false,
+        "flip_sentiment_logic": false
+      },
+      "validation": {
+        "detailed_logging": {
+          "type": "boolean",
+          "required": false
+        },
+        "performance_metrics": {
+          "type": "boolean",
+          "required": false
+        },
+        "reload_on_changes": {
+          "type": "boolean",
+          "required": false
+        },
+        "flip_sentiment_logic": {
+          "type": "boolean",
+          "required": false
+        }
+      }
+    }
+  },
+  
+  "feature_dependencies": {
+    "description": "Feature dependency configuration and validation rules",
+    "dependencies": {
+      "pattern_learning": {
+        "requires": ["pattern_analysis", "analysis_caching"],
+        "description": "Pattern learning requires pattern analysis and caching to be enabled"
+      },
+      "threshold_learning": {
+        "requires": ["ensemble_analysis", "staff_review_logic"],
+        "description": "Threshold learning requires ensemble analysis and staff review logic"
+      },
+      "experimental_features": {
+        "requires": ["detailed_logging"],
+        "description": "Experimental features require detailed logging for monitoring"
+      }
+    },
+    "conflicts": {
+      "flip_sentiment_logic": {
+        "conflicts_with": ["safety_controls"],
+        "description": "Sentiment logic flipping should not be used with safety controls in production"
+      }
+    }
+  },
+  
+  "feature_categories": {
+    "description": "Feature categorization for management and UI purposes",
+    "production_ready": [
+      "ensemble_analysis",
+      "pattern_integration", 
+      "staff_review_logic",
+      "safety_controls",
+      "pattern_analysis",
+      "semantic_analysis",
+      "phrase_extraction",
+      "analysis_caching",
+      "parallel_processing"
+    ],
+    "beta_features": [
+      "threshold_learning",
+      "pattern_learning",
+      "community_vocab",
+      "temporal_patterns"
+    ],
+    "experimental": [
+      "advanced_context",
+      "multi_language"
+    ],
+    "development_only": [
+      "reload_on_changes",
+      "flip_sentiment_logic",
+      "detailed_logging",
+      "performance_metrics"
+    ]
+  }
+}
