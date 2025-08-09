@@ -73,7 +73,7 @@
     "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
     "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}",
     "performance_settings": {
-      "max_concurrent_requests": "${NLP_SERVER_MAX_CONCURRENT_REQUESTS}",
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
       "request_timeout": "${NLP_PERFORMANCE_REQUEST_TIMEOUT}",
       "memory_optimization": true,
       "batch_processing": true
@@ -93,7 +93,7 @@
   },
   "feature_flags": {
     "experimental_features": {
-      "enable_ensemble_analysis": "${NLP_ENABLE_ENSEMBLE_ANALYSIS}",
+      "enable_ensemble_analysis": "${NLP_FEATURE_ENSEMBLE_ANALYSIS}",
       "enable_gap_detection": "${NLP_ENABLE_GAP_DETECTION}",
       "log_model_disagreements": "${NLP_LOGGING_MODEL_DISAGREEMENTS}",
       "enable_model_parallelism": "${NLP_ENABLE_MODEL_PARALLELISM}"
