@@ -1,24 +1,24 @@
-# managers/feature_config_manager.py - PHASE 3D STEP 7
+# ash-nlp/managers/feature_config_manager.py - PHASE 3D STEP 7 COMPLETE
 """
-Phase 3d Step 7: Feature Configuration Manager
-Clean v3.1 Architecture with comprehensive feature flag management
+Feature Configuration Manager for Ash NLP Service v3.1d - Phase 3d Step 7 Complete
+Comprehensive feature flag management system with Clean v3.1 architecture
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
-import json
+import os
 import logging
+from typing import Dict, Any, List, Optional
 from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
 
 logger = logging.getLogger(__name__)
 
 class FeatureConfigManager:
     """
-    Feature Configuration Manager for Ash-NLP v3.1d Step 7
+    Feature Configuration Manager for Ash NLP Service v3.1d - Phase 3d Step 7 Complete
     
-    Manages all feature flags and toggles with JSON configuration + environment overrides.
+    Manages feature flags for crisis analysis system components with comprehensive validation and dependency management.
     Implements Clean v3.1 architecture patterns with dependency injection and fail-fast validation.
     
     Features:
@@ -54,17 +54,53 @@ class FeatureConfigManager:
     def _load_feature_configuration(self):
         """Load feature flag configuration from JSON with environment overrides"""
         try:
-            # Load feature flags configuration through ConfigManager
-            feature_config = self.config_manager.get_config('feature_flags')
+            # Load feature flags configuration through ConfigManager using correct method
+            feature_config_raw = self.config_manager.load_config_file('feature_flags')
             
-            if not feature_config or 'feature_flags' not in feature_config:
-                raise ValueError("Invalid feature_flags configuration - missing 'feature_flags' section")
+            if not feature_config_raw:
+                logger.error("❌ Could not load feature_flags.json configuration")
+                raise ValueError("Feature flags configuration not available")
             
-            self.config_cache = feature_config['feature_flags']
+            # Extract feature flags configuration
+            if 'feature_flags' in feature_config_raw:
+                self.config_cache = feature_config_raw['feature_flags']
+            else:
+                # Direct configuration format
+                self.config_cache = feature_config_raw
+                
             logger.debug("✅ Feature flags configuration loaded successfully")
+            logger.debug(f"🔍 Configuration keys loaded: {list(self.config_cache.keys())}")
             
         except Exception as e:
             logger.error(f"❌ Failed to load feature flags configuration: {e}")
+            # Initialize with safe defaults to prevent system failure
+            self.config_cache = {
+                'core_system_features': {
+                    'defaults': {
+                        'ensemble_analysis': True,
+                        'pattern_integration': True,
+                        'safety_controls': True
+                    }
+                },
+                'analysis_component_features': {
+                    'defaults': {
+                        'pattern_analysis': True,
+                        'semantic_analysis': True,
+                        'phrase_extraction': True
+                    }
+                },
+                'experimental_features': {
+                    'defaults': {}
+                },
+                'development_debug_features': {
+                    'defaults': {
+                        'detailed_logging': False,
+                        'performance_metrics': False,
+                        'debug_output': False
+                    }
+                }
+            }
+            logger.warning("⚠️ Using fallback feature flag configuration")
             raise
     
     def _validate_feature_dependencies(self):
@@ -81,49 +117,39 @@ class FeatureConfigManager:
                         if not self.is_feature_enabled(required):
                             error_msg = f"Feature '{feature}' requires '{required}' to be enabled"
                             self.validation_errors.append(error_msg)
-                            logger.warning(f"⚠️ Dependency validation warning: {error_msg}")
+                            logger.warning(f"⚠️ {error_msg}")
             
             # Validate conflicts
-            for feature, conflict_info in conflicts.items():
+            for feature, conflict_list in conflicts.items():
                 if self.is_feature_enabled(feature):
-                    conflicting_features = conflict_info.get('conflicts_with', [])
-                    for conflict in conflicting_features:
-                        if self.is_feature_enabled(conflict):
-                            error_msg = f"Feature '{feature}' conflicts with '{conflict}'"
+                    for conflicting in conflict_list:
+                        if self.is_feature_enabled(conflicting):
+                            error_msg = f"Feature '{feature}' conflicts with '{conflicting}'"
                             self.validation_errors.append(error_msg)
-                            logger.warning(f"⚠️ Conflict validation warning: {error_msg}")
+                            logger.warning(f"⚠️ {error_msg}")
             
             if self.validation_errors:
-                logger.warning(f"⚠️ Feature dependency validation found {len(self.validation_errors)} issues")
+                logger.warning(f"⚠️ Feature validation found {len(self.validation_errors)} issues")
             else:
                 logger.debug("✅ Feature dependency validation passed")
                 
         except Exception as e:
-            logger.error(f"❌ Feature dependency validation failed: {e}")
-            raise
+            logger.warning(f"⚠️ Error during feature dependency validation: {e}")
     
     # ========================================================================
     # CORE SYSTEM FEATURES
     # ========================================================================
     
     def is_ensemble_analysis_enabled(self) -> bool:
-        """Check if ensemble analysis is enabled"""
+        """Check if three-model ensemble analysis is enabled"""
         return self._get_feature_flag('core_system_features', 'ensemble_analysis', True)
     
     def is_pattern_integration_enabled(self) -> bool:
-        """Check if pattern integration is enabled"""
+        """Check if crisis pattern integration is enabled"""
         return self._get_feature_flag('core_system_features', 'pattern_integration', True)
     
-    def is_threshold_learning_enabled(self) -> bool:
-        """Check if threshold learning is enabled"""
-        return self._get_feature_flag('core_system_features', 'threshold_learning', True)
-    
-    def is_staff_review_logic_enabled(self) -> bool:
-        """Check if staff review logic is enabled"""
-        return self._get_feature_flag('core_system_features', 'staff_review_logic', True)
-    
     def is_safety_controls_enabled(self) -> bool:
-        """Check if safety controls are enabled"""
+        """Check if safety controls and validation are enabled"""
         return self._get_feature_flag('core_system_features', 'safety_controls', True)
     
     def get_core_system_features(self) -> Dict[str, bool]:
@@ -131,8 +157,6 @@ class FeatureConfigManager:
         return {
             'ensemble_analysis': self.is_ensemble_analysis_enabled(),
             'pattern_integration': self.is_pattern_integration_enabled(),
-            'threshold_learning': self.is_threshold_learning_enabled(),
-            'staff_review_logic': self.is_staff_review_logic_enabled(),
             'safety_controls': self.is_safety_controls_enabled()
         }
     
@@ -141,12 +165,16 @@ class FeatureConfigManager:
     # ========================================================================
     
     def is_pattern_analysis_enabled(self) -> bool:
-        """Check if pattern analysis is enabled"""
+        """Check if pattern-based analysis is enabled"""
         return self._get_feature_flag('analysis_component_features', 'pattern_analysis', True)
     
     def is_semantic_analysis_enabled(self) -> bool:
         """Check if semantic analysis is enabled"""
         return self._get_feature_flag('analysis_component_features', 'semantic_analysis', True)
+    
+    def is_context_analysis_enabled(self) -> bool:
+        """Check if context analysis is enabled"""
+        return self._get_feature_flag('analysis_component_features', 'context_analysis', True)
     
     def is_phrase_extraction_enabled(self) -> bool:
         """Check if phrase extraction is enabled"""
@@ -156,8 +184,12 @@ class FeatureConfigManager:
         """Check if pattern learning is enabled"""
         return self._get_feature_flag('analysis_component_features', 'pattern_learning', True)
     
+    def is_community_patterns_enabled(self) -> bool:
+        """Check if community-specific patterns are enabled"""
+        return self._get_feature_flag('analysis_component_features', 'community_patterns', True)
+    
     def is_analysis_caching_enabled(self) -> bool:
-        """Check if analysis caching is enabled"""
+        """Check if analysis result caching is enabled"""
         return self._get_feature_flag('analysis_component_features', 'analysis_caching', True)
     
     def is_parallel_processing_enabled(self) -> bool:
@@ -169,8 +201,10 @@ class FeatureConfigManager:
         return {
             'pattern_analysis': self.is_pattern_analysis_enabled(),
             'semantic_analysis': self.is_semantic_analysis_enabled(),
+            'context_analysis': self.is_context_analysis_enabled(),
             'phrase_extraction': self.is_phrase_extraction_enabled(),
             'pattern_learning': self.is_pattern_learning_enabled(),
+            'community_patterns': self.is_community_patterns_enabled(),
             'analysis_caching': self.is_analysis_caching_enabled(),
             'parallel_processing': self.is_parallel_processing_enabled()
         }
@@ -179,29 +213,34 @@ class FeatureConfigManager:
     # EXPERIMENTAL FEATURES
     # ========================================================================
     
-    def is_experimental_advanced_context_enabled(self) -> bool:
-        """Check if experimental advanced context is enabled"""
+    def is_advanced_context_enabled(self) -> bool:
+        """Check if advanced context analysis is enabled (experimental)"""
         return self._get_feature_flag('experimental_features', 'advanced_context', False)
     
-    def is_experimental_community_vocab_enabled(self) -> bool:
-        """Check if experimental community vocabulary is enabled"""
-        return self._get_feature_flag('experimental_features', 'community_vocab', True)
+    def is_neural_patterns_enabled(self) -> bool:
+        """Check if neural pattern detection is enabled (experimental)"""
+        return self._get_feature_flag('experimental_features', 'neural_patterns', False)
     
-    def is_experimental_temporal_patterns_enabled(self) -> bool:
-        """Check if experimental temporal patterns are enabled"""
-        return self._get_feature_flag('experimental_features', 'temporal_patterns', True)
-    
-    def is_experimental_multi_language_enabled(self) -> bool:
-        """Check if experimental multi-language support is enabled"""
+    def is_multi_language_enabled(self) -> bool:
+        """Check if multi-language support is enabled (experimental)"""
         return self._get_feature_flag('experimental_features', 'multi_language', False)
+    
+    def is_advanced_learning_enabled(self) -> bool:
+        """Check if advanced learning algorithms are enabled (experimental)"""
+        return self._get_feature_flag('experimental_features', 'advanced_learning', False)
+    
+    def is_real_time_adaptation_enabled(self) -> bool:
+        """Check if real-time model adaptation is enabled (experimental)"""
+        return self._get_feature_flag('experimental_features', 'real_time_adaptation', False)
     
     def get_experimental_features(self) -> Dict[str, bool]:
         """Get all experimental feature flags"""
         return {
-            'advanced_context': self.is_experimental_advanced_context_enabled(),
-            'community_vocab': self.is_experimental_community_vocab_enabled(),
-            'temporal_patterns': self.is_experimental_temporal_patterns_enabled(),
-            'multi_language': self.is_experimental_multi_language_enabled()
+            'advanced_context': self.is_advanced_context_enabled(),
+            'neural_patterns': self.is_neural_patterns_enabled(),
+            'multi_language': self.is_multi_language_enabled(),
+            'advanced_learning': self.is_advanced_learning_enabled(),
+            'real_time_adaptation': self.is_real_time_adaptation_enabled()
         }
     
     # ========================================================================
@@ -209,19 +248,23 @@ class FeatureConfigManager:
     # ========================================================================
     
     def is_detailed_logging_enabled(self) -> bool:
-        """Check if detailed logging is enabled"""
-        return self._get_feature_flag('development_debug_features', 'detailed_logging', True)
+        """Check if detailed debug logging is enabled"""
+        return self._get_feature_flag('development_debug_features', 'detailed_logging', False)
     
     def is_performance_metrics_enabled(self) -> bool:
-        """Check if performance metrics are enabled"""
-        return self._get_feature_flag('development_debug_features', 'performance_metrics', True)
+        """Check if performance metrics collection is enabled"""
+        return self._get_feature_flag('development_debug_features', 'performance_metrics', False)
+    
+    def is_debug_output_enabled(self) -> bool:
+        """Check if debug output is enabled"""
+        return self._get_feature_flag('development_debug_features', 'debug_output', False)
     
     def is_reload_on_changes_enabled(self) -> bool:
-        """Check if reload on changes is enabled"""
+        """Check if configuration reload on changes is enabled"""
         return self._get_feature_flag('development_debug_features', 'reload_on_changes', False)
     
     def is_flip_sentiment_logic_enabled(self) -> bool:
-        """Check if sentiment logic flipping is enabled"""
+        """Check if sentiment logic flipping is enabled (for testing)"""
         return self._get_feature_flag('development_debug_features', 'flip_sentiment_logic', False)
     
     def get_development_debug_features(self) -> Dict[str, bool]:
@@ -229,6 +272,7 @@ class FeatureConfigManager:
         return {
             'detailed_logging': self.is_detailed_logging_enabled(),
             'performance_metrics': self.is_performance_metrics_enabled(),
+            'debug_output': self.is_debug_output_enabled(),
             'reload_on_changes': self.is_reload_on_changes_enabled(),
             'flip_sentiment_logic': self.is_flip_sentiment_logic_enabled()
         }
@@ -239,7 +283,7 @@ class FeatureConfigManager:
     
     def is_feature_enabled(self, feature_name: str) -> bool:
         """
-        Check if any feature is enabled by name
+        Check if a specific feature is enabled by name
         
         Args:
             feature_name: Name of the feature to check
@@ -247,25 +291,27 @@ class FeatureConfigManager:
         Returns:
             Boolean indicating if feature is enabled
         """
-        # Map feature names to their getter methods
+        # Map feature names to their respective methods
         feature_methods = {
             'ensemble_analysis': self.is_ensemble_analysis_enabled,
             'pattern_integration': self.is_pattern_integration_enabled,
-            'threshold_learning': self.is_threshold_learning_enabled,
-            'staff_review_logic': self.is_staff_review_logic_enabled,
             'safety_controls': self.is_safety_controls_enabled,
             'pattern_analysis': self.is_pattern_analysis_enabled,
             'semantic_analysis': self.is_semantic_analysis_enabled,
+            'context_analysis': self.is_context_analysis_enabled,
             'phrase_extraction': self.is_phrase_extraction_enabled,
             'pattern_learning': self.is_pattern_learning_enabled,
+            'community_patterns': self.is_community_patterns_enabled,
             'analysis_caching': self.is_analysis_caching_enabled,
             'parallel_processing': self.is_parallel_processing_enabled,
-            'advanced_context': self.is_experimental_advanced_context_enabled,
-            'community_vocab': self.is_experimental_community_vocab_enabled,
-            'temporal_patterns': self.is_experimental_temporal_patterns_enabled,
-            'multi_language': self.is_experimental_multi_language_enabled,
+            'advanced_context': self.is_advanced_context_enabled,
+            'neural_patterns': self.is_neural_patterns_enabled,
+            'multi_language': self.is_multi_language_enabled,
+            'advanced_learning': self.is_advanced_learning_enabled,
+            'real_time_adaptation': self.is_real_time_adaptation_enabled,
             'detailed_logging': self.is_detailed_logging_enabled,
             'performance_metrics': self.is_performance_metrics_enabled,
+            'debug_output': self.is_debug_output_enabled,
             'reload_on_changes': self.is_reload_on_changes_enabled,
             'flip_sentiment_logic': self.is_flip_sentiment_logic_enabled
         }
