@@ -94,6 +94,11 @@ manager = create_[manager]_manager(
 - **Integration**: ThresholdMappingManager integrated throughout analysis pipeline
 - **Factory**: `create_threshold_mapping_manager(config_manager, model_ensemble_manager)`
 
+### **Phase 3d: Environmental Variable Cleanup**
+- **Principle**: Complete audit and cleanup of the Environmental Variables system and config manager
+- **Integration**: consolidating multiple environment variable management approaches into a single, clean, comprehensive system
+- **Factory**: `create_server_config_manager(config_manager)`
+
 ### **Future Phases**
 - **MUST follow established patterns**
 - **MUST use factory functions**

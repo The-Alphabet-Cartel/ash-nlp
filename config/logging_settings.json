@@ -1,0 +1,120 @@
+{
+  "logging_configuration": {
+    "version": "3.1d",
+    "architecture": "clean-v3.1-unified",
+    "description": "Unified logging configuration - standardizes logging variable naming and centralizes all logging settings",
+    "documentation": "Phase 3d Step 6: Consolidates scattered logging variables into single, manageable configuration",
+    "global_settings": {
+      "description": "Core logging settings - GLOBAL_LOG_LEVEL must be preserved for ecosystem compatibility",
+      "log_level": "${GLOBAL_LOG_LEVEL}",
+      "log_file": "${NLP_STORAGE_LOG_FILE}",
+      "log_directory": "${NLP_STORAGE_LOGS_DIR}",
+      "enable_console_output": true,
+      "enable_file_output": true,
+      "log_format": "%(asctime)s %(levelname)s: %(name)s - %(message)s"
+    },
+    "detailed_logging": {
+      "description": "Granular logging controls for different system components",
+      "enable_detailed": "${NLP_LOGGING_ENABLE_DETAILED}",
+      "include_raw_labels": "${NLP_LOGGING_INCLUDE_RAW_LABELS}",
+      "analysis_steps": "${NLP_LOGGING_ANALYSIS_STEPS}",
+      "performance_metrics": "${NLP_LOGGING_PERFORMANCE_METRICS}",
+      "include_reasoning": "${NLP_LOGGING_INCLUDE_REASONING}"
+    },
+    "component_logging": {
+      "description": "Logging controls for specific system components",
+      "threshold_changes": "${NLP_LOGGING_THRESHOLD_CHANGES}",
+      "model_disagreements": "${NLP_LOGGING_MODEL_DISAGREEMENTS}",
+      "staff_review_triggers": "${NLP_LOGGING_STAFF_REVIEW_TRIGGERS}",
+      "pattern_adjustments": "${NLP_LOGGING_PATTERN_ADJUSTMENTS}",
+      "learning_updates": "${NLP_LOGGING_LEARNING_UPDATES}",
+      "label_mappings": "${NLP_LOGGING_LABEL_MAPPINGS}",
+      "ensemble_decisions": "${NLP_LOGGING_ENSEMBLE_DECISIONS}",
+      "crisis_detection": "${NLP_LOGGING_CRISIS_DETECTION}"
+    },
+    "development_logging": {
+      "description": "Logging settings for development and debugging",
+      "debug_mode": "${NLP_LOGGING_DEBUG_MODE}",
+      "trace_requests": "${NLP_LOGGING_TRACE_REQUESTS}",
+      "log_configuration_loading": "${NLP_LOGGING_CONFIG_LOADING}",
+      "log_manager_initialization": "${NLP_LOGGING_MANAGER_INIT}",
+      "log_environment_variables": "${NLP_LOGGING_ENV_VARS}"
+    },
+    "defaults": {
+      "global_settings": {
+        "log_level": "INFO",
+        "log_file": "nlp_service.log",
+        "log_directory": "./logs",
+        "enable_console_output": true,
+        "enable_file_output": true,
+        "log_format": "%(asctime)s %(levelname)s: %(name)s - %(message)s"
+      },
+      "detailed_logging": {
+        "enable_detailed": true,
+        "include_raw_labels": true,
+        "analysis_steps": false,
+        "performance_metrics": true,
+        "include_reasoning": true
+      },
+      "component_logging": {
+        "threshold_changes": true,
+        "model_disagreements": true,
+        "staff_review_triggers": true,
+        "pattern_adjustments": true,
+        "learning_updates": true,
+        "label_mappings": true,
+        "ensemble_decisions": true,
+        "crisis_detection": true
+      },
+      "development_logging": {
+        "debug_mode": false,
+        "trace_requests": false,
+        "log_configuration_loading": false,
+        "log_manager_initialization": true,
+        "log_environment_variables": false
+      }
+    },
+    "validation": {
+      "log_level": {
+        "choices": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+        "type": "string"
+      },
+      "log_file": {
+        "type": "string",
+        "pattern": "^[\\w\\-_.]+\\.log$"
+      },
+      "log_directory": {
+        "type": "string",
+        "must_exist": false,
+        "create_if_missing": true
+      },
+      "boolean_settings": {
+        "type": "boolean",
+        "applies_to": [
+          "enable_detailed", "include_raw_labels", "analysis_steps", 
+          "performance_metrics", "include_reasoning", "threshold_changes",
+          "model_disagreements", "staff_review_triggers", "pattern_adjustments",
+          "learning_updates", "label_mappings", "ensemble_decisions",
+          "crisis_detection", "debug_mode", "trace_requests",
+          "log_configuration_loading", "log_manager_initialization",
+          "log_environment_variables", "enable_console_output", "enable_file_output"
+        ]
+      }
+    },
+    "phase_3d_notes": {
+      "variables_consolidated": [
+        "NLP_ENABLE_DETAILED_LOGGING → NLP_LOGGING_ENABLE_DETAILED",
+        "NLP_LOG_THRESHOLD_CHANGES → NLP_LOGGING_THRESHOLD_CHANGES", 
+        "NLP_LOG_MODEL_DISAGREEMENTS → NLP_LOGGING_MODEL_DISAGREEMENTS",
+        "NLP_LOG_STAFF_REVIEW_TRIGGERS → NLP_LOGGING_STAFF_REVIEW_TRIGGERS",
+        "NLP_LOG_PATTERN_ADJUSTMENTS → NLP_LOGGING_PATTERN_ADJUSTMENTS",
+        "NLP_LOG_LEARNING_UPDATES → NLP_LOGGING_LEARNING_UPDATES",
+        "NLP_LOG_LABEL_MAPPINGS → NLP_LOGGING_LABEL_MAPPINGS"
+      ],
+      "global_variables_preserved": [
+        "GLOBAL_LOG_LEVEL - Unchanged for ecosystem compatibility"
+      ],
+      "architecture_compliance": "Clean v3.1 - Factory functions and dependency injection"
+    }
+  }
+}

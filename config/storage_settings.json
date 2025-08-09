@@ -2,46 +2,138 @@
   "storage_configuration": {
     "version": "3.1d",
     "architecture": "clean-v3.1-unified",
-    "description": "Unified storage configuration - consolidates multiple duplicate directory variables",
+    "description": "Enhanced unified storage configuration - includes HuggingFace cache management",
+    "documentation": "Phase 3d Step 6: Added HuggingFace cache configuration following NLP_STORAGE_* naming convention",
     "directories": {
+      "description": "Primary storage directories - consolidated from multiple duplicate variables",
       "data_directory": "${NLP_STORAGE_DATA_DIR}",
       "models_directory": "${NLP_STORAGE_MODELS_DIR}",
       "logs_directory": "${NLP_STORAGE_LOGS_DIR}", 
-      "learning_directory": "${NLP_STORAGE_LEARNING_DIR}"
+      "learning_directory": "${NLP_STORAGE_LEARNING_DIR}",
+      "cache_directory": "${NLP_STORAGE_CACHE_DIR}",
+      "temp_directory": "${NLP_STORAGE_TEMP_DIR}",
+      "backup_directory": "${NLP_STORAGE_BACKUP_DIR}"
     },
     "file_paths": {
+      "description": "Specific file paths for various system components",
       "log_file": "${NLP_STORAGE_LOG_FILE}",
-      "learning_persistence_file": "${NLP_STORAGE_LEARNING_FILE}"
+      "learning_persistence_file": "${NLP_STORAGE_LEARNING_FILE}",
+      "pid_file": "${NLP_STORAGE_PID_FILE}",
+      "health_check_file": "${NLP_STORAGE_HEALTH_FILE}",
+      "config_backup_file": "${NLP_STORAGE_CONFIG_BACKUP_FILE}"
     },
     "cache_settings": {
-      "huggingface_cache": "${NLP_STORAGE_MODELS_DIR}",
-      "enable_model_caching": true,
-      "cache_cleanup_on_startup": false,
-      "model_cache_size_limit": "10GB"
+      "description": "Caching configuration and storage management",
+      "huggingface_cache": "${NLP_STORAGE_HUGGINGFACE_CACHE}",
+      "analysis_cache": "${NLP_STORAGE_CACHE_DIR}",
+      "enable_model_caching": "${NLP_STORAGE_ENABLE_MODEL_CACHE}",
+      "enable_analysis_caching": "${NLP_STORAGE_ENABLE_ANALYSIS_CACHE}",
+      "cache_cleanup_on_startup": "${NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP}",
+      "model_cache_size_limit": "${NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT}",
+      "analysis_cache_size_limit": "${NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT}",
+      "cache_expiry_hours": "${NLP_STORAGE_CACHE_EXPIRY_HOURS}"
+    },
+    "backup_settings": {
+      "description": "Backup and archival configuration",
+      "enable_automatic_backup": "${NLP_STORAGE_ENABLE_AUTO_BACKUP}",
+      "backup_interval_hours": "${NLP_STORAGE_BACKUP_INTERVAL_HOURS}",
+      "backup_retention_days": "${NLP_STORAGE_BACKUP_RETENTION_DAYS}",
+      "compress_backups": "${NLP_STORAGE_COMPRESS_BACKUPS}",
+      "backup_learning_data": "${NLP_STORAGE_BACKUP_LEARNING_DATA}",
+      "backup_configuration": "${NLP_STORAGE_BACKUP_CONFIG}"
+    },
+    "cleanup_settings": {
+      "description": "Storage cleanup and maintenance policies",
+      "enable_automatic_cleanup": "${NLP_STORAGE_ENABLE_AUTO_CLEANUP}",
+      "cleanup_temp_files": "${NLP_STORAGE_CLEANUP_TEMP_FILES}",
+      "temp_file_max_age_hours": "${NLP_STORAGE_TEMP_FILE_MAX_AGE}",
+      "log_rotation_enabled": "${NLP_STORAGE_LOG_ROTATION_ENABLED}",
+      "log_max_size_mb": "${NLP_STORAGE_LOG_MAX_SIZE_MB}",
+      "log_backup_count": "${NLP_STORAGE_LOG_BACKUP_COUNT}"
     },
     "defaults": {
       "directories": {
         "data_directory": "./data",
         "models_directory": "./models/cache",
         "logs_directory": "./logs",
-        "learning_directory": "./learning_data"
+        "learning_directory": "./learning_data",
+        "cache_directory": "./cache",
+        "temp_directory": "./tmp",
+        "backup_directory": "./backups"
       },
       "file_paths": {
         "log_file": "nlp_service.log",
-        "learning_persistence_file": "./learning_data/adjustments.json"
+        "learning_persistence_file": "./learning_data/adjustments.json",
+        "pid_file": "./tmp/nlp_service.pid",
+        "health_check_file": "./tmp/health_check.json",
+        "config_backup_file": "./backups/config_backup.json"
       },
       "cache_settings": {
         "huggingface_cache": "./models/cache",
+        "analysis_cache": "./cache",
         "enable_model_caching": true,
+        "enable_analysis_caching": true,
         "cache_cleanup_on_startup": false,
-        "model_cache_size_limit": "10GB"
+        "model_cache_size_limit": "10GB",
+        "analysis_cache_size_limit": "2GB",
+        "cache_expiry_hours": 24
+      },
+      "backup_settings": {
+        "enable_automatic_backup": false,
+        "backup_interval_hours": 24,
+        "backup_retention_days": 30,
+        "compress_backups": true,
+        "backup_learning_data": true,
+        "backup_configuration": true
+      },
+      "cleanup_settings": {
+        "enable_automatic_cleanup": true,
+        "cleanup_temp_files": true,
+        "temp_file_max_age_hours": 24,
+        "log_rotation_enabled": true,
+        "log_max_size_mb": 100,
+        "log_backup_count": 5
       }
     },
     "validation": {
       "create_directories_on_startup": true,
       "validate_write_permissions": true,
       "fail_on_inaccessible_directories": false,
-      "required_directories": ["data_directory", "models_directory", "logs_directory", "learning_directory"]
+      "required_directories": [
+        "data_directory", "models_directory", "logs_directory", 
+        "learning_directory", "cache_directory", "temp_directory"
+      ],
+      "optional_directories": ["backup_directory"],
+      "disk_space_checks": {
+        "enable_disk_space_monitoring": true,
+        "minimum_free_space_gb": 5,
+        "warning_threshold_gb": 10,
+        "cleanup_threshold_gb": 8
+      },
+      "file_path_validation": {
+        "validate_file_extensions": true,
+        "allowed_log_extensions": [".log", ".txt"],
+        "allowed_data_extensions": [".json", ".csv", ".txt"],
+        "max_filename_length": 255
+      }
+    },
+    "phase_3d_enhancements": {
+      "step_6_additions": [
+        "huggingface_cache - Clean v3.1 compliant HuggingFace cache configuration",
+        "cache_directory - Consolidates analysis cache paths",
+        "temp_directory - Consolidates temporary file storage",
+        "backup_directory - New backup functionality",
+        "backup_settings - Comprehensive backup configuration",
+        "cleanup_settings - Automated maintenance policies",
+        "Enhanced validation - Disk space and permission checks"
+      ],
+      "variables_consolidated": [
+        "Multiple HF_* variables → NLP_STORAGE_HUGGINGFACE_CACHE",
+        "NLP_ANALYSIS_CACHE_DIR → NLP_STORAGE_CACHE_DIR",
+        "NLP_TEMP_DIR → NLP_STORAGE_TEMP_DIR",
+        "Added comprehensive backup and cleanup variables"
+      ],
+      "architecture_compliance": "Clean v3.1 - Single variable per function, unified naming convention"
     }
   }
 }

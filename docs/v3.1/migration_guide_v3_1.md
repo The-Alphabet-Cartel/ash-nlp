@@ -110,6 +110,9 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_1.md
 |   |   │   │   |   ├── step_2.md
 |   |   │   │   |   ├── step_3.md
+|   |   │   │   |   ├── step_4.md
+|   |   │   │   |   ├── step_5.md
+|   |   │   │   |   ├── step_6.md
 |   |   │   │   │   └── tracker.md
 |   │   │   └── 4/
 |   |   │       ├── a/
@@ -121,6 +124,7 @@ ash/ash-nlp/
 |   |   │           ├── status_update.md
 |   |   │           └── tracker.md
 │   │   ├── 3_1_clean_architecture_charter.md
+│   │   ├── 3_1_frequently_asked_questions.md
 │   │   └── migration_guide_v3_1.md
 │   └── project_instructions_v3_1.md
 ├── learning_data/                           # Learning Data Storage
