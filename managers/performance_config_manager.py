@@ -193,9 +193,14 @@ class PerformanceConfigManager:
         return {
             'max_concurrent_requests': self.get_max_concurrent_requests(),
             'worker_timeout': self.get_worker_timeout(),
-            'keepalive_timeout': self.get_keepalive_timeout()
+            'keepalive_timeout': self.get_keepalive_timeout(),
+            'workers': self.get_workers()  # ADD THIS LINE
         }
     
+    def get_workers(self) -> int:
+        """Get number of server workers"""
+        return self._get_performance_setting('server_performance', 'workers', 1, int)
+
     # ========================================================================
     # MODEL PERFORMANCE SETTINGS
     # ========================================================================
