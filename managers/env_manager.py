@@ -165,7 +165,7 @@ class EnvConfigManager:
             # EXPERIMENTAL FEATURES
             # =================================================================
             'NLP_FEATURE_ENSEMBLE_ANALYSIS': {'type': bool, 'default': True},
-            'NLP_ENABLE_GAP_DETECTION': {'type': bool, 'default': True},
+            'NLP_FEATURE_GAP_DETECTION': {'type': bool, 'default': True},
             'NLP_LOGGING_MODEL_DISAGREEMENTS': {'type': bool, 'default': True},
         }
         

@@ -94,9 +94,9 @@
   "feature_flags": {
     "experimental_features": {
       "enable_ensemble_analysis": "${NLP_FEATURE_ENSEMBLE_ANALYSIS}",
-      "enable_gap_detection": "${NLP_ENABLE_GAP_DETECTION}",
+      "enable_gap_detection": "${NLP_FEATURE_GAP_DETECTION}",
       "log_model_disagreements": "${NLP_LOGGING_MODEL_DISAGREEMENTS}",
-      "enable_model_parallelism": "${NLP_ENABLE_MODEL_PARALLELISM}"
+      "enable_model_parallelism": "${NLP_FEATURE_MODEL_PARALLELISM}"
     },
     "defaults": {
       "experimental_features": {
