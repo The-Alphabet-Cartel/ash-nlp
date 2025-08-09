@@ -229,9 +229,9 @@ class ModelsManager:
             
             # Fallback to environment variables
             return {
-                'device': os.getenv('NLP_DEVICE', 'auto'),
-                'precision': os.getenv('NLP_MODEL_PRECISION', 'float16'),
-                'max_batch_size': int(os.getenv('NLP_MAX_BATCH_SIZE', '32')),
+                'device': os.getenv('NLP_PERFORMANCE_DEVICE', 'auto'),
+                'precision': os.getenv('NLP_PERFORMANCE_MODEL_PRECISION', 'float16'),
+                'max_batch_size': int(os.getenv('NLP_PERFORMANCE_MAX_BATCH_SIZE', '32')),
                 'use_fast_tokenizer': os.getenv('NLP_MODEL_USE_FAST_TOKENIZER', 'true').lower() == 'true',
                 'trust_remote_code': os.getenv('NLP_MODEL_TRUST_REMOTE_CODE', 'false').lower() == 'true',
                 'model_revision': os.getenv('NLP_MODEL_REVISION', 'main')
