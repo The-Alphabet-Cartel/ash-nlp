@@ -63,6 +63,180 @@ class ConfigManager:
             value = os.getenv(env_var)
             logger.debug(f"   {env_var}: {value}")
     
+    def get_feature_configuration(self) -> Dict[str, Any]:
+        """
+        Get feature flags configuration (NEW in Phase 3d Step 7)
+        Provides access to feature toggles and experimental features
+        """
+        logger.debug("🚩 Getting feature flags configuration (Phase 3d Step 7)...")
+        
+        config = self.load_config_file('feature_flags')
+        
+        if config:
+            feature_config = config.get('feature_flags', {})
+            defaults = config.get('defaults', {})
+        else:
+            logger.warning("⚠️ No feature_flags.json found, using environment fallbacks")
+            feature_config = {}
+            defaults = {}
+        
+        # Return consolidated feature configuration with environment overrides
+        return {
+            'core_system_features': {
+                'ensemble_analysis': self._parse_bool(os.getenv('NLP_FEATURE_ENSEMBLE_ANALYSIS', 
+                                                     feature_config.get('core_system_features', {}).get('ensemble_analysis', 
+                                                     defaults.get('core_system_features', {}).get('ensemble_analysis', True)))),
+                'pattern_integration': self._parse_bool(os.getenv('NLP_FEATURE_PATTERN_INTEGRATION',
+                                                       feature_config.get('core_system_features', {}).get('pattern_integration',
+                                                       defaults.get('core_system_features', {}).get('pattern_integration', True)))),
+                'threshold_learning': self._parse_bool(os.getenv('NLP_FEATURE_THRESHOLD_LEARNING',
+                                                      feature_config.get('core_system_features', {}).get('threshold_learning',
+                                                      defaults.get('core_system_features', {}).get('threshold_learning', True)))),
+                'staff_review_logic': self._parse_bool(os.getenv('NLP_FEATURE_STAFF_REVIEW_LOGIC',
+                                                       feature_config.get('core_system_features', {}).get('staff_review_logic',
+                                                       defaults.get('core_system_features', {}).get('staff_review_logic', True)))),
+                'safety_controls': self._parse_bool(os.getenv('NLP_FEATURE_SAFETY_CONTROLS',
+                                                    feature_config.get('core_system_features', {}).get('safety_controls',
+                                                    defaults.get('core_system_features', {}).get('safety_controls', True))))
+            },
+            'analysis_component_features': {
+                'pattern_analysis': self._parse_bool(os.getenv('NLP_FEATURE_PATTERN_ANALYSIS',
+                                                     feature_config.get('analysis_component_features', {}).get('pattern_analysis',
+                                                     defaults.get('analysis_component_features', {}).get('pattern_analysis', True)))),
+                'semantic_analysis': self._parse_bool(os.getenv('NLP_FEATURE_SEMANTIC_ANALYSIS',
+                                                      feature_config.get('analysis_component_features', {}).get('semantic_analysis',
+                                                      defaults.get('analysis_component_features', {}).get('semantic_analysis', True)))),
+                'phrase_extraction': self._parse_bool(os.getenv('NLP_FEATURE_PHRASE_EXTRACTION',
+                                                      feature_config.get('analysis_component_features', {}).get('phrase_extraction',
+                                                      defaults.get('analysis_component_features', {}).get('phrase_extraction', True)))),
+                'pattern_learning': self._parse_bool(os.getenv('NLP_FEATURE_PATTERN_LEARNING',
+                                                     feature_config.get('analysis_component_features', {}).get('pattern_learning',
+                                                     defaults.get('analysis_component_features', {}).get('pattern_learning', True)))),
+                'analysis_caching': self._parse_bool(os.getenv('NLP_FEATURE_ANALYSIS_CACHING',
+                                                     feature_config.get('analysis_component_features', {}).get('analysis_caching',
+                                                     defaults.get('analysis_component_features', {}).get('analysis_caching', True)))),
+                'parallel_processing': self._parse_bool(os.getenv('NLP_FEATURE_PARALLEL_PROCESSING',
+                                                        feature_config.get('analysis_component_features', {}).get('parallel_processing',
+                                                        defaults.get('analysis_component_features', {}).get('parallel_processing', True))))
+            },
+            'experimental_features': {
+                'advanced_context': self._parse_bool(os.getenv('NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT',
+                                                     feature_config.get('experimental_features', {}).get('advanced_context',
+                                                     defaults.get('experimental_features', {}).get('advanced_context', False)))),
+                'community_vocab': self._parse_bool(os.getenv('NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB',
+                                                    feature_config.get('experimental_features', {}).get('community_vocab',
+                                                    defaults.get('experimental_features', {}).get('community_vocab', True)))),
+                'temporal_patterns': self._parse_bool(os.getenv('NLP_FEATURE_EXPERIMENTAL_TEMPORAL_PATTERNS',
+                                                      feature_config.get('experimental_features', {}).get('temporal_patterns',
+                                                      defaults.get('experimental_features', {}).get('temporal_patterns', True)))),
+                'multi_language': self._parse_bool(os.getenv('NLP_FEATURE_EXPERIMENTAL_MULTI_LANGUAGE',
+                                                   feature_config.get('experimental_features', {}).get('multi_language',
+                                                   defaults.get('experimental_features', {}).get('multi_language', False))))
+            },
+            'development_debug_features': {
+                'detailed_logging': self._parse_bool(os.getenv('NLP_FEATURE_DETAILED_LOGGING',
+                                                     feature_config.get('development_debug_features', {}).get('detailed_logging',
+                                                     defaults.get('development_debug_features', {}).get('detailed_logging', True)))),
+                'performance_metrics': self._parse_bool(os.getenv('NLP_FEATURE_PERFORMANCE_METRICS',
+                                                        feature_config.get('development_debug_features', {}).get('performance_metrics',
+                                                        defaults.get('development_debug_features', {}).get('performance_metrics', True)))),
+                'reload_on_changes': self._parse_bool(os.getenv('NLP_FEATURE_RELOAD_ON_CHANGES',
+                                                     feature_config.get('development_debug_features', {}).get('reload_on_changes',
+                                                     defaults.get('development_debug_features', {}).get('reload_on_changes', False)))),
+                'flip_sentiment_logic': self._parse_bool(os.getenv('NLP_FEATURE_FLIP_SENTIMENT_LOGIC',
+                                                         feature_config.get('development_debug_features', {}).get('flip_sentiment_logic',
+                                                         defaults.get('development_debug_features', {}).get('flip_sentiment_logic', False))))
+            }
+        }
+
+    def get_performance_configuration(self) -> Dict[str, Any]:
+        """
+        Get performance settings configuration (NEW in Phase 3d Step 7)
+        Provides access to performance optimization settings
+        """
+        logger.debug("⚡ Getting performance settings configuration (Phase 3d Step 7)...")
+        
+        config = self.load_config_file('performance_settings')
+        
+        if config:
+            performance_config = config.get('performance_settings', {})
+            defaults = config.get('defaults', {})
+        else:
+            logger.warning("⚠️ No performance_settings.json found, using environment fallbacks")
+            performance_config = {}
+            defaults = {}
+        
+        # Return consolidated performance configuration with environment overrides
+        return {
+            'analysis_performance': {
+                'analysis_timeout_ms': int(os.getenv('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS',
+                                                   performance_config.get('analysis_performance', {}).get('analysis_timeout_ms',
+                                                   defaults.get('analysis_performance', {}).get('analysis_timeout_ms', 5000)))),
+                'analysis_max_concurrent': int(os.getenv('NLP_PERFORMANCE_ANALYSIS_MAX_CONCURRENT',
+                                                       performance_config.get('analysis_performance', {}).get('analysis_max_concurrent',
+                                                       defaults.get('analysis_performance', {}).get('analysis_max_concurrent', 10)))),
+                'analysis_cache_ttl': int(os.getenv('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL',
+                                                  performance_config.get('analysis_performance', {}).get('analysis_cache_ttl',
+                                                  defaults.get('analysis_performance', {}).get('analysis_cache_ttl', 300)))),
+                'request_timeout': int(os.getenv('NLP_PERFORMANCE_REQUEST_TIMEOUT',
+                                               performance_config.get('analysis_performance', {}).get('request_timeout',
+                                               defaults.get('analysis_performance', {}).get('request_timeout', 40))))
+            },
+            'server_performance': {
+                'max_concurrent_requests': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS',
+                                                       performance_config.get('server_performance', {}).get('max_concurrent_requests',
+                                                       defaults.get('server_performance', {}).get('max_concurrent_requests', 20)))),
+                'worker_timeout': int(os.getenv('NLP_PERFORMANCE_WORKER_TIMEOUT',
+                                              performance_config.get('server_performance', {}).get('worker_timeout',
+                                              defaults.get('server_performance', {}).get('worker_timeout', 60)))),
+                'workers': int(os.getenv('NLP_PERFORMANCE_WORKERS',
+                                       performance_config.get('server_performance', {}).get('workers',
+                                       defaults.get('server_performance', {}).get('workers', 1))))
+            },
+            'model_performance': {
+                'max_batch_size': int(os.getenv('NLP_PERFORMANCE_MAX_BATCH_SIZE',
+                                              performance_config.get('model_performance', {}).get('max_batch_size',
+                                              defaults.get('model_performance', {}).get('max_batch_size', 32)))),
+                'inference_threads': int(os.getenv('NLP_PERFORMANCE_INFERENCE_THREADS',
+                                                 performance_config.get('model_performance', {}).get('inference_threads',
+                                                 defaults.get('model_performance', {}).get('inference_threads', 16)))),
+                'model_precision': os.getenv('NLP_PERFORMANCE_MODEL_PRECISION',
+                                           performance_config.get('model_performance', {}).get('model_precision',
+                                           defaults.get('model_performance', {}).get('model_precision', 'float16'))),
+                'device': os.getenv('NLP_PERFORMANCE_DEVICE',
+                                  performance_config.get('model_performance', {}).get('device',
+                                  defaults.get('model_performance', {}).get('device', 'auto'))),
+                'max_memory': os.getenv('NLP_PERFORMANCE_MAX_MEMORY',
+                                      performance_config.get('model_performance', {}).get('max_memory',
+                                      defaults.get('model_performance', {}).get('max_memory'))),
+                'offload_folder': os.getenv('NLP_PERFORMANCE_OFFLOAD_FOLDER',
+                                          performance_config.get('model_performance', {}).get('offload_folder',
+                                          defaults.get('model_performance', {}).get('offload_folder')))
+            },
+            'rate_limiting_performance': {
+                'rate_limit_per_minute': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE',
+                                                     performance_config.get('rate_limiting_performance', {}).get('rate_limit_per_minute',
+                                                     defaults.get('rate_limiting_performance', {}).get('rate_limit_per_minute', 120)))),
+                'rate_limit_per_hour': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR',
+                                                   performance_config.get('rate_limiting_performance', {}).get('rate_limit_per_hour',
+                                                   defaults.get('rate_limiting_performance', {}).get('rate_limit_per_hour', 2000)))),
+                'rate_limit_burst': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_BURST',
+                                                performance_config.get('rate_limiting_performance', {}).get('rate_limit_burst',
+                                                defaults.get('rate_limiting_performance', {}).get('rate_limit_burst', 150))))
+            },
+            'cache_performance': {
+                'model_cache_size_limit': os.getenv('NLP_PERFORMANCE_MODEL_CACHE_SIZE_LIMIT',
+                                                  performance_config.get('cache_performance', {}).get('model_cache_size_limit',
+                                                  defaults.get('cache_performance', {}).get('model_cache_size_limit', '10GB'))),
+                'analysis_cache_size_limit': os.getenv('NLP_PERFORMANCE_ANALYSIS_CACHE_SIZE_LIMIT',
+                                                     performance_config.get('cache_performance', {}).get('analysis_cache_size_limit',
+                                                     defaults.get('cache_performance', {}).get('analysis_cache_size_limit', '2GB'))),
+                'cache_expiry_hours': int(os.getenv('NLP_PERFORMANCE_CACHE_EXPIRY_HOURS',
+                                                  performance_config.get('cache_performance', {}).get('cache_expiry_hours',
+                                                  defaults.get('cache_performance', {}).get('cache_expiry_hours', 24))))
+            }
+        }
+
     def get_logging_configuration(self) -> Dict[str, Any]:
         """
         Get logging configuration with Phase 3d unified variables
@@ -153,30 +327,30 @@ class ConfigManager:
                                  server_config.get('network_settings', {}).get('host', 
                                  defaults.get('network_settings', {}).get('host', '0.0.0.0'))),
                 'port': int(os.getenv('GLOBAL_NLP_API_PORT', '8881')),  # PRESERVED GLOBAL
-                'workers': int(os.getenv('NLP_SERVER_WORKERS', 
+                'workers': int(os.getenv('NLP_PERFORMANCE_WORKERS', 
                                        server_config.get('network_settings', {}).get('workers', 
                                        defaults.get('network_settings', {}).get('workers', 1)))),
-                'reload_on_changes': self._parse_bool(os.getenv('NLP_SERVER_RELOAD_ON_CHANGES', 
+                'reload_on_changes': self._parse_bool(os.getenv('NLP_FEATURE_RELOAD_ON_CHANGES', 
                                                               server_config.get('network_settings', {}).get('reload_on_changes', 
                                                               defaults.get('network_settings', {}).get('reload_on_changes', False))))
             },
             'performance_settings': {
-                'max_concurrent_requests': int(os.getenv('NLP_SERVER_MAX_CONCURRENT_REQUESTS', 
+                'max_concurrent_requests': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
                                                        server_config.get('performance_settings', {}).get('max_concurrent_requests', 
                                                        defaults.get('performance_settings', {}).get('max_concurrent_requests', 20)))),
-                'request_timeout': int(os.getenv('NLP_SERVER_REQUEST_TIMEOUT', 
+                'request_timeout': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
                                                server_config.get('performance_settings', {}).get('request_timeout', 
                                                defaults.get('performance_settings', {}).get('request_timeout', 40)))),
-                'worker_timeout': int(os.getenv('NLP_SERVER_WORKER_TIMEOUT', 
+                'worker_timeout': int(os.getenv('NLP_PERFORMANCE_WORKER_TIMEOUT', 
                                               server_config.get('performance_settings', {}).get('worker_timeout', 
                                               defaults.get('performance_settings', {}).get('worker_timeout', 60))))
             },
             'security_settings': {
                 'rate_limiting': {
-                    'requests_per_minute': int(os.getenv('NLP_SECURITY_REQUESTS_PER_MINUTE', 
+                    'requests_per_minute': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 
                                                        server_config.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_minute', 
                                                        defaults.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_minute', 120)))),
-                    'requests_per_hour': int(os.getenv('NLP_SECURITY_REQUESTS_PER_HOUR', 
+                    'requests_per_hour': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 
                                                      server_config.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_hour', 
                                                      defaults.get('security_settings', {}).get('rate_limiting', {}).get('requests_per_hour', 2000)))),
                     'burst_limit': int(os.getenv('NLP_SECURITY_BURST_LIMIT', 
