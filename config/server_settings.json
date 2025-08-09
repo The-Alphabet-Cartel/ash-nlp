@@ -11,19 +11,19 @@
   "server_configuration": {
     "network_settings": {
       "host": "${NLP_SERVER_HOST}",
-      "workers": "${NLP_SERVER_WORKERS}",
-      "reload_on_changes": "${NLP_SERVER_RELOAD_ON_CHANGES}",
+      "workers": "${NLP_PERFORMANCE_WORKERS}",
+      "reload_on_changes": "${NLP_FEATURE_RELOAD_ON_CHANGES}",
       "port_note": "Port managed by GLOBAL_NLP_API_PORT (ecosystem requirement)"
     },
     "performance_settings": {
-      "max_concurrent_requests": "${NLP_SERVER_MAX_CONCURRENT_REQUESTS}",
-      "request_timeout": "${NLP_SERVER_REQUEST_TIMEOUT}",
-      "worker_timeout": "${NLP_SERVER_WORKER_TIMEOUT}"
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "request_timeout": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}"
     },
     "security_settings": {
       "rate_limiting": {
-        "requests_per_minute": "${NLP_SECURITY_REQUESTS_PER_MINUTE}",
-        "requests_per_hour": "${NLP_SECURITY_REQUESTS_PER_HOUR}",
+        "requests_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
+        "requests_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
         "burst_limit": "${NLP_SECURITY_BURST_LIMIT}"
       },
       "access_control": {
@@ -67,8 +67,8 @@
       "NLP_HOST -> NLP_SERVER_HOST", 
       "NLP_SERVICE_PORT -> Use GLOBAL_NLP_API_PORT",
       "NLP_PORT -> Use GLOBAL_NLP_API_PORT",
-      "NLP_UVICORN_WORKERS -> NLP_SERVER_WORKERS",
-      "NLP_MAX_CONCURRENT_REQUESTS -> NLP_SERVER_MAX_CONCURRENT_REQUESTS"
+      "NLP_UVICORN_WORKERS -> NLP_PERFORMANCE_WORKERS",
+      "NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS -> NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS"
     ],
     "preserved_globals": [
       "GLOBAL_NLP_API_PORT",
@@ -77,13 +77,12 @@
     ],
     "new_standardized_variables": [
       "NLP_SERVER_HOST",
-      "NLP_SERVER_WORKERS",
-      "NLP_SERVER_RELOAD_ON_CHANGES",
-      "NLP_SERVER_MAX_CONCURRENT_REQUESTS",
-      "NLP_SERVER_REQUEST_TIMEOUT",
-      "NLP_SERVER_WORKER_TIMEOUT",
-      "NLP_SECURITY_REQUESTS_PER_MINUTE",
-      "NLP_SECURITY_REQUESTS_PER_HOUR",
+      "NLP_PERFORMANCE_WORKERS",
+      "NLP_FEATURE_RELOAD_ON_CHANGES",
+      "NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS",
+      "NLP_PERFORMANCE_WORKER_TIMEOUT",
+      "NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE",
+      "NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR",
       "NLP_SECURITY_BURST_LIMIT",
       "NLP_SERVER_HEALTH_CHECK_INTERVAL",
       "NLP_SERVER_SHUTDOWN_TIMEOUT",
