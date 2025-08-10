@@ -269,6 +269,41 @@ class ThresholdMappingManager:
             logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
             return mode
     
+    def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
+        """
+        Get ensemble thresholds for specific mode - MISSING METHOD ADDED
+        
+        Args:
+            mode: Ensemble mode ('consensus', 'majority', 'weighted')
+            
+        Returns:
+            Dictionary with high, medium, low thresholds for the mode
+        """
+        if mode is None:
+            mode = self.get_current_ensemble_mode()
+        
+        try:
+            mode_config = self.threshold_config.get('threshold_mapping_by_mode', {}).get(mode, {})
+            ensemble_thresholds = mode_config.get('ensemble_thresholds', {})
+            
+            if not ensemble_thresholds:
+                logger.warning(f"⚠️ No ensemble thresholds found for mode '{mode}', using defaults")
+                return {
+                    'high': 0.5,
+                    'medium': 0.3,
+                    'low': 0.15
+                }
+            
+            return ensemble_thresholds
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting ensemble thresholds for mode '{mode}': {e}")
+            return {
+                'high': 0.5,
+                'medium': 0.3,
+                'low': 0.15
+            }
+
     def get_crisis_level_mapping_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
         """Get crisis level mapping thresholds for specific mode"""
         if mode is None:
