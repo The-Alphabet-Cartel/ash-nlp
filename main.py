@@ -1,6 +1,6 @@
 """
 Ash-NLP Main Application Entry Point
-Phase 3d Step 9: Unified Configuration Manager Integration
+Phase 3d Step 9: Unified Configuration Manager Integration - FIXED VERSION
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -29,6 +29,14 @@ from managers.threshold_mapping_manager import create_threshold_mapping_manager
 from managers.model_ensemble_manager import create_model_ensemble_manager
 from managers.settings_manager import create_settings_manager
 from managers.pydantic_manager import create_pydantic_manager
+
+# STEP 9 FIX: Add Models Manager import with error handling
+try:
+    from managers.models_manager import create_models_manager
+    MODELS_MANAGER_AVAILABLE = True
+except ImportError:
+    MODELS_MANAGER_AVAILABLE = False
+    create_models_manager = None
 
 # Phase 3d Step 6-7 Managers
 from managers.logging_config_manager import create_logging_config_manager
@@ -152,6 +160,20 @@ def initialize_unified_managers():
         # Step 4: Initialize core system managers
         logger.info("🔧 Initializing core system managers...")
         model_ensemble = create_model_ensemble_manager(unified_config)
+        
+        # STEP 9 FIX: Create Models Manager with error handling
+        models_manager = None
+        if MODELS_MANAGER_AVAILABLE:
+            try:
+                models_manager = create_models_manager(unified_config)
+                logger.info("✅ ModelsManager v3.1 created successfully")
+            except Exception as e:
+                logger.warning(f"⚠️ ModelsManager creation failed: {e}")
+                logger.info("ℹ️ Admin endpoints will run in limited mode")
+        else:
+            logger.warning("⚠️ ModelsManager not available")
+            logger.info("ℹ️ Admin endpoints will run in limited mode")
+        
         pydantic_manager = create_pydantic_manager()
         settings = create_settings_manager(
             unified_config,
@@ -186,6 +208,7 @@ def initialize_unified_managers():
             'performance_config': performance_config,
             'server_config': server_config,
             'model_ensemble': model_ensemble,
+            'models_manager': models_manager,  # STEP 9 FIX: Add models_manager to dictionary
             'pydantic': pydantic_manager,
             'settings': settings,
             'crisis_analyzer': crisis_analyzer
@@ -255,16 +278,45 @@ def create_fastapi_app():
                     "version": "3.1d-step9"
                 }
         
-        # Register API endpoints with manager dependencies - FIXED FUNCTION CALLS
+        # Register API endpoints with manager dependencies
         logger.info("🔗 Registering API endpoints...")
-        add_ensemble_endpoints_v3c(app, managers['model_ensemble'], managers['pydantic'], 
-                                  crisis_pattern_manager=managers['crisis_pattern'],
-                                  threshold_mapping_manager=managers['threshold_mapping'])  # FIXED: Correct parameters
-        register_learning_endpoints(app, managers['unified_config'])  # STEP 9 CHANGE: Pass UnifiedConfigManager
-        add_admin_endpoints(app, managers['unified_config'], managers['settings'], 
-                           zero_shot_manager=None, crisis_pattern_manager=managers['crisis_pattern'],
-                           models_manager=None, analysis_parameters_manager=managers['analysis_parameters'],
-                           threshold_mapping_manager=managers['threshold_mapping'])  # FIXED: Use correct function name with parameters
+        
+        # Ensemble endpoints
+        add_ensemble_endpoints_v3c(
+            app, 
+            managers['model_ensemble'], 
+            managers['pydantic'], 
+            crisis_pattern_manager=managers['crisis_pattern'],
+            threshold_mapping_manager=managers['threshold_mapping']
+        )
+        
+        # Learning endpoints - STEP 9 FIX: Correct parameters
+        register_learning_endpoints(
+            app, 
+            managers['unified_config'], 
+            threshold_mapping_manager=managers['threshold_mapping']
+        )
+        
+        # Admin endpoints - STEP 9 FIX: Graceful ModelsManager handling
+        try:
+            add_admin_endpoints(
+                app, 
+                managers['unified_config'], 
+                managers['settings'], 
+                zero_shot_manager=None, 
+                crisis_pattern_manager=managers['crisis_pattern'],
+                models_manager=managers['models_manager'],  # This will be None if not available
+                analysis_parameters_manager=managers['analysis_parameters'],
+                threshold_mapping_manager=managers['threshold_mapping']
+            )
+            if managers['models_manager']:
+                logger.info("✅ Full admin endpoints registered with ModelsManager")
+            else:
+                logger.info("✅ Limited admin endpoints registered without ModelsManager")
+        except Exception as e:
+            logger.error(f"❌ Admin endpoints registration failed: {e}")
+            logger.info("ℹ️ Continuing without admin endpoints")
+        
         logger.info("✅ All API endpoints registered")
         
         logger.info("🎉 FastAPI application created successfully with unified configuration")
