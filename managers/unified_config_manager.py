@@ -105,12 +105,16 @@ class UnifiedConfigManager:
         
         # Models & Thresholds (Critical Priority)
         schemas.update({
-            'NLP_MODEL_DEPRESSION_NAME': VariableSchema('str', 'cardiffnlp/twitter-roberta-base-sentiment'),
-            'NLP_MODEL_SENTIMENT_NAME': VariableSchema('str', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
-            'NLP_MODEL_EMOTIONAL_DISTRESS_NAME': VariableSchema('str', 'j-hartmann/emotion-english-distilroberta-base'),
-            'NLP_MODEL_CACHE_DIRECTORY': VariableSchema('str', './model_cache'),
+            'NLP_MODEL_DEPRESSION_NAME': VariableSchema('str', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
+            'NLP_MODEL_SENTIMENT_NAME': VariableSchema('str', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+            'NLP_MODEL_DISTRESS_NAME': VariableSchema('str', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
+            'NLP_MODEL_DEPRESSION_WEIGHT': VariableSchema('float', 0.4, min_value=0.0, max_value=1.0),
+            'NLP_MODEL_SENTIMENT_WEIGHT': VariableSchema('float', 0.3, min_value=0.0, max_value=1.0),
+            'NLP_MODEL_DISTRESS_WEIGHT': VariableSchema('float', 0.3, min_value=0.0, max_value=1.0),
+            'NLP_MODEL_CACHE_DIRECTORY': VariableSchema('str', './models/cache'),
             'NLP_MODEL_DEVICE': VariableSchema('str', 'auto', choices=['auto', 'cpu', 'cuda']),
             'NLP_MODEL_MAX_MEMORY_MB': VariableSchema('int', 8192, min_value=1024, max_value=32768),
+            'NLP_MODEL_ENSEMBLE_MODE': VariableSchema('str', 'consensus', choices=['consensus', 'majority', 'weighted']),
             
             # Analysis Parameters (High Priority)
             'NLP_ANALYSIS_CRISIS_THRESHOLD': VariableSchema('float', 0.7, min_value=0.0, max_value=1.0),
@@ -181,7 +185,6 @@ class UnifiedConfigManager:
         """Get extended variable schemas for complete system coverage"""
         return {
             # Additional model configurations
-            'NLP_MODEL_ENSEMBLE_MODE': VariableSchema('str', 'consensus', choices=['consensus', 'majority', 'weighted']),
             'NLP_MODEL_PRECISION_MODE': VariableSchema('str', 'balanced', choices=['speed', 'balanced', 'accuracy']),
             
             # Extended analysis parameters
@@ -521,34 +524,57 @@ class UnifiedConfigManager:
             logger.warning("⚠️ Model ensemble configuration not found, using environment fallback")
             return self._get_fallback_model_config()
         
-        logger.debug("✅ Model configuration loaded successfully")
-        return config
+        # Extract model definitions from the nested structure
+        model_defs = config.get('model_ensemble', {}).get('model_definitions', {})
+        ensemble_config = config.get('model_ensemble', {}).get('ensemble_config', {})
+        
+        # Return in the format expected by ModelEnsembleManager
+        result = {
+            'models': model_defs,  # ModelEnsembleManager expects 'models' key
+            'ensemble_mode': ensemble_config.get('mode', 'consensus'),
+            'validation': config.get('model_ensemble', {}).get('validation', {}),
+            'performance': config.get('model_ensemble', {}).get('performance', {})
+        }
+        
+        logger.debug(f"✅ Model configuration loaded successfully: {len(model_defs)} models found")
+        return result
     
     def _get_fallback_model_config(self) -> Dict[str, Any]:
         """Get fallback model configuration using schema defaults and environment overrides"""
         logger.info("🔧 Using schema defaults with environment overrides for model configuration")
         
         return {
-            'model_ensemble': {
-                'model_definitions': {
-                    'depression': {
-                        'model_name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'cardiffnlp/twitter-roberta-base-sentiment'),
-                        'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache')
-                    },
-                    'sentiment': {
-                        'model_name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
-                        'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache')
-                    },
-                    'emotional_distress': {
-                        'model_name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
-                        'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache')
-                    }
+            'models': {  # ModelEnsembleManager expects 'models' key
+                'depression': {
+                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'cardiffnlp/twitter-roberta-base-sentiment'),
+                    'weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
+                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'type': 'zero-shot-classification',
+                    'pipeline_task': 'zero-shot-classification'
                 },
-                'ensemble_settings': {
-                    'mode': self.get_env_str('NLP_MODEL_ENSEMBLE_MODE', 'consensus'),
-                    'device': self.get_env_str('NLP_MODEL_DEVICE', 'auto'),
-                    'max_memory_mb': self.get_env_int('NLP_MODEL_MAX_MEMORY_MB', 8192)
+                'sentiment': {
+                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                    'weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
+                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'type': 'sentiment-analysis',
+                    'pipeline_task': 'zero-shot-classification'
+                },
+                'emotional_distress': {
+                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
+                    'weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
+                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'type': 'natural-language-inference',
+                    'pipeline_task': 'zero-shot-classification'
                 }
+            },
+            'ensemble_mode': self.get_env_str('NLP_MODEL_ENSEMBLE_MODE', 'consensus'),
+            'validation': {
+                'ensure_weights_sum_to_one': True,
+                'fail_on_invalid_weights': True
+            },
+            'performance': {
+                'device': self.get_env_str('NLP_MODEL_DEVICE', 'auto'),
+                'max_memory_mb': self.get_env_int('NLP_MODEL_MAX_MEMORY_MB', 8192)
             }
         }
 
