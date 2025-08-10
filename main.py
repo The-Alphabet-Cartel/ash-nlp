@@ -200,10 +200,13 @@ def initialize_unified_managers():
         # Step 5: Initialize analysis components
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
-            unified_config,
+            models_manager=models_manager,                    # FIX: First parameter must be models_manager
             crisis_pattern_manager=crisis_pattern,
+            learning_manager=None,                            # FIX: Add explicit learning_manager parameter
             analysis_parameters_manager=analysis_parameters,
-            threshold_mapping_manager=threshold_mapping
+            threshold_mapping_manager=threshold_mapping,
+            feature_config_manager=feature_config,           # FIX: Add missing manager
+            performance_config_manager=performance_config    # FIX: Add missing manager
         )
         logger.info("✅ Analysis components initialized")
         
