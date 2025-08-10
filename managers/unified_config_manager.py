@@ -168,40 +168,117 @@ class UnifiedConfigManager:
             'NLP_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool', True),
             'NLP_LEARNING_ADJUSTMENT_RATE': VariableSchema('float', 0.1, min_value=0.01, max_value=1.0),
             'NLP_LEARNING_PERSISTENCE_FILE': VariableSchema('str', './learning_data/adjustments.json'),
-            'NLP_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int', 100, min_value=10, max_value=1000)
+            'NLP_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int', 100, min_value=10, max_value=1000),
+            'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE': VariableSchema('str', './learning_data/enhanced_learning_adjustments.json'),
+            'NLP_ANALYSIS_LEARNING_RATE': VariableSchema('float', 0.1, min_value=0.01, max_value=1.0),
+            'NLP_ANALYSIS_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool', True),
+            'NLP_ANALYSIS_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int', 100, min_value=10, max_value=1000),
         }
     
     def _get_threshold_schemas(self) -> Dict[str, VariableSchema]:
         """Get threshold mapping variable schemas"""
-        return {
+        schemas = {}
+        
+        # Basic threshold configuration
+        schemas.update({
             'NLP_THRESHOLD_ENSEMBLE_MODE': VariableSchema('str', 'consensus', choices=['consensus', 'majority', 'weighted']),
             'NLP_THRESHOLD_CRISIS_MAPPING_HIGH': VariableSchema('float', 0.8, min_value=0.0, max_value=1.0),
             'NLP_THRESHOLD_CRISIS_MAPPING_MEDIUM': VariableSchema('float', 0.6, min_value=0.0, max_value=1.0),
             'NLP_THRESHOLD_CRISIS_MAPPING_LOW': VariableSchema('float', 0.4, min_value=0.0, max_value=1.0),
             'NLP_THRESHOLD_STAFF_REVIEW_REQUIRED': VariableSchema('float', 0.7, min_value=0.0, max_value=1.0)
-        }
+        })
+        
+        # Mode-specific threshold mappings (Phase 3c)
+        # Consensus mode thresholds
+        schemas.update({
+            'NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH': VariableSchema('float', 0.50, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM': VariableSchema('float', 0.30, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW': VariableSchema('float', 0.40, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW': VariableSchema('float', 0.70, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW': VariableSchema('float', 0.50, min_value=0.0, max_value=1.0)
+        })
+        
+        # Majority mode thresholds
+        schemas.update({
+            'NLP_THRESHOLD_MAJORITY_CRISIS_TO_HIGH': VariableSchema('float', 0.45, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_MAJORITY_CRISIS_TO_MEDIUM': VariableSchema('float', 0.28, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_MAJORITY_MILD_CRISIS_TO_LOW': VariableSchema('float', 0.35, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_MAJORITY_NEGATIVE_TO_LOW': VariableSchema('float', 0.65, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_MAJORITY_UNKNOWN_TO_LOW': VariableSchema('float', 0.45, min_value=0.0, max_value=1.0)
+        })
+        
+        # Weighted mode thresholds
+        schemas.update({
+            'NLP_THRESHOLD_WEIGHTED_CRISIS_TO_HIGH': VariableSchema('float', 0.55, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_WEIGHTED_CRISIS_TO_MEDIUM': VariableSchema('float', 0.32, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_WEIGHTED_MILD_CRISIS_TO_LOW': VariableSchema('float', 0.42, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_WEIGHTED_NEGATIVE_TO_LOW': VariableSchema('float', 0.72, min_value=0.0, max_value=1.0),
+            'NLP_THRESHOLD_WEIGHTED_UNKNOWN_TO_LOW': VariableSchema('float', 0.52, min_value=0.0, max_value=1.0)
+        })
+        
+        return schemas
     
     def _get_extended_schemas(self) -> Dict[str, VariableSchema]:
         """Get extended variable schemas for complete system coverage"""
-        return {
-            # Additional model configurations
+        schemas = {}
+        
+        # Additional model configurations
+        schemas.update({
             'NLP_MODEL_PRECISION_MODE': VariableSchema('str', 'balanced', choices=['speed', 'balanced', 'accuracy']),
-            
-            # Extended analysis parameters
+        })
+        
+        # Extended analysis parameters
+        schemas.update({
             'NLP_ANALYSIS_ENABLE_PREPROCESSING': VariableSchema('bool', True),
             'NLP_ANALYSIS_ENABLE_POSTPROCESSING': VariableSchema('bool', True),
             'NLP_ANALYSIS_CONTEXT_WINDOW': VariableSchema('int', 512, min_value=64, max_value=2048),
-            
-            # Extended server configurations  
+        })
+        
+        # Extended server configurations  
+        schemas.update({
             'NLP_SERVER_ENABLE_CORS': VariableSchema('bool', True),
             'NLP_SERVER_ENABLE_COMPRESSION': VariableSchema('bool', True),
             'NLP_SERVER_MAX_REQUEST_SIZE': VariableSchema('int', 10485760, min_value=1048576, max_value=104857600),
-            
-            # Extended storage configurations
+        })
+        
+        # Extended storage configurations
+        schemas.update({
             'NLP_STORAGE_ENABLE_COMPRESSION': VariableSchema('bool', False),
             'NLP_STORAGE_BACKUP_DIRECTORY': VariableSchema('str', './backups'),
-            'NLP_STORAGE_RETENTION_DAYS': VariableSchema('int', 30, min_value=1, max_value=365)
-        }
+            'NLP_STORAGE_RETENTION_DAYS': VariableSchema('int', 30, min_value=1, max_value=365),
+            'NLP_STORAGE_MODELS_DIR': VariableSchema('str', './models/cache'),
+            'NLP_STORAGE_LOGS_DIR': VariableSchema('str', './logs'),
+            'NLP_STORAGE_LOG_FILE': VariableSchema('str', 'nlp_service.log'),
+        })
+        
+        # Ensemble configuration
+        schemas.update({
+            'NLP_ENSEMBLE_MODE': VariableSchema('str', 'majority', choices=['consensus', 'majority', 'weighted']),
+            'NLP_ENSEMBLE_GAP_DETECTION_ENABLED': VariableSchema('bool', True),
+            'NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD': VariableSchema('int', 2, min_value=1, max_value=5),
+        })
+        
+        # Hardware configuration
+        schemas.update({
+            'NLP_HARDWARE_DEVICE': VariableSchema('str', 'auto', choices=['auto', 'cpu', 'cuda']),
+            'NLP_HARDWARE_PRECISION': VariableSchema('str', 'float16', choices=['float16', 'float32']),
+            'NLP_HARDWARE_MAX_BATCH_SIZE': VariableSchema('int', 32, min_value=1, max_value=256),
+            'NLP_HARDWARE_INFERENCE_THREADS': VariableSchema('int', 16, min_value=1, max_value=64),
+        })
+        
+        # Logging configuration
+        schemas.update({
+            'NLP_LOGGING_ENABLE_DETAILED': VariableSchema('bool', True),
+            'NLP_LOGGING_ANALYSIS_STEPS': VariableSchema('bool', False),
+            'NLP_LOGGING_THRESHOLD_CHANGES': VariableSchema('bool', True),
+            'NLP_LOGGING_MODEL_DISAGREEMENTS': VariableSchema('bool', True),
+            'NLP_LOGGING_STAFF_REVIEW_TRIGGERS': VariableSchema('bool', True),
+            'NLP_LOGGING_PATTERN_ADJUSTMENTS': VariableSchema('bool', True),
+            'NLP_LOGGING_LEARNING_UPDATES': VariableSchema('bool', True),
+            'NLP_LOGGING_LABEL_MAPPINGS': VariableSchema('bool', False),
+        })
+        
+        return schemas
     
     # ========================================================================
     # UNIFIED ENVIRONMENT VARIABLE ACCESS (FOR MANAGERS WITHOUT JSON CONFIG)
