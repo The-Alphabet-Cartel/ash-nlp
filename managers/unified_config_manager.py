@@ -291,6 +291,142 @@ class UnifiedConfigManager:
         return schemas
     
     # ========================================================================
+    # GET HARDWARE CONFIGURATION FIX
+    # ========================================================================
+
+    def get_hardware_configuration(self) -> Dict[str, Any]:
+        """
+        Get hardware configuration for models - MISSING METHOD FOR MODELSMANAGER
+        
+        Returns:
+            Dictionary containing hardware configuration settings
+        """
+        try:
+            return {
+                'device': self.get_env('NLP_MODEL_DEVICE', 'auto'),
+                'precision': self.get_env('NLP_MODEL_PRECISION', 'float16'),
+                'max_batch_size': self.get_env_int('NLP_MODEL_MAX_BATCH_SIZE', 32),
+                'inference_threads': self.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
+                'max_memory': self.get_env('NLP_MODEL_MAX_MEMORY', None),
+                'offload_folder': self.get_env('NLP_MODEL_OFFLOAD_FOLDER', './models/offload'),
+                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIRECTORY', './models/cache')
+            }
+        except Exception as e:
+            logger.error(f"❌ Error getting hardware configuration: {e}")
+            # Return safe defaults
+            return {
+                'device': 'auto',
+                'precision': 'float16',
+                'max_batch_size': 32,
+                'inference_threads': 16,
+                'max_memory': None,
+                'offload_folder': './models/offload',
+                'cache_directory': './models/cache'
+            }
+
+    def get_model_configuration(self) -> Dict[str, Any]:
+        """
+        Get model configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        
+        Returns:
+            Dictionary containing model configuration
+        """
+        try:
+            return {
+                'depression_model': self.get_env('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
+                'depression_weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
+                'sentiment_model': self.get_env('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'sentiment_weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
+                'emotional_distress_model': self.get_env('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
+                'emotional_distress_weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
+                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'consensus'),
+                'gap_detection_enabled': self.get_env_bool('NLP_ENSEMBLE_GAP_DETECTION_ENABLED', True),
+                'disagreement_threshold': self.get_env_int('NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD', 2),
+                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIRECTORY', './models/cache'),
+                'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
+            }
+        except Exception as e:
+            logger.error(f"❌ Error getting model configuration: {e}")
+            # Return safe defaults
+            return {
+                'depression_model': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0',
+                'depression_weight': 0.4,
+                'sentiment_model': 'Lowerated/lm6-deberta-v3-topic-sentiment',
+                'sentiment_weight': 0.3,
+                'emotional_distress_model': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli',
+                'emotional_distress_weight': 0.3,
+                'ensemble_mode': 'consensus',
+                'gap_detection_enabled': True,
+                'disagreement_threshold': 2,
+                'cache_directory': './models/cache',
+                'huggingface_token': None
+            }
+
+    def get_performance_configuration(self) -> Dict[str, Any]:
+        """
+        Get performance configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        
+        Returns:
+            Dictionary containing performance settings
+        """
+        try:
+            return {
+                'max_concurrent_requests': self.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
+                'request_timeout': self.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 40),
+                'worker_timeout': self.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
+                'analysis_timeout_ms': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS', 5000),
+                'analysis_cache_ttl': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL', 300),
+                'enable_optimization': self.get_env_bool('NLP_PERFORMANCE_ENABLE_OPTIMIZATION', True),
+                'batch_size': self.get_env_int('NLP_PERFORMANCE_BATCH_SIZE', 32),
+                'cache_size': self.get_env_int('NLP_PERFORMANCE_CACHE_SIZE', 1000)
+            }
+        except Exception as e:
+            logger.error(f"❌ Error getting performance configuration: {e}")
+            # Return safe defaults
+            return {
+                'max_concurrent_requests': 20,
+                'request_timeout': 40,
+                'worker_timeout': 60,
+                'analysis_timeout_ms': 5000,
+                'analysis_cache_ttl': 300,
+                'enable_optimization': True,
+                'batch_size': 32,
+                'cache_size': 1000
+            }
+
+    def get_storage_configuration(self) -> Dict[str, Any]:
+        """
+        Get storage configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        
+        Returns:
+            Dictionary containing storage settings
+        """
+        try:
+            return {
+                'data_directory': self.get_env('NLP_STORAGE_DATA_DIRECTORY', './data'),
+                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIRECTORY', './cache'),
+                'log_directory': self.get_env('NLP_STORAGE_LOG_DIRECTORY', './logs'),
+                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIRECTORY', './backups'),
+                'models_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
+                'enable_compression': self.get_env_bool('NLP_STORAGE_ENABLE_COMPRESSION', False),
+                'retention_days': self.get_env_int('NLP_STORAGE_RETENTION_DAYS', 30),
+                'log_file': self.get_env('NLP_STORAGE_LOG_FILE', 'nlp_service.log')
+            }
+        except Exception as e:
+            logger.error(f"❌ Error getting storage configuration: {e}")
+            # Return safe defaults
+            return {
+                'data_directory': './data',
+                'cache_directory': './cache',
+                'log_directory': './logs',
+                'backup_directory': './backups',
+                'models_directory': './models/cache',
+                'enable_compression': False,
+                'retention_days': 30,
+                'log_file': 'nlp_service.log'
+            }
+            
+    # ========================================================================
     # UNIFIED ENVIRONMENT VARIABLE ACCESS (FOR MANAGERS WITHOUT JSON CONFIG)
     # ========================================================================
     
