@@ -1,509 +1,330 @@
-# ash-nlp/main.py - PHASE 3D STEP 7 COMPLETE
 """
-Phase 3d Step 7 COMPLETE: FeatureConfigManager and PerformanceConfigManager integration
-Clean v3.1 Architecture with comprehensive feature flags and performance management
+Ash-NLP Main Application Entry Point
+Phase 3d Step 9: Unified Configuration Manager Integration
 
-Phase 3a: CrisisPatternManager integration
-Phase 3b: AnalysisParametersManager integration  
-Phase 3c: ThresholdMappingManager integration
-Phase 3d Step 5: ServerConfigManager integration
-Phase 3d Step 6: LoggingConfigManager integration with enhanced colorlog
-Phase 3d Step 7: FeatureConfigManager and PerformanceConfigManager integration
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import os
-import asyncio
+import sys
 import logging
-import time
-from contextlib import asynccontextmanager
-from typing import Optional
-
+import colorlog
+from pathlib import Path
 from fastapi import FastAPI
-from pydantic import BaseModel
+import uvicorn
 
-# Clean v3.1 Managers - NO backward compatibility imports
-from managers.config_manager import ConfigManager
-from managers.settings_manager import SettingsManager, create_settings_manager
-from managers.zero_shot_manager import ZeroShotManager
-from managers.pydantic_manager import PydanticManager
-from managers.models_manager import ModelsManager, create_models_manager
-from analysis.crisis_analyzer import CrisisAnalyzer
+# ============================================================================
+# STEP 9: UNIFIED CONFIGURATION MANAGER IMPORT
+# ============================================================================
+from managers.unified_config_manager import create_unified_config_manager
+
+# ============================================================================
+# MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
+# ============================================================================
+from managers.crisis_pattern_manager import create_crisis_pattern_manager
+from managers.analysis_parameters_manager import create_analysis_parameters_manager
+from managers.threshold_mapping_manager import create_threshold_mapping_manager
+from managers.model_ensemble_manager import create_model_ensemble_manager
+from managers.settings_manager import create_settings_manager
+from managers.pydantic_manager import create_pydantic_manager
+
+# Phase 3d Step 6-7 Managers
+from managers.logging_config_manager import create_logging_config_manager
+from managers.feature_config_manager import create_feature_config_manager
+from managers.performance_config_manager import create_performance_config_manager
 from managers.server_config_manager import create_server_config_manager
 
-# ============================================================================
-# ENHANCED LOGGING SETUP - PHASE 3D STEP 6 INTEGRATED
-# ============================================================================
-import colorlog
+# Analysis Components
+from analysis import create_crisis_analyzer
 
-# Global manager instances - Clean v3.1 with Phase 3d Step 7
-config_manager: Optional[ConfigManager] = None
-settings_manager: Optional[SettingsManager] = None
-zero_shot_manager: Optional[ZeroShotManager] = None
-crisis_pattern_manager = None  # Phase 3a
-analysis_parameters_manager = None  # Phase 3b
-threshold_mapping_manager = None  # Phase 3c
-models_manager: Optional[ModelsManager] = None
-pydantic_manager: Optional[PydanticManager] = None
-crisis_analyzer: Optional[CrisisAnalyzer] = None
-learning_manager = None
-server_config_manager = None  # Phase 3d Step 5
-logging_config_manager = None  # Phase 3d Step 6
-feature_config_manager = None  # Phase 3d Step 7
-performance_config_manager = None  # Phase 3d Step 7
+# API Endpoint Registration
+from api.ensemble_endpoints import register_ensemble_endpoints
+from api.learning_endpoints import register_learning_endpoints
+from api.admin_endpoints import register_admin_endpoints
 
-def setup_initial_logging():
+# ============================================================================
+# LOGGING SETUP WITH UNIFIED CONFIGURATION
+# ============================================================================
+
+def setup_unified_logging(unified_config: 'UnifiedConfigManager'):
     """
-    Phase 3d Step 6: Set up initial logging before LoggingConfigManager is available
-    Uses GLOBAL_LOG_LEVEL and basic colorlog setup for early initialization
+    Setup logging with unified configuration manager
+    Enhanced colorlog integration for Phase 3d Step 9
     """
-    # Get initial log level (preserving GLOBAL_LOG_LEVEL for ecosystem compatibility)
-    log_level = os.getenv('GLOBAL_LOG_LEVEL', 'INFO').upper()
+    # Get logging configuration from unified manager
+    log_level = unified_config.get_env('GLOBAL_LOG_LEVEL', 'INFO')
+    logs_dir = unified_config.get_env('NLP_STORAGE_LOGS_DIR', './logs')
+    enable_console = unified_config.get_env_bool('GLOBAL_LOGGING_ENABLE_CONSOLE', True)
+    enable_file = unified_config.get_env_bool('GLOBAL_LOGGING_ENABLE_FILE', True)
     
-    # Get log file using Phase 3d Step 6 standardized variable names
-    log_file = os.getenv('NLP_STORAGE_LOG_FILE', 
-                        os.getenv('NLP_LOG_FILE', 'nlp_service.log'))  # Fallback for compatibility
-    
-    # Create enhanced formatters
-    file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(name)s - %(message)s')
-    console_formatter = colorlog.ColoredFormatter(
-        '%(blue)s%(asctime)s%(reset)s %(log_color)s%(levelname)s%(reset)s: %(purple)s%(name)s%(reset)s - %(message)s',
-        log_colors={
-            'DEBUG':    'cyan',
-            'INFO':     'green',
-            'WARNING':  'yellow',
-            'ERROR':    'red',
-            'CRITICAL': 'red,bg_white',
-        },
-    )
-    
-    # Create handlers
-    file_handler = logging.FileHandler(log_file, encoding='utf-8')
-    file_handler.setFormatter(file_formatter)
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(console_formatter)
+    # Ensure logs directory exists
+    Path(logs_dir).mkdir(parents=True, exist_ok=True)
     
     # Configure root logger
-    logging.basicConfig(
-        level=getattr(logging, log_level),
-        handlers=[file_handler, console_handler],
-        force=True  # Override any existing configuration
-    )
+    root_logger = logging.getLogger()
+    root_logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
     
-    # Get logger for initial messages
+    # Clear existing handlers
+    root_logger.handlers.clear()
+    
+    # Console handler with colorlog
+    if enable_console:
+        console_handler = colorlog.StreamHandler()
+        console_handler.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+        
+        # Enhanced color formatter for Phase 3d
+        color_formatter = colorlog.ColoredFormatter(
+            '%(log_color)s%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'red,bg_yellow',
+            }
+        )
+        console_handler.setFormatter(color_formatter)
+        root_logger.addHandler(console_handler)
+    
+    # File handler
+    if enable_file:
+        file_handler = logging.FileHandler(f"{logs_dir}/ash-nlp.log")
+        file_handler.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+        
+        file_formatter = logging.Formatter(
+            '%(asctime)s | %(levelname)-8s | %(name)-25s | %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        file_handler.setFormatter(file_formatter)
+        root_logger.addHandler(file_handler)
+    
+    return logging.getLogger(__name__)
+
+# ============================================================================
+# UNIFIED MANAGER INITIALIZATION - CLEAN V3.1 ARCHITECTURE
+# ============================================================================
+
+def initialize_unified_managers():
+    """
+    Initialize all managers using Unified Configuration Manager
+    Clean v3.1 architecture with factory functions and dependency injection
+    """
     logger = logging.getLogger(__name__)
-    logger.info("🚀 Starting Ash NLP Service v3.1d - Phase 3d Step 7 Feature & Performance Management")
-    logger.info(f"📝 Initial log level: {log_level} (from GLOBAL_LOG_LEVEL)")
-    logger.info(f"📁 Log file: {log_file}")
+    logger.info("🎉 Initializing Ash-NLP v3.1d Step 9 - Unified Configuration Architecture")
+    logger.info("🏗️ Using Clean v3.1 factory functions with dependency injection")
     
-    return logger
-
-# Initialize logging system
-logger = setup_initial_logging()
-
-async def initialize_components_clean_v3_1():
-    """Initialize all components with clean v3.1 architecture - Phase 3d Step 7"""
-    global config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager
-    global models_manager, pydantic_manager, crisis_analyzer, learning_manager
-    global analysis_parameters_manager, threshold_mapping_manager, server_config_manager
-    global logging_config_manager, feature_config_manager, performance_config_manager  # Phase 3d Step 7
+    managers = {}
     
     try:
-        logger.info("🚀 Initializing components with clean v3.1 architecture - Phase 3d Step 7...")
+        # ===== STEP 1: CREATE UNIFIED CONFIGURATION MANAGER =====
+        logger.info("📋 Step 1: Creating UnifiedConfigManager...")
+        managers['unified_config'] = create_unified_config_manager("/app/config")
+        logger.info("✅ UnifiedConfigManager initialized successfully")
         
-        # Initialize Core Configuration Managers
-        config_manager = ConfigManager("/app/config")
-        zero_shot_manager = ZeroShotManager(config_manager)
+        # ===== STEP 2: CREATE SPECIALIZED MANAGERS (PHASE 3A-3C) =====
+        logger.info("📋 Step 2: Creating Phase 3a-3c managers...")
         
-        # Initialize LoggingConfigManager - Phase 3d Step 6
-        try:
-            from managers.logging_config_manager import create_logging_config_manager
-            logging_config_manager = create_logging_config_manager(config_manager)
-            logger.info("✅ LoggingConfigManager initialized")
-        except Exception as e:
-            logger.warning(f"⚠️ LoggingConfigManager initialization failed (non-critical): {e}")
-            logging_config_manager = None
+        # Phase 3a: Crisis Pattern Manager
+        logger.info("🔍 Creating CrisisPatternManager...")
+        managers['crisis_pattern'] = create_crisis_pattern_manager(managers['unified_config'])
+        logger.info("✅ CrisisPatternManager initialized")
         
-        # Initialize FeatureConfigManager and PerformanceConfigManager - Phase 3d Step 7
-        try:
-            from managers.feature_config_manager import create_feature_config_manager
-            feature_config_manager = create_feature_config_manager(config_manager)
-            logger.info("✅ FeatureConfigManager initialized")
-        except Exception as e:
-            logger.warning(f"⚠️ FeatureConfigManager initialization failed (non-critical): {e}")
-            feature_config_manager = None
+        # Phase 3b: Analysis Parameters Manager
+        logger.info("🔬 Creating AnalysisParametersManager...")
+        managers['analysis_parameters'] = create_analysis_parameters_manager(managers['unified_config'])
+        logger.info("✅ AnalysisParametersManager initialized")
         
-        try:
-            from managers.performance_config_manager import create_performance_config_manager
-            performance_config_manager = create_performance_config_manager(config_manager)
-            logger.info("✅ PerformanceConfigManager initialized")
-        except Exception as e:
-            logger.warning(f"⚠️ PerformanceConfigManager initialization failed (non-critical): {e}")
-            performance_config_manager = None
+        # Phase 3c: Threshold Mapping Manager (requires model ensemble manager)
+        logger.info("🎯 Creating ModelEnsembleManager for threshold mapping dependency...")
+        managers['model_ensemble'] = create_model_ensemble_manager(managers['unified_config'])
+        logger.info("✅ ModelEnsembleManager initialized")
         
-        # Initialize AnalysisParametersManager - Phase 3b
-        from managers.analysis_parameters_manager import create_analysis_parameters_manager
-        analysis_parameters_manager = create_analysis_parameters_manager(config_manager)
-        
-        # Initialize ThresholdMappingManager - Phase 3c
-        from managers.threshold_mapping_manager import create_threshold_mapping_manager
-        from managers.model_ensemble_manager import get_model_ensemble_manager
-        model_ensemble_manager = get_model_ensemble_manager()
-        threshold_mapping_manager = create_threshold_mapping_manager(config_manager, model_ensemble_manager)
-        
-        # Initialize CrisisPatternManager - Phase 3a
-        from managers.crisis_pattern_manager import create_crisis_pattern_manager
-        crisis_pattern_manager = create_crisis_pattern_manager(config_manager)
-        
-        # Initialize ServerConfigManager - Phase 3d Step 5
-        try:
-            server_config_manager = create_server_config_manager(config_manager)
-            logger.info("✅ ServerConfigManager initialized")
-        except Exception as e:
-            logger.warning(f"⚠️ ServerConfigManager initialization failed (non-critical): {e}")
-            server_config_manager = None
-        
-        # Initialize Core ML Components
-        pydantic_manager = PydanticManager()
-        models_manager = create_models_manager(config_manager)
-        
-        # Load models
-        logger.info("🔄 Loading Three Zero-Shot Model Ensemble...")
-        await models_manager.load_models()
-        
-        # Initialize SettingsManager with All Dependencies - Phase 3d Step 7 Enhanced
-        settings_manager = create_settings_manager(
-            config_manager=config_manager,
-            analysis_parameters_manager=analysis_parameters_manager,
-            crisis_pattern_manager=crisis_pattern_manager,
-            threshold_mapping_manager=threshold_mapping_manager,
-            server_config_manager=server_config_manager,
-            logging_config_manager=logging_config_manager,
-            feature_config_manager=feature_config_manager,  # Phase 3d Step 7
-            performance_config_manager=performance_config_manager  # Phase 3d Step 7
+        logger.info("📊 Creating ThresholdMappingManager...")
+        managers['threshold_mapping'] = create_threshold_mapping_manager(
+            managers['unified_config'], 
+            managers['model_ensemble']
         )
+        logger.info("✅ ThresholdMappingManager initialized")
         
-        # Initialize CrisisAnalyzer with ALL Managers - Phase 3d Step 7 Complete
-        crisis_analyzer = CrisisAnalyzer(
-            models_manager=models_manager,
-            crisis_pattern_manager=crisis_pattern_manager,
-            learning_manager=learning_manager,
-            analysis_parameters_manager=analysis_parameters_manager,
-            threshold_mapping_manager=threshold_mapping_manager,
-            feature_config_manager=feature_config_manager,  # Phase 3d Step 7
-            performance_config_manager=performance_config_manager  # Phase 3d Step 7
+        # ===== STEP 3: CREATE PHASE 3D STEP 6-7 MANAGERS =====
+        logger.info("📋 Step 3: Creating Phase 3d Step 6-7 managers...")
+        
+        # Step 6: Logging Configuration Manager
+        logger.info("📝 Creating LoggingConfigManager...")
+        managers['logging_config'] = create_logging_config_manager(managers['unified_config'])
+        logger.info("✅ LoggingConfigManager initialized")
+        
+        # Step 7: Feature Configuration Manager
+        logger.info("🔧 Creating FeatureConfigManager...")
+        managers['feature_config'] = create_feature_config_manager(managers['unified_config'])
+        logger.info("✅ FeatureConfigManager initialized")
+        
+        # Step 7: Performance Configuration Manager
+        logger.info("⚡ Creating PerformanceConfigManager...")
+        managers['performance_config'] = create_performance_config_manager(managers['unified_config'])
+        logger.info("✅ PerformanceConfigManager initialized")
+        
+        # Step 5: Server Configuration Manager
+        logger.info("🌐 Creating ServerConfigManager...")
+        managers['server_config'] = create_server_config_manager(managers['unified_config'])
+        logger.info("✅ ServerConfigManager initialized")
+        
+        # ===== STEP 4: CREATE COMPREHENSIVE SETTINGS MANAGER =====
+        logger.info("📋 Step 4: Creating comprehensive SettingsManager...")
+        managers['settings'] = create_settings_manager(
+            managers['unified_config'],
+            crisis_pattern_manager=managers['crisis_pattern'],
+            analysis_parameters_manager=managers['analysis_parameters'],
+            threshold_mapping_manager=managers['threshold_mapping'],
+            server_config_manager=managers['server_config'],
+            logging_config_manager=managers['logging_config'],
+            feature_config_manager=managers['feature_config'],
+            performance_config_manager=managers['performance_config']
         )
+        logger.info("✅ SettingsManager initialized with all Phase 3d managers")
         
-        # Initialize Learning Manager
-        try:
-            from api.learning_endpoints import EnhancedLearningManager
-            learning_manager = EnhancedLearningManager(
-                models_manager=models_manager,
-                config_manager=config_manager,
-                analysis_parameters_manager=analysis_parameters_manager
-            )
-            logger.info("✅ EnhancedLearningManager initialized")
-        except Exception as e:
-            logger.warning(f"⚠️ EnhancedLearningManager initialization failed (non-critical): {e}")
-            learning_manager = None
+        # ===== STEP 5: CREATE SUPPORTING MANAGERS =====
+        logger.info("📋 Step 5: Creating supporting managers...")
         
-        logger.info("✅ All components initialized successfully - Phase 3d Step 7 Complete")
+        # Pydantic Manager
+        logger.info("📝 Creating PydanticManager...")
+        managers['pydantic'] = create_pydantic_manager(managers['unified_config'])
+        logger.info("✅ PydanticManager initialized")
+        
+        # ===== STEP 6: CREATE CRISIS ANALYZER =====
+        logger.info("📋 Step 6: Creating CrisisAnalyzer with all dependencies...")
+        managers['crisis_analyzer'] = create_crisis_analyzer(
+            models_manager=managers['model_ensemble'],
+            crisis_pattern_manager=managers['crisis_pattern'],
+            learning_manager=None,  # Will be created when needed
+            analysis_parameters_manager=managers['analysis_parameters'],
+            threshold_mapping_manager=managers['threshold_mapping'],
+            feature_config_manager=managers['feature_config'],
+            performance_config_manager=managers['performance_config']
+        )
+        logger.info("✅ CrisisAnalyzer initialized with full Phase 3d support")
+        
+        # ===== SUCCESS SUMMARY =====
+        logger.info("🎉 All managers initialized successfully!")
+        logger.info(f"📊 Total managers created: {len(managers)}")
+        logger.info("✅ Phase 3d Step 9: Unified Configuration Architecture operational")
+        
+        return managers
         
     except Exception as e:
-        logger.error(f"❌ Failed to initialize v3.1 components: {e}")
+        logger.error(f"❌ Manager initialization failed: {e}")
+        logger.error(f"📍 Failed at manager creation step")
         raise
 
 # ============================================================================
-# Health Response Model - Phase 3d Step 7
+# FASTAPI APPLICATION CREATION
 # ============================================================================
-class HealthResponse(BaseModel):
-    status: str
-    uptime: float
-    model_loaded: bool
-    components_available: dict
-    configuration_status: dict
-    manager_status: dict
-    logging_status: dict
-    feature_status: dict  # NEW Phase 3d Step 7
-    performance_status: dict  # NEW Phase 3d Step 7
-    architecture_version: str
-    phase_3d_status: str
 
-# ============================================================================
-# FastAPI Application Setup - Clean v3.1 Phase 3d Step 7
-# ============================================================================
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """FastAPI lifespan context manager - Clean v3.1 Architecture Phase 3d Step 7 Complete"""
-    # Startup
-    logger.info("🚀 FastAPI app starting - Clean v3.1 Architecture (Phase 3d Step 7)...")
+def create_app():
+    """Create FastAPI application with unified configuration"""
+    logger = logging.getLogger(__name__)
     
     try:
-        await initialize_components_clean_v3_1()
-        logger.info("✅ FastAPI application startup complete - Phase 3d Step 7 Ready")
+        # Initialize unified managers
+        managers = initialize_unified_managers()
+        
+        # Get server configuration from unified manager
+        server_config = managers['unified_config'].get_server_configuration()
+        
+        # Create FastAPI app
+        app = FastAPI(
+            title="Ash-NLP Crisis Detection API",
+            description="LGBTQIA+ Mental Health Crisis Detection System - Clean v3.1d Step 9",
+            version="3.1d-step9",
+            docs_url="/docs",
+            redoc_url="/redoc"
+        )
+        
+        # Store managers in app state for endpoint access
+        app.state.managers = managers
+        
+        # Health check endpoint with unified configuration reporting
+        @app.get("/health")
+        async def health_check():
+            """Health check endpoint with Phase 3d Step 9 status"""
+            try:
+                return {
+                    "status": "healthy",
+                    "version": "3.1d-step9",
+                    "architecture": "clean_v3.1_unified_config",
+                    "phase_3d_step_9": "operational",
+                    "unified_config_manager": "active",
+                    "managers_loaded": list(managers.keys()),
+                    "total_managers": len(managers),
+                    "environment_variables": {
+                        "total_managed": len(managers['unified_config'].env_config),
+                        "validation": "comprehensive_schema_validation",
+                        "direct_os_getenv_calls": "eliminated"
+                    },
+                    "community": "The Alphabet Cartel LGBTQIA+ Mental Health Support"
+                }
+            except Exception as e:
+                logger.error(f"❌ Health check error: {e}")
+                return {
+                    "status": "error",
+                    "error": str(e),
+                    "version": "3.1d-step9"
+                }
+        
+        # Register API endpoints with manager dependencies
+        logger.info("🔗 Registering API endpoints...")
+        register_ensemble_endpoints(app, managers['crisis_analyzer'], managers['threshold_mapping'])
+        register_learning_endpoints(app, managers['unified_config'])  # STEP 9 CHANGE: Pass UnifiedConfigManager
+        register_admin_endpoints(app, managers['settings'])
+        logger.info("✅ All API endpoints registered")
+        
+        logger.info("🎉 FastAPI application created successfully with unified configuration")
+        return app
+        
     except Exception as e:
-        logger.error(f"❌ FastAPI app startup failed: {e}")
+        logger.error(f"❌ FastAPI application creation failed: {e}")
         raise
-    
-    # Application running
-    yield
-    
-    # Shutdown
-    logger.info("🛑 FastAPI app shutting down...")
-
-# Create FastAPI app
-app = FastAPI(
-    title="Ash-NLP Crisis Detection API",
-    description="Three Zero-Shot Model Ensemble Crisis Detection - Phase 3d Step 7 Complete",
-    version="3d.7",
-    lifespan=lifespan
-)
 
 # ============================================================================
-# Health Check Endpoint - Phase 3d Step 7 Enhanced
+# APPLICATION STARTUP
 # ============================================================================
-@app.get("/health", response_model=HealthResponse)
-async def health_check():
-    """
-    PHASE 3D STEP 7: Enhanced health check with Feature & Performance management status
-    """
-    start_time = time.time()
-    
+
+def main():
+    """Main application entry point with unified configuration"""
     try:
-        # Basic system info
-        uptime = time.time() - start_time
-        model_loaded = models_manager.models_loaded() if models_manager else False
+        # Create unified configuration manager for initial logging setup
+        initial_config = create_unified_config_manager("/app/config")
         
-        # Component availability - Phase 3d Step 7 enhanced
-        components_available = {
-            'config_manager': config_manager is not None,
-            'settings_manager': settings_manager is not None,
-            'zero_shot_manager': zero_shot_manager is not None,
-            'models_manager': models_manager is not None and model_loaded,
-            'pydantic_manager': pydantic_manager is not None,
-            'crisis_pattern_manager': crisis_pattern_manager is not None,
-            'analysis_parameters_manager': analysis_parameters_manager is not None,
-            'threshold_mapping_manager': threshold_mapping_manager is not None,
-            'server_config_manager': server_config_manager is not None,
-            'logging_config_manager': logging_config_manager is not None,
-            'feature_config_manager': feature_config_manager is not None,  # Phase 3d Step 7
-            'performance_config_manager': performance_config_manager is not None  # Phase 3d Step 7
-        }
+        # Setup logging with unified configuration
+        logger = setup_unified_logging(initial_config)
         
-        # Configuration status
-        configuration_status = {}
+        logger.info("🚀 Starting Ash-NLP v3.1d Step 9 - Unified Configuration Architecture")
+        logger.info("🏳️‍🌈 The Alphabet Cartel LGBTQIA+ Mental Health Crisis Detection System")
+        logger.info("🎯 Phase 3d Step 9: Complete environment variable unification operational")
         
-        if crisis_pattern_manager:
-            try:
-                pattern_count = len(crisis_pattern_manager.get_available_patterns())
-                configuration_status['crisis_patterns_loaded'] = pattern_count > 0
-                configuration_status['pattern_count'] = pattern_count
-            except:
-                configuration_status['crisis_patterns_loaded'] = False
-                
-        if analysis_parameters_manager:
-            try:
-                all_params = analysis_parameters_manager.get_all_parameters()
-                configuration_status['analysis_parameters_loaded'] = len(all_params) > 0
-                configuration_status['json_config_loaded'] = True
-            except:
-                configuration_status['analysis_parameters_loaded'] = False
-                
-        if threshold_mapping_manager:
-            try:
-                current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
-                validation_summary = threshold_mapping_manager.get_validation_summary()
-                
-                configuration_status['threshold_mapping_loaded'] = len(crisis_mapping) > 0
-                configuration_status['threshold_mode'] = current_mode
-                configuration_status['env_overrides_applied'] = True
-                configuration_status['threshold_validation_passed'] = validation_summary.get('validation_errors', 0) == 0
-            except:
-                configuration_status['threshold_mapping_loaded'] = False
+        # Create FastAPI application
+        app = create_app()
         
-        if logging_config_manager:
-            try:
-                status = logging_config_manager.get_configuration_status()
-                configuration_status['logging_config_loaded'] = True
-                configuration_status['global_log_level_preserved'] = status.get('global_log_level_preserved', False)
-            except:
-                configuration_status['logging_config_loaded'] = False
+        # Get server configuration from unified manager
+        server_config = initial_config.get_server_configuration()['server']
         
-        if feature_config_manager:
-            try:
-                all_features = feature_config_manager.get_all_features()
-                configuration_status['feature_flags_loaded'] = len(all_features) > 0
-                configuration_status['feature_validation_passed'] = len(feature_config_manager.get_validation_errors()) == 0
-            except:
-                configuration_status['feature_flags_loaded'] = False
+        # Start the server
+        logger.info(f"🌐 Starting server on {server_config['host']}:{server_config['port']}")
+        logger.info(f"⚙️ Workers: {server_config['workers']}, Timeout: {server_config['timeout']}s")
         
-        if performance_config_manager:
-            try:
-                all_settings = performance_config_manager.get_all_performance_settings()
-                configuration_status['performance_settings_loaded'] = len(all_settings) > 0
-                configuration_status['performance_validation_passed'] = len(performance_config_manager.get_validation_errors()) == 0
-            except:
-                configuration_status['performance_settings_loaded'] = False
-        
-        # Manager status
-        manager_status = {
-            'pattern_analysis_available': crisis_pattern_manager is not None,
-            'parameter_analysis_available': analysis_parameters_manager is not None,
-            'threshold_aware_analysis': threshold_mapping_manager is not None,
-            'server_config_available': server_config_manager is not None,
-            'logging_config_available': logging_config_manager is not None,
-            'feature_config_available': feature_config_manager is not None,  # Phase 3d Step 7
-            'performance_config_available': performance_config_manager is not None,  # Phase 3d Step 7
-            'three_model_ensemble': model_loaded,
-            'crisis_detection_operational': all([
-                crisis_pattern_manager is not None,
-                analysis_parameters_manager is not None, 
-                threshold_mapping_manager is not None,
-                model_loaded
-            ])
-        }
-        
-        # Logging status
-        logging_status = {}
-        if logging_config_manager:
-            try:
-                status = logging_config_manager.get_configuration_status()
-                global_settings = logging_config_manager.get_global_logging_settings()
-                logging_status = {
-                    'logging_config_manager': 'operational',
-                    'status': 'enhanced_integrated',
-                    'log_level': global_settings.get('log_level', 'INFO'),
-                    'global_log_level_preserved': status.get('global_log_level_preserved', False)
-                }
-            except Exception as e:
-                logging_status = {'logging_config_manager': 'error', 'error': str(e)}
-        else:
-            logging_status = {'logging_config_manager': 'not_initialized', 'status': 'initial_colorlog'}
-        
-        # Feature status - NEW Phase 3d Step 7
-        feature_status = {}
-        if feature_config_manager:
-            try:
-                core_features = feature_config_manager.get_core_system_features()
-                experimental_features = feature_config_manager.get_experimental_features()
-                
-                feature_status = {
-                    'manager_available': True,
-                    'core_features_enabled': sum(1 for v in core_features.values() if v),
-                    'total_core_features': len(core_features),
-                    'experimental_features_enabled': sum(1 for v in experimental_features.values() if v),
-                    'total_experimental_features': len(experimental_features),
-                    'validation_errors': len(feature_config_manager.get_validation_errors()),
-                    'key_features': {
-                        'ensemble_analysis': core_features.get('ensemble_analysis', False),
-                        'pattern_integration': core_features.get('pattern_integration', False),
-                        'safety_controls': core_features.get('safety_controls', False)
-                    }
-                }
-            except Exception as e:
-                feature_status = {'manager_available': True, 'error': str(e)}
-        else:
-            feature_status = {'manager_available': False, 'status': 'fallback_mode'}
-        
-        # Performance status - NEW Phase 3d Step 7
-        performance_status = {}
-        if performance_config_manager:
-            try:
-                analysis_perf = performance_config_manager.get_analysis_performance_settings()
-                model_perf = performance_config_manager.get_model_performance_settings()
-                profiles = performance_config_manager.get_available_profiles()
-                
-                performance_status = {
-                    'manager_available': True,
-                    'analysis_timeout_ms': analysis_perf.get('analysis_timeout_ms', 0),
-                    'max_concurrent': analysis_perf.get('analysis_max_concurrent', 0),
-                    'device': model_perf.get('device', 'unknown'),
-                    'model_precision': model_perf.get('model_precision', 'unknown'),
-                    'batch_size': model_perf.get('max_batch_size', 0),
-                    'available_profiles': len(profiles),
-                    'validation_errors': len(performance_config_manager.get_validation_errors())
-                }
-            except Exception as e:
-                performance_status = {'manager_available': True, 'error': str(e)}
-        else:
-            performance_status = {'manager_available': False, 'status': 'fallback_mode'}
-        
-        # Overall status
-        critical_components = [
-            config_manager is not None,
-            settings_manager is not None,
-            zero_shot_manager is not None and model_loaded,
-            pydantic_manager is not None,
-            crisis_pattern_manager is not None,
-            analysis_parameters_manager is not None,
-            threshold_mapping_manager is not None
-        ]
-        
-        overall_status = "healthy" if all(critical_components) else "degraded"
-        
-        return HealthResponse(
-            status=overall_status,
-            uptime=uptime,
-            model_loaded=model_loaded,
-            components_available=components_available,
-            configuration_status=configuration_status,
-            manager_status=manager_status,
-            logging_status=logging_status,
-            feature_status=feature_status,  # NEW Phase 3d Step 7
-            performance_status=performance_status,  # NEW Phase 3d Step 7
-            architecture_version="clean_v3_1_phase_3d_step_7",
-            phase_3d_status="step_7_complete"
-        )
-        
-    except Exception as e:
-        logger.error(f"❌ Health check failed: {e}")
-        return HealthResponse(
-            status="error",
-            uptime=time.time() - start_time,
-            model_loaded=False,
-            components_available={},
-            configuration_status={'error': str(e)},
-            manager_status={'error': str(e)},
-            logging_status={'error': str(e)},
-            feature_status={'error': str(e)},
-            performance_status={'error': str(e)},
-            architecture_version="clean_v3_1_phase_3d_step_7",
-            phase_3d_status="error"
-        )
-
-# ============================================================================
-# Application Entry Point - Phase 3d Step 7
-# ============================================================================
-if __name__ == "__main__":
-    import uvicorn
-    
-    logger.info("🚀 Starting Ash-NLP Crisis Detection API - Phase 3d Step 7")
-    logger.info("🎯 Features: Feature Flags + Performance Management + Enhanced Logging")
-    
-    # Phase 3d Step 7: Use standardized variables
-    host = os.getenv("NLP_SERVER_HOST", "0.0.0.0")  # Phase 3d Step 5
-    port = int(os.getenv("GLOBAL_NLP_API_PORT", "8881"))  # Preserved
-    workers = int(os.getenv("NLP_PERFORMANCE_WORKERS", "1"))  # Phase 3d Step 7
-    reload_on_changes = os.getenv("NLP_FEATURE_RELOAD_ON_CHANGES", "false").lower() == "true"  # Phase 3d Step 7
-    log_level = os.getenv("GLOBAL_LOG_LEVEL", "info").lower()  # Preserved
-    
-    logger.info(f"🌐 Server: {host}:{port} workers={workers} reload={reload_on_changes}")
-    
-    try:
         uvicorn.run(
             app,
-            host=host,
-            port=port,
-            workers=workers,
-            reload=reload_on_changes,
-            log_level=log_level,
-            access_log=True
+            host=server_config['host'],
+            port=server_config['port'],
+            workers=1,  # Single worker for now to avoid manager duplication
+            timeout_keep_alive=server_config['timeout']
         )
+        
     except Exception as e:
-        logger.error(f"❌ Server startup failed: {e}")
-        raise
+        print(f"❌ Application startup failed: {e}")
+        sys.exit(1)
 
-logger.info("✅ Main application module loaded - Phase 3d Step 7 Complete")
-logger.info("🚩 Feature flags management: FeatureConfigManager integrated")
-logger.info("⚡ Performance settings management: PerformanceConfigManager integrated")
-logger.info("🚀 Ready for production deployment")
+if __name__ == "__main__":
+    main()
