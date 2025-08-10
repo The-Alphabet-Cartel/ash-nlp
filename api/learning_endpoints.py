@@ -1,5 +1,5 @@
 """
-Learning Endpoints for Ash-NLP v3.1d Step 9
+Learning Endpoints for Ash-NLP v3.1d Step 9 - FIXED VERSION
 Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -40,54 +40,75 @@ class LearningSystemManager:
     def _load_configuration(self):
         """Load learning configuration using UnifiedConfigManager (NO MORE os.getenv())"""
         try:
-            # Load learning configuration from JSON through unified manager
-            learning_config = self.unified_config.load_config_file('learning_settings')
+            # STEP 9 FIX: Try to load learning configuration, handle missing file gracefully
+            learning_config = None
+            try:
+                learning_config = self.unified_config.load_config_file('learning_settings')
+                logger.info("✅ Learning configuration loaded from learning_settings.json")
+            except Exception as e:
+                logger.warning(f"⚠️ learning_settings.json not found: {e}")
+                logger.info("🔄 Using environment variables only")
             
             if learning_config:
-                # Load from JSON configuration with environment overrides
-                ls_config = learning_config.get('learning_system', {})
-                pattern_config = learning_config.get('pattern_learning', {})
+                # STEP 9 FIX: Handle corrected JSON structure (value, defaults, validation pattern)
                 
-                # STEP 9 CHANGE: Use unified_config instead of os.getenv()
+                # Extract configuration values using the correct JSON structure
+                persistence_config = learning_config.get('learning_persistence', {})
                 self.learning_data_path = self.unified_config.get_env(
                     'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE',
-                    ls_config.get('persistence_file', './learning_data/enhanced_learning_adjustments.json')
+                    persistence_config.get('defaults', {}).get('file', './learning_data/adjustments.json')
                 )
                 
+                learning_rate_config = learning_config.get('learning_rate', {})
                 self.learning_rate = self.unified_config.get_env_float(
                     'NLP_ANALYSIS_LEARNING_RATE',
-                    ls_config.get('learning_rate', 0.01)
+                    learning_rate_config.get('defaults', {}).get('value', 0.01)
                 )
                 
+                confidence_config = learning_config.get('confidence_adjustments', {})
                 self.min_adjustment = self.unified_config.get_env_float(
                     'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT',
-                    ls_config.get('min_confidence_adjustment', 0.05)
+                    confidence_config.get('defaults', {}).get('min_adjustment', 0.05)
                 )
                 
                 self.max_adjustment = self.unified_config.get_env_float(
                     'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT',
-                    ls_config.get('max_confidence_adjustment', 0.30)
+                    confidence_config.get('defaults', {}).get('max_adjustment', 0.30)
                 )
                 
+                daily_limits_config = learning_config.get('daily_limits', {})
                 self.max_adjustments_per_day = self.unified_config.get_env_int(
                     'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY',
-                    ls_config.get('max_adjustments_per_day', 50)
+                    daily_limits_config.get('defaults', {}).get('max_adjustments_per_day', 50)
                 )
                 
-                # Pattern learning configuration
-                self.false_positive_indicators = pattern_config.get('false_positive_indicators', [])
-                self.false_negative_indicators = pattern_config.get('false_negative_indicators', [])
+                # Additional configuration from corrected JSON structure
+                feedback_config = learning_config.get('feedback_factors', {})
+                self.false_positive_factor = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR',
+                    feedback_config.get('defaults', {}).get('false_positive_factor', -0.1)
+                )
+                self.false_negative_factor = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR',
+                    feedback_config.get('defaults', {}).get('false_negative_factor', 0.1)
+                )
                 
-                # Load adjustment rules from JSON
-                adjustment_rules = ls_config.get('adjustment_rules', {})
-                self.false_positive_factor = adjustment_rules.get('false_positive_adjustment_factor', -0.1)
-                self.false_negative_factor = adjustment_rules.get('false_negative_adjustment_factor', 0.1)
-                self.severity_multipliers = adjustment_rules.get('severity_multipliers', {'high': 3.0, 'medium': 2.0, 'low': 1.0})
+                severity_config = learning_config.get('severity_multipliers', {})
+                severity_defaults = severity_config.get('defaults', {})
+                self.severity_multipliers = {
+                    'high': severity_defaults.get('high', 3.0),
+                    'medium': severity_defaults.get('medium', 2.0),
+                    'low': severity_defaults.get('low', 1.0)
+                }
+                
+                # Pattern learning configuration (if available)
+                self.false_positive_indicators = []
+                self.false_negative_indicators = []
                 
                 logger.info("✅ Learning configuration loaded from JSON + ENV using UnifiedConfigManager")
                 
             else:
-                logger.warning("⚠️ Learning configuration file not found, using environment fallback")
+                logger.info("🔄 Loading configuration from environment variables only")
                 self._load_from_environment_only()
                 
         except Exception as e:
@@ -101,7 +122,7 @@ class LearningSystemManager:
         self.learning_data_path = self.unified_config.get_env(
             'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE',
             self.unified_config.get_env('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', 
-                                       './learning_data/enhanced_learning_adjustments.json')
+                                       './learning_data/adjustments.json')
         )
         
         self.learning_rate = self.unified_config.get_env_float(
@@ -344,21 +365,30 @@ def get_pydantic_models():
         return {}
 
 # ========================================================================
-# LEARNING ENDPOINTS REGISTRATION - Phase 3d Step 9
+# LEARNING ENDPOINTS REGISTRATION - Phase 3d Step 9 FIXED
 # ========================================================================
 
-def register_learning_endpoints(app: FastAPI, unified_config_manager):
+def register_learning_endpoints(app: FastAPI, unified_config_manager, threshold_mapping_manager=None):
     """
     Register learning endpoints with UnifiedConfigManager integration
-    Phase 3d Step 9: Updated to use UnifiedConfigManager
+    Phase 3d Step 9: Updated to use UnifiedConfigManager with optional ThresholdMappingManager
     
     Args:
         app: FastAPI application instance
         unified_config_manager: UnifiedConfigManager instance for dependency injection
+        threshold_mapping_manager: Optional ThresholdMappingManager instance for enhanced integration
     """
     
     # STEP 9 CHANGE: Create learning manager with UnifiedConfigManager
     learning_manager = LearningSystemManager(unified_config_manager)
+    
+    # STEP 9 ENHANCEMENT: Optional threshold mapping manager integration
+    if threshold_mapping_manager:
+        logger.info("✅ ThresholdMappingManager integrated with learning endpoints")
+        # Store reference for potential future use in learning adjustments
+        learning_manager.threshold_mapping_manager = threshold_mapping_manager
+    else:
+        logger.info("ℹ️ Learning endpoints running without ThresholdMappingManager integration")
     
     # Get Pydantic models
     models = get_pydantic_models()
