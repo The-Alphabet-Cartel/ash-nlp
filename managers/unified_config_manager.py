@@ -381,9 +381,28 @@ class UnifiedConfigManager:
         
         def apply_defaults_recursive(main_value: Any, defaults_value: Any) -> Any:
             if isinstance(main_value, str) and main_value.startswith('${') and main_value.endswith('}'):
-                # This is still a placeholder, use the default value
+                # This is still a placeholder, use the default value with type conversion
                 logger.debug(f"🔄 Replacing placeholder {main_value} with default: {defaults_value}")
-                return defaults_value
+                
+                # Apply type conversion to the default value
+                if isinstance(defaults_value, (int, float)):
+                    return defaults_value  # Already correct type
+                elif isinstance(defaults_value, str):
+                    # Try to convert string defaults to appropriate types
+                    if defaults_value.lower() in ('true', 'false'):
+                        return defaults_value.lower() == 'true'
+                    elif defaults_value.replace('.', '').replace('-', '').isdigit():
+                        try:
+                            if '.' in defaults_value:
+                                return float(defaults_value)
+                            else:
+                                return int(defaults_value)
+                        except ValueError:
+                            return defaults_value
+                    else:
+                        return defaults_value
+                else:
+                    return defaults_value
             elif isinstance(main_value, dict) and isinstance(defaults_value, dict):
                 # Recursively apply defaults to nested dictionaries
                 result = {}
@@ -395,7 +414,24 @@ class UnifiedConfigManager:
                 # Add any defaults that aren't in main config
                 for key in defaults_value:
                     if key not in result:
-                        result[key] = defaults_value[key]
+                        # Apply type conversion to added defaults too
+                        if isinstance(defaults_value[key], (int, float, bool)):
+                            result[key] = defaults_value[key]
+                        elif isinstance(defaults_value[key], str):
+                            if defaults_value[key].lower() in ('true', 'false'):
+                                result[key] = defaults_value[key].lower() == 'true'
+                            elif defaults_value[key].replace('.', '').replace('-', '').isdigit():
+                                try:
+                                    if '.' in defaults_value[key]:
+                                        result[key] = float(defaults_value[key])
+                                    else:
+                                        result[key] = int(defaults_value[key])
+                                except ValueError:
+                                    result[key] = defaults_value[key]
+                            else:
+                                result[key] = defaults_value[key]
+                        else:
+                            result[key] = defaults_value[key]
                 return result
             elif isinstance(main_value, list) and isinstance(defaults_value, list):
                 # For lists, prefer main_value if it exists, otherwise use defaults
