@@ -64,7 +64,7 @@ class ModelEnsembleManager:
             logger.error(f"❌ Failed to load model configuration: {e}")
             raise
     
-    def _validate_configuration(self):
+def _validate_configuration(self):
         """Validate model ensemble configuration with Phase 3d standards"""
         try:
             models = self.config.get('models', {})
@@ -78,9 +78,35 @@ class ModelEnsembleManager:
                 if model_type not in models:
                     raise ValueError(f"Required model '{model_type}' not found in configuration")
             
-            # Validate model weights sum to approximately 1.0
-            total_weight = sum(model.get('weight', 0) for model in models.values())
+            # DEBUG: Log weight types and values before validation
+            logger.debug("🔍 Debugging weight types before validation:")
+            for model_type, model_config in models.items():
+                weight_value = model_config.get('weight', 0)
+                logger.debug(f"   {model_type}: weight={weight_value} (type: {type(weight_value)})")
+            
+            # Validate model weights sum to approximately 1.0 with explicit type conversion
+            weights = []
+            for model_type, model_config in models.items():
+                weight_value = model_config.get('weight', 0)
+                try:
+                    # Explicit type conversion to handle string weights from JSON
+                    if isinstance(weight_value, str):
+                        weight_float = float(weight_value)
+                        logger.debug(f"🔧 Converted string weight '{weight_value}' to float {weight_float} for {model_type}")
+                    elif isinstance(weight_value, (int, float)):
+                        weight_float = float(weight_value)
+                    else:
+                        logger.warning(f"⚠️ Unexpected weight type {type(weight_value)} for {model_type}, using 0.0")
+                        weight_float = 0.0
+                    weights.append(weight_float)
+                except (ValueError, TypeError) as e:
+                    logger.error(f"❌ Could not convert weight '{weight_value}' to float for {model_type}: {e}")
+                    raise ValueError(f"Invalid weight value for {model_type}: {weight_value}")
+            
+            total_weight = sum(weights)
             weight_tolerance = self.config.get('validation', {}).get('weight_tolerance', 0.01)
+            
+            logger.debug(f"🔍 Total weight calculated: {total_weight}")
             
             if abs(total_weight - 1.0) > weight_tolerance:
                 logger.warning(f"⚠️ Model weights sum to {total_weight}, should be ~1.0 (tolerance: {weight_tolerance})")
@@ -97,7 +123,7 @@ class ModelEnsembleManager:
         except Exception as e:
             logger.error(f"❌ Model configuration validation failed: {e}")
             raise
-    
+        
     # ========================================================================
     # Model Configuration Access - Phase 3d Enhanced
     # ========================================================================
