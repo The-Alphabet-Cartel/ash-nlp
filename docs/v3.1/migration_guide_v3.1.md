@@ -68,6 +68,9 @@ ash/ash-nlp/
 │   ├── admin_endpoints.py
 │   ├── ensemble_endpoints.py
 │   └── learning_endpoints.py
+├── backups/                                 # Backup Location
+│   └── learning_data/
+├── cache/                                   # Caching Location
 ├── config/                                  # JSON configuration files
 │   ├── __init__.py
 │   ├── analysis_parameters.json
@@ -80,11 +83,14 @@ ash/ash-nlp/
 │   ├── crisis_lgbtqia_patterns.json
 │   ├── crisis_patterns.json
 │   ├── enhanced_crisis_patterns.json
+│   ├── feature_flags.json
 │   ├── label_config.json
 │   ├── learning_parameters.json
 │   ├── model_ensemble.json
 │   ├── performance_settings.json
 │   ├── positive_context_patterns.json
+│   ├── server_setting.json
+│   ├── storage_settings.json
 │   ├── temporal_indicators_patterns.json
 │   └── threshold_mapping.json
 ├── data/                                    # DATA Storage
@@ -113,6 +119,10 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_4.md
 |   |   │   │   |   ├── step_5.md
 |   |   │   │   |   ├── step_6.md
+|   |   │   │   |   ├── step_7.md
+|   |   │   │   |   ├── step_8.md
+|   |   │   │   |   ├── step_9.md
+|   |   │   │   |   ├── step_9.5.md
 |   |   │   │   │   └── tracker.md
 |   │   │   └── 4/
 |   |   │       ├── a/
@@ -123,10 +133,10 @@ ash/ash-nlp/
 |   |   │           ├── status_testing.md
 |   |   │           ├── status_update.md
 |   |   │           └── tracker.md
-│   │   ├── 3_1_clean_architecture_charter.md
-│   │   ├── 3_1_frequently_asked_questions.md
-│   │   └── migration_guide_v3_1.md
-│   └── project_instructions_v3_1.md
+│   │   ├── clean_architecture_charter_v3.1.md
+│   │   ├── frequently_asked_questions_v3.1.md
+│   │   └── migration_guide_v3.1.md
+│   └── project_instructions.md
 ├── learning_data/                           # Learning Data Storage
 │   └── __init__.py
 ├── logs/                                    # Logs Storage
@@ -137,11 +147,16 @@ ash/ash-nlp/
 │   ├── config_manager.py
 │   ├── crisis_pattern_manager.py
 │   ├── env_manager.py
+│   ├── feature_config_manager.py
+│   ├── loggin_config_manager.py
 │   ├── model_ensemble_manager.py
 │   ├── models_manager.py
+│   ├── performance_config_manager.py
 │   ├── pydantic_manager.py
+│   ├── server_config_manager.py
 │   ├── settings_manager.py
 │   ├── threshold_mapping_manager.py
+│   ├── unified_config_manager.py
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
 │   ├── cache/                               # Models Cache
@@ -162,10 +177,14 @@ ash/ash-nlp/
 |       |   │   ├── test_integration.py
 |       |   │   └── test_threshold_mapping_manager.py
 |       │   └── d/
+|       |       ├── test_step_6_integration.py
+|       |       ├── test_step_7_integration.py
+|       |       └── test_step_9_integration.py
 |       └── 4/
 |           ├── a/
 |           └── b/
-├── utils/                                   # Utility and Helper Files
+├── tmp/                                   # Temporary Files
+├── utils/                                   # Utility & Helper Files
 │   ├── __init__.py
 │   ├── community_patterns.py
 │   ├── context_helpers.py
