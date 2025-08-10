@@ -1,7 +1,6 @@
 """
-Unified Configuration Manager for Ash-NLP v3.1d Step 9 - FIXED
-Follows the established JSON configuration pattern from ConfigManager
-Eliminates all direct os.getenv() calls system-wide
+Unified Configuration Manager for Ash-NLP v3.1d Step 9 - CORRECTLY FIXED
+Follows the established JSON defaults block pattern and eliminates all direct os.getenv() calls
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -417,9 +416,11 @@ class UnifiedConfigManager:
         
         logger.debug("✅ Defaults block fallback applied")
         return result
+    
+    def load_config_file(self, config_name: str) -> Dict[str, Any]:
         """
-        Load and parse a configuration file with environment variable substitution
-        FOLLOWS ESTABLISHED PATTERN from ConfigManager
+        Load and parse a configuration file with environment variable substitution and defaults fallback
+        FOLLOWS ESTABLISHED PATTERN: ${VAR} placeholders + defaults block
         """
         if config_name in self.config_cache:
             logger.debug(f"📋 Using cached config for {config_name}")
@@ -446,9 +447,13 @@ class UnifiedConfigManager:
             
             logger.debug(f"✅ JSON loaded successfully")
             
-            # Substitute environment variables
-            logger.debug("🔄 Starting environment variable substitution...")
-            processed_config = self.substitute_environment_variables(raw_config)
+            # Step 1: Substitute environment variables
+            logger.debug("🔄 Step 1: Starting environment variable substitution...")
+            env_substituted_config = self.substitute_environment_variables(raw_config)
+            
+            # Step 2: Apply defaults block fallback for remaining placeholders
+            logger.debug("🔄 Step 2: Applying defaults block fallback...")
+            processed_config = self._apply_defaults_fallback(env_substituted_config)
             
             # Cache the processed configuration
             self.config_cache[config_name] = processed_config
