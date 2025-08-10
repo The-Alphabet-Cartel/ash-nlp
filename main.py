@@ -43,6 +43,7 @@ from managers.logging_config_manager import create_logging_config_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.performance_config_manager import create_performance_config_manager
 from managers.server_config_manager import create_server_config_manager
+from managers.zero_shot_manager import create_zero_shot_manager
 
 # Analysis Components
 from analysis import create_crisis_analyzer
@@ -174,6 +175,15 @@ def initialize_unified_managers():
             logger.warning("⚠️ ModelsManager not available")
             logger.info("ℹ️ Admin endpoints will run in limited mode")
         
+        # Create ZeroShotManager (needed for admin endpoints)
+        zero_shot_manager = None
+        try:
+            zero_shot_manager = create_zero_shot_manager(unified_config)
+            logger.info("✅ ZeroShotManager created successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ ZeroShotManager creation failed: {e}")
+            logger.info("ℹ️ Admin endpoints will run with limited functionality")
+
         pydantic_manager = create_pydantic_manager()
         settings = create_settings_manager(
             unified_config,
@@ -211,6 +221,7 @@ def initialize_unified_managers():
             'models_manager': models_manager,  # STEP 9 FIX: Add models_manager to dictionary
             'pydantic': pydantic_manager,
             'settings': settings,
+            'zero_shot_manager': zero_shot_manager,
             'crisis_analyzer': crisis_analyzer
         }
         
@@ -298,21 +309,24 @@ def create_fastapi_app():
         )
         
         # Admin endpoints - STEP 9 FIX: Graceful ModelsManager handling
+        # Admin endpoints with ZeroShotManager
         try:
             add_admin_endpoints(
                 app, 
                 managers['unified_config'], 
                 managers['settings'], 
-                zero_shot_manager=None, 
+                zero_shot_manager=managers['zero_shot_manager'],  # FIX: Pass actual ZeroShotManager
                 crisis_pattern_manager=managers['crisis_pattern'],
-                models_manager=managers['models_manager'],  # This will be None if not available
+                models_manager=managers['models_manager'],
                 analysis_parameters_manager=managers['analysis_parameters'],
                 threshold_mapping_manager=managers['threshold_mapping']
             )
-            if managers['models_manager']:
-                logger.info("✅ Full admin endpoints registered with ModelsManager")
+            if managers['models_manager'] and managers['zero_shot_manager']:
+                logger.info("✅ Full admin endpoints registered with ModelsManager and ZeroShotManager")
+            elif managers['models_manager']:
+                logger.info("✅ Limited admin endpoints registered with ModelsManager only")
             else:
-                logger.info("✅ Limited admin endpoints registered without ModelsManager")
+                logger.info("✅ Basic admin endpoints registered")
         except Exception as e:
             logger.error(f"❌ Admin endpoints registration failed: {e}")
             logger.info("ℹ️ Continuing without admin endpoints")
