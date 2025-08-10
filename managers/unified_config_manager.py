@@ -396,6 +396,35 @@ class UnifiedConfigManager:
             logger.warning(f"⚠️ No schema found for {var_name}, returning raw value: {env_value}")
             return env_value
     
+    # ========================================================================
+    # UNIFIED ENVIRONMENT VARIABLE ACCESS (CRITICAL METHODS)
+    # ========================================================================
+    
+    def get_env(self, var_name: str, default: Any = None) -> Any:
+        """
+        Get environment variable with schema validation and type conversion
+        CRITICAL METHOD - Used by all managers
+        """
+        # Get raw environment value
+        env_value = os.getenv(var_name)
+        
+        # If no environment value, use schema default or provided default
+        if env_value is None:
+            if var_name in self.variable_schemas:
+                result = self.variable_schemas[var_name].default
+                logger.debug(f"🔧 Using schema default for {var_name}: {result}")
+                return result
+            else:
+                logger.debug(f"🔧 Using provided default for {var_name}: {default}")
+                return default
+        
+        # Validate and convert using schema
+        if var_name in self.variable_schemas:
+            return self._validate_and_convert(var_name, env_value)
+        else:
+            logger.warning(f"⚠️ No schema found for {var_name}, returning raw value: {env_value}")
+            return env_value
+    
     def get_env_str(self, var_name: str, default: str = '') -> str:
         """Get environment variable as string"""
         result = self.get_env(var_name, default)
@@ -436,7 +465,7 @@ class UnifiedConfigManager:
         if isinstance(result, str) and result:
             return [item.strip() for item in result.split(',')]
         return default
-    
+
     def _validate_and_convert(self, var_name: str, value: str) -> Any:
         """Validate and convert environment variable using schema"""
         schema = self.variable_schemas[var_name]
