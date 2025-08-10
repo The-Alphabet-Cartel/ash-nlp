@@ -1,85 +1,120 @@
 # Phase 3d Step 9.5: Remaining Files Update Summary
 
-## ✅ COMPLETED UPDATES
+### **NEED TO FIX**
 
-### **✅ Major Files Updated**
-1. **api/learning_endpoints.py** - ✅ COMPLETE
-  - Updated LearningSystemManager to use UnifiedConfigManager
-  - Eliminated all direct os.getenv() calls
-  - Updated register_learning_endpoints() to accept unified_config_manager
+**UnifiedConfigManager**
+  - Fix UnifiedConfigManager to comply with established JSON configuration file patterns and established 3.1 Clean Architecture
 
-2. **managers/logging_config_manager.py** - ✅ COMPLETE
-  - Complete UnifiedConfigManager integration
-  - All logging variables accessed through unified_config.get_env_*()
-  - Updated factory function for UnifiedConfigManager dependency
+UnifiedConfigManager Currently expects this JSON format:
+```json
+{
+  "model_definitions": {
+    "depression": {
+      "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",  // ✅ Default model
+      "weight": 0.4  // ✅ Default weight
+    }
+  },
+  [...]
+}
+```
 
-3. **managers/settings_manager.py** - ✅ COMPLETE (done earlier)
-  - Updated to use UnifiedConfigManager as first parameter
-  - All environment access through unified configuration
+Established JSON configuration file pattern for 3.1 Clean Architecture is:
+```json
+{
+  [...]
+  "model_ensemble": {
+    "model_definitions": {
+      "depression": {
+        "name": "${NLP_MODEL_DEPRESSION_NAME}",
+        "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+        "type": "zero-shot-classification",
+        "purpose": "Depression and mental health crisis detection using zero-shot classification",
+        "pipeline_task": "zero-shot-classification"
+      },
+      "sentiment": {
+        "name": "${NLP_MODEL_SENTIMENT_NAME}",
+        "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+        "type": "sentiment-analysis", 
+        "purpose": "Topic-based sentiment analysis",
+        "pipeline_task": "zero-shot-classification"
+      },
+      "emotional_distress": {
+        "name": "${NLP_MODEL_DISTRESS_NAME}",
+        "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+        "type": "natural-language-inference",
+        "purpose": "Emotional distress detection using multilingual NLI",
+        "pipeline_task": "zero-shot-classification"
+      }
+    },
+    "defaults": {
+      "model_definitions": {
+        "depression": {
+          "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+          "weight": 0.4
+        },
+        "sentiment": {
+          "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+          "weight": 0.3
+        },
+        "emotional_distress": {
+          "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+          "weight": 0.3
+        }
+      },
+      "cache_dir": "./models/cache"
+    },
+    "ensemble_config": {
+      "mode": "${NLP_ENSEMBLE_MODE}",
+      "gap_detection": {
+        "enabled": "${NLP_ENSEMBLE_GAP_DETECTION_ENABLED}",
+        "disagreement_threshold": "${NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD}"
+      },
+      "defaults": {
+        "mode": "majority",
+        "gap_detection": {
+          "enabled": true,
+          "disagreement_threshold": 2
+        }
+      }
+    }
+  },
+  [...]
+}
+```
 
-4. **managers/threshold_mapping_manager.py** - ✅ COMPLETE (done earlier)
-  - Complete UnifiedConfigManager integration
-  - All threshold variables accessed through unified configuration
+We need to fix the UnifiedConfigManager to properly handle missing environment variables by falling back to the defaults sections in the JSON files.
 
-5. **managers/server_config_manager.py**
-  - Complete UnifiedConfigManager integration
-  - All logging variables accessed through unified_config.get_env_*()
-  - Updated factory function for UnifiedConfigManager dependency
-
-## ⏳ REMAINING FILES TO UPDATE
-
-### **🔧 Files Still Needing Updates**
-1. **managers/models_manager.py**
-  - May have fallback os.getenv() calls
-  - Needs UnifiedConfigManager integration
-
-2. **managers/zero_shot_manager.py**
-  - May have fallback os.getenv() calls
-  - Needs UnifiedConfigManager integration
-
-## 🎯 COMPLETION STRATEGY
-
-### **Priority 1: Critical Managers**
-- **models_manager.py**: Core functionality manager
-
-### **Priority 2: Supporting Managers**
-- **zero_shot_manager.py**: ML model support
-
-### **Required Changes Pattern**
-For each manager, the pattern is:
-1. Update constructor to accept `unified_config_manager` instead of `config_manager`
-2. Replace all `os.getenv()` calls with `self.unified_config.get_env*()`
-3. Update factory function to use UnifiedConfigManager
-4. Update main.py imports and initialization
+---
 
 ## 🚀 COMPLETION TARGET
 
-**Goal**: Complete all remaining files within this conversation
-**Estimated**: 4 managers × 10 minutes each = 40 minutes
-**Impact**: 100% elimination of direct os.getenv() calls system-wide
+**Goal**: Fix UnifiedConfigManager to correctly utilize the established JSON formatting pattern
 
 ## ✅ SUCCESS METRICS
 
 ### **Technical Indicators**
-- [ ] All managers use UnifiedConfigManager
-- [ ] Zero direct os.getenv() calls in production code
-- [ ] All factory functions updated
-- [ ] Main.py initialization updated
+- [x] All managers use UnifiedConfigManager
+- [x] Zero direct os.getenv() calls in production code
+- [x] All factory functions updated
+- [x] Main.py initialization updated
+- [ ] Update UnifiedConfigManager to properly utilize established JSON patterns in compliance with our established 3.1 Clean Architecture
 
 ### **Testing Indicators**
-- [ ] Integration tests pass
 - [ ] System startup successful
+- [ ] Integration tests pass
 - [ ] All endpoints responding
 - [ ] Configuration loading functional
 
 ## 📋 NEXT ACTIONS
 
-1. **Update server_config_manager.py** - Priority 1
-2. **Update models_manager.py** - Priority 1  
-3. **Update zero_shot_manager.py** - Priority 2
-4. **Update learning_config_manager.py** - Priority 2
-5. **Update main.py imports** - Final integration
-6. **Run comprehensive tests** - Validation
+1. **Fix UnifiedConfigManager** - *In Progress*
+2. **Run Testing** - Validation
 
 **Estimated Completion**: End of current conversation session
-**Final Result**: 100% UnifiedConfigManager integration, zero direct os.getenv() calls
+**Final Result**:
+- 100% UnifiedConfigManager integration
+- System starts up without complaint about missing variables
+- Testing can begin in earnest.
