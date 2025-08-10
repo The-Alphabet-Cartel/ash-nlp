@@ -97,6 +97,9 @@ class UnifiedConfigManager:
             'learning_settings': 'learning_settings.json'
         }
         
+        # Load and validate all environment variables
+        self.env_config = self._load_all_environment_variables()
+        
         logger.info("UnifiedConfigManager v3.1d Step 9 initialized - Following established JSON patterns")
     
     def _initialize_schemas(self) -> Dict[str, VariableSchema]:
@@ -151,7 +154,11 @@ class UnifiedConfigManager:
             # Preserve GLOBAL_* variables (Ecosystem Compatibility)
             'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR']),
             'GLOBAL_DEBUG': VariableSchema('bool', False),
-            'GLOBAL_ENABLE_LOGGING': VariableSchema('bool', True)
+            'GLOBAL_ENABLE_LOGGING': VariableSchema('bool', True),
+            'GLOBAL_NLP_API_PORT': VariableSchema('int', 8881, min_value=1024, max_value=65535),
+            'GLOBAL_ENABLE_CORS': VariableSchema('bool', True),
+            'GLOBAL_ALLOWED_IPS': VariableSchema('str', '10.20.30.0/24,127.0.0.1,::1'),
+            'GLOBAL_HUGGINGFACE_TOKEN': VariableSchema('str', ''),
         })
         
         # Add additional schemas for learning, thresholds, etc.
@@ -173,6 +180,9 @@ class UnifiedConfigManager:
             'NLP_ANALYSIS_LEARNING_RATE': VariableSchema('float', 0.1, min_value=0.01, max_value=1.0),
             'NLP_ANALYSIS_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool', True),
             'NLP_ANALYSIS_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int', 100, min_value=10, max_value=1000),
+            'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT': VariableSchema('float', 0.05, min_value=0.01, max_value=0.5),
+            'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT': VariableSchema('float', 0.30, min_value=0.1, max_value=1.0),
+            'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY': VariableSchema('int', 50, min_value=1, max_value=500),
         }
     
     def _get_threshold_schemas(self) -> Dict[str, VariableSchema]:
@@ -284,7 +294,84 @@ class UnifiedConfigManager:
     # UNIFIED ENVIRONMENT VARIABLE ACCESS (FOR MANAGERS WITHOUT JSON CONFIG)
     # ========================================================================
     
-    def get_env(self, var_name: str, default: Any = None) -> Any:
+    def _load_all_environment_variables(self) -> Dict[str, Any]:
+        """Load and validate all environment variables using schemas"""
+        env_config = {}
+        validation_errors = []
+        
+        logger.info("🔍 Loading and validating all environment variables...")
+        
+        for var_name, schema in self.variable_schemas.items():
+            try:
+                # Get environment value or use default
+                env_value = os.getenv(var_name)
+                
+                if env_value is None:
+                    if schema.required:
+                        validation_errors.append(f"Required variable {var_name} not found")
+                        continue
+                    else:
+                        env_config[var_name] = schema.default
+                        logger.debug(f"✅ {var_name}: Using default '{schema.default}'")
+                        continue
+                
+                # Validate and convert the environment value
+                validated_value = self._validate_and_convert(var_name, env_value)
+                env_config[var_name] = validated_value
+                
+                logger.debug(f"✅ {var_name}: '{env_value}' → {validated_value}")
+                
+            except Exception as e:
+                validation_errors.append(f"Validation error for {var_name}: {e}")
+                logger.error(f"❌ {var_name}: {e}")
+        
+        # Fail-fast on validation errors
+        if validation_errors:
+            error_msg = f"Environment variable validation failed:\n" + "\n".join(validation_errors)
+            logger.error(f"❌ {error_msg}")
+            raise ValueError(error_msg)
+        
+        logger.info(f"✅ Successfully loaded and validated {len(env_config)} environment variables")
+        return env_config
+        
+    def _validate_and_convert(self, var_name: str, value: str) -> Any:
+        """Validate and convert environment variable value according to schema"""
+        schema = self.variable_schemas[var_name]
+        
+        try:
+            # Type conversion
+            if schema.var_type == 'bool':
+                converted = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
+            elif schema.var_type == 'int':
+                converted = int(value)
+            elif schema.var_type == 'float':
+                converted = float(value)
+            elif schema.var_type == 'list':
+                converted = [item.strip() for item in value.split(',')]
+            else:  # str
+                converted = value
+            
+            # Validation
+            if schema.choices and converted not in schema.choices:
+                logger.error(f"❌ Invalid choice for {var_name}: {converted} not in {schema.choices}")
+                return schema.default
+                
+            if schema.min_value is not None and isinstance(converted, (int, float)):
+                if converted < schema.min_value:
+                    logger.error(f"❌ Value too low for {var_name}: {converted} < {schema.min_value}")
+                    return schema.default
+                    
+            if schema.max_value is not None and isinstance(converted, (int, float)):
+                if converted > schema.max_value:
+                    logger.error(f"❌ Value too high for {var_name}: {converted} > {schema.max_value}")
+                    return schema.default
+            
+            logger.debug(f"✅ Validated {var_name}: {converted}")
+            return converted
+            
+        except (ValueError, TypeError) as e:
+            logger.error(f"❌ Conversion error for {var_name}: {e}")
+            return schema.default
         """
         Get environment variable with schema validation and type conversion
         FOR UNIFIED MANAGER USE ONLY - JSON loading uses os.getenv() directly
