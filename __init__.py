@@ -1,67 +1,58 @@
-# ash/ash-nlp/__init__.py (Clean v3.1 Architecture - Phase 3a Complete)
+# ash-nlp/__init__.py - Clean v3.1 Package Initialization
 """
-Ash NLP Service - Enhanced Mental Health Crisis Detection
-Version 3.1 - Clean Manager Architecture (Phase 3a Complete)
+Ash NLP Service - v3.1 Clean Architecture
+Step 9.8: ConfigManager Eliminated - UnifiedConfigManager Only
 
-A specialized microservice for analyzing Discord messages to detect mental health crises
-with a safety-first approach designed for LGBTQIA+ communities.
-
-Phase 3a Status: Complete - Crisis Pattern Manager integrated
-Architecture: Clean v3.1 with direct manager access and JSON configuration
+Mental health crisis detection for The Alphabet Cartel LGBTQIA+ community.
+Uses Clean v3.1 architecture with unified configuration management.
 """
 
-__version__ = "3.1.0"
-__author__ = "The Alphabet Cartel"
-__description__ = "Enhanced Mental Health Crisis Detection with Clean Manager Architecture and Crisis Patterns"
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ============================================================================
-# CLEAN V3.1 IMPORTS - Direct Manager Access Only (Phase 3a Updated)
+# CLEAN V3.1 ARCHITECTURE IMPORTS - Step 9.8 Complete
 # ============================================================================
 
-# Core managers from clean v3.1 architecture
+# STEP 9.8: Import UnifiedConfigManager instead of ConfigManager
 try:
-    from .managers.config_manager import ConfigManager
-    from .managers.settings_manager import SettingsManager
-    from .managers.zero_shot_manager import ZeroShotManager
-    from .managers.models_manager import ModelsManager  # Phase 2A Complete
-    from .managers.pydantic_manager import PydanticManager, create_pydantic_manager  # Phase 2B Complete
-    from .managers.crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager  # Phase 3a Complete
-    
-    # Analysis components
-    from .analysis.crisis_analyzer import CrisisAnalyzer
-    
+    from .managers import (
+        UnifiedConfigManager, create_unified_config_manager,
+        ModelsManager, create_models_manager,
+        PydanticManager, create_pydantic_manager,
+        CrisisPatternManager, create_crisis_pattern_manager,
+        SettingsManager, create_settings_manager,
+        get_manager_status
+    )
     MANAGERS_AVAILABLE = True
-    
+    logger.debug("✅ Clean v3.1 managers imported successfully (Step 9.8)")
 except ImportError as e:
-    # Clean v3.1: Fail gracefully but provide clear error information
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.error(f"❌ Clean v3.1: Manager imports failed: {e}")
-    logger.error("💡 Ensure all managers are properly installed in managers/ directory")
-    
-    # Set placeholders to None for graceful degradation
-    ConfigManager = None
-    SettingsManager = None
-    ZeroShotManager = None
+    logger.error(f"❌ Clean v3.1 manager imports failed: {e}")
+    # Set all to None for graceful degradation
+    UnifiedConfigManager = None
+    create_unified_config_manager = None
     ModelsManager = None
+    create_models_manager = None
     PydanticManager = None
     create_pydantic_manager = None
     CrisisPatternManager = None
     create_crisis_pattern_manager = None
-    CrisisAnalyzer = None
-    
+    SettingsManager = None
+    create_settings_manager = None
+    get_manager_status = None
     MANAGERS_AVAILABLE = False
 
 # ============================================================================
-# CLEAN V3.1 MODEL ACCESS FUNCTIONS (Phase 3a Updated)
+# CLEAN V3.1 EXTERNAL API - Step 9.8 Updated
 # ============================================================================
 
 def get_pydantic_models():
     """
-    Get Pydantic models from clean v3.1 architecture
+    Get Pydantic models for external usage
     
     Returns:
-        Dictionary of Pydantic model classes for external usage
+        Dictionary of available Pydantic models
         
     Raises:
         RuntimeError: If PydanticManager v3.1 not available
@@ -109,7 +100,7 @@ def create_crisis_pattern_manager_instance(config_manager=None):
     Create CrisisPatternManager instance with proper dependency injection
     
     Args:
-        config_manager: Optional ConfigManager instance. If None, creates one.
+        config_manager: Optional UnifiedConfigManager instance. If None, creates one.
         
     Returns:
         CrisisPatternManager instance for external usage
@@ -123,151 +114,114 @@ def create_crisis_pattern_manager_instance(config_manager=None):
             "Ensure managers are properly installed in managers/ directory."
         )
     
-    # Create ConfigManager if not provided
+    # STEP 9.8: Create UnifiedConfigManager if not provided
     if config_manager is None:
-        if not ConfigManager:
+        if not UnifiedConfigManager:
             raise RuntimeError(
-                "Clean v3.1: ConfigManager not available for CrisisPatternManager dependency injection."
+                "Clean v3.1: UnifiedConfigManager not available for CrisisPatternManager dependency injection."
             )
-        config_manager = ConfigManager()
+        
+        # Use factory function to create UnifiedConfigManager
+        config_manager = create_unified_config_manager()
     
     # Import factory function
+    from .managers import create_crisis_pattern_manager
     return create_crisis_pattern_manager(config_manager)
 
-# ============================================================================
-# SERVICE INFORMATION FUNCTIONS (Phase 3a Updated)
-# ============================================================================
+def create_unified_config_manager_instance(config_dir: str = "/app/config"):
+    """
+    Create UnifiedConfigManager instance for external usage
+    
+    Args:
+        config_dir: Configuration directory path
+        
+    Returns:
+        UnifiedConfigManager instance
+        
+    Raises:
+        RuntimeError: If UnifiedConfigManager not available
+    """
+    if not MANAGERS_AVAILABLE or not UnifiedConfigManager:
+        raise RuntimeError(
+            "Clean v3.1: UnifiedConfigManager not available. "
+            "Ensure managers are properly installed in managers/ directory."
+        )
+    
+    # Import factory function
+    from .managers import create_unified_config_manager
+    return create_unified_config_manager(config_dir)
 
-SERVICE_INFO = {
-    "service": "Ash NLP Service",
-    "version": "3.1.0",
-    "architecture": "clean_v3.1_phase_3a_complete",
-    "description": "Enhanced Mental Health Crisis Detection with Crisis Pattern Manager",
-    "author": "The Alphabet Cartel",
-    "discord": "https://discord.gg/alphabetcartel",
-    "website": "http://alphabetcartel.org",
-    "phases_complete": ["2A", "2B", "2C", "3a"],
-    "features": {
-        "crisis_detection": True,
-        "multi_model_ensemble": True,
-        "lgbtqia_community_patterns": True,
-        "json_configuration": True,
-        "crisis_pattern_manager": True,
-        "clean_architecture": True
-    }
-}
-
-def get_service_info():
-    """Get comprehensive service information including Phase 3a features"""
-    return SERVICE_INFO
-
-def get_version_info():
-    """Get version and architecture information"""
-    return {
-        "version": __version__,
-        "author": __author__,
-        "description": __description__,
-        "architecture": "clean_v3.1_phase_3a_complete",
-        "phase_status": {
-            "phase_2a_models_manager": "complete",
-            "phase_2b_pydantic_manager": "complete",
-            "phase_2c_cleanup": "complete",
-            "phase_3a_crisis_patterns": "complete"
-        },
-        "backward_compatibility": "removed_phase_2c",
-        "manager_integration": {
-            "config_manager": ConfigManager is not None,
-            "settings_manager": SettingsManager is not None,
-            "zero_shot_manager": ZeroShotManager is not None,
-            "models_manager_v3_1": ModelsManager is not None,
-            "pydantic_manager_v3_1": PydanticManager is not None,
-            "crisis_pattern_manager_v3_1": CrisisPatternManager is not None,
-            "crisis_analyzer": CrisisAnalyzer is not None
+def get_system_status():
+    """
+    Get overall system status including all managers
+    
+    Returns:
+        Dictionary containing system status information
+    """
+    if not MANAGERS_AVAILABLE:
+        return {
+            'status': 'error',
+            'managers_available': False,
+            'error': 'Clean v3.1 managers not available'
         }
-    }
-
-def get_manager_status():
-    """Get detailed manager availability status for clean v3.1 architecture"""
-    return {
-        "managers_available": MANAGERS_AVAILABLE,
-        "architecture": "clean_v3.1_phase_3a_complete",
-        "manager_components": {
-            "ConfigManager": ConfigManager is not None,
-            "SettingsManager": SettingsManager is not None,
-            "ZeroShotManager": ZeroShotManager is not None,
-            "ModelsManager_v3_1": ModelsManager is not None,
-            "PydanticManager_v3_1": PydanticManager is not None,
-            "CrisisPatternManager_v3_1": CrisisPatternManager is not None,
-            "CrisisAnalyzer": CrisisAnalyzer is not None
-        },
-        "phase_status": {
-            "phase_2a_models_manager": ModelsManager is not None,
-            "phase_2b_pydantic_manager": PydanticManager is not None,
-            "phase_2c_cleanup": "complete",
-            "phase_3a_crisis_patterns": CrisisPatternManager is not None
-        },
-        "usage_notes": {
-            "manager_initialization": "Use create_pydantic_manager(), create_models_manager(), and create_crisis_pattern_manager_instance()",
-            "direct_access_only": "No global functions or legacy imports",
-            "fail_fast_design": "Clear errors when managers unavailable",
-            "crisis_patterns": "Crisis patterns now managed via CrisisPatternManager with JSON configuration"
+    
+    try:
+        manager_status = get_manager_status() if get_manager_status else {}
+        return {
+            'status': 'operational',
+            'managers_available': True,
+            'architecture': 'Clean v3.1 Step 9.8',
+            'configuration_system': 'UnifiedConfigManager',
+            'manager_status': manager_status,
+            'total_managers': len(manager_status),
+            'available_managers': sum(manager_status.values())
         }
-    }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'managers_available': True,
+            'error': str(e)
+        }
 
 # ============================================================================
-# CLEAN V3.1 PUBLIC API - Phase 3a Complete
+# STEP 9.8: UNIFIED CONFIGURATION EXPORTS
 # ============================================================================
 
 __all__ = [
-    # Version info
-    "__version__",
-    "__author__", 
-    "__description__",
+    # Unified Configuration (Step 9.8)
+    'UnifiedConfigManager',
+    'create_unified_config_manager',
+    'create_unified_config_manager_instance',
     
-    # Core managers (Phase 2A, 2B, 3a Complete)
-    "ConfigManager",
-    "SettingsManager", 
-    "ZeroShotManager",
-    "ModelsManager",  # Phase 2A
-    "PydanticManager",  # Phase 2B
-    "create_pydantic_manager",  # Phase 2B
-    "CrisisPatternManager",  # Phase 3a
-    "create_crisis_pattern_manager",  # Phase 3a
+    # Core Managers
+    'ModelsManager',
+    'create_models_manager',
+    'PydanticManager',
+    'create_pydantic_manager',
+    'CrisisPatternManager',
+    'create_crisis_pattern_manager',
+    'create_crisis_pattern_manager_instance',
+    'SettingsManager',
+    'create_settings_manager',
     
-    # Analysis components
-    "CrisisAnalyzer",
+    # External API Functions
+    'get_pydantic_models',
+    'get_system_status',
+    'get_manager_status',
     
-    # Manager creation functions
-    "get_pydantic_models",
-    "create_models_manager",
-    "create_crisis_pattern_manager_instance",  # Phase 3a
-    
-    # Service info functions
-    "SERVICE_INFO",
-    "get_service_info",
-    "get_version_info",
-    "get_manager_status",
-    
-    # Status flags
-    "MANAGERS_AVAILABLE"
+    # System Information
+    'MANAGERS_AVAILABLE'
 ]
 
 # ============================================================================
-# CLEAN V3.1 PHASE 3A INITIALIZATION COMPLETE
+# STEP 9.8 COMPLETION LOG
 # ============================================================================
 
-# Log initialization status
+logger.info("✅ Ash-NLP __init__.py Step 9.8 complete - ConfigManager eliminated, UnifiedConfigManager only")
+
 if MANAGERS_AVAILABLE:
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.info("✅ Ash NLP Service v3.1 - Clean Manager Architecture with Crisis Patterns initialized")
-    logger.info("🎉 Phase 3a Complete - Crisis Pattern Manager integrated")
-    logger.debug(f"📊 Managers available: {sum(1 for m in [ConfigManager, SettingsManager, ZeroShotManager, ModelsManager, PydanticManager, CrisisPatternManager, CrisisAnalyzer] if m is not None)}/7")
+    logger.info("🎉 Step 9.8 SUCCESS: All managers available with UnifiedConfigManager architecture!")
 else:
-    # Managers not available - log warning but don't fail import
-    import logging
-    logger = logging.getLogger(__name__)
-    logger.warning("⚠️ Ash NLP Service v3.1 - Some managers not available")
-    logger.warning("💡 Check managers/ directory for proper installation")
-    if not CrisisPatternManager:
-        logger.warning("🔍 CrisisPatternManager not available - Phase 3a integration incomplete")
+    logger.warning("⚠️ Step 9.8 INCOMPLETE: Manager imports failed")
+
+logger.info("🏳️‍🌈 Ash-NLP v3.1 Step 9.8 ready to serve The Alphabet Cartel LGBTQIA+ community!")
