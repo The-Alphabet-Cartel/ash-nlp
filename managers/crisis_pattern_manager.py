@@ -235,12 +235,12 @@ class CrisisPatternManager:
                                 'confidence': indicator.get('confidence', 0.6),
                                 'boost_multiplier': indicator.get('boost_multiplier', 1.0)
                             })
-        
-        return found_phrases
-        
-    except Exception as e:
-        logger.error(f"Error extracting crisis context phrases: {e}")
-        return []
+            
+            return found_phrases
+            
+        except Exception as e:
+            logger.error(f"Error extracting crisis context phrases: {e}")
+            return []
 
     def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
         """
