@@ -354,6 +354,47 @@ class ThresholdMappingManager:
             logger.error(f"❌ Error getting staff review thresholds for mode '{mode}': {e}")
             return self.get_global_staff_review_thresholds()
     
+    def get_staff_review_config(self) -> Dict[str, Union[bool, float]]:
+            """
+            Get staff review configuration for the current ensemble mode
+            This is a convenience method that wraps get_staff_review_thresholds_for_mode()
+            
+            Returns:
+                Dictionary with staff review configuration:
+                - high_always: bool - Always require review for high crisis
+                - medium_confidence_threshold: float - Confidence threshold for medium crisis review
+                - low_confidence_threshold: float - Confidence threshold for low crisis review  
+                - on_disagreement: bool - Require review when models disagree
+                - gap_detection_review: bool - Require review when gap detected (added for consistency)
+            """
+            try:
+                # Get staff review thresholds for current mode
+                staff_thresholds = self.get_staff_review_thresholds_for_mode()
+                
+                # Normalize the keys to match expected interface
+                # The stored keys might be different than the interface keys
+                config = {
+                    'high_always': staff_thresholds.get('high_always', True),
+                    'medium_confidence_threshold': staff_thresholds.get('medium_confidence', 0.45),
+                    'low_confidence_threshold': staff_thresholds.get('low_confidence', 0.75),
+                    'on_disagreement': staff_thresholds.get('on_disagreement', True),
+                    'gap_detection_review': staff_thresholds.get('gap_detection_review', True)  # Default to True for safety
+                }
+                
+                logger.debug(f"📋 Staff review config for current mode: {config}")
+                return config
+                
+            except Exception as e:
+                logger.error(f"❌ Error getting staff review config: {e}")
+                # Return safe defaults
+                return {
+                    'high_always': True,
+                    'medium_confidence_threshold': 0.45,
+                    'low_confidence_threshold': 0.75,
+                    'on_disagreement': True,
+                    'gap_detection_review': True
+                }
+
     def get_global_staff_review_thresholds(self) -> Dict[str, Union[bool, float]]:
         """Get global staff review thresholds"""
         try:
