@@ -1,8 +1,9 @@
+# ash-nlp/managers/crisis_pattern_manager.py
 """
-Crisis Pattern Manager - v3.1 Clean Architecture
-Manages all crisis pattern configurations from JSON files with ENV overrides
-
-STEP 9.8: Updated to use UnifiedConfigManager (ConfigManager eliminated)
+Crisis Pattern Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
