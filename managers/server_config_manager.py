@@ -1,7 +1,7 @@
+# ash-nlp/managers/server_config_manager.py
 """
-ServerConfigManager - Centralized Server Configuration Manager
-Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
-
+Centralized Server Configuration Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
