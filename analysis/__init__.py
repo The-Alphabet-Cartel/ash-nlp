@@ -1,13 +1,7 @@
-# ash-nlp/analysis/__init__.py - PHASE 3D STEP 7 COMPLETE
+# ash-nlp/analysis/__init__.py
 """
-Analysis Package - Phase 3d Step 7 Complete
-Crisis Analysis with comprehensive manager integration including feature flags and performance settings
-
-Phase 3a: CrisisPatternManager integration
-Phase 3b: AnalysisParametersManager integration  
-Phase 3c: ThresholdMappingManager integration
-Phase 3d Step 7: FeatureConfigManager and PerformanceConfigManager integration
-
+Analysis Package for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
