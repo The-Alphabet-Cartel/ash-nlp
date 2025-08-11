@@ -1,7 +1,7 @@
+# ash-nlp/managers/settings_manager.py
 """
-SettingsManager - Runtime Settings and Configuration Overrides
-Phase 3d Step 9: Updated for UnifiedConfigManager - NO MORE os.getenv() calls
-
+Runtime Settings and Configuration Overrides for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 # ============================================================================
 
 SERVER_CONFIG = {
-    "description": "Phase 3d Step 9: Server configuration managed by UnifiedConfigManager",
+    "description": "Phase 3d: Server configuration managed by UnifiedConfigManager",
     "note": "These legacy constants preserved for backward compatibility only",
-    "version": "3.1d-step9",
+    "version": "3.1d",
     "unified_config": True
 }
 
@@ -28,42 +28,59 @@ class SettingsManager:
     Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
     
     All configuration now accessed through specialized managers:
-    - Crisis patterns: CrisisPatternManager (Phase 3a)
-    - Analysis parameters: AnalysisParametersManager (Phase 3b) 
-    - Threshold mappings: ThresholdMappingManager (Phase 3c)
-    - Server settings: ServerConfigManager + UnifiedConfigManager (Phase 3d Step 5+9)
-    - Logging settings: LoggingConfigManager + UnifiedConfigManager (Phase 3d Step 6+9)
-    - Feature flags: FeatureConfigManager + UnifiedConfigManager (Phase 3d Step 7+9)
-    - Performance settings: PerformanceConfigManager + UnifiedConfigManager (Phase 3d Step 7+9)
+    - Analysis parameters: AnalysisParametersManager
+    - Crisis patterns: CrisisPatternManager
+    - Feature flags: FeatureConfigManager
+    - Logging settings: LoggingConfigManager
+    - Model Ensemble settings: ModelEnsembleManager
+    - Models settings: ModelsManager
+    - Performance settings: PerformanceConfigManager
+    - Pydantic settings: PydanticManager
+    - Server settings: ServerConfigManager
+    - Storage settings: StorageConfigManager
+    - Threshold mappings: ThresholdMappingManager
+    - Zero Shot settings: ZeroShotManager
     """
     
-    def __init__(self, unified_config_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, 
-                 threshold_mapping_manager=None, server_config_manager=None, logging_config_manager=None,
-                 feature_config_manager=None, performance_config_manager=None, storage_config_manager=None):  # ADD THIS PARAMETER
+    def __init__(self, unified_config_manager,
+        analysis_parameters_manager=None, crisis_pattern_manager=None,
+        feature_config_manager=None, logging_config_manager=None,
+        model_ensemble_manager=None, models_manager=None,
+        performance_config_manager=None, pydantic_manager=None,
+        server_config_manager=None, storage_config_manager=None,
+        threshold_mapping_manager=None, zero_shot_manager=None):
         """
         Initialize SettingsManager with UnifiedConfigManager and all Phase 3d managers
         
         Args:
-            unified_config_manager: UnifiedConfigManager instance for dependency injection (NEW IN STEP 9)
-            crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
-            analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b)
-            threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
-            server_config_manager: ServerConfigManager instance (Phase 3d Step 5)
-            logging_config_manager: LoggingConfigManager instance (Phase 3d Step 6)
-            feature_config_manager: FeatureConfigManager instance (Phase 3d Step 7)
-            performance_config_manager: PerformanceConfigManager instance (Phase 3d Step 7)
-            storage_config_manager: StorageConfigManager instance (Phase 3d Step 6)  # ADD THIS LINE
+            unified_config_manager: UnifiedConfigManager instance for dependency injection
+            analysis_parameters_manager: AnalysisParametersManager instance
+            crisis_pattern_manager: CrisisPatternManager instance
+            analysis_parameters_manager: AnalysisParametersManager instance
+            logging_config_manager: LoggingConfigManager instance
+            model_ensemble_manager: ModelEnsembleManager instance
+            models_manager: ModelsManager instance
+            performance_config_manager: PerformanceConfigManager instance
+            pydantic_manager: PydanticManager instance
+            server_config_manager: ServerConfigManager instance
+            storage_config_manager: StorageConfigManager instance
+            threshold_mapping_manager: ThresholdMappingManager instance
+            zero_shot_manager: ZeroShotManager instance
         """
         # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
         self.unified_config = unified_config_manager
-        self.crisis_pattern_manager = crisis_pattern_manager
         self.analysis_parameters_manager = analysis_parameters_manager
-        self.threshold_mapping_manager = threshold_mapping_manager
-        self.server_config_manager = server_config_manager
-        self.logging_config_manager = logging_config_manager
+        self.crisis_pattern_manager = crisis_pattern_manager
         self.feature_config_manager = feature_config_manager
+        self.logging_config_manager = logging_config_manager
+        self.model_ensemble_manager = model_ensemble_manager
+        self.models_manager = models_manager
         self.performance_config_manager = performance_config_manager
-        self.storage_config_manager = storage_config_manager  # ADD THIS LINE
+        self.pydantic_manager = pydantic_manager
+        self.server_config_manager = server_config_manager
+        self.storage_config_manager = storage_config_manager
+        self.threshold_mapping_manager = threshold_mapping_manager
+        self.zero_shot_manager = zero_shot_manager
 
         self.setting_overrides = {}
         self.runtime_settings = {}
@@ -83,6 +100,7 @@ class SettingsManager:
             self.runtime_settings = {
                 'server': SERVER_CONFIG,
                 'phase_status': {
+                    'unified_config_manager': 'operational',  # NEW
                     'phase_2a': 'complete',
                     'phase_2b': 'complete', 
                     'phase_2c': 'complete',
@@ -101,7 +119,6 @@ class SettingsManager:
                     'logging_configuration': 'externalized_to_json',
                     'feature_flags': 'externalized_to_json',
                     'performance_settings': 'externalized_to_json',
-                    'unified_config_manager': 'operational',  # NEW
                     'direct_os_getenv_calls': 'eliminated'    # NEW
                 }
             }
@@ -135,14 +152,19 @@ class SettingsManager:
     def _validate_manager_integration(self):
         """Validate manager integration for Phase 3d Step 9"""
         managers = {
-            'UnifiedConfigManager': self.unified_config,  # NEW IN STEP 9
+            'UnifiedConfigManager': self.unified_config,
             'AnalysisParametersManager': self.analysis_parameters_manager,
             'CrisisPatternManager': self.crisis_pattern_manager,
-            'ThresholdMappingManager': self.threshold_mapping_manager,
-            'ServerConfigManager': self.server_config_manager,
-            'LoggingConfigManager': self.logging_config_manager,
             'FeatureConfigManager': self.feature_config_manager,
-            'PerformanceConfigManager': self.performance_config_manager
+            'LoggingConfigManager': self.logging_config_manager,
+            'ModelEnsembleManager': self.model_ensemble_manager,
+            'ModelsManager': self.models_manager,
+            'PerformanceConfigManager': self.performance_config_manager,
+            'PydanticManager': self.pydantic_manager,
+            'ServerConfigManager': self.server_config_manager,
+            'StorageConfigManager': self.storage_config_manager,
+            'ThresholdMappingManager': self.threshold_mapping_manager,
+            'ZeroShotManager': self.zero_shot_manager,
         }
         
         available_managers = [name for name, mgr in managers.items() if mgr is not None]
@@ -393,37 +415,48 @@ class SettingsManager:
 # ============================================================================
 # FACTORY FUNCTION - Updated for Phase 3d Step 9
 # ============================================================================
-def create_settings_manager(unified_config_manager, crisis_pattern_manager=None, analysis_parameters_manager=None,
-                           threshold_mapping_manager=None, server_config_manager=None, logging_config_manager=None,
-                           feature_config_manager=None, performance_config_manager=None, 
-                           storage_config_manager=None) -> SettingsManager:  # ADD PARAMETER
+def create_settings_manager(unified_config_manager,
+    analysis_parameters_manager=None, crisis_pattern_manager=None,
+    feature_config_manager=None, logging_config_manager=None,
+    model_ensemble_manager=None, models_manager=None,
+    performance_config_manager=None, pydantic_manager=None,
+    server_config_manager=None, storage_config_manager=None,
+    threshold_mapping_manager=None, zero_shot_manager=None) -> SettingsManager:
     """
     Factory function to create SettingsManager instance - Phase 3d Step 9 Complete
     
     Args:
-        unified_config_manager: UnifiedConfigManager instance (NEW IN STEP 9 - REQUIRED)
-        crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
-        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b)
-        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
-        server_config_manager: ServerConfigManager instance (Phase 3d Step 5)
-        logging_config_manager: LoggingConfigManager instance (Phase 3d Step 6)
-        feature_config_manager: FeatureConfigManager instance (Phase 3d Step 7)
-        performance_config_manager: PerformanceConfigManager instance (Phase 3d Step 7)
-        storage_config_manager: StorageConfigManager instance (Phase 3d Step 6)  # ADD DOCS
-        
+        unified_config_manager: UnifiedConfigManager instance
+        analysis_parameters_manager: AnalysisParametersManager instance
+        crisis_pattern_manager: CrisisPatternManager instance
+        feature_config_manager: FeatureConfigManager instance
+        logging_config_manager: LoggingConfigManager instance
+        model_ensemble_manager: ModelEnsembleManager instance
+        models_manager: ModelsManager instance
+        performance_config_manager: PerformanceConfigManager instance
+        pydantic_manager: PydanticManager instance
+        server_config_manager: ServerConfigManager instance
+        storage_config_manager: StorageConfigManager instance
+        threshold_mapping_manager: ThresholdMappingManager instance
+        zero_shot_manager: ZeroShotManager instance
+
     Returns:
         SettingsManager instance
     """
     return SettingsManager(
-        unified_config_manager,
-        crisis_pattern_manager=crisis_pattern_manager,
+        unified_config_manager=unified_config_manager,
         analysis_parameters_manager=analysis_parameters_manager,
-        threshold_mapping_manager=threshold_mapping_manager,
-        server_config_manager=server_config_manager,
-        logging_config_manager=logging_config_manager,
+        crisis_pattern_manager=crisis_pattern_manager,
         feature_config_manager=feature_config_manager,
+        logging_config_manager=logging_config_manager,
+        model_ensemble_manager=model_ensemble_manager,
+        models_manager=models_manager,
         performance_config_manager=performance_config_manager,
-        storage_config_manager=storage_config_manager
+        pydantic_manager=pydantic_manager,
+        server_config_manager=server_config_manager,
+        storage_config_manager=storage_config_manager,
+        threshold_mapping_manager=threshold_mapping_manager,
+        zero_shot_manager=zero_shot_manager,
     )
 
 # ============================================================================

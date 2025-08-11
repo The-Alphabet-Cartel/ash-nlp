@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-# ash/ash-nlp/managers/pydantic_manager.py - Phase 2B Migration
+# ash-nlp/managers/pydantic_manager.py
 """
-PydanticManager v3.1 - Clean Manager Architecture for Pydantic Models
-Migrated from models/pydantic_models.py to follow the established manager pattern
-
-Part of the Ash NLP Service v3.1 Clean Manager Architecture
-Following the same successful pattern as ModelsManager v3.1
+Clean Manager Architecture for Pydantic Models for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
@@ -26,7 +24,7 @@ class PydanticManager:
     Follows the clean manager architecture established in Phase 2A
     """
     
-    def __init__(self, config_manager=None):
+    def __init__(self, config_manager):
         """
         Initialize PydanticManager with clean manager architecture
         
@@ -304,7 +302,7 @@ class PydanticManager:
 # FACTORY FUNCTION FOR CLEAN INITIALIZATION
 # ============================================================================
 
-def create_pydantic_manager(config_manager=None) -> PydanticManager:
+def create_pydantic_manager(config_manager) -> PydanticManager:
     """
     Factory function to create PydanticManager with clean architecture
     

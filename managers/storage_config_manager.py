@@ -1,8 +1,7 @@
-# managers/storage_config_manager.py
+# ash-nlp/managers/storage_config_manager.py
 """
-Storage Configuration Manager v3.1d Step 6
-Manages storage, cache, backup, and file management configuration
-
+Storage Configuration Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

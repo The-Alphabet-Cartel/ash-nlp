@@ -1,11 +1,8 @@
-# ash/ash-nlp/managers/models_manager.py
+# ash-nlp/managers/models_manager.py
 """
-ModelsManager v3.1 - Advanced Model Ensemble Management
-Phase 3d Step 9: Updated for UnifiedConfigManager integration - NO MORE os.getenv() calls
-
-Advanced manager for handling three zero-shot model ensemble with GPU optimization,
-model caching, and comprehensive validation.
-
+Advanced Model Ensemble Management for handling three zero-shot model ensemble
+with GPU optimization, model caching, and comprehensive validation for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

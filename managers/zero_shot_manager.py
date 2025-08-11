@@ -1,9 +1,7 @@
-# ash/ash-nlp/managers/zero_shot_manager.py
+# ash-nlp/managers/zero_shot_manager.py
 """
-Zero-Shot Manager for Ash NLP Service v3.1 - Clean Architecture
-Phase 3d Step 9: Updated for UnifiedConfigManager integration - NO MORE os.getenv() calls
-
-Manages zero-shot classification labels and mappings
+Zero-Shot Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

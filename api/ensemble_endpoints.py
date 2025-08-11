@@ -1,9 +1,9 @@
-# ash-nlp/api/ensemble_endpoints.py - PHASE 3C UPDATED
+# ash-nlp/api/ensemble_endpoints.py
 """
-Phase 3c UPDATED: Clean Three Zero-Shot Model Ensemble API Endpoints with ThresholdMappingManager
-Mode-aware threshold integration with fail-fast validation and staff review logic
-
-Clean v3.1 Architecture - NO Backward Compatibility
+Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging

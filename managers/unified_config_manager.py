@@ -1,7 +1,7 @@
+# ash-nlp/managers/unified_config_manager.py
 """
-Unified Configuration Manager for Ash-NLP v3.1d Step 9 - CORRECTLY FIXED
-Follows the established JSON defaults block pattern and eliminates all direct os.getenv() calls
-
+Unified Configuration Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -131,7 +131,7 @@ class UnifiedConfigManager:
                 min_value=0.0, max_value=1.0),
             'NLP_MODEL_DISTRESS_WEIGHT': VariableSchema('float', 0.3,
                 min_value=0.0, max_value=1.0),
-            'NLP_MODEL_CACHE_DIRECTORY': VariableSchema('str',
+            'NLP_MODEL_CACHE_DIR': VariableSchema('str',
                 './models/cache'),
             'NLP_MODEL_DEVICE': VariableSchema('str', 'auto',
                 choices=['auto', 'cpu', 'cuda']),
@@ -172,9 +172,9 @@ class UnifiedConfigManager:
             'NLP_SERVER_RELOAD': VariableSchema('bool', False),
             
             # Storage & Logging (Medium Priority)
-            'NLP_STORAGE_DATA_DIRECTORY': VariableSchema('str', './data'),
-            'NLP_STORAGE_CACHE_DIRECTORY': VariableSchema('str', './cache'),
-            'NLP_STORAGE_LOG_DIRECTORY': VariableSchema('str', './logs'),
+            'NLP_STORAGE_DATA_DIR': VariableSchema('str', './data'),
+            'NLP_STORAGE_CACHE_DIR': VariableSchema('str', './cache'),
+            'NLP_STORAGE_LOG_DIR': VariableSchema('str', './logs'),
             'NLP_LOGGING_LEVEL': VariableSchema('str', 'INFO',
                 choices=['DEBUG', 'INFO', 'WARNING', 'ERROR']),
             'NLP_LOGGING_FORMAT': VariableSchema('str', 'detailed',
@@ -187,7 +187,9 @@ class UnifiedConfigManager:
             'NLP_FEATURE_ENABLE_ENHANCED_PATTERNS': VariableSchema('bool',
                 False,
                 description='Enable enhanced pattern matching features'),
-            
+            'NLP_FEATURE_ENSEMBLE_ANALYSIS': VariableSchema('bool', True,
+                description='Enable ensemble analysis functionality'),
+
             # Performance Settings (Low Priority)
             'NLP_PERFORMANCE_BATCH_SIZE': VariableSchema('int', 32,
                 min_value=1, max_value=256),
@@ -359,7 +361,7 @@ class UnifiedConfigManager:
         # Extended storage configurations
         schemas.update({
             'NLP_STORAGE_ENABLE_COMPRESSION': VariableSchema('bool', False),
-            'NLP_STORAGE_BACKUP_DIRECTORY': VariableSchema('str', './backups'),
+            'NLP_STORAGE_BACKUP_DIR': VariableSchema('str', './backups'),
             'NLP_STORAGE_RETENTION_DAYS': VariableSchema('int', 30, min_value=1,
                 max_value=365),
             'NLP_STORAGE_MODELS_DIR': VariableSchema('str', './models/cache'),
@@ -421,7 +423,7 @@ class UnifiedConfigManager:
                 'inference_threads': self.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
                 'max_memory': self.get_env('NLP_MODEL_MAX_MEMORY', None),
                 'offload_folder': self.get_env('NLP_MODEL_OFFLOAD_FOLDER', './models/offload'),
-                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIRECTORY', './models/cache')
+                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIR', './models/cache')
             }
         except Exception as e:
             logger.error(f"❌ Error getting hardware configuration: {e}")
@@ -454,7 +456,7 @@ class UnifiedConfigManager:
                 'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'consensus'),
                 'gap_detection_enabled': self.get_env_bool('NLP_ENSEMBLE_GAP_DETECTION_ENABLED', True),
                 'disagreement_threshold': self.get_env_int('NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD', 2),
-                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIRECTORY', './models/cache'),
+                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIR', './models/cache'),
                 'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
             }
         except Exception as e:
@@ -515,10 +517,10 @@ class UnifiedConfigManager:
         """
         try:
             return {
-                'data_directory': self.get_env('NLP_STORAGE_DATA_DIRECTORY', './data'),
-                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIRECTORY', './cache'),
-                'log_directory': self.get_env('NLP_STORAGE_LOG_DIRECTORY', './logs'),
-                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIRECTORY', './backups'),
+                'data_directory': self.get_env('NLP_STORAGE_DATA_DIR', './data'),
+                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIR', './cache'),
+                'log_directory': self.get_env('NLP_STORAGE_LOG_DIR', './logs'),
+                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIR', './backups'),
                 'models_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
                 'enable_compression': self.get_env_bool('NLP_STORAGE_ENABLE_COMPRESSION', False),
                 'retention_days': self.get_env_int('NLP_STORAGE_RETENTION_DAYS', 30),
@@ -1025,21 +1027,21 @@ class UnifiedConfigManager:
                 'depression': {
                     'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'cardiffnlp/twitter-roberta-base-sentiment'),
                     'weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIR', './model_cache'),
                     'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'sentiment': {
                     'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
                     'weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIR', './model_cache'),
                     'type': 'sentiment-analysis',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'emotional_distress': {
                     'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
                     'weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIR', './model_cache'),
                     'type': 'natural-language-inference',
                     'pipeline_task': 'zero-shot-classification'
                 }

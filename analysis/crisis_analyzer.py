@@ -1,14 +1,8 @@
-# ash-nlp/analysis/crisis_analyzer.py - PHASE 3D STEP 7 COMPLETE
+# ash-nlp/analysis/crisis_analyzer.py
 """
-Phase 3d Step 7 COMPLETE: Crisis Analyzer with FeatureConfigManager and PerformanceConfigManager Integration
-Complete feature flag and performance settings support with Clean v3.1 architecture
-
-Phase 3a: Clean v3.1 architecture with JSON-based patterns
-Phase 3b: Analysis parameters from AnalysisParametersManager  
-Phase 3c: Mode-aware thresholds from ThresholdMappingManager
-Phase 3d Step 7: Feature flags and performance settings from dedicated managers
-
-Clean v3.1 Architecture - NO backward compatibility
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging

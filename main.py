@@ -1,7 +1,7 @@
+# ash-nlp/main.py
 """
-Ash-NLP Main Application Entry Point
-Phase 3d Step 9: Unified Configuration Manager Integration - FIXED VERSION
-
+Ash-NLP Main Application Entry Point for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -23,27 +23,18 @@ from managers.unified_config_manager import create_unified_config_manager
 # ============================================================================
 # MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
 # ============================================================================
-from managers.crisis_pattern_manager import create_crisis_pattern_manager
 from managers.analysis_parameters_manager import create_analysis_parameters_manager
-from managers.threshold_mapping_manager import create_threshold_mapping_manager
-from managers.model_ensemble_manager import create_model_ensemble_manager
-from managers.settings_manager import create_settings_manager
-from managers.pydantic_manager import create_pydantic_manager
-
-# STEP 9 FIX: Add Models Manager import with error handling
-try:
-    from managers.models_manager import create_models_manager
-    MODELS_MANAGER_AVAILABLE = True
-except ImportError:
-    MODELS_MANAGER_AVAILABLE = False
-    create_models_manager = None
-
-# Phase 3d Step 6-7 Managers
-from managers.logging_config_manager import create_logging_config_manager
+from managers.crisis_pattern_manager import create_crisis_pattern_manager
 from managers.feature_config_manager import create_feature_config_manager
+from managers.logging_config_manager import create_logging_config_manager
+from managers.model_ensemble_manager import create_model_ensemble_manager
+from managers.models_manager import create_models_manager
 from managers.performance_config_manager import create_performance_config_manager
+from managers.pydantic_manager import create_pydantic_manager
 from managers.server_config_manager import create_server_config_manager
+from managers.settings_manager import create_settings_manager
 from managers.storage_config_manager import create_storage_config_manager
+from managers.threshold_mapping_manager import create_threshold_mapping_manager
 from managers.zero_shot_manager import create_zero_shot_manager
 
 # Analysis Components
@@ -139,75 +130,76 @@ def initialize_unified_managers():
     logger.info("🚀 Initializing unified configuration management system...")
     
     try:
-        # Step 1: Create UnifiedConfigManager (foundation for everything)
         logger.info("🏗️ Creating UnifiedConfigManager...")
         unified_config = create_unified_config_manager()
         logger.info("✅ UnifiedConfigManager created successfully")
-        
-        # Step 2: Initialize all Phase 3a-3c managers with unified config
-        logger.info("🔧 Initializing Phase 3a-3c managers...")
-        crisis_pattern = create_crisis_pattern_manager(unified_config)
-        analysis_parameters = create_analysis_parameters_manager(unified_config)
-        threshold_mapping = create_threshold_mapping_manager(unified_config)
-        logger.info("✅ Phase 3a-3c managers initialized")
-        
-        # Step 3: Initialize Phase 3d managers with unified config
-        logger.info("🔧 Initializing Phase 3d managers...")
-        logging_config = create_logging_config_manager(unified_config)
-        feature_config = create_feature_config_manager(unified_config)
-        performance_config = create_performance_config_manager(unified_config)
-        server_config = create_server_config_manager(unified_config)
-        # Initialize StorageConfigManager
-        storage_config = None
-        try:
-            storage_config = create_storage_config_manager(unified_config)
-            logger.info("✅ StorageConfigManager initialized successfully")
-        except Exception as e:
-            logger.warning(f"⚠️ StorageConfigManager initialization failed: {e}")
-            logger.info("ℹ️ Continuing without StorageConfigManager - using fallback storage configuration")
-        logger.info("✅ Phase 3d managers initialized")
-        
-        # Step 4: Initialize core system managers
-        logger.info("🔧 Initializing core system managers...")
-        model_ensemble = create_model_ensemble_manager(unified_config)
-        
-        # STEP 9 FIX: Create Models Manager with error handling
-        models_manager = None
-        if MODELS_MANAGER_AVAILABLE:
-            try:
-                models_manager = create_models_manager(unified_config)
-                logger.info("✅ ModelsManager v3.1 created successfully")
-            except Exception as e:
-                logger.warning(f"⚠️ ModelsManager creation failed: {e}")
-                logger.info("ℹ️ Admin endpoints will run in limited mode")
-        else:
-            logger.warning("⚠️ ModelsManager not available")
-            logger.info("ℹ️ Admin endpoints will run in limited mode")
-        
-        # Create ZeroShotManager (needed for admin endpoints)
-        zero_shot_manager = None
-        try:
-            zero_shot_manager = create_zero_shot_manager(unified_config)
-            logger.info("✅ ZeroShotManager created successfully")
-        except Exception as e:
-            logger.warning(f"⚠️ ZeroShotManager creation failed: {e}")
-            logger.info("ℹ️ Admin endpoints will run with limited functionality")
 
-        pydantic_manager = create_pydantic_manager()
+        logger.info("🔧 Initializing analysis parameters manager...")
+        analysis_parameters = create_analysis_parameters_manager(unified_config)
+        logger.info("✅ Analysis parameters manager initialized...")
+
+        logger.info("🔧 Initializing crisis pattern manager...")
+        crisis_pattern = create_crisis_pattern_manager(unified_config)
+        logger.info("✅ Crisis pattern manager initialized...")
+
+        logger.info("🔧 Initializing feature config manager...")
+        feature_config = create_feature_config_manager(unified_config)
+        logger.info("✅ Feature config manager initialized...")
+
+        logger.info("🔧 Initializing logging config manager...")
+        logging_config = create_logging_config_manager(unified_config)
+        logger.info("✅ Logging config manager initialized...")
+
+        logger.info("🔧 Initializing models ensemble manager...")
+        model_ensemble = create_model_ensemble_manager(unified_config)
+        logger.info("✅ Models ensemble manager initialized...")
+
+        logger.info("🔧 Initializing models manager...")
+        models_manager = create_models_manager(unified_config)
+        logger.info("✅ Models manager initialized...")
+
+        logger.info("🔧 Initializing performance config manager...")
+        performance_config = create_performance_config_manager(unified_config)
+        logger.info("✅ Performance config manager initialized...")
+
+        logger.info("🔧 Initializing pydantic manager...")
+        pydantic_manager = create_pydantic_manager(unified_config)
+        logger.info("✅ Pydantic manager initialized...")
+
+        logger.info("🔧 Initializing server config manager...")
+        server_config = create_server_config_manager(unified_config)
+        logger.info("✅ Server config manager initialized...")
+
+        logger.info("🔧 Initializing storage manager...")
+        storage_config = create_storage_config_manager(unified_config)
+        logger.info("✅ Storage manager initialized...")
+
+        logger.info("🔧 Initializing threshold mapping manager...")
+        threshold_mapping = create_threshold_mapping_manager(unified_config)
+        logger.info("✅ Threshold mapping manager initialized...")
+
+        logger.info("🔧 Initializing zero shot manager...")
+        zero_shot_manager = create_zero_shot_manager(unified_config)
+        logger.info("✅ Zero shot manager initialized...")
+        
+        logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
             unified_config,
-            crisis_pattern_manager=crisis_pattern,
             analysis_parameters_manager=analysis_parameters,
-            threshold_mapping_manager=threshold_mapping,
-            server_config_manager=server_config,
-            logging_config_manager=logging_config,
+            crisis_pattern_manager=crisis_pattern,
             feature_config_manager=feature_config,
+            logging_config_manager=logging_config,
+            model_ensemble_manager=model_ensemble,
+            models_manager=models_manager,
             performance_config_manager=performance_config,
-            storage_config_manager=storage_config
+            pydantic_manager=pydantic_manager,
+            server_config_manager=server_config,
+            storage_config_manager=storage_config,
+            threshold_mapping_manager=threshold_mapping,
+            zero_shot_manager=zero_shot_manager,
         )
-        logger.info("✅ Core system managers initialized")
-        
-        # Step 5: Initialize analysis components
+        logger.info("✅ Settings manager initialized...")
+
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
             models_manager=models_manager,
@@ -216,11 +208,10 @@ def initialize_unified_managers():
             analysis_parameters_manager=analysis_parameters,
             threshold_mapping_manager=threshold_mapping,
             feature_config_manager=feature_config,
-            performance_config_manager=performance_config
+            performance_config_manager=performance_config,
         )
         logger.info("✅ Analysis components initialized")
         
-        # Return all managers in a structured dictionary
         managers = {
             'unified_config': unified_config,
             'crisis_pattern': crisis_pattern,

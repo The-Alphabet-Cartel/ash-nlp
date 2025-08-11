@@ -1,6 +1,9 @@
+# ash-nlp/utils/__init__.py
 """
-Utilities Package for Ash NLP Service
-Helper functions and utilities for context analysis, scoring, and community patterns
+Utilities Package for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 # Context analysis utilities
