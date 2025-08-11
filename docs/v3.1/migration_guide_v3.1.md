@@ -135,6 +135,7 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_7.md
 |   |   │   │   |   ├── step_8.md
 |   |   │   │   |   ├── step_9.md
+|   |   │   │   |   ├── step_10.md
 |   |   │   │   │   └── tracker.md
 |   │   │   ├── 3/
 |   |   │   │   └── e/
@@ -190,7 +191,8 @@ ash/ash-nlp/
 |       │   └── d/
 |       |       ├── test_step_6_integration.py
 |       |       ├── test_step_7_integration.py
-|       |       └── test_step_9_integration.py
+|       |       ├── test_step_9_integration.py
+|       |       └── test_step_9.8_validation.py
 |       └── 4/
 |           ├── a/
 |           └── b/

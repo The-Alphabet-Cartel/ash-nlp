@@ -39,7 +39,7 @@ class SettingsManager:
     
     def __init__(self, unified_config_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, 
                  threshold_mapping_manager=None, server_config_manager=None, logging_config_manager=None,
-                 feature_config_manager=None, performance_config_manager=None):
+                 feature_config_manager=None, performance_config_manager=None, storage_config_manager=None):  # ADD THIS PARAMETER
         """
         Initialize SettingsManager with UnifiedConfigManager and all Phase 3d managers
         
@@ -52,6 +52,7 @@ class SettingsManager:
             logging_config_manager: LoggingConfigManager instance (Phase 3d Step 6)
             feature_config_manager: FeatureConfigManager instance (Phase 3d Step 7)
             performance_config_manager: PerformanceConfigManager instance (Phase 3d Step 7)
+            storage_config_manager: StorageConfigManager instance (Phase 3d Step 6)  # ADD THIS LINE
         """
         # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
         self.unified_config = unified_config_manager
@@ -62,6 +63,7 @@ class SettingsManager:
         self.logging_config_manager = logging_config_manager
         self.feature_config_manager = feature_config_manager
         self.performance_config_manager = performance_config_manager
+        self.storage_config_manager = storage_config_manager  # ADD THIS LINE
 
         self.setting_overrides = {}
         self.runtime_settings = {}
@@ -184,10 +186,118 @@ class SettingsManager:
         """Get float environment variable through UnifiedConfigManager"""
         return self.unified_config.get_env_float(var_name, default)
     
+    def get_storage_configuration(self) -> Dict[str, Any]:
+        """
+        Get comprehensive storage configuration settings
+        Uses StorageConfigManager if available, otherwise falls back to UnifiedConfigManager
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_complete_configuration()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to UnifiedConfigManager storage configuration
+        try:
+            return self.unified_config.get_storage_configuration()
+        except Exception as e:
+            logger.warning(f"⚠️ Could not get storage configuration: {e}")
+            # Return basic fallback configuration
+            return {
+                'directories': {
+                    'data_directory': './data',
+                    'cache_directory': './cache',
+                    'logs_directory': './logs',
+                    'backup_directory': './backups',
+                    'models_directory': './models/cache'
+                },
+                'cache_settings': {
+                    'enable_model_cache': True,
+                    'enable_analysis_cache': True
+                },
+                'status': 'fallback_configuration'
+            }
+
+    def get_storage_directories(self) -> Dict[str, str]:
+        """
+        Get storage directory configuration
+        Uses StorageConfigManager if available, otherwise falls back to basic directories
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_directories()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to basic directories from environment or defaults
+        return {
+            'data_directory': self.unified_config.get_env('NLP_STORAGE_DATA_DIRECTORY', './data'),
+            'cache_directory': self.unified_config.get_env('NLP_STORAGE_CACHE_DIRECTORY', './cache'),
+            'logs_directory': self.unified_config.get_env('NLP_STORAGE_LOG_DIRECTORY', './logs'),
+            'backup_directory': self.unified_config.get_env('NLP_STORAGE_BACKUP_DIRECTORY', './backups'),
+            'models_directory': self.unified_config.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
+            'learning_directory': self.unified_config.get_env('NLP_STORAGE_LEARNING_DIRECTORY', './learning_data')
+        }
+
+    def get_cache_settings(self) -> Dict[str, Any]:
+        """
+        Get cache configuration settings
+        Uses StorageConfigManager if available, otherwise falls back to environment variables
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_cache_settings()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to individual environment variables
+        return {
+            'enable_model_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_MODEL_CACHE', True),
+            'enable_analysis_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_ANALYSIS_CACHE', True),
+            'cache_cleanup_on_startup': self.unified_config.get_env_bool('NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP', False),
+            'model_cache_size_limit': self.unified_config.get_env('NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT', 1000),
+            'analysis_cache_size_limit': self.unified_config.get_env('NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT', 500),
+            'cache_expiry_hours': self.unified_config.get_env('NLP_STORAGE_CACHE_EXPIRY_HOURS', 24)
+        }
+
+    def is_storage_cache_enabled(self) -> bool:
+        """
+        Check if storage caching is enabled
+        Uses StorageConfigManager if available, otherwise checks environment
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.is_model_cache_enabled()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        return self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_MODEL_CACHE', True)
+
+    def get_backup_settings(self) -> Dict[str, Any]:
+        """
+        Get backup configuration settings
+        Uses StorageConfigManager if available, otherwise falls back to environment variables
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_backup_settings()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to individual environment variables
+        return {
+            'enable_automatic_backup': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_AUTO_BACKUP', False),
+            'backup_interval_hours': self.unified_config.get_env('NLP_STORAGE_BACKUP_INTERVAL_HOURS', 24),
+            'backup_retention_days': self.unified_config.get_env('NLP_STORAGE_BACKUP_RETENTION_DAYS', 30),
+            'compress_backups': self.unified_config.get_env_bool('NLP_STORAGE_COMPRESS_BACKUPS', True),
+            'backup_learning_data': self.unified_config.get_env_bool('NLP_STORAGE_BACKUP_LEARNING_DATA', True),
+            'backup_configuration': self.unified_config.get_env_bool('NLP_STORAGE_BACKUP_CONFIG', True)
+        }
+
     # ========================================================================
     # MANAGER-DELEGATED METHODS (PRESERVED FROM PREVIOUS PHASES)
     # ========================================================================
-    
+
     def get_crisis_patterns_migration_notice(self):
         """Provides migration notice for deprecated crisis pattern methods"""
         return {
@@ -285,7 +395,8 @@ class SettingsManager:
 # ============================================================================
 def create_settings_manager(unified_config_manager, crisis_pattern_manager=None, analysis_parameters_manager=None,
                            threshold_mapping_manager=None, server_config_manager=None, logging_config_manager=None,
-                           feature_config_manager=None, performance_config_manager=None) -> SettingsManager:
+                           feature_config_manager=None, performance_config_manager=None, 
+                           storage_config_manager=None) -> SettingsManager:  # ADD PARAMETER
     """
     Factory function to create SettingsManager instance - Phase 3d Step 9 Complete
     
@@ -298,19 +409,21 @@ def create_settings_manager(unified_config_manager, crisis_pattern_manager=None,
         logging_config_manager: LoggingConfigManager instance (Phase 3d Step 6)
         feature_config_manager: FeatureConfigManager instance (Phase 3d Step 7)
         performance_config_manager: PerformanceConfigManager instance (Phase 3d Step 7)
+        storage_config_manager: StorageConfigManager instance (Phase 3d Step 6)  # ADD DOCS
         
     Returns:
         SettingsManager instance
     """
     return SettingsManager(
-        unified_config_manager,  # STEP 9 CHANGE: First parameter is now UnifiedConfigManager
+        unified_config_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         analysis_parameters_manager=analysis_parameters_manager,
         threshold_mapping_manager=threshold_mapping_manager,
         server_config_manager=server_config_manager,
         logging_config_manager=logging_config_manager,
         feature_config_manager=feature_config_manager,
-        performance_config_manager=performance_config_manager
+        performance_config_manager=performance_config_manager,
+        storage_config_manager=storage_config_manager
     )
 
 # ============================================================================

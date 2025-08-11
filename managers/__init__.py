@@ -138,6 +138,16 @@ except ImportError as e:
     create_server_config_manager = None
     SERVER_CONFIG_MANAGER_AVAILABLE = False
 
+try:
+    from .storage_config_manager import StorageConfigManager, create_storage_config_manager
+    STORAGE_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("✅ StorageConfigManager v3.1 imported (Phase 3d Step 6)")
+except ImportError as e:
+    logger.error(f"❌ StorageConfigManager v3.1 import failed: {e}")
+    StorageConfigManager = None
+    create_storage_config_manager = None
+    STORAGE_CONFIG_MANAGER_AVAILABLE = False
+
 # ============================================================================
 # MANAGER AVAILABILITY SUMMARY
 # ============================================================================
@@ -160,7 +170,8 @@ def get_manager_status() -> dict:
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'performance_config_manager': PERFORMANCE_CONFIG_MANAGER_AVAILABLE,
-        'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE
+        'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
+        'storage_config_manager': STORAGE_CONFIG_MANAGER_AVAILABLE  # ADD THIS LINE
     }
 
 # ============================================================================
@@ -174,6 +185,7 @@ __all__ = [
     'SettingsManager',
     'create_settings_manager',
     'ZeroShotManager',
+    'create_zero_shot_manager',
     
     # Model Managers
     'ModelsManager',
@@ -200,11 +212,12 @@ __all__ = [
     'create_performance_config_manager',
     'ServerConfigManager',
     'create_server_config_manager',
+    'StorageConfigManager',  # ADD THIS LINE
+    'create_storage_config_manager',  # ADD THIS LINE
     
     # Utility Functions
     'get_manager_status'
 ]
-
 # ============================================================================
 # STEP 9.8 COMPLETION LOG
 # ============================================================================
