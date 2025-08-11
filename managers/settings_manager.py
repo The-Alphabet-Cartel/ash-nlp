@@ -1,7 +1,7 @@
+# ash-nlp/managers/settings_manager.py
 """
-SettingsManager - Runtime Settings and Configuration Overrides
-Phase 3d Step 9: Updated for UnifiedConfigManager - NO MORE os.getenv() calls
-
+Runtime Settings and Configuration Overrides for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
