@@ -521,12 +521,17 @@ class Step10ComprehensiveTestSuite:
         try:
             # Critical endpoints for production readiness
             endpoints_to_test = [
-                ("/health", "GET", "System health check"),
-                ("/analyze", "POST", "Crisis analysis endpoint"),
-                ("/ensemble/health", "GET", "Ensemble health check"),
-                ("/ensemble/status", "GET", "Ensemble status"),
-                ("/admin/threshold/mode", "GET", "Threshold mode check"),
-                ("/admin/labels", "GET", "Label management")
+                # Core system endpoints
+                ("GET", "/health", "System health check"),
+                ("POST", "/analyze", "Crisis analysis endpoint"),
+                
+                # Ensemble endpoints  
+                ("GET", "/ensemble/health", "Ensemble health check"),
+                ("GET", "/ensemble/status", "Ensemble status"),
+                
+                # Admin endpoints - CORRECTED URLS
+                ("GET", "/admin/threshold/status", "Threshold status check"),  # FIXED: was /admin/threshold/mode
+                ("GET", "/admin/labels/status", "Label management"),           # FIXED: was /admin/labels
             ]
             
             successful_endpoints = 0
