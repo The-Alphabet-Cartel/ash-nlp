@@ -102,7 +102,7 @@ class Step10ComprehensiveTestSuite:
                 ("managers.model_ensemble_manager", "create_model_ensemble_manager"),
                 ("managers.models_manager", "create_models_manager"),
                 ("managers.performance_config_manager", "create_performance_config_manager"),
-                ("managers.pydantic_config_manager", "create_pydantic_manager"),
+                ("managers.pydantic_manager", "create_pydantic_manager"),
                 ("managers.server_config_manager", "create_server_config_manager"),
                 ("managers.settings_manager", "create_settings_manager"),
                 ("managers.storage_config_manager", "create_storage_config_manager"),
