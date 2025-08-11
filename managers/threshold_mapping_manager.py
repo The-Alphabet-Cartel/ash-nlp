@@ -375,6 +375,81 @@ class ThresholdMappingManager:
                 'on_disagreement': True
             }
     
+    def is_staff_review_required(self, crisis_level: str, confidence: float, 
+                                     has_model_disagreement: bool = False, 
+                                     has_gap_detection: bool = False) -> bool:
+            """
+            Determine if staff review is required based on crisis level, confidence, and conditions
+            
+            Args:
+                crisis_level: The determined crisis level ('high', 'medium', 'low', 'none')
+                confidence: The confidence score (0.0 to 1.0)
+                has_model_disagreement: Whether models disagreed significantly
+                has_gap_detection: Whether gap detection flagged for review
+                
+            Returns:
+                bool: True if staff review is required, False otherwise
+            """
+            try:
+                # Get staff review configuration for current mode
+                staff_config = self.get_staff_review_config()
+                
+                # Rule 1: High crisis levels always require review (if configured)
+                if crisis_level == 'high' and staff_config.get('high_always', True):
+                    logger.debug(f"📋 Staff review required: High crisis level (always={staff_config.get('high_always')})")
+                    return True
+                
+                # Rule 2: Model disagreement requires review (if configured)
+                if has_model_disagreement and staff_config.get('on_disagreement', True):
+                    logger.debug(f"📋 Staff review required: Model disagreement detected")
+                    return True
+                
+                # Rule 3: Gap detection requires review (if configured)
+                if has_gap_detection and staff_config.get('gap_detection_review', True):
+                    logger.debug(f"📋 Staff review required: Gap detection flagged")
+                    return True
+                
+                # Rule 4: Confidence-based review requirements
+                if crisis_level == 'medium':
+                    medium_threshold = staff_config.get('medium_confidence_threshold', 0.45)
+                    if confidence < medium_threshold:
+                        logger.debug(f"📋 Staff review required: Medium crisis with low confidence ({confidence:.3f} < {medium_threshold:.3f})")
+                        return True
+                
+                elif crisis_level == 'low':
+                    low_threshold = staff_config.get('low_confidence_threshold', 0.75)
+                    if confidence < low_threshold:
+                        logger.debug(f"📋 Staff review required: Low crisis with very low confidence ({confidence:.3f} < {low_threshold:.3f})")
+                        return True
+                
+                # Rule 5: Check for borderline cases requiring review
+                # If we're close to a threshold boundary, require review for safety
+                current_mode = self.get_current_ensemble_mode()
+                crisis_mapping = self.get_crisis_level_mapping_for_mode(current_mode)
+                
+                if crisis_level == 'medium':
+                    high_threshold = crisis_mapping.get('crisis_to_high', 0.5)
+                    # If we're within 0.05 of high threshold, require review
+                    if confidence >= (high_threshold - 0.05):
+                        logger.debug(f"📋 Staff review required: Near high threshold boundary ({confidence:.3f} near {high_threshold:.3f})")
+                        return True
+                
+                # Rule 6: Safety net - very high confidence with no crisis requires review
+                # This catches potential false negatives
+                if crisis_level == 'none' and confidence >= 0.9:
+                    logger.debug(f"📋 Staff review required: Very high confidence with no crisis detected (potential false negative)")
+                    return True
+                
+                logger.debug(f"📋 No staff review required: {crisis_level} level, confidence {confidence:.3f}")
+                return False
+                
+            except Exception as e:
+                logger.error(f"❌ Error determining staff review requirement: {e}")
+                # Conservative fallback - require review for medium+ crisis levels
+                fallback_required = crisis_level in ['high', 'medium']
+                logger.warning(f"⚠️ Using fallback staff review logic: {fallback_required}")
+                return fallback_required
+
     def get_learning_thresholds(self) -> Dict[str, Union[float, int]]:
         """Get learning system thresholds"""
         try:
