@@ -1,8 +1,7 @@
-# ash-nlp/managers/performance_config_manager.py - PHASE 3D STEP 7 COMPLETE
+# ash-nlp/managers/performance_config_manager.py
 """
-Performance Configuration Manager for Ash NLP Service v3.1d - Phase 3d Step 7 Complete
-Comprehensive performance settings management system with Clean v3.1 architecture
-
+Performance Configuration Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
