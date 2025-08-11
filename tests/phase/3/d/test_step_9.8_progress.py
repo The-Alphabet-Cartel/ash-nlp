@@ -73,7 +73,7 @@ def test_unified_config_manager():
         status = config_manager.get_status()
         
         print(f"✅ UnifiedConfigManager status: {status['status']}")
-        print(f"✅ Config files: {len(status['config_files'])}")
+        print(f"✅ Config files: {status['config_files']}")  # This is already a count
         print(f"✅ Variables managed: {status['variables_managed']}")
         
         return True
