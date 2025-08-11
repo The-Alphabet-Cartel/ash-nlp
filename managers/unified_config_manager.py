@@ -187,7 +187,9 @@ class UnifiedConfigManager:
             'NLP_FEATURE_ENABLE_ENHANCED_PATTERNS': VariableSchema('bool',
                 False,
                 description='Enable enhanced pattern matching features'),
-            
+            'NLP_FEATURE_ENSEMBLE_ANALYSIS': VariableSchema('bool', True,
+                description='Enable ensemble analysis functionality'),
+
             # Performance Settings (Low Priority)
             'NLP_PERFORMANCE_BATCH_SIZE': VariableSchema('int', 32,
                 min_value=1, max_value=256),
