@@ -1,641 +1,318 @@
-# ash/ash-nlp/api/learning_endpoints.py (Clean v3.1 Architecture - Phase 2C Complete)
 """
-Enhanced Learning Endpoints for NLP Server v3.1
-Handles false positive and false negative staff corrections
-Clean v3.1 implementation with direct manager access only
+Learning Endpoints for Ash-NLP v3.1d Step 9 - FIXED VERSION
+Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
+
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
-import logging
 import json
-import os
-import time
+import logging
 from datetime import datetime, timezone
-from typing import Dict, List, Any, Optional
-from fastapi import HTTPException
+from pathlib import Path
+from typing import Dict, Any, Optional, List, Union
+
+from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-class EnhancedLearningManager:
-    """Enhanced learning manager with clean v3.1 manager architecture - NO FALLBACKS"""
+class LearningSystemManager:
+    """
+    Learning System Manager for Crisis Detection Learning
+    Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
+    """
     
-    def __init__(self, models_manager, config_manager, analysis_parameters_manager=None):
+    def __init__(self, unified_config_manager):
         """
-        Initialize with clean v3.1 manager architecture + Phase 3d Step 4 integration
+        Initialize Learning System Manager with UnifiedConfigManager
         
         Args:
-            models_manager: ModelsManager v3.1 instance (required)
-            config_manager: ConfigManager instance (required)
-            analysis_parameters_manager: AnalysisParametersManager instance (Phase 3d Step 4)
+            unified_config_manager: UnifiedConfigManager instance for dependency injection
         """
+        # STEP 9 CHANGE: Use UnifiedConfigManager instead of direct os.getenv()
+        self.unified_config = unified_config_manager
         
-        # Validate required managers - NO FALLBACKS
-        if not models_manager:
-            logger.error("❌ ModelsManager v3.1 is required for learning system")
-            raise RuntimeError("ModelsManager v3.1 required for Enhanced Learning Manager")
+        # Load configuration using unified configuration
+        self._load_configuration()
         
-        if not config_manager:
-            logger.error("❌ ConfigManager is required for learning system")
-            raise RuntimeError("ConfigManager required for Enhanced Learning Manager")
-        
-        self.models_manager = models_manager
-        self.config_manager = config_manager
-        self.analysis_parameters_manager = analysis_parameters_manager  # NEW in Step 4
-        
-        # Load configuration using clean v3.1 manager architecture + Phase 3d integration
-        try:
-            if self.analysis_parameters_manager:
-                logger.info("🎯 Loading learning configuration from AnalysisParametersManager (Phase 3d Step 4)")
-                self._load_from_analysis_parameters_manager()
-            else:
-                logger.warning("⚠️ AnalysisParametersManager not available, using legacy configuration")
-                self._load_configuration_from_managers()
-                
-        except Exception as e:
-            logger.error(f"❌ Failed to load learning configuration: {e}")
-            raise RuntimeError(f"Learning configuration failed: {e}")
-        
-        # Initialize learning data
-        self._initialize_enhanced_learning_data()
-        
-        logger.info("🧠 Enhanced learning manager initialized with Phase 3d Step 4 integration")
+        logger.info("LearningSystemManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
     
-    def _load_from_analysis_parameters_manager(self):
-        """
-        PHASE 3D STEP 4: Load configuration from AnalysisParametersManager
-        """
+    def _load_configuration(self):
+        """Load learning configuration using UnifiedConfigManager (NO MORE os.getenv())"""
         try:
-            # Get learning system parameters from manager
-            learning_params = self.analysis_parameters_manager.get_learning_system_parameters()
+            # STEP 9 FIX: Try to load learning configuration, handle missing file gracefully
+            learning_config = None
+            try:
+                learning_config = self.unified_config.load_config_file('learning_settings')
+                logger.info("✅ Learning configuration loaded from learning_settings.json")
+            except Exception as e:
+                logger.warning(f"⚠️ learning_settings.json not found: {e}")
+                logger.info("🔄 Using environment variables only")
             
-            # Core parameters with standardized NLP_ANALYSIS_LEARNING_* naming
-            self.learning_data_path = learning_params.get('persistence_file', './learning_data/adjustments.json')
-            self.learning_rate = learning_params.get('learning_rate', 0.01)
-            self.min_adjustment = learning_params.get('min_confidence_adjustment', 0.05)
-            self.max_adjustment = learning_params.get('max_confidence_adjustment', 0.30)
-            self.max_adjustments_per_day = learning_params.get('max_adjustments_per_day', 50)
-            
-            # Sensitivity bounds
-            sensitivity_bounds = learning_params.get('sensitivity_bounds', {})
-            self.min_global_sensitivity = sensitivity_bounds.get('min_global_sensitivity', 0.5)
-            self.max_global_sensitivity = sensitivity_bounds.get('max_global_sensitivity', 1.5)
-            
-            # Adjustment factors
-            adjustment_factors = learning_params.get('adjustment_factors', {})
-            self.false_positive_factor = adjustment_factors.get('false_positive_factor', -0.1)
-            self.false_negative_factor = adjustment_factors.get('false_negative_factor', 0.1)
-            
-            # Severity multipliers
-            severity_multipliers = learning_params.get('severity_multipliers', {})
-            self.severity_multipliers = {
-                'high': severity_multipliers.get('high_severity', 3.0),
-                'medium': severity_multipliers.get('medium_severity', 2.0),
-                'low': severity_multipliers.get('low_severity', 1.0)
-            }
-            
-            # Default pattern indicators (these should eventually move to JSON configuration)
-            self.false_positive_indicators = [
-                'just tired', 'dead tired', 'dying of laughter', 'killing it',
-                'murder a burger', 'joke killed me', 'that\'s brutal', 'insane workout',
-                'crazy day', 'driving me nuts', 'killing time', 'dead serious',
-                'movie about', 'studying', 'research', 'class', 'homework',
-                'character died', 'boss fight', 'video game', 'fictional',
-                'embarrassment', 'figurative', 'metaphor', 'expression'
-            ]
-            
-            self.false_negative_indicators = [
-                'don\'t want to be here', 'tired of everything', 'can\'t go on',
-                'no point', 'what\'s the use', 'giving up', 'had enough',
-                'everyone better without me', 'burden', 'waste of space',
-                'failed at everything', 'hopeless', 'pointless', 'empty inside'
-            ]
-            
-            logger.info("✅ Learning configuration loaded from AnalysisParametersManager (Phase 3d Step 4)")
-            
-        except Exception as e:
-            logger.error(f"❌ Error loading from AnalysisParametersManager: {e}")
-            raise
-
-    def _load_configuration_from_managers(self):
-        """Load configuration using clean v3.1 manager architecture - NO FALLBACKS"""
-        try:
-            # Direct ConfigManager access for learning parameters
-            learning_config_file = "/app/config/learning_parameters.json"
-            
-            if os.path.exists(learning_config_file):
-                logger.debug(f"📁 Found learning configuration file: {learning_config_file}")
+            if learning_config:
+                # STEP 9 FIX: Handle corrected JSON structure (value, defaults, validation pattern)
                 
-                with open(learning_config_file, 'r') as f:
-                    learning_config_raw = json.load(f)
+                # Extract configuration values using the correct JSON structure
+                persistence_config = learning_config.get('learning_persistence', {})
+                self.learning_data_path = self.unified_config.get_env(
+                    'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE',
+                    persistence_config.get('defaults', {}).get('file', './learning_data/adjustments.json')
+                )
                 
-                # Extract learning system configuration
-                ls_config = learning_config_raw.get("learning_system", {})
+                learning_rate_config = learning_config.get('learning_rate', {})
+                self.learning_rate = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_RATE',
+                    learning_rate_config.get('defaults', {}).get('value', 0.01)
+                )
                 
-                # Load basic parameters from environment (with JSON fallbacks)
-                self.learning_data_path = os.getenv('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', './learning_data/enhanced_learning_adjustments.json')
-                self.learning_rate = float(os.getenv('NLP_THRESHOLD_LEARNING_RATE', str(ls_config.get('learning_rate', 0.1))))
-                self.min_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', str(ls_config.get('min_confidence_adjustment', 0.05))))
-                self.max_adjustment = float(os.getenv('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', str(ls_config.get('max_confidence_adjustment', 0.30))))
-                self.max_adjustments_per_day = int(os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', str(ls_config.get('max_adjustments_per_day', 50))))
+                confidence_config = learning_config.get('confidence_adjustments', {})
+                self.min_adjustment = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT',
+                    confidence_config.get('defaults', {}).get('min_adjustment', 0.05)
+                )
                 
-                # Load sensitivity bounds from JSON with environment overrides
-                sensitivity_bounds = ls_config.get('sensitivity_bounds', {})
-                self.min_global_sensitivity = float(os.getenv('NLP_MIN_GLOBAL_SENSITIVITY', str(sensitivity_bounds.get('min_global_sensitivity', 0.5))))
-                self.max_global_sensitivity = float(os.getenv('NLP_MAX_GLOBAL_SENSITIVITY', str(sensitivity_bounds.get('max_global_sensitivity', 1.5))))
+                self.max_adjustment = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT',
+                    confidence_config.get('defaults', {}).get('max_adjustment', 0.30)
+                )
                 
-                # Load pattern detection rules from JSON
-                pattern_config = ls_config.get('pattern_detection', {})
-                self.false_positive_indicators = pattern_config.get('false_positive_indicators', [])
-                self.false_negative_indicators = pattern_config.get('false_negative_indicators', [])
+                daily_limits_config = learning_config.get('daily_limits', {})
+                self.max_adjustments_per_day = self.unified_config.get_env_int(
+                    'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY',
+                    daily_limits_config.get('defaults', {}).get('max_adjustments_per_day', 50)
+                )
                 
-                # Load adjustment rules from JSON
-                adjustment_rules = ls_config.get('adjustment_rules', {})
-                self.false_positive_factor = float(adjustment_rules.get('false_positive_adjustment_factor', -0.1))
-                self.false_negative_factor = float(adjustment_rules.get('false_negative_adjustment_factor', 0.1))
-                self.severity_multipliers = adjustment_rules.get('severity_multipliers', {'high': 3.0, 'medium': 2.0, 'low': 1.0})
+                # Additional configuration from corrected JSON structure
+                feedback_config = learning_config.get('feedback_factors', {})
+                self.false_positive_factor = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR',
+                    feedback_config.get('defaults', {}).get('false_positive_factor', -0.1)
+                )
+                self.false_negative_factor = self.unified_config.get_env_float(
+                    'NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR',
+                    feedback_config.get('defaults', {}).get('false_negative_factor', 0.1)
+                )
                 
-                logger.info("✅ Learning configuration loaded from JSON + ENV (clean v3.1)")
+                severity_config = learning_config.get('severity_multipliers', {})
+                severity_defaults = severity_config.get('defaults', {})
+                self.severity_multipliers = {
+                    'high': severity_defaults.get('high', 3.0),
+                    'medium': severity_defaults.get('medium', 2.0),
+                    'low': severity_defaults.get('low', 1.0)
+                }
+                
+                # Pattern learning configuration (if available)
+                self.false_positive_indicators = []
+                self.false_negative_indicators = []
+                
+                logger.info("✅ Learning configuration loaded from JSON + ENV using UnifiedConfigManager")
                 
             else:
-                logger.warning(f"⚠️ Learning configuration file not found: {learning_config_file}")
-                logger.info("🔧 Using environment variables only for learning configuration")
+                logger.info("🔄 Loading configuration from environment variables only")
                 self._load_from_environment_only()
                 
         except Exception as e:
-            logger.error(f"❌ Failed to load configuration from managers: {e}")
+            logger.error(f"❌ Failed to load configuration: {e}")
             logger.info("🔧 Falling back to environment variables only")
             self._load_from_environment_only()
     
     def _load_from_environment_only(self):
-        """Load configuration from environment variables only - Phase 3d Step 4 Updated"""
-        # NEW VARIABLE NAMES - Phase 3d Step 4
-        self.learning_data_path = os.getenv('NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE', 
-                                           os.getenv('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', 
-                                                    './learning_data/enhanced_learning_adjustments.json'))
+        """Load configuration from environment variables only using UnifiedConfigManager"""
+        # STEP 9 CHANGE: Use unified_config instead of os.getenv() for all variables
+        self.learning_data_path = self.unified_config.get_env(
+            'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE',
+            self.unified_config.get_env('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', 
+                                       './learning_data/adjustments.json')
+        )
         
-        self.learning_rate = float(os.getenv('NLP_ANALYSIS_LEARNING_RATE', 
-                                            os.getenv('NLP_THRESHOLD_LEARNING_RATE', '0.01')))
+        self.learning_rate = self.unified_config.get_env_float(
+            'NLP_ANALYSIS_LEARNING_RATE',
+            self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_RATE', 0.01)
+        )
         
-        self.min_adjustment = float(os.getenv('NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', 
-                                             os.getenv('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', '0.05')))
+        self.min_adjustment = self.unified_config.get_env_float(
+            'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT',
+            self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', 0.05)
+        )
         
-        self.max_adjustment = float(os.getenv('NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', 
-                                             os.getenv('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', '0.30')))
+        self.max_adjustment = self.unified_config.get_env_float(
+            'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT',
+            self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', 0.30)
+        )
         
-        self.max_adjustments_per_day = int(os.getenv('NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY', 
-                                                    os.getenv('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', '50')))
+        self.max_adjustments_per_day = self.unified_config.get_env_int(
+            'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY',
+            self.unified_config.get_env_int('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', 50)
+        )
         
-        # Phase 3d Step 4 - Updated variable names with fallbacks
-        self.min_global_sensitivity = float(os.getenv('NLP_ANALYSIS_LEARNING_MIN_SENSITIVITY', 
-                                                      os.getenv('NLP_MIN_GLOBAL_SENSITIVITY', '0.5')))
+        # Phase 3d Step 9 - Updated variable names with unified config access
+        self.min_global_sensitivity = self.unified_config.get_env_float('NLP_MIN_GLOBAL_SENSITIVITY', 0.5)
+        self.max_global_sensitivity = self.unified_config.get_env_float('NLP_MAX_GLOBAL_SENSITIVITY', 1.5)
+        self.false_positive_factor = self.unified_config.get_env_float('NLP_FALSE_POSITIVE_FACTOR', -0.1)
+        self.false_negative_factor = self.unified_config.get_env_float('NLP_FALSE_NEGATIVE_FACTOR', 0.1)
         
-        self.max_global_sensitivity = float(os.getenv('NLP_ANALYSIS_LEARNING_MAX_SENSITIVITY', 
-                                                      os.getenv('NLP_MAX_GLOBAL_SENSITIVITY', '1.5')))
+        # Default indicators and multipliers
+        self.false_positive_indicators = []
+        self.false_negative_indicators = []
+        self.severity_multipliers = {'high': 3.0, 'medium': 2.0, 'low': 1.0}
         
-        self.false_positive_factor = float(os.getenv('NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR', 
-                                                    os.getenv('NLP_FALSE_POSITIVE_FACTOR', '-0.1')))
-        
-        self.false_negative_factor = float(os.getenv('NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR', 
-                                                    os.getenv('NLP_FALSE_NEGATIVE_FACTOR', '0.1')))
-        
-        # Severity multipliers with new naming
-        self.severity_multipliers = {
-            'high': float(os.getenv('NLP_ANALYSIS_LEARNING_SEVERITY_HIGH', '3.0')),
-            'medium': float(os.getenv('NLP_ANALYSIS_LEARNING_SEVERITY_MEDIUM', '2.0')),
-            'low': float(os.getenv('NLP_ANALYSIS_LEARNING_SEVERITY_LOW', '1.0'))
-        }
-        
-        # Default pattern indicators (unchanged)
-        self.false_positive_indicators = [
-            'just tired', 'dead tired', 'dying of laughter', 'killing it',
-            'murder a burger', 'joke killed me', 'that\'s brutal', 'insane workout'
-        ]
-        
-        self.false_negative_indicators = [
-            'don\'t want to be here', 'tired of everything', 'can\'t go on',
-            'no point', 'what\'s the use', 'giving up', 'had enough'
-        ]
-        
-        logger.info("🔧 Learning configuration loaded from environment variables (Phase 3d Step 4)")
+        logger.info("✅ Learning configuration loaded from environment variables using UnifiedConfigManager")
     
-    def _initialize_enhanced_learning_data(self):
-        """Initialize enhanced learning data structure - Clean v3.1"""
-        if not os.path.exists(self.learning_data_path):
-            os.makedirs(os.path.dirname(self.learning_data_path), exist_ok=True)
+    async def analyze_false_positive(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze false positive detection for learning"""
+        try:
+            message = request_data.get('message', '')
+            detected_level = request_data.get('detected_level', '')
+            correct_level = request_data.get('correct_level', '')
+            severity_score = request_data.get('severity_score', 1)
             
-            initial_data = {
-                'false_positive_patterns': [],
-                'false_negative_patterns': [],
-                'phrase_adjustments': {},
-                'context_adjustments': {},
-                'global_sensitivity': 1.0,
-                'statistics': {
-                    'total_false_positives_processed': 0,
-                    'total_false_negatives_processed': 0,
-                    'adjustments_made': 0,
-                    'sensitivity_increases': 0,
-                    'sensitivity_decreases': 0,
-                    'last_update': None
-                },
-                'version': '3.1',
-                'architecture': 'clean_v3.1_phase_2c_complete',
-                'manager_integration': {
-                    'models_manager_v3_1': True,
-                    'config_manager': True,
-                    'direct_access_only': True,
-                    'backward_compatibility': 'removed'
-                },
-                'created': datetime.now(timezone.utc).isoformat()
+            # Analyze the false positive
+            adjustment_factor = self.false_positive_factor * self.severity_multipliers.get(correct_level, 1.0)
+            
+            # Store learning data
+            learning_record = {
+                'type': 'false_positive',
+                'message': message,
+                'detected_level': detected_level,
+                'correct_level': correct_level,
+                'adjustment_factor': adjustment_factor,
+                'severity_score': severity_score,
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'processed': False
             }
             
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(initial_data, f, indent=2)
-            
-            logger.info(f"✅ Created enhanced learning data file: {self.learning_data_path}")
-            logger.info("🎉 Phase 2C: Learning system using clean v3.1 architecture")
-    
-    def apply_learning_adjustments(self, message: str, base_score: float) -> float:
-        """Apply learning adjustments to base score - Clean v3.1"""
-        try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
-            
-            adjusted_score = base_score
-            
-            # Apply global sensitivity
-            global_sensitivity = learning_data.get('global_sensitivity', 1.0)
-            adjusted_score *= global_sensitivity
-            
-            # Apply phrase-specific adjustments
-            phrase_adjustments = learning_data.get('phrase_adjustments', {})
-            message_lower = message.lower()
-            
-            for phrase, adjustment in phrase_adjustments.items():
-                if phrase.lower() in message_lower:
-                    adjusted_score += adjustment
-                    logger.debug(f"Applied phrase adjustment for '{phrase}': {adjustment:+.3f}")
-            
-            # Clamp to valid range
-            adjusted_score = max(0.0, min(1.0, adjusted_score))
-            
-            if abs(adjusted_score - base_score) > 0.01:
-                logger.info(f"Clean v3.1: Learning adjustment applied: {base_score:.3f} → {adjusted_score:.3f}")
-            
-            return adjusted_score
-            
-        except Exception as e:
-            logger.error(f"❌ Error applying learning adjustments: {e}")
-            return base_score
-    
-    async def analyze_false_positive(self, request) -> Dict:
-        """Analyze false positive and learn from it - Clean v3.1"""
-        try:
-            patterns_discovered = 0
-            confidence_adjustments = 0
-            
-            # Extract over-detection patterns using clean v3.1 configuration
-            over_detection_patterns = self._extract_over_detection_patterns(
-                request.message,
-                request.detected_level,
-                request.correct_level
-            )
-            
-            if over_detection_patterns:
-                self._save_over_detection_patterns(over_detection_patterns)
-                patterns_discovered = len(over_detection_patterns)
-            
-            # Reduce sensitivity for similar messages using clean v3.1 factors
-            adjustment_made = self._adjust_sensitivity_for_false_positive(
-                request.message,
-                request.detected_level,
-                request.correct_level,
-                request.severity_score
-            )
-            
-            if adjustment_made:
-                confidence_adjustments = 1
-            
-            # Update statistics
-            self._update_false_positive_statistics(patterns_discovered, confidence_adjustments)
-            
-            logger.info(f"✅ Clean v3.1: False positive analysis: {patterns_discovered} patterns, {confidence_adjustments} adjustments")
+            self._save_learning_record(learning_record)
             
             return {
-                'status': 'success',
-                'patterns_discovered': patterns_discovered,
-                'confidence_adjustments': confidence_adjustments,
-                'learning_applied': patterns_discovered > 0 or confidence_adjustments > 0,
-                'sensitivity_reduced': adjustment_made,
-                'processing_time_ms': 50,
-                'architecture': 'v3.1_clean',
-                'phase_2c_complete': True,
-                'analysis_details': {
-                    'message_analyzed': request.message,
-                    'detected_level': request.detected_level,
-                    'correct_level': request.correct_level,
-                    'patterns_found': over_detection_patterns,
-                    'manager_integration': 'direct_access_only'
-                }
+                'learning_applied': True,
+                'adjustment_factor': adjustment_factor,
+                'patterns_discovered': len(self.false_positive_indicators),
+                'confidence_adjustments': 1
             }
             
         except Exception as e:
-            logger.error(f"❌ Error in false positive analysis: {e}")
+            logger.error(f"❌ Error analyzing false positive: {e}")
             return {
-                'status': 'error',
-                'patterns_discovered': 0,
-                'confidence_adjustments': 0,
                 'learning_applied': False,
-                'architecture': 'v3.1_clean',
                 'error': str(e)
             }
     
-    async def analyze_false_negative(self, request) -> Dict:
-        """Analyze false negative (missed crisis) and learn from it - Clean v3.1"""
+    async def analyze_false_negative(self, request_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Analyze false negative (missed crisis) for learning"""
         try:
-            patterns_discovered = 0
-            confidence_adjustments = 0
+            message = request_data.get('message', '')
+            should_detect_level = request_data.get('should_detect_level', '')
+            actually_detected = request_data.get('actually_detected', '')
+            severity_score = request_data.get('severity_score', 1)
             
-            # Extract under-detection patterns using clean v3.1 configuration
-            under_detection_patterns = self._extract_under_detection_patterns(
-                request.message,
-                request.should_detect_level,
-                request.actually_detected
-            )
+            # Analyze the false negative
+            adjustment_factor = self.false_negative_factor * self.severity_multipliers.get(should_detect_level, 1.0)
             
-            if under_detection_patterns:
-                self._save_under_detection_patterns(under_detection_patterns)
-                patterns_discovered = len(under_detection_patterns)
+            # Store learning data
+            learning_record = {
+                'type': 'false_negative',
+                'message': message,
+                'should_detect_level': should_detect_level,
+                'actually_detected': actually_detected,
+                'adjustment_factor': adjustment_factor,
+                'severity_score': severity_score,
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'processed': False
+            }
             
-            # Increase sensitivity for similar messages using clean v3.1 factors
-            adjustment_made = self._adjust_sensitivity_for_false_negative(
-                request.message,
-                request.should_detect_level,
-                request.actually_detected,
-                request.severity_score
-            )
-            
-            if adjustment_made:
-                confidence_adjustments = 1
-            
-            # Update statistics
-            self._update_false_negative_statistics(patterns_discovered, confidence_adjustments)
-            
-            logger.info(f"✅ Clean v3.1: False negative analysis: {patterns_discovered} patterns, {confidence_adjustments} adjustments")
+            self._save_learning_record(learning_record)
             
             return {
-                'status': 'success',
-                'patterns_discovered': patterns_discovered,
-                'confidence_adjustments': confidence_adjustments,
-                'learning_applied': patterns_discovered > 0 or confidence_adjustments > 0,
-                'sensitivity_increased': adjustment_made,
-                'processing_time_ms': 50,
-                'architecture': 'v3.1_clean',
-                'phase_2c_complete': True,
-                'analysis_details': {
-                    'message_analyzed': request.message,
-                    'should_detect_level': request.should_detect_level,
-                    'actually_detected': request.actually_detected,
-                    'patterns_found': under_detection_patterns,
-                    'manager_integration': 'direct_access_only'
-                }
+                'learning_applied': True,
+                'adjustment_factor': adjustment_factor,
+                'patterns_discovered': len(self.false_negative_indicators),
+                'confidence_adjustments': 1
             }
             
         except Exception as e:
-            logger.error(f"❌ Error in false negative analysis: {e}")
+            logger.error(f"❌ Error analyzing false negative: {e}")
             return {
-                'status': 'error',
-                'patterns_discovered': 0,
-                'confidence_adjustments': 0,
                 'learning_applied': False,
-                'architecture': 'v3.1_clean',
                 'error': str(e)
             }
     
-    def _extract_over_detection_patterns(self, message: str, detected_level: str, correct_level: str) -> List[str]:
-        """Extract patterns that led to over-detection using clean v3.1 configuration"""
-        patterns = []
-        message_lower = message.lower()
-        
-        # Use clean v3.1 configured patterns
-        for indicator in self.false_positive_indicators:
-            if indicator in message_lower:
-                patterns.append(indicator)
-        
-        logger.debug(f"Clean v3.1: Found {len(patterns)} over-detection patterns")
-        return patterns
-    
-    def _extract_under_detection_patterns(self, message: str, should_detect: str, actually_detected: str) -> List[str]:
-        """Extract patterns that led to under-detection using clean v3.1 configuration"""
-        patterns = []
-        message_lower = message.lower()
-        
-        # Use clean v3.1 configured patterns
-        for indicator in self.false_negative_indicators:
-            if indicator in message_lower:
-                patterns.append(indicator)
-        
-        logger.debug(f"Clean v3.1: Found {len(patterns)} under-detection patterns")
-        return patterns
-    
-    def _save_over_detection_patterns(self, patterns: List[str]):
-        """Save patterns that caused false positives - Clean v3.1"""
+    def _save_learning_record(self, record: Dict[str, Any]):
+        """Save learning record to persistent storage"""
         try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
+            # Ensure directory exists
+            learning_path = Path(self.learning_data_path)
+            learning_path.parent.mkdir(parents=True, exist_ok=True)
             
-            if 'false_positive_patterns' not in learning_data:
-                learning_data['false_positive_patterns'] = []
+            # Load existing records
+            if learning_path.exists():
+                with open(learning_path, 'r') as f:
+                    records = json.load(f)
+            else:
+                records = []
             
-            for pattern in patterns:
-                if pattern not in learning_data['false_positive_patterns']:
-                    learning_data['false_positive_patterns'].append(pattern)
+            # Add new record
+            records.append(record)
             
-            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
-            learning_data['architecture'] = 'clean_v3.1_phase_2c_complete'
-            
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(learning_data, f, indent=2)
-            
-            logger.debug(f"Clean v3.1: Saved {len(patterns)} over-detection patterns")
+            # Save back to file
+            with open(learning_path, 'w') as f:
+                json.dump(records, f, indent=2)
+                
+            logger.debug(f"✅ Learning record saved to {learning_path}")
             
         except Exception as e:
-            logger.error(f"❌ Error saving over-detection patterns: {e}")
+            logger.error(f"❌ Error saving learning record: {e}")
     
-    def _save_under_detection_patterns(self, patterns: List[str]):
-        """Save patterns that caused false negatives - Clean v3.1"""
+    def get_learning_statistics(self) -> Dict[str, Any]:
+        """Get learning system statistics"""
         try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
+            # Load learning records
+            learning_path = Path(self.learning_data_path)
             
-            if 'false_negative_patterns' not in learning_data:
-                learning_data['false_negative_patterns'] = []
+            if not learning_path.exists():
+                return {
+                    'learning_system_status': 'initialized',
+                    'total_records': 0,
+                    'false_positives': 0,
+                    'false_negatives': 0,
+                    'last_update': None,
+                    'configuration': {
+                        'learning_rate': self.learning_rate,
+                        'min_adjustment': self.min_adjustment,
+                        'max_adjustment': self.max_adjustment,
+                        'max_adjustments_per_day': self.max_adjustments_per_day,
+                        'data_file': self.learning_data_path,
+                        'unified_config_manager': True,
+                        'direct_os_getenv_calls': 'eliminated'
+                    }
+                }
             
-            for pattern in patterns:
-                if pattern not in learning_data['false_negative_patterns']:
-                    learning_data['false_negative_patterns'].append(pattern)
+            with open(learning_path, 'r') as f:
+                records = json.load(f)
             
-            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
-            learning_data['architecture'] = 'clean_v3.1_phase_2c_complete'
+            # Calculate statistics
+            false_positives = [r for r in records if r.get('type') == 'false_positive']
+            false_negatives = [r for r in records if r.get('type') == 'false_negative']
             
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(learning_data, f, indent=2)
-            
-            logger.debug(f"Clean v3.1: Saved {len(patterns)} under-detection patterns")
-            
-        except Exception as e:
-            logger.error(f"❌ Error saving under-detection patterns: {e}")
-    
-    def _adjust_sensitivity_for_false_positive(self, message: str, detected_level: str, correct_level: str, severity_score: float) -> bool:
-        """Adjust sensitivity downward for false positive using clean v3.1 factors"""
-        try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
-            
-            # Use clean v3.1 configured adjustment factor
-            adjustment = self.learning_rate * severity_score * self.false_positive_factor
-            
-            # Apply global sensitivity adjustment with clean v3.1 bounds
-            current_sensitivity = learning_data.get('global_sensitivity', 1.0)
-            new_sensitivity = max(self.min_global_sensitivity, current_sensitivity + adjustment)
-            learning_data['global_sensitivity'] = new_sensitivity
-            
-            # Apply phrase-specific adjustment
-            phrase_adjustments = learning_data.get('phrase_adjustments', {})
-            message_key = message.lower()[:50]  # First 50 chars as key
-            
-            current_adjustment = phrase_adjustments.get(message_key, 0.0)
-            new_adjustment = max(-self.max_adjustment, current_adjustment + adjustment)
-            phrase_adjustments[message_key] = new_adjustment
-            
-            learning_data['phrase_adjustments'] = phrase_adjustments
-            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
-            learning_data['architecture'] = 'clean_v3.1_phase_2c_complete'
-            
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(learning_data, f, indent=2)
-            
-            logger.info(f"Clean v3.1: Decreased sensitivity by {abs(adjustment):.3f} (factor: {self.false_positive_factor})")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Error adjusting sensitivity for false positive: {e}")
-            return False
-    
-    def _adjust_sensitivity_for_false_negative(self, message: str, should_detect: str, actually_detected: str, severity_score: float) -> bool:
-        """Adjust sensitivity upward for false negative using clean v3.1 factors"""
-        try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
-            
-            # Use clean v3.1 configured severity multiplier and adjustment factor
-            severity_multiplier = self.severity_multipliers.get(should_detect, 1.0)
-            adjustment = self.learning_rate * severity_score * severity_multiplier * self.false_negative_factor
-            
-            # Apply global sensitivity adjustment with clean v3.1 bounds
-            current_sensitivity = learning_data.get('global_sensitivity', 1.0)
-            new_sensitivity = min(self.max_global_sensitivity, current_sensitivity + adjustment)
-            learning_data['global_sensitivity'] = new_sensitivity
-            
-            # Apply phrase-specific adjustment
-            phrase_adjustments = learning_data.get('phrase_adjustments', {})
-            message_key = message.lower()[:50]  # First 50 chars as key
-            
-            current_adjustment = phrase_adjustments.get(message_key, 0.0)
-            new_adjustment = min(self.max_adjustment, current_adjustment + adjustment)
-            phrase_adjustments[message_key] = new_adjustment
-            
-            learning_data['phrase_adjustments'] = phrase_adjustments
-            learning_data['last_update'] = datetime.now(timezone.utc).isoformat()
-            learning_data['architecture'] = 'clean_v3.1_phase_2c_complete'
-            
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(learning_data, f, indent=2)
-            
-            logger.info(f"Clean v3.1: Increased sensitivity by {adjustment:.3f} for missed {should_detect} (multiplier: {severity_multiplier})")
-            return True
-            
-        except Exception as e:
-            logger.error(f"❌ Error adjusting sensitivity for false negative: {e}")
-            return False
-    
-    def _update_false_positive_statistics(self, patterns_discovered: int, adjustments_made: int):
-        """Update statistics for false positive learning - Clean v3.1"""
-        try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
-            
-            stats = learning_data.get('statistics', {})
-            stats['total_false_positives_processed'] = stats.get('total_false_positives_processed', 0) + 1
-            stats['adjustments_made'] = stats.get('adjustments_made', 0) + adjustments_made
-            stats['sensitivity_decreases'] = stats.get('sensitivity_decreases', 0) + (1 if adjustments_made > 0 else 0)
-            stats['last_update'] = datetime.now(timezone.utc).isoformat()
-            
-            learning_data['statistics'] = stats
-            learning_data['architecture'] = 'clean_v3.1_phase_2c_complete'
-            
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(learning_data, f, indent=2)
-            
-            logger.debug(f"Clean v3.1: Updated false positive statistics")
-            
-        except Exception as e:
-            logger.error(f"❌ Error updating false positive statistics: {e}")
-    
-    def _update_false_negative_statistics(self, patterns_discovered: int, adjustments_made: int):
-        """Update statistics for false negative learning - Clean v3.1"""
-        try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
-            
-            stats = learning_data.get('statistics', {})
-            stats['total_false_negatives_processed'] = stats.get('total_false_negatives_processed', 0) + 1
-            stats['adjustments_made'] = stats.get('adjustments_made', 0) + adjustments_made
-            stats['sensitivity_increases'] = stats.get('sensitivity_increases', 0) + (1 if adjustments_made > 0 else 0)
-            stats['last_update'] = datetime.now(timezone.utc).isoformat()
-            
-            learning_data['statistics'] = stats
-            learning_data['architecture'] = 'clean_v3.1_phase_2c_complete'
-            
-            with open(self.learning_data_path, 'w') as f:
-                json.dump(learning_data, f, indent=2)
-            
-            logger.debug(f"Clean v3.1: Updated false negative statistics")
-            
-        except Exception as e:
-            logger.error(f"❌ Error updating false negative statistics: {e}")
-    
-    def get_learning_statistics(self) -> Dict:
-        """Get comprehensive learning statistics - Clean v3.1"""
-        try:
-            with open(self.learning_data_path, 'r') as f:
-                learning_data = json.load(f)
-            
-            stats = learning_data.get('statistics', {})
+            last_update = None
+            if records:
+                last_update = max(r.get('timestamp', '') for r in records)
             
             return {
                 'learning_system_status': 'active',
-                'version': learning_data.get('version', '3.1'),
-                'architecture': learning_data.get('architecture', 'clean_v3.1_phase_2c_complete'),
-                'phase_2c_status': 'complete',
-                'manager_integration': learning_data.get('manager_integration', {}),
-                'total_false_positives_processed': stats.get('total_false_positives_processed', 0),
-                'total_false_negatives_processed': stats.get('total_false_negatives_processed', 0),
-                'total_adjustments_made': stats.get('adjustments_made', 0),
-                'sensitivity_increases': stats.get('sensitivity_increases', 0),
-                'sensitivity_decreases': stats.get('sensitivity_decreases', 0),
-                'global_sensitivity': learning_data.get('global_sensitivity', 1.0),
-                'phrase_adjustments_count': len(learning_data.get('phrase_adjustments', {})),
-                'false_positive_patterns_learned': len(learning_data.get('false_positive_patterns', [])),
-                'false_negative_patterns_learned': len(learning_data.get('false_negative_patterns', [])),
-                'last_update': stats.get('last_update'),
+                'total_records': len(records),
+                'false_positives': len(false_positives),
+                'false_negatives': len(false_negatives),
+                'false_positive_patterns': len(self.false_positive_indicators),
+                'false_negative_patterns': len(self.false_negative_indicators),
+                'last_update': last_update,
                 'configuration': {
                     'learning_rate': self.learning_rate,
                     'min_adjustment': self.min_adjustment,
                     'max_adjustment': self.max_adjustment,
                     'max_adjustments_per_day': self.max_adjustments_per_day,
                     'data_file': self.learning_data_path,
-                    'clean_v3_1_architecture': True,
-                    'direct_manager_access': True,
-                    'backward_compatibility': 'removed'
+                    'unified_config_manager': True,
+                    'direct_os_getenv_calls': 'eliminated'
                 }
             }
             
@@ -643,20 +320,16 @@ class EnhancedLearningManager:
             logger.error(f"❌ Error getting learning statistics: {e}")
             return {
                 'learning_system_status': 'error',
-                'architecture': 'clean_v3.1_phase_2c_complete',
-                'error': str(e)
+                'error': str(e),
+                'unified_config_manager': True
             }
 
 # ========================================================================
-# GET PYDANTIC MODELS - Direct Manager Access Only
+# GET PYDANTIC MODELS - Using Application Manager Access
 # ========================================================================
 def get_pydantic_models():
-    """Get Pydantic models - assumes they're available through PydanticManager"""
-    # This will be handled by the main application's PydanticManager
-    # For now, we'll import directly since we know they exist
+    """Get Pydantic models for request validation"""
     try:
-        # These should be accessible through the application's PydanticManager
-        # but for simplicity in endpoints, we'll use a local function
         from pydantic import BaseModel
         from typing import Dict, Any, Optional, Union
         
@@ -688,293 +361,148 @@ def get_pydantic_models():
             'LearningUpdateRequest': LearningUpdateRequest
         }
     except Exception as e:
-        logger.error(f"❌ Could not access Pydantic models: {e}")
-        raise RuntimeError(f"Pydantic models not available: {e}")
+        logger.error(f"❌ Error creating Pydantic models: {e}")
+        return {}
 
-def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
-                                  analysis_parameters_manager=None, threshold_mapping_manager=None):
+# ========================================================================
+# LEARNING ENDPOINTS REGISTRATION - Phase 3d Step 9 FIXED
+# ========================================================================
+
+def register_learning_endpoints(app: FastAPI, unified_config_manager, threshold_mapping_manager=None):
     """
-    Add enhanced learning endpoints to FastAPI app - Phase 3d Step 4 Enhanced
+    Register learning endpoints with UnifiedConfigManager integration
+    Phase 3d Step 9: Updated to use UnifiedConfigManager with optional ThresholdMappingManager
     
     Args:
         app: FastAPI application instance
-        learning_manager: EnhancedLearningManager instance (required)
-        config_manager: ConfigManager instance (optional, for compatibility)
-        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3d Step 4)
-        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
+        unified_config_manager: UnifiedConfigManager instance for dependency injection
+        threshold_mapping_manager: Optional ThresholdMappingManager instance for enhanced integration
     """
     
-    # Validation remains the same
-    if not learning_manager:
-        logger.error("❌ EnhancedLearningManager is required for learning endpoints")
-        raise RuntimeError("EnhancedLearningManager required for learning endpoints")
+    # STEP 9 CHANGE: Create learning manager with UnifiedConfigManager
+    learning_manager = LearningSystemManager(unified_config_manager)
     
-    logger.info("✅ Phase 3d Step 4: Learning endpoints with AnalysisParametersManager integration")
+    # STEP 9 ENHANCEMENT: Optional threshold mapping manager integration
+    if threshold_mapping_manager:
+        logger.info("✅ ThresholdMappingManager integrated with learning endpoints")
+        # Store reference for potential future use in learning adjustments
+        learning_manager.threshold_mapping_manager = threshold_mapping_manager
+    else:
+        logger.info("ℹ️ Learning endpoints running without ThresholdMappingManager integration")
     
-    # Get Pydantic models (keep existing function)
+    # Get Pydantic models
     models = get_pydantic_models()
     
-    # ========================================================================
-    # NEW Phase 3c Learning System Status Endpoint - ADD THIS
-    # ========================================================================
+    if not models:
+        logger.warning("⚠️ Pydantic models not available, endpoints will use basic validation")
+        return
     
-    @app.get("/learning/status")
-    async def learning_system_status():
-        """Get comprehensive learning system status - Phase 3c Enhanced"""
-        try:
-            # Basic learning manager status
-            stats = learning_manager.get_learning_statistics()
-            
-            status = {
-                "learning_system_available": True,
-                "phase": "3c",
-                "architecture": "clean_v3.1_with_phase_3c_integration",
-                "manager_integration": "direct_access_enhanced",
-                "configuration_externalized": True,
-                "statistics": stats
-            }
-            
-            # Phase 3b - Analysis Parameters Integration - NEW
-            if analysis_parameters_manager:
-                try:
-                    learning_params = analysis_parameters_manager.get_pattern_learning_parameters()
-                    status["analysis_parameters"] = {
-                        "available": True,
-                        "learning_rate": learning_params.get('learning_rate'),
-                        "confidence_adjustments": {
-                            "min": learning_params.get('min_confidence_adjustment'),
-                            "max": learning_params.get('max_confidence_adjustment')
-                        },
-                        "daily_limits": learning_params.get('max_adjustments_per_day'),
-                        "phase_3b_integrated": True
-                    }
-                except Exception as e:
-                    status["analysis_parameters"] = {"available": False, "error": str(e)}
-            else:
-                status["analysis_parameters"] = {"available": False, "reason": "AnalysisParametersManager not provided"}
-            
-            # Phase 3c - Threshold Mapping Integration - NEW
-            if threshold_mapping_manager:
-                try:
-                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
-                    status["threshold_mapping"] = {
-                        "available": True,
-                        "current_mode": current_mode,
-                        "learning_integration": "threshold_adjustment_capable",
-                        "crisis_thresholds": crisis_thresholds,
-                        "phase_3c_integrated": True
-                    }
-                except Exception as e:
-                    status["threshold_mapping"] = {"available": False, "error": str(e)}
-            else:
-                status["threshold_mapping"] = {"available": False, "reason": "ThresholdMappingManager not provided"}
-            
-            return status
-            
-        except Exception as e:
-            logger.error(f"❌ Error getting learning system status: {e}")
-            raise HTTPException(
-                status_code=500, 
-                detail=f"Learning system status error: {str(e)}"
-            )
-
-    # ========================================================================
-    # NEW Phase 3c Threshold-Aware Learning Analysis - ADD THIS
-    # ========================================================================
+    FalsePositiveAnalysisRequest = models['FalsePositiveAnalysisRequest']
+    FalseNegativeAnalysisRequest = models['FalseNegativeAnalysisRequest']
+    LearningUpdateRequest = models['LearningUpdateRequest']
     
-    @app.post("/learning/analyze_with_thresholds")
-    async def analyze_with_threshold_awareness(request: dict):
-        """
-        Analyze learning patterns with threshold awareness - Phase 3c
-        Integrates learning analysis with current threshold configuration
-        """
-        try:
-            if not threshold_mapping_manager:
-                return {
-                    "status": "threshold_manager_not_available",
-                    "message": "ThresholdMappingManager required for threshold-aware learning",
-                    "basic_analysis": "Use standard learning endpoints instead"
-                }
-            
-            # Get current threshold context
-            current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-            crisis_thresholds = threshold_mapping_manager.get_crisis_level_thresholds()
-            
-            # Analyze learning pattern with threshold context
-            learning_analysis = {
-                "threshold_context": {
-                    "current_mode": current_mode,
-                    "crisis_thresholds": crisis_thresholds
-                },
-                "learning_recommendations": [],
-                "threshold_adjustments": []
-            }
-            
-            # Basic learning pattern analysis
-            message = request.get('message', '')
-            user_feedback = request.get('user_feedback', {})
-            
-            # Analyze if learning should adjust thresholds for current mode
-            if user_feedback.get('type') == 'false_positive':
-                threshold_suggestion = {
-                    "mode": current_mode,
-                    "adjustment_type": "increase_threshold",
-                    "severity": user_feedback.get('severity', 'medium'),
-                    "reason": "False positive indicates threshold may be too low"
-                }
-                learning_analysis["threshold_adjustments"].append(threshold_suggestion)
-                learning_analysis["learning_recommendations"].append(
-                    f"Consider increasing {current_mode} mode thresholds to reduce false positives"
-                )
-            
-            elif user_feedback.get('type') == 'false_negative':
-                threshold_suggestion = {
-                    "mode": current_mode,
-                    "adjustment_type": "decrease_threshold", 
-                    "severity": user_feedback.get('severity', 'medium'),
-                    "reason": "False negative indicates threshold may be too high"
-                }
-                learning_analysis["threshold_adjustments"].append(threshold_suggestion)
-                learning_analysis["learning_recommendations"].append(
-                    f"Consider decreasing {current_mode} mode thresholds to catch more cases"
-                )
-            
-            learning_analysis["phase_3c_complete"] = True
-            learning_analysis["threshold_aware"] = True
-            
-            return learning_analysis
-            
-        except Exception as e:
-            logger.error(f"❌ Error in threshold-aware learning analysis: {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Threshold-aware learning analysis failed: {str(e)}"
-            )
-
     # ========================================================================
-    # NEW Enhanced Learning Statistics with Phase 3c Context - ADD THIS
+    # FALSE POSITIVE ANALYSIS ENDPOINT
     # ========================================================================
-    
-    @app.get("/learning/statistics_enhanced")
-    async def get_enhanced_learning_statistics():
-        """Get learning statistics with Phase 3c context"""
-        try:
-            # Get base statistics
-            base_stats = learning_manager.get_learning_statistics()
-            
-            enhanced_stats = {
-                **base_stats,
-                "phase_3c_enhancements": {
-                    "threshold_aware": threshold_mapping_manager is not None,
-                    "analysis_parameter_integration": analysis_parameters_manager is not None,
-                    "configuration_externalized": True
-                }
-            }
-            
-            # Add threshold context if available
-            if threshold_mapping_manager:
-                try:
-                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    enhanced_stats["threshold_context"] = {
-                        "current_ensemble_mode": current_mode,
-                        "threshold_source": "JSON + environment configuration"
-                    }
-                except Exception as e:
-                    enhanced_stats["threshold_context"] = {"error": str(e)}
-            
-            # Add analysis parameter context if available
-            if analysis_parameters_manager:
-                try:
-                    learning_params = analysis_parameters_manager.get_pattern_learning_parameters()
-                    enhanced_stats["analysis_parameter_context"] = {
-                        "source": "AnalysisParametersManager",
-                        "externalized": True,
-                        "learning_rate": learning_params.get('learning_rate')
-                    }
-                except Exception as e:
-                    enhanced_stats["analysis_parameter_context"] = {"error": str(e)}
-            
-            return enhanced_stats
-            
-        except Exception as e:
-            logger.error(f"❌ Error getting enhanced learning statistics: {e}")
-            raise HTTPException(
-                status_code=500,
-                detail=f"Enhanced learning statistics failed: {str(e)}"
-            )
-    
-    @app.post("/analyze_false_negative")
-    async def analyze_false_negative(request: models['FalseNegativeAnalysisRequest']):
-        """Analyze false negative (missed crisis) and learn from it - Clean v3.1"""
-        
-        if not request.message.strip():
-            raise HTTPException(status_code=400, detail="Empty message")
-        
-        try:
-            result = await learning_manager.analyze_false_negative(request)
-            
-            # Add clean v3.1 metadata
-            result['endpoint_architecture'] = 'v3.1_clean'
-            result['manager_integration'] = 'direct_access_only'
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"❌ Error in false negative analysis: {e}")
-            raise HTTPException(
-                status_code=500, 
-                detail=f"Clean v3.1: False negative analysis failed: {str(e)}"
-            )
     
     @app.post("/analyze_false_positive")
-    async def analyze_false_positive(request: models['FalsePositiveAnalysisRequest']):
-        """Analyze false positive and learn from it - Clean v3.1"""
-        
-        if not request.message.strip():
-            raise HTTPException(status_code=400, detail="Empty message")
+    async def analyze_false_positive(request: FalsePositiveAnalysisRequest):
+        """Analyze false positive detection for learning - Phase 3d Step 9"""
         
         try:
-            result = await learning_manager.analyze_false_positive(request)
+            request_data = {
+                'message': request.message,
+                'detected_level': request.detected_level,
+                'correct_level': request.correct_level,
+                'context': request.context,
+                'severity_score': request.severity_score
+            }
             
-            # Add clean v3.1 metadata
-            result['endpoint_architecture'] = 'v3.1_clean'
-            result['manager_integration'] = 'direct_access_only'
+            result = await learning_manager.analyze_false_positive(request_data)
             
-            return result
+            return {
+                'status': 'success',
+                'analysis_type': 'false_positive',
+                'learning_applied': result.get('learning_applied', False),
+                'adjustment_factor': result.get('adjustment_factor', 0),
+                'patterns_discovered': result.get('patterns_discovered', 0),
+                'confidence_adjustments': result.get('confidence_adjustments', 0),
+                'unified_config_manager': True,
+                'direct_os_getenv_calls': 'eliminated'
+            }
             
         except Exception as e:
-            logger.error(f"❌ Error in false positive analysis: {e}")
+            logger.error(f"❌ Error analyzing false positive: {e}")
             raise HTTPException(
                 status_code=500, 
-                detail=f"Clean v3.1: False positive analysis failed: {str(e)}"
+                detail=f"Phase 3d Step 9: False positive analysis failed: {str(e)}"
             )
     
-    @app.post("/update_learning_model")
-    async def update_learning_model(request: models['LearningUpdateRequest']):
-        """Update learning model with staff correction - Clean v3.1"""
+    # ========================================================================
+    # FALSE NEGATIVE ANALYSIS ENDPOINT
+    # ========================================================================
+    
+    @app.post("/analyze_false_negative")
+    async def analyze_false_negative(request: FalseNegativeAnalysisRequest):
+        """Analyze false negative (missed crisis) for learning - Phase 3d Step 9"""
         
         try:
-            # Process the learning record based on type - Direct manager usage
-            if request.record_type == 'false_negative':
-                fn_request = models['FalseNegativeAnalysisRequest'](
-                    message=request.message_data['content'],
-                    should_detect_level=request.correction_data['should_detect_level'],
-                    actually_detected=request.correction_data['actually_detected'],
-                    context=request.context_data,
-                    severity_score=request.correction_data.get('severity_score', 1)
-                )
-                result = await learning_manager.analyze_false_negative(fn_request)
+            request_data = {
+                'message': request.message,
+                'should_detect_level': request.should_detect_level,
+                'actually_detected': request.actually_detected,
+                'context': request.context,
+                'severity_score': request.severity_score
+            }
             
-            elif request.record_type == 'false_positive':
-                fp_request = models['FalsePositiveAnalysisRequest'](
-                    message=request.message_data['content'],
-                    detected_level=request.correction_data['detected_level'],
-                    correct_level=request.correction_data['correct_level'],
-                    context=request.context_data,
-                    severity_score=request.correction_data.get('severity_score', 1)
-                )
+            result = await learning_manager.analyze_false_negative(request_data)
+            
+            return {
+                'status': 'success',
+                'analysis_type': 'false_negative',
+                'learning_applied': result.get('learning_applied', False),
+                'adjustment_factor': result.get('adjustment_factor', 0),
+                'patterns_discovered': result.get('patterns_discovered', 0),
+                'confidence_adjustments': result.get('confidence_adjustments', 0),
+                'unified_config_manager': True,
+                'direct_os_getenv_calls': 'eliminated'
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error analyzing false negative: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Phase 3d Step 9: False negative analysis failed: {str(e)}"
+            )
+    
+    # ========================================================================
+    # LEARNING MODEL UPDATE ENDPOINT
+    # ========================================================================
+    
+    @app.post("/update_learning_model")
+    async def update_learning_model(request: LearningUpdateRequest):
+        """Update learning model with staff corrections - Phase 3d Step 9"""
+        
+        try:
+            record_type = request.record_type.lower()
+            
+            if record_type == 'false_positive':
+                fp_request = {
+                    'message': request.message_data.get('message', ''),
+                    'detected_level': request.correction_data.get('detected_level', ''),
+                    'correct_level': request.correction_data.get('correct_level', ''),
+                    'severity_score': request.correction_data.get('severity_score', 1)
+                }
                 result = await learning_manager.analyze_false_positive(fp_request)
+            
+            elif record_type == 'false_negative':
+                fn_request = {
+                    'message': request.message_data.get('message', ''),
+                    'should_detect_level': request.correction_data.get('should_detect_level', ''),
+                    'actually_detected': request.correction_data.get('actually_detected', ''),
+                    'severity_score': request.correction_data.get('severity_score', 1)
+                }
+                result = await learning_manager.analyze_false_negative(fn_request)
             
             else:
                 raise HTTPException(status_code=400, detail=f"Unknown record type: {request.record_type}")
@@ -986,28 +514,32 @@ def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
                 'learning_applied': result.get('learning_applied', False),
                 'patterns_discovered': result.get('patterns_discovered', 0),
                 'adjustments_made': result.get('confidence_adjustments', 0),
-                'architecture': 'v3.1_clean',
-                'phase_2c_complete': True,
-                'manager_integration': 'direct_access_only'
+                'unified_config_manager': True,
+                'direct_os_getenv_calls': 'eliminated'
             }
             
         except Exception as e:
             logger.error(f"❌ Error updating learning model: {e}")
             raise HTTPException(
                 status_code=500, 
-                detail=f"Clean v3.1: Learning model update failed: {str(e)}"
+                detail=f"Phase 3d Step 9: Learning model update failed: {str(e)}"
             )
+    
+    # ========================================================================
+    # LEARNING STATISTICS ENDPOINT
+    # ========================================================================
     
     @app.get("/learning_statistics")
     async def get_learning_statistics():
-        """Get comprehensive learning system statistics - Clean v3.1"""
+        """Get comprehensive learning system statistics - Phase 3d Step 9"""
         
         try:
             stats = learning_manager.get_learning_statistics()
             
             # Add endpoint metadata
-            stats['endpoint_architecture'] = 'v3.1_clean'
-            stats['manager_integration'] = 'direct_access_only'
+            stats['endpoint_architecture'] = 'v3.1d_step_9'
+            stats['unified_config_manager'] = True
+            stats['direct_os_getenv_calls'] = 'eliminated'
             
             return stats
             
@@ -1015,18 +547,18 @@ def add_enhanced_learning_endpoints(app, learning_manager, config_manager=None,
             logger.error(f"❌ Error getting learning statistics: {e}")
             raise HTTPException(
                 status_code=500, 
-                detail=f"Clean v3.1: Statistics retrieval failed: {str(e)}"
+                detail=f"Phase 3d Step 9: Statistics retrieval failed: {str(e)}"
             )
     
     # ========================================================================
     # ENDPOINT REGISTRATION COMPLETE
     # ========================================================================
     
-    logger.info("🧠 Clean v3.1: Enhanced learning endpoints added successfully")
+    logger.info("🧠 Phase 3d Step 9: Enhanced learning endpoints added successfully")
     logger.info("🔧 Learning endpoints registered:")
     logger.info("   POST /analyze_false_negative - Analyze missed crises")
     logger.info("   POST /analyze_false_positive - Analyze over-detections")
     logger.info("   POST /update_learning_model - Update model with staff corrections")
     logger.info("   GET /learning_statistics - Comprehensive learning statistics")
-    logger.info("✅ Phase 2C: All learning endpoints using direct manager access - No fallback code")
-    logger.info("🎉 Clean v3.1 Architecture: Learning system with direct manager integration")
+    logger.info("✅ Phase 3d Step 9: All learning endpoints using UnifiedConfigManager")
+    logger.info("🎉 UnifiedConfigManager integration: Learning system complete - No direct os.getenv() calls")

@@ -84,7 +84,7 @@
     "combine_with_other_patterns": true
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('burden_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('burden_patterns')",
     "access_method": "SettingsManager.get_burden_patterns()",
     "environment_override_example": "NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER=1.5",
     "notes": [

@@ -1,159 +1,218 @@
-# managers/server_config_manager.py
 """
-Phase 3d Step 5: Server Configuration Manager
-Consolidates server infrastructure variables following Clean v3.1 architecture
+ServerConfigManager - Centralized Server Configuration Manager
+Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
+
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
-import os
 from typing import Dict, Any, Union
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 class ServerConfigManager:
     """
-    Server Configuration Manager for Ash-NLP v3.1d Step 5
-    Manages server infrastructure configuration with environment variable overrides
-    Consolidates duplicate server variables into standardized naming convention
+    Centralized server configuration management for Ash-NLP
+    Phase 3d Step 5: Consolidates all server-related environment variables
+    Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
     """
     
-    def __init__(self, config_manager):
+    def __init__(self, unified_config_manager):
         """
-        Initialize ServerConfigManager
+        Initialize ServerConfigManager with UnifiedConfigManager integration
         
         Args:
-            config_manager: ConfigManager instance for JSON configuration loading
+            unified_config_manager: UnifiedConfigManager instance for dependency injection
         """
-        self.config_manager = config_manager
-        self.server_config = None
+        # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
+        self.unified_config = unified_config_manager
         
-        logger.info("🖥️ Initializing ServerConfigManager (Phase 3d Step 5)")
-        self._load_configuration()
-        logger.info("✅ ServerConfigManager initialization complete")
+        # Load server configuration using unified manager
+        self.server_config = self._load_server_configuration()
+        
+        logger.info("ServerConfigManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
     
-    def _load_configuration(self):
-        """Load server configuration from JSON with environment overrides"""
+    def _load_server_configuration(self) -> Dict[str, Any]:
+        """Load server configuration using UnifiedConfigManager (NO MORE os.getenv())"""
         try:
-            logger.debug("📋 Loading server configuration...")
+            # Load server configuration from JSON through unified manager
+            config = self.unified_config.load_config_file('server_settings')
             
-            # Load server_settings.json configuration
-            self.server_config = self.config_manager.load_config_file('server_settings')
-            
-            if not self.server_config:
-                logger.warning("⚠️ No server_settings.json found, using environment variables only")
-                self.server_config = {'server_configuration': {}, 'defaults': {}}
-            
-            logger.info("✅ Server configuration loaded successfully")
-            
+            if config and 'server_configuration' in config:
+                logger.info("✅ Server configuration loaded from JSON with environment overrides")
+                return config
+            else:
+                logger.warning("⚠️ JSON server configuration not found, using environment fallback")
+                return self._get_fallback_server_config()
+                
         except Exception as e:
-            logger.error(f"❌ Failed to load server configuration: {e}")
-            # Fallback to empty configuration
-            self.server_config = {'server_configuration': {}, 'defaults': {}}
+            logger.error(f"❌ Error loading server configuration: {e}")
+            return self._get_fallback_server_config()
+    
+    def _get_fallback_server_config(self) -> Dict[str, Any]:
+        """Get fallback server configuration using UnifiedConfigManager (NO MORE os.getenv())"""
+        logger.info("🔧 Using UnifiedConfigManager for fallback server configuration")
+        
+        # STEP 9 CHANGE: Use unified_config instead of os.getenv() for ALL variables
+        return {
+            'server_configuration': {
+                'network_settings': {
+                    'host': self.unified_config.get_env('NLP_SERVER_HOST', '0.0.0.0'),
+                    'port': self.unified_config.get_env_int('GLOBAL_NLP_API_PORT', 8881),  # PRESERVED GLOBAL
+                    'workers': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKERS', 1),
+                    'reload_on_changes': self.unified_config.get_env_bool('NLP_FEATURE_RELOAD_ON_CHANGES', False)
+                },
+                'performance_settings': {
+                    'max_concurrent_requests': self.unified_config.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
+                    'request_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 40),
+                    'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60)
+                },
+                'security_settings': {
+                    'rate_limiting': {
+                        'requests_per_minute': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 120),
+                        'requests_per_hour': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 2000),
+                        'burst_limit': self.unified_config.get_env_int('NLP_SECURITY_BURST_LIMIT', 150)
+                    },
+                    'access_control': {
+                        'allowed_ips': self.unified_config.get_env('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),  # PRESERVED GLOBAL
+                        'cors_enabled': self.unified_config.get_env_bool('GLOBAL_ENABLE_CORS', True)  # PRESERVED GLOBAL
+                    }
+                },
+                'operational_settings': {
+                    'health_check_interval': self.unified_config.get_env_int('NLP_SERVER_HEALTH_CHECK_INTERVAL', 30),
+                    'graceful_shutdown_timeout': self.unified_config.get_env_int('NLP_SERVER_SHUTDOWN_TIMEOUT', 10),
+                    'startup_timeout': self.unified_config.get_env_int('NLP_SERVER_STARTUP_TIMEOUT', 120)
+                }
+            },
+            'defaults': {
+                'network_settings': {
+                    'host': '0.0.0.0',
+                    'port': 8881,
+                    'workers': 1,
+                    'reload_on_changes': False
+                },
+                'performance_settings': {
+                    'max_concurrent_requests': 20,
+                    'request_timeout': 40,
+                    'worker_timeout': 60
+                },
+                'security_settings': {
+                    'rate_limiting': {
+                        'requests_per_minute': 120,
+                        'requests_per_hour': 2000,
+                        'burst_limit': 150
+                    }
+                },
+                'operational_settings': {
+                    'health_check_interval': 30,
+                    'graceful_shutdown_timeout': 10,
+                    'startup_timeout': 120
+                }
+            }
+        }
+    
+    def _parse_bool(self, value: Union[str, bool]) -> bool:
+        """Parse boolean value from string or bool"""
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ('true', '1', 'yes', 'on')
+        return False
+    
+    # ========================================================================
+    # NETWORK SETTINGS ACCESS METHODS
+    # ========================================================================
     
     def get_network_settings(self) -> Dict[str, Any]:
-        """
-        Get network configuration settings
-        Consolidates: NLP_HOST, NLP_SERVICE_HOST -> NLP_SERVER_HOST
-        Preserves: GLOBAL_NLP_API_PORT (ecosystem requirement)
-        """
+        """Get server network configuration settings"""
         logger.debug("🌐 Getting network settings...")
         
         defaults = self.server_config.get('defaults', {}).get('network_settings', {})
         config_settings = self.server_config.get('server_configuration', {}).get('network_settings', {})
         
+        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
-            'host': os.getenv('NLP_SERVER_HOST', 
-                             config_settings.get('host', 
-                             defaults.get('host', '0.0.0.0'))),
-            'port': int(os.getenv('GLOBAL_NLP_API_PORT', '8881')),  # PRESERVED GLOBAL
-            'workers': int(os.getenv('NLP_PERFORMANCE_WORKERS', 
-                                   config_settings.get('workers', 
-                                   defaults.get('workers', 1)))),
-            'reload_on_changes': self._parse_bool(os.getenv('NLP_FEATURE_RELOAD_ON_CHANGES', 
-                                                          config_settings.get('reload_on_changes', 
-                                                          defaults.get('reload_on_changes', False))))
+            'host': self.unified_config.get_env('NLP_SERVER_HOST', 
+                                              config_settings.get('host', 
+                                              defaults.get('host', '0.0.0.0'))),
+            'port': self.unified_config.get_env_int('GLOBAL_NLP_API_PORT', 8881),  # PRESERVED GLOBAL
+            'workers': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKERS', 
+                                                     config_settings.get('workers', 
+                                                     defaults.get('workers', 1))),
+            'reload_on_changes': self.unified_config.get_env_bool('NLP_FEATURE_RELOAD_ON_CHANGES', 
+                                                               config_settings.get('reload_on_changes', 
+                                                               defaults.get('reload_on_changes', False)))
         }
     
     def get_performance_settings(self) -> Dict[str, Any]:
-        """
-        Get server performance settings
-        Consolidates: NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS -> NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS
-        Distinguishes: NLP_PERFORMANCE_REQUEST_TIMEOUT -> NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS (vs NLP_ANALYSIS_TIMEOUT)
-        """
+        """Get server performance settings"""
         logger.debug("⚡ Getting performance settings...")
         
         defaults = self.server_config.get('defaults', {}).get('performance_settings', {})
         config_settings = self.server_config.get('server_configuration', {}).get('performance_settings', {})
         
+        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
-            'max_concurrent_requests': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
-                                                   config_settings.get('max_concurrent_requests', 
-                                                   defaults.get('max_concurrent_requests', 20)))),
-            'request_timeout': int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
-                                           config_settings.get('request_timeout', 
-                                           defaults.get('request_timeout', 40)))),
-            'worker_timeout': int(os.getenv('NLP_PERFORMANCE_WORKER_TIMEOUT', 
-                                          config_settings.get('worker_timeout', 
-                                          defaults.get('worker_timeout', 60))))
+            'max_concurrent_requests': self.unified_config.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
+                                                                     config_settings.get('max_concurrent_requests', 
+                                                                     defaults.get('max_concurrent_requests', 20))),
+            'request_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 
+                                                             config_settings.get('request_timeout', 
+                                                             defaults.get('request_timeout', 40))),
+            'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 
+                                                            config_settings.get('worker_timeout', 
+                                                            defaults.get('worker_timeout', 60)))
         }
     
     def get_security_settings(self) -> Dict[str, Any]:
-        """
-        Get security configuration settings
-        Preserves: GLOBAL_ALLOWED_IPS, GLOBAL_ENABLE_CORS (ecosystem requirements)
-        Standardizes: Rate limiting with NLP_SECURITY_* prefix
-        """
+        """Get security configuration settings"""
         logger.debug("🔒 Getting security settings...")
         
         defaults = self.server_config.get('defaults', {}).get('security_settings', {}).get('rate_limiting', {})
         config_settings = self.server_config.get('server_configuration', {}).get('security_settings', {}).get('rate_limiting', {})
         
+        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
             'rate_limiting': {
-                'requests_per_minute': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 
-                                                   config_settings.get('requests_per_minute', 
-                                                   defaults.get('requests_per_minute', 120)))),
-                'requests_per_hour': int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 
-                                                 config_settings.get('requests_per_hour', 
-                                                 defaults.get('requests_per_hour', 2000)))),
-                'burst_limit': int(os.getenv('NLP_SECURITY_BURST_LIMIT', 
-                                           config_settings.get('burst_limit', 
-                                           defaults.get('burst_limit', 150))))
+                'requests_per_minute': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 
+                                                                     config_settings.get('requests_per_minute', 
+                                                                     defaults.get('requests_per_minute', 120))),
+                'requests_per_hour': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 
+                                                                   config_settings.get('requests_per_hour', 
+                                                                   defaults.get('requests_per_hour', 2000))),
+                'burst_limit': self.unified_config.get_env_int('NLP_SECURITY_BURST_LIMIT', 
+                                                             config_settings.get('burst_limit', 
+                                                             defaults.get('burst_limit', 150)))
             },
             'access_control': {
-                'allowed_ips': os.getenv('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),  # PRESERVED GLOBAL
-                'cors_enabled': self._parse_bool(os.getenv('GLOBAL_ENABLE_CORS', 'true'))  # PRESERVED GLOBAL
+                'allowed_ips': self.unified_config.get_env('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),  # PRESERVED GLOBAL
+                'cors_enabled': self.unified_config.get_env_bool('GLOBAL_ENABLE_CORS', True)  # PRESERVED GLOBAL
             }
         }
     
     def get_operational_settings(self) -> Dict[str, Any]:
-        """
-        Get operational configuration settings
-        New standardized variables for server lifecycle management
-        """
+        """Get operational configuration settings"""
         logger.debug("⚙️ Getting operational settings...")
         
         defaults = self.server_config.get('defaults', {}).get('operational_settings', {})
         config_settings = self.server_config.get('server_configuration', {}).get('operational_settings', {})
         
+        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
-            'health_check_interval': int(os.getenv('NLP_SERVER_HEALTH_CHECK_INTERVAL', 
-                                                 config_settings.get('health_check_interval', 
-                                                 defaults.get('health_check_interval', 30)))),
-            'graceful_shutdown_timeout': int(os.getenv('NLP_SERVER_SHUTDOWN_TIMEOUT', 
-                                                     config_settings.get('graceful_shutdown_timeout', 
-                                                     defaults.get('graceful_shutdown_timeout', 10)))),
-            'startup_timeout': int(os.getenv('NLP_SERVER_STARTUP_TIMEOUT', 
-                                           config_settings.get('startup_timeout', 
-                                           defaults.get('startup_timeout', 120))))
+            'health_check_interval': self.unified_config.get_env_int('NLP_SERVER_HEALTH_CHECK_INTERVAL', 
+                                                                   config_settings.get('health_check_interval', 
+                                                                   defaults.get('health_check_interval', 30))),
+            'graceful_shutdown_timeout': self.unified_config.get_env_int('NLP_SERVER_SHUTDOWN_TIMEOUT', 
+                                                                       config_settings.get('graceful_shutdown_timeout', 
+                                                                       defaults.get('graceful_shutdown_timeout', 10))),
+            'startup_timeout': self.unified_config.get_env_int('NLP_SERVER_STARTUP_TIMEOUT', 
+                                                             config_settings.get('startup_timeout', 
+                                                             defaults.get('startup_timeout', 120)))
         }
     
     def get_complete_server_configuration(self) -> Dict[str, Any]:
-        """
-        Get complete server configuration
-        Returns all server settings in organized structure
-        """
+        """Get complete server configuration"""
         logger.debug("📊 Assembling complete server configuration...")
         
         return {
@@ -162,25 +221,25 @@ class ServerConfigManager:
             'security': self.get_security_settings(),
             'operational': self.get_operational_settings(),
             'metadata': {
-                'phase': '3d-step5',
-                'architecture': 'clean_v3.1',
+                'phase': '3d-step9',
+                'architecture': 'clean_v3.1d_unified_config',
                 'consolidation_complete': True,
-                'duplicates_eliminated': 5
+                'duplicates_eliminated': 5,
+                'unified_config_manager': True,
+                'direct_os_getenv_calls': 'eliminated'
             }
         }
     
     def validate_server_configuration(self) -> Dict[str, Any]:
-        """
-        Validate server configuration settings
-        Returns validation status and any issues found
-        """
+        """Validate server configuration settings"""
         logger.debug("🔍 Validating server configuration...")
         
         validation_results = {
             'valid': True,
             'warnings': [],
             'errors': [],
-            'consolidation_status': 'complete'
+            'consolidation_status': 'complete',
+            'unified_config_manager': True
         }
         
         try:
@@ -195,63 +254,49 @@ class ServerConfigManager:
             
             # Validate performance settings
             performance = self.get_performance_settings()
-            if performance['max_concurrent_requests'] < 1:
-                validation_results['errors'].append("max_concurrent_requests must be >= 1")
-                validation_results['valid'] = False
+            if performance['max_concurrent_requests'] > 100:
+                validation_results['warnings'].append(f"High concurrent requests: {performance['max_concurrent_requests']} (may impact performance)")
             
-            if performance['request_timeout'] < 5:
-                validation_results['warnings'].append("Request timeout < 5 seconds may cause issues")
+            if performance['request_timeout'] < 10:
+                validation_results['warnings'].append(f"Low request timeout: {performance['request_timeout']}s (may cause premature timeouts)")
             
-            # Validate security settings
-            security = self.get_security_settings()
-            if security['rate_limiting']['requests_per_minute'] < 1:
-                validation_results['errors'].append("requests_per_minute must be >= 1")
-                validation_results['valid'] = False
-            
-            logger.info(f"🔍 Server configuration validation: {'✅ Valid' if validation_results['valid'] else '❌ Invalid'}")
+            logger.info(f"✅ Server configuration validation: {'PASSED' if validation_results['valid'] else 'FAILED'}")
             
         except Exception as e:
-            validation_results['valid'] = False
             validation_results['errors'].append(f"Validation error: {str(e)}")
-            logger.error(f"❌ Server configuration validation failed: {e}")
+            validation_results['valid'] = False
+            logger.error(f"❌ Server configuration validation error: {e}")
         
         return validation_results
-    
-    def _parse_bool(self, value: Union[str, bool]) -> bool:
-        """Parse boolean value from string or bool"""
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.lower() in ('true', '1', 'yes', 'on')
-        return False
-    
-    def get_status(self) -> Dict[str, Any]:
-        """
-        Get ServerConfigManager status for health checks
-        """
-        return {
-            'manager': 'ServerConfigManager',
-            'phase': '3d-step5',
-            'status': 'operational',
-            'configuration_loaded': self.server_config is not None,
-            'architecture': 'clean_v3.1',
-            'variable_consolidation': 'complete'
-        }
 
+# ========================================================================
+# FACTORY FUNCTION - Updated for Phase 3d Step 9
+# ========================================================================
 
-def create_server_config_manager(config_manager) -> ServerConfigManager:
+def create_server_config_manager(unified_config_manager) -> ServerConfigManager:
     """
-    Factory function to create ServerConfigManager
-    Follows Clean v3.1 architecture pattern
+    Factory function for creating ServerConfigManager instance - Phase 3d Step 9
     
     Args:
-        config_manager: ConfigManager instance
+        unified_config_manager: UnifiedConfigManager instance for dependency injection
         
     Returns:
-        ServerConfigManager instance
+        Initialized ServerConfigManager instance
+        
+    Raises:
+        ValueError: If unified_config_manager is None or invalid
     """
-    logger.info("🏭 Creating ServerConfigManager (Phase 3d Step 5)")
-    return ServerConfigManager(config_manager)
+    logger.debug("🏭 Creating ServerConfigManager with UnifiedConfigManager (Phase 3d Step 9)")
+    
+    if not unified_config_manager:
+        raise ValueError("UnifiedConfigManager is required for ServerConfigManager factory")
+    
+    return ServerConfigManager(unified_config_manager)
 
+# ========================================================================
+# MODULE EXPORTS - CLEAN V3.1 STANDARD
+# ========================================================================
 
 __all__ = ['ServerConfigManager', 'create_server_config_manager']
+
+logger.info("✅ ServerConfigManager v3.1d Step 9 loaded - UnifiedConfigManager integration complete, direct os.getenv() calls eliminated")

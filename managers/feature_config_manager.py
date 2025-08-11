@@ -35,7 +35,7 @@ class FeatureConfigManager:
         Initialize FeatureConfigManager with dependency injection
         
         Args:
-            config_manager: ConfigManager instance for accessing configuration
+            config_manager: UnifiedConfigManager instance for accessing configuration
         """
         self.config_manager = config_manager
         self.config_cache = {}
@@ -54,7 +54,7 @@ class FeatureConfigManager:
     def _load_feature_configuration(self):
         """Load feature flag configuration from JSON with environment overrides"""
         try:
-            # Load feature flags configuration through ConfigManager using correct method
+            # Load feature flags configuration through UnifiedConfigManager using correct method
             feature_config_raw = self.config_manager.load_config_file('feature_flags')
             
             if not feature_config_raw:
@@ -378,7 +378,7 @@ def create_feature_config_manager(config_manager) -> FeatureConfigManager:
     Factory function for FeatureConfigManager (Clean v3.1 Pattern)
     
     Args:
-        config_manager: ConfigManager instance
+        config_manager: UnifiedConfigManager instance
         
     Returns:
         Initialized FeatureConfigManager instance

@@ -167,7 +167,7 @@
     "staff_training_recommended": true
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('community_vocabulary_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('community_vocabulary_patterns')",
     "access_method": "CrisisPatternManager.get_community_vocabulary()",
     "environment_override_example": "NLP_CONFIG_COMMUNITY_CONTEXT_BOOST=0.08",
     "implementation_notes": [

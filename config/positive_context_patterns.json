@@ -178,7 +178,7 @@
     "require_multiple_indicators": false
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('positive_context_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('positive_context_patterns')",
     "access_method": "CrisisPatternManager.get_positive_contexts()",
     "environment_override_example": "NLP_CONFIG_POSITIVE_CONTEXT_REDUCTION=0.25",
     "implementation_notes": [

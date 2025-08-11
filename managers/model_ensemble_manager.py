@@ -1,7 +1,7 @@
 # ash/ash-nlp/managers/model_ensemble_manager.py - Phase 3d Updated
 """
 Model Ensemble Manager for Ash NLP Service v3.1d - Updated for Standardized Variables
-Phase 3d: Uses enhanced ConfigManager with standardized variable naming
+Phase 3d: Uses enhanced UnifiedConfigManager with standardized variable naming
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 class ModelEnsembleManager:
     """
     Model Ensemble Manager with Phase 3d standardized variable support
-    Updated to use enhanced ConfigManager with unified configuration approach
+    Updated to use enhanced UnifiedConfigManager with unified configuration approach
     """
     
     def __init__(self, config_manager):
@@ -27,32 +27,32 @@ class ModelEnsembleManager:
         Initialize Model Ensemble Manager
         
         Args:
-            config_manager: Enhanced ConfigManager instance (Phase 3d)
+            config_manager: Enhanced UnifiedConfigManager instance (Phase 3d)
         """
         if config_manager is None:
-            raise ValueError("ConfigManager is required for ModelEnsembleManager")
+            raise ValueError("UnifiedConfigManager is required for ModelEnsembleManager")
         
         self.config_manager = config_manager
         self.config = None
         
-        logger.info("✅ ModelEnsembleManager v3.1d initialized with enhanced ConfigManager")
+        logger.info("✅ ModelEnsembleManager v3.1d initialized with UnifiedConfigManager")
         
-        # Load configuration using enhanced ConfigManager
+        # Load configuration using UnifiedConfigManager
         self._load_configuration()
         
         # Validate configuration
         self._validate_configuration()
     
     def _load_configuration(self):
-        """Load model ensemble configuration using enhanced ConfigManager"""
+        """Load model ensemble configuration using UnifiedConfigManager"""
         try:
-            # Use enhanced ConfigManager's get_model_configuration method
+            # Use UnifiedConfigManager's get_model_configuration method
             self.config = self.config_manager.get_model_configuration()
             
             if not self.config:
                 raise ValueError("Model configuration could not be loaded")
             
-            logger.info(f"✅ Model ensemble configuration loaded via enhanced ConfigManager")
+            logger.info(f"✅ Model ensemble configuration loaded via UnifiedConfigManager")
             logger.debug(f"🔍 Loaded {len(self.config.get('models', {}))} model definitions")
             
             # Log standardized variables being used
@@ -65,38 +65,64 @@ class ModelEnsembleManager:
             raise
     
     def _validate_configuration(self):
-        """Validate model ensemble configuration with Phase 3d standards"""
-        try:
-            models = self.config.get('models', {})
-            
-            if not models:
-                raise ValueError("No model definitions found")
-            
-            # Validate required models
-            required_models = ['depression', 'sentiment', 'emotional_distress']
-            for model_type in required_models:
-                if model_type not in models:
-                    raise ValueError(f"Required model '{model_type}' not found in configuration")
-            
-            # Validate model weights sum to approximately 1.0
-            total_weight = sum(model.get('weight', 0) for model in models.values())
-            weight_tolerance = self.config.get('validation', {}).get('weight_tolerance', 0.01)
-            
-            if abs(total_weight - 1.0) > weight_tolerance:
-                logger.warning(f"⚠️ Model weights sum to {total_weight}, should be ~1.0 (tolerance: {weight_tolerance})")
-                if self.config.get('validation', {}).get('fail_on_invalid_weights', False):
-                    raise ValueError(f"Model weights sum to {total_weight}, must be ~1.0")
-            
-            # Validate model names are not empty
-            for model_type, model_config in models.items():
-                if not model_config.get('name'):
-                    raise ValueError(f"Model '{model_type}' has empty name")
-            
-            logger.info("✅ Model ensemble configuration validation passed")
-            
-        except Exception as e:
-            logger.error(f"❌ Model configuration validation failed: {e}")
-            raise
+            """Validate model ensemble configuration with Phase 3d standards"""
+            try:
+                models = self.config.get('models', {})
+                
+                if not models:
+                    raise ValueError("No model definitions found")
+                
+                # Validate required models
+                required_models = ['depression', 'sentiment', 'emotional_distress']
+                for model_type in required_models:
+                    if model_type not in models:
+                        raise ValueError(f"Required model '{model_type}' not found in configuration")
+                
+                # DEBUG: Log weight types and values before validation
+                logger.debug("🔍 Debugging weight types before validation:")
+                for model_type, model_config in models.items():
+                    weight_value = model_config.get('weight', 0)
+                    logger.debug(f"   {model_type}: weight={weight_value} (type: {type(weight_value)})")
+                
+                # Validate model weights sum to approximately 1.0 with explicit type conversion
+                weights = []
+                for model_type, model_config in models.items():
+                    weight_value = model_config.get('weight', 0)
+                    try:
+                        # Explicit type conversion to handle string weights from JSON
+                        if isinstance(weight_value, str):
+                            weight_float = float(weight_value)
+                            logger.debug(f"🔧 Converted string weight '{weight_value}' to float {weight_float} for {model_type}")
+                        elif isinstance(weight_value, (int, float)):
+                            weight_float = float(weight_value)
+                        else:
+                            logger.warning(f"⚠️ Unexpected weight type {type(weight_value)} for {model_type}, using 0.0")
+                            weight_float = 0.0
+                        weights.append(weight_float)
+                    except (ValueError, TypeError) as e:
+                        logger.error(f"❌ Could not convert weight '{weight_value}' to float for {model_type}: {e}")
+                        raise ValueError(f"Invalid weight value for {model_type}: {weight_value}")
+                
+                total_weight = sum(weights)
+                weight_tolerance = self.config.get('validation', {}).get('weight_tolerance', 0.01)
+                
+                logger.debug(f"🔍 Total weight calculated: {total_weight}")
+                
+                if abs(total_weight - 1.0) > weight_tolerance:
+                    logger.warning(f"⚠️ Model weights sum to {total_weight}, should be ~1.0 (tolerance: {weight_tolerance})")
+                    if self.config.get('validation', {}).get('fail_on_invalid_weights', False):
+                        raise ValueError(f"Model weights sum to {total_weight}, must be ~1.0")
+                
+                # Validate model names are not empty
+                for model_type, model_config in models.items():
+                    if not model_config.get('name'):
+                        raise ValueError(f"Model '{model_type}' has empty name")
+                
+                logger.info("✅ Model ensemble configuration validation passed")
+                
+            except Exception as e:
+                logger.error(f"❌ Model configuration validation failed: {e}")
+                raise
     
     # ========================================================================
     # Model Configuration Access - Phase 3d Enhanced
@@ -233,7 +259,7 @@ class ModelEnsembleManager:
     # ========================================================================
     
     def get_storage_configuration(self) -> Dict[str, Any]:
-        """Get storage configuration via enhanced ConfigManager"""
+        """Get storage configuration via UnifiedConfigManager"""
         try:
             return self.config_manager.get_storage_configuration()
         except Exception as e:
@@ -311,7 +337,7 @@ def get_model_ensemble_manager(config_manager=None) -> ModelEnsembleManager:
     Get the global model ensemble manager instance - TRANSITION COMPATIBLE
     
     Args:
-        config_manager: Enhanced ConfigManager instance (optional for compatibility)
+        config_manager: UnifiedConfigManager instance (optional for compatibility)
         
     Returns:
         ModelEnsembleManager instance
@@ -321,9 +347,9 @@ def get_model_ensemble_manager(config_manager=None) -> ModelEnsembleManager:
     if _model_ensemble_manager is None:
         # If no config_manager provided, create one (for backward compatibility)
         if config_manager is None:
-            logger.info("🔄 Creating ConfigManager for ModelEnsembleManager compatibility")
-            from managers.config_manager import ConfigManager
-            config_manager = ConfigManager("/app/config")
+            logger.info("🔄 Creating UnifiedConfigManager for ModelEnsembleManager compatibility")
+            from managers.unified_config_manager import UnifiedConfigManager
+            config_manager = UnifiedConfigManager("/app/config")
         
         _model_ensemble_manager = ModelEnsembleManager(config_manager)
     
@@ -343,7 +369,7 @@ def create_model_ensemble_manager(config_manager) -> ModelEnsembleManager:
     Factory function to create ModelEnsembleManager instance
     
     Args:
-        config_manager: Enhanced ConfigManager instance
+        config_manager: UnifiedConfigManager instance
         
     Returns:
         ModelEnsembleManager instance

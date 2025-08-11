@@ -1,8 +1,17 @@
 {
-  "version": "1.0",
-  "description": "Zero-Shot Model Labels Configuration for Ash NLP Service",
-  "last_updated": "2025-08-02",
-  "default_label_set": "enhanced_crisis",
+  "version": "1.1",
+  "description": "Zero-Shot Model Labels Configuration for Ash NLP Service - Phase 3d Compliant",
+  "last_updated": "2025-08-10",
+  "architecture": "clean-v3.1-unified",
+  "phase": "Phase 3d Step 9 - Architecture-compliant placeholder + defaults pattern",
+  
+  "configuration": {
+    "current_label_set": "${NLP_ZERO_SHOT_LABEL_SET}",
+    "enable_runtime_switching": "${NLP_ZERO_SHOT_ENABLE_RUNTIME_SWITCHING}",
+    "cache_labels": "${NLP_ZERO_SHOT_CACHE_LABELS}",
+    "validate_on_load": "${NLP_ZERO_SHOT_VALIDATE_ON_LOAD}",
+    "fallback_label_set": "${NLP_ZERO_SHOT_FALLBACK_LABEL_SET}"
+  },
   
   "label_sets": {
     "current": {
@@ -337,12 +346,14 @@
     }
   },
 
-  "configuration": {
-    "environment_variable": "NLP_ZERO_SHOT_LABEL_SET",
-    "fallback_label_set": "enhanced_crisis",
-    "enable_runtime_switching": true,
-    "cache_labels": true,
-    "validate_on_load": true
+  "defaults": {
+    "configuration": {
+      "current_label_set": "enhanced_crisis",
+      "enable_runtime_switching": true,
+      "cache_labels": true,
+      "validate_on_load": true,
+      "fallback_label_set": "enhanced_crisis"
+    }
   },
 
   "metadata": {

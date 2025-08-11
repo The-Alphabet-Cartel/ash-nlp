@@ -1,131 +1,11 @@
 {
   "ensemble_info": {
-    "version": "3.1d-transition",
-    "architecture": "clean-v3.1-unified-compatible",
-    "description": "Transition-compatible model ensemble configuration",
-    "migration_notes": "Phase 3d: Includes both old and new structures for compatibility"
-  },
-  "model_definitions": {
-    "depression": {
-      "name": "${NLP_MODEL_DEPRESSION_NAME}",
-      "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "type": "zero-shot-classification",
-      "purpose": "Depression and mental health crisis detection using zero-shot classification",
-      "pipeline_task": "zero-shot-classification",
-      "environment_variable": "NLP_MODEL_DEPRESSION_NAME",
-      "default_name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-      "default_weight": 0.4
-    },
-    "sentiment": {
-      "name": "${NLP_MODEL_SENTIMENT_NAME}",
-      "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "type": "sentiment-analysis", 
-      "purpose": "Topic-based sentiment analysis",
-      "pipeline_task": "zero-shot-classification",
-      "environment_variable": "NLP_MODEL_SENTIMENT_NAME",
-      "default_name": "Lowerated/lm6-deberta-v3-topic-sentiment",
-      "default_weight": 0.3
-    },
-    "emotional_distress": {
-      "name": "${NLP_MODEL_DISTRESS_NAME}",
-      "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "type": "natural-language-inference",
-      "purpose": "Emotional distress detection using multilingual NLI",
-      "pipeline_task": "zero-shot-classification",
-      "environment_variable": "NLP_MODEL_DISTRESS_NAME",
-      "default_name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-      "default_weight": 0.3
-    }
-  },
-  "ensemble_configuration": {
-    "default_mode": "${NLP_ENSEMBLE_MODE}",
-    "available_modes": {
-      "consensus": {
-        "description": "All models must agree for high confidence"
-      },
-      "majority": {
-        "description": "Democratic voting with confidence weighting"
-      },
-      "weighted": {
-        "description": "Configurable model importance weighting"
-      }
-    },
-    "model_weights": {
-      "depression": "${NLP_MODEL_DEPRESSION_WEIGHT}",
-      "sentiment": "${NLP_MODEL_SENTIMENT_WEIGHT}",
-      "emotional_distress": "${NLP_MODEL_DISTRESS_WEIGHT}"
-    },
-    "defaults": {
-      "default_mode": "consensus",
-      "model_weights": {
-        "depression": 0.4,
-        "sentiment": 0.3,
-        "emotional_distress": 0.3
-      }
-    }
-  },
-  "hardware_optimization": {
-    "device": "${NLP_HARDWARE_DEVICE}",
-    "precision": "${NLP_HARDWARE_PRECISION}",
-    "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
-    "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}",
-    "performance_settings": {
-      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
-      "request_timeout": "${NLP_PERFORMANCE_REQUEST_TIMEOUT}",
-      "memory_optimization": true,
-      "batch_processing": true
-    },
-    "defaults": {
-      "device": "auto",
-      "precision": "float16",
-      "max_batch_size": 32,
-      "inference_threads": 16,
-      "performance_settings": {
-        "max_concurrent_requests": 20,
-        "request_timeout": 40,
-        "memory_optimization": true,
-        "batch_processing": true
-      }
-    }
-  },
-  "feature_flags": {
-    "experimental_features": {
-      "enable_ensemble_analysis": "${NLP_FEATURE_ENSEMBLE_ANALYSIS}",
-      "enable_gap_detection": "${NLP_FEATURE_GAP_DETECTION}",
-      "log_model_disagreements": "${NLP_LOGGING_MODEL_DISAGREEMENTS}",
-      "enable_model_parallelism": "${NLP_FEATURE_MODEL_PARALLELISM}"
-    },
-    "defaults": {
-      "experimental_features": {
-        "enable_ensemble_analysis": true,
-        "enable_gap_detection": true,
-        "log_model_disagreements": true,
-        "enable_model_parallelism": false
-      }
-    }
-  },
-  "validation_rules": {
-    "model_weights": {
-      "ensure_sum_to_one": true,
-      "tolerance": 0.01,
-      "fail_on_invalid": true
-    },
-    "model_accessibility": {
-      "validate_on_startup": true,
-      "timeout_seconds": 30
-    },
-    "ensemble_modes": {
-      "validate_mode_support": true,
-      "required_modes": ["consensus", "majority", "weighted"]
-    }
+    "version": "3.1d-step9",
+    "architecture": "clean-v3.1-unified",
+    "description": "Model ensemble configuration following established Pattern A with defaults",
+    "phase": "Phase 3d Step 9 - Architecture-compliant placeholder + defaults pattern"
   },
   "model_ensemble": {
-    "version": "3.1d-enhanced",
-    "architecture": "clean-v3.1-unified",
-    "description": "Enhanced model ensemble configuration with standardized variable naming",
     "model_definitions": {
       "depression": {
         "name": "${NLP_MODEL_DEPRESSION_NAME}",
@@ -152,48 +32,65 @@
         "pipeline_task": "zero-shot-classification"
       }
     },
-    "ensemble_settings": {
-      "mode": "${NLP_ENSEMBLE_MODE}",
-      "validation": {
-        "ensure_weights_sum_to_one": true,
-        "fail_on_invalid_weights": true,
-        "validate_model_accessibility": true,
-        "weight_tolerance": 0.01
-      }
-    },
-    "hardware_settings": {
-      "device": "${NLP_HARDWARE_DEVICE}",
-      "precision": "${NLP_HARDWARE_PRECISION}",
-      "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
-      "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}"
-    },
     "defaults": {
       "model_definitions": {
         "depression": {
           "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-          "weight": 0.4,
-          "cache_dir": "./models/cache"
+          "weight": 0.4
         },
         "sentiment": {
           "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
-          "weight": 0.3,
-          "cache_dir": "./models/cache"
+          "weight": 0.3
         },
         "emotional_distress": {
           "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-          "weight": 0.3,
-          "cache_dir": "./models/cache"
+          "weight": 0.3
         }
       },
-      "ensemble_settings": {
-        "mode": "consensus"
+      "cache_dir": "./models/cache"
+    },
+    "ensemble_config": {
+      "mode": "${NLP_ENSEMBLE_MODE}",
+      "gap_detection": {
+        "enabled": "${NLP_ENSEMBLE_GAP_DETECTION_ENABLED}",
+        "disagreement_threshold": "${NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD}"
       },
-      "hardware_settings": {
+      "defaults": {
+        "mode": "majority",
+        "gap_detection": {
+          "enabled": true,
+          "disagreement_threshold": 2
+        }
+      }
+    },
+    "hardware_config": {
+      "device": "${NLP_HARDWARE_DEVICE}",
+      "precision": "${NLP_HARDWARE_PRECISION}",
+      "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
+      "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}",
+      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+      "defaults": {
         "device": "auto",
         "precision": "float16",
         "max_batch_size": 32,
-        "inference_threads": 16
+        "inference_threads": 16,
+        "cache_dir": "./models/cache"
       }
+    }
+  },
+  "validation_rules": {
+    "model_weights": {
+      "ensure_sum_to_one": true,
+      "tolerance": 0.01,
+      "fail_on_invalid": true
+    },
+    "model_accessibility": {
+      "validate_on_startup": true,
+      "timeout_seconds": 30
+    },
+    "ensemble_modes": {
+      "validate_mode_support": true,
+      "required_modes": ["consensus", "majority", "weighted"]
     }
   }
 }

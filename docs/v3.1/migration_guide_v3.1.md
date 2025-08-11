@@ -1,15 +1,21 @@
 # NLP Configuration Migration Guide v3.1
+
 ## Phase 3a 
-- **Implementation**
-  - **✅ COMPLETE**
+**Implementation**
+- **✅ COMPLETE**
+
 ## Phase 3b
-- **Implementation**
-  - **✅ COMPLETE**
+**Implementation**
+- **✅ COMPLETE**
+
 ## Phase 3c
-- **Implementation**
-  - **✅ COMPLETE**
+**Implementation**
+- **✅ COMPLETE**
+
 ## Phase 3d
-- **In Progress**
+**In Progress**
+
+---
 
 ## Overview
 This guide outlines the complete recode of the configuration system for clean JSON + environment variable management without backward compatibility concerns.
@@ -19,6 +25,8 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
 
 **Current Status**: 🎉 **PHASE 3D IN PROGRESS**
   - Clean v3.1 architecture with comprehensive threshold mapping configuration operational
+
+---
 
 ## Design Philosophies and Core Principles
 
@@ -34,8 +42,10 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
   - We keep track of progress for each phase in the associated tracker document.
     - These files are to be kept up to date with each milestone reached so that future work can be continued from them as needed.
     - We are working with the documentation files:
-      - `docs/project_instructions_v3_1.md`
-      - `docs/v3.1/migration_guide_v3_1.md`
+      - `docs/project_instructions.md`
+      - `docs/v3.1/migration_guide_v3.1.md`
+      - `docs/v3.1/clean_architecture_charter_v3.1.md`
+      - `docs/v3.1/frequently_asked_questions_v3.1.md`
       - `docs/v3.1/phase/*phase*/*subPhase*/tracker.md`
       - `docs/v3.1/phase/*phase*/*subPhase*/step_*step#*.md`
 
@@ -54,9 +64,12 @@ This migration is focused exclusively on the **NLP Server (`ash/ash-nlp`)** conf
   - Centralized access to all system components
 - **Ongoing Documentation Updates**
   - Continuous updates to the documentation to allow for tracking of changes and accomplishments easily
-- **Refer To the `3_1_clean_architecture_charter.md` for further information**
+- **Refer To the `clean_architecture_charter_v3.1.md` for further information**
+
+---
 
 ## Technical Architecture
+
 ### 📁 **Final File Organization** (Phase 3c Complete)
 ```
 ash/ash-nlp/
@@ -68,6 +81,9 @@ ash/ash-nlp/
 │   ├── admin_endpoints.py
 │   ├── ensemble_endpoints.py
 │   └── learning_endpoints.py
+├── backups/                                 # Backup Location
+│   └── learning_data/
+├── cache/                                   # Caching Location
 ├── config/                                  # JSON configuration files
 │   ├── __init__.py
 │   ├── analysis_parameters.json
@@ -80,11 +96,14 @@ ash/ash-nlp/
 │   ├── crisis_lgbtqia_patterns.json
 │   ├── crisis_patterns.json
 │   ├── enhanced_crisis_patterns.json
+│   ├── feature_flags.json
 │   ├── label_config.json
 │   ├── learning_parameters.json
 │   ├── model_ensemble.json
 │   ├── performance_settings.json
 │   ├── positive_context_patterns.json
+│   ├── server_setting.json
+│   ├── storage_settings.json
 │   ├── temporal_indicators_patterns.json
 │   └── threshold_mapping.json
 ├── data/                                    # DATA Storage
@@ -113,20 +132,22 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_4.md
 |   |   │   │   |   ├── step_5.md
 |   |   │   │   |   ├── step_6.md
+|   |   │   │   |   ├── step_7.md
+|   |   │   │   |   ├── step_8.md
+|   |   │   │   |   ├── step_9.md
 |   |   │   │   │   └── tracker.md
+|   │   │   ├── 3/
+|   |   │   │   └── e/
+|   |   │   │       └── tracker.md
 |   │   │   └── 4/
 |   |   │       ├── a/
-|   |   │       |   ├── status_testing.md
-|   |   │       |   ├── status_update.md
 |   |   │       │   └── tracker.md
 |   |   │       └── b/
-|   |   │           ├── status_testing.md
-|   |   │           ├── status_update.md
 |   |   │           └── tracker.md
-│   │   ├── 3_1_clean_architecture_charter.md
-│   │   ├── 3_1_frequently_asked_questions.md
-│   │   └── migration_guide_v3_1.md
-│   └── project_instructions_v3_1.md
+│   │   ├── clean_architecture_charter_v3.1.md
+│   │   ├── frequently_asked_questions_v3.1.md
+│   │   └── migration_guide_v3.1.md
+│   └── project_instructions.md
 ├── learning_data/                           # Learning Data Storage
 │   └── __init__.py
 ├── logs/                                    # Logs Storage
@@ -137,11 +158,16 @@ ash/ash-nlp/
 │   ├── config_manager.py
 │   ├── crisis_pattern_manager.py
 │   ├── env_manager.py
+│   ├── feature_config_manager.py
+│   ├── loggin_config_manager.py
 │   ├── model_ensemble_manager.py
 │   ├── models_manager.py
+│   ├── performance_config_manager.py
 │   ├── pydantic_manager.py
+│   ├── server_config_manager.py
 │   ├── settings_manager.py
 │   ├── threshold_mapping_manager.py
+│   ├── unified_config_manager.py
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
 │   ├── cache/                               # Models Cache
@@ -162,10 +188,14 @@ ash/ash-nlp/
 |       |   │   ├── test_integration.py
 |       |   │   └── test_threshold_mapping_manager.py
 |       │   └── d/
+|       |       ├── test_step_6_integration.py
+|       |       ├── test_step_7_integration.py
+|       |       └── test_step_9_integration.py
 |       └── 4/
 |           ├── a/
 |           └── b/
-├── utils/                                   # Utility and Helper Files
+├── tmp/                                   # Temporary Files
+├── utils/                                   # Utility & Helper Files
 │   ├── __init__.py
 │   ├── community_patterns.py
 │   ├── context_helpers.py
@@ -180,6 +210,8 @@ ash/ash-nlp/
 ├── README.md
 └── requirements.txt
 ```
+
+---
 
 ## Implementation Status Summary
 #### ✅ **Phase 1: Core Systems** - **COMPLETE AND OPERATIONAL**
@@ -265,13 +297,22 @@ Migrate threshold and mapping logic from hardcoded constants to JSON configurati
 - **Learning System Integration**: Threshold optimization capabilities built-in
 - **Complete Configuration Externalization**: Zero hardcoded thresholds remaining
 
+---
+
 ## Current Phase
-### Phase 3d: Environmental Variables Cleanup (Next)
+
+### Phase 3d: Environmental Variables Cleanup
 - **Scope**: Streamline and consolidate environment variables  
 - **Objective**: Remove duplicates and simplify configuration
 - **Components**: All project components environment variable audit and cleanup
 
+### Phase 3e: Standardize JSON configuration Files (Next)
+- **Scope**: Standardize the JSON configuration files to the correct 3.1 Clean Architecture Standards
+- **Objective**: Fix non-compliant JSON configuration files to match and implement the new JSON configuration file standards
+- **Components**: All project configuration files
+
 ## Future Phases
+
 ### Phase 4a: Crisis Detection Audit (Future)
 - **Objective**: 
 - **Scope**: 
