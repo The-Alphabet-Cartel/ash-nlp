@@ -85,16 +85,28 @@ class UnifiedConfigManager:
         
         # Configuration file mappings (follows established pattern)
         self.config_files = {
-            'model_ensemble': 'model_ensemble.json',
-            'crisis_patterns': 'crisis_patterns.json', 
             'analysis_parameters': 'analysis_parameters.json',
-            'threshold_mapping': 'threshold_mapping.json',
-            'server_settings': 'server_settings.json',
-            'logging_settings': 'logging_settings.json',
+            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
+            'context_weight_patterns': 'context_weight_patterns.json',
+            'crisis_burden_patterns': 'crisis_burden_patterns.json',
+            'crisis_community_vocabulary': 'crisis_community_vocabulary.json',
+            'crisis_context_patterns': 'crisis_context_patterns.json',
+            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
+            'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',
+            'crisis_patterns': 'crisis_patterns.json', 
+            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
             'feature_flags': 'feature_flags.json',
+            'label_config': 'label_config.json',
+            'learning_parameters': 'learning_parameters.json',
+            'learning_settings': 'learning_settings.json',
+            'logging_settings': 'logging_settings.json',
+            'model_ensemble': 'model_ensemble.json',
             'performance_settings': 'performance_settings.json',
+            'positive_context_patterns': 'positive_context_patterns.json',
+            'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
-            'learning_settings': 'learning_settings.json'
+            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
+            'threshold_mapping': 'threshold_mapping.json',
         }
         
         # Load and validate all environment variables
