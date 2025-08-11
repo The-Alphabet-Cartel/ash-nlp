@@ -226,6 +226,116 @@ class ModelEnsembleManager:
         # Normalize to sum to 1.0
         return {model_type: weight / total_weight for model_type, weight in weights.items()}
     
+    def models_loaded(self) -> bool:
+        """
+        Check if models are loaded and ready for analysis
+        This method is required for API compatibility with ModelsManager interface
+        
+        Returns:
+            bool: True if models are configured and ready, False otherwise
+        """
+        try:
+            # Check if we have model definitions
+            models = self.get_model_definitions()
+            if not models:
+                logger.debug("❌ No models configured")
+                return False
+            
+            # Check if all required models are defined
+            required_models = ['depression', 'sentiment', 'emotional_distress']
+            missing_models = []
+            
+            for model_type in required_models:
+                if model_type not in models:
+                    missing_models.append(model_type)
+                    continue
+                
+                model_config = models[model_type]
+                model_name = model_config.get('name', '')
+                
+                if not model_name:
+                    missing_models.append(f"{model_type} (no name)")
+            
+            if missing_models:
+                logger.debug(f"❌ Missing models: {missing_models}")
+                return False
+            
+            # Check if weights are valid
+            weights = self.get_model_weights()
+            total_weight = sum(weights.values())
+            
+            # Allow some tolerance for floating point precision issues
+            weight_tolerance = self.config_manager.get_env('NLP_MODEL_WEIGHT_TOLERANCE', 0.01)
+            
+            if abs(total_weight - 1.0) > weight_tolerance:
+                logger.warning(f"⚠️ Model weights sum to {total_weight}, should be ~1.0")
+                # Don't fail on weight issues unless explicitly configured to do so
+                if self.config.get('validation', {}).get('fail_on_invalid_weights', False):
+                    logger.debug(f"❌ Model weights validation failed: {total_weight}")
+                    return False
+            
+            logger.debug("✅ All models configured and ready")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error checking models_loaded status: {e}")
+            return False
+
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get comprehensive model information for API responses
+        This method is required for API compatibility with ModelsManager interface
+        
+        Returns:
+            Dict containing model configuration and status information
+        """
+        try:
+            models = self.get_model_definitions()
+            weights = self.get_model_weights()
+            
+            # Build model info response
+            model_info = {
+                'total_models': len(models),
+                'ensemble_mode': self.get_ensemble_mode(),
+                'models_configured': len(models) > 0,
+                'weights_valid': abs(sum(weights.values()) - 1.0) < 0.01,
+                'total_weight': sum(weights.values()),
+                'device_setting': self.get_device_setting(),
+                'precision_setting': self.get_precision_setting(),
+                'model_details': {}
+            }
+            
+            # Add details for each model
+            for model_type, model_config in models.items():
+                model_info['model_details'][model_type] = {
+                    'name': model_config.get('name', ''),
+                    'weight': model_config.get('weight', 0.0),
+                    'type': model_config.get('type', ''),
+                    'pipeline_task': model_config.get('pipeline_task', 'text-classification'),
+                    'cache_dir': model_config.get('cache_dir', './models/cache')
+                }
+            
+            # Add status information
+            model_info['status'] = {
+                'models_loaded': self.models_loaded(),
+                'configuration_source': 'unified_config_manager',
+                'architecture_version': '3.1d',
+                'validation_enabled': bool(self.config.get('validation', {}))
+            }
+            
+            logger.debug(f"✅ Model info generated: {len(models)} models configured")
+            return model_info
+            
+        except Exception as e:
+            logger.error(f"❌ Error generating model info: {e}")
+            return {
+                'total_models': 0,
+                'models_configured': False,
+                'status': 'error',
+                'error': str(e),
+                'architecture_version': '3.1d'
+            }
+
     # ========================================================================
     # Validation and Utility Methods - Phase 3d Enhanced
     # ========================================================================
