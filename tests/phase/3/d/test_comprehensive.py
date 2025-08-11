@@ -394,10 +394,36 @@ class Step10ComprehensiveTestSuite:
                     # Test staff review check if available
                     if hasattr(crisis_analyzer, '_is_staff_review_required'):
                         try:
-                            staff_review = crisis_analyzer._is_staff_review_required('high', 0.8)
+                            # Create a mock ensemble_result for testing
+                            mock_ensemble_result = {
+                                'gap_detection': {
+                                    'gap_detected': False,
+                                    'requires_review': False
+                                },
+                                'consensus': {
+                                    'prediction': 'crisis',
+                                    'confidence': 0.8
+                                }
+                            }
+                            
+                            # Test with correct signature: crisis_level, confidence, ensemble_result
+                            staff_review = crisis_analyzer._is_staff_review_required('high', 0.8, mock_ensemble_result)
                             logger.info(f"   ✅ Staff review functionality: {staff_review}")
+                            
+                            # Test with different levels
+                            staff_review_medium = crisis_analyzer._is_staff_review_required('medium', 0.6, mock_ensemble_result)
+                            staff_review_low = crisis_analyzer._is_staff_review_required('low', 0.3, mock_ensemble_result)
+                            
+                            logger.info(f"   📊 Staff review - High: {staff_review}, Medium: {staff_review_medium}, Low: {staff_review_low}")
+                            
                         except Exception as e:
                             logger.warning(f"   ⚠️ Staff review method exists but failed: {e}")
+                            # Try to see what the actual signature is
+                            import inspect
+                            sig = inspect.signature(crisis_analyzer._is_staff_review_required)
+                            logger.info(f"   🔍 Method signature: {sig}")
+                    else:
+                        logger.info(f"   📋 Staff review method not available")
                     
                 except Exception as e:
                     logger.warning(f"   ⚠️ Some functionality not fully implemented: {e}")
