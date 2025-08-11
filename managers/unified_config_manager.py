@@ -1057,21 +1057,21 @@ class UnifiedConfigManager:
         }
 
     def get_status(self) -> Dict[str, Any]:
-            """
-            Get status of UnifiedConfigManager
-            
-            Returns:
-                Dictionary containing manager status and operational info
-            """
-            return {
-                'status': 'operational',
-                'config_files': len(self.config_files),
-                'variables_managed': len(self.environment_schema),
-                'cache_size': len(self.config_cache),
-                'config_directory': str(self.config_dir),
-                'version': 'v3.1_step_9',
-                'architecture': 'Clean v3.1 with Unified Configuration'
-            }
+        """
+        Get status of UnifiedConfigManager
+        
+        Returns:
+            Dictionary containing manager status and operational info
+        """
+        return {
+            'status': 'operational',
+            'config_files': len(self.config_files),
+            'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
+            'cache_size': len(self.config_cache),
+            'config_directory': str(self.config_dir),
+            'version': 'v3.1_step_9',
+            'architecture': 'Clean v3.1 with Unified Configuration'
+        }
 
 # ============================================================================
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
