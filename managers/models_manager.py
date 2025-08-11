@@ -152,7 +152,7 @@ class ModelsManager:
             config = {
                 'device': hardware_config.get('device') or self.unified_config.get_env('NLP_MODEL_DEVICE', 'auto'),
                 'precision': hardware_config.get('precision') or self.unified_config.get_env('NLP_MODEL_PRECISION', 'float16'),
-                'max_batch_size': hardware_config.get('max_batch_size') or self.unified_config.get_env_int('NLP_MODEL_MAX_BATCH_SIZE', 32),
+                'max_batch_size': hardware_config.get('max_batch_size') or self.unified_config.get_env_int('NLP_PERFORMANCE_BATCH_SIZE', 32),
                 'inference_threads': hardware_config.get('inference_threads') or self.unified_config.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16)
             }
             
@@ -191,7 +191,7 @@ class ModelsManager:
         return {
             'device': self.unified_config.get_env('NLP_MODEL_DEVICE', 'auto'),
             'precision': self.unified_config.get_env('NLP_MODEL_PRECISION', 'float16'),
-            'max_batch_size': self.unified_config.get_env_int('NLP_MODEL_MAX_BATCH_SIZE', 32),
+            'max_batch_size': self.unified_config.get_env_int('NLP_PERFORMANCE_BATCH_SIZE', 32),
             'inference_threads': self.unified_config.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16)
         }
     
