@@ -30,7 +30,7 @@ class TestAnalysisParametersManager:
     
     @pytest.fixture
     def mock_config_manager(self):
-        """FIXED: Create properly configured mock ConfigManager"""
+        """FIXED: Create properly configured mock UnifiedConfigManager"""
         mock_manager = Mock()
         
         # Mock valid analysis parameters configuration
@@ -547,7 +547,7 @@ class TestAnalysisParametersManagerEnvironmentOverrides:
     
     @pytest.fixture
     def mock_config_manager_with_env_vars(self):
-        """FIXED: Create a mock ConfigManager that includes environment variable placeholders"""
+        """FIXED: Create a mock UnifiedConfigManager that includes environment variable placeholders"""
         mock_manager = Mock()
         
         # Configuration with environment variable placeholders
@@ -586,7 +586,7 @@ class TestAnalysisParametersManagerEnvironmentOverrides:
         """Test that the manager can handle environment variable placeholders"""
         logger.info("🧪 Testing environment variable override integration...")
         
-        # Note: The actual environment variable substitution happens in ConfigManager
+        # Note: The actual environment variable substitution happens in UnifiedConfigManager
         # This test validates that the manager can handle the structure
         manager = AnalysisParametersManager(mock_config_manager_with_env_vars)
         

@@ -257,7 +257,7 @@
     }
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('community_vocabulary')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('community_vocabulary')",
     "access_method": "SettingsManager.get_community_vocabulary()",
     "environment_override_example": "NLP_CONFIG_COMMUNITY_VOCABULARY_SENSITIVITY=high",
     "semantic_boost_explanation": [

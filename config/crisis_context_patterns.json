@@ -119,7 +119,7 @@
     "fallback_behavior": "no_boost"
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('crisis_context_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('crisis_context_patterns')",
     "access_method": "CrisisPatternManager.get_context_patterns()",
     "environment_override_example": "NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.5",
     "implementation_notes": [

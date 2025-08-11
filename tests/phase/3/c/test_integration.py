@@ -31,7 +31,7 @@ try:
     from managers.threshold_mapping_manager import ThresholdMappingManager
     from analysis.crisis_analyzer import CrisisAnalyzer
     from api.ensemble_endpoints import integrate_pattern_and_ensemble_analysis_v3c, _map_ensemble_prediction_to_crisis_level_v3c
-    from managers.config_manager import ConfigManager
+    from managers.unified_config_manager import UnifiedConfigManager
     logger.info("✅ Successfully imported Phase 3c integration components")
 except ImportError as e:
     logger.error(f"❌ Failed to import Phase 3c components: {e}")

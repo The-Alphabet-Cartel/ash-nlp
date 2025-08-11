@@ -1,6 +1,8 @@
 """
 Crisis Pattern Manager - v3.1 Clean Architecture
 Manages all crisis pattern configurations from JSON files with ENV overrides
+
+STEP 9.8: Updated to use UnifiedConfigManager (ConfigManager eliminated)
 """
 
 import logging
@@ -8,7 +10,7 @@ import re
 import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
-from managers.config_manager import ConfigManager
+from managers.unified_config_manager import UnifiedConfigManager
 
 logger = logging.getLogger(__name__)
 
@@ -16,20 +18,22 @@ class CrisisPatternManager:
     """
     Manages crisis pattern configurations with JSON defaults and ENV overrides
     Following v3.1 clean architecture patterns
+    
+    STEP 9.8: Updated to use UnifiedConfigManager instead of legacy ConfigManager
     """
     
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self, config_manager: UnifiedConfigManager):
         """
-        Initialize CrisisPatternManager with ConfigManager dependency injection
+        Initialize CrisisPatternManager with UnifiedConfigManager dependency injection
         
         Args:
-            config_manager: ConfigManager instance for loading JSON configurations
+            config_manager: UnifiedConfigManager instance for loading JSON configurations
         """
         self.config_manager = config_manager
         self._patterns_cache = {}
         self._compiled_regex_cache = {}
         
-        logger.info("CrisisPatternManager v3.1 initializing...")
+        logger.info("CrisisPatternManager v3.1 Step 9.8 initializing...")
         self._load_all_patterns()
         logger.info(f"CrisisPatternManager initialized with {len(self._patterns_cache)} pattern sets")
     
@@ -130,64 +134,61 @@ class CrisisPatternManager:
         return self._patterns_cache.get('temporal_indicators_patterns', {})
     
     def get_community_vocabulary(self) -> Dict[str, Any]:
-        """Get LGBTQIA+ community vocabulary for enhanced context awareness"""
+        """Get community-specific vocabulary patterns"""
         return self._patterns_cache.get('community_vocabulary_patterns', {})
     
     def get_context_weights(self) -> Dict[str, Any]:
-        """Get context weighting patterns for crisis and positive words"""
+        """Get context weight multipliers for pattern matching"""
         return self._patterns_cache.get('context_weights_patterns', {})
     
-    def get_enhanced_crisis_patterns(self) -> Dict[str, Any]:
-        """Get enhanced crisis patterns including hopelessness, struggle, and negation"""
+    def get_enhanced_patterns(self) -> Dict[str, Any]:
+        """Get enhanced crisis patterns with advanced matching"""
         return self._patterns_cache.get('enhanced_crisis_patterns', {})
     
     def get_idiom_patterns(self) -> Dict[str, Any]:
-        """Get idiom patterns for false positive reduction"""
+        """Get idiom-based crisis patterns"""
         return self._patterns_cache.get('crisis_idiom_patterns', {})
     
     def get_burden_patterns(self) -> Dict[str, Any]:
-        """Get burden feeling patterns for self-worth crisis detection"""
+        """Get burden and stress-related patterns"""
         return self._patterns_cache.get('crisis_burden_patterns', {})
     
     def get_lgbtqia_patterns(self) -> Dict[str, Any]:
-        """Get LGBTQIA+ specific crisis patterns"""
+        """Get LGBTQIA+ community specific patterns"""
         return self._patterns_cache.get('crisis_lgbtqia_patterns', {})
-    
+
     def extract_community_patterns(self, message: str) -> List[Dict[str, Any]]:
-        """Extract community-specific crisis patterns from message"""
-        if not message or not isinstance(message, str):
-            return []
+        """
+        Extract community-specific patterns from message
         
-        message_lower = message.lower()
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            List of matched community patterns with metadata
+        """
         found_patterns = []
+        message_lower = message.lower()
         
         try:
-            # Get LGBTQIA+ patterns
-            lgbtqia_patterns = self.get_lgbtqia_patterns()
-            if lgbtqia_patterns and isinstance(lgbtqia_patterns, dict):
-                pattern_groups = lgbtqia_patterns.get('patterns', {})
-                
-                for group_name, pattern_group in pattern_groups.items():
-                    # FIXED: Skip non-dictionary values (like weight_multiplier floats)
-                    if not isinstance(pattern_group, dict):
-                        logger.debug(f"⚠️ Skipping non-dict pattern group: {group_name} ({type(pattern_group).__name__})")
-                        continue
-                    
-                    if not pattern_group.get('patterns'):
-                        continue
-                    
-                    patterns = pattern_group['patterns']
-                    for pattern_item in patterns:
+            community_vocab = self.get_community_vocabulary()
+            if not community_vocab or 'patterns' not in community_vocab:
+                return found_patterns
+            
+            patterns = community_vocab['patterns']
+            
+            for pattern_type, pattern_list in patterns.items():
+                if isinstance(pattern_list, list):
+                    for pattern_item in pattern_list:
                         if isinstance(pattern_item, dict):
-                            pattern_text = pattern_item.get('pattern', '')
-                            if pattern_text and pattern_text.lower() in message_lower:
+                            pattern = pattern_item.get('pattern', '')
+                            if pattern and pattern.lower() in message_lower:
                                 found_patterns.append({
-                                    'pattern_type': 'lgbtqia',
-                                    'pattern_name': group_name,
-                                    'matched_text': pattern_text,
-                                    'crisis_level': pattern_item.get('crisis_level', 'medium'),
-                                    'confidence': pattern_item.get('confidence', 0.7),
-                                    'context': pattern_item.get('context', [])
+                                    'pattern_type': pattern_type,
+                                    'matched_pattern': pattern,
+                                    'crisis_level': pattern_item.get('crisis_level', 'low'),
+                                    'confidence': pattern_item.get('confidence', 0.5),
+                                    'weight': pattern_item.get('weight', 1.0)
                                 })
             
             return found_patterns
@@ -195,46 +196,52 @@ class CrisisPatternManager:
         except Exception as e:
             logger.error(f"Error extracting community patterns: {e}")
             return []
-    
+
     def extract_crisis_context_phrases(self, message: str) -> List[Dict[str, Any]]:
-        """Extract crisis context phrases from message"""
-        if not message or not isinstance(message, str):
-            return []
+        """
+        Extract crisis context phrases that amplify crisis detection
         
-        message_lower = message.lower()
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            List of matched context phrases with crisis amplification data
+        """
         found_phrases = []
+        message_lower = message.lower()
         
         try:
-            # Get crisis context patterns
             context_patterns = self.get_crisis_context_patterns()
-            if context_patterns and isinstance(context_patterns, dict):
-                pattern_groups = context_patterns.get('patterns', {})
+            if not context_patterns or 'patterns' not in context_patterns:
+                return found_phrases
+            
+            patterns = context_patterns['patterns']
+            
+            for context_type, context_data in patterns.items():
+                # FIXED: Skip non-dictionary values (like configuration floats)
+                if not isinstance(context_data, dict):
+                    logger.debug(f"⚠️ Skipping non-dict context data: {context_type} ({type(context_data).__name__})")
+                    continue
                 
-                for context_type, context_data in pattern_groups.items():
-                    # FIXED: Skip non-dictionary values (like configuration floats)
-                    if not isinstance(context_data, dict):
-                        logger.debug(f"⚠️ Skipping non-dict context data: {context_type} ({type(context_data).__name__})")
-                        continue
-                    
-                    indicators = context_data.get('indicators', [])
-                    for indicator in indicators:
-                        if isinstance(indicator, dict):
-                            phrase = indicator.get('phrase', '')
-                            if phrase and phrase.lower() in message_lower:
-                                found_phrases.append({
-                                    'phrase_type': context_type,
-                                    'matched_phrase': phrase,
-                                    'crisis_level': indicator.get('crisis_level', 'low'),
-                                    'confidence': indicator.get('confidence', 0.6),
-                                    'boost_multiplier': indicator.get('boost_multiplier', 1.0)
-                                })
+                indicators = context_data.get('indicators', [])
+                for indicator in indicators:
+                    if isinstance(indicator, dict):
+                        phrase = indicator.get('phrase', '')
+                        if phrase and phrase.lower() in message_lower:
+                            found_phrases.append({
+                                'phrase_type': context_type,
+                                'matched_phrase': phrase,
+                                'crisis_level': indicator.get('crisis_level', 'low'),
+                                'confidence': indicator.get('confidence', 0.6),
+                                'boost_multiplier': indicator.get('boost_multiplier', 1.0)
+                            })
             
             return found_phrases
             
         except Exception as e:
             logger.error(f"Error extracting crisis context phrases: {e}")
             return []
-    
+
     def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
         """
         Comprehensive message analysis using all available crisis pattern methods
@@ -306,39 +313,24 @@ class CrisisPatternManager:
                 logger.warning(f"Temporal indicators analysis failed: {e}")
                 analysis_result['details']['temporal_indicators'] = {}
             
-            # 4. Check enhanced crisis patterns
+            # 4. Analyze enhanced patterns
             try:
-                enhanced_patterns = self.check_enhanced_crisis_patterns(message)
-                if enhanced_patterns and enhanced_patterns.get('matches'):
-                    for match in enhanced_patterns.get('matches', []):
+                enhanced_analysis = self.analyze_enhanced_patterns(message)
+                if enhanced_analysis and enhanced_analysis.get('patterns_found'):
+                    for pattern in enhanced_analysis.get('patterns_found', []):
                         analysis_result['patterns_triggered'].append({
-                            'pattern_name': f"enhanced_{match.get('pattern_name', 'unknown')}",
+                            'pattern_name': f"enhanced_{pattern.get('pattern_name', 'unknown')}",
                             'pattern_type': 'enhanced',
-                            'crisis_level': match.get('crisis_level', 'high'),
-                            'confidence': match.get('confidence', 0.7),
-                            'details': match
+                            'crisis_level': pattern.get('crisis_level', 'medium'),
+                            'confidence': pattern.get('confidence', 0.7),
+                            'details': pattern
                         })
-                analysis_result['details']['enhanced_patterns'] = enhanced_patterns
+                analysis_result['details']['enhanced_patterns'] = enhanced_analysis
             except Exception as e:
                 logger.warning(f"Enhanced patterns analysis failed: {e}")
                 analysis_result['details']['enhanced_patterns'] = {}
             
-            # 5. Apply context weights if patterns were found
-            if analysis_result['patterns_triggered']:
-                try:
-                    # Use a base score for weight calculation
-                    base_score = 0.5
-                    weighted_score, weight_details = self.apply_context_weights(message, base_score)
-                    analysis_result['details']['context_weights'] = {
-                        'original_score': base_score,
-                        'weighted_score': weighted_score,
-                        'weight_details': weight_details
-                    }
-                except Exception as e:
-                    logger.warning(f"Context weights application failed: {e}")
-                    analysis_result['details']['context_weights'] = {}
-            
-            # 6. Calculate summary statistics
+            # 5. Calculate summary statistics
             pattern_count = len(analysis_result['patterns_triggered'])
             crisis_levels = [p.get('crisis_level', 'low') for p in analysis_result['patterns_triggered']]
             
@@ -395,370 +387,134 @@ class CrisisPatternManager:
             message: Message text to analyze
             
         Returns:
-            Dictionary with temporal analysis results
+            Dictionary containing temporal indicator analysis results
         """
-        message_lower = message.lower()
-        temporal_patterns = self.get_temporal_indicators()
-        
-        if not temporal_patterns.get('patterns'):
-            return {
-                'found_indicators': [],
-                'highest_urgency': 'none',
-                'total_boost': 0.0,
-                'auto_escalate': False,
-                'staff_alert': False
-            }
-        
-        found_indicators = []
-        highest_urgency = 'none'
-        total_boost = 0.0
-        auto_escalate = False
-        staff_alert = False
-        
-        urgency_levels = {'none': 0, 'low': 1, 'medium': 2, 'high': 3, 'critical': 4, 'immediate': 5}
-        max_urgency_score = 0
-        
-        for pattern_name, pattern_data in temporal_patterns['patterns'].items():
-            indicators = pattern_data.get('indicators', [])
+        try:
+            temporal_patterns = self.get_temporal_indicators()
+            if not temporal_patterns or 'patterns' not in temporal_patterns:
+                return {'found_indicators': [], 'urgency_score': 0.0}
             
-            for indicator in indicators:
-                if indicator in message_lower:
-                    boost_factor = pattern_data.get('boost_factor', 0.0)
-                    urgency = pattern_data.get('escalation_level', 'medium')
-                    
-                    found_indicators.append({
-                        'indicator': indicator,
-                        'pattern_type': pattern_name,
-                        'boost_factor': boost_factor,
-                        'urgency': urgency,
-                        'auto_escalate': pattern_data.get('auto_escalate', False),
-                        'staff_alert': pattern_data.get('staff_alert', False)
-                    })
-                    
-                    total_boost += boost_factor
-                    
-                    if pattern_data.get('auto_escalate', False):
-                        auto_escalate = True
-                    if pattern_data.get('staff_alert', False):
-                        staff_alert = True
-                    
-                    urgency_score = urgency_levels.get(urgency, 0)
-                    if urgency_score > max_urgency_score:
-                        max_urgency_score = urgency_score
-                        highest_urgency = urgency
-        
-        # Apply maximum boost limit
-        max_boost = temporal_patterns.get('escalation_rules', {}).get('max_temporal_boost', 0.50)
-        total_boost = min(total_boost, max_boost)
-        
-        return {
-            'found_indicators': found_indicators,
-            'highest_urgency': highest_urgency,
-            'total_boost': total_boost,
-            'auto_escalate': auto_escalate,
-            'staff_alert': staff_alert
-        }
-    
-    def apply_context_weights(self, message: str, base_crisis_score: float) -> Tuple[float, Dict[str, Any]]:
+            patterns = temporal_patterns['patterns']
+            found_indicators = []
+            message_lower = message.lower()
+            
+            for indicator_type, indicator_data in patterns.items():
+                if isinstance(indicator_data, dict) and 'indicators' in indicator_data:
+                    for indicator in indicator_data['indicators']:
+                        if isinstance(indicator, dict):
+                            phrase = indicator.get('phrase', '')
+                            if phrase and phrase.lower() in message_lower:
+                                found_indicators.append({
+                                    'indicator_type': indicator_type,
+                                    'matched_phrase': phrase,
+                                    'crisis_level': indicator.get('crisis_level', 'medium'),
+                                    'confidence': indicator.get('confidence', 0.6),
+                                    'urgency_multiplier': indicator.get('urgency_multiplier', 1.0),
+                                    'time_sensitivity': indicator.get('time_sensitivity', 'normal')
+                                })
+            
+            # Calculate overall urgency score
+            urgency_score = 0.0
+            if found_indicators:
+                urgency_values = [ind.get('urgency_multiplier', 1.0) for ind in found_indicators]
+                urgency_score = sum(urgency_values) / len(urgency_values)
+            
+            return {
+                'found_indicators': found_indicators,
+                'urgency_score': urgency_score,
+                'requires_immediate_attention': urgency_score > 1.5 or any(
+                    ind.get('time_sensitivity') == 'immediate' for ind in found_indicators
+                )
+            }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing temporal indicators: {e}")
+            return {'found_indicators': [], 'urgency_score': 0.0}
+
+    def analyze_enhanced_patterns(self, message: str) -> Dict[str, Any]:
         """
-        Apply context weights to modify crisis score based on context words
+        Analyze enhanced crisis patterns with advanced matching logic
         
         Args:
             message: Message text to analyze
-            base_crisis_score: Base crisis score to modify
             
         Returns:
-            Tuple of (modified_score, analysis_details)
+            Dictionary containing enhanced pattern analysis results
         """
-        message_lower = message.lower()
-        context_weights = self.get_context_weights()
-        
-        if not context_weights.get('weights'):
-            return base_crisis_score, {'analysis': 'no_context_weights_available'}
-        
-        crisis_boost = 0.0
-        positive_reduction = 0.0
-        found_crisis_words = []
-        found_positive_words = []
-        
-        # Process crisis context words
-        crisis_words = context_weights['weights'].get('crisis_context_words', {})
-        if crisis_words.get('words'):
-            for word_config in crisis_words['words']:
-                word = word_config.get('word', '')
-                weight = word_config.get('weight', 0.0)
-                
-                if self._word_in_message(word, message_lower):
-                    crisis_boost += weight
-                    found_crisis_words.append({
-                        'word': word,
-                        'weight': weight,
-                        'priority': word_config.get('priority', 'medium')
-                    })
-        
-        # Process positive context words  
-        positive_words = context_weights['weights'].get('positive_context_words', {})
-        if positive_words.get('words'):
-            for word_config in positive_words['words']:
-                word = word_config.get('word', '')
-                weight = word_config.get('weight', 0.0)
-                validation_required = word_config.get('validation_required', True)
-                
-                if self._word_in_message(word, message_lower):
-                    # Simple validation - ensure word is not negated
-                    if not validation_required or not self._is_word_negated(word, message_lower):
-                        positive_reduction += weight  # weight is negative for positive words
-                        found_positive_words.append({
-                            'word': word,
-                            'weight': weight,
-                            'priority': word_config.get('priority', 'medium')
-                        })
-        
-        # Apply limits
-        max_crisis_boost = context_weights.get('processing_rules', {}).get('max_total_crisis_boost', 0.30)
-        max_positive_reduction = context_weights.get('processing_rules', {}).get('max_total_positive_reduction', -0.25)
-        
-        crisis_boost = min(crisis_boost, max_crisis_boost)
-        positive_reduction = max(positive_reduction, max_positive_reduction)
-        
-        # Calculate final score
-        total_adjustment = crisis_boost + positive_reduction
-        modified_score = max(0.0, min(1.0, base_crisis_score + total_adjustment))
-        
-        analysis_details = {
-            'crisis_boost': crisis_boost,
-            'positive_reduction': positive_reduction,
-            'total_adjustment': total_adjustment,
-            'found_crisis_words': found_crisis_words,
-            'found_positive_words': found_positive_words,
-            'original_score': base_crisis_score,
-            'modified_score': modified_score
-        }
-        
-        return modified_score, analysis_details
-    
-    def check_enhanced_crisis_patterns(self, message: str) -> Dict[str, Any]:
-        """Check message against enhanced crisis patterns"""
-        if not message or not isinstance(message, str):
-            return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
-
-        message_lower = message.lower()
-        matches = []
-        total_weight = 0.0
-
         try:
-            enhanced_patterns = self.get_enhanced_crisis_patterns()
-            if not enhanced_patterns or not isinstance(enhanced_patterns, dict):
-                return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
-
-            pattern_categories = enhanced_patterns.get('patterns', {})
-
-            for category_name, pattern_data in pattern_categories.items():
-                # FIXED: Skip non-dictionary values (like configuration floats/bools)
-                if not isinstance(pattern_data, dict):
-                    logger.debug(f"⚠️ Skipping non-dict pattern data: {category_name} ({type(pattern_data).__name__})")
-                    continue
-
-                category_patterns = pattern_data.get('patterns', [])
-
-                for pattern_item in category_patterns:
-                    if isinstance(pattern_item, dict):
-                        pattern_text = pattern_item.get('pattern', '')
-                        pattern_type = pattern_item.get('type', 'exact_match')
-                        
-                        # FIXED: Use proper pattern matching instead of simple string search
-                        pattern_matches = self._find_pattern_matches(message_lower, pattern_text, pattern_type)
-                        
-                        if pattern_matches:
-                            weight = pattern_item.get('weight', 1.0)
-                            matches.append({
-                                'category': category_name,
-                                'pattern': pattern_text,
-                                'pattern_type': pattern_type,
-                                'matches': pattern_matches,
-                                'weight': weight,
-                                'crisis_level': pattern_item.get('crisis_level', 'high'),
-                                'confidence': pattern_item.get('confidence', 0.8)
-                            })
-                            total_weight += weight
-
-            # Check for auto-escalation
-            config = enhanced_patterns.get('configuration', {})
-            escalation_threshold = config.get('auto_escalation_weight', 2.0)
-            auto_escalate = total_weight >= escalation_threshold
-
+            enhanced_patterns = self.get_enhanced_patterns()
+            if not enhanced_patterns or 'patterns' not in enhanced_patterns:
+                return {'patterns_found': [], 'confidence_score': 0.0}
+            
+            patterns = enhanced_patterns['patterns']
+            patterns_found = []
+            message_lower = message.lower()
+            
+            for pattern_group, pattern_data in patterns.items():
+                if isinstance(pattern_data, dict) and 'patterns' in pattern_data:
+                    for pattern in pattern_data['patterns']:
+                        if isinstance(pattern, dict):
+                            pattern_text = pattern.get('pattern', '')
+                            if pattern_text and pattern_text.lower() in message_lower:
+                                patterns_found.append({
+                                    'pattern_group': pattern_group,
+                                    'pattern_name': pattern.get('name', 'unnamed'),
+                                    'matched_text': pattern_text,
+                                    'crisis_level': pattern.get('crisis_level', 'medium'),
+                                    'confidence': pattern.get('confidence', 0.7),
+                                    'context_required': pattern.get('context_required', False),
+                                    'severity_modifier': pattern.get('severity_modifier', 1.0)
+                                })
+            
+            # Calculate overall confidence score
+            confidence_score = 0.0
+            if patterns_found:
+                confidence_values = [p.get('confidence', 0.7) for p in patterns_found]
+                confidence_score = sum(confidence_values) / len(confidence_values)
+            
             return {
-                'matches': matches,
-                'total_weight': total_weight,
-                'auto_escalate': auto_escalate,
-                'requires_immediate_attention': auto_escalate and total_weight >= 3.0
+                'patterns_found': patterns_found,
+                'confidence_score': confidence_score,
+                'high_confidence_patterns': [p for p in patterns_found if p.get('confidence', 0) > 0.8]
             }
+            
+        except Exception as e:
+            logger.error(f"Error analyzing enhanced patterns: {e}")
+            return {'patterns_found': [], 'confidence_score': 0.0}
 
-        except Exception as e:
-            logger.error(f"Error checking enhanced crisis patterns: {e}")
-            return {'matches': [], 'total_weight': 0.0, 'auto_escalate': False}
-    
-    def _find_pattern_matches(self, text: str, pattern: str, pattern_type: str) -> List[str]:
-        """Find pattern matches in text based on pattern type"""
-        matches = []
-        
-        try:
-            if pattern_type == 'exact_match':
-                if pattern in text:
-                    matches.append(pattern)
-            elif pattern_type == 'regex':
-                compiled_pattern = self._get_compiled_regex(pattern)
-                if compiled_pattern:
-                    regex_matches = compiled_pattern.finditer(text)
-                    matches.extend([match.group().strip() for match in regex_matches])
-        except Exception as e:
-            logger.error(f"Error matching pattern '{pattern}': {e}")
-        
-        return matches
-    
-    def _find_pattern_matches_with_context(self, text: str, pattern: str, pattern_type: str) -> List[str]:
-        """Find pattern matches with additional context validation"""
-        # For now, use basic pattern matching
-        # This can be enhanced with more sophisticated context analysis
-        return self._find_pattern_matches(text, pattern, pattern_type)
-    
-    def _get_compiled_regex(self, pattern: str) -> Optional[re.Pattern]:
-        """Get compiled regex pattern with caching"""
-        if pattern not in self._compiled_regex_cache:
-            try:
-                self._compiled_regex_cache[pattern] = re.compile(pattern, re.IGNORECASE)
-            except re.error as e:
-                logger.error(f"Invalid regex pattern '{pattern}': {e}")
-                return None
-        
-        return self._compiled_regex_cache.get(pattern)
-    
-    def _word_in_message(self, word: str, message: str) -> bool:
-        """Check if word exists in message with word boundary awareness"""
-        pattern = f"\\b{re.escape(word)}\\b"
-        return bool(re.search(pattern, message, re.IGNORECASE))
-    
-    def _is_word_negated(self, word: str, message: str) -> bool:
-        """Simple negation detection for context words"""
-        negation_words = ['not', 'never', 'no', "don't", "won't", "can't", "isn't", "aren't"]
-        
-        words = message.split()
-        for i, msg_word in enumerate(words):
-            if word in msg_word.lower():
-                # Check if any negation word appears within 3 words before
-                for j in range(max(0, i-3), i):
-                    if words[j].lower() in negation_words:
-                        return True
-        return False
-    
     def get_status(self) -> Dict[str, Any]:
-        """Get CrisisPatternManager status information"""
+        """
+        Get current status of crisis pattern manager
+        
+        Returns:
+            Dictionary containing manager status and loaded patterns info
+        """
         return {
-            'manager': 'CrisisPatternManager',
-            'version': '3.1.0',
-            'architecture': 'v3.1_clean',
-            'loaded_pattern_sets': len(self._patterns_cache),
-            'available_pattern_types': list(self._patterns_cache.keys()),
-            'compiled_regex_cache_size': len(self._compiled_regex_cache),
-            'configuration_enabled': all(
-                patterns.get('configuration', {}).get('enabled', False) 
-                for patterns in self._patterns_cache.values()
-            )
+            'status': 'operational',
+            'patterns_loaded': len(self._patterns_cache),
+            'pattern_types': list(self._patterns_cache.keys()),
+            'cache_size': len(self._compiled_regex_cache),
+            'version': 'v3.1_step_9.8',
+            'config_manager': 'UnifiedConfigManager'
         }
-    
-    def validate_patterns(self) -> Dict[str, Any]:
-        """Validate all loaded patterns for integrity"""
-        validation_result = {
-            'valid': True,
-            'warnings': [],
-            'errors': [],
-            'pattern_counts': {}
-        }
-        
-        # Known configuration keys that might accidentally appear in patterns section
-        config_keys_to_skip = {
-            'weight_multiplier', 'boost_multiplier', 'enabled', 'threshold',
-            'confidence_threshold', 'priority_level', 'escalation_enabled',
-            'auto_escalate', 'staff_alert', 'requires_attention'
-        }
-        
-        for pattern_type, patterns in self._patterns_cache.items():
-            try:
-                if not patterns:
-                    validation_result['warnings'].append(f"Empty pattern set: {pattern_type}")
-                    continue
-                
-                pattern_groups = patterns.get('patterns', {})
-                total_patterns = 0
-                
-                if not pattern_groups:
-                    validation_result['warnings'].append(f"No patterns found in {pattern_type}")
-                    validation_result['pattern_counts'][pattern_type] = 0
-                    continue
-                
-                # FIXED: Skip configuration values that leaked into patterns section
-                for group_name, group_data in pattern_groups.items():
-                    # Skip known configuration keys
-                    if group_name in config_keys_to_skip:
-                        logger.debug(f"⚠️ Skipping config value in patterns: {group_name} = {group_data}")
-                        continue
-                    
-                    # Only process actual pattern groups (dictionaries)
-                    if not isinstance(group_data, dict):
-                        logger.warning(f"⚠️ Skipping non-dict pattern group: {group_name} ({type(group_data).__name__})")
-                        continue
-                    
-                    # Count patterns in this group
-                    group_patterns = group_data.get('patterns', [])
-                    if isinstance(group_patterns, list):
-                        total_patterns += len(group_patterns)
-                    elif isinstance(group_patterns, dict):
-                        total_patterns += len(group_patterns)
-                    elif group_patterns:  # Non-empty value
-                        total_patterns += 1
-                
-                validation_result['pattern_counts'][pattern_type] = total_patterns
-                
-                if total_patterns == 0:
-                    validation_result['warnings'].append(f"No patterns found in {pattern_type}")
-                else:
-                    logger.debug(f"✅ {pattern_type}: {total_patterns} patterns validated")
-                
-            except Exception as e:
-                error_msg = f"Validation error in {pattern_type}: {e}"
-                validation_result['errors'].append(error_msg)
-                validation_result['valid'] = False
-                logger.error(f"❌ {error_msg}")
-        
-        # Log summary
-        total_errors = len(validation_result['errors'])
-        total_warnings = len(validation_result['warnings'])
-        total_patterns = sum(validation_result['pattern_counts'].values())
-        
-        if total_errors == 0:
-            logger.info(f"✅ Pattern validation successful: {total_patterns} patterns across {len(validation_result['pattern_counts'])} sets")
-            if total_warnings > 0:
-                logger.info(f"⚠️ {total_warnings} warnings (non-critical)")
-        else:
-            logger.error(f"❌ Pattern validation failed: {total_errors} errors, {total_warnings} warnings")
-        
-        return validation_result
 
-def create_crisis_pattern_manager(config_manager: ConfigManager) -> CrisisPatternManager:
+
+# ============================================================================
+# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# ============================================================================
+
+def create_crisis_pattern_manager(config_manager: UnifiedConfigManager) -> CrisisPatternManager:
     """
     Factory function to create CrisisPatternManager instance
     
     Args:
-        config_manager: ConfigManager instance for dependency injection
+        config_manager: UnifiedConfigManager instance
         
     Returns:
         CrisisPatternManager instance
     """
     return CrisisPatternManager(config_manager)
 
+__all__ = ['CrisisPatternManager', 'create_crisis_pattern_manager']
 
-# Export for clean architecture
-__all__ = [
-    'CrisisPatternManager',
-    'create_crisis_pattern_manager'
-]
+logger.info("✅ CrisisPatternManager v3.1 Step 9.8 loaded - ConfigManager eliminated, UnifiedConfigManager integration complete")

@@ -31,7 +31,7 @@ class PydanticManager:
         Initialize PydanticManager with clean manager architecture
         
         Args:
-            config_manager: ConfigManager instance for future configuration needs
+            config_manager: UnifiedConfigManager instance for future configuration needs
         """
         self.config_manager = config_manager
         self._models_initialized = False
@@ -309,7 +309,7 @@ def create_pydantic_manager(config_manager=None) -> PydanticManager:
     Factory function to create PydanticManager with clean architecture
     
     Args:
-        config_manager: Optional ConfigManager instance
+        config_manager: Optional UnifiedConfigManager instance
         
     Returns:
         Initialized PydanticManager instance

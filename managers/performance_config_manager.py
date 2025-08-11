@@ -36,7 +36,7 @@ class PerformanceConfigManager:
         Initialize PerformanceConfigManager with dependency injection
         
         Args:
-            config_manager: ConfigManager instance for accessing configuration
+            config_manager: UnifiedConfigManager instance for accessing configuration
         """
         self.config_manager = config_manager
         self.config_cache = {}
@@ -55,7 +55,7 @@ class PerformanceConfigManager:
     def _load_performance_configuration(self):
         """Load performance settings configuration from JSON with environment overrides"""
         try:
-            # Load performance settings configuration through ConfigManager using correct method
+            # Load performance settings configuration through UnifiedConfigManager using correct method
             performance_config_raw = self.config_manager.load_config_file('performance_settings')
             
             if not performance_config_raw:
@@ -450,7 +450,7 @@ def create_performance_config_manager(config_manager) -> PerformanceConfigManage
     Factory function for PerformanceConfigManager (Clean v3.1 Pattern)
     
     Args:
-        config_manager: ConfigManager instance
+        config_manager: UnifiedConfigManager instance
         
     Returns:
         Initialized PerformanceConfigManager instance

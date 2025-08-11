@@ -58,7 +58,7 @@ class UnifiedConfigManager:
     }
     
     This manager consolidates:
-    - ConfigManager: JSON loading with ${VAR} substitution (PRESERVED)
+    - UnifiedConfigManager: JSON loading with ${VAR} substitution (PRESERVED)
     - EnvConfigManager: Schema validation and type conversion (INTEGRATED)  
     - Direct os.getenv(): Centralized environment access (REPLACED)
     
@@ -93,7 +93,6 @@ class UnifiedConfigManager:
             'crisis_context_patterns': 'crisis_context_patterns.json',
             'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
             'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',
-            'crisis_patterns': 'crisis_patterns.json', 
             'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
             'feature_flags': 'feature_flags.json',
             'label_config': 'label_config.json',
@@ -772,7 +771,7 @@ class UnifiedConfigManager:
                 logger.debug(f"🔄 Substituting ${{{env_var}}} = {env_value}")
                 
                 if env_value is not None:
-                    # Type conversion for substituted values (follows ConfigManager pattern)
+                    # Type conversion for substituted values (follows UnifiedConfigManager pattern)
                     if env_value.lower() in ('true', 'false'):
                         result = str(env_value.lower() == 'true')
                         logger.debug(f"   → Converted to boolean: {result}")
@@ -1056,6 +1055,22 @@ class UnifiedConfigManager:
             }
         }
 
+    def get_status(self) -> Dict[str, Any]:
+        """
+        Get status of UnifiedConfigManager
+        
+        Returns:
+            Dictionary containing manager status and operational info
+        """
+        return {
+            'status': 'operational',
+            'config_files': len(self.config_files),
+            'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
+            'cache_size': len(self.config_cache),
+            'config_directory': str(self.config_dir),
+            'version': 'v3.1_step_9',
+            'architecture': 'Clean v3.1 with Unified Configuration'
+        }
 
 # ============================================================================
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
