@@ -135,7 +135,7 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_7.md
 |   |   │   │   |   ├── step_8.md
 |   |   │   │   |   ├── step_9.md
-|   |   │   │   |   ├── step_9.5.md
+|   |   │   │   |   ├── step_9.8.md
 |   |   │   │   │   └── tracker.md
 |   │   │   ├── 3/
 |   |   │   │   └── e/
