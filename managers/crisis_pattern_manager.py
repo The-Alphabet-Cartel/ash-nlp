@@ -483,6 +483,118 @@ class CrisisPatternManager:
             logger.error(f"Error analyzing enhanced patterns: {e}")
             return {'patterns_found': [], 'confidence_score': 0.0}
 
+    def find_triggered_patterns(self, message: str) -> List[Dict[str, Any]]:
+        """
+        Find triggered crisis patterns in a message - CRITICAL MISSING METHOD
+        
+        This method is called by CrisisAnalyzer but was missing from CrisisPatternManager.
+        It should search through all pattern types and return triggered patterns.
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            List of dictionaries containing triggered pattern information
+        """
+        try:
+            triggered_patterns = []
+            message_lower = message.lower()
+            
+            logger.debug(f"🔍 Finding triggered patterns in message: '{message[:50]}...'")
+            
+            # 1. Check enhanced crisis patterns (these contain the suicidal/hopeless patterns)
+            try:
+                enhanced_patterns = self.get_enhanced_patterns()
+                if enhanced_patterns and 'patterns' in enhanced_patterns:
+                    patterns = enhanced_patterns['patterns']
+                    
+                    for pattern_group, pattern_data in patterns.items():
+                        if isinstance(pattern_data, dict) and 'patterns' in pattern_data:
+                            for pattern in pattern_data['patterns']:
+                                if isinstance(pattern, dict):
+                                    pattern_text = pattern.get('pattern', '')
+                                    if pattern_text and pattern_text.lower() in message_lower:
+                                        triggered_patterns.append({
+                                            'pattern_name': pattern_text,
+                                            'pattern_type': 'enhanced',
+                                            'pattern_group': pattern_group,
+                                            'crisis_level': pattern_data.get('crisis_level', 'medium'),
+                                            'confidence': pattern.get('weight', 0.7),
+                                            'urgency': pattern.get('urgency', 'medium'),
+                                            'auto_escalate': pattern.get('auto_escalate', False),
+                                            'category': pattern_data.get('category', 'unknown'),
+                                            'matched_text': pattern_text,
+                                            'source': 'enhanced_crisis_patterns'
+                                        })
+                                        logger.info(f"🚨 PATTERN TRIGGERED: {pattern_text} (group: {pattern_group}, urgency: {pattern.get('urgency', 'medium')})")
+            except Exception as e:
+                logger.warning(f"⚠️ Error checking enhanced patterns: {e}")
+            
+            # 2. Check community patterns
+            try:
+                community_patterns = self.extract_community_patterns(message)
+                for pattern in community_patterns:
+                    triggered_patterns.append({
+                        'pattern_name': f"community_{pattern.get('pattern_type', 'unknown')}",
+                        'pattern_type': 'community',
+                        'crisis_level': pattern.get('crisis_level', 'low'),
+                        'confidence': pattern.get('confidence', 0.5),
+                        'category': 'community',
+                        'matched_text': pattern.get('matched_phrase', ''),
+                        'source': 'community_patterns'
+                    })
+            except Exception as e:
+                logger.warning(f"⚠️ Error checking community patterns: {e}")
+            
+            # 3. Check crisis context phrases  
+            try:
+                context_phrases = self.extract_crisis_context_phrases(message)
+                for phrase in context_phrases:
+                    triggered_patterns.append({
+                        'pattern_name': f"context_{phrase.get('phrase_type', 'unknown')}",
+                        'pattern_type': 'context_phrase',
+                        'crisis_level': phrase.get('crisis_level', 'low'),
+                        'confidence': phrase.get('confidence', 0.5),
+                        'category': phrase.get('phrase_type', 'context'),
+                        'matched_text': phrase.get('matched_phrase', ''),
+                        'source': 'crisis_context_patterns'
+                    })
+            except Exception as e:
+                logger.warning(f"⚠️ Error checking context phrases: {e}")
+            
+            # 4. Check temporal indicators
+            try:
+                temporal_analysis = self.analyze_temporal_indicators(message)
+                if temporal_analysis and temporal_analysis.get('found_indicators'):
+                    for indicator in temporal_analysis.get('found_indicators', []):
+                        triggered_patterns.append({
+                            'pattern_name': f"temporal_{indicator.get('indicator_type', 'unknown')}",
+                            'pattern_type': 'temporal',
+                            'crisis_level': indicator.get('crisis_level', 'medium'),
+                            'confidence': indicator.get('confidence', 0.6),
+                            'category': 'temporal',
+                            'matched_text': indicator.get('matched_text', ''),
+                            'source': 'temporal_indicators'
+                        })
+            except Exception as e:
+                logger.warning(f"⚠️ Error checking temporal indicators: {e}")
+            
+            # Log results
+            if triggered_patterns:
+                logger.info(f"✅ Found {len(triggered_patterns)} triggered patterns")
+                for pattern in triggered_patterns:
+                    logger.debug(f"   - {pattern['pattern_name']} ({pattern['crisis_level']}) from {pattern['source']}")
+            else:
+                logger.warning(f"⚠️ No patterns triggered for message: '{message[:50]}...'")
+                logger.debug(f"📋 Available pattern sources checked: enhanced_crisis_patterns, community_patterns, crisis_context_patterns, temporal_indicators")
+            
+            return triggered_patterns
+            
+        except Exception as e:
+            logger.error(f"❌ Error in find_triggered_patterns: {e}")
+            logger.exception("Full error details:")
+            return []
+
     def get_status(self) -> Dict[str, Any]:
         """
         Get current status of crisis pattern manager
