@@ -35,9 +35,18 @@ class StorageConfigManager:
         logger.info("🗄️ Initializing StorageConfigManager (Phase 3d Step 6)")
         
         try:
-            # Load storage configuration from JSON
-            self.config = self.config_manager.load_config('storage_settings')
-            logger.info("✅ Loaded configuration: storage_settings from storage_settings.json")
+            # Check if UnifiedConfigManager has the expected method
+            if hasattr(self.config_manager, 'load_config_file'):
+                self.config = self.config_manager.load_config_file('storage_settings')
+                logger.info("✅ Loaded configuration: storage_settings from storage_settings.json")
+            elif hasattr(self.config_manager, 'load_config'):
+                # Fallback for different method name
+                self.config = self.config_manager.load_config('storage_settings')
+                logger.info("✅ Loaded configuration: storage_settings from storage_settings.json")
+            else:
+                logger.warning("⚠️ UnifiedConfigManager missing expected config loading method")
+                raise AttributeError("No suitable config loading method found")
+            
             logger.info("✅ Storage configuration loaded from JSON with environment overrides")
             logger.info("StorageConfigManager v3.1d Step 6 initialized - UnifiedConfigManager integration complete")
             
@@ -46,6 +55,23 @@ class StorageConfigManager:
             logger.info("🔧 Using default storage configuration")
             self.config = self._get_default_config()
     
+    def _load_server_configuration(self) -> Dict[str, Any]:
+        """Load server configuration using UnifiedConfigManager (FIXED METHOD NAME)"""
+        try:
+            # FIX: Use load_config_file instead of load_config
+            config = self.config_manager.load_config_file('storage_settings')
+            
+            if config and 'storage_configuration' in config:
+                logger.info("✅ Storage configuration loaded from JSON with environment overrides")
+                return config
+            else:
+                logger.warning("⚠️ JSON storage configuration not found, using environment fallback")
+                return self._get_fallback_storage_config()
+                
+        except Exception as e:
+            logger.error(f"❌ Error loading storage configuration: {e}")
+            return self._get_fallback_storage_config()
+
     def _get_default_config(self) -> Dict[str, Any]:
         """Get default storage configuration if JSON loading fails"""
         return {
