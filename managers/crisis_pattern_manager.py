@@ -59,6 +59,64 @@ class CrisisPatternManager:
                 logger.error(f"Failed to load {pattern_type}: {e}")
                 self._patterns_cache[pattern_type] = {}
     
+    def get_crisis_patterns(self) -> List[Dict[str, Any]]:
+        """
+        Get all crisis patterns for backward compatibility with tests
+        
+        Returns:
+            List of all crisis patterns from all loaded pattern sets
+        """
+        all_patterns = []
+        
+        try:
+            # Aggregate patterns from all loaded pattern sets
+            for pattern_type, pattern_data in self._patterns_cache.items():
+                if isinstance(pattern_data, dict) and 'patterns' in pattern_data:
+                    patterns_section = pattern_data['patterns']
+                    
+                    # Handle different pattern structures
+                    if isinstance(patterns_section, dict):
+                        # Flatten nested pattern groups
+                        for group_name, group_patterns in patterns_section.items():
+                            if isinstance(group_patterns, list):
+                                for pattern in group_patterns:
+                                    if isinstance(pattern, dict):
+                                        # Add metadata about source
+                                        pattern_with_meta = pattern.copy()
+                                        pattern_with_meta['source_type'] = pattern_type
+                                        pattern_with_meta['source_group'] = group_name
+                                        all_patterns.append(pattern_with_meta)
+                                    elif isinstance(pattern, str):
+                                        # Convert string patterns to dict format
+                                        all_patterns.append({
+                                            'pattern': pattern,
+                                            'type': 'regex',
+                                            'source_type': pattern_type,
+                                            'source_group': group_name,
+                                            'weight': 1.0
+                                        })
+                    elif isinstance(patterns_section, list):
+                        # Direct list of patterns
+                        for pattern in patterns_section:
+                            if isinstance(pattern, dict):
+                                pattern_with_meta = pattern.copy()
+                                pattern_with_meta['source_type'] = pattern_type
+                                all_patterns.append(pattern_with_meta)
+                            elif isinstance(pattern, str):
+                                all_patterns.append({
+                                    'pattern': pattern,
+                                    'type': 'regex',
+                                    'source_type': pattern_type,
+                                    'weight': 1.0
+                                })
+            
+            logger.debug(f"✅ Aggregated {len(all_patterns)} crisis patterns from {len(self._patterns_cache)} pattern sets")
+            return all_patterns
+            
+        except Exception as e:
+            logger.error(f"❌ Error aggregating crisis patterns: {e}")
+            return []
+
     def get_crisis_context_patterns(self) -> Dict[str, Any]:
         """Get crisis context patterns that amplify crisis detection"""
         return self._patterns_cache.get('crisis_context_patterns', {})
