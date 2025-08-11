@@ -134,7 +134,7 @@
     "fallback_behavior": "no_boost"
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('temporal_indicators_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('temporal_indicators_patterns')",
     "access_method": "CrisisPatternManager.get_temporal_indicators()",
     "environment_override_example": "NLP_CONFIG_IMMEDIATE_TEMPORAL_BOOST=0.4",
     "implementation_notes": [
