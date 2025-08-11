@@ -43,6 +43,7 @@ from managers.logging_config_manager import create_logging_config_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.performance_config_manager import create_performance_config_manager
 from managers.server_config_manager import create_server_config_manager
+from managers.storage_config_manager import create_storage_config_manager
 from managers.zero_shot_manager import create_zero_shot_manager
 
 # Analysis Components
@@ -156,6 +157,14 @@ def initialize_unified_managers():
         feature_config = create_feature_config_manager(unified_config)
         performance_config = create_performance_config_manager(unified_config)
         server_config = create_server_config_manager(unified_config)
+        # Initialize StorageConfigManager
+        storage_config = None
+        try:
+            storage_config = create_storage_config_manager(unified_config)
+            logger.info("✅ StorageConfigManager initialized successfully")
+        except Exception as e:
+            logger.warning(f"⚠️ StorageConfigManager initialization failed: {e}")
+            logger.info("ℹ️ Continuing without StorageConfigManager - using fallback storage configuration")
         logger.info("✅ Phase 3d managers initialized")
         
         # Step 4: Initialize core system managers
@@ -193,20 +202,21 @@ def initialize_unified_managers():
             server_config_manager=server_config,
             logging_config_manager=logging_config,
             feature_config_manager=feature_config,
-            performance_config_manager=performance_config
+            performance_config_manager=performance_config,
+            storage_config_manager=storage_config
         )
         logger.info("✅ Core system managers initialized")
         
         # Step 5: Initialize analysis components
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
-            models_manager=models_manager,                    # FIX: First parameter must be models_manager
+            models_manager=models_manager,
             crisis_pattern_manager=crisis_pattern,
-            learning_manager=None,                            # FIX: Add explicit learning_manager parameter
+            learning_manager=None,
             analysis_parameters_manager=analysis_parameters,
             threshold_mapping_manager=threshold_mapping,
-            feature_config_manager=feature_config,           # FIX: Add missing manager
-            performance_config_manager=performance_config    # FIX: Add missing manager
+            feature_config_manager=feature_config,
+            performance_config_manager=performance_config
         )
         logger.info("✅ Analysis components initialized")
         
@@ -220,8 +230,9 @@ def initialize_unified_managers():
             'feature_config': feature_config,
             'performance_config': performance_config,
             'server_config': server_config,
+            'storage_config': storage_config,
             'model_ensemble': model_ensemble,
-            'models_manager': models_manager,  # STEP 9 FIX: Add models_manager to dictionary
+            'models_manager': models_manager,
             'pydantic': pydantic_manager,
             'settings': settings,
             'zero_shot_manager': zero_shot_manager,
@@ -268,28 +279,32 @@ def create_fastapi_app():
         async def health_check():
             """Enhanced health check with unified configuration status"""
             try:
+                # Get storage status if available
+                storage_status = "available" if managers.get('storage_config') else "unavailable"
+                
                 return {
                     "status": "healthy",
                     "timestamp": time.time(),
-                    "version": "3.1d-step9",
+                    "version": "3.1d",
                     "architecture": "clean_v3.1_unified_config",
-                    "phase_3d_step_9": "operational",
+                    "phase_3d": "operational",
                     "unified_config_manager": "active",
                     "managers_loaded": list(managers.keys()),
                     "total_managers": len(managers),
+                    "storage_config_manager": storage_status,
                     "environment_variables": {
                         "total_managed": len(managers['unified_config'].env_config),
                         "validation": "comprehensive_schema_validation",
                         "direct_os_getenv_calls": "eliminated"
                     },
-                    "community": "The Alphabet Cartel LGBTQIA+ Mental Health Support"
+                    "community": "The Alphabet Cartel"
                 }
             except Exception as e:
                 logger.error(f"❌ Health check error: {e}")
                 return {
                     "status": "error",
                     "error": str(e),
-                    "version": "3.1d-step9"
+                    "version": "3.1d"
                 }
         
         # Register API endpoints with manager dependencies
