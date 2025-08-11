@@ -1,10 +1,9 @@
-# ash/ash-nlp/managers/analysis_parameters_manager.py - Phase 3d Cleaned
+# ash-nlp/managers/analysis_parameters_manager.py
 """
-Analysis Parameters Manager for Ash NLP Service v3.1d - Duplicate Variables Removed
-Phase 3d: Removed duplicate ensemble weight variables (use ModelEnsembleManager instead)
-
+Analysis Parameters Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
-Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import os
