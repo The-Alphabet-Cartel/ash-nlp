@@ -45,14 +45,34 @@ def check_manager_availability():
             # Try to get the factory function
             factory_name = f"create_{manager_name.replace('Manager', '').lower()}_manager"
             # Handle special cases
-            if manager_name == 'UnifiedConfigManager':
-                factory_name = 'create_unified_config_manager'
-            elif manager_name == 'AnalysisParametersManager':
+            if manager_name == 'AnalysisParametersManager':
                 factory_name = 'create_analysis_parameters_manager'
             elif manager_name == 'CrisisPatternManager':
                 factory_name = 'create_crisis_pattern_manager'
+            elif manager_name == 'FeatureConfigManager':
+                factory_name = 'create_feature_config_manager'
+            elif manager_name == 'LoggingConfigManager':
+                factory_name = 'create_logging_config_manager'
+            elif manager_name == 'ModelEnsembleManager':
+                factory_name = 'create_model_ensemble_manager'
+            elif manager_name == 'ModelsManager':
+                factory_name = 'create_models_manager'
+            elif manager_name == 'PerformanceConfigManager':
+                factory_name = 'create_performance_config_manager'
+            elif manager_name == 'PydanticManager':
+                factory_name = 'create_pydantic_manager'
+            elif manager_name == 'ServerConfigManager':
+                factory_name = 'create_server_config_manager'
+            elif manager_name == 'SettingsManager':
+                factory_name = 'create_settings_manager'
+            elif manager_name == 'StorageConfigManager':
+                factory_name = 'create_storage_config_manager'
             elif manager_name == 'ThresholdMappingManager':
                 factory_name = 'create_threshold_mapping_manager'
+            elif manager_name == 'UnifiedConfigManager':
+                factory_name = 'create_unified_config_manager'
+            elif manager_name == 'ZeroShotManager':
+                factory_name = 'create_zero_shot_manager'
             
             factory_func = getattr(module, factory_name, None)
             
