@@ -20,7 +20,7 @@ import sys
 sys.path.append('/app')
 
 from managers.analysis_parameters_manager import AnalysisParametersManager
-from managers.config_manager import ConfigManager
+from managers.unified_config_manager import UnifiedConfigManager
 
 # Configure logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -319,7 +319,7 @@ class TestEnvironmentVariableValidation:
         }
         
         with patch.dict(os.environ, env_vars):
-            # Create a configuration that would have been processed by ConfigManager
+            # Create a configuration that would have been processed by UnifiedConfigManager
             processed_config = {
                 "crisis_thresholds": {
                     "high": 0.75,      # Converted from string
