@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-# ash/ash-nlp/managers/pydantic_manager.py - Phase 2B Migration
+# ash-nlp/managers/pydantic_manager.py
 """
-PydanticManager v3.1 - Clean Manager Architecture for Pydantic Models
-Migrated from models/pydantic_models.py to follow the established manager pattern
-
-Part of the Ash NLP Service v3.1 Clean Manager Architecture
-Following the same successful pattern as ModelsManager v3.1
+Clean Manager Architecture for Pydantic Models for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
