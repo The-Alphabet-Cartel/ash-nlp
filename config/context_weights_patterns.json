@@ -196,7 +196,7 @@
     }
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('context_weights_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('context_weights_patterns')",
     "access_method": "CrisisPatternManager.get_context_weights()",
     "environment_override_example": "NLP_CONFIG_CRISIS_CONTEXT_WEIGHT=1.2",
     "implementation_notes": [

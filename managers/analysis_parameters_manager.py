@@ -26,10 +26,10 @@ class AnalysisParametersManager:
         Initialize Analysis Parameters Manager
         
         Args:
-            config_manager: ConfigManager instance for configuration access
+            config_manager: UnifiedConfigManager instance for configuration access
         """
         if config_manager is None:
-            raise ValueError("ConfigManager is required for AnalysisParametersManager")
+            raise ValueError("UnifiedConfigManager is required for AnalysisParametersManager")
         
         self.config_manager = config_manager
         self.analysis_config = {}
@@ -43,7 +43,7 @@ class AnalysisParametersManager:
     def _load_configuration(self):
         """Load analysis parameters configuration"""
         try:
-            # Load analysis parameters via ConfigManager
+            # Load analysis parameters via UnifiedConfigManager
             analysis_config_raw = self.config_manager.load_config_file('analysis_parameters')
             
             if not analysis_config_raw:
@@ -670,7 +670,7 @@ def create_analysis_parameters_manager(config_manager) -> AnalysisParametersMana
     Factory function to create AnalysisParametersManager instance
     
     Args:
-        config_manager: ConfigManager instance
+        config_manager: UnifiedConfigManager instance
         
     Returns:
         AnalysisParametersManager instance

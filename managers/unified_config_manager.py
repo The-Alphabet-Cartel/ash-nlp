@@ -58,7 +58,7 @@ class UnifiedConfigManager:
     }
     
     This manager consolidates:
-    - ConfigManager: JSON loading with ${VAR} substitution (PRESERVED)
+    - UnifiedConfigManager: JSON loading with ${VAR} substitution (PRESERVED)
     - EnvConfigManager: Schema validation and type conversion (INTEGRATED)  
     - Direct os.getenv(): Centralized environment access (REPLACED)
     
@@ -771,7 +771,7 @@ class UnifiedConfigManager:
                 logger.debug(f"🔄 Substituting ${{{env_var}}} = {env_value}")
                 
                 if env_value is not None:
-                    # Type conversion for substituted values (follows ConfigManager pattern)
+                    # Type conversion for substituted values (follows UnifiedConfigManager pattern)
                     if env_value.lower() in ('true', 'false'):
                         result = str(env_value.lower() == 'true')
                         logger.debug(f"   → Converted to boolean: {result}")

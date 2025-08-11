@@ -31,7 +31,7 @@ class TestPhase3bIntegration:
     
     @pytest.fixture
     def mock_config_manager(self):
-        """FIXED: Create properly configured mock ConfigManager"""
+        """FIXED: Create properly configured mock UnifiedConfigManager"""
         mock_manager = Mock()
         
         # Complete analysis parameters configuration

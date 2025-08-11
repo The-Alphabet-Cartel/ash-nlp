@@ -33,7 +33,7 @@ sys.path.insert(0, '/app')
 
 try:
     from managers.threshold_mapping_manager import ThresholdMappingManager
-    from managers.config_manager import ConfigManager
+    from managers.unified_config_manager import UnifiedConfigManager
     logger.info("✅ Successfully imported ThresholdMappingManager")
 except ImportError as e:
     logger.error(f"❌ Failed to import ThresholdMappingManager: {e}")

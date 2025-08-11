@@ -206,7 +206,7 @@
     }
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('lgbtqia_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('lgbtqia_patterns')",
     "access_method": "SettingsManager.get_lgbtqia_patterns()",
     "environment_override_example": "NLP_CONFIG_ENABLE_LGBTQIA_PATTERNS=true",
     "notes": [
