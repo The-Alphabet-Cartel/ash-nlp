@@ -467,7 +467,7 @@
     "immediate_review_required": true
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('enhanced_crisis_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('enhanced_crisis_patterns')",
     "access_method": "CrisisPatternManager.get_enhanced_patterns()",
     "environment_override_example": "NLP_CONFIG_ENHANCED_CRISIS_WEIGHT=1.5",
     "implementation_notes": [
