@@ -194,7 +194,7 @@ def initialize_unified_managers():
             performance_config_manager=performance_config,
             pydantic_manager=pydantic_manager,
             server_config_manager=server_config,
-            storage_config_manager=storage_config
+            storage_config_manager=storage_config,
             threshold_mapping_manager=threshold_mapping,
             zero_shot_manager=zero_shot_manager,
         )
@@ -208,7 +208,7 @@ def initialize_unified_managers():
             analysis_parameters_manager=analysis_parameters,
             threshold_mapping_manager=threshold_mapping,
             feature_config_manager=feature_config,
-            performance_config_manager=performance_config
+            performance_config_manager=performance_config,
         )
         logger.info("✅ Analysis components initialized")
         
