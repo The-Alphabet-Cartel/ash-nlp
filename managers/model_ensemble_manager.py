@@ -125,7 +125,7 @@ class ModelEnsembleManager:
     
     async def analyze_message_ensemble(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
         """
-        Analyze message using ensemble models - CRITICAL METHOD FOR API COMPATIBILITY
+        Analyze message using ensemble models - CORRECTED VERSION
         
         This method is required by the API endpoints but delegates to CrisisAnalyzer
         following Clean v3.1 Architecture principles
@@ -144,9 +144,8 @@ class ModelEnsembleManager:
             # Import here to avoid circular imports
             from analysis.crisis_analyzer import CrisisAnalyzer
             
-            # Check if we have access to other managers through config manager
             try:
-                # Get other required managers for CrisisAnalyzer
+                # Get other required managers for CrisisAnalyzer using factory functions
                 from managers.crisis_pattern_manager import create_crisis_pattern_manager
                 from managers.analysis_parameters_manager import create_analysis_parameters_manager
                 from managers.threshold_mapping_manager import create_threshold_mapping_manager
@@ -160,10 +159,12 @@ class ModelEnsembleManager:
                 feature_config_manager = create_feature_config_manager(self.config_manager)
                 performance_config_manager = create_performance_config_manager(self.config_manager)
                 
-                # Create CrisisAnalyzer with all required dependencies
+                # CORRECTED: Create CrisisAnalyzer with the correct parameters (no config_manager)
+                # Based on analysis/__init__.py, the correct parameters are:
                 crisis_analyzer = CrisisAnalyzer(
-                    config_manager=self.config_manager,
+                    models_manager=self,  # ModelEnsembleManager acts as models_manager
                     crisis_pattern_manager=crisis_pattern_manager,
+                    learning_manager=None,  # Optional
                     analysis_parameters_manager=analysis_parameters_manager,
                     threshold_mapping_manager=threshold_mapping_manager,
                     feature_config_manager=feature_config_manager,
@@ -171,7 +172,7 @@ class ModelEnsembleManager:
                 )
                 
                 # Delegate to CrisisAnalyzer's analyze_message method
-                logger.debug(f"✅ CrisisAnalyzer created, performing analysis...")
+                logger.debug(f"✅ CrisisAnalyzer created with correct parameters, performing analysis...")
                 result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
                 
                 logger.debug(f"✅ Ensemble analysis complete via CrisisAnalyzer delegation")
@@ -179,6 +180,7 @@ class ModelEnsembleManager:
                 
             except Exception as e:
                 logger.error(f"❌ Failed to create CrisisAnalyzer or dependencies: {e}")
+                logger.exception("Full error details:")
                 # Fallback to basic response structure
                 return self._create_fallback_analysis_result(message, str(e))
                 
