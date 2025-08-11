@@ -160,11 +160,13 @@ def test_comprehensive_variable_validation():
             
             # Integer variables
             ('NLP_SERVER_PORT', 'get_env_int', 'integer'),
-            ('NLP_MODEL_MAX_BATCH_SIZE', 'get_env_int', 'integer'),
+            ('NLP_PERFORMANCE_BATCH_SIZE', 'get_env_int', 'integer'),
             
             # Float variables
             ('NLP_MODEL_DEPRESSION_WEIGHT', 'get_env_float', 'float'),
-            ('NLP_ANALYSIS_CRISIS_THRESHOLD', 'get_env_float', 'float'),
+            ('NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH', 'get_env_float', 'float'),
+            ('NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM', 'get_env_float', 'float'),
+            ('NLP_ANALYSIS_CRISIS_THRESHOLD_LOW', 'get_env_float', 'float'),
             
             # Boolean variables
             ('NLP_FEATURE_ENABLE_CRISIS_DETECTION', 'get_env_bool', 'boolean'),
