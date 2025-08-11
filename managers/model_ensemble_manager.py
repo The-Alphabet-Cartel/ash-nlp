@@ -1,10 +1,9 @@
-# ash/ash-nlp/managers/model_ensemble_manager.py - Phase 3d Updated
+# ash-nlp/managers/model_ensemble_manager.py
 """
-Model Ensemble Manager for Ash NLP Service v3.1d - Updated for Standardized Variables
-Phase 3d: Uses enhanced UnifiedConfigManager with standardized variable naming
-
+Model Ensemble Manager for Ash NLP Service v3.1
+Clean v3.1 Architecture
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
-Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import os
