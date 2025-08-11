@@ -1,10 +1,9 @@
-# ash-nlp/__init__.py - Clean v3.1 Package Initialization
+# ash-nlp/__init__.py
 """
-Ash NLP Service - v3.1 Clean Architecture
-Step 9.8: ConfigManager Eliminated - UnifiedConfigManager Only
-
-Mental health crisis detection for The Alphabet Cartel LGBTQIA+ community.
-Uses Clean v3.1 architecture with unified configuration management.
+Ash NLP Service for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
