@@ -510,6 +510,52 @@ class ThresholdMappingManager:
                 'min_confidence_for_learning': 0.3
             }
     
+    def get_pattern_integration_config(self) -> Dict[str, Any]:
+        """
+        Get pattern integration configuration settings
+        
+        This method was missing and is required by the integration logic
+        
+        Returns:
+            Dictionary with pattern integration configuration
+        """
+        try:
+            # Get pattern integration settings from threshold configuration
+            integration_config = self.threshold_config.get('pattern_integration', {})
+            
+            # If no specific pattern integration config, provide sensible defaults
+            if not integration_config:
+                integration_config = {
+                    'enabled': True,
+                    'confidence_boost_multiplier': 1.2,
+                    'pattern_weight': 0.3,
+                    'ensemble_weight': 0.7,
+                    'confidence_threshold': 0.5,
+                    'crisis_level_promotion': {
+                        'enabled': True,
+                        'boost_factor': 0.1
+                    }
+                }
+                logger.debug("🔧 Using default pattern integration configuration")
+            
+            logger.debug(f"✅ Pattern integration config loaded: {integration_config}")
+            return integration_config
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting pattern integration config: {e}")
+            # Return safe defaults
+            return {
+                'enabled': True,
+                'confidence_boost_multiplier': 1.0,
+                'pattern_weight': 0.3,
+                'ensemble_weight': 0.7,
+                'confidence_threshold': 0.5,
+                'crisis_level_promotion': {
+                    'enabled': False,
+                    'boost_factor': 0.0
+                }
+            }
+
     # ========================================================================
     # VALIDATION AND STATUS METHODS (PRESERVED)
     # ========================================================================
