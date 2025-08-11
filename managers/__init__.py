@@ -1,10 +1,9 @@
-# ash/ash-nlp/managers/__init__.py (Clean v3.1 Architecture - Step 9.8 Complete)
+# ash-nlp/managers/__init__.py
 """
-Ash NLP Service Managers - Clean v3.1 Architecture
-Step 9.8: Complete ConfigManager Elimination - UnifiedConfigManager Only
-
-Provides centralized access to all manager components following clean v3.1 patterns.
-All managers use dependency injection and fail-fast design.
+Service Managers for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
@@ -17,9 +16,9 @@ logger = logging.getLogger(__name__)
 try:
     from .analysis_parameters_manager import AnalysisParametersManager, create_analysis_parameters_manager
     ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = True
-    logger.debug("✅ AnalysisParametersManager v3.1 imported")
+    logger.debug("  ✅ AnalysisParametersManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ AnalysisParametersManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ AnalysisParametersManager v3.1 import failed: {e}")
     AnalysisParametersManager = None
     create_analysis_parameters_manager = None
     ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = False
@@ -27,9 +26,9 @@ except ImportError as e:
 try:
     from .crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
     CRISIS_PATTERN_MANAGER_AVAILABLE = True
-    logger.debug("✅ CrisisPatternManager v3.1 Step 9.8 imported")
+    logger.debug("  ✅ CrisisPatternManager v3.1 Step 9.8 imported")
 except ImportError as e:
-    logger.error(f"❌ CrisisPatternManager v3.1 Step 9.8 import failed: {e}")
+    logger.error(f"  ❌ CrisisPatternManager v3.1 Step 9.8 import failed: {e}")
     CrisisPatternManager = None
     create_crisis_pattern_manager = None
     CRISIS_PATTERN_MANAGER_AVAILABLE = False
@@ -37,9 +36,9 @@ except ImportError as e:
 try:
     from .feature_config_manager import FeatureConfigManager, create_feature_config_manager
     FEATURE_CONFIG_MANAGER_AVAILABLE = True
-    logger.debug("✅ FeatureConfigManager v3.1 imported")
+    logger.debug("  ✅ FeatureConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ FeatureConfigManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ FeatureConfigManager v3.1 import failed: {e}")
     FeatureConfigManager = None
     create_feature_config_manager = None
     FEATURE_CONFIG_MANAGER_AVAILABLE = False
@@ -47,9 +46,9 @@ except ImportError as e:
 try:
     from .logging_config_manager import LoggingConfigManager, create_logging_config_manager
     LOGGING_CONFIG_MANAGER_AVAILABLE = True
-    logger.debug("✅ LoggingConfigManager v3.1 imported")
+    logger.debug("  ✅ LoggingConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ LoggingConfigManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ LoggingConfigManager v3.1 import failed: {e}")
     LoggingConfigManager = None
     create_logging_config_manager = None
     LOGGING_CONFIG_MANAGER_AVAILABLE = False
@@ -57,9 +56,9 @@ except ImportError as e:
 try:
     from .model_ensemble_manager import ModelEnsembleManager, create_model_ensemble_manager
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = True
-    logger.debug("✅ ModelEnsembleManager v3.1 imported")
+    logger.debug("  ✅ ModelEnsembleManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ ModelEnsembleManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ ModelEnsembleManager v3.1 import failed: {e}")
     ModelEnsembleManager = None
     create_model_ensemble_manager = None
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = False
@@ -67,9 +66,9 @@ except ImportError as e:
 try:
     from .models_manager import ModelsManager, create_models_manager
     MODELS_MANAGER_AVAILABLE = True
-    logger.debug("✅ ModelsManager v3.1 imported")
+    logger.debug("  ✅ ModelsManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ ModelsManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ ModelsManager v3.1 import failed: {e}")
     ModelsManager = None
     create_models_manager = None
     MODELS_MANAGER_AVAILABLE = False
@@ -77,9 +76,9 @@ except ImportError as e:
 try:
     from .performance_config_manager import PerformanceConfigManager, create_performance_config_manager
     PERFORMANCE_CONFIG_MANAGER_AVAILABLE = True
-    logger.debug("✅ PerformanceConfigManager v3.1 imported")
+    logger.debug("  ✅ PerformanceConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ PerformanceConfigManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ PerformanceConfigManager v3.1 import failed: {e}")
     PerformanceConfigManager = None
     create_performance_config_manager = None
     PERFORMANCE_CONFIG_MANAGER_AVAILABLE = False
@@ -88,9 +87,9 @@ except ImportError as e:
 try:
     from .pydantic_manager import PydanticManager, create_pydantic_manager
     PYDANTIC_MANAGER_AVAILABLE = True
-    logger.debug("✅ PydanticManager v3.1 imported")
+    logger.debug("  ✅ PydanticManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ PydanticManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ PydanticManager v3.1 import failed: {e}")
     PydanticManager = None
     create_pydantic_manager = None
     PYDANTIC_MANAGER_AVAILABLE = False
@@ -98,9 +97,9 @@ except ImportError as e:
 try:
     from .server_config_manager import ServerConfigManager, create_server_config_manager
     SERVER_CONFIG_MANAGER_AVAILABLE = True
-    logger.debug("✅ ServerConfigManager v3.1 imported")
+    logger.debug("  ✅ ServerConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ ServerConfigManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ ServerConfigManager v3.1 import failed: {e}")
     ServerConfigManager = None
     create_server_config_manager = None
     SERVER_CONFIG_MANAGER_AVAILABLE = False
@@ -108,9 +107,9 @@ except ImportError as e:
 try:
     from .settings_manager import SettingsManager, create_settings_manager
     SETTINGS_MANAGER_AVAILABLE = True
-    logger.debug("✅ SettingsManager v3.1 imported")
+    logger.debug("  ✅ SettingsManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ SettingsManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ SettingsManager v3.1 import failed: {e}")
     SettingsManager = None
     create_settings_manager = None
     SETTINGS_MANAGER_AVAILABLE = False
@@ -118,9 +117,9 @@ except ImportError as e:
 try:
     from .storage_config_manager import StorageConfigManager, create_storage_config_manager
     STORAGE_CONFIG_MANAGER_AVAILABLE = True
-    logger.debug("✅ StorageConfigManager v3.1 imported")
+    logger.debug("  ✅ StorageConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ StorageConfigManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ StorageConfigManager v3.1 import failed: {e}")
     StorageConfigManager = None
     create_storage_config_manager = None
     STORAGE_CONFIG_MANAGER_AVAILABLE = False
@@ -128,9 +127,9 @@ except ImportError as e:
 try:
     from .threshold_mapping_manager import ThresholdMappingManager, create_threshold_mapping_manager
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = True
-    logger.debug("✅ ThresholdMappingManager v3.1 imported")
+    logger.debug("  ✅ ThresholdMappingManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ ThresholdMappingManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ ThresholdMappingManager v3.1 import failed: {e}")
     ThresholdMappingManager = None
     create_threshold_mapping_manager = None
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = False
@@ -138,9 +137,9 @@ except ImportError as e:
 try:
     from .unified_config_manager import UnifiedConfigManager, create_unified_config_manager
     UNIFIED_CONFIG_MANAGER_AVAILABLE = True
-    logger.debug("✅ Unified configuration managers imported")
+    logger.debug("  ✅ Unified configuration managers imported")
 except ImportError as e:
-    logger.error(f"❌ Unified configuration manager imports failed: {e}")
+    logger.error(f"  ❌ Unified configuration manager imports failed: {e}")
     UnifiedConfigManager = None
     create_unified_config_manager = None
     UNIFIED_CONFIG_MANAGER_AVAILABLE = False
@@ -148,9 +147,9 @@ except ImportError as e:
 try:
     from .zero_shot_manager import ZeroShotManager, create_zero_shot_manager
     ZERO_SHOT_MANAGER_AVAILABLE = True
-    logger.debug("✅ ZeroShotManager imported")
+    logger.debug("  ✅ ZeroShotManager imported")
 except ImportError as e:
-    logger.error(f"❌ ZeroShotManager import failed: {e}")
+    logger.error(f"  ❌ ZeroShotManager import failed: {e}")
     ZeroShotManager = None
     create_zero_shot_manager = None
     ZERO_SHOT_MANAGER_AVAILABLE = False
