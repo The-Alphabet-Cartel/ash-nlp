@@ -1,348 +1,306 @@
 {
-  "version": "1.0",
-  "description": "Zero-Shot Model Labels Configuration for Ash NLP Service",
-  "last_updated": "2025-08-02",
-  "default_label_set": "enhanced_crisis",
+  "version": "1.1",
+  "description": "Zero-Shot Model Labels Configuration for Ash NLP Service - Phase 3d Compliant",
+  "last_updated": "2025-08-10",
+  "architecture": "clean-v3.1-unified",
+  "phase": "Phase 3d Step 9 - Architecture-compliant placeholder + defaults pattern",
   
-  "label_sets": {
-    "current": {
-      "name": "Current (Baseline)",
-      "description": "Original baseline labels from current implementation",
-      "optimized_for": "balanced_detection",
-      "sensitivity_level": "medium",
-      "labels": {
-        "depression": [
-          "person experiencing severe clinical depression with major functional impairment",
-          "person showing moderate depression with professional intervention needed",
-          "person with mild depressive episode with manageable symptoms and temporary low mood",
-          "person with stable mental health with normal emotional fluctuations and no depression signs",
-          "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
-        ],
-        "sentiment": [
-          "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
-          "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment", 
-          "person displaying mixed or neutral emotional state without strong positive or negative feelings",
-          "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
-          "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
-          "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
-        ],
-        "emotional_distress": [
-          "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
-          "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
-          "person showing moderate distress with some difficulty managing emotions and daily responsibilities", 
-          "person handling normal life stress with adequate coping strategies and emotional regulation",
-          "person demonstrating strong emotional resilience with healthy stress management and adaptation",
-          "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
-        ]
-      },
-      "mapping_rules": {
-        "depression": {
-          "severe_patterns": ["severe clinical depression", "major functional impairment"],
-          "moderate_patterns": ["moderate depression", "professional intervention"],
-          "mild_patterns": ["mild depressive episode", "manageable symptoms"],
-          "none_patterns": ["stable mental health", "positive mental wellness"]
+  "label_configuration": {
+    "current_label_set": "${NLP_ZERO_SHOT_LABEL_SET}",
+    "enable_runtime_switching": "${NLP_ZERO_SHOT_ENABLE_RUNTIME_SWITCHING}",
+    "cache_labels": "${NLP_ZERO_SHOT_CACHE_LABELS}",
+    "validate_on_load": "${NLP_ZERO_SHOT_VALIDATE_ON_LOAD}",
+    "fallback_label_set": "${NLP_ZERO_SHOT_FALLBACK_LABEL_SET}",
+    
+    "label_sets": {
+      "enhanced_crisis": {
+        "name": "Enhanced Crisis Detection",
+        "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
+        "optimized_for": "high_crisis_detection",
+        "sensitivity_level": "high",
+        "recommended": true,
+        "models_used": {
+          "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+          "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment", 
+          "emotional_distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
         },
-        "sentiment": {
-          "very_negative_patterns": ["profound despair", "overwhelming sadness", "emotional devastation"],
-          "negative_patterns": ["significant negative emotions", "anger", "frustration", "fear"],
-          "neutral_patterns": ["mixed or neutral", "without strong positive or negative"],
-          "positive_patterns": ["mild positive emotions", "satisfaction", "contentment"],
-          "very_positive_patterns": ["strong positive emotions", "joy", "excitement", "intense positive energy"]
-        },
-        "emotional_distress": {
-          "high_patterns": ["acute psychological distress", "immediate crisis intervention", "severe emotional overwhelm"],
-          "medium_patterns": ["moderate distress", "some difficulty managing"],
-          "low_patterns": ["normal life stress", "adequate coping strategies"],
-          "none_patterns": ["strong emotional resilience", "optimal emotional wellbeing"]
-        }
-      }
-    },
-
-    "enhanced_crisis": {
-      "name": "Enhanced Crisis Detection",
-      "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
-      "optimized_for": "high_crisis_detection",
-      "sensitivity_level": "high",
-      "recommended": true,
-      "models_used": {
-        "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-        "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment", 
-        "emotional_distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
-      },
-      "labels": {
-        "depression": [
-          "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
-          "person stating they want to die, kill themselves, or commit suicide with immediate intent",
-          "person describing specific suicide methods, plans, preparations, or final arrangements",
-          "person expressing complete hopelessness, that nothing will ever get better, or life has no meaning",
-          "person stating they are beyond help, cannot be saved, or are past the point of return",
-          "person describing feeling trapped with no way out or escape from their situation",
-          "person describing active self-harm, cutting, burning, or intentional self-injury behaviors",
-          "person expressing desire to hurt themselves or engage in reckless dangerous behaviors",
-          "person showing severe depression with major breakdown and inability to function daily",
-          "person experiencing moderate depression, significant sadness, but maintaining some daily functioning",
-          "person expressing emotional difficulty, low mood, or distress but still coping with life",
-          "person describing temporary depression, bad periods, or situational emotional struggles",
-          "person showing stable mental health with normal emotional ups and downs and healthy coping",
-          "person demonstrating positive mental health, emotional resilience, and psychological wellbeing"
-        ],
-        "sentiment": [
-          "person expressing devastating emotional pain, complete despair, or overwhelming hopelessness with crisis-level intensity",
-          "person showing intense destructive emotions, uncontrollable rage, or violent emotional breakdown",
-          "person displaying emotional devastation, crushing sadness, or complete psychological collapse",
-          "person expressing significant emotional pain, deep sadness, intense fear, anxiety, or distressing emotions",
-          "person showing frustration, anger, disappointment, worry, or moderate negative emotional states",
-          "person displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
-          "person expressing neutral emotions, balanced feelings, or stable emotional state without extremes",
-          "person showing factual communication, casual conversation, or emotionally neutral expressions",
-          "person expressing contentment, satisfaction, mild happiness, gratitude, or positive emotions",
-          "person showing hope, optimism, appreciation, joy, or constructive positive emotional states",
-          "person expressing intense joy, excitement, euphoria, overwhelming happiness, or peak positive emotional highs"
-        ],
-        "emotional_distress": [
-          "person in acute psychological crisis, mental health emergency, completely unable to cope or function",
-          "person experiencing emotional breakdown, psychological emergency, or complete loss of emotional control",
-          "person showing total inability to manage emotions, daily life, or basic functioning",
-          "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities",
-          "person showing serious emotional distress that significantly impairs work, relationships, or functioning",
-          "person displaying major emotional strain affecting multiple important life areas",
-          "person experiencing moderate emotional distress with some difficulty managing daily activities",
-          "person showing emotional challenges, stress, or strain but maintaining basic life functioning",
-          "person displaying concerning emotional difficulty that interferes with some normal activities",
-          "person handling typical life stress with adequate emotional regulation and healthy coping strategies",
-          "person experiencing normal daily stressors but managing them appropriately with good coping",
-          "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
-        ]
-      },
-      "mapping_rules": {
-        "depression": {
-          "severe_patterns": [
-            "actively expressing suicidal", "want to die", "kill themselves", 
-            "suicide methods", "suicide plans", "end their life", "death wishes",
-            "specific plans to end", "immediate intent", "complete hopelessness", 
-            "beyond help", "cannot be saved", "past the point", "trapped with no way", 
-            "nothing will ever get better", "no meaning", "no escape"
+        "labels": {
+          "depression": [
+            "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
+            "person stating they want to die, kill themselves, or commit suicide with immediate intent",
+            "person describing specific suicide methods, plans, preparations, or final arrangements",
+            "person expressing complete hopelessness, that nothing will ever get better, or life has no meaning",
+            "person stating they are beyond help, cannot be saved, or are past the point of return",
+            "person describing feeling trapped with no way out or escape from their situation",
+            "person describing active self-harm, cutting, burning, or intentional self-injury behaviors",
+            "person expressing desire to hurt themselves or engage in reckless dangerous behaviors",
+            "person showing severe depression with major breakdown and inability to function daily",
+            "person experiencing moderate depression, significant sadness, but maintaining some daily functioning",
+            "person expressing emotional difficulty, low mood, or distress but still coping with life",
+            "person describing temporary depression, bad periods, or situational emotional struggles",
+            "person showing stable mental health with normal emotional ups and downs and healthy coping",
+            "person demonstrating positive mental health, emotional resilience, and psychological wellbeing"
           ],
-          "moderate_patterns": [
-            "active self-harm", "cutting", "burning", "hurt themselves",
-            "severe depression", "major breakdown", "inability to function",
-            "reckless dangerous", "intentional self-injury"
+          "sentiment": [
+            "person expressing devastating emotional pain, complete despair, or overwhelming hopelessness with crisis-level intensity",
+            "person showing intense destructive emotions, uncontrollable rage, or violent emotional breakdown",
+            "person displaying emotional devastation, crushing sadness, or complete psychological collapse",
+            "person expressing significant emotional pain, deep sadness, intense fear, anxiety, or distressing emotions",
+            "person showing frustration, anger, disappointment, worry, or moderate negative emotional states",
+            "person displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
+            "person expressing neutral emotions, balanced feelings, or stable emotional state without extremes",
+            "person showing factual communication, casual conversation, or emotionally neutral expressions",
+            "person expressing contentment, satisfaction, mild happiness, gratitude, or positive emotions",
+            "person showing hope, optimism, appreciation, joy, or constructive positive emotional states",
+            "person expressing intense joy, excitement, euphoria, overwhelming happiness, or peak positive emotional highs"
           ],
-          "mild_patterns": [
-            "moderate depression", "significant sadness", "maintaining some",
-            "emotional difficulty", "low mood", "temporary depression",
-            "bad periods", "situational emotional"
-          ],
-          "none_patterns": [
-            "stable mental health", "normal emotional", "positive mental health",
-            "emotional resilience", "psychological wellbeing", "healthy coping"
+          "emotional_distress": [
+            "person in acute psychological crisis, mental health emergency, completely unable to cope or function",
+            "person experiencing emotional breakdown, psychological emergency, or complete loss of emotional control",
+            "person showing total inability to manage emotions, daily life, or basic functioning",
+            "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities",
+            "person showing serious emotional distress that significantly impairs work, relationships, or functioning",
+            "person displaying major emotional strain affecting multiple important life areas",
+            "person experiencing moderate emotional distress with some difficulty managing daily activities",
+            "person showing emotional challenges, stress, or strain but maintaining basic life functioning",
+            "person displaying concerning emotional difficulty that interferes with some normal activities",
+            "person handling typical life stress with adequate emotional regulation and healthy coping strategies",
+            "person experiencing normal daily stressors but managing them appropriately with good coping",
+            "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
           ]
         },
-        "sentiment": {
-          "very_negative_patterns": [
-            "devastating emotional pain", "complete despair", "overwhelming hopelessness",
-            "crisis-level intensity", "destructive emotions", "emotional devastation",
-            "psychological collapse", "uncontrollable", "violent emotional"
+        "mapping_rules": {
+          "depression": {
+            "severe_patterns": [
+              "actively expressing suicidal", "want to die", "kill themselves", 
+              "suicide methods", "suicide plans", "end their life", "death wishes",
+              "specific plans to end", "immediate intent", "complete hopelessness", 
+              "beyond help", "cannot be saved", "past the point", "trapped with no way", 
+              "nothing will ever get better", "no meaning", "no escape"
+            ],
+            "moderate_patterns": [
+              "active self-harm", "cutting", "burning", "hurt themselves",
+              "severe depression", "major breakdown", "inability to function",
+              "reckless dangerous", "intentional self-injury"
+            ],
+            "mild_patterns": [
+              "moderate depression", "significant sadness", "maintaining some",
+              "emotional difficulty", "low mood", "temporary depression",
+              "bad periods", "situational emotional"
+            ],
+            "none_patterns": [
+              "stable mental health", "normal emotional", "positive mental health",
+              "emotional resilience", "psychological wellbeing", "healthy coping"
+            ]
+          },
+          "sentiment": {
+            "very_negative_patterns": [
+              "devastating emotional pain", "complete despair", "overwhelming hopelessness",
+              "crisis-level intensity", "destructive emotions", "emotional devastation",
+              "psychological collapse", "uncontrollable", "violent emotional"
+            ],
+            "negative_patterns": [
+              "significant emotional pain", "deep sadness", "intense fear",
+              "emotional struggle", "difficulty coping", "negative emotional",
+              "distressing emotions", "ongoing negative"
+            ],
+            "neutral_patterns": [
+              "neutral emotions", "balanced feelings", "stable emotional",
+              "factual communication", "casual conversation", "emotionally neutral"
+            ],
+            "positive_patterns": [
+              "contentment", "satisfaction", "mild happiness", "gratitude",
+              "hope", "optimism", "constructive positive", "positive emotions"
+            ],
+            "very_positive_patterns": [
+              "intense joy", "excitement", "euphoria", "overwhelming happiness",
+              "peak positive", "incredibly happy", "absolutely thrilled"
+            ]
+          },
+          "emotional_distress": {
+            "high_patterns": [
+              "acute psychological crisis", "mental health emergency", "completely unable to cope",
+              "emotional breakdown", "psychological emergency", "total inability",
+              "complete loss of emotional control", "severe emotional overwhelm", 
+              "major difficulty managing", "serious emotional distress", "significantly impairs", 
+              "major emotional strain", "multiple life areas"
+            ],
+            "medium_patterns": [
+              "moderate emotional distress", "some difficulty managing", "emotional challenges",
+              "maintaining basic", "interferes with some", "concerning emotional"
+            ],
+            "low_patterns": [
+              "typical life stress", "adequate emotional regulation", "normal daily stressors",
+              "managing them appropriately", "healthy coping strategies"
+            ],
+            "none_patterns": [
+              "excellent emotional resilience", "optimal coping", "strong psychological wellbeing",
+              "emotional strength", "thriving"
+            ]
+          }
+        }
+      },
+
+      "clinical_focused": {
+        "name": "Clinical/Medical Terminology",
+        "description": "Medical and clinical terminology focused labels for professional assessment contexts",
+        "optimized_for": "clinical_assessment",
+        "sensitivity_level": "medium",
+        "labels": {
+          "depression": [
+            "patient presenting with acute suicidal ideation requiring immediate psychiatric intervention",
+            "patient showing severe major depressive disorder with psychotic features and functional impairment",
+            "patient exhibiting moderate depression with significant symptoms requiring professional treatment",
+            "patient displaying mild depressive symptoms with minimal functional impact",
+            "patient demonstrating normal mood and affect with no signs of depressive disorder"
           ],
-          "negative_patterns": [
-            "significant emotional pain", "deep sadness", "intense fear",
-            "emotional struggle", "difficulty coping", "negative emotional",
-            "distressing emotions", "ongoing negative"
+          "sentiment": [
+            "patient expressing severe psychological distress with marked negative affect",
+            "patient showing moderate negative emotions and mood disturbance",
+            "patient displaying neutral affect and mood state",
+            "patient expressing positive mood and emotional wellbeing",
+            "patient demonstrating elevated positive affect and mood"
           ],
-          "neutral_patterns": [
-            "neutral emotions", "balanced feelings", "stable emotional",
-            "factual communication", "casual conversation", "emotionally neutral"
-          ],
-          "positive_patterns": [
-            "contentment", "satisfaction", "mild happiness", "gratitude",
-            "hope", "optimism", "constructive positive", "positive emotions"
-          ],
-          "very_positive_patterns": [
-            "intense joy", "excitement", "euphoria", "overwhelming happiness",
-            "peak positive", "incredibly happy", "absolutely thrilled"
+          "emotional_distress": [
+            "patient in acute psychiatric crisis requiring immediate emergency intervention",
+            "patient experiencing severe psychological distress with marked functional impairment",
+            "patient showing moderate stress response with some coping difficulties",
+            "patient managing normal stress levels with adequate coping mechanisms",
+            "patient demonstrating optimal stress management and psychological resilience"
           ]
         },
-        "emotional_distress": {
-          "high_patterns": [
-            "acute psychological crisis", "mental health emergency", "completely unable to cope",
-            "emotional breakdown", "psychological emergency", "total inability",
-            "complete loss of emotional control", "severe emotional overwhelm", 
-            "major difficulty managing", "serious emotional distress", "significantly impairs", 
-            "major emotional strain", "multiple life areas"
+        "mapping_rules": {
+          "depression": {
+            "severe_patterns": ["acute suicidal ideation", "immediate psychiatric intervention", "severe major depressive disorder"],
+            "moderate_patterns": ["moderate depression", "significant symptoms", "professional treatment"],
+            "mild_patterns": ["mild depressive symptoms", "minimal functional impact"],
+            "none_patterns": ["normal mood and affect", "no signs of depressive disorder"]
+          },
+          "sentiment": {
+            "very_negative_patterns": ["severe psychological distress", "marked negative affect"],
+            "negative_patterns": ["moderate negative emotions", "mood disturbance"],
+            "neutral_patterns": ["neutral affect and mood state"],
+            "positive_patterns": ["positive mood", "emotional wellbeing"],
+            "very_positive_patterns": ["elevated positive affect"]
+          },
+          "emotional_distress": {
+            "high_patterns": ["acute psychiatric crisis", "immediate emergency intervention", "severe psychological distress"],
+            "medium_patterns": ["moderate stress response", "some coping difficulties"],
+            "low_patterns": ["normal stress levels", "adequate coping mechanisms"],
+            "none_patterns": ["optimal stress management", "psychological resilience"]
+          }
+        }
+      },
+
+      "conversational": {
+        "name": "Conversational/Social Media",
+        "description": "Labels optimized for informal conversation and social media language patterns typical in Discord communities",
+        "optimized_for": "social_media_detection",
+        "sensitivity_level": "medium",
+        "labels": {
+          "depression": [
+            "someone saying they want to die, end it all, or expressing serious thoughts about suicide",
+            "someone describing feeling completely hopeless, broken, or like nothing will ever get better",
+            "someone talking about hurting themselves or feeling really depressed and struggling badly",
+            "someone having a rough time, feeling down, or going through some emotional difficulties",
+            "someone doing okay emotionally, handling life normally, or feeling generally stable"
           ],
-          "medium_patterns": [
-            "moderate emotional distress", "some difficulty managing", "emotional challenges",
-            "maintaining basic", "interferes with some", "concerning emotional"
+          "sentiment": [
+            "someone expressing intense pain, devastation, or feeling completely destroyed emotionally",
+            "someone feeling really negative, upset, angry, or going through serious emotional difficulty",
+            "someone feeling neutral, okay, or just having normal everyday conversation",
+            "someone feeling pretty good, positive, happy, or expressing gratitude and hope",
+            "someone feeling amazing, incredibly happy, excited, or absolutely thrilled about something"
           ],
-          "low_patterns": [
-            "typical life stress", "adequate emotional regulation", "normal daily stressors",
-            "managing them appropriately", "healthy coping strategies"
-          ],
-          "none_patterns": [
-            "excellent emotional resilience", "optimal coping", "strong psychological wellbeing",
-            "emotional strength", "thriving"
+          "emotional_distress": [
+            "someone having a complete breakdown, crisis, or unable to cope with anything right now",
+            "someone feeling overwhelmed, severely stressed, or struggling to handle daily life",
+            "someone dealing with stress but managing okay, having some tough moments",
+            "someone handling normal life stress pretty well with good coping",
+            "someone feeling really strong emotionally, handling everything great, thriving"
           ]
+        },
+        "mapping_rules": {
+          "depression": {
+            "severe_patterns": ["want to die", "end it all", "serious thoughts about suicide", "completely hopeless"],
+            "moderate_patterns": ["hurting themselves", "really depressed", "struggling badly"],
+            "mild_patterns": ["rough time", "feeling down", "emotional difficulties"],
+            "none_patterns": ["doing okay", "handling life normally", "generally stable"]
+          },
+          "sentiment": {
+            "very_negative_patterns": ["intense pain", "devastation", "completely destroyed"],
+            "negative_patterns": ["really negative", "upset", "angry", "serious emotional difficulty"],
+            "neutral_patterns": ["feeling neutral", "normal everyday conversation"],
+            "positive_patterns": ["feeling pretty good", "positive", "gratitude and hope"],
+            "very_positive_patterns": ["feeling amazing", "incredibly happy", "absolutely thrilled"]
+          },
+          "emotional_distress": {
+            "high_patterns": ["complete breakdown", "crisis", "unable to cope"],
+            "medium_patterns": ["feeling overwhelmed", "severely stressed", "struggling to handle"],
+            "low_patterns": ["dealing with stress", "managing okay", "some tough moments"],
+            "none_patterns": ["handling normal life stress", "feeling really strong", "thriving"]
+          }
         }
-      }
-    },
-
-    "clinical_focused": {
-      "name": "Clinical/Medical Terminology",
-      "description": "Medical and clinical terminology focused labels for professional assessment contexts",
-      "optimized_for": "clinical_assessment",
-      "sensitivity_level": "medium",
-      "labels": {
-        "depression": [
-          "patient presenting with acute suicidal ideation requiring immediate psychiatric intervention",
-          "patient showing severe major depressive disorder with psychotic features and functional impairment",
-          "patient exhibiting moderate depression with significant symptoms requiring professional treatment",
-          "patient displaying mild depressive symptoms with minimal functional impact",
-          "patient demonstrating normal mood and affect with no signs of depressive disorder"
-        ],
-        "sentiment": [
-          "patient expressing severe psychological distress with marked negative affect",
-          "patient showing moderate negative emotions and mood disturbance",
-          "patient displaying neutral affect and mood state",
-          "patient expressing positive mood and emotional wellbeing",
-          "patient demonstrating elevated positive affect and mood"
-        ],
-        "emotional_distress": [
-          "patient in acute psychiatric crisis requiring immediate emergency intervention",
-          "patient experiencing severe psychological distress with marked functional impairment",
-          "patient showing moderate stress response with some coping difficulties",
-          "patient managing normal stress levels with adequate coping mechanisms",
-          "patient demonstrating optimal stress management and psychological resilience"
-        ]
       },
-      "mapping_rules": {
-        "depression": {
-          "severe_patterns": ["acute suicidal ideation", "immediate psychiatric intervention", "severe major depressive disorder"],
-          "moderate_patterns": ["moderate depression", "significant symptoms", "professional treatment"],
-          "mild_patterns": ["mild depressive symptoms", "minimal functional impact"],
-          "none_patterns": ["normal mood and affect", "no signs of depressive disorder"]
-        },
-        "sentiment": {
-          "very_negative_patterns": ["severe psychological distress", "marked negative affect"],
-          "negative_patterns": ["moderate negative emotions", "mood disturbance"],
-          "neutral_patterns": ["neutral affect and mood state"],
-          "positive_patterns": ["positive mood", "emotional wellbeing"],
-          "very_positive_patterns": ["elevated positive affect"]
-        },
-        "emotional_distress": {
-          "high_patterns": ["acute psychiatric crisis", "immediate emergency intervention", "severe psychological distress"],
-          "medium_patterns": ["moderate stress response", "some coping difficulties"],
-          "low_patterns": ["normal stress levels", "adequate coping mechanisms"],
-          "none_patterns": ["optimal stress management", "psychological resilience"]
-        }
-      }
-    },
 
-    "conversational": {
-      "name": "Conversational/Social Media",
-      "description": "Labels optimized for informal conversation and social media language patterns typical in Discord communities",
-      "optimized_for": "social_media_detection",
-      "sensitivity_level": "medium",
-      "labels": {
-        "depression": [
-          "someone saying they want to die, end it all, or expressing serious thoughts about suicide",
-          "someone describing feeling completely hopeless, broken, or like nothing will ever get better",
-          "someone talking about hurting themselves or feeling really depressed and struggling badly",
-          "someone having a rough time, feeling down, or going through some emotional difficulties",
-          "someone doing okay emotionally, handling life normally, or feeling generally stable"
-        ],
-        "sentiment": [
-          "someone expressing intense pain, devastation, or feeling completely destroyed emotionally",
-          "someone feeling really negative, upset, angry, or going through serious emotional difficulty",
-          "someone feeling neutral, okay, or just having normal everyday conversation",
-          "someone feeling pretty good, positive, happy, or expressing gratitude and hope",
-          "someone feeling amazing, incredibly happy, excited, or absolutely thrilled about something"
-        ],
-        "emotional_distress": [
-          "someone having a complete breakdown, crisis, or unable to cope with anything right now",
-          "someone feeling overwhelmed, severely stressed, or struggling to handle daily life",
-          "someone dealing with stress but managing okay, having some tough moments",
-          "someone handling normal life stress pretty well with good coping",
-          "someone feeling really strong emotionally, handling everything great, thriving"
-        ]
-      },
-      "mapping_rules": {
-        "depression": {
-          "severe_patterns": ["want to die", "end it all", "serious thoughts about suicide", "completely hopeless"],
-          "moderate_patterns": ["hurting themselves", "really depressed", "struggling badly"],
-          "mild_patterns": ["rough time", "feeling down", "emotional difficulties"],
-          "none_patterns": ["doing okay", "handling life normally", "generally stable"]
+      "safety_first": {
+        "name": "Safety First (Ultra-Sensitive)",
+        "description": "Ultra-sensitive labels designed to catch any potential crisis with maximum safety bias",
+        "optimized_for": "maximum_safety",
+        "sensitivity_level": "ultra_high",
+        "labels": {
+          "depression": [
+            "any expression of wanting to die, suicide thoughts, self-harm, or ending life",
+            "any statement about hopelessness, being beyond help, or having no future",
+            "any description of severe sadness, depression, or emotional breakdown",
+            "any mention of emotional struggle, difficult times, or feeling down",
+            "only clearly positive, stable, happy, or normal emotional expressions"
+          ],
+          "sentiment": [
+            "any negative, sad, angry, or distressing emotional expression",
+            "any neutral or mixed emotional state",
+            "only clearly positive, happy, grateful, or joyful expressions"
+          ],
+          "emotional_distress": [
+            "any sign of crisis, breakdown, inability to cope, or emergency situation",
+            "any expression of being overwhelmed, stressed, or struggling with life",
+            "any mention of emotional difficulty or challenges",
+            "only expressions of excellent coping and emotional strength"
+          ]
         },
-        "sentiment": {
-          "very_negative_patterns": ["intense pain", "devastation", "completely destroyed"],
-          "negative_patterns": ["really negative", "upset", "angry", "serious emotional difficulty"],
-          "neutral_patterns": ["feeling neutral", "normal everyday conversation"],
-          "positive_patterns": ["feeling pretty good", "positive", "gratitude and hope"],
-          "very_positive_patterns": ["feeling amazing", "incredibly happy", "absolutely thrilled"]
-        },
-        "emotional_distress": {
-          "high_patterns": ["complete breakdown", "crisis", "unable to cope"],
-          "medium_patterns": ["feeling overwhelmed", "severely stressed", "struggling to handle"],
-          "low_patterns": ["dealing with stress", "managing okay", "some tough moments"],
-          "none_patterns": ["handling normal life stress", "feeling really strong", "thriving"]
-        }
-      }
-    },
-
-    "safety_first": {
-      "name": "Safety First (Ultra-Sensitive)",
-      "description": "Ultra-sensitive labels designed to catch any potential crisis with maximum safety bias",
-      "optimized_for": "maximum_safety",
-      "sensitivity_level": "ultra_high",
-      "labels": {
-        "depression": [
-          "any expression of wanting to die, suicide thoughts, self-harm, or ending life",
-          "any statement about hopelessness, being beyond help, or having no future",
-          "any description of severe sadness, depression, or emotional breakdown",
-          "any mention of emotional struggle, difficult times, or feeling down",
-          "only clearly positive, stable, happy, or normal emotional expressions"
-        ],
-        "sentiment": [
-          "any negative, sad, angry, or distressing emotional expression",
-          "any neutral or mixed emotional state",
-          "only clearly positive, happy, grateful, or joyful expressions"
-        ],
-        "emotional_distress": [
-          "any sign of crisis, breakdown, inability to cope, or emergency situation",
-          "any expression of being overwhelmed, stressed, or struggling with life",
-          "any mention of emotional difficulty or challenges",
-          "only expressions of excellent coping and emotional strength"
-        ]
-      },
-      "mapping_rules": {
-        "depression": {
-          "severe_patterns": ["wanting to die", "suicide", "self-harm", "ending life", "hopelessness", "beyond help"],
-          "moderate_patterns": ["severe sadness", "depression", "emotional breakdown"],
-          "mild_patterns": ["emotional struggle", "difficult times", "feeling down"],
-          "none_patterns": ["clearly positive", "stable", "happy", "normal emotional"]
-        },
-        "sentiment": {
-          "very_negative_patterns": ["negative", "sad", "angry", "distressing"],
-          "negative_patterns": ["neutral", "mixed emotional"],
-          "neutral_patterns": [],
-          "positive_patterns": [],
-          "very_positive_patterns": ["clearly positive", "happy", "grateful", "joyful"]
-        },
-        "emotional_distress": {
-          "high_patterns": ["crisis", "breakdown", "inability to cope", "emergency"],
-          "medium_patterns": ["overwhelmed", "stressed", "struggling"],
-          "low_patterns": ["emotional difficulty", "challenges"],
-          "none_patterns": ["excellent coping", "emotional strength"]
+        "mapping_rules": {
+          "depression": {
+            "severe_patterns": ["wanting to die", "suicide", "self-harm", "ending life", "hopelessness", "beyond help"],
+            "moderate_patterns": ["severe sadness", "depression", "emotional breakdown"],
+            "mild_patterns": ["emotional struggle", "difficult times", "feeling down"],
+            "none_patterns": ["clearly positive", "stable", "happy", "normal emotional"]
+          },
+          "sentiment": {
+            "very_negative_patterns": ["negative", "sad", "angry", "distressing"],
+            "negative_patterns": ["neutral", "mixed emotional"],
+            "neutral_patterns": [],
+            "positive_patterns": [],
+            "very_positive_patterns": ["clearly positive", "happy", "grateful", "joyful"]
+          },
+          "emotional_distress": {
+            "high_patterns": ["crisis", "breakdown", "inability to cope", "emergency"],
+            "medium_patterns": ["overwhelmed", "stressed", "struggling"],
+            "low_patterns": ["emotional difficulty", "challenges"],
+            "none_patterns": ["excellent coping", "emotional strength"]
+          }
         }
       }
     }
   },
 
-  "configuration": {
-    "environment_variable": "NLP_ZERO_SHOT_LABEL_SET",
-    "fallback_label_set": "enhanced_crisis",
-    "enable_runtime_switching": true,
-    "cache_labels": true,
-    "validate_on_load": true
+  "defaults": {
+    "label_configuration": {
+      "current_label_set": "enhanced_crisis",
+      "enable_runtime_switching": true,
+      "cache_labels": true,
+      "validate_on_load": true,
+      "fallback_label_set": "enhanced_crisis"
+    }
   },
 
   "metadata": {
