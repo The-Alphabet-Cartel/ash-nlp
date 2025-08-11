@@ -1,7 +1,9 @@
+# ash-nlp/api/__init__.py
 """
 API Package for Ash NLP Service v3.1
-Contains FastAPI endpoint definitions for the NLP server
-FIXED: Correct import names for new file structure
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 # Make this directory a Python package
