@@ -1,9 +1,9 @@
+# ash-nlp/utils/scoring_helpers.py
 """
-Scoring Helpers for Ash NLP Service v3.1 - Phase 3a Updated
-Enhanced scoring utilities with crisis pattern integration
-
-Phase 3a: Updated to work without hardcoded pattern imports
-All pattern analysis now handled by CrisisPatternManager
+Scoring Helpers for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import re
