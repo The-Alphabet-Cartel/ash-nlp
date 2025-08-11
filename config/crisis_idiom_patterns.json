@@ -143,7 +143,7 @@
     "context_window": "Check 10 words before and after the idiom match for context keywords"
   },
   "usage_instructions": {
-    "integration": "Load via ConfigManager.get_crisis_patterns('enhanced_idiom_patterns')",
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('enhanced_idiom_patterns')",
     "access_method": "SettingsManager.get_enhanced_idiom_patterns()",
     "environment_override_example": "NLP_CONFIG_IDIOM_REDUCTION_STRENGTH=0.8",
     "implementation_notes": [
