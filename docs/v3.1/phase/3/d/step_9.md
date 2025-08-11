@@ -45,7 +45,10 @@
 
 ### **📁 Files Likely Needing Updates:**
 - `managers/__init__.py` - May import EnvConfigManager
+- `__init__.py` - May import EnvConfigManager
 - Various manager files - May use EnvConfigManager
+- Various api files - May use EnvConfigManager
+- Various analysis files - may use EnvConfigManager
 - Test files - May reference env_manager
 - Any utility files - May import EnvConfigManager
 
