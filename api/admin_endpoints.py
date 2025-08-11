@@ -1,7 +1,9 @@
-# ash/ash-nlp/api/admin_endpoints.py (Clean v3.1 Architecture - FIXED)
+# ash/ash-nlp/api/admin_endpoints.py
 """
-Admin endpoints for label management and system administration
-FIXED: Corrected method names, manager usage, and async issues
+Admin endpoints for label management and system administration for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 from fastapi import APIRouter, HTTPException
