@@ -1,8 +1,9 @@
+# ash-nlp/utils/community_patterns.py
 """
-LGBTQIA+ Community Pattern Extraction - v3.1 Clean Architecture
-Handles community-specific crisis pattern recognition using CrisisPatternManager
-
-Phase 3a: Updated to use CrisisPatternManager instead of hardcoded imports
+LGBTQIA+ Community Pattern Extraction for Ash NLP Service v3.1
+Clean v3.1 Architecture
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
