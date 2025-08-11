@@ -95,17 +95,19 @@ class Step10ComprehensiveTestSuite:
             
             # Test 3: Verify all managers use UnifiedConfigManager - FIXED LIST
             manager_imports = [
-                ("managers.settings_manager", "create_settings_manager"),
-                ("managers.crisis_pattern_manager", "create_crisis_pattern_manager"),
                 ("managers.analysis_parameters_manager", "create_analysis_parameters_manager"),
-                ("managers.threshold_mapping_manager", "create_threshold_mapping_manager"),
-                ("managers.model_ensemble_manager", "create_model_ensemble_manager"),
-                ("managers.server_config_manager", "create_server_config_manager"),
-                ("managers.logging_config_manager", "create_logging_config_manager"),
+                ("managers.crisis_pattern_manager", "create_crisis_pattern_manager"),
                 ("managers.feature_config_manager", "create_feature_config_manager"),
-                ("managers.performance_config_manager", "create_performance_config_manager"),
+                ("managers.logging_config_manager", "create_logging_config_manager"),
+                ("managers.model_ensemble_manager", "create_model_ensemble_manager"),
                 ("managers.models_manager", "create_models_manager"),
-                # NOTE: StorageConfigManager will be optional for now
+                ("managers.performance_config_manager", "create_performance_config_manager"),
+                ("managers.pydantic_config_manager", "create_pydantic_manager"),
+                ("managers.server_config_manager", "create_server_config_manager"),
+                ("managers.settings_manager", "create_settings_manager"),
+                ("managers.storage_config_manager", "create_storage_config_manager"),
+                ("managers.threshold_mapping_manager", "create_threshold_mapping_manager"),
+                ("managers.zero_shot_manager", "create_zero_shot_manager"),
             ]
             
             successful_managers = 0
@@ -160,14 +162,19 @@ class Step10ComprehensiveTestSuite:
             
             # Test factory function pattern compliance - UPDATED LIST
             factory_tests = [
-                ("crisis_pattern_manager", "create_crisis_pattern_manager", unified_config),
                 ("analysis_parameters_manager", "create_analysis_parameters_manager", unified_config),
-                ("threshold_mapping_manager", "create_threshold_mapping_manager", unified_config, None),
-                ("server_config_manager", "create_server_config_manager", unified_config),
-                ("logging_config_manager", "create_logging_config_manager", unified_config),
+                ("crisis_pattern_manager", "create_crisis_pattern_manager", unified_config),
                 ("feature_config_manager", "create_feature_config_manager", unified_config),
+                ("logging_config_manager", "create_logging_config_manager", unified_config),
+                ("model_ensemble_manager", "create_model_ensemble_manager", unified_config),
+                ("models_manager", "create_models_manager", unified_config),
                 ("performance_config_manager", "create_performance_config_manager", unified_config),
-                ("models_manager", "create_models_manager", unified_config)
+                ("pydantic_manager", "create_pydantic_manager", unified_config),
+                ("server_config_manager", "create_server_config_manager", unified_config),
+                ("settings_manager", "create_settings_manager", unified_config),
+                ("storage_config_manager", "create_storage_config_manager", unified_config),
+                ("threshold_mapping_manager", "create_threshold_mapping_manager", unified_config, None),
+                ("zero_shot_manager", "create_zero_shot_manager", unified_config, None),
             ]
             
             successful_tests = 0
