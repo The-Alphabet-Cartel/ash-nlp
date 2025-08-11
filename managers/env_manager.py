@@ -71,9 +71,9 @@ class EnvConfigManager:
             'NLP_THRESHOLD_GAP_AUTO_ESCALATION': {'type': bool, 'default': True},
             
             # Model confidence weighting (for weighted ensemble mode)
-            'NLP_MODEL_WEIGHT_DEPRESSION': {'type': float, 'default': 0.6, 'min': 0.0, 'max': 1.0},
-            'NLP_MODEL_WEIGHT_SENTIMENT': {'type': float, 'default': 0.15, 'min': 0.0, 'max': 1.0},
-            'NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS': {'type': float, 'default': 0.25, 'min': 0.0, 'max': 1.0},
+            'NLP_MODEL_DEPRESSION_WEIGHT': {'type': float, 'default': 0.6, 'min': 0.0, 'max': 1.0},
+            'NLP_MODEL_SENTIMENT_WEIGHT': {'type': float, 'default': 0.15, 'min': 0.0, 'max': 1.0},
+            'NLP_MODEL_EMOTIONAL_DISTRESS_WEIGHT': {'type': float, 'default': 0.25, 'min': 0.0, 'max': 1.0},
             
             # =================================================================
             # CENTRALIZED CONSENSUS PREDICTION MAPPING THRESHOLDS
@@ -234,9 +234,9 @@ class EnvConfigManager:
         # Validate model weights sum to 1.0 (for weighted ensemble mode)
         if self.config['NLP_ENSEMBLE_MODE'] == 'weighted':
             total_weight = (
-                self.config['NLP_MODEL_WEIGHT_DEPRESSION'] + 
-                self.config['NLP_MODEL_WEIGHT_SENTIMENT'] + 
-                self.config['NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS']
+                self.config['NLP_MODEL_DEPRESSION_WEIGHT'] + 
+                self.config['NLP_MODEL_SENTIMENT_WEIGHT'] + 
+                self.config['NLP_MODEL_EMOTIONAL_DISTRESS_WEIGHT']
             )
             
             if abs(total_weight - 1.0) > 0.01:  # Allow small floating point errors
@@ -274,9 +274,9 @@ class EnvConfigManager:
         
         # Model weights
         logger.debug("   Model Weights:")
-        logger.debug(f"     Depression: {self.config['NLP_MODEL_WEIGHT_DEPRESSION']}")
-        logger.debug(f"     Sentiment: {self.config['NLP_MODEL_WEIGHT_SENTIMENT']}")
-        logger.debug(f"     Emotional Distress: {self.config['NLP_MODEL_WEIGHT_EMOTIONAL_DISTRESS']}")
+        logger.debug(f"     Depression: {self.config['NLP_MODEL_DEPRESSION_WEIGHT']}")
+        logger.debug(f"     Sentiment: {self.config['NLP_MODEL_SENTIMENT_WEIGHT']}")
+        logger.debug(f"     Emotional Distress: {self.config['NLP_MODEL_EMOTIONAL_DISTRESS_WEIGHT']}")
         
         # Staff review thresholds
         logger.debug("   Staff Review Thresholds:")
