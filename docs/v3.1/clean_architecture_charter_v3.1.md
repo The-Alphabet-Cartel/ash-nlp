@@ -10,13 +10,13 @@
 
 ### **Rule #1: Factory Function Pattern - MANDATORY**
 - **ALL managers MUST use factory functions** - `create_[manager_name]()`
-- **NEVER call constructors directly** in production code
+- **NEVER call constructors directly**
 - **Factory functions enable**: dependency injection, testing, consistency
 - **Examples**: `create_models_manager()`, `create_crisis_pattern_manager()`, `create_settings_manager()`
 
 ### **Rule #2: Dependency Injection - REQUIRED**
 - **All managers accept dependencies through constructor parameters**
-- **ConfigManager is always the first parameter**
+- **UnifiedConfigManager is always the first parameter**
 - **Additional managers passed as named parameters**
 - **Clean separation of concerns maintained**
 
@@ -28,9 +28,10 @@
 
 ### **Rule #4: JSON Configuration + Environment Overrides - STANDARD**
 - **All configuration externalized to JSON files**
+- **JSON configuration files set default values**
 - **Environment variables override JSON defaults**
 - **No hardcoded configuration in source code**
-- **ConfigManager handles all configuration loading**
+- **UnifiedConfigManager handles all configuration loading**
 
 ### **Rule #5: Fail-Fast Validation - CRITICAL**
 - **Invalid configurations prevent system startup**
@@ -73,6 +74,62 @@ manager = create_[manager]_manager(
     config_manager=config_manager,
     [additional_managers...]
 )
+```
+
+---
+
+## 🔧 **JSON CONFIGURATION FILE STANDARDS**
+
+### **Required JSON Structure:**
+**Filename**:
+- `*descriptiveName*_*configurationType*.json`
+- Examples:
+  - analysis_parameters.json
+  - learning_settings.json
+  - crisis_patterns.json
+
+**JSON Structure**
+```json
+{
+  [...]
+  "*setting_category*": {
+    "description": "*settingDescription*",
+    "*setting_name*": "${*ENV_VAR*}",
+    [...moreSettings...],
+    "defaults": {
+      "*setting_name*": *default_value*,
+      [...moreSettings...],
+    },
+    "validation": {
+      [...categoryValidationValues...],
+    }
+  },
+  [...],
+}
+```
+
+**Example**
+```json
+{
+  [...]
+  "crisis_thresholds": {
+    "description": "Core crisis level mapping thresholds for analysis algorithms",
+    "high": "${NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH}",
+    "medium": "${NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM}",
+    "low": "${NLP_ANALYSIS_CRISIS_THRESHOLD_LOW}",
+    "defaults": {
+      "high": 0.55,
+      "medium": 0.28,
+      "low": 0.16
+    },
+    "validation": {
+      "range": [0.0, 1.0],
+      "type": "float",
+      "ordering": "high > medium > low"
+    }
+  },
+  [...]
+}
 ```
 
 ---
