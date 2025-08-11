@@ -123,6 +123,103 @@ class ModelEnsembleManager:
                 logger.error(f"❌ Model configuration validation failed: {e}")
                 raise
     
+    async def analyze_message_ensemble(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
+        """
+        Analyze message using ensemble models - CRITICAL METHOD FOR API COMPATIBILITY
+        
+        This method is required by the API endpoints but delegates to CrisisAnalyzer
+        following Clean v3.1 Architecture principles
+        
+        Args:
+            message: Message text to analyze
+            user_id: User ID for context
+            channel_id: Channel ID for context
+            
+        Returns:
+            Dictionary containing ensemble analysis results
+        """
+        try:
+            logger.debug(f"🔍 ModelEnsembleManager delegating analysis to CrisisAnalyzer")
+            
+            # Import here to avoid circular imports
+            from analysis.crisis_analyzer import CrisisAnalyzer
+            
+            # Check if we have access to other managers through config manager
+            try:
+                # Get other required managers for CrisisAnalyzer
+                from managers.crisis_pattern_manager import create_crisis_pattern_manager
+                from managers.analysis_parameters_manager import create_analysis_parameters_manager
+                from managers.threshold_mapping_manager import create_threshold_mapping_manager
+                from managers.feature_config_manager import create_feature_config_manager
+                from managers.performance_config_manager import create_performance_config_manager
+                
+                # Create managers using factory functions (Clean v3.1 compliance)
+                crisis_pattern_manager = create_crisis_pattern_manager(self.config_manager)
+                analysis_parameters_manager = create_analysis_parameters_manager(self.config_manager)
+                threshold_mapping_manager = create_threshold_mapping_manager(self.config_manager, self)
+                feature_config_manager = create_feature_config_manager(self.config_manager)
+                performance_config_manager = create_performance_config_manager(self.config_manager)
+                
+                # Create CrisisAnalyzer with all required dependencies
+                crisis_analyzer = CrisisAnalyzer(
+                    config_manager=self.config_manager,
+                    crisis_pattern_manager=crisis_pattern_manager,
+                    analysis_parameters_manager=analysis_parameters_manager,
+                    threshold_mapping_manager=threshold_mapping_manager,
+                    feature_config_manager=feature_config_manager,
+                    performance_config_manager=performance_config_manager
+                )
+                
+                # Delegate to CrisisAnalyzer's analyze_message method
+                logger.debug(f"✅ CrisisAnalyzer created, performing analysis...")
+                result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
+                
+                logger.debug(f"✅ Ensemble analysis complete via CrisisAnalyzer delegation")
+                return result
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to create CrisisAnalyzer or dependencies: {e}")
+                # Fallback to basic response structure
+                return self._create_fallback_analysis_result(message, str(e))
+                
+        except Exception as e:
+            logger.error(f"❌ Error in analyze_message_ensemble: {e}")
+            logger.exception("Full error details:")
+            return self._create_fallback_analysis_result(message, str(e))
+
+    def _create_fallback_analysis_result(self, message: str, error_message: str) -> Dict[str, Any]:
+        """
+        Create fallback analysis result when ensemble analysis fails
+        
+        Args:
+            message: Original message
+            error_message: Error description
+            
+        Returns:
+            Dictionary with fallback analysis result
+        """
+        return {
+            'needs_response': False,
+            'crisis_level': 'none',
+            'confidence_score': 0.0,
+            'detected_categories': [],
+            'method': 'ensemble_fallback_error',
+            'processing_time_ms': 0.0,
+            'model_info': 'ModelEnsembleManager fallback - CrisisAnalyzer unavailable',
+            'reasoning': f"Ensemble analysis failed: {error_message}",
+            'analysis': {
+                'error': error_message,
+                'fallback_used': True,
+                'ensemble_available': False
+            },
+            'staff_review_required': True,  # Always require review on errors
+            'ensemble_status': {
+                'models_configured': len(self.get_model_definitions()),
+                'error': error_message,
+                'fallback_reason': 'crisis_analyzer_creation_failed'
+            }
+        }
+
     # ========================================================================
     # Model Configuration Access - Phase 3d Enhanced
     # ========================================================================
