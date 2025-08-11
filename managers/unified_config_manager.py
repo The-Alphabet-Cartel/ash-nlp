@@ -93,7 +93,6 @@ class UnifiedConfigManager:
             'crisis_context_patterns': 'crisis_context_patterns.json',
             'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
             'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',
-            'crisis_patterns': 'crisis_patterns.json', 
             'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
             'feature_flags': 'feature_flags.json',
             'label_config': 'label_config.json',
