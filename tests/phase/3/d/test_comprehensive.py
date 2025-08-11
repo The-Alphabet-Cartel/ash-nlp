@@ -243,7 +243,7 @@ class Step10ComprehensiveTestSuite:
                 ('NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH', 0.55),
                 ('NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM', 0.28),
                 ('NLP_ANALYSIS_CRISIS_THRESHOLD_LOW', 0.16),
-                ('NLP_FEATURE_ENSEMBLE_ANALYSIS_ENABLED', True),  # This should be boolean
+                ('NLP_FEATURE_ENSEMBLE_ANALYSIS', True),
                 ('NLP_PERFORMANCE_BATCH_SIZE', 32),
                 ('NLP_STORAGE_CACHE_DIR', '/app/cache')
             ]
@@ -645,7 +645,7 @@ class Step10ComprehensiveTestSuite:
             test_schema_failures = [
                 ('NLP_SERVER_PORT', 'invalid_port_number'),
                 ('NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH', 'not_a_number'),
-                ('NLP_FEATURE_ENSEMBLE_ANALYSIS_ENABLED', 'not_a_boolean')
+                ('NLP_FEATURE_ENSEMBLE_ANALYSIS', 'not_a_boolean'),
             ]
             
             schema_validations = 0
