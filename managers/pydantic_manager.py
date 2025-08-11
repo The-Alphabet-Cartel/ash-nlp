@@ -24,7 +24,7 @@ class PydanticManager:
     Follows the clean manager architecture established in Phase 2A
     """
     
-    def __init__(self, config_manager=None):
+    def __init__(self, config_manager):
         """
         Initialize PydanticManager with clean manager architecture
         
@@ -302,7 +302,7 @@ class PydanticManager:
 # FACTORY FUNCTION FOR CLEAN INITIALIZATION
 # ============================================================================
 
-def create_pydantic_manager(config_manager=None) -> PydanticManager:
+def create_pydantic_manager(config_manager) -> PydanticManager:
     """
     Factory function to create PydanticManager with clean architecture
     
