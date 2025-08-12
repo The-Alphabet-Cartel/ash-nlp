@@ -51,12 +51,12 @@
       "analysis_caching": "${NLP_FEATURE_ANALYSIS_CACHING}",
       "parallel_processing": "${NLP_FEATURE_PARALLEL_PROCESSING}",
       "defaults": {
-        "pattern_analysis": true,
-        "semantic_analysis": true,
-        "phrase_extraction": true,
-        "pattern_learning": true,
-        "analysis_caching": true,
-        "parallel_processing": true
+        "pattern_analysis": false,
+        "semantic_analysis": false,
+        "phrase_extraction": false,
+        "pattern_learning": false,
+        "analysis_caching": false,
+        "parallel_processing": false
       },
       "validation": {
         "pattern_analysis": {

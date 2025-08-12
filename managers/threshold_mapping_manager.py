@@ -38,17 +38,17 @@ class ThresholdMappingManager:
         logger.info("ThresholdMappingManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
     
     def _load_threshold_mapping_config(self):
-        """Load threshold mapping configuration using UnifiedConfigManager"""
+        """Load threshold mapping configuration using UnifiedConfigManager - UPDATED for v3.1 compliance"""
         try:
             # Load threshold mapping configuration through unified manager
-            self.threshold_config = self.unified_config.load_config_file('threshold_mapping')
+            raw_config = self.unified_config.load_config_file('threshold_mapping')
             
-            if not self.threshold_config:
+            if not raw_config:
                 logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
                 self.threshold_config = self._get_fallback_threshold_config()
-            
-            # Apply environment overrides using unified configuration
-            self.threshold_config = self._apply_environment_overrides(self.threshold_config)
+            else:
+                # NEW: Process v3.1 compliant configuration with environment variable resolution
+                self.threshold_config = self._process_v31_config(raw_config)
             
             # Validate threshold configuration
             self._validate_threshold_config()
@@ -59,6 +59,148 @@ class ThresholdMappingManager:
             logger.error(f"❌ Error loading threshold mapping configuration: {e}")
             self._validation_errors.append(f"Configuration loading error: {str(e)}")
     
+    def _process_v31_config(self, raw_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process v3.1 compliant configuration with environment variable resolution
+        This replaces the old _apply_environment_overrides method
+        """
+        processed_config = {}
+        
+        try:
+            # Copy metadata
+            if '_metadata' in raw_config:
+                processed_config['_metadata'] = raw_config['_metadata']
+            
+            # Process mode-specific configurations
+            if 'threshold_mapping_by_mode' in raw_config:
+                processed_config['threshold_mapping_by_mode'] = {}
+                
+                for mode, mode_config in raw_config['threshold_mapping_by_mode'].items():
+                    if isinstance(mode_config, dict):
+                        processed_config['threshold_mapping_by_mode'][mode] = self._resolve_mode_config(mode, mode_config)
+            
+            # Process shared configuration
+            if 'shared_configuration' in raw_config:
+                processed_config['shared_configuration'] = self._resolve_shared_config(raw_config['shared_configuration'])
+            
+            # Handle legacy configurations for backward compatibility
+            for legacy_key in ['global_staff_review', 'learning_thresholds']:
+                if legacy_key in raw_config:
+                    processed_config[legacy_key] = raw_config[legacy_key]
+            
+            logger.debug("✅ v3.1 configuration processing complete")
+            return processed_config
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing v3.1 configuration: {e}")
+            # Fall back to applying environment overrides to raw config
+            return self._apply_environment_overrides(raw_config)
+    
+    def _resolve_mode_config(self, mode: str, mode_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Resolve environment variables for mode-specific configuration"""
+        resolved = {}
+        
+        # Copy description and other non-resolvable fields
+        for key in ['description']:
+            if key in mode_config:
+                resolved[key] = mode_config[key]
+        
+        # Resolve crisis level mapping with environment variables
+        if 'crisis_level_mapping' in mode_config:
+            resolved['crisis_level_mapping'] = {}
+            defaults = mode_config.get('defaults', {}).get('crisis_level_mapping', {})
+            
+            for threshold_key, env_var_or_value in mode_config['crisis_level_mapping'].items():
+                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                    # Extract environment variable name
+                    env_name = env_var_or_value[2:-1]  # Remove ${} wrapper
+                    default_value = defaults.get(threshold_key, 0.5)
+                    resolved['crisis_level_mapping'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
+                else:
+                    # Use direct value (for non-environment variable values)
+                    resolved['crisis_level_mapping'][threshold_key] = env_var_or_value
+        
+        # Resolve ensemble thresholds with environment variables
+        if 'ensemble_thresholds' in mode_config:
+            resolved['ensemble_thresholds'] = {}
+            defaults = mode_config.get('defaults', {}).get('ensemble_thresholds', {})
+            
+            for threshold_key, env_var_or_value in mode_config['ensemble_thresholds'].items():
+                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                    env_name = env_var_or_value[2:-1]
+                    default_value = defaults.get(threshold_key, 0.3)
+                    resolved['ensemble_thresholds'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
+                else:
+                    resolved['ensemble_thresholds'][threshold_key] = env_var_or_value
+        
+        # Resolve staff review thresholds with environment variables (THIS FIXES THE WARNING!)
+        if 'staff_review_thresholds' in mode_config:
+            resolved['staff_review_thresholds'] = {}
+            defaults = mode_config.get('defaults', {}).get('staff_review_thresholds', {})
+            
+            for threshold_key, env_var_or_value in mode_config['staff_review_thresholds'].items():
+                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                    env_name = env_var_or_value[2:-1]
+                    default_value = defaults.get(threshold_key, True if 'always' in threshold_key or 'review' in threshold_key else 0.5)
+                    
+                    # Use appropriate type conversion based on default value
+                    if isinstance(default_value, bool):
+                        resolved['staff_review_thresholds'][threshold_key] = self.unified_config.get_env_bool(env_name, default_value)
+                    else:
+                        resolved['staff_review_thresholds'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
+                else:
+                    resolved['staff_review_thresholds'][threshold_key] = env_var_or_value
+        
+        # Copy defaults and validation for reference
+        for meta_key in ['defaults', 'validation']:
+            if meta_key in mode_config:
+                resolved[meta_key] = mode_config[meta_key]
+        
+        return resolved
+    
+    def _resolve_shared_config(self, shared_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Resolve environment variables for shared configuration"""
+        resolved = {}
+        
+        if 'description' in shared_config:
+            resolved['description'] = shared_config['description']
+        
+        for section_name, section_config in shared_config.items():
+            if section_name == 'description':
+                continue
+                
+            if isinstance(section_config, dict):
+                resolved[section_name] = {}
+                
+                # Copy description
+                if 'description' in section_config:
+                    resolved[section_name]['description'] = section_config['description']
+                
+                # Resolve environment variables
+                defaults = section_config.get('defaults', {})
+                for key, env_var_or_value in section_config.items():
+                    if key in ['description', 'defaults', 'validation']:
+                        resolved[section_name][key] = section_config[key]
+                        continue
+                    
+                    if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                        env_name = env_var_or_value[2:-1]
+                        default_value = defaults.get(key, 1.0 if 'multiplier' in key else 0.5)
+                        
+                        # Use appropriate type conversion
+                        if isinstance(default_value, bool):
+                            resolved[section_name][key] = self.unified_config.get_env_bool(env_name, default_value)
+                        elif isinstance(default_value, int):
+                            resolved[section_name][key] = self.unified_config.get_env_int(env_name, default_value)
+                        elif isinstance(default_value, str):
+                            resolved[section_name][key] = self.unified_config.get_env_str(env_name, default_value)
+                        else:
+                            resolved[section_name][key] = self.unified_config.get_env_float(env_name, default_value)
+                    else:
+                        resolved[section_name][key] = env_var_or_value
+        
+        return resolved
+
     def _apply_environment_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Apply environment variable overrides using UnifiedConfigManager (NO MORE os.getenv())"""
         # Use deep copy to prevent mutation of original config
@@ -271,13 +413,8 @@ class ThresholdMappingManager:
     
     def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
         """
-        Get ensemble thresholds for specific mode - MISSING METHOD ADDED
-        
-        Args:
-            mode: Ensemble mode ('consensus', 'majority', 'weighted')
-            
-        Returns:
-            Dictionary with high, medium, low thresholds for the mode
+        Get ensemble thresholds for specific mode
+        FIXED: Ensures all returned values are properly converted to floats
         """
         if mode is None:
             mode = self.get_current_ensemble_mode()
@@ -294,7 +431,28 @@ class ThresholdMappingManager:
                     'low': 0.15
                 }
             
-            return ensemble_thresholds
+            # FIXED: Ensure all values are converted to floats
+            safe_thresholds = {}
+            default_values = {
+                'high': 0.5,
+                'medium': 0.3,
+                'low': 0.15
+            }
+            
+            for key, value in ensemble_thresholds.items():
+                try:
+                    safe_thresholds[key] = float(value)
+                except (ValueError, TypeError):
+                    default_val = default_values.get(key, 0.3)
+                    logger.warning(f"⚠️ Invalid ensemble threshold '{value}' for {key} in mode '{mode}', using default {default_val}")
+                    safe_thresholds[key] = default_val
+            
+            # Ensure all required keys are present
+            for key, default_val in default_values.items():
+                if key not in safe_thresholds:
+                    safe_thresholds[key] = default_val
+            
+            return safe_thresholds
             
         except Exception as e:
             logger.error(f"❌ Error getting ensemble thresholds for mode '{mode}': {e}")
@@ -305,7 +463,10 @@ class ThresholdMappingManager:
             }
 
     def get_crisis_level_mapping_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
-        """Get crisis level mapping thresholds for specific mode"""
+        """
+        Get crisis level mapping thresholds for specific mode
+        FIXED: Ensures all returned values are properly converted to floats
+        """
         if mode is None:
             mode = self.get_current_ensemble_mode()
         
@@ -323,7 +484,30 @@ class ThresholdMappingManager:
                     'unknown_to_low': 0.5
                 }
             
-            return mapping
+            # FIXED: Ensure all values are converted to floats
+            safe_mapping = {}
+            default_values = {
+                'crisis_to_high': 0.5,
+                'crisis_to_medium': 0.3,
+                'mild_crisis_to_low': 0.4,
+                'negative_to_low': 0.7,
+                'unknown_to_low': 0.5
+            }
+            
+            for key, value in mapping.items():
+                try:
+                    safe_mapping[key] = float(value)
+                except (ValueError, TypeError):
+                    default_val = default_values.get(key, 0.5)
+                    logger.warning(f"⚠️ Invalid {key} value '{value}' for mode '{mode}', using default {default_val}")
+                    safe_mapping[key] = default_val
+            
+            # Ensure all required keys are present
+            for key, default_val in default_values.items():
+                if key not in safe_mapping:
+                    safe_mapping[key] = default_val
+            
+            return safe_mapping
             
         except Exception as e:
             logger.error(f"❌ Error getting crisis level mapping for mode '{mode}': {e}")
@@ -336,7 +520,10 @@ class ThresholdMappingManager:
             }
     
     def get_staff_review_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, Union[bool, float]]:
-        """Get staff review thresholds for specific mode"""
+        """
+        Get staff review thresholds for specific mode
+        FIXED: Ensures all returned values are properly typed (bool/float)
+        """
         if mode is None:
             mode = self.get_current_ensemble_mode()
         
@@ -345,10 +532,52 @@ class ThresholdMappingManager:
             staff_thresholds = mode_config.get('staff_review_thresholds', {})
             
             if not staff_thresholds:
-                logger.warning(f"⚠️ No staff review thresholds found for mode '{mode}', using global defaults")
+                logger.debug(f"📋 No mode-specific staff review thresholds for '{mode}', using global defaults")
                 return self.get_global_staff_review_thresholds()
             
-            return staff_thresholds
+            # FIXED: Ensure all values are properly typed
+            safe_thresholds = {}
+            
+            # Boolean values
+            bool_keys = ['high_always', 'on_disagreement', 'gap_detection_review', 'pattern_mismatch_review']
+            for key in bool_keys:
+                if key in staff_thresholds:
+                    value = staff_thresholds[key]
+                    try:
+                        if isinstance(value, str):
+                            safe_thresholds[key] = value.lower() in ['true', '1', 'yes', 'on']
+                        else:
+                            safe_thresholds[key] = bool(value)
+                    except (ValueError, TypeError):
+                        logger.warning(f"⚠️ Invalid boolean value '{value}' for {key}, using True")
+                        safe_thresholds[key] = True
+                else:
+                    safe_thresholds[key] = True  # Safe default
+            
+            # Float values
+            float_keys_defaults = {
+                'medium_confidence_threshold': 0.45,
+                'medium_confidence': 0.45,  # Alternative key name
+                'low_confidence_threshold': 0.75,
+                'low_confidence': 0.75      # Alternative key name
+            }
+            
+            for key, default_val in float_keys_defaults.items():
+                if key in staff_thresholds:
+                    value = staff_thresholds[key]
+                    try:
+                        safe_thresholds[key] = float(value)
+                    except (ValueError, TypeError):
+                        logger.warning(f"⚠️ Invalid float value '{value}' for {key}, using default {default_val}")
+                        safe_thresholds[key] = default_val
+            
+            # Ensure we have the expected keys with consistent naming
+            if 'medium_confidence_threshold' not in safe_thresholds:
+                safe_thresholds['medium_confidence_threshold'] = safe_thresholds.get('medium_confidence', 0.45)
+            if 'low_confidence_threshold' not in safe_thresholds:
+                safe_thresholds['low_confidence_threshold'] = safe_thresholds.get('low_confidence', 0.75)
+            
+            return safe_thresholds
             
         except Exception as e:
             logger.error(f"❌ Error getting staff review thresholds for mode '{mode}': {e}")
@@ -419,77 +648,104 @@ class ThresholdMappingManager:
     def is_staff_review_required(self, crisis_level: str, confidence: float, 
                                      has_model_disagreement: bool = False, 
                                      has_gap_detection: bool = False) -> bool:
-            """
-            Determine if staff review is required based on crisis level, confidence, and conditions
+        """
+        Determine if staff review is required based on crisis level, confidence, and conditions
+        FIXED: Added type safety for threshold values to prevent string/float arithmetic errors
+        
+        Args:
+            crisis_level: The determined crisis level ('high', 'medium', 'low', 'none')
+            confidence: The confidence score (0.0 to 1.0)
+            has_model_disagreement: Whether models disagreed significantly
+            has_gap_detection: Whether gap detection flagged for review
             
-            Args:
-                crisis_level: The determined crisis level ('high', 'medium', 'low', 'none')
-                confidence: The confidence score (0.0 to 1.0)
-                has_model_disagreement: Whether models disagreed significantly
-                has_gap_detection: Whether gap detection flagged for review
-                
-            Returns:
-                bool: True if staff review is required, False otherwise
-            """
+        Returns:
+            bool: True if staff review is required, False otherwise
+        """
+        try:
+            # Get staff review configuration for current mode
+            staff_config = self.get_staff_review_config()
+            
+            # Rule 1: High crisis levels always require review (if configured)
+            if crisis_level == 'high' and staff_config.get('high_always', True):
+                logger.debug(f"📋 Staff review required: High crisis level (always={staff_config.get('high_always')})")
+                return True
+            
+            # Rule 2: Model disagreement requires review (if configured)
+            if has_model_disagreement and staff_config.get('on_disagreement', True):
+                logger.debug(f"📋 Staff review required: Model disagreement detected")
+                return True
+            
+            # Rule 3: Gap detection requires review (if configured)
+            if has_gap_detection and staff_config.get('gap_detection_review', True):
+                logger.debug(f"📋 Staff review required: Gap detection flagged")
+                return True
+            
+            # Rule 4: Confidence-based review requirements
+            if crisis_level == 'medium':
+                medium_threshold = staff_config.get('medium_confidence_threshold', 0.45)
+                # FIXED: Ensure medium_threshold is a float
+                try:
+                    medium_threshold = float(medium_threshold)
+                except (ValueError, TypeError):
+                    logger.warning(f"⚠️ Invalid medium_confidence_threshold '{medium_threshold}', using default 0.45")
+                    medium_threshold = 0.45
+                    
+                if confidence < medium_threshold:
+                    logger.debug(f"📋 Staff review required: Medium crisis with low confidence ({confidence:.3f} < {medium_threshold:.3f})")
+                    return True
+            
+            elif crisis_level == 'low':
+                low_threshold = staff_config.get('low_confidence_threshold', 0.75)
+                # FIXED: Ensure low_threshold is a float
+                try:
+                    low_threshold = float(low_threshold)
+                except (ValueError, TypeError):
+                    logger.warning(f"⚠️ Invalid low_confidence_threshold '{low_threshold}', using default 0.75")
+                    low_threshold = 0.75
+                    
+                if confidence < low_threshold:
+                    logger.debug(f"📋 Staff review required: Low crisis with very low confidence ({confidence:.3f} < {low_threshold:.3f})")
+                    return True
+            
+            # Rule 5: Check for borderline cases requiring review
+            # If we're close to a threshold boundary, require review for safety
             try:
-                # Get staff review configuration for current mode
-                staff_config = self.get_staff_review_config()
-                
-                # Rule 1: High crisis levels always require review (if configured)
-                if crisis_level == 'high' and staff_config.get('high_always', True):
-                    logger.debug(f"📋 Staff review required: High crisis level (always={staff_config.get('high_always')})")
-                    return True
-                
-                # Rule 2: Model disagreement requires review (if configured)
-                if has_model_disagreement and staff_config.get('on_disagreement', True):
-                    logger.debug(f"📋 Staff review required: Model disagreement detected")
-                    return True
-                
-                # Rule 3: Gap detection requires review (if configured)
-                if has_gap_detection and staff_config.get('gap_detection_review', True):
-                    logger.debug(f"📋 Staff review required: Gap detection flagged")
-                    return True
-                
-                # Rule 4: Confidence-based review requirements
-                if crisis_level == 'medium':
-                    medium_threshold = staff_config.get('medium_confidence_threshold', 0.45)
-                    if confidence < medium_threshold:
-                        logger.debug(f"📋 Staff review required: Medium crisis with low confidence ({confidence:.3f} < {medium_threshold:.3f})")
-                        return True
-                
-                elif crisis_level == 'low':
-                    low_threshold = staff_config.get('low_confidence_threshold', 0.75)
-                    if confidence < low_threshold:
-                        logger.debug(f"📋 Staff review required: Low crisis with very low confidence ({confidence:.3f} < {low_threshold:.3f})")
-                        return True
-                
-                # Rule 5: Check for borderline cases requiring review
-                # If we're close to a threshold boundary, require review for safety
                 current_mode = self.get_current_ensemble_mode()
                 crisis_mapping = self.get_crisis_level_mapping_for_mode(current_mode)
                 
                 if crisis_level == 'medium':
-                    high_threshold = crisis_mapping.get('crisis_to_high', 0.5)
+                    high_threshold_raw = crisis_mapping.get('crisis_to_high', 0.5)
+                    # FIXED: Ensure high_threshold is a float before arithmetic operations
+                    try:
+                        high_threshold = float(high_threshold_raw)
+                    except (ValueError, TypeError):
+                        logger.warning(f"⚠️ Invalid crisis_to_high threshold '{high_threshold_raw}', using default 0.5")
+                        high_threshold = 0.5
+                    
                     # If we're within 0.05 of high threshold, require review
                     if confidence >= (high_threshold - 0.05):
                         logger.debug(f"📋 Staff review required: Near high threshold boundary ({confidence:.3f} near {high_threshold:.3f})")
                         return True
-                
-                # Rule 6: Safety net - very high confidence with no crisis requires review
-                # This catches potential false negatives
-                if crisis_level == 'none' and confidence >= 0.9:
-                    logger.debug(f"📋 Staff review required: Very high confidence with no crisis detected (potential false negative)")
-                    return True
-                
-                logger.debug(f"📋 No staff review required: {crisis_level} level, confidence {confidence:.3f}")
-                return False
-                
-            except Exception as e:
-                logger.error(f"❌ Error determining staff review requirement: {e}")
-                # Conservative fallback - require review for medium+ crisis levels
-                fallback_required = crisis_level in ['high', 'medium']
-                logger.warning(f"⚠️ Using fallback staff review logic: {fallback_required}")
-                return fallback_required
+                        
+            except Exception as threshold_error:
+                logger.warning(f"⚠️ Error checking threshold boundaries: {threshold_error}")
+                # Continue with other rules if threshold boundary check fails
+            
+            # Rule 6: Safety net - very high confidence with no crisis requires review
+            # This catches potential false negatives
+            if crisis_level == 'none' and confidence >= 0.9:
+                logger.debug(f"📋 Staff review required: Very high confidence with no crisis detected (potential false negative)")
+                return True
+            
+            logger.debug(f"📋 No staff review required: {crisis_level} level, confidence {confidence:.3f}")
+            return False
+            
+        except Exception as e:
+            logger.error(f"❌ Error determining staff review requirement: {e}")
+            # Conservative fallback - require review for medium+ crisis levels
+            fallback_required = crisis_level in ['high', 'medium']
+            logger.warning(f"⚠️ Using fallback staff review logic: {fallback_required}")
+            return fallback_required
 
     def get_learning_thresholds(self) -> Dict[str, Union[float, int]]:
         """Get learning system thresholds"""
