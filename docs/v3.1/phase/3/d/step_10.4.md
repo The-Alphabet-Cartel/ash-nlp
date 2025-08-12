@@ -242,4 +242,4 @@ crisis_categories = {
 
 ---
 
-**Next Session Focus**: Debug pattern detection sensitivity and complete Phase 3d validation (estimated 20 minutes)**
+**Next Session Focus**: Debug pattern detection sensitivity and complete Phase 3d validation (estimated 30 minutes)**
