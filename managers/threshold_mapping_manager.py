@@ -38,17 +38,17 @@ class ThresholdMappingManager:
         logger.info("ThresholdMappingManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
     
     def _load_threshold_mapping_config(self):
-        """Load threshold mapping configuration using UnifiedConfigManager"""
+        """Load threshold mapping configuration using UnifiedConfigManager - UPDATED for v3.1 compliance"""
         try:
             # Load threshold mapping configuration through unified manager
-            self.threshold_config = self.unified_config.load_config_file('threshold_mapping')
+            raw_config = self.unified_config.load_config_file('threshold_mapping')
             
-            if not self.threshold_config:
+            if not raw_config:
                 logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
                 self.threshold_config = self._get_fallback_threshold_config()
-            
-            # Apply environment overrides using unified configuration
-            self.threshold_config = self._apply_environment_overrides(self.threshold_config)
+            else:
+                # NEW: Process v3.1 compliant configuration with environment variable resolution
+                self.threshold_config = self._process_v31_config(raw_config)
             
             # Validate threshold configuration
             self._validate_threshold_config()
@@ -59,6 +59,148 @@ class ThresholdMappingManager:
             logger.error(f"❌ Error loading threshold mapping configuration: {e}")
             self._validation_errors.append(f"Configuration loading error: {str(e)}")
     
+    def _process_v31_config(self, raw_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process v3.1 compliant configuration with environment variable resolution
+        This replaces the old _apply_environment_overrides method
+        """
+        processed_config = {}
+        
+        try:
+            # Copy metadata
+            if '_metadata' in raw_config:
+                processed_config['_metadata'] = raw_config['_metadata']
+            
+            # Process mode-specific configurations
+            if 'threshold_mapping_by_mode' in raw_config:
+                processed_config['threshold_mapping_by_mode'] = {}
+                
+                for mode, mode_config in raw_config['threshold_mapping_by_mode'].items():
+                    if isinstance(mode_config, dict):
+                        processed_config['threshold_mapping_by_mode'][mode] = self._resolve_mode_config(mode, mode_config)
+            
+            # Process shared configuration
+            if 'shared_configuration' in raw_config:
+                processed_config['shared_configuration'] = self._resolve_shared_config(raw_config['shared_configuration'])
+            
+            # Handle legacy configurations for backward compatibility
+            for legacy_key in ['global_staff_review', 'learning_thresholds']:
+                if legacy_key in raw_config:
+                    processed_config[legacy_key] = raw_config[legacy_key]
+            
+            logger.debug("✅ v3.1 configuration processing complete")
+            return processed_config
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing v3.1 configuration: {e}")
+            # Fall back to applying environment overrides to raw config
+            return self._apply_environment_overrides(raw_config)
+    
+    def _resolve_mode_config(self, mode: str, mode_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Resolve environment variables for mode-specific configuration"""
+        resolved = {}
+        
+        # Copy description and other non-resolvable fields
+        for key in ['description']:
+            if key in mode_config:
+                resolved[key] = mode_config[key]
+        
+        # Resolve crisis level mapping with environment variables
+        if 'crisis_level_mapping' in mode_config:
+            resolved['crisis_level_mapping'] = {}
+            defaults = mode_config.get('defaults', {}).get('crisis_level_mapping', {})
+            
+            for threshold_key, env_var_or_value in mode_config['crisis_level_mapping'].items():
+                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                    # Extract environment variable name
+                    env_name = env_var_or_value[2:-1]  # Remove ${} wrapper
+                    default_value = defaults.get(threshold_key, 0.5)
+                    resolved['crisis_level_mapping'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
+                else:
+                    # Use direct value (for non-environment variable values)
+                    resolved['crisis_level_mapping'][threshold_key] = env_var_or_value
+        
+        # Resolve ensemble thresholds with environment variables
+        if 'ensemble_thresholds' in mode_config:
+            resolved['ensemble_thresholds'] = {}
+            defaults = mode_config.get('defaults', {}).get('ensemble_thresholds', {})
+            
+            for threshold_key, env_var_or_value in mode_config['ensemble_thresholds'].items():
+                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                    env_name = env_var_or_value[2:-1]
+                    default_value = defaults.get(threshold_key, 0.3)
+                    resolved['ensemble_thresholds'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
+                else:
+                    resolved['ensemble_thresholds'][threshold_key] = env_var_or_value
+        
+        # Resolve staff review thresholds with environment variables (THIS FIXES THE WARNING!)
+        if 'staff_review_thresholds' in mode_config:
+            resolved['staff_review_thresholds'] = {}
+            defaults = mode_config.get('defaults', {}).get('staff_review_thresholds', {})
+            
+            for threshold_key, env_var_or_value in mode_config['staff_review_thresholds'].items():
+                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                    env_name = env_var_or_value[2:-1]
+                    default_value = defaults.get(threshold_key, True if 'always' in threshold_key or 'review' in threshold_key else 0.5)
+                    
+                    # Use appropriate type conversion based on default value
+                    if isinstance(default_value, bool):
+                        resolved['staff_review_thresholds'][threshold_key] = self.unified_config.get_env_bool(env_name, default_value)
+                    else:
+                        resolved['staff_review_thresholds'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
+                else:
+                    resolved['staff_review_thresholds'][threshold_key] = env_var_or_value
+        
+        # Copy defaults and validation for reference
+        for meta_key in ['defaults', 'validation']:
+            if meta_key in mode_config:
+                resolved[meta_key] = mode_config[meta_key]
+        
+        return resolved
+    
+    def _resolve_shared_config(self, shared_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Resolve environment variables for shared configuration"""
+        resolved = {}
+        
+        if 'description' in shared_config:
+            resolved['description'] = shared_config['description']
+        
+        for section_name, section_config in shared_config.items():
+            if section_name == 'description':
+                continue
+                
+            if isinstance(section_config, dict):
+                resolved[section_name] = {}
+                
+                # Copy description
+                if 'description' in section_config:
+                    resolved[section_name]['description'] = section_config['description']
+                
+                # Resolve environment variables
+                defaults = section_config.get('defaults', {})
+                for key, env_var_or_value in section_config.items():
+                    if key in ['description', 'defaults', 'validation']:
+                        resolved[section_name][key] = section_config[key]
+                        continue
+                    
+                    if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
+                        env_name = env_var_or_value[2:-1]
+                        default_value = defaults.get(key, 1.0 if 'multiplier' in key else 0.5)
+                        
+                        # Use appropriate type conversion
+                        if isinstance(default_value, bool):
+                            resolved[section_name][key] = self.unified_config.get_env_bool(env_name, default_value)
+                        elif isinstance(default_value, int):
+                            resolved[section_name][key] = self.unified_config.get_env_int(env_name, default_value)
+                        elif isinstance(default_value, str):
+                            resolved[section_name][key] = self.unified_config.get_env_str(env_name, default_value)
+                        else:
+                            resolved[section_name][key] = self.unified_config.get_env_float(env_name, default_value)
+                    else:
+                        resolved[section_name][key] = env_var_or_value
+        
+        return resolved
+
     def _apply_environment_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Apply environment variable overrides using UnifiedConfigManager (NO MORE os.getenv())"""
         # Use deep copy to prevent mutation of original config
@@ -336,7 +478,10 @@ class ThresholdMappingManager:
             }
     
     def get_staff_review_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, Union[bool, float]]:
-        """Get staff review thresholds for specific mode"""
+        """
+        Get staff review thresholds for specific mode - FIXED for v3.1 compliance
+        This method now properly handles the new JSON structure and eliminates warnings
+        """
         if mode is None:
             mode = self.get_current_ensemble_mode()
         
@@ -344,12 +489,32 @@ class ThresholdMappingManager:
             mode_config = self.threshold_config.get('threshold_mapping_by_mode', {}).get(mode, {})
             staff_thresholds = mode_config.get('staff_review_thresholds', {})
             
-            if not staff_thresholds:
-                logger.warning(f"⚠️ No staff review thresholds found for mode '{mode}', using global defaults")
+            if staff_thresholds:
+                # Found mode-specific staff review thresholds (v3.1 compliant structure)
+                logger.debug(f"✅ Using mode-specific staff review thresholds for '{mode}'")
+                return staff_thresholds
+            else:
+                # Check shared configuration for backward compatibility
+                shared_config = self.threshold_config.get('shared_configuration', {})
+                
+                # Try shared staff_review configuration
+                if 'staff_review' in shared_config:
+                    logger.debug(f"📋 Using shared staff review configuration for '{mode}' (v3.1 shared config)")
+                    shared_staff_review = shared_config['staff_review']
+                    
+                    # Normalize keys to match expected format
+                    normalized_config = {}
+                    for key, value in shared_staff_review.items():
+                        if key in ['description', 'defaults', 'validation']:
+                            continue
+                        normalized_config[key] = value
+                    
+                    return normalized_config
+                
+                # Final fallback to global configuration
+                logger.debug(f"📋 Using global staff review configuration for '{mode}' (legacy fallback)")
                 return self.get_global_staff_review_thresholds()
-            
-            return staff_thresholds
-            
+                
         except Exception as e:
             logger.error(f"❌ Error getting staff review thresholds for mode '{mode}': {e}")
             return self.get_global_staff_review_thresholds()
