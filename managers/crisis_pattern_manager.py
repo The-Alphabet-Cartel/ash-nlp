@@ -1308,3 +1308,63 @@ logger.info("✅ CrisisPatternManager v3.1 Hybrid loaded - Enhanced safety featu
                 'v3_1_compliant': False,
                 'validation_timestamp': time.time()
             }
+
+    # ========================================================================
+    # UTILITY METHODS - Additional Helper Functions  
+    # ========================================================================
+    
+    def analyze_community_patterns(self, message: str) -> Dict[str, Any]:
+        """
+        Analyze community-specific vocabulary patterns in the message
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            Dictionary containing community pattern analysis results
+        """
+        try:
+            patterns_found = self.extract_community_patterns(message)
+            
+            return {
+                'patterns_found': patterns_found,
+                'community_indicators_count': len(patterns_found),
+                'community_analysis_available': True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error in community pattern analysis: {e}")
+            return {
+                'patterns_found': [],
+                'community_indicators_count': 0,
+                'community_analysis_available': False,
+                'error': str(e)
+            }
+    
+    def analyze_context_phrases(self, message: str) -> Dict[str, Any]:
+        """
+        Analyze crisis context phrases that amplify crisis detection
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            Dictionary containing context phrase analysis results
+        """
+        try:
+            context_patterns = self.extract_crisis_context_phrases(message)
+            
+            return {
+                'context_patterns': context_patterns,
+                'context_amplifiers_count': len(context_patterns),
+                'context_analysis_available': True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error in context phrase analysis: {e}")
+            return {
+                'context_patterns': [],
+                'context_amplifiers_count': 0,
+                'context_analysis_available': False,
+                'error': str(e)
+            }
