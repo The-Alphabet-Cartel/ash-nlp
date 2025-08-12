@@ -510,6 +510,126 @@ class ThresholdMappingManager:
                 'min_confidence_for_learning': 0.3
             }
     
+    def get_pattern_integration_config(self) -> Dict[str, Any]:
+        """
+        Get pattern integration configuration settings
+        
+        This method was missing and is required by the integration logic
+        
+        Returns:
+            Dictionary with pattern integration configuration
+        """
+        try:
+            # Get pattern integration settings from threshold configuration
+            integration_config = self.threshold_config.get('pattern_integration', {})
+            
+            # If no specific pattern integration config, provide sensible defaults
+            if not integration_config:
+                integration_config = {
+                    'enabled': True,
+                    'confidence_boost_multiplier': 1.2,
+                    'pattern_weight': 0.3,
+                    'ensemble_weight': 0.7,
+                    'confidence_threshold': 0.5,
+                    'crisis_level_promotion': {
+                        'enabled': True,
+                        'boost_factor': 0.1
+                    }
+                }
+                logger.debug("🔧 Using default pattern integration configuration")
+            
+            logger.debug(f"✅ Pattern integration config loaded: {integration_config}")
+            return integration_config
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting pattern integration config: {e}")
+            # Return safe defaults
+            return {
+                'enabled': True,
+                'confidence_boost_multiplier': 1.0,
+                'pattern_weight': 0.3,
+                'ensemble_weight': 0.7,
+                'confidence_threshold': 0.5,
+                'crisis_level_promotion': {
+                    'enabled': False,
+                    'boost_factor': 0.0
+                }
+            }
+
+    def get_safety_controls_config(self) -> Dict[str, Any]:
+        """
+        Get safety controls configuration settings
+        
+        This method provides safety control settings for crisis detection
+        
+        Returns:
+            Dictionary with safety controls configuration
+        """
+        try:
+            # Get safety controls from threshold configuration
+            safety_config = self.threshold_config.get('safety_controls', {})
+            
+            # If no specific safety controls config, provide sensible defaults
+            if not safety_config:
+                safety_config = {
+                    'enabled': True,
+                    'conservative_mode': True,
+                    'staff_review_triggers': {
+                        'high_crisis': True,
+                        'medium_crisis': True,
+                        'low_confidence': True,
+                        'pattern_conflicts': True
+                    },
+                    'confidence_requirements': {
+                        'minimum_for_high': 0.7,
+                        'minimum_for_medium': 0.5,
+                        'minimum_for_low': 0.3
+                    },
+                    'escalation_thresholds': {
+                        'immediate_attention': 0.8,
+                        'priority_review': 0.6,
+                        'standard_review': 0.4
+                    },
+                    'fallback_behavior': {
+                        'on_error': 'conservative_escalation',
+                        'default_crisis_level': 'low',
+                        'require_staff_review': True
+                    }
+                }
+                logger.debug("🔧 Using default safety controls configuration")
+            
+            logger.debug(f"✅ Safety controls config loaded: enabled={safety_config.get('enabled', True)}")
+            return safety_config
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting safety controls config: {e}")
+            # Return ultra-safe defaults
+            return {
+                'enabled': True,
+                'conservative_mode': True,
+                'staff_review_triggers': {
+                    'high_crisis': True,
+                    'medium_crisis': True,
+                    'low_confidence': True,
+                    'pattern_conflicts': True
+                },
+                'confidence_requirements': {
+                    'minimum_for_high': 0.8,
+                    'minimum_for_medium': 0.6,
+                    'minimum_for_low': 0.4
+                },
+                'escalation_thresholds': {
+                    'immediate_attention': 0.9,
+                    'priority_review': 0.7,
+                    'standard_review': 0.5
+                },
+                'fallback_behavior': {
+                    'on_error': 'conservative_escalation',
+                    'default_crisis_level': 'medium',  # More conservative on error
+                    'require_staff_review': True
+                }
+            }
+
     # ========================================================================
     # VALIDATION AND STATUS METHODS (PRESERVED)
     # ========================================================================

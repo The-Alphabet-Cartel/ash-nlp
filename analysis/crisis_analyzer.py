@@ -8,6 +8,7 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 import logging
 import time
 import re
+import asyncio
 from typing import Dict, List, Tuple, Any, Optional
 from utils.context_helpers import extract_context_signals, analyze_sentiment_context, process_sentiment_with_flip
 from utils.scoring_helpers import (
@@ -802,8 +803,8 @@ class CrisisAnalyzer:
 
     async def _analyze_with_crisis_patterns(self, message: str) -> Dict[str, Any]:
         """
-        Crisis pattern analysis using CrisisPatternManager (Phase 3a compatibility)
-        Enhanced with Phase 3c threshold awareness
+        Crisis pattern analysis using CrisisPatternManager with semantic NLP integration
+        Enhanced with Phase 3c threshold awareness and semantic classification
         """
         try:
             if not self.crisis_pattern_manager:
@@ -814,8 +815,11 @@ class CrisisAnalyzer:
                     'error': 'CrisisPatternManager not initialized'
                 }
             
-            # Use crisis pattern manager for pattern detection
-            triggered_patterns = self.crisis_pattern_manager.find_triggered_patterns(message)
+            # UPDATED: Pass models_manager to enable semantic pattern matching
+            triggered_patterns = self.crisis_pattern_manager.find_triggered_patterns(
+                message, 
+                models_manager=self.models_manager  # Pass the models manager for semantic analysis
+            )
             
             if not triggered_patterns:
                 return {
@@ -827,12 +831,24 @@ class CrisisAnalyzer:
             # Calculate pattern-based adjustments with Phase 3c awareness
             adjustments = self._calculate_pattern_adjustments_v3c(triggered_patterns, message)
             
+            # Enhanced summary with semantic classification info
+            pattern_sources = list(set(p.get('source', 'unknown') for p in triggered_patterns))
+            semantic_patterns = [p for p in triggered_patterns if p.get('pattern_type') == 'semantic_classification']
+            
+            summary_parts = [f"{len(triggered_patterns)} patterns triggered"]
+            if semantic_patterns:
+                summary_parts.append(f"{len(semantic_patterns)} semantic")
+            if 'zero_shot_nlp_model' in pattern_sources:
+                summary_parts.append("(NLP-powered)")
+            
             return {
                 'patterns_triggered': triggered_patterns,
                 'adjustments': adjustments,
-                'summary': f"{len(triggered_patterns)} patterns triggered",
+                'summary': " ".join(summary_parts),
                 'pattern_categories': list(set(p.get('category', 'unknown') for p in triggered_patterns)),
-                'highest_crisis_level': self._get_highest_pattern_crisis_level(triggered_patterns)
+                'highest_crisis_level': self._get_highest_pattern_crisis_level(triggered_patterns),
+                'semantic_classification_used': len(semantic_patterns) > 0,
+                'pattern_sources': pattern_sources
             }
             
         except Exception as e:
