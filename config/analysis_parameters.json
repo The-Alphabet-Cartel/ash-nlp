@@ -215,10 +215,10 @@
     "enable_pattern_learning": "${NLP_FEATURE_PATTERN_LEARNING}",
     "integration_mode": "${NLP_ANALYSIS_INTEGRATION_MODE}",
     "defaults": {
-      "enable_pattern_analysis": true,
-      "enable_semantic_analysis": true,
-      "enable_phrase_extraction": true,
-      "enable_pattern_learning": true,
+      "enable_pattern_analysis": false,
+      "enable_semantic_analysis": false,
+      "enable_phrase_extraction": false,
+      "enable_pattern_learning": false,
       "integration_mode": "full"
     },
     "validation": {
