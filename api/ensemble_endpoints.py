@@ -350,7 +350,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     # ENSEMBLE ANALYSIS ENDPOINT - PHASE 3D UPDATED
     # ========================================================================
     @app.post("/analyze", response_model=models['CrisisResponse'])
-    async def analyze_message_v3d_clean(request: models['AnalysisRequest']):
+    async def analyze_message_v3d_clean(request: models['MessageRequest']):
         """
         CLEAN v3.1 Architecture: Single Analysis via CrisisAnalyzer
         
