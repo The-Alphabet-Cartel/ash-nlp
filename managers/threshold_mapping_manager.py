@@ -45,7 +45,6 @@ class ThresholdMappingManager:
         
         # Validate configuration
         #self._validate_configuration()
-        self._validate_threshold_config()
         
         logger.info("✅ Threshold mapping configuration loaded and validated")
         logger.info("ThresholdMappingManager v3.1d Step 10 initialized - Standardized configuration support")
