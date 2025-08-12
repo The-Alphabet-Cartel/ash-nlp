@@ -184,74 +184,103 @@ class CrisisAnalyzer:
         except Exception as e:
             logger.warning(f"⚠️ Could not log current thresholds: {e}")
 
-    async def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict:
+    async def analyze_message(self, message: str, user_id: str = None, channel_id: str = None) -> Dict[str, Any]:
         """
-        PHASE 3D STEP 7: Enhanced crisis analysis with feature flags and performance optimization
-        Phase 3a: Enhanced with CrisisPatternManager integration
-        Phase 3b: Analysis parameters integration
-        Phase 3c: Mode-aware thresholds with ThresholdMappingManager
-        Phase 3d Step 7: Feature flags and performance settings integration
-        """
+        Main analysis method - FIXED FEATURE FLAG ENFORCEMENT
         
-        self._ensure_feature_cache()
+        This method now properly respects all feature flags set in .env
+        Enhanced for Phase 3d Step 7 with comprehensive feature flag checking
+        """
         start_time = time.time()
         reasoning_steps = []
         
-        try:
-            # Check if ensemble analysis is enabled - Phase 3d Step 7
-            if not self._feature_cache.get('ensemble_analysis', True):
-                logger.debug("🔥 Ensemble analysis disabled by feature flag - using basic analysis")
-                return await self._basic_crisis_analysis(message, user_id, channel_id, start_time)
+        # Ensure feature cache is initialized
+        self._ensure_feature_cache()
+        
+        # Log current feature flag status for debugging
+        logger.debug(f"🔧 Feature flags: pattern_analysis={self._feature_cache.get('pattern_analysis', 'unknown')}, "
+                    f"ensemble_analysis={self._feature_cache.get('ensemble_analysis', 'unknown')}")
+        
+        # STEP 1: Check if ensemble analysis is enabled
+        if not self._feature_cache.get('ensemble_analysis', True):
+            logger.info("🚫 Ensemble analysis disabled by feature flag - using basic analysis")
+            return await self._basic_crisis_analysis(message, user_id, channel_id, start_time)
+        
+        # STEP 2: Pattern Analysis - ONLY if feature flag enabled
+        if self._feature_cache.get('pattern_analysis', False) and self.crisis_pattern_manager:
+            pattern_analysis = await self._analyze_with_crisis_patterns(message)
+            reasoning_steps.append(f"Pattern Analysis: {pattern_analysis.get('summary', 'none')}")
+            logger.debug(f"✅ Pattern analysis enabled: {pattern_analysis.get('summary', 'none')}")
+        else:
+            pattern_analysis = {'patterns_triggered': [], 'adjustments': {}, 'summary': 'Pattern analysis disabled by feature flag'}
+            reasoning_steps.append("Pattern Analysis: Disabled by feature flag")
+            logger.debug("🚫 Pattern analysis disabled by feature flag")
+        
+        # STEP 3: Three Zero-Shot Model Ensemble ANALYSIS
+        if hasattr(self.models_manager, 'analyze_with_ensemble'):
+            # Use the new Three Zero-Shot Model Ensemble
+            ensemble_result = self.models_manager.analyze_with_ensemble(message)
             
-            # Apply performance timeout - Phase 3d Step 7
-            analysis_timeout = self._performance_cache.get('analysis_timeout', 30.0)
+            # Extract consensus prediction for crisis level mapping
+            consensus = ensemble_result.get('consensus', {})
+            consensus_prediction = consensus.get('prediction', 'unknown')
+            consensus_confidence = consensus.get('confidence', 0.0)
             
-            try:
-                # Get analysis timeout from performance settings
-                analysis_result = await asyncio.wait_for(
-                    self._full_ensemble_analysis(message, user_id, channel_id, start_time, reasoning_steps),
-                    timeout=analysis_timeout
+            # PHASE 3C: Use ThresholdMappingManager for crisis level mapping
+            crisis_level = self._map_consensus_to_crisis_level_v3c(consensus_prediction, consensus_confidence)
+            
+            # Apply pattern-based adjustments ONLY if pattern analysis is enabled AND patterns were found
+            if (self._feature_cache.get('pattern_analysis', False) and 
+                pattern_analysis.get('adjustments') and 
+                self._feature_cache.get('pattern_integration', True)):
+                
+                crisis_level, consensus_confidence = self._apply_pattern_adjustments_v3c(
+                    crisis_level, consensus_confidence, pattern_analysis['adjustments']
                 )
-            except asyncio.TimeoutError:
-                logger.warning(f"⏰ Analysis timeout after {analysis_timeout}s - using quick analysis")
-                analysis_result = await self._quick_crisis_analysis(message, user_id, channel_id, start_time)
+                logger.debug(f"✅ Pattern adjustments applied to ensemble result")
+            else:
+                logger.debug(f"🚫 Pattern adjustments skipped - pattern_analysis={self._feature_cache.get('pattern_analysis')} or no patterns")
             
-            # Add Phase 3d Step 7 metadata
-            analysis_result['metadata'] = analysis_result.get('metadata', {})
-            analysis_result['metadata']['phase_3d_step_7'] = {
-                'feature_flags_applied': True,
-                'performance_optimization': True,
-                'analysis_time': time.time() - start_time,
-                'timeout_setting': analysis_timeout,
-                'features_used': {
-                    'ensemble_analysis': self._feature_cache.get('ensemble_analysis', True),
-                    'pattern_integration': self._feature_cache.get('pattern_integration', True),
-                    'semantic_analysis': self._feature_cache.get('semantic_analysis', True)
-                }
-            }
+            # Phase 3c: Determine if staff review required
+            staff_review_required = self._is_staff_review_required(
+                crisis_level, consensus_confidence, ensemble_result
+            )
             
-            return analysis_result
-            
-        except Exception as e:
-            logger.error(f"❌ Crisis analysis error: {e}")
-            return {
-                'needs_response': False,
-                'crisis_level': 'none',
-                'confidence_score': 0.0,
-                'detected_categories': [],
-                'method': 'error_fallback',
+            # Build final result with ensemble data
+            result = {
+                'needs_response': crisis_level != 'none',
+                'crisis_level': crisis_level,
+                'confidence_score': consensus_confidence,
+                'detected_categories': ensemble_result.get('detected_categories', []),
+                'method': 'ensemble_and_patterns_integrated_v3d7' if pattern_analysis.get('patterns_triggered') else 'ensemble_only_v3d7',
                 'processing_time_ms': (time.time() - start_time) * 1000,
-                'error': str(e),
-                'staff_review_required': True,  # Always require review on errors
-                'metadata': {
-                    'analysis_time': time.time() - start_time,
-                    'phase_3d_step_7': {
-                        'error_occurred': True,
-                        'feature_flags_applied': False,
-                        'performance_optimization': False
-                    }
+                'model_info': f"Three Zero-Shot Model Ensemble + Pattern Analysis ({'enabled' if self._feature_cache.get('pattern_analysis') else 'disabled'})",
+                'reasoning': ' | '.join(reasoning_steps),
+                'ensemble_details': ensemble_result,
+                'pattern_analysis': pattern_analysis,
+                'staff_review_required': staff_review_required,
+                'threshold_mode': self._get_current_threshold_mode(),
+                'threshold_config': self._get_threshold_debug_info(),
+                'feature_flags_applied': {
+                    'pattern_analysis': self._feature_cache.get('pattern_analysis', False),
+                    'ensemble_analysis': self._feature_cache.get('ensemble_analysis', True),
+                    'pattern_integration': self._feature_cache.get('pattern_integration', True)
                 }
             }
+            
+            logger.debug(f"✅ ENSEMBLE+PATTERNS (pattern_analysis={self._feature_cache.get('pattern_analysis')}): "
+                       f"{crisis_level} (conf={consensus_confidence:.3f}) "
+                       f"consensus={consensus_prediction} mode={result['threshold_mode']}")
+            
+            # Phase 3c: Learning system feedback
+            if self.learning_manager and self.threshold_mapping_manager:
+                await self._provide_learning_feedback(result)
+            
+            return result
+            
+        else:
+            # Fallback to legacy two-model analysis with Phase 3c thresholds
+            return await self._legacy_two_model_analysis_v3c(message, user_id, channel_id, start_time)
     
     async def _full_ensemble_analysis(self, message: str, user_id: str, channel_id: str, start_time: float, reasoning_steps: List[str]) -> Dict:
         """Full ensemble analysis with Phase 3d Step 7 feature flag integration"""
@@ -323,22 +352,31 @@ class CrisisAnalyzer:
             return await self._legacy_two_model_analysis_v3c(message, user_id, channel_id, start_time)
     
     async def _basic_crisis_analysis(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
-        """Basic crisis analysis when ensemble is disabled by feature flag"""
+        """
+        Basic crisis analysis when ensemble is disabled by feature flag
+        FIXED: Properly respects pattern analysis feature flag
+        """
         logger.info("🔥 Running basic crisis analysis - ensemble disabled by feature flag")
         
-        # Simple pattern-based analysis
-        if self._feature_cache.get('pattern_analysis', True) and self.crisis_pattern_manager:
+        # Check if pattern analysis is enabled
+        pattern_analysis_enabled = self._feature_cache.get('pattern_analysis', False)
+        
+        if pattern_analysis_enabled and self.crisis_pattern_manager:
+            logger.debug("✅ Pattern analysis enabled for basic analysis")
             pattern_analysis = await self._analyze_with_crisis_patterns(message)
             
             # Simple crisis level determination based on patterns
             if pattern_analysis.get('patterns_triggered'):
                 highest_level = self._get_highest_pattern_crisis_level(pattern_analysis['patterns_triggered'])
                 confidence = 0.6  # Conservative confidence for basic analysis
+                logger.debug(f"✅ Pattern-based analysis result: {highest_level} (conf: {confidence})")
             else:
                 highest_level = 'none'
                 confidence = 0.0
+                logger.debug("📊 No patterns triggered in basic analysis")
         else:
-            pattern_analysis = {'patterns_triggered': [], 'adjustments': {}, 'summary': 'Pattern analysis disabled'}
+            logger.debug("🚫 Pattern analysis disabled - returning minimal analysis")
+            pattern_analysis = {'patterns_triggered': [], 'adjustments': {}, 'summary': 'Pattern analysis disabled by feature flag'}
             highest_level = 'none'
             confidence = 0.0
         
@@ -347,15 +385,20 @@ class CrisisAnalyzer:
             'crisis_level': highest_level,
             'confidence_score': confidence,
             'detected_categories': [],
-            'method': 'basic_pattern_only_v3d7',
+            'method': 'basic_pattern_only_v3d7' if pattern_analysis_enabled else 'basic_disabled_v3d7',
             'processing_time_ms': (time.time() - start_time) * 1000,
-            'model_info': 'Basic pattern-only analysis',
-            'reasoning': 'Ensemble analysis disabled by feature flag',
+            'model_info': f"Basic analysis (pattern_analysis={'enabled' if pattern_analysis_enabled else 'disabled'})",
+            'reasoning': f"Ensemble analysis disabled by feature flag, pattern analysis {'enabled' if pattern_analysis_enabled else 'disabled'}",
             'pattern_analysis': pattern_analysis,
             'staff_review_required': highest_level in ['high', 'medium'],
             'threshold_mode': 'basic',
             'threshold_config': {'mode': 'basic_fallback'},
-            'note': 'Basic analysis - ensemble disabled by feature flag'
+            'feature_flags_applied': {
+                'pattern_analysis': pattern_analysis_enabled,
+                'ensemble_analysis': False,
+                'pattern_integration': False
+            },
+            'note': f"Basic analysis - ensemble disabled, pattern analysis {'enabled' if pattern_analysis_enabled else 'disabled'}"
         }
     
     async def _quick_crisis_analysis(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
