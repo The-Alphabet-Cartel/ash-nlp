@@ -347,127 +347,113 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     logger.info("🚀 Adding Clean v3.1 Three Zero-Shot Model Ensemble endpoints (Phase 3c)")
     
     # ========================================================================
-    # ENSEMBLE ANALYSIS ENDPOINT - PHASE 3C UPDATED
+    # ENSEMBLE ANALYSIS ENDPOINT - PHASE 3D UPDATED
     # ========================================================================
-    
     @app.post("/analyze", response_model=models['CrisisResponse'])
-    async def analyze_message_ensemble_v3c(request: models['MessageRequest']):
+    async def analyze_message_v3d_clean(request: models['AnalysisRequest']):
         """
-        PHASE 3C: Analyze message using Three Zero-Shot Model Ensemble + Crisis Patterns + ThresholdMappingManager
-        Clean v3.1 implementation with mode-aware threshold integration
-        """
-        start_time = time.time()
+        CLEAN v3.1 Architecture: Single Analysis via CrisisAnalyzer
         
+        Removed redundant API-level analysis - CrisisAnalyzer is the single source of truth
+        """
         try:
-            logger.debug(f"🔍 Clean v3.1 Phase 3c: Analyzing message from user {request.user_id}")
+            start_time = time.time()
+            logger.debug(f"🔍 Clean v3.1 Architecture: Analyzing message from user {request.user_id}")
             
-            # Validate models are loaded - Direct manager check
-            if not models_manager.models_loaded():
-                logger.error("❌ Three Zero-Shot Model Ensemble not loaded")
+            # ========================================================================
+            # CLEAN ARCHITECTURE: SINGLE SOURCE OF TRUTH
+            # CrisisAnalyzer handles all analysis logic including:
+            # - Feature flag enforcement
+            # - Ensemble analysis
+            # - Pattern analysis (if enabled)
+            # - Threshold mapping
+            # - Integration logic
+            # ========================================================================
+            
+            if not models_manager:
                 raise HTTPException(
-                    status_code=503, 
-                    detail="Three Zero-Shot Model Ensemble not available"
+                    status_code=500,
+                    detail="Models manager not available"
                 )
             
-            # STEP 1: Perform ensemble analysis - Direct manager usage
             try:
-                ensemble_analysis = await models_manager.analyze_message_ensemble(
+                # Single analysis call - CrisisAnalyzer does everything
+                complete_analysis = await models_manager.analyze_message_ensemble(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
                 )
-                logger.debug(f"✅ Ensemble analysis complete")
+                logger.debug(f"✅ Complete analysis via CrisisAnalyzer: {complete_analysis.get('method', 'unknown')}")
+                
             except Exception as e:
-                logger.error(f"❌ Ensemble analysis failed: {e}")
+                logger.error(f"❌ CrisisAnalyzer analysis failed: {e}")
                 raise HTTPException(
                     status_code=500,
-                    detail=f"Ensemble analysis failed: {str(e)}"
+                    detail=f"Analysis failed: {str(e)}"
                 )
-            
-            # STEP 2: CRISIS PATTERN ANALYSIS INTEGRATION (Phase 3a compatibility)
-            pattern_analysis = {}
-            if crisis_pattern_manager:
-                try:
-                    logger.debug("🔍 Running crisis pattern analysis...")
-                    pattern_analysis = crisis_pattern_manager.analyze_message(
-                        message=request.message,
-                        user_id=request.user_id,
-                        channel_id=request.channel_id
-                    )
-                    patterns_found = pattern_analysis.get('patterns_triggered', [])
-                    logger.debug(f"✅ Pattern analysis complete: {len(patterns_found)} patterns triggered")
-                    
-                    if patterns_found:
-                        logger.info(f"🚨 Crisis patterns detected: {[p.get('pattern_name', 'unknown') for p in patterns_found]}")
-                except Exception as e:
-                    logger.warning(f"⚠️ Pattern analysis failed: {e}")
-                    pattern_analysis = {
-                        "error": str(e), 
-                        "patterns_triggered": [],
-                        "analysis_available": False
-                    }
-            else:
-                logger.debug("⚠️ No crisis pattern manager available - skipping pattern analysis")
-                pattern_analysis = {
-                    "error": "CrisisPatternManager not available", 
-                    "patterns_triggered": [],
-                    "analysis_available": False
-                }
-            
-            # STEP 3: PHASE 3C - COMBINE ENSEMBLE AND PATTERN RESULTS WITH THRESHOLDMAPPINGMANAGER
-            combined_analysis = integrate_pattern_and_ensemble_analysis_v3c(
-                ensemble_analysis, pattern_analysis, threshold_mapping_manager
-            )
             
             processing_time_ms = (time.time() - start_time) * 1000
             
-            # Create response using PydanticManager models with combined analysis
+            # ========================================================================
+            # RESPONSE FORMATTING - NO ADDITIONAL ANALYSIS
+            # CrisisAnalyzer already produced the final result
+            # ========================================================================
+            
             response = models['CrisisResponse'](
-                needs_response=combined_analysis.get('needs_response', False),
-                crisis_level=combined_analysis.get('crisis_level', 'none'),
-                confidence_score=combined_analysis.get('confidence_score', 0.0),
-                detected_categories=combined_analysis.get('detected_categories', []),
-                method=combined_analysis.get('method', 'ensemble_and_patterns_v3c'),
+                needs_response=complete_analysis.get('needs_response', False),
+                crisis_level=complete_analysis.get('crisis_level', 'none'),
+                confidence_score=complete_analysis.get('confidence_score', 0.0),
+                detected_categories=complete_analysis.get('detected_categories', []),
+                method=complete_analysis.get('method', 'crisis_analyzer_complete_v3d'),
                 processing_time_ms=processing_time_ms,
-                model_info=combined_analysis.get('model_info', 'Clean v3.1 Ensemble + Patterns + ThresholdMapping'),
-                reasoning=combined_analysis.get('reasoning'),
+                model_info=complete_analysis.get('model_info', 'Clean v3.1 Architecture - CrisisAnalyzer Complete'),
+                reasoning=complete_analysis.get('reasoning', 'Single analysis via CrisisAnalyzer'),
                 analysis={
-                    'ensemble_analysis': ensemble_analysis,
-                    'pattern_analysis': pattern_analysis,
-                    'combined_result': combined_analysis,
-                    'threshold_configuration': combined_analysis.get('threshold_mode', 'unknown'),
-                    'staff_review_required': combined_analysis.get('staff_review_required', False)
+                    'complete_analysis': complete_analysis,
+                    'architecture': 'clean_v3_1_single_source_of_truth',
+                    'redundant_processing': False,
+                    'feature_flags_respected': True,
+                    'api_processing_time_ms': processing_time_ms,
+                    'note': 'No redundant API analysis - CrisisAnalyzer handled everything'
                 }
             )
             
-            # Phase 3c: Log comprehensive analysis summary
-            crisis_level = combined_analysis.get('crisis_level', 'none')
-            staff_review = combined_analysis.get('staff_review_required', False)
-            threshold_mode = combined_analysis.get('threshold_mode', 'unknown')
+            # ========================================================================
+            # LOGGING - FINAL RESULT
+            # ========================================================================
             
-            logger.debug(f"✅ Clean v3.1 Phase 3c: Analysis complete - {crisis_level} level detected "
-                        f"(mode={threshold_mode}, staff_review={staff_review})")
+            crisis_level = complete_analysis.get('crisis_level', 'none')
+            method = complete_analysis.get('method', 'unknown')
+            confidence = complete_analysis.get('confidence_score', 0.0)
+            feature_flags = complete_analysis.get('feature_flags_applied', {})
+            
+            logger.debug(f"✅ Clean Architecture Result: {crisis_level} (conf: {confidence:.3f}) via {method}")
+            logger.debug(f"🏗️ Feature flags applied: {feature_flags}")
             
             return response
             
         except HTTPException:
             raise
         except Exception as e:
-            processing_time_ms = (time.time() - start_time) * 1000
-            logger.error(f"❌ Unexpected error in analysis: {e}")
-            logger.exception("Full analysis error:")
+            processing_time_ms = (time.time() - start_time) * 1000 if 'start_time' in locals() else 0.0
+            logger.error(f"❌ Unexpected error in clean analysis endpoint: {e}")
+            logger.exception("Full error details:")
             
-            # Return error response using PydanticManager models  
+            # Return clean error response
             return models['CrisisResponse'](
                 needs_response=False,
                 crisis_level='none',
                 confidence_score=0.0,
                 detected_categories=[],
-                method='error',
+                method='error_clean_architecture',
                 processing_time_ms=processing_time_ms,
-                model_info='Clean v3.1 Phase 3c - Analysis Error',
-                reasoning=f"Error during analysis: {str(e)}",
-                analysis={'error': str(e), 'staff_review_required': True}
+                model_info='Clean v3.1 Architecture - Error',
+                reasoning=f"Error during clean analysis: {str(e)}",
+                analysis={
+                    'error': str(e),
+                    'architecture': 'clean_v3_1_error_handling',
+                    'processing_time_ms': processing_time_ms
+                }
             )
     
     # ========================================================================
