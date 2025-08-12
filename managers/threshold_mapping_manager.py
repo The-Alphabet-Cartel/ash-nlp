@@ -21,22 +21,152 @@ class ThresholdMappingManager:
     
     def __init__(self, unified_config_manager, model_ensemble_manager=None):
         """
-        Initialize ThresholdMappingManager with mode-aware threshold support
+        Initialize ThresholdMappingManager with standardized configuration support
         
         Args:
-            unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
-            model_ensemble_manager: ModelEnsembleManager for mode detection
+            unified_config_manager: UnifiedConfigManager instance
+            model_ensemble_manager: ModelEnsembleManager instance (optional)
         """
-        # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
+        if unified_config_manager is None:
+            raise ValueError("UnifiedConfigManager is required for ThresholdMappingManager")
+        
         self.unified_config = unified_config_manager
         self.model_ensemble_manager = model_ensemble_manager
-        self._validation_errors = []
         
-        # Load threshold mapping configuration using unified manager
-        self._load_threshold_mapping_config()
+        logger.info("ThresholdMappingManager v3.1d Step 10 initializing with standardized configuration...")
         
-        logger.info("ThresholdMappingManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
+        # Try to load standardized configuration first, fall back to legacy if needed
+        try:
+            self.threshold_config = self._load_standardized_threshold_config()
+            logger.info("✅ Using standardized JSON configuration format")
+        except Exception as e:
+            logger.warning(f"⚠️ Standardized config failed, using legacy format: {e}")
+            self.threshold_config = self._load_threshold_configuration()
+        
+        # Validate configuration
+        self._validate_configuration()
+        
+        logger.info("✅ Threshold mapping configuration loaded and validated")
+        logger.info("ThresholdMappingManager v3.1d Step 10 initialized - Standardized configuration support")
     
+    def _load_standardized_threshold_config(self) -> Dict[str, Any]:
+        """
+        Load threshold configuration from standardized JSON format
+        Following Clean v3.1 JSON configuration standards with defaults blocks
+        """
+        try:
+            config = self.unified_config.get_threshold_configuration()
+            
+            # Transform from standardized format to internal format
+            standardized_config = {
+                'threshold_mapping_by_mode': {
+                    'consensus': {
+                        'crisis_level_mapping': {
+                            'crisis_to_high': config.get('consensus_mode_thresholds', {}).get('crisis_to_high'),
+                            'crisis_to_medium': config.get('consensus_mode_thresholds', {}).get('crisis_to_medium'),
+                            'mild_crisis_to_low': config.get('consensus_mode_thresholds', {}).get('mild_crisis_to_low'),
+                            'negative_to_low': config.get('consensus_mode_thresholds', {}).get('negative_to_low'),
+                            'unknown_to_low': config.get('consensus_mode_thresholds', {}).get('unknown_to_low')
+                        },
+                        'ensemble_thresholds': {
+                            'high': config.get('consensus_mode_thresholds', {}).get('ensemble_high'),
+                            'medium': config.get('consensus_mode_thresholds', {}).get('ensemble_medium'),
+                            'low': config.get('consensus_mode_thresholds', {}).get('ensemble_low')
+                        },
+                        'staff_review_thresholds': {
+                            'high_always': config.get('staff_review_settings', {}).get('high_always'),
+                            'medium_confidence_threshold': config.get('staff_review_settings', {}).get('medium_confidence_threshold'),
+                            'low_confidence_threshold': config.get('staff_review_settings', {}).get('low_confidence_threshold'),
+                            'on_disagreement': config.get('staff_review_settings', {}).get('on_disagreement'),
+                            'gap_detection_review': config.get('staff_review_settings', {}).get('gap_detection_review')
+                        }
+                    },
+                    'majority': {
+                        'crisis_level_mapping': {
+                            'crisis_to_high': config.get('majority_mode_thresholds', {}).get('crisis_to_high'),
+                            'crisis_to_medium': config.get('majority_mode_thresholds', {}).get('crisis_to_medium'),
+                            'mild_crisis_to_low': config.get('majority_mode_thresholds', {}).get('mild_crisis_to_low'),
+                            'negative_to_low': config.get('majority_mode_thresholds', {}).get('negative_to_low'),
+                            'unknown_to_low': config.get('majority_mode_thresholds', {}).get('unknown_to_low')
+                        },
+                        'ensemble_thresholds': {
+                            'high': config.get('majority_mode_thresholds', {}).get('ensemble_high'),
+                            'medium': config.get('majority_mode_thresholds', {}).get('ensemble_medium'),
+                            'low': config.get('majority_mode_thresholds', {}).get('ensemble_low')
+                        },
+                        'staff_review_thresholds': {
+                            'high_always': config.get('staff_review_settings', {}).get('high_always'),
+                            'medium_confidence_threshold': config.get('staff_review_settings', {}).get('medium_confidence_threshold'),
+                            'low_confidence_threshold': config.get('staff_review_settings', {}).get('low_confidence_threshold'),
+                            'on_disagreement': config.get('staff_review_settings', {}).get('on_disagreement'),
+                            'gap_detection_review': config.get('staff_review_settings', {}).get('gap_detection_review')
+                        }
+                    },
+                    'weighted': {
+                        'crisis_level_mapping': {
+                            'crisis_to_high': config.get('weighted_mode_thresholds', {}).get('crisis_to_high'),
+                            'crisis_to_medium': config.get('weighted_mode_thresholds', {}).get('crisis_to_medium'),
+                            'mild_crisis_to_low': config.get('weighted_mode_thresholds', {}).get('mild_crisis_to_low'),
+                            'negative_to_low': config.get('weighted_mode_thresholds', {}).get('negative_to_low'),
+                            'unknown_to_low': config.get('weighted_mode_thresholds', {}).get('unknown_to_low')
+                        },
+                        'ensemble_thresholds': {
+                            'high': config.get('weighted_mode_thresholds', {}).get('ensemble_high'),
+                            'medium': config.get('weighted_mode_thresholds', {}).get('ensemble_medium'),
+                            'low': config.get('weighted_mode_thresholds', {}).get('ensemble_low')
+                        },
+                        'staff_review_thresholds': {
+                            'high_always': config.get('staff_review_settings', {}).get('high_always'),
+                            'medium_confidence_threshold': config.get('staff_review_settings', {}).get('medium_confidence_threshold'),
+                            'low_confidence_threshold': config.get('staff_review_settings', {}).get('low_confidence_threshold'),
+                            'on_disagreement': config.get('staff_review_settings', {}).get('on_disagreement'),
+                            'gap_detection_review': config.get('staff_review_settings', {}).get('gap_detection_review')
+                        }
+                    }
+                },
+                'shared_configuration': {
+                    'pattern_integration': {
+                        'pattern_weight_multiplier': config.get('pattern_integration_settings', {}).get('pattern_weight_multiplier'),
+                        'confidence_boost_limit': config.get('pattern_integration_settings', {}).get('confidence_boost_limit'),
+                        'pattern_override_threshold': config.get('pattern_integration_settings', {}).get('pattern_override_threshold'),
+                        'community_pattern_boost': config.get('pattern_integration_settings', {}).get('community_pattern_boost'),
+                        'pattern_weight': config.get('pattern_integration_settings', {}).get('pattern_weight'),
+                        'ensemble_weight': config.get('pattern_integration_settings', {}).get('ensemble_weight'),
+                        'confidence_threshold': config.get('pattern_integration_settings', {}).get('confidence_threshold'),
+                        'crisis_level_promotion': {
+                            'enabled': config.get('pattern_integration_settings', {}).get('crisis_level_promotion_enabled'),
+                            'boost_factor': config.get('pattern_integration_settings', {}).get('crisis_level_boost_factor')
+                        }
+                    },
+                    'learning_system': {
+                        'feedback_weight': config.get('learning_system_settings', {}).get('feedback_weight'),
+                        'min_samples_for_update': config.get('learning_system_settings', {}).get('min_samples_for_update'),
+                        'confidence_adjustment_limit': config.get('learning_system_settings', {}).get('confidence_adjustment_limit'),
+                        'enable_threshold_learning': config.get('learning_system_settings', {}).get('enable_threshold_learning'),
+                        'learning_rate': config.get('learning_system_settings', {}).get('learning_rate'),
+                        'max_threshold_drift': config.get('learning_system_settings', {}).get('max_threshold_drift'),
+                        'min_confidence_for_learning': config.get('learning_system_settings', {}).get('min_confidence_for_learning')
+                    },
+                    'safety_controls': {
+                        'enabled': config.get('safety_controls_settings', {}).get('safety_bias_enabled'),
+                        'enable_conservative_bias': config.get('safety_controls_settings', {}).get('enable_conservative_bias'),
+                        'false_negative_penalty': config.get('safety_controls_settings', {}).get('false_negative_penalty'),
+                        'false_positive_tolerance': config.get('safety_controls_settings', {}).get('false_positive_tolerance'),
+                        'emergency_escalation_threshold': config.get('safety_controls_settings', {}).get('emergency_escalation_threshold')
+                    }
+                }
+            }
+            
+            logger.info("✅ Loaded standardized threshold configuration successfully")
+            logger.debug(f"🔧 Configuration includes {len(standardized_config['threshold_mapping_by_mode'])} modes")
+            
+            return standardized_config
+            
+        except Exception as e:
+            logger.error(f"❌ Error loading standardized threshold configuration: {e}")
+            logger.info("🔄 Falling back to legacy configuration format")
+            return self._get_fallback_threshold_config()
+
     def _load_threshold_mapping_config(self):
         """Load threshold mapping configuration using UnifiedConfigManager"""
         try:
