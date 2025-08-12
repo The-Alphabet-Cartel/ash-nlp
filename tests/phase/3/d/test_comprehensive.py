@@ -171,7 +171,7 @@ class Step10ComprehensiveTestSuite:
                 ("performance_config_manager", "create_performance_config_manager", unified_config),
                 ("pydantic_manager", "create_pydantic_manager", unified_config),
                 ("server_config_manager", "create_server_config_manager", unified_config),
-                ("settings_manager", "create_settings_manager", unified_config),
+                ("settings_manager", "create_settings_manager", unified_config, None),
                 ("storage_config_manager", "create_storage_config_manager", unified_config),
                 ("threshold_mapping_manager", "create_threshold_mapping_manager", unified_config, None),
                 ("zero_shot_manager", "create_zero_shot_manager", unified_config, None),
