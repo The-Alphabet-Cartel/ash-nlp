@@ -690,6 +690,79 @@ class CrisisAnalyzer:
             logger.error(f"❌ Error applying pattern adjustments: {e}")
             return crisis_level, confidence
 
+    def _map_confidence_to_crisis_level(self, confidence: float, model_weights: Dict = None, mode_override: str = None) -> str:
+        """
+        PHASE 3D: Map confidence score to crisis level using integrated ThresholdMappingManager
+        Central crisis analysis method that replaces utility functions with manager-based approach
+        
+        Args:
+            confidence: Confidence score (0.0 to 1.0) from model ensemble
+            model_weights: Optional model-specific weights for confidence adjustment
+            mode_override: Optional ensemble mode override for testing/debugging
+            
+        Returns:
+            Crisis level string ('none', 'low', 'medium', 'high')
+        """
+        try:
+            # Phase out utility functions - use integrated manager approach
+            if self.threshold_mapping_manager:
+                # Get current ensemble mode (with optional override for testing)
+                current_mode = mode_override or self.threshold_mapping_manager.get_current_ensemble_mode()
+                
+                # Get mode-specific ensemble thresholds (this is the sophisticated part!)
+                ensemble_thresholds = self.threshold_mapping_manager.get_ensemble_thresholds_for_mode(current_mode)
+                
+                logger.debug(f"🎯 Using {current_mode} mode thresholds: {ensemble_thresholds}")
+                
+                # Apply model weighting to confidence if provided
+                weighted_confidence = confidence
+                if model_weights and self.models_manager:
+                    # Weight confidence based on model performance/reliability
+                    weight_multiplier = sum(model_weights.values()) / len(model_weights) if model_weights else 1.0
+                    weighted_confidence = confidence * weight_multiplier
+                    weighted_confidence = max(0.0, min(1.0, weighted_confidence))  # Clamp to valid range
+                    
+                    logger.debug(f"📊 Applied model weighting: {confidence:.3f} → {weighted_confidence:.3f} (weights: {model_weights})")
+                
+                # Map using mode-aware thresholds (this is why it's better than utils!)
+                if weighted_confidence >= ensemble_thresholds.get('high', 0.48):
+                    crisis_level = 'high'
+                elif weighted_confidence >= ensemble_thresholds.get('medium', 0.27):
+                    crisis_level = 'medium'
+                elif weighted_confidence >= ensemble_thresholds.get('low', 0.13):
+                    crisis_level = 'low'
+                else:
+                    crisis_level = 'none'
+                
+                logger.debug(f"📊 Confidence mapping: {confidence:.3f} → {crisis_level} (mode: {current_mode})")
+                return crisis_level
+                
+            else:
+                # Fallback when ThresholdMappingManager not available
+                logger.warning("⚠️ No ThresholdMappingManager - using fallback thresholds")
+                
+                # Conservative fallback thresholds
+                if confidence >= 0.55:
+                    return 'high'
+                elif confidence >= 0.30:
+                    return 'medium'
+                elif confidence >= 0.18:
+                    return 'low'
+                else:
+                    return 'none'
+                    
+        except Exception as e:
+            logger.error(f"❌ Error in confidence to crisis level mapping: {e}")
+            # Ultra-safe fallback
+            if confidence >= 0.60:  # Conservative high threshold
+                return 'high'
+            elif confidence >= 0.35:
+                return 'medium'
+            elif confidence >= 0.20:
+                return 'low'
+            else:
+                return 'none'
+
     def _is_staff_review_required(self, crisis_level: str, confidence: float, 
                                 ensemble_result: Dict[str, Any]) -> bool:
         """
