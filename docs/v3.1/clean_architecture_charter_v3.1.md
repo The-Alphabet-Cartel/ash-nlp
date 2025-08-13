@@ -1,11 +1,11 @@
 <!-- ash-nlp/docs/v3.1/clean_architecture_charter_v3.1.md -->
 <!--
 Clean Architecture Charter for Ash-NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.7-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.6 - Documentation Updated for File Versioning
+PHASE: 3d Step 10.7
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Charter updated with file versioning requirements
+MIGRATION STATUS: Charter updated with environment variables requirements
 -->
 # Clean v3.1 Architecture Charter - Ash-NLP (Production Ready)
 
@@ -47,24 +47,19 @@ MIGRATION STATUS: Charter updated with file versioning requirements
 - **Invalid configurations trigger graceful fallbacks, not system crashes**
 - **Data type validation provides safe defaults with logging**
 - **Configuration path issues handled transparently**  
-- **System prioritizes **operational continuity** for life-saving functionality**
+- **System prioritizes operational continuity for life-saving functionality**
 - **Clear error logging for debugging while maintaining service availability**
 
-### **Rule #6: File Versioning System - MANDATORY** *(Phase 3d Step 10.6)*
+### **Rule #6: File Versioning System - MANDATORY**
 - **ALL code files MUST include version headers** in the format:
-  - `v[Major]-[Minor]-[Phase]-[Step]-[Increment]`
+  - `v[Major].[Minor]-[Phase]-[Step]-[Increment]`
 - **Version format**:
-  - `v3.1-3d-10.6-1`
-  - (Clean Architecture v3.1, Phase 3d, Step 10.6, Increment 1)
-- **Header placement**:
-  - At the top of each file in comments or docstrings
-- **Version increments**:
-  - Required for each meaningful change within a step
-- **Cross-conversation continuity**:
-  - Ensures accurate file tracking across sessions
-- *Version Headers should include at the top of the header a file description of what the file code does*
+  - `v3.1-3d-10.6-1` (Clean Architecture v3.1, Phase 3d, Step 10.6, Increment 1)
+- **Header placement**: At the top of each file in comments or docstrings
+- **Version increments**: Required for each meaningful change within a step
+- **Cross-conversation continuity**: Ensures accurate file tracking across sessions
+- **Version Headers should include at the top of the header a file description of what the file code does**
   - `[fileDescription] for Ash-NLP Service`
-
 
 #### **Required Version Header Format:**
 ```python
@@ -85,6 +80,41 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 - **Minor changes**: Bug fixes, small improvements, documentation updates
 - **Step completion**: Always increment when completing a phase step
 - **Cross-session**: Always increment when continuing work across conversations
+
+### **Rule #7: Environment Variable Reuse - MANDATORY**
+- **Always check existing environment variables in `.env.template` before creating new ones**
+- **Map new functionality to existing variables whenever possible**
+- **Prevent environment variable bloat and configuration sprawl**
+- **Maintain consistent naming conventions and patterns**
+- **Document the mapping relationship when reusing variables**
+
+#### **Rule #7 Implementation Process**:
+1. **Audit Existing Variables**: Search `.env.template` for related functionality
+2. **Map Requirements**: Identify how new needs can use existing variables
+3. **Calculate Conversions**: Create appropriate scaling/conversion logic if needed
+4. **Document Reuse**: Clearly document which existing variables are being leveraged
+5. **Test Thoroughly**: Ensure existing functionality isn't impacted by reuse
+
+#### **Step 10.7 Success Example**:
+```bash
+# ❌ WRONG: Creating new undefined variables
+${NLP_CRISIS_AMPLIFIER_BASE_WEIGHT}     # New variable
+${NLP_POSITIVE_REDUCER_BASE_WEIGHT}     # New variable
+
+# ✅ RIGHT: Reusing existing variables with conversion
+NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT=1.5   # Existing variable
+# Convert: crisis_base_weight = context_boost_weight * 0.1 = 0.15
+
+NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.0  # Existing variable  
+# Use directly for scaling calculations
+```
+
+#### **Benefits of Rule #7**:
+- **Prevents Variable Bloat**: Keeps configuration manageable
+- **Reuses Infrastructure**: Leverages existing patterns and validation
+- **Maintains Consistency**: Uses established naming conventions
+- **Reduces Complexity**: Fewer variables to manage, test, and document
+- **Sustainable Development**: Encourages thoughtful design over quick additions
 
 ---
 
@@ -284,7 +314,10 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 4. **Does this maintain JSON + environment configuration?** ✅ Required
 5. **Does this implement resilient error handling?** ✅ **PRODUCTION CRITICAL**
 6. **Does this maintain operational continuity for crisis detection?** ✅ **LIFE-SAVING REQUIRED**
-7. **Does this include proper file versioning?** ✅ **TRACKING REQUIRED** *(Phase 3d Step 10.6)*
+7. **Does this include proper file versioning?** ✅ **TRACKING REQUIRED**
+8. **Does this check existing environment variables first?** ✅ **NEW REQUIREMENT**
+
+---
 
 ### **Red Flags - IMMEDIATE STOP:**
 - ❌ Direct constructor calls in production code
@@ -292,10 +325,14 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ❌ Hardcoding configuration values
 - ❌ Breaking manager integration patterns
 - ❌ Bypassing factory functions
-- ❌ **NEW**: Implementing fail-fast for non-critical configuration issues
-- ❌ **NEW**: Allowing system crashes for recoverable problems
-- ❌ **NEW**: Missing file version headers in code files *(Phase 3d Step 10.6)*
-- ❌ **NEW**: Inconsistent version numbering across files *(Phase 3d Step 10.6)*
+- ❌ Implementing fail-fast for non-critical configuration issues
+- ❌ Allowing system crashes for recoverable problems
+- ❌ Missing file version headers in code files
+- ❌ Inconsistent version numbering across files
+- ❌ **Creating new environment variables without first checking current `.env.template` file**
+- ❌ **Duplicating functionality with different variable names**
+- ❌ **Ignoring existing infrastructure in favor of "clean slate" approaches**
+- ❌ **Adding variables without considering conversion/mapping possibilities**
 
 ---
 
@@ -306,23 +343,25 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ✅ All configuration externalized
 - ✅ All phases cumulative and functional
 - ✅ Clean dependency injection throughout
-- ✅ **Production-ready resilient error handling**
-- ✅ **Consistent file versioning across all code files** *(Phase 3d Step 10.6)*
+- ✅ Production-ready resilient error handling
+- ✅ Consistent file versioning across all code files
+- ✅ **Consistent environment variables across all code files**
 
 ### **Integration Health:**
 - ✅ Tests use same patterns as production code
 - ✅ Factory functions handle all initialization
 - ✅ Managers properly integrated across phases
 - ✅ Configuration overrides working consistently
-- ✅ **System maintains availability under adverse conditions**
-- ✅ **File versions track accurately across conversations** *(Phase 3d Step 10.6)*
+- ✅ System maintains availability under adverse conditions
+- ✅ File versions track accurately across conversations
+- ✅ **Environment variable bloat is avoided**
 
 ### **Production Readiness:**
 - ✅ **Operational continuity preserved** under configuration issues
 - ✅ **Comprehensive logging** for debugging and monitoring
 - ✅ **Safe fallback mechanisms** for all critical functionality
 - ✅ **Crisis detection capability** maintained regardless of configuration state
-- ✅ **Version tracking enables precise change management** *(Phase 3d Step 10.6)*
+- ✅ **Version tracking** enables precise change management
 
 ---
 
@@ -333,7 +372,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - **Maintainable and extensible codebase** with production-ready resilience
 - **Clear separation of concerns** with intelligent error recovery
 - **Professional-grade system design** optimized for life-saving service delivery
-- **Precise version tracking** for maintainable cross-conversation development *(Phase 3d Step 10.6)*
+- **Precise version tracking** for maintainable cross-conversation development
 
 **Every architectural decision supports the mission of providing continuous, reliable mental health support to LGBTQIA+ community members.**
 
@@ -342,7 +381,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 **Status**: Living Document - Updated for Production Resilience (Phase 3d Step 10.6)  
 **Authority**: Project Lead + AI Assistant Collaboration  
 **Enforcement**: Mandatory for ALL code changes  
-**Version**: v3.1-3d-10.6-3
+**Version**: v3.1-3d-10.7-1
 
 ---
 
