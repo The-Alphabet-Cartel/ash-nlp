@@ -1,0 +1,191 @@
+{
+  "metadata": {
+    "pattern_type": "positive_context_patterns",
+    "version": "3.1.0",
+    "description": "Positive context patterns that reduce false positive crisis detection",
+    "last_updated": "2025-08-04",
+    "total_patterns": 35,
+    "source": "Migrated from managers/settings_manager.py POSITIVE_CONTEXT_PATTERNS",
+    "environment_overrides": {
+      "enabled": "NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS",
+      "reduction_factor": "NLP_CONFIG_POSITIVE_CONTEXT_REDUCTION",
+      "context_sensitivity": "NLP_CONFIG_POSITIVE_CONTEXT_SENSITIVITY"
+    }
+  },
+  "configuration": {
+    "enabled": true,
+    "global_reduction_factor": 0.15,
+    "context_window": 10,
+    "priority_level": "medium",
+    "requires_validation": true
+  },
+  "patterns": {
+    "humor": {
+      "reduction_factor": 0.20,
+      "context_type": "humor",
+      "description": "Humor-related contexts that indicate non-crisis situations",
+      "keywords": [
+        "joke",
+        "funny", 
+        "hilarious",
+        "laugh",
+        "comedy",
+        "lol",
+        "haha",
+        "amusing",
+        "witty",
+        "sarcasm"
+      ],
+      "weight": 0.8,
+      "validation_required": true
+    },
+    "entertainment": {
+      "reduction_factor": 0.15,
+      "context_type": "entertainment", 
+      "description": "Entertainment and media contexts that reduce crisis likelihood",
+      "keywords": [
+        "movie",
+        "show",
+        "game",
+        "book",
+        "story",
+        "video",
+        "series",
+        "episode",
+        "character",
+        "plot",
+        "streaming",
+        "netflix"
+      ],
+      "weight": 0.7,
+      "validation_required": true
+    },
+    "work_success": {
+      "reduction_factor": 0.12,
+      "context_type": "work_success",
+      "description": "Work and achievement contexts indicating positive situations", 
+      "keywords": [
+        "work",
+        "job",
+        "project",
+        "performance",
+        "success",
+        "achievement",
+        "promotion",
+        "accomplishment",
+        "career",
+        "professional",
+        "meeting",
+        "presentation"
+      ],
+      "weight": 0.6,
+      "validation_required": false
+    },
+    "food": {
+      "reduction_factor": 0.25,
+      "context_type": "food",
+      "description": "Food-related contexts that often contain non-crisis language",
+      "keywords": [
+        "hungry",
+        "eat",
+        "food",
+        "burger",
+        "pizza",
+        "meal",
+        "dinner",
+        "lunch",
+        "breakfast",
+        "restaurant",
+        "cooking",
+        "recipe",
+        "delicious",
+        "tasty"
+      ],
+      "weight": 0.9,
+      "validation_required": true
+    },
+    "fatigue": {
+      "reduction_factor": 0.18,
+      "context_type": "fatigue",
+      "description": "Normal fatigue expressions that should not trigger crisis detection",
+      "keywords": [
+        "tired",
+        "exhausted",
+        "sleepy",
+        "worn out",
+        "beat",
+        "drained",
+        "weary",
+        "fatigued",
+        "need sleep",
+        "long day"
+      ],
+      "weight": 0.7,
+      "validation_required": true
+    },
+    "frustration": {
+      "reduction_factor": 0.10,
+      "context_type": "frustration",
+      "description": "Normal frustration contexts like traffic, homework, tests",
+      "keywords": [
+        "traffic",
+        "homework", 
+        "test",
+        "exam",
+        "assignment",
+        "studying",
+        "deadline",
+        "commute",
+        "waiting",
+        "slow internet"
+      ],
+      "weight": 0.5,
+      "validation_required": true
+    },
+    "celebration": {
+      "reduction_factor": 0.30,
+      "context_type": "celebration",
+      "description": "Celebratory contexts that strongly indicate positive situations",
+      "keywords": [
+        "celebrating",
+        "party",
+        "birthday",
+        "anniversary",
+        "graduation",
+        "wedding",
+        "achievement",
+        "victory",
+        "success",
+        "win",
+        "congratulations",
+        "proud"
+      ],
+      "weight": 1.0,
+      "validation_required": false
+    }
+  },
+  "processing_rules": {
+    "context_window_words": 10,
+    "multiple_contexts": "apply_strongest_reduction",
+    "max_total_reduction": 0.40,
+    "validation_method": "keyword_proximity",
+    "fallback_behavior": "no_reduction"
+  },
+  "validation_rules": {
+    "proximity_check": true,
+    "negation_awareness": true,
+    "context_strength_threshold": 0.3,
+    "require_multiple_indicators": false
+  },
+  "usage_instructions": {
+    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('positive_context_patterns')",
+    "access_method": "CrisisPatternManager.get_positive_contexts()",
+    "environment_override_example": "NLP_CONFIG_POSITIVE_CONTEXT_REDUCTION=0.25",
+    "implementation_notes": [
+      "Positive contexts should reduce crisis scores, not eliminate them entirely",
+      "Validation prevents false reductions in genuinely concerning messages",
+      "Food and humor contexts have highest reduction factors due to common false positives",
+      "Multiple positive contexts can combine but are capped at max_total_reduction"
+    ]
+  }
+}
