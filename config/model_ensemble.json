@@ -17,281 +17,88 @@
     }
   },
 
-  "model_configuration": {
-    "ensemble_settings": {
-      "description": "Model ensemble configuration and behavior settings",
-      "ensemble_mode": "${NLP_MODEL_ENSEMBLE_MODE}",
-      "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
-      "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
-      "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
+  "models": {
+    "description": "Individual AI model configurations for the ensemble",
+    "sentiment": {
+      "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
+      "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
+      "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
+      "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
+      "cache_dir": "${NLP_MODEL_SENTIMENT_CACHE_DIR}",
+      "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}",
       "defaults": {
-        "ensemble_mode": "weighted",
-        "require_all_models": false,
-        "fallback_mode": "single_best",
-        "confidence_threshold": 0.5
-      },
-      "validation": {
-        "ensemble_mode": {
-          "type": "string",
-          "allowed_values": ["consensus", "majority", "weighted"],
-          "description": "Method for combining model predictions"
-        },
-        "require_all_models": {
-          "type": "boolean",
-          "description": "Whether all models must be available for analysis"
-        },
-        "fallback_mode": {
-          "type": "string",
-          "allowed_values": ["single_best", "fail", "average"],
-          "description": "Behavior when some models are unavailable"
-        },
-        "confidence_threshold": {
-          "type": "float",
-          "range": [0.0, 1.0],
-          "description": "Minimum confidence threshold for ensemble decisions"
-        }
+        "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "weight": 0.4,
+        "type": "transformers",
+        "pipeline_task": "text-classification",
+        "cache_dir": "./models/cache",
+        "enabled": true
       }
     },
-
-    "models": {
-      "description": "Individual AI model configurations for the ensemble",
-      "sentiment_model": {
-        "description": "Primary sentiment analysis model configuration",
-        "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
-        "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
-        "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
-        "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODEL_SENTIMENT_CACHE_DIR}",
-        "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}",
-        "defaults": {
-          "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
-          "weight": 0.4,
-          "type": "transformers",
-          "pipeline_task": "text-classification",
-          "cache_dir": "./models/cache",
-          "enabled": true
-        },
-        "validation": {
-          "name": {
-            "type": "string",
-            "required": true,
-            "description": "HuggingFace model identifier or local path"
-          },
-          "weight": {
-            "type": "float",
-            "range": [0.0, 1.0],
-            "description": "Model weight in ensemble voting"
-          },
-          "type": {
-            "type": "string",
-            "allowed_values": ["transformers", "sklearn", "custom"],
-            "description": "Model framework type"
-          },
-          "pipeline_task": {
-            "type": "string",
-            "description": "HuggingFace pipeline task type"
-          },
-          "cache_dir": {
-            "type": "string",
-            "description": "Directory for model cache storage"
-          },
-          "enabled": {
-            "type": "boolean",
-            "description": "Whether this model is active in the ensemble"
-          }
-        }
-      },
-
-      "emotion_model": {
-        "description": "Emotion detection model configuration",
-        "name": "${NLP_MODEL_EMOTION_MODEL_NAME}",
-        "weight": "${NLP_MODEL_EMOTION_MODEL_WEIGHT}",
-        "type": "${NLP_MODEL_EMOTION_MODEL_TYPE}",
-        "pipeline_task": "${NLP_MODEL_EMOTION_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODEL_EMOTION_CACHE_DIR}",
-        "enabled": "${NLP_MODEL_EMOTION_ENABLED}",
-        "defaults": {
-          "name": "j-hartmann/emotion-english-distilroberta-base",
-          "weight": 0.35,
-          "type": "transformers",
-          "pipeline_task": "text-classification",
-          "cache_dir": "./models/cache",
-          "enabled": true
-        },
-        "validation": {
-          "name": {
-            "type": "string",
-            "required": true,
-            "description": "HuggingFace model identifier or local path"
-          },
-          "weight": {
-            "type": "float",
-            "range": [0.0, 1.0],
-            "description": "Model weight in ensemble voting"
-          },
-          "type": {
-            "type": "string",
-            "allowed_values": ["transformers", "sklearn", "custom"],
-            "description": "Model framework type"
-          },
-          "pipeline_task": {
-            "type": "string",
-            "description": "HuggingFace pipeline task type"
-          },
-          "cache_dir": {
-            "type": "string",
-            "description": "Directory for model cache storage"
-          },
-          "enabled": {
-            "type": "boolean",
-            "description": "Whether this model is active in the ensemble"
-          }
-        }
-      },
-
-      "mental_health_model": {
-        "description": "Mental health specialized model configuration",
-        "name": "${NLP_MODEL_MENTAL_HEALTH_MODEL_NAME}",
-        "weight": "${NLP_MODEL_MENTAL_HEALTH_MODEL_WEIGHT}",
-        "type": "${NLP_MODEL_MENTAL_HEALTH_MODEL_TYPE}",
-        "pipeline_task": "${NLP_MODEL_MENTAL_HEALTH_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODEL_MENTAL_HEALTH_CACHE_DIR}",
-        "enabled": "${NLP_MODEL_MENTAL_HEALTH_ENABLED}",
-        "defaults": {
-          "name": "martin-ha/toxic-comment-model",
-          "weight": 0.25,
-          "type": "transformers",
-          "pipeline_task": "text-classification",
-          "cache_dir": "./models/cache",
-          "enabled": true
-        },
-        "validation": {
-          "name": {
-            "type": "string",
-            "required": true,
-            "description": "HuggingFace model identifier or local path"
-          },
-          "weight": {
-            "type": "float",
-            "range": [0.0, 1.0],
-            "description": "Model weight in ensemble voting"
-          },
-          "type": {
-            "type": "string",
-            "allowed_values": ["transformers", "sklearn", "custom"],
-            "description": "Model framework type"
-          },
-          "pipeline_task": {
-            "type": "string",
-            "description": "HuggingFace pipeline task type"
-          },
-          "cache_dir": {
-            "type": "string",
-            "description": "Directory for model cache storage"
-          },
-          "enabled": {
-            "type": "boolean",
-            "description": "Whether this model is active in the ensemble"
-          }
-        }
+    "emotional_distress": {
+      "name": "${NLP_MODEL_EMOTION_MODEL_NAME}",
+      "weight": "${NLP_MODEL_EMOTION_MODEL_WEIGHT}",
+      "type": "${NLP_MODEL_EMOTION_MODEL_TYPE}",
+      "pipeline_task": "${NLP_MODEL_EMOTION_PIPELINE_TASK}",
+      "cache_dir": "${NLP_MODEL_EMOTION_CACHE_DIR}",
+      "enabled": "${NLP_MODEL_EMOTION_ENABLED}",
+      "defaults": {
+        "name": "j-hartmann/emotion-english-distilroberta-base",
+        "weight": 0.35,
+        "type": "transformers",
+        "pipeline_task": "text-classification",
+        "cache_dir": "./models/cache",
+        "enabled": true
       }
     },
-
-    "hardware_settings": {
-      "description": "Hardware and performance settings for model inference",
-      "device": "${NLP_MODEL_HARDWARE_DEVICE}",
-      "device_map": "${NLP_MODEL_HARDWARE_DEVICE_MAP}",
-      "load_in_8bit": "${NLP_MODEL_HARDWARE_LOAD_IN_8BIT}",
-      "load_in_4bit": "${NLP_MODEL_HARDWARE_LOAD_IN_4BIT}",
-      "torch_dtype": "${NLP_MODEL_HARDWARE_TORCH_DTYPE}",
-      "max_memory": "${NLP_MODEL_HARDWARE_MAX_MEMORY}",
-      "offload_folder": "${NLP_MODEL_HARDWARE_OFFLOAD_FOLDER}",
+    "depression": {
+      "name": "${NLP_MODEL_MENTAL_HEALTH_MODEL_NAME}",
+      "weight": "${NLP_MODEL_MENTAL_HEALTH_MODEL_WEIGHT}",
+      "type": "${NLP_MODEL_MENTAL_HEALTH_MODEL_TYPE}",
+      "pipeline_task": "${NLP_MODEL_MENTAL_HEALTH_PIPELINE_TASK}",
+      "cache_dir": "${NLP_MODEL_MENTAL_HEALTH_CACHE_DIR}",
+      "enabled": "${NLP_MODEL_MENTAL_HEALTH_ENABLED}",
       "defaults": {
-        "device": "auto",
-        "device_map": "auto",
-        "load_in_8bit": false,
-        "load_in_4bit": false,
-        "torch_dtype": "float16",
-        "max_memory": null,
-        "offload_folder": null
-      },
-      "validation": {
-        "device": {
-          "type": "string",
-          "allowed_values": ["auto", "cpu", "cuda", "cuda:0", "cuda:1", "mps"],
-          "description": "Target device for model inference"
-        },
-        "device_map": {
-          "type": "string",
-          "allowed_values": ["auto", "balanced", "balanced_low_0", "sequential"],
-          "description": "Device mapping strategy for multi-GPU setups"
-        },
-        "load_in_8bit": {
-          "type": "boolean",
-          "description": "Enable 8-bit quantization for memory efficiency"
-        },
-        "load_in_4bit": {
-          "type": "boolean",
-          "description": "Enable 4-bit quantization for memory efficiency"
-        },
-        "torch_dtype": {
-          "type": "string",
-          "allowed_values": ["float32", "float16", "bfloat16"],
-          "description": "PyTorch data type for model parameters"
-        },
-        "max_memory": {
-          "type": "string",
-          "nullable": true,
-          "pattern": "^\\d+[GMK]B$",
-          "description": "Maximum memory per device (e.g., '10GB')"
-        },
-        "offload_folder": {
-          "type": "string",
-          "nullable": true,
-          "description": "Folder for CPU offloading of model weights"
-        }
+        "name": "martin-ha/toxic-comment-model",
+        "weight": 0.25,
+        "type": "transformers",
+        "pipeline_task": "text-classification",
+        "cache_dir": "./models/cache",
+        "enabled": true
       }
-    },
+    }
+  },
 
-    "loading_settings": {
-      "description": "Model loading and initialization settings",
-      "lazy_loading": "${NLP_MODEL_LOADING_LAZY_LOADING}",
-      "preload_models": "${NLP_MODEL_LOADING_PRELOAD_MODELS}",
-      "model_timeout": "${NLP_MODEL_LOADING_MODEL_TIMEOUT}",
-      "retry_attempts": "${NLP_MODEL_LOADING_RETRY_ATTEMPTS}",
-      "cache_models": "${NLP_MODEL_LOADING_CACHE_MODELS}",
-      "defaults": {
-        "lazy_loading": true,
-        "preload_models": false,
-        "model_timeout": 300,
-        "retry_attempts": 3,
-        "cache_models": true
-      },
-      "validation": {
-        "lazy_loading": {
-          "type": "boolean",
-          "description": "Load models only when first needed"
-        },
-        "preload_models": {
-          "type": "boolean",
-          "description": "Load all models at system startup"
-        },
-        "model_timeout": {
-          "type": "integer",
-          "range": [30, 1800],
-          "unit": "seconds",
-          "description": "Timeout for model loading operations"
-        },
-        "retry_attempts": {
-          "type": "integer",
-          "range": [0, 10],
-          "description": "Number of retry attempts for failed model loads"
-        },
-        "cache_models": {
-          "type": "boolean",
-          "description": "Cache loaded models in memory"
-        }
-      }
+  "ensemble_mode": "${NLP_MODEL_ENSEMBLE_MODE}",
+  "ensemble_config": {
+    "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
+    "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
+    "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
+    "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
+    "defaults": {
+      "mode": "weighted",
+      "require_all_models": false,
+      "fallback_mode": "single_best",
+      "confidence_threshold": 0.5
+    }
+  },
+
+  "hardware_settings": {
+    "device": "${NLP_MODEL_HARDWARE_DEVICE}",
+    "device_map": "${NLP_MODEL_HARDWARE_DEVICE_MAP}",
+    "load_in_8bit": "${NLP_MODEL_HARDWARE_LOAD_IN_8BIT}",
+    "load_in_4bit": "${NLP_MODEL_HARDWARE_LOAD_IN_4BIT}",
+    "torch_dtype": "${NLP_MODEL_HARDWARE_TORCH_DTYPE}",
+    "max_memory": "${NLP_MODEL_HARDWARE_MAX_MEMORY}",
+    "offload_folder": "${NLP_MODEL_HARDWARE_OFFLOAD_FOLDER}",
+    "defaults": {
+      "device": "auto",
+      "device_map": "auto",
+      "load_in_8bit": false,
+      "load_in_4bit": false,
+      "torch_dtype": "float16",
+      "max_memory": null,
+      "offload_folder": null
     }
   },
 
@@ -304,50 +111,38 @@
     "validate_model_compatibility": true
   },
 
-  "model_profiles": {
-    "description": "Pre-configured model profiles for different deployment scenarios",
-    "development": {
-      "description": "Development profile with CPU-optimized models",
-      "device": "cpu",
+  "defaults": {
+    "ensemble_mode": "weighted",
+    "models": {
+      "sentiment": {
+        "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+        "weight": 0.4,
+        "type": "transformers",
+        "pipeline_task": "text-classification",
+        "cache_dir": "./models/cache",
+        "enabled": true
+      },
+      "emotional_distress": {
+        "name": "j-hartmann/emotion-english-distilroberta-base",
+        "weight": 0.35,
+        "type": "transformers", 
+        "pipeline_task": "text-classification",
+        "cache_dir": "./models/cache",
+        "enabled": true
+      },
+      "depression": {
+        "name": "martin-ha/toxic-comment-model",
+        "weight": 0.25,
+        "type": "transformers",
+        "pipeline_task": "text-classification",
+        "cache_dir": "./models/cache",
+        "enabled": true
+      }
+    },
+    "hardware_settings": {
+      "device": "auto",
       "load_in_8bit": false,
-      "lazy_loading": true,
-      "preload_models": false
-    },
-    "testing": {
-      "description": "Testing profile with lightweight models",
-      "device": "auto",
-      "load_in_8bit": true,
-      "lazy_loading": true,
-      "require_all_models": false
-    },
-    "production": {
-      "description": "Production profile with GPU acceleration",
-      "device": "auto",
-      "load_in_8bit": true,
-      "lazy_loading": false,
-      "preload_models": true,
-      "require_all_models": true
-    },
-    "high_performance": {
-      "description": "High performance profile for heavy workloads",
-      "device": "cuda",
-      "load_in_4bit": true,
-      "lazy_loading": false,
-      "preload_models": true,
-      "ensemble_mode": "weighted"
+      "lazy_loading": true
     }
-  },
-
-  "usage_instructions": {
-    "description": "Configuration usage and integration guidelines",
-    "manager_integration": "Use ModelEnsembleManager with create_model_ensemble_manager(config_manager)",
-    "environment_override_pattern": "Set environment variables using NLP_MODEL_*CATEGORY*_*SETTING* pattern",
-    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
-    "weight_validation": "Model weights should sum to 1.0 but system will normalize if needed",
-    "device_selection": "Use 'auto' for automatic GPU/CPU selection, 'cuda' for GPU, 'cpu' for CPU only",
-    "memory_optimization": "Enable quantization (8bit/4bit) for memory-constrained environments",
-    "model_compatibility": "Ensure all models use compatible pipeline tasks and output formats",
-    "cache_management": "Models are cached in specified cache_dir for faster subsequent loads",
-    "production_notes": "Use 'production' profile for live deployments with preloaded models"
   }
 }
