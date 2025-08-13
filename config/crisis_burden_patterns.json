@@ -1,96 +1,272 @@
 {
-  "metadata": {
-    "pattern_type": "burden_patterns",
-    "version": "3.1.0",
-    "description": "Crisis patterns indicating self-worth issues and burden feelings",
-    "last_updated": "2025-08-04",
-    "total_patterns": 6,
-    "source": "Migrated from managers/settings_manager.py lines 264-268",
+  "_metadata": {
+    "configuration_version": "3d.1",
+    "description": "Crisis burden patterns for detecting expressions of overwhelming burden and responsibility",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "pattern_count": 30,
+    "manager_integration": "crisis_pattern_manager.py",
     "environment_overrides": {
-      "weight_multiplier": "NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER",
-      "enabled": "NLP_CONFIG_ENABLE_BURDEN_PATTERNS",
-      "threshold": "NLP_CONFIG_BURDEN_PATTERN_THRESHOLD"
+      "enabled": "${NLP_CRISIS_BURDEN_ENABLED}",
+      "detection_threshold": "${NLP_CRISIS_BURDEN_THRESHOLD}",
+      "responsibility_weight": "${NLP_CRISIS_BURDEN_RESPONSIBILITY_WEIGHT}",
+      "overwhelm_weight": "${NLP_CRISIS_BURDEN_OVERWHELM_WEIGHT}"
     }
   },
+
   "configuration": {
-    "enabled": true,
-    "weight_multiplier": 1.2,
-    "confidence_boost": 0.15,
-    "priority_level": "high",
-    "auto_escalate": true
+    "description": "Global configuration settings for crisis burden pattern processing",
+    "enabled": "${NLP_CRISIS_BURDEN_ENABLED}",
+    "detection_threshold": "${NLP_CRISIS_BURDEN_THRESHOLD}",
+    "priority_level": "${NLP_CRISIS_BURDEN_PRIORITY}",
+    "context_validation": "${NLP_CRISIS_BURDEN_CONTEXT_VALIDATION}",
+    "escalation_enabled": "${NLP_CRISIS_BURDEN_ESCALATION}",
+    "defaults": {
+      "enabled": true,
+      "detection_threshold": 0.65,
+      "priority_level": "high",
+      "context_validation": true,
+      "escalation_enabled": false
+    },
+    "validation": {
+      "enabled": {"type": "boolean", "required": true},
+      "detection_threshold": {"type": "float", "range": [0.0, 1.0]},
+      "priority_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+      "context_validation": {"type": "boolean", "required": true},
+      "escalation_enabled": {"type": "boolean", "required": true}
+    }
   },
+
   "patterns": {
-    "burden_expressions": {
-      "crisis_level": "high",
-      "category": "self_worth",
-      "description": "Direct expressions of feeling like a burden to others",
-      "patterns": [
-        {
-          "pattern": "better off without me",
-          "type": "exact_match",
-          "weight": 1.0,
-          "urgency": "high",
-          "auto_review": true
-        },
-        {
-          "pattern": "everyone would be better without me",
-          "type": "exact_match",
-          "weight": 1.0,
-          "urgency": "high",
-          "auto_review": true
-        },
-        {
-          "pattern": "better off if i was gone",
-          "type": "exact_match",
-          "weight": 1.0,
-          "urgency": "high",
-          "auto_review": true
-        },
-        {
-          "pattern": "better off if i wasn't here",
-          "type": "exact_match",
-          "weight": 1.0,
-          "urgency": "high",
-          "auto_review": true
-        },
-        {
-          "pattern": "nobody would miss me",
-          "type": "exact_match",
-          "weight": 0.9,
-          "urgency": "high",
-          "auto_review": true
-        },
-        {
-          "pattern": "wouldn't be missed",
-          "type": "exact_match",
-          "weight": 0.8,
-          "urgency": "medium",
-          "auto_review": true
-        }
+    "description": "Crisis burden patterns organized by burden type",
+
+    "overwhelming_responsibility": {
+      "description": "Expressions of crushing responsibility and obligation",
+      "crisis_level": "${NLP_OVERWHELMING_RESPONSIBILITY_CRISIS_LEVEL}",
+      "weight": "${NLP_OVERWHELMING_RESPONSIBILITY_WEIGHT}",
+      "context_required": "${NLP_OVERWHELMING_RESPONSIBILITY_CONTEXT}",
+      "urgency": "${NLP_OVERWHELMING_RESPONSIBILITY_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.75,
+        "context_required": false,
+        "urgency": "medium"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
+      "expressions": [
+        "too much responsibility", "burden on everyone", "everyone depends on me", 
+        "can't let them down", "all on my shoulders", "have to be strong", 
+        "everyone's counting on me", "can't disappoint", "weight of responsibility", 
+        "have to hold it together"
+      ]
+    },
+
+    "financial_burden": {
+      "description": "Expressions of overwhelming financial stress and pressure",
+      "crisis_level": "${NLP_FINANCIAL_BURDEN_CRISIS_LEVEL}",
+      "weight": "${NLP_FINANCIAL_BURDEN_WEIGHT}",
+      "context_required": "${NLP_FINANCIAL_BURDEN_CONTEXT}",
+      "urgency": "${NLP_FINANCIAL_BURDEN_URGENCY}",
+      "defaults": {
+        "crisis_level": "high",
+        "weight": 0.8,
+        "context_required": true,
+        "urgency": "high"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
+      "expressions": [
+        "can't afford", "drowning in debt", "bills piling up", "money running out", 
+        "financial stress", "can't make ends meet", "going broke", "bankruptcy", 
+        "losing everything", "financial ruin"
+      ]
+    },
+
+    "caregiver_burden": {
+      "description": "Expressions of overwhelming caregiving responsibilities",
+      "crisis_level": "${NLP_CAREGIVER_BURDEN_CRISIS_LEVEL}",
+      "weight": "${NLP_CAREGIVER_BURDEN_WEIGHT}",
+      "context_required": "${NLP_CAREGIVER_BURDEN_CONTEXT}",
+      "urgency": "${NLP_CAREGIVER_BURDEN_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.7,
+        "context_required": true,
+        "urgency": "medium"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
+      "expressions": [
+        "caring for everyone", "no time for myself", "exhausted from caregiving", 
+        "need to take care of", "everyone needs me", "can't take a break", 
+        "burnout from caring", "giving everything", "nothing left to give", 
+        "caregiver fatigue"
+      ]
+    },
+
+    "emotional_burden": {
+      "description": "Expressions of carrying emotional weight for others",
+      "crisis_level": "${NLP_EMOTIONAL_BURDEN_CRISIS_LEVEL}",
+      "weight": "${NLP_EMOTIONAL_BURDEN_WEIGHT}",
+      "context_required": "${NLP_EMOTIONAL_BURDEN_CONTEXT}",
+      "urgency": "${NLP_EMOTIONAL_BURDEN_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.65,
+        "context_required": false,
+        "urgency": "medium"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
+      "expressions": [
+        "emotional support for everyone", "absorbing everyone's pain", 
+        "carrying their problems", "their emotions are mine", "feel everything", 
+        "emotional sponge", "taking on their stress", "everyone's therapist", 
+        "holding space for everyone", "emotionally drained"
+      ]
+    },
+
+    "academic_work_burden": {
+      "description": "Expressions of overwhelming academic or work pressure",
+      "crisis_level": "${NLP_ACADEMIC_WORK_BURDEN_CRISIS_LEVEL}",
+      "weight": "${NLP_ACADEMIC_WORK_BURDEN_WEIGHT}",
+      "context_required": "${NLP_ACADEMIC_WORK_BURDEN_CONTEXT}",
+      "urgency": "${NLP_ACADEMIC_WORK_BURDEN_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.6,
+        "context_required": true,
+        "urgency": "low"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
+      "expressions": [
+        "drowning in assignments", "too much work", "overwhelming workload", 
+        "pressure to succeed", "academic stress", "failing everything", 
+        "can't keep up", "deadlines crushing me", "work consuming my life", 
+        "perfectionist pressure"
+      ]
+    },
+
+    "existential_burden": {
+      "description": "Expressions of overwhelming existential or life responsibility",
+      "crisis_level": "${NLP_EXISTENTIAL_BURDEN_CRISIS_LEVEL}",
+      "weight": "${NLP_EXISTENTIAL_BURDEN_WEIGHT}",
+      "context_required": "${NLP_EXISTENTIAL_BURDEN_CONTEXT}",
+      "urgency": "${NLP_EXISTENTIAL_BURDEN_URGENCY}",
+      "defaults": {
+        "crisis_level": "high",
+        "weight": 0.85,
+        "context_required": true,
+        "urgency": "high"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
+      "expressions": [
+        "burden of existence", "why do I exist", "life is too heavy", 
+        "can't handle life", "existence is exhausting", "too much to bear", 
+        "life overwhelming", "weight of living", "burden of being alive", 
+        "existence feels pointless"
       ]
     }
   },
-  "detection_rules": {
-    "case_sensitive": false,
-    "require_word_boundaries": true,
-    "allow_punctuation_variations": true,
-    "context_window": 5,
-    "negation_detection": true
+
+  "processing_rules": {
+    "description": "Rules for processing crisis burden patterns",
+    "burden_accumulation": "${NLP_BURDEN_ACCUMULATION}",
+    "context_window": "${NLP_BURDEN_CONTEXT_WINDOW}",
+    "multiple_burdens": "${NLP_BURDEN_MULTIPLE_HANDLING}",
+    "severity_escalation": "${NLP_BURDEN_SEVERITY_ESCALATION}",
+    "temporal_awareness": "${NLP_BURDEN_TEMPORAL_AWARENESS}",
+    "defaults": {
+      "burden_accumulation": "cumulative",
+      "context_window": 15,
+      "multiple_burdens": "multiplicative_boost",
+      "severity_escalation": true,
+      "temporal_awareness": true
+    },
+    "validation": {
+      "burden_accumulation": {"type": "string", "enum": ["cumulative", "strongest_only", "average"]},
+      "context_window": {"type": "integer", "range": [1, 50]},
+      "multiple_burdens": {"type": "string", "enum": ["multiplicative_boost", "additive", "max_only"]},
+      "severity_escalation": {"type": "boolean", "required": true},
+      "temporal_awareness": {"type": "boolean", "required": true}
+    }
   },
+
   "escalation_rules": {
-    "immediate_review": true,
-    "staff_notification": true,
-    "crisis_level_override": "high",
-    "combine_with_other_patterns": true
+    "description": "Rules for burden pattern escalation",
+    "multiple_burden_threshold": "${NLP_BURDEN_MULTIPLE_THRESHOLD}",
+    "existential_auto_escalate": "${NLP_BURDEN_EXISTENTIAL_AUTO_ESCALATE}",
+    "financial_crisis_threshold": "${NLP_BURDEN_FINANCIAL_CRISIS_THRESHOLD}",
+    "cumulative_burden_limit": "${NLP_BURDEN_CUMULATIVE_LIMIT}",
+    "defaults": {
+      "multiple_burden_threshold": 3,
+      "existential_auto_escalate": true,
+      "financial_crisis_threshold": 0.8,
+      "cumulative_burden_limit": 2.0
+    },
+    "validation": {
+      "multiple_burden_threshold": {"type": "integer", "range": [1, 10]},
+      "existential_auto_escalate": {"type": "boolean", "required": true},
+      "financial_crisis_threshold": {"type": "float", "range": [0.0, 1.0]},
+      "cumulative_burden_limit": {"type": "float", "range": [0.0, 5.0]}
+    }
   },
+
   "usage_instructions": {
-    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('burden_patterns')",
-    "access_method": "SettingsManager.get_burden_patterns()",
-    "environment_override_example": "NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER=1.5",
-    "notes": [
-      "All burden patterns should trigger immediate staff review",
-      "These patterns have high correlation with suicidal ideation",
-      "Consider context analysis to avoid false positives in creative content"
+    "integration": {
+      "description": "How to integrate crisis burden patterns with the crisis detection system",
+      "primary_manager": "crisis_pattern_manager.py",
+      "loader_method": "get_burden_patterns()",
+      "access_pattern": "UnifiedConfigManager.get_crisis_patterns('crisis_burden_patterns')",
+      "fallback_behavior": "Use safe defaults with comprehensive logging if configuration fails"
+    },
+    "environment_override_examples": {
+      "enable_patterns": "NLP_CRISIS_BURDEN_ENABLED=true",
+      "adjust_threshold": "NLP_CRISIS_BURDEN_THRESHOLD=0.7",
+      "modify_responsibility_weight": "NLP_OVERWHELMING_RESPONSIBILITY_WEIGHT=0.8",
+      "set_escalation": "NLP_BURDEN_EXISTENTIAL_AUTO_ESCALATE=true"
+    },
+    "resilient_operation": {
+      "description": "System behavior when configuration issues occur",
+      "invalid_weight": "Use safe default (0.7) with warning log",
+      "missing_expressions": "Load basic burden expression set with info log",
+      "pattern_validation_error": "Skip invalid patterns, continue with valid ones, error log",
+      "file_not_found": "Use minimal built-in burden patterns with warning log"
+    },
+    "implementation_notes": [
+      "Multiple burden types in one message significantly increase crisis risk",
+      "Existential burden expressions require immediate attention and escalation",
+      "Financial burden often correlates with other crisis factors",
+      "Caregiver burden indicates need for support resource recommendations",
+      "Context validation helps distinguish actual burden from casual expression"
     ]
   }
 }
