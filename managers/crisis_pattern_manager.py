@@ -284,9 +284,9 @@ class CrisisPatternManager:
                 confidence_values = [p.get('confidence', 0.7) for p in patterns_found]
                 confidence_score = min(sum(confidence_values) / len(confidence_values), 1.0)
             
-            # Check emergency response threshold
+            # Check emergency response threshold with more aggressive defaults
             emergency_threshold = self._safe_get_float(escalation_rules, 'emergency_response_threshold', 
-                                                     escalation_rules.get('defaults', {}).get('emergency_response_threshold', 0.80))
+                                                     escalation_rules.get('defaults', {}).get('emergency_response_threshold', 0.60))  # More aggressive default
             
             if confidence_score >= emergency_threshold or safety_flags['critical_patterns_detected']:
                 safety_flags['emergency_response_triggered'] = True
@@ -349,12 +349,12 @@ class CrisisPatternManager:
             weights_applied = []
             total_adjustment = 0.0
             
-            # Apply crisis amplifier weights
+            # Apply crisis amplifier weights with more aggressive defaults
             crisis_words = context_weights.get('crisis_context_words', {})
             if crisis_words and 'words' in crisis_words:
                 amplifier_words = crisis_words.get('words', [])
-                base_weight = self._safe_get_float(crisis_words, 'base_weight', 0.10)
-                max_boost = self._safe_get_float(crisis_words, 'max_cumulative_boost', 0.30)
+                base_weight = self._safe_get_float(crisis_words, 'base_weight', 0.15)  # More aggressive default
+                max_boost = self._safe_get_float(crisis_words, 'max_cumulative_boost', 0.35)  # More aggressive default
                 
                 for word in amplifier_words:
                     if isinstance(word, str) and word.lower() in message_lower:
@@ -369,12 +369,12 @@ class CrisisPatternManager:
                             })
                             logger.debug(f"Crisis amplifier '{word}': +{adjustment:.3f}")
             
-            # Apply positive reducer weights
+            # Apply positive reducer weights with more aggressive defaults
             positive_words = context_weights.get('positive_context_words', {})
             if positive_words and 'words' in positive_words:
                 reducer_words = positive_words.get('words', [])
-                base_weight = self._safe_get_float(positive_words, 'base_weight', -0.08)
-                max_reduction = self._safe_get_float(positive_words, 'max_cumulative_reduction', -0.25)
+                base_weight = self._safe_get_float(positive_words, 'base_weight', -0.10)  # More aggressive default
+                max_reduction = self._safe_get_float(positive_words, 'max_cumulative_reduction', -0.30)  # More aggressive default
                 
                 for word in reducer_words:
                     if isinstance(word, str) and word.lower() in message_lower:
