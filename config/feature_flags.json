@@ -1,93 +1,133 @@
 {
+  "_metadata": {
+    "configuration_version": "3d.1",
+    "description": "Feature flag configuration for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "manager": "FeatureConfigManager",
+    "environment_overrides": {
+      "description": "All feature flags support environment variable overrides",
+      "pattern": "${NLP_FEATURE_*CATEGORY*_*FUNCTION*_*SETTING*}",
+      "examples": [
+        "NLP_FEATURE_CORE_ENSEMBLE_ANALYSIS",
+        "NLP_FEATURE_ANALYSIS_PATTERN_ANALYSIS",
+        "NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB"
+      ]
+    }
+  },
+
   "feature_flags": {
-    "description": "Feature toggle configuration for Ash-NLP v3.1d",
-    "version": "3.1d",
-    "last_updated": "2025-08-08",
-    
     "core_system_features": {
-      "description": "Core system functionality toggles",
-      "ensemble_analysis": "${NLP_FEATURE_ENSEMBLE_ANALYSIS}",
-      "pattern_integration": "${NLP_FEATURE_PATTERN_INTEGRATION}",
-      "threshold_learning": "${NLP_FEATURE_THRESHOLD_LEARNING}",
-      "staff_review_logic": "${NLP_FEATURE_STAFF_REVIEW_LOGIC}",
-      "safety_controls": "${NLP_FEATURE_SAFETY_CONTROLS}",
+      "description": "Core system feature toggles for production crisis detection",
+      "ensemble_analysis": "${NLP_FEATURE_CORE_ENSEMBLE_ANALYSIS}",
+      "pattern_integration": "${NLP_FEATURE_CORE_PATTERN_INTEGRATION}",
+      "staff_review_logic": "${NLP_FEATURE_CORE_STAFF_REVIEW_LOGIC}",
+      "safety_controls": "${NLP_FEATURE_CORE_SAFETY_CONTROLS}",
       "defaults": {
         "ensemble_analysis": true,
         "pattern_integration": true,
-        "threshold_learning": true,
         "staff_review_logic": true,
         "safety_controls": true
       },
       "validation": {
         "ensemble_analysis": {
           "type": "boolean",
-          "required": true
+          "required": true,
+          "description": "Three-model ensemble analysis is critical for accuracy"
         },
         "pattern_integration": {
-          "type": "boolean",
-          "required": true
-        },
-        "threshold_learning": {
-          "type": "boolean",
-          "required": false
+          "type": "boolean", 
+          "required": true,
+          "description": "Crisis pattern integration essential for detection"
         },
         "staff_review_logic": {
           "type": "boolean",
-          "required": true
+          "required": false,
+          "description": "Staff review workflow integration"
         },
         "safety_controls": {
           "type": "boolean",
-          "required": true
+          "required": true,
+          "description": "Safety controls prevent dangerous outputs"
         }
       }
     },
-    
+
     "analysis_component_features": {
-      "description": "Analysis pipeline component toggles",
-      "pattern_analysis": "${NLP_FEATURE_PATTERN_ANALYSIS}",
-      "semantic_analysis": "${NLP_FEATURE_SEMANTIC_ANALYSIS}",
-      "phrase_extraction": "${NLP_FEATURE_PHRASE_EXTRACTION}",
-      "pattern_learning": "${NLP_FEATURE_PATTERN_LEARNING}",
+      "description": "Analysis component feature toggles for processing pipeline",
+      "pattern_analysis": "${NLP_FEATURE_ANALYSIS_PATTERN_ANALYSIS}",
+      "semantic_analysis": "${NLP_FEATURE_ANALYSIS_SEMANTIC_ANALYSIS}",
+      "context_analysis": "${NLP_FEATURE_ANALYSIS_CONTEXT_ANALYSIS}",
+      "phrase_extraction": "${NLP_FEATURE_ANALYSIS_PHRASE_EXTRACTION}",
       "analysis_caching": "${NLP_FEATURE_ANALYSIS_CACHING}",
-      "parallel_processing": "${NLP_FEATURE_PARALLEL_PROCESSING}",
+      "parallel_processing": "${NLP_FEATURE_ANALYSIS_PARALLEL_PROCESSING}",
       "defaults": {
-        "pattern_analysis": false,
-        "semantic_analysis": false,
-        "phrase_extraction": false,
-        "pattern_learning": false,
-        "analysis_caching": false,
-        "parallel_processing": false
+        "pattern_analysis": true,
+        "semantic_analysis": true,
+        "context_analysis": true,
+        "phrase_extraction": true,
+        "analysis_caching": true,
+        "parallel_processing": true
       },
       "validation": {
         "pattern_analysis": {
           "type": "boolean",
-          "required": true
+          "required": false,
+          "description": "Pattern-based crisis detection analysis"
         },
         "semantic_analysis": {
           "type": "boolean",
-          "required": true
+          "required": false,
+          "description": "Semantic meaning analysis for context"
+        },
+        "context_analysis": {
+          "type": "boolean",
+          "required": false,
+          "description": "Contextual analysis of surrounding text"
         },
         "phrase_extraction": {
           "type": "boolean",
-          "required": true
-        },
-        "pattern_learning": {
-          "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Key phrase extraction from input text"
         },
         "analysis_caching": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Cache analysis results for performance"
         },
         "parallel_processing": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Parallel processing for performance optimization"
         }
       }
     },
-    
+
+    "learning_features": {
+      "description": "Machine learning and adaptation feature toggles",
+      "threshold_learning": "${NLP_FEATURE_LEARNING_THRESHOLD_LEARNING}",
+      "pattern_learning": "${NLP_FEATURE_LEARNING_PATTERN_LEARNING}",
+      "defaults": {
+        "threshold_learning": false,
+        "pattern_learning": false
+      },
+      "validation": {
+        "threshold_learning": {
+          "type": "boolean",
+          "required": false,
+          "description": "Adaptive threshold learning based on outcomes"
+        },
+        "pattern_learning": {
+          "type": "boolean",
+          "required": false,
+          "description": "Learn new crisis patterns from data"
+        }
+      }
+    },
+
     "experimental_features": {
-      "description": "Experimental and research features - use with caution",
+      "description": "Experimental and beta feature toggles",
       "advanced_context": "${NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT}",
       "community_vocab": "${NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB}",
       "temporal_patterns": "${NLP_FEATURE_EXPERIMENTAL_TEMPORAL_PATTERNS}",
@@ -101,29 +141,33 @@
       "validation": {
         "advanced_context": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Advanced contextual analysis algorithms"
         },
         "community_vocab": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "LGBTQIA+ community-specific vocabulary analysis"
         },
         "temporal_patterns": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Time-based pattern analysis"
         },
         "multi_language": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Multi-language support for analysis"
         }
       }
     },
-    
+
     "development_debug_features": {
       "description": "Development and debugging feature toggles",
-      "detailed_logging": "${NLP_FEATURE_DETAILED_LOGGING}",
-      "performance_metrics": "${NLP_FEATURE_PERFORMANCE_METRICS}",
-      "reload_on_changes": "${NLP_FEATURE_RELOAD_ON_CHANGES}",
-      "flip_sentiment_logic": "${NLP_FEATURE_FLIP_SENTIMENT_LOGIC}",
+      "detailed_logging": "${NLP_FEATURE_DEBUG_DETAILED_LOGGING}",
+      "performance_metrics": "${NLP_FEATURE_DEBUG_PERFORMANCE_METRICS}",
+      "reload_on_changes": "${NLP_FEATURE_DEBUG_RELOAD_ON_CHANGES}",
+      "flip_sentiment_logic": "${NLP_FEATURE_DEBUG_FLIP_SENTIMENT_LOGIC}",
       "defaults": {
         "detailed_logging": true,
         "performance_metrics": true,
@@ -133,24 +177,28 @@
       "validation": {
         "detailed_logging": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Enable detailed debug logging output"
         },
         "performance_metrics": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Collect and report performance metrics"
         },
         "reload_on_changes": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Hot reload configuration on file changes"
         },
         "flip_sentiment_logic": {
           "type": "boolean",
-          "required": false
+          "required": false,
+          "description": "Flip sentiment logic for testing (DANGEROUS)"
         }
       }
     }
   },
-  
+
   "feature_dependencies": {
     "description": "Feature dependency configuration and validation rules",
     "dependencies": {
@@ -174,7 +222,7 @@
       }
     }
   },
-  
+
   "feature_categories": {
     "description": "Feature categorization for management and UI purposes",
     "production_ready": [
@@ -184,6 +232,7 @@
       "safety_controls",
       "pattern_analysis",
       "semantic_analysis",
+      "context_analysis",
       "phrase_extraction",
       "analysis_caching",
       "parallel_processing"
@@ -204,5 +253,15 @@
       "detailed_logging",
       "performance_metrics"
     ]
+  },
+
+  "usage_instructions": {
+    "description": "Configuration usage and integration guidelines",
+    "manager_integration": "Use FeatureConfigManager with create_feature_config_manager(config_manager)",
+    "environment_override_pattern": "Set environment variables using NLP_FEATURE_*CATEGORY*_*FUNCTION* pattern",
+    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
+    "boolean_conversion": "String values converted: 'true'/'1'/'yes'/'on'/'enabled' → true, others → false",
+    "validation_behavior": "Feature dependency validation logs warnings but allows system to continue",
+    "production_notes": "Disable development_debug_features in production environments"
   }
 }
