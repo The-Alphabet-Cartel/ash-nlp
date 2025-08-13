@@ -1,139 +1,320 @@
 {
+  "_metadata": {
+    "configuration_version": "3d.1",
+    "description": "Storage and file management configuration for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "manager": "StorageConfigManager",
+    "environment_overrides": {
+      "description": "All storage settings support environment variable overrides",
+      "pattern": "${NLP_STORAGE_*CATEGORY*_*SETTING*}",
+      "examples": [
+        "NLP_STORAGE_DIRECTORIES_DATA_DIRECTORY",
+        "NLP_STORAGE_CACHE_ENABLE_MODEL_CACHE",
+        "NLP_STORAGE_BACKUP_ENABLE_AUTOMATIC_BACKUP"
+      ]
+    }
+  },
+
   "storage_configuration": {
-    "version": "3.1d",
-    "architecture": "clean-v3.1-unified",
-    "description": "Enhanced unified storage configuration - includes HuggingFace cache management",
-    "documentation": "Phase 3d Step 6: Added HuggingFace cache configuration following NLP_STORAGE_* naming convention",
     "directories": {
-      "description": "Primary storage directories - consolidated from multiple duplicate variables",
-      "data_directory": "${NLP_STORAGE_DATA_DIR}",
-      "models_directory": "${NLP_STORAGE_MODELS_DIR}",
-      "logs_directory": "${NLP_STORAGE_LOGS_DIR}", 
-      "learning_directory": "${NLP_STORAGE_LEARNING_DIR}",
-      "cache_directory": "${NLP_STORAGE_CACHE_DIR}",
-      "temp_directory": "${NLP_STORAGE_TEMP_DIR}",
-      "backup_directory": "${NLP_STORAGE_BACKUP_DIR}"
-    },
-    "file_paths": {
-      "description": "Specific file paths for various system components",
-      "log_file": "${NLP_STORAGE_LOG_FILE}",
-      "learning_persistence_file": "${NLP_STORAGE_LEARNING_FILE}",
-      "pid_file": "${NLP_STORAGE_PID_FILE}",
-      "health_check_file": "${NLP_STORAGE_HEALTH_FILE}",
-      "config_backup_file": "${NLP_STORAGE_CONFIG_BACKUP_FILE}"
-    },
-    "cache_settings": {
-      "description": "Caching configuration and storage management",
-      "huggingface_cache": "${NLP_STORAGE_HUGGINGFACE_CACHE}",
-      "analysis_cache": "${NLP_STORAGE_CACHE_DIR}",
-      "enable_model_caching": "${NLP_STORAGE_ENABLE_MODEL_CACHE}",
-      "enable_analysis_caching": "${NLP_STORAGE_ENABLE_ANALYSIS_CACHE}",
-      "cache_cleanup_on_startup": "${NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP}",
-      "model_cache_size_limit": "${NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT}",
-      "analysis_cache_size_limit": "${NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT}",
-      "cache_expiry_hours": "${NLP_STORAGE_CACHE_EXPIRY_HOURS}"
-    },
-    "backup_settings": {
-      "description": "Backup and archival configuration",
-      "enable_automatic_backup": "${NLP_STORAGE_ENABLE_AUTO_BACKUP}",
-      "backup_interval_hours": "${NLP_STORAGE_BACKUP_INTERVAL_HOURS}",
-      "backup_retention_days": "${NLP_STORAGE_BACKUP_RETENTION_DAYS}",
-      "compress_backups": "${NLP_STORAGE_COMPRESS_BACKUPS}",
-      "backup_learning_data": "${NLP_STORAGE_BACKUP_LEARNING_DATA}",
-      "backup_configuration": "${NLP_STORAGE_BACKUP_CONFIG}"
-    },
-    "cleanup_settings": {
-      "description": "Storage cleanup and maintenance policies",
-      "enable_automatic_cleanup": "${NLP_STORAGE_ENABLE_AUTO_CLEANUP}",
-      "cleanup_temp_files": "${NLP_STORAGE_CLEANUP_TEMP_FILES}",
-      "temp_file_max_age_hours": "${NLP_STORAGE_TEMP_FILE_MAX_AGE}",
-      "log_rotation_enabled": "${NLP_STORAGE_LOG_ROTATION_ENABLED}",
-      "log_max_size_mb": "${NLP_STORAGE_LOG_MAX_SIZE_MB}",
-      "log_backup_count": "${NLP_STORAGE_LOG_BACKUP_COUNT}"
-    },
-    "defaults": {
-      "directories": {
+      "description": "Directory paths for data, models, logs, and cache storage",
+      "data_directory": "${NLP_STORAGE_DIRECTORIES_DATA_DIRECTORY}",
+      "models_directory": "${NLP_STORAGE_DIRECTORIES_MODELS_DIRECTORY}",
+      "logs_directory": "${NLP_STORAGE_DIRECTORIES_LOGS_DIRECTORY}",
+      "learning_directory": "${NLP_STORAGE_DIRECTORIES_LEARNING_DIRECTORY}",
+      "cache_directory": "${NLP_STORAGE_DIRECTORIES_CACHE_DIRECTORY}",
+      "backup_directory": "${NLP_STORAGE_DIRECTORIES_BACKUP_DIRECTORY}",
+      "temp_directory": "${NLP_STORAGE_DIRECTORIES_TEMP_DIRECTORY}",
+      "defaults": {
         "data_directory": "./data",
         "models_directory": "./models/cache",
         "logs_directory": "./logs",
         "learning_directory": "./learning_data",
         "cache_directory": "./cache",
-        "temp_directory": "./tmp",
-        "backup_directory": "./backups"
+        "backup_directory": "./backups",
+        "temp_directory": "./temp"
       },
-      "file_paths": {
-        "log_file": "nlp_service.log",
-        "learning_persistence_file": "./learning_data/adjustments.json",
-        "pid_file": "./tmp/nlp_service.pid",
-        "health_check_file": "./tmp/health_check.json",
-        "config_backup_file": "./backups/config_backup.json"
-      },
-      "cache_settings": {
-        "huggingface_cache": "./models/cache",
-        "analysis_cache": "./cache",
-        "enable_model_caching": true,
-        "enable_analysis_caching": true,
+      "validation": {
+        "data_directory": {
+          "type": "string",
+          "required": true,
+          "description": "Main data storage directory"
+        },
+        "models_directory": {
+          "type": "string",
+          "required": true,
+          "description": "AI model cache directory"
+        },
+        "logs_directory": {
+          "type": "string",
+          "required": true,
+          "description": "System logs directory"
+        },
+        "learning_directory": {
+          "type": "string",
+          "required": true,
+          "description": "Machine learning data directory"
+        },
+        "cache_directory": {
+          "type": "string",
+          "required": true,
+          "description": "Analysis results cache directory"
+        },
+        "backup_directory": {
+          "type": "string",
+          "required": false,
+          "description": "Backup storage directory"
+        },
+        "temp_directory": {
+          "type": "string",
+          "required": false,
+          "description": "Temporary files directory"
+        }
+      }
+    },
+
+    "cache_settings": {
+      "description": "Cache configuration for models and analysis results",
+      "enable_model_cache": "${NLP_STORAGE_CACHE_ENABLE_MODEL_CACHE}",
+      "enable_analysis_cache": "${NLP_STORAGE_CACHE_ENABLE_ANALYSIS_CACHE}",
+      "cache_cleanup_on_startup": "${NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP}",
+      "model_cache_size_limit": "${NLP_STORAGE_CACHE_MODEL_CACHE_SIZE_LIMIT}",
+      "analysis_cache_size_limit": "${NLP_STORAGE_CACHE_ANALYSIS_CACHE_SIZE_LIMIT}",
+      "cache_expiry_hours": "${NLP_STORAGE_CACHE_CACHE_EXPIRY_HOURS}",
+      "cache_compression": "${NLP_STORAGE_CACHE_CACHE_COMPRESSION}",
+      "defaults": {
+        "enable_model_cache": true,
+        "enable_analysis_cache": true,
         "cache_cleanup_on_startup": false,
-        "model_cache_size_limit": "10GB",
-        "analysis_cache_size_limit": "2GB",
-        "cache_expiry_hours": 24
+        "model_cache_size_limit": 1000,
+        "analysis_cache_size_limit": 500,
+        "cache_expiry_hours": 24,
+        "cache_compression": true
       },
-      "backup_settings": {
+      "validation": {
+        "enable_model_cache": {
+          "type": "boolean",
+          "description": "Enable caching of AI model files"
+        },
+        "enable_analysis_cache": {
+          "type": "boolean",
+          "description": "Enable caching of analysis results"
+        },
+        "cache_cleanup_on_startup": {
+          "type": "boolean",
+          "description": "Clean expired cache entries on system startup"
+        },
+        "model_cache_size_limit": {
+          "type": "integer",
+          "range": [100, 10000],
+          "unit": "MB",
+          "description": "Maximum model cache size in megabytes"
+        },
+        "analysis_cache_size_limit": {
+          "type": "integer",
+          "range": [50, 5000],
+          "unit": "MB",
+          "description": "Maximum analysis cache size in megabytes"
+        },
+        "cache_expiry_hours": {
+          "type": "integer",
+          "range": [1, 168],
+          "unit": "hours",
+          "description": "Cache expiration time in hours"
+        },
+        "cache_compression": {
+          "type": "boolean",
+          "description": "Enable compression for cached data"
+        }
+      }
+    },
+
+    "backup_settings": {
+      "description": "Automatic backup configuration for data protection",
+      "enable_automatic_backup": "${NLP_STORAGE_BACKUP_ENABLE_AUTOMATIC_BACKUP}",
+      "backup_interval_hours": "${NLP_STORAGE_BACKUP_BACKUP_INTERVAL_HOURS}",
+      "backup_retention_days": "${NLP_STORAGE_BACKUP_BACKUP_RETENTION_DAYS}",
+      "compress_backups": "${NLP_STORAGE_BACKUP_COMPRESS_BACKUPS}",
+      "backup_learning_data": "${NLP_STORAGE_BACKUP_BACKUP_LEARNING_DATA}",
+      "backup_configuration": "${NLP_STORAGE_BACKUP_BACKUP_CONFIGURATION}",
+      "backup_models": "${NLP_STORAGE_BACKUP_BACKUP_MODELS}",
+      "defaults": {
         "enable_automatic_backup": false,
         "backup_interval_hours": 24,
         "backup_retention_days": 30,
         "compress_backups": true,
         "backup_learning_data": true,
-        "backup_configuration": true
+        "backup_configuration": true,
+        "backup_models": false
       },
-      "cleanup_settings": {
+      "validation": {
+        "enable_automatic_backup": {
+          "type": "boolean",
+          "description": "Enable automatic backup system"
+        },
+        "backup_interval_hours": {
+          "type": "integer",
+          "range": [1, 168],
+          "unit": "hours",
+          "description": "Hours between automatic backups"
+        },
+        "backup_retention_days": {
+          "type": "integer",
+          "range": [1, 365],
+          "unit": "days",
+          "description": "Days to retain backup files"
+        },
+        "compress_backups": {
+          "type": "boolean",
+          "description": "Compress backup files to save space"
+        },
+        "backup_learning_data": {
+          "type": "boolean",
+          "description": "Include learning data in backups"
+        },
+        "backup_configuration": {
+          "type": "boolean",
+          "description": "Include configuration files in backups"
+        },
+        "backup_models": {
+          "type": "boolean",
+          "description": "Include AI models in backups (large files)"
+        }
+      }
+    },
+
+    "cleanup_settings": {
+      "description": "Automatic cleanup and maintenance configuration",
+      "enable_automatic_cleanup": "${NLP_STORAGE_CLEANUP_ENABLE_AUTOMATIC_CLEANUP}",
+      "cleanup_temp_files": "${NLP_STORAGE_CLEANUP_CLEANUP_TEMP_FILES}",
+      "temp_file_max_age_hours": "${NLP_STORAGE_CLEANUP_TEMP_FILE_MAX_AGE_HOURS}",
+      "log_rotation_enabled": "${NLP_STORAGE_CLEANUP_LOG_ROTATION_ENABLED}",
+      "log_max_size_mb": "${NLP_STORAGE_CLEANUP_LOG_MAX_SIZE_MB}",
+      "log_backup_count": "${NLP_STORAGE_CLEANUP_LOG_BACKUP_COUNT}",
+      "cleanup_interval_hours": "${NLP_STORAGE_CLEANUP_CLEANUP_INTERVAL_HOURS}",
+      "defaults": {
         "enable_automatic_cleanup": true,
         "cleanup_temp_files": true,
-        "temp_file_max_age_hours": 24,
+        "temp_file_max_age_hours": 48,
         "log_rotation_enabled": true,
         "log_max_size_mb": 100,
-        "log_backup_count": 5
-      }
-    },
-    "validation": {
-      "create_directories_on_startup": true,
-      "validate_write_permissions": true,
-      "fail_on_inaccessible_directories": false,
-      "required_directories": [
-        "data_directory", "models_directory", "logs_directory", 
-        "learning_directory", "cache_directory", "temp_directory"
-      ],
-      "optional_directories": ["backup_directory"],
-      "disk_space_checks": {
-        "enable_disk_space_monitoring": true,
-        "minimum_free_space_gb": 5,
-        "warning_threshold_gb": 10,
-        "cleanup_threshold_gb": 8
+        "log_backup_count": 5,
+        "cleanup_interval_hours": 12
       },
-      "file_path_validation": {
-        "validate_file_extensions": true,
-        "allowed_log_extensions": [".log", ".txt"],
-        "allowed_data_extensions": [".json", ".csv", ".txt"],
-        "max_filename_length": 255
+      "validation": {
+        "enable_automatic_cleanup": {
+          "type": "boolean",
+          "description": "Enable automatic file cleanup"
+        },
+        "cleanup_temp_files": {
+          "type": "boolean",
+          "description": "Clean up temporary files automatically"
+        },
+        "temp_file_max_age_hours": {
+          "type": "integer",
+          "range": [1, 168],
+          "unit": "hours",
+          "description": "Maximum age for temporary files before deletion"
+        },
+        "log_rotation_enabled": {
+          "type": "boolean",
+          "description": "Enable log file rotation"
+        },
+        "log_max_size_mb": {
+          "type": "integer",
+          "range": [10, 1000],
+          "unit": "MB",
+          "description": "Maximum log file size before rotation"
+        },
+        "log_backup_count": {
+          "type": "integer",
+          "range": [1, 20],
+          "description": "Number of rotated log files to keep"
+        },
+        "cleanup_interval_hours": {
+          "type": "integer",
+          "range": [1, 72],
+          "unit": "hours",
+          "description": "Hours between cleanup operations"
+        }
       }
     },
-    "phase_3d_enhancements": {
-      "step_6_additions": [
-        "huggingface_cache - Clean v3.1 compliant HuggingFace cache configuration",
-        "cache_directory - Consolidates analysis cache paths",
-        "temp_directory - Consolidates temporary file storage",
-        "backup_directory - New backup functionality",
-        "backup_settings - Comprehensive backup configuration",
-        "cleanup_settings - Automated maintenance policies",
-        "Enhanced validation - Disk space and permission checks"
-      ],
-      "variables_consolidated": [
-        "Multiple HF_* variables → NLP_STORAGE_HUGGINGFACE_CACHE",
-        "NLP_ANALYSIS_CACHE_DIR → NLP_STORAGE_CACHE_DIR",
-        "NLP_TEMP_DIR → NLP_STORAGE_TEMP_DIR",
-        "Added comprehensive backup and cleanup variables"
-      ],
-      "architecture_compliance": "Clean v3.1 - Single variable per function, unified naming convention"
+
+    "file_permissions": {
+      "description": "File and directory permission settings",
+      "directory_permissions": "${NLP_STORAGE_PERMISSIONS_DIRECTORY_PERMISSIONS}",
+      "file_permissions": "${NLP_STORAGE_PERMISSIONS_FILE_PERMISSIONS}",
+      "enable_permission_checks": "${NLP_STORAGE_PERMISSIONS_ENABLE_PERMISSION_CHECKS}",
+      "defaults": {
+        "directory_permissions": "755",
+        "file_permissions": "644",
+        "enable_permission_checks": true
+      },
+      "validation": {
+        "directory_permissions": {
+          "type": "string",
+          "pattern": "^[0-7]{3}$",
+          "description": "Octal permissions for directories (e.g., '755')"
+        },
+        "file_permissions": {
+          "type": "string",
+          "pattern": "^[0-7]{3}$",
+          "description": "Octal permissions for files (e.g., '644')"
+        },
+        "enable_permission_checks": {
+          "type": "boolean",
+          "description": "Verify file permissions on access"
+        }
+      }
     }
+  },
+
+  "storage_profiles": {
+    "description": "Pre-configured storage profiles for different deployment scenarios",
+    "development": {
+      "description": "Development environment with minimal cleanup",
+      "enable_automatic_cleanup": false,
+      "enable_automatic_backup": false,
+      "cache_expiry_hours": 1,
+      "log_max_size_mb": 50
+    },
+    "testing": {
+      "description": "Testing environment with moderate cleanup",
+      "enable_automatic_cleanup": true,
+      "enable_automatic_backup": false,
+      "cache_expiry_hours": 6,
+      "cleanup_interval_hours": 6
+    },
+    "production": {
+      "description": "Production environment with full backup and cleanup",
+      "enable_automatic_cleanup": true,
+      "enable_automatic_backup": true,
+      "cache_expiry_hours": 48,
+      "backup_interval_hours": 12,
+      "backup_retention_days": 90
+    },
+    "high_volume": {
+      "description": "High volume environment with aggressive cleanup",
+      "enable_automatic_cleanup": true,
+      "enable_automatic_backup": true,
+      "cache_expiry_hours": 24,
+      "cleanup_interval_hours": 4,
+      "temp_file_max_age_hours": 12
+    }
+  },
+
+  "usage_instructions": {
+    "description": "Configuration usage and integration guidelines",
+    "manager_integration": "Use StorageConfigManager with create_storage_config_manager(config_manager)",
+    "environment_override_pattern": "Set environment variables using NLP_STORAGE_*CATEGORY*_*SETTING* pattern",
+    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
+    "directory_creation": "Directories are created automatically if they don't exist",
+    "permissions_note": "File permissions only apply on Unix-like systems",
+    "backup_size_warning": "Backup size can be large if backup_models is enabled",
+    "cleanup_safety": "Cleanup operations only affect files in specified directories",
+    "cache_performance": "Enable compression for cache if storage space is limited",
+    "production_recommendations": "Use 'production' profile for live deployments"
   }
 }
