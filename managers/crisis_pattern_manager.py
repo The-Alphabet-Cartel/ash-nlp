@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
 Crisis Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.7-1
+FILE VERSION: v3.1-3d-10.7-2
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Community Pattern Consolidation
+PHASE: 3d Step 10.7 - Community Pattern Consolidation + Environment Variable Fixes
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Added apply_context_weights and check_enhanced_crisis_patterns methods
+MIGRATION STATUS: Added missing methods + environment variable error handling
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -53,6 +53,44 @@ class CrisisPatternManager:
         logger.info("CrisisPatternManager v3.1 context-consolidation initializing...")
         self._load_all_patterns()
         logger.info(f"CrisisPatternManager initialized with {len(self._patterns_cache)} pattern sets")
+
+    def _safe_get_int(self, data: dict, key: str, default: int) -> int:
+        """Safely get integer value, handling environment variable placeholders"""
+        try:
+            value = data.get(key, default)
+            if isinstance(value, str) and value.startswith('${'):
+                logger.warning(f"Environment variable '{value}' not resolved, using default {default}")
+                return default
+            return int(value)
+        except (ValueError, TypeError):
+            logger.warning(f"Could not convert '{key}' to int, using default {default}")
+            return default
+
+    def _safe_get_float(self, data: dict, key: str, default: float) -> float:
+        """Safely get float value, handling environment variable placeholders"""
+        try:
+            value = data.get(key, default)
+            if isinstance(value, str) and value.startswith('${'):
+                logger.warning(f"Environment variable '{value}' not resolved, using default {default}")
+                return default
+            return float(value)
+        except (ValueError, TypeError):
+            logger.warning(f"Could not convert '{key}' to float, using default {default}")
+            return default
+
+    def _safe_get_bool(self, data: dict, key: str, default: bool) -> bool:
+        """Safely get boolean value, handling environment variable placeholders"""
+        try:
+            value = data.get(key, default)
+            if isinstance(value, str) and value.startswith('${'):
+                logger.warning(f"Environment variable '{value}' not resolved, using default {default}")
+                return default
+            if isinstance(value, str):
+                return value.lower() in ('true', '1', 'yes', 'on')
+            return bool(value)
+        except (ValueError, TypeError):
+            logger.warning(f"Could not convert '{key}' to bool, using default {default}")
+            return default
 
     def _load_all_patterns(self) -> None:
         """Load all crisis pattern configurations with v3.1 consolidation support"""
@@ -142,10 +180,10 @@ class CrisisPatternManager:
             escalation_rules = enhanced_patterns.get('escalation_rules', {})
             pattern_defaults = enhanced_patterns.get('pattern_defaults', {})
             
-            # Get processing configuration with v3.1 fallbacks
-            case_sensitive = processing_rules.get('case_sensitive', defaults.get('case_sensitive', False))
-            context_window = int(processing_rules.get('context_window', defaults.get('context_window', 10)))
-            max_pattern_boost = float(processing_rules.get('max_pattern_boost', defaults.get('max_pattern_boost', 0.50)))
+            # Get processing configuration with v3.1 fallbacks and safe type conversion
+            case_sensitive = self._safe_get_bool(processing_rules, 'case_sensitive', defaults.get('case_sensitive', False))
+            context_window = self._safe_get_int(processing_rules, 'context_window', defaults.get('context_window', 10))
+            max_pattern_boost = self._safe_get_float(processing_rules, 'max_pattern_boost', defaults.get('max_pattern_boost', 0.50))
             
             patterns_found = []
             safety_flags = {
@@ -247,8 +285,8 @@ class CrisisPatternManager:
                 confidence_score = min(sum(confidence_values) / len(confidence_values), 1.0)
             
             # Check emergency response threshold
-            emergency_threshold = float(escalation_rules.get('emergency_response_threshold', 
-                                      escalation_rules.get('defaults', {}).get('emergency_response_threshold', 0.80)))
+            emergency_threshold = self._safe_get_float(escalation_rules, 'emergency_response_threshold', 
+                                                     escalation_rules.get('defaults', {}).get('emergency_response_threshold', 0.80))
             
             if confidence_score >= emergency_threshold or safety_flags['critical_patterns_detected']:
                 safety_flags['emergency_response_triggered'] = True
@@ -315,8 +353,8 @@ class CrisisPatternManager:
             crisis_words = context_weights.get('crisis_context_words', {})
             if crisis_words and 'words' in crisis_words:
                 amplifier_words = crisis_words.get('words', [])
-                base_weight = float(crisis_words.get('base_weight', 0.10))
-                max_boost = float(crisis_words.get('max_cumulative_boost', 0.30))
+                base_weight = self._safe_get_float(crisis_words, 'base_weight', 0.10)
+                max_boost = self._safe_get_float(crisis_words, 'max_cumulative_boost', 0.30)
                 
                 for word in amplifier_words:
                     if isinstance(word, str) and word.lower() in message_lower:
@@ -335,8 +373,8 @@ class CrisisPatternManager:
             positive_words = context_weights.get('positive_context_words', {})
             if positive_words and 'words' in positive_words:
                 reducer_words = positive_words.get('words', [])
-                base_weight = float(positive_words.get('base_weight', -0.08))
-                max_reduction = float(positive_words.get('max_cumulative_reduction', -0.25))
+                base_weight = self._safe_get_float(positive_words, 'base_weight', -0.08)
+                max_reduction = self._safe_get_float(positive_words, 'max_cumulative_reduction', -0.25)
                 
                 for word in reducer_words:
                     if isinstance(word, str) and word.lower() in message_lower:
