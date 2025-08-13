@@ -1,7 +1,10 @@
 # ash-nlp/utils/__init__.py
 """
-Utilities Package for Ash NLP Service v3.1
-Clean v3.1 Architecture
+FILE VERSION: v3.1-3d-10.6-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10.6 - Scoring Functions Consolidated
+CLEAN ARCHITECTURE: v3.1 Compliant
+MIGRATION STATUS: Scoring helpers consolidated into CrisisAnalyzer
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -15,15 +18,8 @@ from .context_helpers import (
     score_term_in_context
 )
 
-# Scoring utilities  
-from .scoring_helpers import (
-    extract_depression_score,
-    enhanced_depression_analysis,
-    advanced_idiom_detection,
-    enhanced_crisis_level_mapping,
-    score_phrases_with_models,
-    filter_and_rank_phrases
-)
+# PHASE 3D STEP 10.6: Scoring functions migrated to CrisisAnalyzer
+# scoring_helpers imports removed - functions now available as CrisisAnalyzer methods
 
 # Community pattern utilities
 from .community_patterns import (
@@ -31,7 +27,15 @@ from .community_patterns import (
     extract_crisis_context_phrases
 )
 
-# Utility metadata
+# Enhanced learning utilities (for Step 10.9)
+try:
+    from .enhanced_learning import EnhancedLearningManager, add_enhanced_learning_endpoints
+except ImportError:
+    # Enhanced learning not yet implemented
+    EnhancedLearningManager = None
+    add_enhanced_learning_endpoints = None
+
+# Utility metadata - Updated for Phase 3d Step 10.6
 UTILITY_FUNCTIONS = {
     "context_analysis": {
         "extract_context_signals": "Extract contextual signals from messages",
@@ -42,17 +46,29 @@ UTILITY_FUNCTIONS = {
     },
     
     "scoring_and_analysis": {
-        "extract_depression_score": "Extract depression score from model output",
-        "enhanced_depression_analysis": "Enhanced depression analysis with safety-first approach",
-        "advanced_idiom_detection": "Advanced idiom detection with context verification", 
-        "enhanced_crisis_level_mapping": "Map confidence scores to crisis levels",
-        "score_phrases_with_models": "Score extracted phrases using ML models",
-        "filter_and_rank_phrases": "Filter and rank phrases by relevance and confidence"
+        # PHASE 3D STEP 10.6: These functions are now CrisisAnalyzer instance methods
+        "extract_depression_score": "Consolidated into CrisisAnalyzer.extract_depression_score()",
+        "enhanced_depression_analysis": "Consolidated into CrisisAnalyzer.enhanced_depression_analysis()",
+        "advanced_idiom_detection": "Consolidated into CrisisAnalyzer.advanced_idiom_detection()", 
+        "enhanced_crisis_level_mapping": "Consolidated into CrisisAnalyzer.enhanced_crisis_level_mapping()",
+        "score_phrases_with_models": "Consolidated into CrisisAnalyzer.score_phrases_with_models()",
+        "filter_and_rank_phrases": "Consolidated into CrisisAnalyzer.filter_and_rank_phrases()"
     },
     
     "community_patterns": {
         "extract_community_patterns": "Extract LGBTQIA+ community-specific patterns",
         "extract_crisis_context_phrases": "Extract phrases with crisis context indicators"
+    },
+    
+    "migration_status": {
+        "phase_3d_step_10_6": "✅ Scoring functions consolidated into CrisisAnalyzer",
+        "utils_scoring_helpers": "🗑️ Eliminated - functions moved to CrisisAnalyzer",
+        "clean_architecture": "✅ Clean v3.1 compliance achieved"
+    },
+    
+    "remaining_consolidation_targets": {
+        "utils_community_patterns": "⏳ Pending Step 10.7 - migrate to CrisisPatternManager",
+        "utils_context_helpers": "⏳ Pending Step 10.8 - create ContextPatternManager"
     }
 }
 
@@ -82,26 +98,32 @@ def get_context_analysis_capabilities():
     }
 
 def get_scoring_capabilities():
-    """Get scoring and analysis capabilities"""
+    """Get scoring and analysis capabilities (now in CrisisAnalyzer)"""
     return {
-        "depression_analysis": [
-            "multi_model_integration",
-            "safety_first_recalibration",
-            "critical_pattern_detection",
-            "context_based_adjustments"
-        ],
-        "idiom_detection": [
-            "context_aware_filtering",
-            "pattern_matching",
-            "reduction_factors",
-            "max_score_limits"
-        ],
-        "phrase_scoring": [
-            "model_based_scoring",
-            "community_pattern_boosting",
-            "crisis_context_enhancement",
-            "confidence_mapping"
-        ]
+        "status": "MIGRATED_TO_CRISIS_ANALYZER",
+        "phase": "3d_step_10_6_complete",
+        "access_method": "Use CrisisAnalyzer instance methods",
+        "functions": {
+            "depression_analysis": [
+                "multi_model_integration",
+                "safety_first_recalibration",
+                "critical_pattern_detection",
+                "context_based_adjustments"
+            ],
+            "idiom_detection": [
+                "context_aware_filtering",
+                "pattern_matching",
+                "reduction_factors",
+                "max_score_limits"
+            ],
+            "phrase_scoring": [
+                "model_based_scoring",
+                "community_pattern_boosting",
+                "crisis_context_enhancement",
+                "confidence_mapping"
+            ]
+        },
+        "migration_note": "All scoring functions now available as CrisisAnalyzer instance methods"
     }
 
 def get_community_pattern_capabilities():
@@ -120,6 +142,16 @@ def get_community_pattern_capabilities():
             "social_isolation", 
             "capability_loss"
         ]
+    }
+
+def get_migration_status():
+    """Get Phase 3d consolidation migration status"""
+    return {
+        "current_step": "10.6_complete",
+        "completed": ["scoring_helpers_consolidation"],
+        "pending": ["community_patterns_consolidation", "context_helpers_manager_creation"],
+        "architecture_compliance": "clean_v3_1_achieved",
+        "version": "v3.1.3d.10.6.1"
     }
 
 # Helper function to validate utility inputs
@@ -145,7 +177,7 @@ def validate_model_result(result) -> bool:
     return False
 
 __all__ = [
-    # Learning utilities
+    # Enhanced learning utilities (conditional)
     'EnhancedLearningManager',
     'add_enhanced_learning_endpoints',
 
@@ -156,15 +188,15 @@ __all__ = [
     "perform_enhanced_context_analysis",
     "score_term_in_context",
     
-    # Scoring utilities
-    "extract_depression_score",
-    "enhanced_depression_analysis",
-    "advanced_idiom_detection",
-    "enhanced_crisis_level_mapping",
-    "score_phrases_with_models",
-    "filter_and_rank_phrases",
+    # PHASE 3D STEP 10.6: Scoring utilities REMOVED (consolidated into CrisisAnalyzer)
+    # "extract_depression_score",           # ❌ MIGRATED
+    # "enhanced_depression_analysis",       # ❌ MIGRATED
+    # "advanced_idiom_detection",          # ❌ MIGRATED
+    # "enhanced_crisis_level_mapping",     # ❌ MIGRATED
+    # "score_phrases_with_models",         # ❌ MIGRATED
+    # "filter_and_rank_phrases",           # ❌ MIGRATED
     
-    # Community patterns
+    # Community patterns (pending Step 10.7)
     "extract_community_patterns",
     "extract_crisis_context_phrases",
     
@@ -173,6 +205,7 @@ __all__ = [
     "get_context_analysis_capabilities",
     "get_scoring_capabilities", 
     "get_community_pattern_capabilities",
+    "get_migration_status",
     
     # Validation functions
     "validate_message_input",
