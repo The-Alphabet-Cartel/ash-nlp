@@ -17,9 +17,10 @@
     }
   },
 
-  "models": {
-    "description": "Individual AI model configurations for the ensemble",
-    "sentiment": {
+  "model_ensemble": {
+    "model_definitions": {
+    "model_definitions": {
+      "sentiment": {
       "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
       "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
       "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
@@ -33,6 +34,9 @@
         "pipeline_task": "text-classification",
         "cache_dir": "./models/cache",
         "enabled": true
+      },
+      "ensemble_config": {
+        "mode": "weighted"
       }
     },
     "emotional_distress": {
@@ -66,20 +70,18 @@
         "cache_dir": "./models/cache",
         "enabled": true
       }
-    }
-  },
-
-  "ensemble_mode": "${NLP_MODEL_ENSEMBLE_MODE}",
-  "ensemble_config": {
-    "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
-    "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
-    "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
-    "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
-    "defaults": {
-      "mode": "weighted",
-      "require_all_models": false,
-      "fallback_mode": "single_best",
-      "confidence_threshold": 0.5
+    },
+    "ensemble_config": {
+      "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
+      "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
+      "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
+      "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
+      "defaults": {
+        "mode": "weighted",
+        "require_all_models": false,
+        "fallback_mode": "single_best",
+        "confidence_threshold": 0.5
+      }
     }
   },
 
@@ -112,8 +114,8 @@
   },
 
   "defaults": {
-    "ensemble_mode": "weighted",
-    "models": {
+    "model_ensemble": {
+      "model_definitions": {
       "sentiment": {
         "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
         "weight": 0.4,
