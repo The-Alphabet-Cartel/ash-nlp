@@ -459,6 +459,7 @@ class CrisisAnalyzer:
                 return 'low'
             else:
                 return 'none'
+
         except Exception as e:
             logger.error(f"❌ Crisis level determination failed: {e}")
             # Conservative fallback
