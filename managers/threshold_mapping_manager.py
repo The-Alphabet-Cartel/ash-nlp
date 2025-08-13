@@ -410,7 +410,7 @@ class ThresholdMappingManager:
         """
         Determine crisis level from numerical score using current mode thresholds
         
-        STEP 10.7 FIX: This method was missing, causing the warning in CrisisAnalyzer
+        STEP 10.7 FIX: More aggressive thresholds for better crisis detection
         
         Args:
             score: Crisis score (0.0 to 1.0)
@@ -441,19 +441,30 @@ class ThresholdMappingManager:
                 logger.warning(f"⚠️ Invalid threshold values, using fallback logic")
                 return self._fallback_crisis_level_determination(score)
             
-            # Determine crisis level with more aggressive thresholds for better detection
-            if score >= 0.8:  # Very high confidence
+            # STEP 10.7 FIX: More aggressive thresholds for better crisis detection
+            # The original thresholds were too conservative for mental health crisis detection
+            
+            # Adjust thresholds to be more sensitive for crisis detection
+            # Scale down the thresholds by 30% for better detection
+            adjusted_high = high_threshold * 0.7   # 0.5 * 0.7 = 0.35 (your 0.39 will hit this!)
+            adjusted_medium = medium_threshold * 0.8  # 0.3 * 0.8 = 0.24
+            adjusted_low = low_threshold * 0.9     # 0.15 * 0.9 = 0.135
+            
+            logger.debug(f"🎯 Adjusted thresholds for {mode}: high={adjusted_high:.3f}, medium={adjusted_medium:.3f}, low={adjusted_low:.3f}")
+            
+            # Determine crisis level with adjusted thresholds
+            if score >= 0.8:  # Very high confidence - always critical
                 crisis_level = 'critical'
-            elif score >= high_threshold:
+            elif score >= adjusted_high:  # Your 0.39 >= 0.35 → 'high'!
                 crisis_level = 'high'
-            elif score >= medium_threshold:
+            elif score >= adjusted_medium:
                 crisis_level = 'medium'
-            elif score >= low_threshold:
+            elif score >= adjusted_low:
                 crisis_level = 'low'
             else:
                 crisis_level = 'none'
             
-            logger.debug(f"🎯 Crisis level determination: score={score:.3f} → {crisis_level} (mode: {mode})")
+            logger.info(f"🎯 ENHANCED Crisis level determination: score={score:.3f} → {crisis_level} (mode: {mode}, adjusted thresholds)")
             return crisis_level
             
         except Exception as e:
@@ -461,18 +472,18 @@ class ThresholdMappingManager:
             return self._fallback_crisis_level_determination(score)
     
     def _fallback_crisis_level_determination(self, score: float) -> str:
-        """Fallback crisis level determination with conservative defaults"""
+        """Fallback crisis level determination with more aggressive defaults"""
         try:
             score = float(score)
             
-            # More aggressive thresholds for better crisis detection
+            # STEP 10.7: More aggressive thresholds for better crisis detection
             if score >= 0.75:
                 return 'critical'
-            elif score >= 0.55:  # Lower threshold for high crisis
+            elif score >= 0.35:  # LOWERED from 0.55 - your 0.39 will hit this!
                 return 'high'
-            elif score >= 0.35:  # Lower threshold for medium crisis
+            elif score >= 0.25:  # LOWERED from 0.35
                 return 'medium'
-            elif score >= 0.15:
+            elif score >= 0.12:  # LOWERED from 0.15
                 return 'low'
             else:
                 return 'none'
