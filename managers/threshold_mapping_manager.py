@@ -1,10 +1,11 @@
 # ash-nlp/managers/threshold_mapping_manager.py
 """
 Mode-Aware Threshold Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.7-3
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d Step 10.7 - Environment Variable Fixes + Crisis Level Determination Method Added
 CLEAN ARCHITECTURE: v3.1 Compliant
+MIGRATION STATUS: Added missing determine_crisis_level method, fixed environment variable resolution
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -20,6 +21,7 @@ class ThresholdMappingManager:
     Manages threshold mappings for crisis level determination and staff review logic
     Phase 3c: Mode-aware thresholds with dynamic ensemble mode detection
     Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
+    Phase 3d Step 10.7: Added missing determine_crisis_level method
     """
     
     def __init__(self, unified_config_manager, model_ensemble_manager=None):
@@ -38,7 +40,7 @@ class ThresholdMappingManager:
         # Load threshold mapping configuration using unified manager
         self._load_threshold_mapping_config()
         
-        logger.info("ThresholdMappingManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
+        logger.info("ThresholdMappingManager v3.1d Step 10.7 initialized - Crisis level determination method added")
     
     def _load_threshold_mapping_config(self):
         """Load threshold mapping configuration using UnifiedConfigManager - UPDATED for v3.1 compliance"""
@@ -400,6 +402,111 @@ class ThresholdMappingManager:
             logger.error(f"❌ {error_msg}")
             self._validation_errors.append(error_msg)
     
+    # ========================================================================
+    # STEP 10.7 FIX: MISSING CRISIS LEVEL DETERMINATION METHOD
+    # ========================================================================
+    
+    def determine_crisis_level(self, score: float, mode: Optional[str] = None) -> str:
+        """
+        Determine crisis level from numerical score using current mode thresholds
+        
+        STEP 10.7 FIX: This method was missing, causing the warning in CrisisAnalyzer
+        
+        Args:
+            score: Crisis score (0.0 to 1.0)
+            mode: Optional specific mode to use (defaults to current mode)
+            
+        Returns:
+            Crisis level string: 'critical', 'high', 'medium', 'low', or 'none'
+        """
+        try:
+            if mode is None:
+                mode = self.get_current_ensemble_mode()
+            
+            # Get ensemble thresholds for the current mode
+            ensemble_thresholds = self.get_ensemble_thresholds_for_mode(mode)
+            
+            # Determine crisis level based on score and thresholds
+            high_threshold = ensemble_thresholds.get('high', 0.5)
+            medium_threshold = ensemble_thresholds.get('medium', 0.3)
+            low_threshold = ensemble_thresholds.get('low', 0.15)
+            
+            # Convert thresholds to floats for safe comparison
+            try:
+                high_threshold = float(high_threshold)
+                medium_threshold = float(medium_threshold)
+                low_threshold = float(low_threshold)
+                score = float(score)
+            except (ValueError, TypeError):
+                logger.warning(f"⚠️ Invalid threshold values, using fallback logic")
+                return self._fallback_crisis_level_determination(score)
+            
+            # Determine crisis level with more aggressive thresholds for better detection
+            if score >= 0.8:  # Very high confidence
+                crisis_level = 'critical'
+            elif score >= high_threshold:
+                crisis_level = 'high'
+            elif score >= medium_threshold:
+                crisis_level = 'medium'
+            elif score >= low_threshold:
+                crisis_level = 'low'
+            else:
+                crisis_level = 'none'
+            
+            logger.debug(f"🎯 Crisis level determination: score={score:.3f} → {crisis_level} (mode: {mode})")
+            return crisis_level
+            
+        except Exception as e:
+            logger.error(f"❌ Error in determine_crisis_level: {e}")
+            return self._fallback_crisis_level_determination(score)
+    
+    def _fallback_crisis_level_determination(self, score: float) -> str:
+        """Fallback crisis level determination with conservative defaults"""
+        try:
+            score = float(score)
+            
+            # More aggressive thresholds for better crisis detection
+            if score >= 0.75:
+                return 'critical'
+            elif score >= 0.55:  # Lower threshold for high crisis
+                return 'high'
+            elif score >= 0.35:  # Lower threshold for medium crisis
+                return 'medium'
+            elif score >= 0.15:
+                return 'low'
+            else:
+                return 'none'
+                
+        except (ValueError, TypeError):
+            logger.warning(f"⚠️ Invalid score value: {score}, returning 'medium' for safety")
+            return 'medium'  # Conservative fallback
+    
+    def map_score_to_level(self, score: float, mode: Optional[str] = None) -> str:
+        """
+        Alias for determine_crisis_level for backward compatibility
+        
+        Args:
+            score: Crisis score (0.0 to 1.0)
+            mode: Optional specific mode to use
+            
+        Returns:
+            Crisis level string
+        """
+        return self.determine_crisis_level(score, mode)
+    
+    def get_crisis_level(self, score: float, mode: Optional[str] = None) -> str:
+        """
+        Another alias for determine_crisis_level for backward compatibility
+        
+        Args:
+            score: Crisis score (0.0 to 1.0)
+            mode: Optional specific mode to use
+            
+        Returns:
+            Crisis level string
+        """
+        return self.determine_crisis_level(score, mode)
+
     # ========================================================================
     # MODE-AWARE THRESHOLD ACCESS METHODS (PRESERVED)
     # ========================================================================
@@ -917,19 +1024,19 @@ class ThresholdMappingManager:
         }
 
 # ============================================================================
-# FACTORY FUNCTION - Updated for Phase 3d Step 9
+# FACTORY FUNCTION - Updated for Phase 3d Step 10.7
 # ============================================================================
 
 def create_threshold_mapping_manager(unified_config_manager, model_ensemble_manager=None) -> ThresholdMappingManager:
     """
-    Factory function to create ThresholdMappingManager instance - Phase 3d Step 9
+    Factory function to create ThresholdMappingManager instance - Phase 3d Step 10.7
     
     Args:
         unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
         model_ensemble_manager: ModelEnsembleManager instance for mode detection
         
     Returns:
-        ThresholdMappingManager instance
+        ThresholdMappingManager instance with crisis level determination capability
     """
     return ThresholdMappingManager(unified_config_manager, model_ensemble_manager)
 
@@ -942,4 +1049,4 @@ __all__ = [
     'create_threshold_mapping_manager'
 ]
 
-logger.info("✅ ThresholdMappingManager v3.1d Step 9 loaded - UnifiedConfigManager integration complete, direct os.getenv() calls eliminated")
+logger.info("✅ ThresholdMappingManager v3.1d Step 10.7 loaded - Crisis level determination method added, environment variable integration complete")
