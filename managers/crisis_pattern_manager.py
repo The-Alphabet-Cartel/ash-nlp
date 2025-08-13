@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
 Crisis Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.7-2
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d Step 10.7 - Community Pattern Consolidation + Environment Variable Fixes
 CLEAN ARCHITECTURE: v3.1 Compliant
+MIGRATION STATUS: Added missing methods + environment variable error handling
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -33,6 +34,7 @@ class CrisisPatternManager:
     - Community-specific vocabulary and context patterns
     - Production-ready error handling and resilience
     - v3.1 JSON configuration compatibility
+    - Step 10.7: Community pattern methods consolidated
     
     CRITICAL: This manager detects life-threatening situations requiring immediate response.
     """
@@ -51,6 +53,44 @@ class CrisisPatternManager:
         logger.info("CrisisPatternManager v3.1 context-consolidation initializing...")
         self._load_all_patterns()
         logger.info(f"CrisisPatternManager initialized with {len(self._patterns_cache)} pattern sets")
+
+    def _safe_get_int(self, data: dict, key: str, default: int) -> int:
+        """Safely get integer value, handling environment variable placeholders"""
+        try:
+            value = data.get(key, default)
+            if isinstance(value, str) and value.startswith('${'):
+                logger.warning(f"Environment variable '{value}' not resolved, using default {default}")
+                return default
+            return int(value)
+        except (ValueError, TypeError):
+            logger.warning(f"Could not convert '{key}' to int, using default {default}")
+            return default
+
+    def _safe_get_float(self, data: dict, key: str, default: float) -> float:
+        """Safely get float value, handling environment variable placeholders"""
+        try:
+            value = data.get(key, default)
+            if isinstance(value, str) and value.startswith('${'):
+                logger.warning(f"Environment variable '{value}' not resolved, using default {default}")
+                return default
+            return float(value)
+        except (ValueError, TypeError):
+            logger.warning(f"Could not convert '{key}' to float, using default {default}")
+            return default
+
+    def _safe_get_bool(self, data: dict, key: str, default: bool) -> bool:
+        """Safely get boolean value, handling environment variable placeholders"""
+        try:
+            value = data.get(key, default)
+            if isinstance(value, str) and value.startswith('${'):
+                logger.warning(f"Environment variable '{value}' not resolved, using default {default}")
+                return default
+            if isinstance(value, str):
+                return value.lower() in ('true', '1', 'yes', 'on')
+            return bool(value)
+        except (ValueError, TypeError):
+            logger.warning(f"Could not convert '{key}' to bool, using default {default}")
+            return default
 
     def _load_all_patterns(self) -> None:
         """Load all crisis pattern configurations with v3.1 consolidation support"""
@@ -140,10 +180,10 @@ class CrisisPatternManager:
             escalation_rules = enhanced_patterns.get('escalation_rules', {})
             pattern_defaults = enhanced_patterns.get('pattern_defaults', {})
             
-            # Get processing configuration with v3.1 fallbacks
-            case_sensitive = processing_rules.get('case_sensitive', defaults.get('case_sensitive', False))
-            context_window = int(processing_rules.get('context_window', defaults.get('context_window', 10)))
-            max_pattern_boost = float(processing_rules.get('max_pattern_boost', defaults.get('max_pattern_boost', 0.50)))
+            # Get processing configuration with v3.1 fallbacks and safe type conversion
+            case_sensitive = self._safe_get_bool(processing_rules, 'case_sensitive', defaults.get('case_sensitive', False))
+            context_window = self._safe_get_int(processing_rules, 'context_window', defaults.get('context_window', 10))
+            max_pattern_boost = self._safe_get_float(processing_rules, 'max_pattern_boost', defaults.get('max_pattern_boost', 0.50))
             
             patterns_found = []
             safety_flags = {
@@ -244,9 +284,9 @@ class CrisisPatternManager:
                 confidence_values = [p.get('confidence', 0.7) for p in patterns_found]
                 confidence_score = min(sum(confidence_values) / len(confidence_values), 1.0)
             
-            # Check emergency response threshold
-            emergency_threshold = float(escalation_rules.get('emergency_response_threshold', 
-                                      escalation_rules.get('defaults', {}).get('emergency_response_threshold', 0.80)))
+            # Check emergency response threshold with more aggressive defaults
+            emergency_threshold = self._safe_get_float(escalation_rules, 'emergency_response_threshold', 
+                                                     escalation_rules.get('defaults', {}).get('emergency_response_threshold', 0.60))  # More aggressive default
             
             if confidence_score >= emergency_threshold or safety_flags['critical_patterns_detected']:
                 safety_flags['emergency_response_triggered'] = True
@@ -280,6 +320,227 @@ class CrisisPatternManager:
                 'patterns_found': [], 
                 'confidence_score': 0.0,
                 'safety_flags': {'analysis_error': True},
+                'error': str(e)
+            }
+
+    # ========================================================================
+    # STEP 10.7: MISSING METHODS ADDED FOR COMMUNITY PATTERN CONSOLIDATION
+    # ========================================================================
+
+    def apply_context_weights(self, message: str, base_crisis_score: float) -> Tuple[float, Dict[str, Any]]:
+        """
+        Apply context weights to modify crisis score (STEP 10.7: Updated to use existing environment variables)
+        
+        Args:
+            message: Message text to analyze
+            base_crisis_score: Base crisis score to modify
+            
+        Returns:
+            Tuple of (modified_score, analysis_details)
+        """
+        try:
+            # Get context weights from consolidated patterns
+            context_weights = self.get_context_weights()
+            if not context_weights:
+                logger.debug("No context weights available - returning base score")
+                return base_crisis_score, {'weights_applied': [], 'total_adjustment': 0.0}
+            
+            message_lower = message.lower()
+            weights_applied = []
+            total_adjustment = 0.0
+            
+            # STEP 10.7 FIX: Use existing environment variables instead of undefined ones
+            # Get boost values from existing variables in .env.template
+            try:
+                # Use existing NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT (default 1.5 in template)
+                context_boost_weight = float(self.config_manager.get_env('NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT', 1.5))
+                # Convert to our crisis amplifier format (scale down from 1.5 to 0.15)
+                crisis_base_weight = context_boost_weight * 0.1  # 1.5 * 0.1 = 0.15
+                
+                # Use existing NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER (default 1.0 in template)  
+                crisis_multiplier = float(self.config_manager.get_env('NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER', 1.0))
+                max_boost = crisis_base_weight * crisis_multiplier * 2.0  # Calculate reasonable max
+                
+                logger.debug(f"Using existing env vars: context_boost={context_boost_weight}, multiplier={crisis_multiplier}")
+                logger.debug(f"Calculated: base_weight={crisis_base_weight:.3f}, max_boost={max_boost:.3f}")
+                
+            except Exception as e:
+                logger.warning(f"Error reading existing environment variables: {e}, using safe defaults")
+                crisis_base_weight = 0.15
+                max_boost = 0.35
+            
+            # Apply crisis amplifier weights using calculated values
+            crisis_words = context_weights.get('crisis_context_words', {})
+            if crisis_words and 'words' in crisis_words:
+                amplifier_words = crisis_words.get('words', [])
+                
+                for word in amplifier_words:
+                    if isinstance(word, str) and word.lower() in message_lower:
+                        adjustment = min(crisis_base_weight, max_boost - total_adjustment)
+                        if adjustment > 0:
+                            total_adjustment += adjustment
+                            weights_applied.append({
+                                'word': word,
+                                'type': 'crisis_amplifier',
+                                'adjustment': adjustment,
+                                'weight': crisis_base_weight,
+                                'source': 'existing_env_vars'
+                            })
+                            logger.debug(f"Crisis amplifier '{word}': +{adjustment:.3f} (from existing env vars)")
+            
+            # Apply positive reducer weights with safe defaults (no existing variables for this)
+            positive_words = context_weights.get('positive_context_words', {})
+            if positive_words and 'words' in positive_words:
+                reducer_words = positive_words.get('words', [])
+                positive_base_weight = -0.10  # Safe default
+                max_reduction = -0.30  # Safe default
+                
+                for word in reducer_words:
+                    if isinstance(word, str) and word.lower() in message_lower:
+                        adjustment = max(positive_base_weight, max_reduction - total_adjustment)
+                        if adjustment < 0:
+                            total_adjustment += adjustment
+                            weights_applied.append({
+                                'word': word,
+                                'type': 'positive_reducer',
+                                'adjustment': adjustment,
+                                'weight': positive_base_weight,
+                                'source': 'safe_defaults'
+                            })
+                            logger.debug(f"Positive reducer '{word}': {adjustment:.3f} (safe default)")
+            
+            # Additional context boost from hopelessness detection
+            if any(word in message_lower for word in ['hopeless', 'hope', 'despair', 'desperate']):
+                # Use existing NLP_CONFIG_ENHANCED_CRISIS_WEIGHT (default 1.2 in template)
+                try:
+                    enhanced_weight = float(self.config_manager.get_env('NLP_CONFIG_ENHANCED_CRISIS_WEIGHT', 1.2))
+                    hopelessness_boost = (enhanced_weight - 1.0) * 0.2  # Convert 1.2 to 0.04 boost
+                    if hopelessness_boost > 0:
+                        total_adjustment += hopelessness_boost
+                        weights_applied.append({
+                            'word': 'hopelessness_context',
+                            'type': 'enhanced_crisis_boost',
+                            'adjustment': hopelessness_boost,
+                            'weight': enhanced_weight,
+                            'source': 'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT'
+                        })
+                        logger.debug(f"Enhanced crisis boost for hopelessness: +{hopelessness_boost:.3f}")
+                except Exception as e:
+                    logger.warning(f"Error applying enhanced crisis weight: {e}")
+            
+            # Calculate final score with bounds checking
+            modified_score = max(0.0, min(1.0, base_crisis_score + total_adjustment))
+            
+            analysis_details = {
+                'weights_applied': weights_applied,
+                'total_adjustment': total_adjustment,
+                'base_score': base_crisis_score,
+                'modified_score': modified_score,
+                'crisis_words_found': len([w for w in weights_applied if w['type'] == 'crisis_amplifier']),
+                'positive_words_found': len([w for w in weights_applied if w['type'] == 'positive_reducer']),
+                'enhanced_boosts': len([w for w in weights_applied if w['type'] == 'enhanced_crisis_boost']),
+                'source': 'existing_environment_variables',
+                'uses_new_env_vars': False,
+                'reuses_existing_infrastructure': True
+            }
+            
+            if total_adjustment != 0:
+                logger.info(f"Context weights (using existing env vars): {base_crisis_score:.3f} → {modified_score:.3f} (Δ{total_adjustment:+.3f})")
+            
+            return modified_score, analysis_details
+            
+        except Exception as e:
+            logger.error(f"Error applying context weights: {e}")
+            return base_crisis_score, {'error': str(e), 'weights_applied': [], 'total_adjustment': 0.0}
+
+    def check_enhanced_crisis_patterns(self, message: str) -> Dict[str, Any]:
+        """
+        Check for enhanced crisis patterns (STEP 10.7: Added from community patterns)
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            Dictionary with enhanced pattern analysis results compatible with community pattern format
+        """
+        try:
+            # Use the existing analyze_enhanced_patterns method but format for compatibility
+            enhanced_analysis = self.analyze_enhanced_patterns(message)
+            
+            if not enhanced_analysis or 'patterns_found' not in enhanced_analysis:
+                return {
+                    'matches': [],
+                    'highest_urgency': 'none',
+                    'auto_escalate': False,
+                    'total_weight': 0.0,
+                    'requires_immediate_attention': False,
+                    'confidence_score': 0.0
+                }
+            
+            patterns_found = enhanced_analysis.get('patterns_found', [])
+            safety_flags = enhanced_analysis.get('safety_flags', {})
+            
+            # Convert to community pattern format
+            matches = []
+            for pattern in patterns_found:
+                matches.append({
+                    'pattern_name': pattern.get('pattern_name', ''),
+                    'pattern_group': pattern.get('pattern_group', ''),
+                    'crisis_level': pattern.get('crisis_level', 'medium'),
+                    'urgency': pattern.get('urgency', 'medium'),
+                    'weight': pattern.get('weight', 0.7),
+                    'confidence': pattern.get('confidence', 0.7),
+                    'auto_escalate': pattern.get('auto_escalate', False),
+                    'matched_text': pattern.get('matched_text', ''),
+                    'pattern_type': pattern.get('pattern_type', 'enhanced')
+                })
+            
+            # Determine highest urgency
+            urgency_levels = [m.get('urgency', 'none') for m in matches]
+            urgency_priority = {'critical': 4, 'high': 3, 'medium': 2, 'low': 1, 'none': 0}
+            highest_urgency = 'none'
+            if urgency_levels:
+                highest_urgency = max(urgency_levels, key=lambda x: urgency_priority.get(x, 0))
+            
+            # Check auto-escalation
+            auto_escalate = any(m.get('auto_escalate', False) for m in matches)
+            
+            # Calculate total weight
+            total_weight = sum(m.get('weight', 0.0) for m in matches)
+            
+            # Check immediate attention requirement
+            requires_immediate_attention = (
+                safety_flags.get('emergency_response_triggered', False) or
+                safety_flags.get('immediate_intervention_patterns', []) or
+                highest_urgency == 'critical' or
+                any(m.get('crisis_level') == 'critical' for m in matches)
+            )
+            
+            result = {
+                'matches': matches,
+                'highest_urgency': highest_urgency,
+                'auto_escalate': auto_escalate,
+                'total_weight': total_weight,
+                'requires_immediate_attention': requires_immediate_attention,
+                'confidence_score': enhanced_analysis.get('confidence_score', 0.0),
+                'safety_flags': safety_flags,
+                'critical_patterns_count': len(safety_flags.get('critical_patterns_detected', [])),
+                'source': 'analyze_enhanced_patterns_v3.1'
+            }
+            
+            if matches:
+                logger.info(f"Enhanced crisis patterns check: {len(matches)} matches, urgency: {highest_urgency}")
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Error checking enhanced crisis patterns: {e}")
+            return {
+                'matches': [],
+                'highest_urgency': 'none',
+                'auto_escalate': False,
+                'total_weight': 0.0,
+                'requires_immediate_attention': False,
                 'error': str(e)
             }
 
@@ -823,10 +1084,11 @@ class CrisisPatternManager:
                     'analysis_timestamp': time.time(),
                     'analysis_date': datetime.now().isoformat(),
                     'methods_used': ['enhanced_patterns', 'community_patterns', 'context_phrases', 'temporal_indicators'],
-                    'manager_version': 'v3.1-consolidated',
+                    'manager_version': 'v3.1-consolidated-step-10.7',
                     'safety_analysis_version': 'v3.1',
                     'v3_1_features_used': True,
-                    'context_consolidation': True
+                    'context_consolidation': True,
+                    'community_pattern_consolidation': True
                 }
             })
             
@@ -871,7 +1133,7 @@ class CrisisPatternManager:
                     'channel_id': channel_id,
                     'analysis_timestamp': time.time(),
                     'error_occurred': True,
-                    'manager_version': 'v3.1-consolidated'
+                    'manager_version': 'v3.1-consolidated-step-10.7'
                 }
             }
 
@@ -888,7 +1150,7 @@ class CrisisPatternManager:
                     logger.info(f"✅ Semantic classification found {len(semantic_patterns)} patterns")
                     return semantic_patterns
             
-            logger.info("🔄 Using enhanced pattern matching fallback")
+            logger.info("🔥 Using enhanced pattern matching fallback")
             return self._find_patterns_enhanced_fallback(message)
             
         except Exception as e:
@@ -1142,7 +1404,7 @@ class CrisisPatternManager:
                 'patterns_loaded': len(self._patterns_cache),
                 'pattern_types': list(self._patterns_cache.keys()),
                 'cache_size': len(self._compiled_regex_cache),
-                'version': 'v3.1-consolidated',
+                'version': 'v3.1-consolidated-step-10.7',
                 'config_manager': 'UnifiedConfigManager',
                 'v3_1_compliance': {
                     'json_version': metadata.get('configuration_version', 'unknown'),
@@ -1155,9 +1417,11 @@ class CrisisPatternManager:
                     'legacy_context_files_present': has_legacy_context_files,
                     'context_consolidation_complete': has_consolidated_context and not has_legacy_context_files,
                     'community_consolidation_complete': not has_legacy_community_files,
+                    'community_pattern_methods_consolidated': True,  # Step 10.7
                     'files_eliminated_context': 3 if has_consolidated_context else 0,
                     'files_eliminated_community': 2,  # crisis_lgbtqia + crisis_community_vocabulary
-                    'total_files_eliminated': (3 if has_consolidated_context else 0) + 2,
+                    'files_eliminated_step_10_7': 1,  # utils/community_patterns.py
+                    'total_files_eliminated': (3 if has_consolidated_context else 0) + 2 + 1,
                     'pattern_ecosystem_files': len([f for f in self._patterns_cache.keys() 
                                                   if not f.startswith('crisis_context') and 
                                                      not f.startswith('positive_context') and 
@@ -1181,14 +1445,20 @@ class CrisisPatternManager:
                         'crisis_community_vocabulary',    # ❌ Merged into community_vocabulary_patterns
                         'crisis_context_patterns',        # ❌ Merged into context_patterns
                         'positive_context_patterns',      # ❌ Merged into context_patterns
-                        'context_weights_patterns'        # ❌ Merged into context_patterns
+                        'context_weights_patterns',       # ❌ Merged into context_patterns
+                        'utils/community_patterns.py'     # ❌ Step 10.7 - Methods consolidated into CrisisPatternManager
                     ]
+                },
+                'step_10_7_methods_added': {
+                    'apply_context_weights': '✅ Added - Context weight application for crisis score modification',
+                    'check_enhanced_crisis_patterns': '✅ Added - Enhanced crisis pattern checking with community format compatibility'
                 },
                 'safety_features': {
                     'immediate_intervention_detection': True,
                     'auto_escalation_support': True,
                     'emergency_response_triggers': True,
-                    'critical_pattern_monitoring': True
+                    'critical_pattern_monitoring': True,
+                    'community_pattern_integration': True  # Step 10.7
                 }
             }
         except Exception as e:
@@ -1196,7 +1466,7 @@ class CrisisPatternManager:
             return {
                 'status': 'error',
                 'error': str(e),
-                'version': 'v3.1-consolidated'
+                'version': 'v3.1-consolidated-step-10.7'
             }
 
 
@@ -1212,10 +1482,10 @@ def create_crisis_pattern_manager(config_manager: UnifiedConfigManager) -> Crisi
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        CrisisPatternManager instance with v3.1 consolidation support (context + community)
+        CrisisPatternManager instance with v3.1 consolidation support (context + community + Step 10.7)
     """
     return CrisisPatternManager(config_manager)
 
 __all__ = ['CrisisPatternManager', 'create_crisis_pattern_manager']
 
-logger.info("✅ CrisisPatternManager v3.1 Consolidated loaded - Enhanced safety + full consolidation support")
+logger.info("✅ CrisisPatternManager v3.1 Step 10.7 loaded - Enhanced safety + community pattern consolidation support")
