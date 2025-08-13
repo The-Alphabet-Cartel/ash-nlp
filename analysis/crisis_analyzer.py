@@ -1,11 +1,11 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.7-2
+FILE VERSION: v3.1-3d-10.7-3
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Community Pattern Consolidation + Manager Integration Fixes
+PHASE: 3d Step 10.7 - Community Pattern Consolidation + Manager Method Fixes
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Added backward compatibility + fixed manager method calls
+MIGRATION STATUS: Fixed manager method calls and environment variable handling
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -76,13 +76,13 @@ class CrisisAnalyzer:
                 try:
                     # Use the correct method names for FeatureConfigManager
                     self._feature_cache = {
-                        'ensemble_enabled': self.feature_config_manager.get_ensemble_enabled(),
-                        'pattern_analysis': self.feature_config_manager.get_pattern_analysis_enabled(),
-                        'sentiment_analysis': self.feature_config_manager.get_sentiment_analysis_enabled(),
-                        'enhanced_learning': self.feature_config_manager.get_enhanced_learning_enabled(),
-                        'temporal_boost': self.feature_config_manager.get_temporal_boost_enabled(),
-                        'community_patterns': self.feature_config_manager.get_community_patterns_enabled(),
-                        'context_analysis': self.feature_config_manager.get_context_analysis_enabled()
+                        'ensemble_enabled': self.feature_config_manager.is_ensemble_analysis_enabled(),
+                        'pattern_analysis': self.feature_config_manager.is_pattern_analysis_enabled(),
+                        'sentiment_analysis': self.feature_config_manager.is_semantic_analysis_enabled(),
+                        'enhanced_learning': self.feature_config_manager.is_threshold_learning_enabled(),
+                        'temporal_boost': self.feature_config_manager.is_temporal_patterns_enabled(),
+                        'community_patterns': self.feature_config_manager.is_community_vocab_enabled(),
+                        'context_analysis': self.feature_config_manager.is_context_analysis_enabled()
                     }
                     self._last_feature_check = current_time
                     logger.debug("Feature cache refreshed")
@@ -118,11 +118,11 @@ class CrisisAnalyzer:
                 try:
                     # Use the correct method names for PerformanceConfigManager
                     self._performance_cache = {
-                        'analysis_timeout': self.performance_config_manager.get_analysis_timeout_seconds(),
-                        'model_timeout': self.performance_config_manager.get_model_timeout_seconds(),
-                        'batch_size': self.performance_config_manager.get_batch_processing_size(),
-                        'cache_enabled': self.performance_config_manager.get_caching_enabled(),
-                        'parallel_analysis': self.performance_config_manager.get_parallel_processing_enabled()
+                        'analysis_timeout': self.performance_config_manager.get_analysis_timeout(),
+                        'model_timeout': self.performance_config_manager.get_analysis_timeout(),  # Use same for model timeout
+                        'batch_size': self.performance_config_manager.get_analysis_batch_size(),
+                        'cache_enabled': True,  # Default to enabled
+                        'parallel_analysis': False  # Default to disabled (handled by FeatureConfigManager)
                     }
                     self._last_performance_check = current_time
                     logger.debug("Performance cache refreshed")
