@@ -1,11 +1,11 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.7-1
+FILE VERSION: v3.1-3d-10.7-2
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Community Pattern Consolidation
+PHASE: 3d Step 10.7 - Community Pattern Consolidation + Manager Integration Fixes
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Community patterns consolidated into CrisisPatternManager
+MIGRATION STATUS: Added backward compatibility + fixed manager method calls
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -74,14 +74,15 @@ class CrisisAnalyzer:
         if current_time - self._last_feature_check > self._feature_cache_duration:
             if self.feature_config_manager:
                 try:
+                    # Use the correct method names for FeatureConfigManager
                     self._feature_cache = {
-                        'ensemble_enabled': self.feature_config_manager.is_ensemble_enabled(),
-                        'pattern_analysis': self.feature_config_manager.is_pattern_analysis_enabled(),
-                        'sentiment_analysis': self.feature_config_manager.is_sentiment_analysis_enabled(),
-                        'enhanced_learning': self.feature_config_manager.is_enhanced_learning_enabled(),
-                        'temporal_boost': self.feature_config_manager.is_temporal_boost_enabled(),
-                        'community_patterns': self.feature_config_manager.is_community_patterns_enabled(),
-                        'context_analysis': self.feature_config_manager.is_context_analysis_enabled()
+                        'ensemble_enabled': self.feature_config_manager.get_ensemble_enabled(),
+                        'pattern_analysis': self.feature_config_manager.get_pattern_analysis_enabled(),
+                        'sentiment_analysis': self.feature_config_manager.get_sentiment_analysis_enabled(),
+                        'enhanced_learning': self.feature_config_manager.get_enhanced_learning_enabled(),
+                        'temporal_boost': self.feature_config_manager.get_temporal_boost_enabled(),
+                        'community_patterns': self.feature_config_manager.get_community_patterns_enabled(),
+                        'context_analysis': self.feature_config_manager.get_context_analysis_enabled()
                     }
                     self._last_feature_check = current_time
                     logger.debug("Feature cache refreshed")
@@ -115,12 +116,13 @@ class CrisisAnalyzer:
         if current_time - self._last_performance_check > self._feature_cache_duration:
             if self.performance_config_manager:
                 try:
+                    # Use the correct method names for PerformanceConfigManager
                     self._performance_cache = {
-                        'analysis_timeout': self.performance_config_manager.get_analysis_timeout(),
-                        'model_timeout': self.performance_config_manager.get_model_timeout(),
-                        'batch_size': self.performance_config_manager.get_batch_size(),
-                        'cache_enabled': self.performance_config_manager.is_cache_enabled(),
-                        'parallel_analysis': self.performance_config_manager.is_parallel_analysis_enabled()
+                        'analysis_timeout': self.performance_config_manager.get_analysis_timeout_seconds(),
+                        'model_timeout': self.performance_config_manager.get_model_timeout_seconds(),
+                        'batch_size': self.performance_config_manager.get_batch_processing_size(),
+                        'cache_enabled': self.performance_config_manager.get_caching_enabled(),
+                        'parallel_analysis': self.performance_config_manager.get_parallel_processing_enabled()
                     }
                     self._last_performance_check = current_time
                     logger.debug("Performance cache refreshed")
@@ -432,26 +434,40 @@ class CrisisAnalyzer:
     def _determine_crisis_level(self, score: float) -> str:
         """
         Determine crisis level from score using ThresholdMappingManager
-        Updated for Phase 3c integration
+        Updated for Phase 3c integration with fallback for missing methods
         """
         try:
             if self.threshold_mapping_manager:
-                return self.threshold_mapping_manager.determine_crisis_level(score)
-            else:
-                # Fallback thresholds
-                if score >= 0.7:
-                    return 'critical'
-                elif score >= 0.5:
-                    return 'high'
-                elif score >= 0.3:
-                    return 'medium'
-                elif score >= 0.1:
-                    return 'low'
+                # Try different possible method names on ThresholdMappingManager
+                if hasattr(self.threshold_mapping_manager, 'determine_crisis_level'):
+                    return self.threshold_mapping_manager.determine_crisis_level(score)
+                elif hasattr(self.threshold_mapping_manager, 'get_crisis_level'):
+                    return self.threshold_mapping_manager.get_crisis_level(score)
+                elif hasattr(self.threshold_mapping_manager, 'map_score_to_level'):
+                    return self.threshold_mapping_manager.map_score_to_level(score)
                 else:
-                    return 'none'
+                    logger.warning("ThresholdMappingManager has no known crisis level method - using fallback")
+            
+            # Fallback thresholds
+            if score >= 0.7:
+                return 'critical'
+            elif score >= 0.5:
+                return 'high'
+            elif score >= 0.3:
+                return 'medium'
+            elif score >= 0.1:
+                return 'low'
+            else:
+                return 'none'
         except Exception as e:
             logger.error(f"❌ Crisis level determination failed: {e}")
-            return 'unknown'
+            # Conservative fallback
+            if score >= 0.5:
+                return 'high'
+            elif score >= 0.3:
+                return 'medium'
+            else:
+                return 'low'
 
     async def _basic_crisis_analysis(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
         """
