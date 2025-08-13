@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Crisis Pattern Manager for Ash NLP Service v3.1 - Hybrid v3.1 Compatible
-Enhanced crisis pattern detection and analysis with v3.1 JSON compliance
+Crisis Pattern Manager for Ash NLP Service v3.1 - Context Consolidation Compatible
+Enhanced crisis pattern detection with consolidated context pattern support
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -21,10 +21,11 @@ logger = logging.getLogger(__name__)
 
 class CrisisPatternManager:
     """
-    Crisis Pattern Manager with comprehensive pattern analysis and v3.1 JSON compatibility
+    Crisis Pattern Manager with consolidated context pattern support and v3.1 JSON compatibility
     
     Features:
     - Enhanced crisis pattern detection with immediate escalation
+    - Consolidated context pattern management (crisis_context + positive_context + context_weights)
     - Advanced pattern matching with context validation
     - Temporal indicators for time-sensitive crisis detection
     - Community-specific vocabulary and context patterns
@@ -36,7 +37,7 @@ class CrisisPatternManager:
     
     def __init__(self, config_manager: UnifiedConfigManager):
         """
-        Initialize Crisis Pattern Manager with v3.1 compatibility
+        Initialize Crisis Pattern Manager with v3.1 compatibility and context consolidation
         
         Args:
             config_manager: UnifiedConfigManager instance for configuration access
@@ -45,22 +46,28 @@ class CrisisPatternManager:
         self._patterns_cache = {}
         self._compiled_regex_cache = {}
         
-        logger.info("CrisisPatternManager v3.1 hybrid initializing...")
+        logger.info("CrisisPatternManager v3.1 context-consolidation initializing...")
         self._load_all_patterns()
         logger.info(f"CrisisPatternManager initialized with {len(self._patterns_cache)} pattern sets")
 
     def _load_all_patterns(self) -> None:
-        """Load all crisis pattern configurations"""
+        """Load all crisis pattern configurations with v3.1 consolidation support"""
         pattern_files = [
-            'crisis_context_patterns',
-            'positive_context_patterns', 
+            # NEW: Consolidated context patterns file (replaces 3 files)
+            'context_patterns',
+            # Core v3.1 compliant pattern files (all updated in this conversation)
             'temporal_indicators_patterns',
-            'community_vocabulary_patterns',
-            'context_weights_patterns',
-            'enhanced_crisis_patterns',
-            'crisis_idiom_patterns',
-            'crisis_burden_patterns',
-            'crisis_lgbtqia_patterns'
+            'community_vocabulary_patterns',  # ✅ CONSOLIDATED (merged crisis_lgbtqia + crisis_community_vocabulary)
+            'enhanced_crisis_patterns',       # ✅ v3.1 COMPLIANT
+            'crisis_idiom_patterns',          # ✅ v3.1 COMPLIANT
+            'crisis_burden_patterns',         # ✅ v3.1 COMPLIANT
+            # DEPRECATED: These are now consolidated into context_patterns
+            # 'crisis_context_patterns',     # ❌ REMOVED - now in context_patterns
+            # 'positive_context_patterns',   # ❌ REMOVED - now in context_patterns  
+            # 'context_weights_patterns',    # ❌ REMOVED - now in context_patterns
+            # ELIMINATED: These files were consolidated/eliminated in this conversation
+            # 'crisis_lgbtqia_patterns',     # ❌ ELIMINATED - merged into community_vocabulary_patterns
+            # 'crisis_community_vocabulary', # ❌ ELIMINATED - merged into community_vocabulary_patterns
         ]
         
         for pattern_type in pattern_files:
@@ -68,15 +75,36 @@ class CrisisPatternManager:
                 patterns = self.config_manager.get_crisis_patterns(pattern_type)
                 if patterns:
                     self._patterns_cache[pattern_type] = patterns
-                    logger.debug(f"Loaded {pattern_type}: {len(patterns.get('patterns', {}))} pattern groups")
+                    logger.debug(f"Loaded {pattern_type}: {len(patterns.get('patterns', {}) if isinstance(patterns.get('patterns'), dict) else patterns)} pattern groups")
                 else:
                     logger.warning(f"No patterns found for {pattern_type}")
             except Exception as e:
                 logger.error(f"Failed to load {pattern_type}: {e}")
                 self._patterns_cache[pattern_type] = {}
 
+        # Check for any remaining legacy files with detailed deprecation warnings
+        legacy_files = [
+            'crisis_context_patterns', 
+            'positive_context_patterns', 
+            'context_weights_patterns',
+            'crisis_lgbtqia_patterns',      # Should be merged into community_vocabulary_patterns
+            'crisis_community_vocabulary'   # Should be merged into community_vocabulary_patterns  
+        ]
+        for legacy_file in legacy_files:
+            try:
+                patterns = self.config_manager.get_crisis_patterns(legacy_file)
+                if patterns:
+                    if legacy_file in ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary']:
+                        logger.warning(f"⚠️ DEPRECATED: {legacy_file} found - content should be merged into community_vocabulary_patterns.json")
+                    else:
+                        logger.warning(f"⚠️ DEPRECATED: {legacy_file} found - should be migrated to context_patterns.json")
+                    self._patterns_cache[legacy_file] = patterns
+            except Exception:
+                # Expected - these files should not exist after consolidation
+                pass
+
     # ========================================================================
-    # ENHANCED PATTERNS ACCESS - v3.1 Compatible
+    # ENHANCED PATTERNS ACCESS - v3.1 Compatible (UNCHANGED)
     # ========================================================================
     
     def get_enhanced_patterns(self) -> Dict[str, Any]:
@@ -254,7 +282,121 @@ class CrisisPatternManager:
             }
 
     # ========================================================================
-    # CORE PATTERN ACCESS METHODS - Backward Compatibility
+    # CONSOLIDATED CONTEXT PATTERN ACCESS METHODS - NEW v3.1 Implementation
+    # ========================================================================
+    
+    def get_consolidated_context_patterns(self) -> Dict[str, Any]:
+        """
+        Get consolidated context patterns (NEW - replaces individual context files)
+        
+        Returns:
+            Dictionary containing all context patterns (crisis amplification + positive reduction + weights)
+        """
+        return self._patterns_cache.get('context_patterns', {})
+    
+    def get_crisis_context_patterns(self) -> Dict[str, Any]:
+        """
+        Get crisis context patterns that amplify crisis detection
+        
+        Returns:
+            Crisis amplification patterns from consolidated context file or legacy file
+        """
+        # Try consolidated file first
+        consolidated = self.get_consolidated_context_patterns()
+        if consolidated and 'crisis_amplification_patterns' in consolidated:
+            return {
+                'patterns': consolidated['crisis_amplification_patterns'],
+                'configuration': consolidated.get('configuration', {}),
+                'processing_rules': consolidated.get('processing_rules', {}),
+                '_metadata': consolidated.get('_metadata', {}),
+                'source': 'consolidated_context_patterns'
+            }
+        
+        # Fallback to legacy file (with deprecation warning)
+        legacy_patterns = self._patterns_cache.get('crisis_context_patterns', {})
+        if legacy_patterns:
+            logger.warning("⚠️ DEPRECATED: Using legacy crisis_context_patterns.json - migrate to context_patterns.json")
+        
+        return legacy_patterns
+    
+    def get_positive_context_patterns(self) -> Dict[str, Any]:
+        """
+        Get positive context patterns that reduce false positives
+        
+        Returns:
+            Positive reduction patterns from consolidated context file or legacy file
+        """
+        # Try consolidated file first
+        consolidated = self.get_consolidated_context_patterns()
+        if consolidated and 'positive_reduction_patterns' in consolidated:
+            return {
+                'patterns': consolidated['positive_reduction_patterns'],
+                'configuration': consolidated.get('configuration', {}),
+                'processing_rules': consolidated.get('processing_rules', {}),
+                '_metadata': consolidated.get('_metadata', {}),
+                'source': 'consolidated_context_patterns'
+            }
+        
+        # Fallback to legacy file (with deprecation warning)
+        legacy_patterns = self._patterns_cache.get('positive_context_patterns', {})
+        if legacy_patterns:
+            logger.warning("⚠️ DEPRECATED: Using legacy positive_context_patterns.json - migrate to context_patterns.json")
+        
+        return legacy_patterns
+    
+    def get_context_weights(self) -> Dict[str, Any]:
+        """
+        Get context weight multipliers for pattern matching
+        
+        Returns:
+            Context weights from consolidated context file or legacy file
+        """
+        # Try consolidated file first
+        consolidated = self.get_consolidated_context_patterns()
+        if consolidated:
+            # Extract word weights from crisis amplification and positive reduction patterns
+            weights = {
+                'crisis_context_words': {},
+                'positive_context_words': {},
+                'configuration': consolidated.get('configuration', {}),
+                'processing_rules': consolidated.get('processing_rules', {}),
+                '_metadata': consolidated.get('_metadata', {}),
+                'source': 'consolidated_context_patterns'
+            }
+            
+            # Extract crisis amplifier words
+            crisis_amp = consolidated.get('crisis_amplification_patterns', {})
+            if 'crisis_amplifier_words' in crisis_amp:
+                amplifier_data = crisis_amp['crisis_amplifier_words']
+                weights['crisis_context_words'] = {
+                    'weight_type': 'crisis_amplifier',
+                    'base_weight': amplifier_data.get('base_weight', 0.10),
+                    'max_cumulative_boost': amplifier_data.get('max_cumulative_boost', 0.30),
+                    'words': amplifier_data.get('words', [])
+                }
+            
+            # Extract positive reducer words
+            positive_red = consolidated.get('positive_reduction_patterns', {})
+            if 'positive_reducer_words' in positive_red:
+                reducer_data = positive_red['positive_reducer_words']
+                weights['positive_context_words'] = {
+                    'weight_type': 'crisis_reducer',
+                    'base_weight': reducer_data.get('base_weight', -0.08),
+                    'max_cumulative_reduction': reducer_data.get('max_cumulative_reduction', -0.25),
+                    'words': reducer_data.get('words', [])
+                }
+            
+            return weights
+        
+        # Fallback to legacy file (with deprecation warning)
+        legacy_patterns = self._patterns_cache.get('context_weights_patterns', {})
+        if legacy_patterns:
+            logger.warning("⚠️ DEPRECATED: Using legacy context_weights_patterns.json - migrate to context_patterns.json")
+        
+        return legacy_patterns
+
+    # ========================================================================
+    # CORE PATTERN ACCESS METHODS - Backward Compatibility (UNCHANGED)
     # ========================================================================
     
     def get_crisis_patterns(self) -> List[Dict[str, Any]]:
@@ -296,14 +438,6 @@ class CrisisPatternManager:
             logger.error(f"❌ Error aggregating crisis patterns: {e}")
             return []
 
-    def get_crisis_context_patterns(self) -> Dict[str, Any]:
-        """Get crisis context patterns that amplify crisis detection"""
-        return self._patterns_cache.get('crisis_context_patterns', {})
-    
-    def get_positive_context_patterns(self) -> Dict[str, Any]:
-        """Get positive context patterns that reduce false positives"""
-        return self._patterns_cache.get('positive_context_patterns', {})
-    
     def get_temporal_indicators(self) -> Dict[str, Any]:
         """Get temporal indicator patterns for time-based crisis modification"""
         return self._patterns_cache.get('temporal_indicators_patterns', {})
@@ -311,10 +445,6 @@ class CrisisPatternManager:
     def get_community_vocabulary(self) -> Dict[str, Any]:
         """Get community-specific vocabulary patterns"""
         return self._patterns_cache.get('community_vocabulary_patterns', {})
-    
-    def get_context_weights(self) -> Dict[str, Any]:
-        """Get context weight multipliers for pattern matching"""
-        return self._patterns_cache.get('context_weights_patterns', {})
     
     def get_idiom_patterns(self) -> Dict[str, Any]:
         """Get idiom-based crisis patterns"""
@@ -325,37 +455,114 @@ class CrisisPatternManager:
         return self._patterns_cache.get('crisis_burden_patterns', {})
     
     def get_lgbtqia_patterns(self) -> Dict[str, Any]:
-        """Get LGBTQIA+ community specific patterns"""
-        return self._patterns_cache.get('crisis_lgbtqia_patterns', {})
+        """Get LGBTQIA+ community specific patterns (DEPRECATED - use community_vocabulary)"""
+        # First check if legacy file exists
+        legacy_patterns = self._patterns_cache.get('crisis_lgbtqia_patterns', {})
+        if legacy_patterns:
+            logger.warning("⚠️ DEPRECATED: crisis_lgbtqia_patterns.json - content merged into community_vocabulary_patterns.json")
+            return legacy_patterns
+        
+        # Return empty dict with info message - content is now in community_vocabulary_patterns
+        logger.info("ℹ️ LGBTQIA+ patterns are now part of community_vocabulary_patterns.json")
+        return {}
 
     # ========================================================================
-    # PATTERN EXTRACTION METHODS
+    # PATTERN EXTRACTION METHODS - Updated for Consolidation
     # ========================================================================
 
     def extract_community_patterns(self, message: str) -> List[Dict[str, Any]]:
-        """Extract community-specific patterns from message"""
+        """Extract community-specific patterns from message - Updated for v3.1 consolidated format"""
         found_patterns = []
         message_lower = message.lower()
         
         try:
             community_vocab = self.get_community_vocabulary()
-            if not community_vocab or 'patterns' not in community_vocab:
+            if not community_vocab:
                 return found_patterns
             
-            patterns = community_vocab['patterns']
+            # Handle v3.1 consolidated structure from our conversation work
+            # Structure: community_vocabulary_patterns.json has sections like:
+            # - identity_vocabulary, experience_vocabulary, community_support_vocabulary, 
+            #   struggle_vocabulary, medical_transition_vocabulary, crisis_patterns
             
-            for pattern_type, pattern_list in patterns.items():
-                if isinstance(pattern_list, list):
-                    for pattern_item in pattern_list:
-                        if isinstance(pattern_item, dict):
-                            pattern = pattern_item.get('pattern', '')
-                            if pattern and pattern.lower() in message_lower:
+            # Check for main vocabulary sections
+            vocabulary_sections = [
+                'identity_vocabulary', 'experience_vocabulary', 'community_support_vocabulary',
+                'struggle_vocabulary', 'medical_transition_vocabulary'
+            ]
+            
+            for section_name in vocabulary_sections:
+                section_data = community_vocab.get(section_name, {})
+                if isinstance(section_data, dict):
+                    terms = section_data.get('terms', [])
+                    defaults = section_data.get('defaults', {})
+                    
+                    for term in terms:
+                        if isinstance(term, str) and term.lower() in message_lower:
+                            found_patterns.append({
+                                'pattern_type': section_name,
+                                'matched_pattern': term,
+                                'crisis_level': defaults.get('crisis_relevance', 'low'),
+                                'confidence': defaults.get('weight', 0.5),
+                                'weight': defaults.get('boost_factor', 1.0)
+                            })
+            
+            # Check for crisis patterns section (regex patterns)
+            crisis_patterns = community_vocab.get('crisis_patterns', {})
+            if isinstance(crisis_patterns, dict):
+                for pattern_category, pattern_data in crisis_patterns.items():
+                    if isinstance(pattern_data, dict) and 'patterns' in pattern_data:
+                        defaults = pattern_data.get('defaults', {})
+                        for pattern_item in pattern_data['patterns']:
+                            if isinstance(pattern_item, dict):
+                                pattern_text = pattern_item.get('pattern', '')
+                                pattern_type = pattern_item.get('type', 'exact_match')
+                                
+                                matched = False
+                                if pattern_type == 'regex':
+                                    try:
+                                        if re.search(pattern_text, message, re.IGNORECASE):
+                                            matched = True
+                                    except re.error:
+                                        continue
+                                elif pattern_type == 'exact_match':
+                                    if pattern_text.lower() in message_lower:
+                                        matched = True
+                                
+                                if matched:
+                                    found_patterns.append({
+                                        'pattern_type': pattern_category,
+                                        'matched_pattern': pattern_text,
+                                        'crisis_level': defaults.get('crisis_level', 'medium'),
+                                        'confidence': defaults.get('weight', 0.8),
+                                        'weight': defaults.get('urgency', 1.0)
+                                    })
+            
+            # Fallback: Handle legacy structure if still present
+            patterns_data = community_vocab.get('patterns', community_vocab.get('vocabulary', {}))
+            for pattern_type, pattern_info in patterns_data.items():
+                if isinstance(pattern_info, dict):
+                    # Handle consolidated structure with terms/keywords
+                    terms = pattern_info.get('terms', pattern_info.get('keywords', pattern_info.get('indicators', [])))
+                    
+                    for term in terms:
+                        if isinstance(term, str) and term.lower() in message_lower:
+                            found_patterns.append({
+                                'pattern_type': pattern_type,
+                                'matched_pattern': term,
+                                'crisis_level': pattern_info.get('crisis_level', 'low'),
+                                'confidence': pattern_info.get('confidence', 0.5),
+                                'weight': pattern_info.get('weight', 1.0)
+                            })
+                        elif isinstance(term, dict):
+                            term_text = term.get('term', term.get('word', ''))
+                            if term_text and term_text.lower() in message_lower:
                                 found_patterns.append({
                                     'pattern_type': pattern_type,
-                                    'matched_pattern': pattern,
-                                    'crisis_level': pattern_item.get('crisis_level', 'low'),
-                                    'confidence': pattern_item.get('confidence', 0.5),
-                                    'weight': pattern_item.get('weight', 1.0)
+                                    'matched_pattern': term_text,
+                                    'crisis_level': term.get('crisis_level', pattern_info.get('crisis_level', 'low')),
+                                    'confidence': term.get('confidence', pattern_info.get('confidence', 0.5)),
+                                    'weight': term.get('weight', pattern_info.get('weight', 1.0))
                                 })
             
             return found_patterns
@@ -365,7 +572,7 @@ class CrisisPatternManager:
             return []
 
     def extract_crisis_context_phrases(self, message: str) -> List[Dict[str, Any]]:
-        """Extract crisis context phrases that amplify crisis detection"""
+        """Extract crisis context phrases that amplify crisis detection - Updated for consolidation"""
         found_phrases = []
         message_lower = message.lower()
         
@@ -380,17 +587,27 @@ class CrisisPatternManager:
                 if not isinstance(context_data, dict):
                     continue
                 
-                indicators = context_data.get('indicators', [])
+                # Handle both consolidated and legacy structures
+                indicators = context_data.get('indicators', context_data.get('keywords', context_data.get('terms', [])))
+                
                 for indicator in indicators:
-                    if isinstance(indicator, dict):
-                        phrase = indicator.get('phrase', '')
+                    if isinstance(indicator, str) and indicator.lower() in message_lower:
+                        found_phrases.append({
+                            'phrase_type': context_type,
+                            'matched_phrase': indicator,
+                            'crisis_level': context_data.get('crisis_level', context_data.get('crisis_boost', 'low')),
+                            'confidence': context_data.get('confidence', 0.6),
+                            'boost_multiplier': context_data.get('boost_multiplier', context_data.get('boost_factor', 1.0))
+                        })
+                    elif isinstance(indicator, dict):
+                        phrase = indicator.get('phrase', indicator.get('indicator', ''))
                         if phrase and phrase.lower() in message_lower:
                             found_phrases.append({
                                 'phrase_type': context_type,
                                 'matched_phrase': phrase,
-                                'crisis_level': indicator.get('crisis_level', 'low'),
-                                'confidence': indicator.get('confidence', 0.6),
-                                'boost_multiplier': indicator.get('boost_multiplier', 1.0)
+                                'crisis_level': indicator.get('crisis_level', context_data.get('crisis_level', 'low')),
+                                'confidence': indicator.get('confidence', context_data.get('confidence', 0.6)),
+                                'boost_multiplier': indicator.get('boost_multiplier', context_data.get('boost_factor', 1.0))
                             })
             
             return found_phrases
@@ -400,7 +617,7 @@ class CrisisPatternManager:
             return []
 
     def analyze_temporal_indicators(self, message: str) -> Dict[str, Any]:
-        """Analyze temporal indicators in message for crisis urgency assessment"""
+        """Analyze temporal indicators in message for crisis urgency assessment - Updated for v3.1 format"""
         try:
             temporal_patterns = self.get_temporal_indicators()
             if not temporal_patterns or 'patterns' not in temporal_patterns:
@@ -410,20 +627,26 @@ class CrisisPatternManager:
             found_indicators = []
             message_lower = message.lower()
             
+            # Handle v3.1 format from our conversation work
+            # Structure: temporal_indicators_patterns.json has sections like:
+            # - immediate, recent, ongoing, future_fear, escalation_timeline
             for indicator_type, indicator_data in patterns.items():
-                if isinstance(indicator_data, dict) and 'indicators' in indicator_data:
-                    for indicator in indicator_data['indicators']:
-                        if isinstance(indicator, dict):
-                            phrase = indicator.get('phrase', '')
-                            if phrase and phrase.lower() in message_lower:
-                                found_indicators.append({
-                                    'indicator_type': indicator_type,
-                                    'matched_phrase': phrase,
-                                    'crisis_level': indicator.get('crisis_level', 'medium'),
-                                    'confidence': indicator.get('confidence', 0.6),
-                                    'urgency_multiplier': indicator.get('urgency_multiplier', 1.0),
-                                    'time_sensitivity': indicator.get('time_sensitivity', 'normal')
-                                })
+                if isinstance(indicator_data, dict):
+                    defaults = indicator_data.get('defaults', {})
+                    # Handle v3.1 structure with indicators array
+                    indicators = indicator_data.get('indicators', [])
+                    
+                    for indicator in indicators:
+                        if isinstance(indicator, str) and indicator.lower() in message_lower:
+                            found_indicators.append({
+                                'indicator_type': indicator_type,
+                                'matched_phrase': indicator,
+                                'crisis_level': defaults.get('crisis_boost', 'medium'),
+                                'confidence': defaults.get('weight', 0.6),
+                                'urgency_multiplier': defaults.get('boost_factor', 1.0),
+                                'time_sensitivity': defaults.get('urgency', 'normal'),
+                                'auto_escalate': defaults.get('auto_escalate', False)
+                            })
             
             urgency_score = 0.0
             if found_indicators:
@@ -434,7 +657,8 @@ class CrisisPatternManager:
                 'found_indicators': found_indicators,
                 'urgency_score': urgency_score,
                 'requires_immediate_attention': urgency_score > 1.5 or any(
-                    ind.get('time_sensitivity') == 'immediate' for ind in found_indicators
+                    ind.get('time_sensitivity') in ['immediate', 'critical'] or ind.get('auto_escalate', False)
+                    for ind in found_indicators
                 )
             }
             
@@ -443,7 +667,7 @@ class CrisisPatternManager:
             return {'found_indicators': [], 'urgency_score': 0.0}
 
     # ========================================================================
-    # COMPREHENSIVE MESSAGE ANALYSIS
+    # COMPREHENSIVE MESSAGE ANALYSIS (UNCHANGED - but benefits from consolidation)
     # ========================================================================
 
     def analyze_message(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
@@ -520,7 +744,7 @@ class CrisisPatternManager:
                 logger.warning(f"⚠️ Community patterns analysis failed: {e}")
                 analysis_result['details']['community_patterns'] = {'error': str(e)}
             
-            # Context phrases analysis
+            # Context phrases analysis (now uses consolidated patterns)
             try:
                 context_phrases = self.extract_crisis_context_phrases(message)
                 if context_phrases:
@@ -553,7 +777,7 @@ class CrisisPatternManager:
                         analysis_result['patterns_triggered'].append(pattern_data)
                         
                         # Check for immediate intervention based on temporal urgency
-                        if indicator.get('time_sensitivity') == 'immediate':
+                        if indicator.get('time_sensitivity') in ['immediate', 'critical']:
                             analysis_result['safety_assessment']['immediate_intervention_required'] = True
                 
                 analysis_result['details']['temporal_indicators'] = temporal_analysis
@@ -597,9 +821,10 @@ class CrisisPatternManager:
                     'analysis_timestamp': time.time(),
                     'analysis_date': datetime.now().isoformat(),
                     'methods_used': ['enhanced_patterns', 'community_patterns', 'context_phrases', 'temporal_indicators'],
-                    'manager_version': 'v3.1-hybrid',
+                    'manager_version': 'v3.1-consolidated',
                     'safety_analysis_version': 'v3.1',
-                    'v3_1_features_used': True
+                    'v3_1_features_used': True,
+                    'context_consolidation': True
                 }
             })
             
@@ -644,12 +869,12 @@ class CrisisPatternManager:
                     'channel_id': channel_id,
                     'analysis_timestamp': time.time(),
                     'error_occurred': True,
-                    'manager_version': 'v3.1-hybrid'
+                    'manager_version': 'v3.1-consolidated'
                 }
             }
 
     # ========================================================================
-    # SEMANTIC PATTERN ANALYSIS - Preserved Original Functionality
+    # SEMANTIC PATTERN ANALYSIS - Preserved Original Functionality (UNCHANGED)
     # ========================================================================
 
     def find_triggered_patterns(self, message: str, models_manager=None) -> List[Dict[str, Any]]:
@@ -898,23 +1123,64 @@ class CrisisPatternManager:
             return []
         
     def get_status(self) -> Dict[str, Any]:
-        """Get current status of crisis pattern manager"""
+        """Get current status of crisis pattern manager with consolidation info"""
         try:
             enhanced_patterns = self.get_enhanced_patterns()
             metadata = enhanced_patterns.get('_metadata', {})
+            
+            # Check consolidation status
+            has_consolidated_context = 'context_patterns' in self._patterns_cache
+            has_legacy_context_files = any(f in self._patterns_cache for f in 
+                ['crisis_context_patterns', 'positive_context_patterns', 'context_weights_patterns'])
+            has_legacy_community_files = any(f in self._patterns_cache for f in
+                ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary'])
             
             return {
                 'status': 'operational',
                 'patterns_loaded': len(self._patterns_cache),
                 'pattern_types': list(self._patterns_cache.keys()),
                 'cache_size': len(self._compiled_regex_cache),
-                'version': 'v3.1-hybrid',
+                'version': 'v3.1-consolidated',
                 'config_manager': 'UnifiedConfigManager',
                 'v3_1_compliance': {
                     'json_version': metadata.get('configuration_version', 'unknown'),
                     'compliance_status': metadata.get('compliance', 'unknown'),
                     'metadata_available': bool(metadata),
                     'safety_features_enabled': True
+                },
+                'consolidation_status': {
+                    'context_consolidation_active': has_consolidated_context,
+                    'legacy_context_files_present': has_legacy_context_files,
+                    'context_consolidation_complete': has_consolidated_context and not has_legacy_context_files,
+                    'community_consolidation_complete': not has_legacy_community_files,
+                    'files_eliminated_context': 3 if has_consolidated_context else 0,
+                    'files_eliminated_community': 2,  # crisis_lgbtqia + crisis_community_vocabulary
+                    'total_files_eliminated': (3 if has_consolidated_context else 0) + 2,
+                    'pattern_ecosystem_files': len([f for f in self._patterns_cache.keys() 
+                                                  if not f.startswith('crisis_context') and 
+                                                     not f.startswith('positive_context') and 
+                                                     not f.startswith('context_weights') and
+                                                     not f == 'crisis_lgbtqia_patterns' and
+                                                     not f == 'crisis_community_vocabulary'])
+                },
+                'pattern_files_status': {
+                    'v3_1_compliant': [
+                        'community_vocabulary_patterns',  # ✅ Consolidated + v3.1
+                        'temporal_indicators_patterns',   # ✅ v3.1 compliant  
+                        'enhanced_crisis_patterns',       # ✅ v3.1 compliant
+                        'crisis_idiom_patterns',          # ✅ v3.1 compliant
+                        'crisis_burden_patterns'          # ✅ v3.1 compliant
+                    ],
+                    'consolidated': [
+                        'context_patterns'  # ✅ Consolidated (crisis_context + positive_context + context_weights)
+                    ],
+                    'eliminated': [
+                        'crisis_lgbtqia_patterns',        # ❌ Merged into community_vocabulary_patterns
+                        'crisis_community_vocabulary',    # ❌ Merged into community_vocabulary_patterns
+                        'crisis_context_patterns',        # ❌ Merged into context_patterns
+                        'positive_context_patterns',      # ❌ Merged into context_patterns
+                        'context_weights_patterns'        # ❌ Merged into context_patterns
+                    ]
                 },
                 'safety_features': {
                     'immediate_intervention_detection': True,
@@ -928,7 +1194,7 @@ class CrisisPatternManager:
             return {
                 'status': 'error',
                 'error': str(e),
-                'version': 'v3.1-hybrid'
+                'version': 'v3.1-consolidated'
             }
 
 
@@ -944,10 +1210,10 @@ def create_crisis_pattern_manager(config_manager: UnifiedConfigManager) -> Crisi
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        CrisisPatternManager instance with v3.1 hybrid compatibility
+        CrisisPatternManager instance with v3.1 consolidation support (context + community)
     """
     return CrisisPatternManager(config_manager)
 
 __all__ = ['CrisisPatternManager', 'create_crisis_pattern_manager']
 
-logger.info("✅ CrisisPatternManager v3.1 Hybrid loaded - Enhanced safety features + v3.1 compliance")
+logger.info("✅ CrisisPatternManager v3.1 Consolidated loaded - Enhanced safety + full consolidation support")
