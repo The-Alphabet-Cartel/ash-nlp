@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service v3.1
-Clean v3.1 Architecture
+Clean v3.1 Architecture with v3.1 Pattern File Consolidation Support
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -29,7 +29,7 @@ class VariableSchema:
 
 class UnifiedConfigManager:
     """
-    Unified Configuration Manager for Ash-NLP v3.1d Step 9 - CORRECTLY FIXED
+    Unified Configuration Manager for Ash-NLP v3.1d with Pattern File Consolidation Support
     
     FOLLOWS ESTABLISHED PATTERN WITH DEFAULTS BLOCK:
     1. JSON files have main configuration with ${VAR_NAME} placeholders
@@ -67,6 +67,11 @@ class UnifiedConfigManager:
     - Dependency injection support
     - Fail-fast validation
     - JSON placeholders + defaults block pattern
+    
+    v3.1 Pattern File Consolidation Support:
+    - Supports consolidated context_patterns.json (crisis + positive + weights)
+    - Supports consolidated community_vocabulary_patterns.json
+    - Backward compatibility with legacy pattern files
     """
     
     def __init__(self, config_dir: str = "/app/config"):
@@ -83,17 +88,21 @@ class UnifiedConfigManager:
         # Initialize schema definitions for validation
         self.variable_schemas = self._initialize_schemas()
         
-        # Configuration file mappings (follows established pattern)
+        # Configuration file mappings - UPDATED for v3.1 consolidation
         self.config_files = {
+            # Core algorithm configuration
             'analysis_parameters': 'analysis_parameters.json',
-            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
-            'context_weight_patterns': 'context_weight_patterns.json',
-            'crisis_burden_patterns': 'crisis_burden_patterns.json',
-            'crisis_community_vocabulary': 'crisis_community_vocabulary.json',
-            'crisis_context_patterns': 'crisis_context_patterns.json',
-            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
-            'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',
-            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
+            'threshold_mapping': 'threshold_mapping.json',
+            
+            # v3.1 compliant pattern files (consolidated and individual)
+            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',  # ✅ Consolidated
+            'context_patterns': 'context_patterns.json',                           # ✅ Consolidated (NEW)
+            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',   # ✅ v3.1 compliant
+            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',           # ✅ v3.1 compliant
+            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',                 # ✅ v3.1 compliant
+            'crisis_burden_patterns': 'crisis_burden_patterns.json',               # ✅ v3.1 compliant
+            
+            # Core system configuration
             'feature_flags': 'feature_flags.json',
             'label_config': 'label_config.json',
             'learning_parameters': 'learning_parameters.json',
@@ -101,17 +110,21 @@ class UnifiedConfigManager:
             'logging_settings': 'logging_settings.json',
             'model_ensemble': 'model_ensemble.json',
             'performance_settings': 'performance_settings.json',
-            'positive_context_patterns': 'positive_context_patterns.json',
             'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
-            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
-            'threshold_mapping': 'threshold_mapping.json',
+            
+            # ELIMINATED FILES - Removed from config_files mapping
+            # ❌ 'context_weight_patterns': 'context_weight_patterns.json',        # Merged into context_patterns.json
+            # ❌ 'crisis_community_vocabulary': 'crisis_community_vocabulary.json', # Merged into community_vocabulary_patterns.json
+            # ❌ 'crisis_context_patterns': 'crisis_context_patterns.json',        # Merged into context_patterns.json
+            # ❌ 'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',        # Merged into community_vocabulary_patterns.json
+            # ❌ 'positive_context_patterns': 'positive_context_patterns.json',    # Merged into context_patterns.json
         }
         
         # Load and validate all environment variables
         self.env_config = self._load_all_environment_variables()
         
-        logger.info("UnifiedConfigManager v3.1d Step 9 initialized - Following established JSON patterns")
+        logger.info("UnifiedConfigManager v3.1 Consolidated initialized - Following established JSON patterns with consolidation support")
     
     def _initialize_schemas(self) -> Dict[str, VariableSchema]:
         """Initialize comprehensive schema definitions for all 150+ environment variables"""
@@ -583,68 +596,6 @@ class UnifiedConfigManager:
         
         logger.info(f"✅ Successfully loaded and validated {len(env_config)} environment variables")
         return env_config
-        
-    def _validate_and_convert(self, var_name: str, value: str) -> Any:
-        """Validate and convert environment variable value according to schema"""
-        schema = self.variable_schemas[var_name]
-        
-        try:
-            # Type conversion
-            if schema.var_type == 'bool':
-                converted = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
-            elif schema.var_type == 'int':
-                converted = int(value)
-            elif schema.var_type == 'float':
-                converted = float(value)
-            elif schema.var_type == 'list':
-                converted = [item.strip() for item in value.split(',')]
-            else:  # str
-                converted = value
-            
-            # Validation
-            if schema.choices and converted not in schema.choices:
-                logger.error(f"❌ Invalid choice for {var_name}: {converted} not in {schema.choices}")
-                return schema.default
-                
-            if schema.min_value is not None and isinstance(converted, (int, float)):
-                if converted < schema.min_value:
-                    logger.error(f"❌ Value too low for {var_name}: {converted} < {schema.min_value}")
-                    return schema.default
-                    
-            if schema.max_value is not None and isinstance(converted, (int, float)):
-                if converted > schema.max_value:
-                    logger.error(f"❌ Value too high for {var_name}: {converted} > {schema.max_value}")
-                    return schema.default
-            
-            logger.debug(f"✅ Validated {var_name}: {converted}")
-            return converted
-            
-        except (ValueError, TypeError) as e:
-            logger.error(f"❌ Conversion error for {var_name}: {e}")
-            return schema.default
-        """
-        Get environment variable with schema validation and type conversion
-        FOR UNIFIED MANAGER USE ONLY - JSON loading uses os.getenv() directly
-        """
-        # Get raw environment value
-        env_value = os.getenv(var_name)
-        
-        # If no environment value, use schema default or provided default
-        if env_value is None:
-            if var_name in self.variable_schemas:
-                result = self.variable_schemas[var_name].default
-                logger.debug(f"🔧 Using schema default for {var_name}: {result}")
-                return result
-            else:
-                logger.debug(f"🔧 Using provided default for {var_name}: {default}")
-                return default
-        
-        # Validate and convert using schema
-        if var_name in self.variable_schemas:
-            return self._validate_and_convert(var_name, env_value)
-        else:
-            logger.warning(f"⚠️ No schema found for {var_name}, returning raw value: {env_value}")
-            return env_value
     
     # ========================================================================
     # UNIFIED ENVIRONMENT VARIABLE ACCESS (CRITICAL METHODS)
@@ -922,7 +873,7 @@ class UnifiedConfigManager:
             return {}
         
         try:
-            logger.debug(f"📁 Loading config file: {config_path}")
+            logger.debug(f"🔍 Loading config file: {config_path}")
             
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
@@ -955,8 +906,53 @@ class UnifiedConfigManager:
     # ========================================================================
     
     def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
-        """Get crisis pattern configuration by type - PRESERVED from Phase 3a"""
+        """
+        Get crisis pattern configuration by type - UPDATED for consolidation support
+        
+        This method now handles both consolidated and individual pattern files:
+        - For consolidated files: Loads the new consolidated JSON structure
+        - For individual files: Loads individual pattern files as before
+        - For eliminated files: Returns empty dict with info message
+        """
         logger.debug(f"🔍 Getting crisis patterns: {pattern_type}")
+        
+        # Handle requests for eliminated files
+        eliminated_files = {
+            'crisis_context_patterns': 'context_patterns',
+            'positive_context_patterns': 'context_patterns', 
+            'context_weights_patterns': 'context_patterns',
+            'crisis_lgbtqia_patterns': 'community_vocabulary_patterns',
+            'crisis_community_vocabulary': 'community_vocabulary_patterns'
+        }
+        
+        if pattern_type in eliminated_files:
+            target_file = eliminated_files[pattern_type]
+            logger.info(f"ℹ️ {pattern_type}.json was consolidated into {target_file}.json")
+            
+            # Load the consolidated file instead
+            consolidated_config = self.get_crisis_patterns(target_file)
+            if not consolidated_config:
+                logger.warning(f"⚠️ Consolidated file {target_file}.json not found")
+                return {}
+            
+            # Extract the relevant section based on pattern type
+            if pattern_type == 'crisis_context_patterns':
+                return consolidated_config.get('crisis_amplification_patterns', {})
+            elif pattern_type == 'positive_context_patterns':
+                return consolidated_config.get('positive_reduction_patterns', {})
+            elif pattern_type == 'context_weights_patterns':
+                # Reconstruct the weights structure from consolidated file
+                weights = {}
+                crisis_amp = consolidated_config.get('crisis_amplification_patterns', {})
+                if 'crisis_amplifier_words' in crisis_amp:
+                    weights['crisis_context_words'] = crisis_amp['crisis_amplifier_words']
+                positive_red = consolidated_config.get('positive_reduction_patterns', {})
+                if 'positive_reducer_words' in positive_red:
+                    weights['positive_context_words'] = positive_red['positive_reducer_words']
+                return weights
+            elif pattern_type in ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary']:
+                # Return the full consolidated community vocabulary
+                return consolidated_config
         
         try:
             # Check if we have a cached version first
@@ -972,7 +968,7 @@ class UnifiedConfigManager:
                 logger.warning(f"⚠️ Crisis pattern file not found: {config_file_path}")
                 return {}
             
-            logger.debug(f"📁 Loading config file: {config_file_path}")
+            logger.debug(f"🔍 Loading config file: {config_file_path}")
             
             with open(config_file_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
@@ -981,6 +977,9 @@ class UnifiedConfigManager:
             
             # Apply environment variable substitutions
             processed_config = self.substitute_environment_variables(raw_config)
+            
+            # Apply defaults fallback if present
+            processed_config = self._apply_defaults_fallback(processed_config)
             
             # Cache the processed configuration
             self.config_cache[cache_key] = processed_config
@@ -1059,7 +1058,7 @@ class UnifiedConfigManager:
 
     def get_status(self) -> Dict[str, Any]:
         """
-        Get status of UnifiedConfigManager
+        Get status of UnifiedConfigManager with consolidation info
         
         Returns:
             Dictionary containing manager status and operational info
@@ -1070,8 +1069,17 @@ class UnifiedConfigManager:
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
             'cache_size': len(self.config_cache),
             'config_directory': str(self.config_dir),
-            'version': 'v3.1_step_9',
-            'architecture': 'Clean v3.1 with Unified Configuration'
+            'version': 'v3.1_consolidated',
+            'architecture': 'Clean v3.1 with Unified Configuration and Pattern Consolidation',
+            'consolidation_status': {
+                'context_patterns_consolidated': 'context_patterns' in self.config_files,
+                'community_patterns_consolidated': 'community_vocabulary_patterns' in self.config_files,
+                'eliminated_files': [
+                    'crisis_context_patterns', 'positive_context_patterns', 'context_weights_patterns',
+                    'crisis_lgbtqia_patterns', 'crisis_community_vocabulary'
+                ],
+                'consolidated_files': ['context_patterns', 'community_vocabulary_patterns']
+            }
         }
 
 # ============================================================================
@@ -1086,10 +1094,10 @@ def create_unified_config_manager(config_dir: str = "/app/config") -> UnifiedCon
         config_dir: Directory containing JSON configuration files
         
     Returns:
-        UnifiedConfigManager instance
+        UnifiedConfigManager instance with consolidation support
     """
     return UnifiedConfigManager(config_dir)
 
 __all__ = ['UnifiedConfigManager', 'create_unified_config_manager']
 
-logger.info("✅ UnifiedConfigManager v3.1d Step 9 CORRECTLY FIXED - JSON placeholders + defaults block pattern implemented, complete environment variable unification achieved")
+logger.info("✅ UnifiedConfigManager v3.1 Consolidated loaded - JSON placeholders + defaults block pattern + pattern file consolidation support")

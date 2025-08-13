@@ -1,7 +1,7 @@
 # ash-nlp/managers/feature_config_manager.py
 """
 Feature Configuration Manager for Ash NLP Service v3.1
-Clean v3.1 Architecture
+Clean v3.1 Architecture - Updated for v3.1 Configuration Format
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class FeatureConfigManager:
     """
-    Feature Configuration Manager for Ash NLP Service v3.1d - Phase 3d Step 7 Complete
+    Feature Configuration Manager for Ash NLP Service v3.1d - Updated for v3.1 Configuration Format
     
     Manages feature flags for crisis analysis system components with comprehensive validation and dependency management.
     Implements Clean v3.1 architecture patterns with dependency injection and fail-fast validation.
@@ -23,10 +23,13 @@ class FeatureConfigManager:
     Features:
     - Core system feature toggles
     - Analysis component feature flags  
+    - Learning system feature management
     - Experimental feature management
     - Development and debug toggles
     - Feature dependency validation
     - Profile-based feature sets
+    
+    Updated for v3.1 configuration format with environment variable placeholders and comprehensive defaults.
     """
     
     def __init__(self, config_manager):
@@ -40,67 +43,107 @@ class FeatureConfigManager:
         self.config_cache = {}
         self.validation_errors = []
         
-        logger.info("🚩 Initializing FeatureConfigManager (Phase 3d Step 7)")
+        logger.info("🚩 Initializing FeatureConfigManager v3.1 (Updated for v3.1 Config Format)")
         
         try:
             self._load_feature_configuration()
             self._validate_feature_dependencies()
-            logger.info("✅ FeatureConfigManager initialization complete")
+            logger.info("✅ FeatureConfigManager v3.1 initialization complete")
         except Exception as e:
             logger.error(f"❌ FeatureConfigManager initialization failed: {e}")
-            raise
+            logger.info("🛡️ Falling back to safe defaults per Clean Architecture Charter Rule #5")
+            self._initialize_safe_defaults()
     
     def _load_feature_configuration(self):
-        """Load feature flag configuration from JSON with environment overrides"""
+        """Load feature flag configuration from v3.1 JSON with environment overrides"""
         try:
-            # Load feature flags configuration through UnifiedConfigManager using correct method
+            # Load feature flags configuration through UnifiedConfigManager
             feature_config_raw = self.config_manager.load_config_file('feature_flags')
             
             if not feature_config_raw:
                 logger.error("❌ Could not load feature_flags.json configuration")
                 raise ValueError("Feature flags configuration not available")
             
-            # Extract feature flags configuration
+            # Extract feature flags configuration - Updated for v3.1 format
             if 'feature_flags' in feature_config_raw:
                 self.config_cache = feature_config_raw['feature_flags']
             else:
-                # Direct configuration format
+                # Handle direct configuration format or legacy format
                 self.config_cache = feature_config_raw
                 
-            logger.debug("✅ Feature flags configuration loaded successfully")
+            logger.debug("✅ Feature flags v3.1 configuration loaded successfully")
             logger.debug(f"🔍 Configuration keys loaded: {list(self.config_cache.keys())}")
             
+            # Validate v3.1 structure
+            if not self._validate_v31_structure():
+                logger.warning("⚠️ Configuration doesn't match v3.1 format, using resilient fallbacks")
+                
         except Exception as e:
             logger.error(f"❌ Failed to load feature flags configuration: {e}")
-            # Initialize with safe defaults to prevent system failure
-            self.config_cache = {
-                'core_system_features': {
-                    'defaults': {
-                        'ensemble_analysis': True,
-                        'pattern_integration': True,
-                        'safety_controls': True
-                    }
-                },
-                'analysis_component_features': {
-                    'defaults': {
-                        'pattern_analysis': True,
-                        'semantic_analysis': True,
-                        'phrase_extraction': True
-                    }
-                },
-                'experimental_features': {
-                    'defaults': {}
-                },
-                'development_debug_features': {
-                    'defaults': {
-                        'detailed_logging': False,
-                        'performance_metrics': False,
-                        'debug_output': False
-                    }
+            raise
+    
+    def _validate_v31_structure(self) -> bool:
+        """Validate that configuration matches v3.1 format"""
+        required_sections = [
+            'core_system_features',
+            'analysis_component_features', 
+            'learning_features',
+            'experimental_features',
+            'development_debug_features'
+        ]
+        
+        for section in required_sections:
+            if section not in self.config_cache:
+                logger.warning(f"⚠️ Missing v3.1 section: {section}")
+                return False
+                
+        return True
+    
+    def _initialize_safe_defaults(self):
+        """Initialize safe default configuration per Clean Architecture Charter Rule #5"""
+        self.config_cache = {
+            'core_system_features': {
+                'defaults': {
+                    'ensemble_analysis': True,
+                    'pattern_integration': True,
+                    'staff_review_logic': True,
+                    'safety_controls': True
+                }
+            },
+            'analysis_component_features': {
+                'defaults': {
+                    'pattern_analysis': True,
+                    'semantic_analysis': True,
+                    'context_analysis': True,
+                    'phrase_extraction': True,
+                    'analysis_caching': True,
+                    'parallel_processing': True
+                }
+            },
+            'learning_features': {
+                'defaults': {
+                    'threshold_learning': False,
+                    'pattern_learning': False
+                }
+            },
+            'experimental_features': {
+                'defaults': {
+                    'advanced_context': False,
+                    'community_vocab': True,
+                    'temporal_patterns': True,
+                    'multi_language': False
+                }
+            },
+            'development_debug_features': {
+                'defaults': {
+                    'detailed_logging': True,
+                    'performance_metrics': True,
+                    'reload_on_changes': False,
+                    'flip_sentiment_logic': False
                 }
             }
-            logger.warning("⚠️ Using fallback feature flag configuration")
-            raise
+        }
+        logger.info("✅ Safe defaults initialized for resilient operation")
     
     def _validate_feature_dependencies(self):
         """Validate feature dependencies and conflicts"""
@@ -136,7 +179,7 @@ class FeatureConfigManager:
             logger.warning(f"⚠️ Error during feature dependency validation: {e}")
     
     # ========================================================================
-    # CORE SYSTEM FEATURES
+    # CORE SYSTEM FEATURES - Updated for v3.1
     # ========================================================================
     
     def is_ensemble_analysis_enabled(self) -> bool:
@@ -147,6 +190,10 @@ class FeatureConfigManager:
         """Check if crisis pattern integration is enabled"""
         return self._get_feature_flag('core_system_features', 'pattern_integration', True)
     
+    def is_staff_review_logic_enabled(self) -> bool:
+        """Check if staff review logic is enabled"""
+        return self._get_feature_flag('core_system_features', 'staff_review_logic', True)
+    
     def is_safety_controls_enabled(self) -> bool:
         """Check if safety controls and validation are enabled"""
         return self._get_feature_flag('core_system_features', 'safety_controls', True)
@@ -156,11 +203,12 @@ class FeatureConfigManager:
         return {
             'ensemble_analysis': self.is_ensemble_analysis_enabled(),
             'pattern_integration': self.is_pattern_integration_enabled(),
+            'staff_review_logic': self.is_staff_review_logic_enabled(),
             'safety_controls': self.is_safety_controls_enabled()
         }
     
     # ========================================================================
-    # ANALYSIS COMPONENT FEATURES
+    # ANALYSIS COMPONENT FEATURES - Updated for v3.1
     # ========================================================================
     
     def is_pattern_analysis_enabled(self) -> bool:
@@ -179,14 +227,6 @@ class FeatureConfigManager:
         """Check if phrase extraction is enabled"""
         return self._get_feature_flag('analysis_component_features', 'phrase_extraction', True)
     
-    def is_pattern_learning_enabled(self) -> bool:
-        """Check if pattern learning is enabled"""
-        return self._get_feature_flag('analysis_component_features', 'pattern_learning', True)
-    
-    def is_community_patterns_enabled(self) -> bool:
-        """Check if community-specific patterns are enabled"""
-        return self._get_feature_flag('analysis_component_features', 'community_patterns', True)
-    
     def is_analysis_caching_enabled(self) -> bool:
         """Check if analysis result caching is enabled"""
         return self._get_feature_flag('analysis_component_features', 'analysis_caching', True)
@@ -202,61 +242,69 @@ class FeatureConfigManager:
             'semantic_analysis': self.is_semantic_analysis_enabled(),
             'context_analysis': self.is_context_analysis_enabled(),
             'phrase_extraction': self.is_phrase_extraction_enabled(),
-            'pattern_learning': self.is_pattern_learning_enabled(),
-            'community_patterns': self.is_community_patterns_enabled(),
             'analysis_caching': self.is_analysis_caching_enabled(),
             'parallel_processing': self.is_parallel_processing_enabled()
         }
     
     # ========================================================================
-    # EXPERIMENTAL FEATURES
+    # LEARNING FEATURES - New for v3.1
+    # ========================================================================
+    
+    def is_threshold_learning_enabled(self) -> bool:
+        """Check if threshold learning is enabled"""
+        return self._get_feature_flag('learning_features', 'threshold_learning', False)
+    
+    def is_pattern_learning_enabled(self) -> bool:
+        """Check if pattern learning is enabled"""
+        return self._get_feature_flag('learning_features', 'pattern_learning', False)
+    
+    def get_learning_features(self) -> Dict[str, bool]:
+        """Get all learning feature flags"""
+        return {
+            'threshold_learning': self.is_threshold_learning_enabled(),
+            'pattern_learning': self.is_pattern_learning_enabled()
+        }
+    
+    # ========================================================================
+    # EXPERIMENTAL FEATURES - Updated for v3.1
     # ========================================================================
     
     def is_advanced_context_enabled(self) -> bool:
         """Check if advanced context analysis is enabled (experimental)"""
         return self._get_feature_flag('experimental_features', 'advanced_context', False)
     
-    def is_neural_patterns_enabled(self) -> bool:
-        """Check if neural pattern detection is enabled (experimental)"""
-        return self._get_feature_flag('experimental_features', 'neural_patterns', False)
+    def is_community_vocab_enabled(self) -> bool:
+        """Check if community vocabulary analysis is enabled (experimental)"""
+        return self._get_feature_flag('experimental_features', 'community_vocab', True)
+    
+    def is_temporal_patterns_enabled(self) -> bool:
+        """Check if temporal patterns analysis is enabled (experimental)"""
+        return self._get_feature_flag('experimental_features', 'temporal_patterns', True)
     
     def is_multi_language_enabled(self) -> bool:
         """Check if multi-language support is enabled (experimental)"""
         return self._get_feature_flag('experimental_features', 'multi_language', False)
     
-    def is_advanced_learning_enabled(self) -> bool:
-        """Check if advanced learning algorithms are enabled (experimental)"""
-        return self._get_feature_flag('experimental_features', 'advanced_learning', False)
-    
-    def is_real_time_adaptation_enabled(self) -> bool:
-        """Check if real-time model adaptation is enabled (experimental)"""
-        return self._get_feature_flag('experimental_features', 'real_time_adaptation', False)
-    
     def get_experimental_features(self) -> Dict[str, bool]:
         """Get all experimental feature flags"""
         return {
             'advanced_context': self.is_advanced_context_enabled(),
-            'neural_patterns': self.is_neural_patterns_enabled(),
-            'multi_language': self.is_multi_language_enabled(),
-            'advanced_learning': self.is_advanced_learning_enabled(),
-            'real_time_adaptation': self.is_real_time_adaptation_enabled()
+            'community_vocab': self.is_community_vocab_enabled(),
+            'temporal_patterns': self.is_temporal_patterns_enabled(),
+            'multi_language': self.is_multi_language_enabled()
         }
     
     # ========================================================================
-    # DEVELOPMENT & DEBUG FEATURES
+    # DEVELOPMENT & DEBUG FEATURES - Updated for v3.1
     # ========================================================================
     
     def is_detailed_logging_enabled(self) -> bool:
         """Check if detailed debug logging is enabled"""
-        return self._get_feature_flag('development_debug_features', 'detailed_logging', False)
+        return self._get_feature_flag('development_debug_features', 'detailed_logging', True)
     
     def is_performance_metrics_enabled(self) -> bool:
         """Check if performance metrics collection is enabled"""
-        return self._get_feature_flag('development_debug_features', 'performance_metrics', False)
-    
-    def is_debug_output_enabled(self) -> bool:
-        """Check if debug output is enabled"""
-        return self._get_feature_flag('development_debug_features', 'debug_output', False)
+        return self._get_feature_flag('development_debug_features', 'performance_metrics', True)
     
     def is_reload_on_changes_enabled(self) -> bool:
         """Check if configuration reload on changes is enabled"""
@@ -271,13 +319,12 @@ class FeatureConfigManager:
         return {
             'detailed_logging': self.is_detailed_logging_enabled(),
             'performance_metrics': self.is_performance_metrics_enabled(),
-            'debug_output': self.is_debug_output_enabled(),
             'reload_on_changes': self.is_reload_on_changes_enabled(),
             'flip_sentiment_logic': self.is_flip_sentiment_logic_enabled()
         }
     
     # ========================================================================
-    # UTILITY METHODS
+    # UTILITY METHODS - Updated for v3.1
     # ========================================================================
     
     def is_feature_enabled(self, feature_name: str) -> bool:
@@ -290,27 +337,35 @@ class FeatureConfigManager:
         Returns:
             Boolean indicating if feature is enabled
         """
-        # Map feature names to their respective methods
+        # Updated feature methods mapping for v3.1
         feature_methods = {
+            # Core system features
             'ensemble_analysis': self.is_ensemble_analysis_enabled,
             'pattern_integration': self.is_pattern_integration_enabled,
+            'staff_review_logic': self.is_staff_review_logic_enabled,
             'safety_controls': self.is_safety_controls_enabled,
+            
+            # Analysis component features
             'pattern_analysis': self.is_pattern_analysis_enabled,
             'semantic_analysis': self.is_semantic_analysis_enabled,
             'context_analysis': self.is_context_analysis_enabled,
             'phrase_extraction': self.is_phrase_extraction_enabled,
-            'pattern_learning': self.is_pattern_learning_enabled,
-            'community_patterns': self.is_community_patterns_enabled,
             'analysis_caching': self.is_analysis_caching_enabled,
             'parallel_processing': self.is_parallel_processing_enabled,
+            
+            # Learning features
+            'threshold_learning': self.is_threshold_learning_enabled,
+            'pattern_learning': self.is_pattern_learning_enabled,
+            
+            # Experimental features
             'advanced_context': self.is_advanced_context_enabled,
-            'neural_patterns': self.is_neural_patterns_enabled,
+            'community_vocab': self.is_community_vocab_enabled,
+            'temporal_patterns': self.is_temporal_patterns_enabled,
             'multi_language': self.is_multi_language_enabled,
-            'advanced_learning': self.is_advanced_learning_enabled,
-            'real_time_adaptation': self.is_real_time_adaptation_enabled,
+            
+            # Development debug features
             'detailed_logging': self.is_detailed_logging_enabled,
             'performance_metrics': self.is_performance_metrics_enabled,
-            'debug_output': self.is_debug_output_enabled,
             'reload_on_changes': self.is_reload_on_changes_enabled,
             'flip_sentiment_logic': self.is_flip_sentiment_logic_enabled
         }
@@ -327,6 +382,7 @@ class FeatureConfigManager:
         return {
             'core_system_features': self.get_core_system_features(),
             'analysis_component_features': self.get_analysis_component_features(),
+            'learning_features': self.get_learning_features(),
             'experimental_features': self.get_experimental_features(),
             'development_debug_features': self.get_development_debug_features()
         }
@@ -339,9 +395,38 @@ class FeatureConfigManager:
         """Get any feature dependency validation errors"""
         return self.validation_errors.copy()
     
+    def activate_profile(self, profile_name: str) -> bool:
+        """
+        Activate a feature profile from configuration
+        
+        Args:
+            profile_name: Name of the profile to activate
+            
+        Returns:
+            Boolean indicating if profile was activated successfully
+        """
+        try:
+            profiles = self.config_cache.get('feature_profiles', {})
+            if profile_name not in profiles:
+                logger.warning(f"⚠️ Profile '{profile_name}' not found")
+                return False
+            
+            profile = profiles[profile_name]
+            logger.info(f"🔄 Activating feature profile: {profile_name}")
+            
+            # Profile activation would typically override current settings
+            # For now, just log the profile settings
+            logger.debug(f"📋 Profile '{profile_name}' settings: {profile}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error activating profile '{profile_name}': {e}")
+            return False
+    
     def _get_feature_flag(self, category: str, feature: str, default: bool) -> bool:
         """
         Internal method to get feature flag value with proper type conversion
+        Handles v3.1 configuration format with environment variables and defaults
         
         Args:
             category: Feature category
@@ -353,15 +438,18 @@ class FeatureConfigManager:
         """
         try:
             category_config = self.config_cache.get(category, {})
+            
+            # First try to get the value directly (after environment substitution)
             value = category_config.get(feature)
             
-            if value is None:
-                # Fall back to defaults
+            # If value is None or still has placeholder, fall back to defaults
+            if value is None or (isinstance(value, str) and value.startswith('${') and value.endswith('}')):
                 defaults = category_config.get('defaults', {})
                 value = defaults.get(feature, default)
             
             # Convert to boolean if needed
             if isinstance(value, str):
+                # Handle string boolean values
                 return value.lower() in ('true', '1', 'yes', 'on', 'enabled')
             elif isinstance(value, (int, float)):
                 return bool(value)

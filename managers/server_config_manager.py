@@ -1,7 +1,7 @@
 # ash-nlp/managers/server_config_manager.py
 """
 Centralized Server Configuration Manager for Ash NLP Service v3.1
-Clean v3.1 Architecture
+Clean v3.1 Architecture - Updated for v3.1 Configuration Format
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -14,8 +14,10 @@ logger = logging.getLogger(__name__)
 class ServerConfigManager:
     """
     Centralized server configuration management for Ash-NLP
+    Updated for v3.1 configuration format with comprehensive settings and environment overrides
     Phase 3d Step 5: Consolidates all server-related environment variables
     Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
+    Updated for v3.1: Works with new server_settings.json format
     """
     
     def __init__(self, unified_config_manager):
@@ -31,23 +33,24 @@ class ServerConfigManager:
         # Load server configuration using unified manager
         self.server_config = self._load_server_configuration()
         
-        logger.info("ServerConfigManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
+        logger.info("ServerConfigManager v3.1 Step 9 initialized - v3.1 configuration format support added")
     
     def _load_server_configuration(self) -> Dict[str, Any]:
-        """Load server configuration using UnifiedConfigManager (NO MORE os.getenv())"""
+        """Load server configuration using UnifiedConfigManager with v3.1 format support"""
         try:
-            # Load server configuration from JSON through unified manager
+            # Load server configuration from v3.1 JSON through unified manager
             config = self.unified_config.load_config_file('server_settings')
             
             if config and 'server_configuration' in config:
-                logger.info("✅ Server configuration loaded from JSON with environment overrides")
+                logger.info("✅ Server configuration loaded from v3.1 JSON with environment overrides")
                 return config
             else:
-                logger.warning("⚠️ JSON server configuration not found, using environment fallback")
+                logger.warning("⚠️ v3.1 JSON server configuration not found, using environment fallback")
                 return self._get_fallback_server_config()
                 
         except Exception as e:
-            logger.error(f"❌ Error loading server configuration: {e}")
+            logger.error(f"❌ Error loading v3.1 server configuration: {e}")
+            logger.info("🛡️ Falling back to safe defaults per Clean Architecture Charter Rule #5")
             return self._get_fallback_server_config()
     
     def _get_fallback_server_config(self) -> Dict[str, Any]:
@@ -58,180 +61,258 @@ class ServerConfigManager:
         return {
             'server_configuration': {
                 'network_settings': {
-                    'host': self.unified_config.get_env('NLP_SERVER_HOST', '0.0.0.0'),
-                    'port': self.unified_config.get_env_int('GLOBAL_NLP_API_PORT', 8881),  # PRESERVED GLOBAL
-                    'workers': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKERS', 1),
-                    'reload_on_changes': self.unified_config.get_env_bool('NLP_FEATURE_RELOAD_ON_CHANGES', False)
+                    'host': self.unified_config.get_env('NLP_SERVER_NETWORK_HOST', '0.0.0.0'),
+                    'port': self.unified_config.get_env_int('NLP_SERVER_NETWORK_PORT', 8881),
+                    'enable_ssl': self.unified_config.get_env_bool('NLP_SERVER_NETWORK_ENABLE_SSL', False),
+                    'ssl_cert_path': self.unified_config.get_env('NLP_SERVER_NETWORK_SSL_CERT_PATH', './certs/server.crt'),
+                    'ssl_key_path': self.unified_config.get_env('NLP_SERVER_NETWORK_SSL_KEY_PATH', './certs/server.key'),
+                    'defaults': {
+                        'host': '0.0.0.0',
+                        'port': 8881,
+                        'enable_ssl': False,
+                        'ssl_cert_path': './certs/server.crt',
+                        'ssl_key_path': './certs/server.key'
+                    }
+                },
+                'application_settings': {
+                    'debug_mode': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_DEBUG_MODE', False),
+                    'workers': self.unified_config.get_env_int('NLP_SERVER_APPLICATION_WORKERS', 1),
+                    'reload_on_changes': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_RELOAD_ON_CHANGES', False),
+                    'access_log': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_ACCESS_LOG', True),
+                    'error_log': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_ERROR_LOG', True),
+                    'defaults': {
+                        'debug_mode': False,
+                        'workers': 1,
+                        'reload_on_changes': False,
+                        'access_log': True,
+                        'error_log': True
+                    }
                 },
                 'performance_settings': {
-                    'max_concurrent_requests': self.unified_config.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                    'request_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 40),
-                    'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60)
+                    'max_concurrent_requests': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
+                    'request_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_REQUEST_TIMEOUT', 40),
+                    'worker_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_WORKER_TIMEOUT', 60),
+                    'keep_alive_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT', 2),
+                    'max_request_size': self.unified_config.get_env('NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE', '10MB'),
+                    'defaults': {
+                        'max_concurrent_requests': 20,
+                        'request_timeout': 40,
+                        'worker_timeout': 60,
+                        'keep_alive_timeout': 2,
+                        'max_request_size': '10MB'
+                    }
                 },
                 'security_settings': {
                     'rate_limiting': {
-                        'requests_per_minute': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 120),
-                        'requests_per_hour': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 2000),
-                        'burst_limit': self.unified_config.get_env_int('NLP_SECURITY_BURST_LIMIT', 150)
+                        'enable_rate_limiting': self.unified_config.get_env_bool('NLP_SERVER_SECURITY_RATE_LIMIT_ENABLE', True),
+                        'requests_per_minute': self.unified_config.get_env_int('NLP_SERVER_SECURITY_RATE_LIMIT_PER_MINUTE', 60),
+                        'requests_per_hour': self.unified_config.get_env_int('NLP_SERVER_SECURITY_RATE_LIMIT_PER_HOUR', 1000),
+                        'burst_size': self.unified_config.get_env_int('NLP_SERVER_SECURITY_RATE_LIMIT_BURST_SIZE', 100),
+                        'defaults': {
+                            'enable_rate_limiting': True,
+                            'requests_per_minute': 60,
+                            'requests_per_hour': 1000,
+                            'burst_size': 100
+                        }
                     },
-                    'access_control': {
-                        'allowed_ips': self.unified_config.get_env('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),  # PRESERVED GLOBAL
-                        'cors_enabled': self.unified_config.get_env_bool('GLOBAL_ENABLE_CORS', True)  # PRESERVED GLOBAL
+                    'cors': {
+                        'enable_cors': self.unified_config.get_env_bool('NLP_SERVER_SECURITY_CORS_ENABLE', True),
+                        'allowed_origins': self.unified_config.get_env('NLP_SERVER_SECURITY_CORS_ALLOWED_ORIGINS', '["*"]'),
+                        'allowed_methods': self.unified_config.get_env('NLP_SERVER_SECURITY_CORS_ALLOWED_METHODS', '["GET", "POST", "OPTIONS"]'),
+                        'allowed_headers': self.unified_config.get_env('NLP_SERVER_SECURITY_CORS_ALLOWED_HEADERS', '["Content-Type", "Authorization"]'),
+                        'defaults': {
+                            'enable_cors': True,
+                            'allowed_origins': ['*'],
+                            'allowed_methods': ['GET', 'POST', 'OPTIONS'],
+                            'allowed_headers': ['Content-Type', 'Authorization']
+                        }
                     }
-                },
-                'operational_settings': {
-                    'health_check_interval': self.unified_config.get_env_int('NLP_SERVER_HEALTH_CHECK_INTERVAL', 30),
-                    'graceful_shutdown_timeout': self.unified_config.get_env_int('NLP_SERVER_SHUTDOWN_TIMEOUT', 10),
-                    'startup_timeout': self.unified_config.get_env_int('NLP_SERVER_STARTUP_TIMEOUT', 120)
-                }
-            },
-            'defaults': {
-                'network_settings': {
-                    'host': '0.0.0.0',
-                    'port': 8881,
-                    'workers': 1,
-                    'reload_on_changes': False
-                },
-                'performance_settings': {
-                    'max_concurrent_requests': 20,
-                    'request_timeout': 40,
-                    'worker_timeout': 60
-                },
-                'security_settings': {
-                    'rate_limiting': {
-                        'requests_per_minute': 120,
-                        'requests_per_hour': 2000,
-                        'burst_limit': 150
-                    }
-                },
-                'operational_settings': {
-                    'health_check_interval': 30,
-                    'graceful_shutdown_timeout': 10,
-                    'startup_timeout': 120
                 }
             }
         }
     
-    def _parse_bool(self, value: Union[str, bool]) -> bool:
-        """Parse boolean value from string or bool"""
-        if isinstance(value, bool):
+    def _get_setting_with_defaults(self, section: str, subsection: str, setting: str, default: Any) -> Any:
+        """Helper to get setting with v3.1 defaults fallback"""
+        try:
+            config_section = self.server_config.get('server_configuration', {}).get(section, {})
+            
+            if subsection:
+                config_subsection = config_section.get(subsection, {})
+                value = config_subsection.get(setting)
+                
+                # Fall back to defaults if value is placeholder or None
+                if value is None or (isinstance(value, str) and value.startswith('${') and value.endswith('}')):
+                    defaults = config_subsection.get('defaults', {})
+                    value = defaults.get(setting, default)
+            else:
+                value = config_section.get(setting)
+                
+                # Fall back to defaults if value is placeholder or None
+                if value is None or (isinstance(value, str) and value.startswith('${') and value.endswith('}')):
+                    defaults = config_section.get('defaults', {})
+                    value = defaults.get(setting, default)
+            
             return value
-        if isinstance(value, str):
-            return value.lower() in ('true', '1', 'yes', 'on')
-        return False
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Error getting setting {section}.{subsection}.{setting}: {e}")
+            return default
     
     # ========================================================================
-    # NETWORK SETTINGS ACCESS METHODS
+    # NETWORK SETTINGS ACCESS METHODS - Updated for v3.1
     # ========================================================================
     
     def get_network_settings(self) -> Dict[str, Any]:
-        """Get server network configuration settings"""
+        """Get server network configuration settings from v3.1 format"""
         logger.debug("🌐 Getting network settings...")
         
-        defaults = self.server_config.get('defaults', {}).get('network_settings', {})
-        config_settings = self.server_config.get('server_configuration', {}).get('network_settings', {})
-        
-        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
-            'host': self.unified_config.get_env('NLP_SERVER_HOST', 
-                                              config_settings.get('host', 
-                                              defaults.get('host', '0.0.0.0'))),
-            'port': self.unified_config.get_env_int('GLOBAL_NLP_API_PORT', 8881),  # PRESERVED GLOBAL
-            'workers': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKERS', 
-                                                     config_settings.get('workers', 
-                                                     defaults.get('workers', 1))),
-            'reload_on_changes': self.unified_config.get_env_bool('NLP_FEATURE_RELOAD_ON_CHANGES', 
-                                                               config_settings.get('reload_on_changes', 
-                                                               defaults.get('reload_on_changes', False)))
+            'host': self._get_setting_with_defaults('network_settings', None, 'host', '0.0.0.0'),
+            'port': self._get_setting_with_defaults('network_settings', None, 'port', 8881),
+            'enable_ssl': self._get_setting_with_defaults('network_settings', None, 'enable_ssl', False),
+            'ssl_cert_path': self._get_setting_with_defaults('network_settings', None, 'ssl_cert_path', './certs/server.crt'),
+            'ssl_key_path': self._get_setting_with_defaults('network_settings', None, 'ssl_key_path', './certs/server.key')
+        }
+    
+    def get_application_settings(self) -> Dict[str, Any]:
+        """Get application-level configuration settings"""
+        logger.debug("⚙️ Getting application settings...")
+        
+        return {
+            'debug_mode': self._get_setting_with_defaults('application_settings', None, 'debug_mode', False),
+            'workers': self._get_setting_with_defaults('application_settings', None, 'workers', 1),
+            'reload_on_changes': self._get_setting_with_defaults('application_settings', None, 'reload_on_changes', False),
+            'access_log': self._get_setting_with_defaults('application_settings', None, 'access_log', True),
+            'error_log': self._get_setting_with_defaults('application_settings', None, 'error_log', True)
         }
     
     def get_performance_settings(self) -> Dict[str, Any]:
-        """Get server performance settings"""
+        """Get server performance settings from v3.1 format"""
         logger.debug("⚡ Getting performance settings...")
         
-        defaults = self.server_config.get('defaults', {}).get('performance_settings', {})
-        config_settings = self.server_config.get('server_configuration', {}).get('performance_settings', {})
-        
-        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
-            'max_concurrent_requests': self.unified_config.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 
-                                                                     config_settings.get('max_concurrent_requests', 
-                                                                     defaults.get('max_concurrent_requests', 20))),
-            'request_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 
-                                                             config_settings.get('request_timeout', 
-                                                             defaults.get('request_timeout', 40))),
-            'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 
-                                                            config_settings.get('worker_timeout', 
-                                                            defaults.get('worker_timeout', 60)))
+            'max_concurrent_requests': self._get_setting_with_defaults('performance_settings', None, 'max_concurrent_requests', 20),
+            'request_timeout': self._get_setting_with_defaults('performance_settings', None, 'request_timeout', 40),
+            'worker_timeout': self._get_setting_with_defaults('performance_settings', None, 'worker_timeout', 60),
+            'keep_alive_timeout': self._get_setting_with_defaults('performance_settings', None, 'keep_alive_timeout', 2),
+            'max_request_size': self._get_setting_with_defaults('performance_settings', None, 'max_request_size', '10MB')
         }
     
     def get_security_settings(self) -> Dict[str, Any]:
-        """Get security configuration settings"""
+        """Get security configuration settings from v3.1 format"""
         logger.debug("🔒 Getting security settings...")
         
-        defaults = self.server_config.get('defaults', {}).get('security_settings', {}).get('rate_limiting', {})
-        config_settings = self.server_config.get('server_configuration', {}).get('security_settings', {}).get('rate_limiting', {})
-        
-        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
             'rate_limiting': {
-                'requests_per_minute': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE', 
-                                                                     config_settings.get('requests_per_minute', 
-                                                                     defaults.get('requests_per_minute', 120))),
-                'requests_per_hour': self.unified_config.get_env_int('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', 
-                                                                   config_settings.get('requests_per_hour', 
-                                                                   defaults.get('requests_per_hour', 2000))),
-                'burst_limit': self.unified_config.get_env_int('NLP_SECURITY_BURST_LIMIT', 
-                                                             config_settings.get('burst_limit', 
-                                                             defaults.get('burst_limit', 150)))
+                'enable_rate_limiting': self._get_setting_with_defaults('security_settings', 'rate_limiting', 'enable_rate_limiting', True),
+                'requests_per_minute': self._get_setting_with_defaults('security_settings', 'rate_limiting', 'requests_per_minute', 60),
+                'requests_per_hour': self._get_setting_with_defaults('security_settings', 'rate_limiting', 'requests_per_hour', 1000),
+                'burst_size': self._get_setting_with_defaults('security_settings', 'rate_limiting', 'burst_size', 100)
             },
-            'access_control': {
-                'allowed_ips': self.unified_config.get_env('GLOBAL_ALLOWED_IPS', '10.20.30.0/24,127.0.0.1,::1'),  # PRESERVED GLOBAL
-                'cors_enabled': self.unified_config.get_env_bool('GLOBAL_ENABLE_CORS', True)  # PRESERVED GLOBAL
+            'cors': {
+                'enable_cors': self._get_setting_with_defaults('security_settings', 'cors', 'enable_cors', True),
+                'allowed_origins': self._get_setting_with_defaults('security_settings', 'cors', 'allowed_origins', ['*']),
+                'allowed_methods': self._get_setting_with_defaults('security_settings', 'cors', 'allowed_methods', ['GET', 'POST', 'OPTIONS']),
+                'allowed_headers': self._get_setting_with_defaults('security_settings', 'cors', 'allowed_headers', ['Content-Type', 'Authorization'])
             }
         }
     
+    # ========================================================================
+    # DEPLOYMENT PROFILE SUPPORT - New for v3.1
+    # ========================================================================
+    
+    def get_deployment_profiles(self) -> Dict[str, Any]:
+        """Get available deployment profiles from v3.1 configuration"""
+        return self.server_config.get('deployment_profiles', {})
+    
+    def get_profile_settings(self, profile_name: str) -> Dict[str, Any]:
+        """Get settings for a specific deployment profile"""
+        profiles = self.get_deployment_profiles()
+        return profiles.get(profile_name, {})
+    
+    def activate_profile(self, profile_name: str) -> bool:
+        """
+        Activate a deployment profile
+        
+        Args:
+            profile_name: Name of the profile to activate
+            
+        Returns:
+            Boolean indicating if profile was found
+        """
+        profile_settings = self.get_profile_settings(profile_name)
+        if not profile_settings:
+            logger.warning(f"⚠️ Unknown deployment profile: {profile_name}")
+            return False
+        
+        logger.info(f"🔄 Deployment profile '{profile_name}' settings retrieved")
+        logger.info("⚠️ Note: Profile activation requires server restart")
+        
+        return True
+    
+    # ========================================================================
+    # MONITORING SUPPORT - New for v3.1
+    # ========================================================================
+    
+    def get_monitoring_settings(self) -> Dict[str, Any]:
+        """Get monitoring and health check settings from v3.1 configuration"""
+        return self.server_config.get('monitoring', {
+            'health_check_endpoint': '/health',
+            'metrics_endpoint': '/metrics',
+            'status_endpoint': '/status',
+            'enable_health_checks': True,
+            'health_check_interval': 30,
+            'log_health_status': True
+        })
+    
+    # ========================================================================
+    # LEGACY COMPATIBILITY METHODS - Preserved for backward compatibility
+    # ========================================================================
+    
     def get_operational_settings(self) -> Dict[str, Any]:
-        """Get operational configuration settings"""
-        logger.debug("⚙️ Getting operational settings...")
+        """Get operational configuration settings (legacy compatibility)"""
+        logger.debug("⚙️ Getting operational settings (legacy compatibility)...")
         
-        defaults = self.server_config.get('defaults', {}).get('operational_settings', {})
-        config_settings = self.server_config.get('server_configuration', {}).get('operational_settings', {})
+        # Map to v3.1 structure
+        performance = self.get_performance_settings()
+        monitoring = self.get_monitoring_settings()
         
-        # STEP 9 CHANGE: Use unified_config instead of os.getenv()
         return {
-            'health_check_interval': self.unified_config.get_env_int('NLP_SERVER_HEALTH_CHECK_INTERVAL', 
-                                                                   config_settings.get('health_check_interval', 
-                                                                   defaults.get('health_check_interval', 30))),
-            'graceful_shutdown_timeout': self.unified_config.get_env_int('NLP_SERVER_SHUTDOWN_TIMEOUT', 
-                                                                       config_settings.get('graceful_shutdown_timeout', 
-                                                                       defaults.get('graceful_shutdown_timeout', 10))),
-            'startup_timeout': self.unified_config.get_env_int('NLP_SERVER_STARTUP_TIMEOUT', 
-                                                             config_settings.get('startup_timeout', 
-                                                             defaults.get('startup_timeout', 120)))
+            'health_check_interval': monitoring.get('health_check_interval', 30),
+            'graceful_shutdown_timeout': 10,  # Default value
+            'startup_timeout': 120,  # Default value
+            'max_concurrent_requests': performance.get('max_concurrent_requests', 20),
+            'request_timeout': performance.get('request_timeout', 40)
         }
     
+    # ========================================================================
+    # COMPREHENSIVE CONFIGURATION ACCESS
+    # ========================================================================
+    
     def get_complete_server_configuration(self) -> Dict[str, Any]:
-        """Get complete server configuration"""
+        """Get complete server configuration from v3.1 format"""
         logger.debug("📊 Assembling complete server configuration...")
         
         return {
             'network': self.get_network_settings(),
+            'application': self.get_application_settings(),
             'performance': self.get_performance_settings(),
             'security': self.get_security_settings(),
-            'operational': self.get_operational_settings(),
+            'monitoring': self.get_monitoring_settings(),
+            'deployment_profiles': self.get_deployment_profiles(),
             'metadata': {
-                'phase': '3d-step9',
+                'phase': '3d-step9-v3.1',
                 'architecture': 'clean_v3.1d_unified_config',
+                'configuration_version': '3d.1',
                 'consolidation_complete': True,
-                'duplicates_eliminated': 5,
+                'v31_compliant': True,
                 'unified_config_manager': True,
                 'direct_os_getenv_calls': 'eliminated'
             }
         }
     
     def validate_server_configuration(self) -> Dict[str, Any]:
-        """Validate server configuration settings"""
+        """Validate server configuration settings for v3.1 format"""
         logger.debug("🔍 Validating server configuration...")
         
         validation_results = {
@@ -239,6 +320,7 @@ class ServerConfigManager:
             'warnings': [],
             'errors': [],
             'consolidation_status': 'complete',
+            'v31_compliant': True,
             'unified_config_manager': True
         }
         
@@ -249,16 +331,24 @@ class ServerConfigManager:
                 validation_results['errors'].append(f"Invalid port: {network['port']} (must be 1024-65535)")
                 validation_results['valid'] = False
             
-            if network['workers'] < 1 or network['workers'] > 8:
-                validation_results['warnings'].append(f"Unusual worker count: {network['workers']} (recommended: 1-4)")
+            # Validate application settings
+            application = self.get_application_settings()
+            if application['workers'] < 1 or application['workers'] > 16:
+                validation_results['warnings'].append(f"Unusual worker count: {application['workers']} (recommended: 1-8)")
             
             # Validate performance settings
             performance = self.get_performance_settings()
-            if performance['max_concurrent_requests'] > 100:
-                validation_results['warnings'].append(f"High concurrent requests: {performance['max_concurrent_requests']} (may impact performance)")
+            if performance['max_concurrent_requests'] > 1000:
+                validation_results['warnings'].append(f"Very high concurrent requests: {performance['max_concurrent_requests']} (may impact performance)")
             
-            if performance['request_timeout'] < 10:
-                validation_results['warnings'].append(f"Low request timeout: {performance['request_timeout']}s (may cause premature timeouts)")
+            if performance['request_timeout'] < 5:
+                validation_results['warnings'].append(f"Very low request timeout: {performance['request_timeout']}s (may cause premature timeouts)")
+            
+            # Validate security settings
+            security = self.get_security_settings()
+            rate_limiting = security.get('rate_limiting', {})
+            if rate_limiting.get('requests_per_minute', 0) > 1000:
+                validation_results['warnings'].append("High rate limiting threshold may not provide adequate protection")
             
             logger.info(f"✅ Server configuration validation: {'PASSED' if validation_results['valid'] else 'FAILED'}")
             
@@ -270,12 +360,12 @@ class ServerConfigManager:
         return validation_results
 
 # ========================================================================
-# FACTORY FUNCTION - Updated for Phase 3d Step 9
+# FACTORY FUNCTION - Updated for v3.1 Configuration Format
 # ========================================================================
 
 def create_server_config_manager(unified_config_manager) -> ServerConfigManager:
     """
-    Factory function for creating ServerConfigManager instance - Phase 3d Step 9
+    Factory function for creating ServerConfigManager instance - v3.1 Updated
     
     Args:
         unified_config_manager: UnifiedConfigManager instance for dependency injection
@@ -286,7 +376,7 @@ def create_server_config_manager(unified_config_manager) -> ServerConfigManager:
     Raises:
         ValueError: If unified_config_manager is None or invalid
     """
-    logger.debug("🏭 Creating ServerConfigManager with UnifiedConfigManager (Phase 3d Step 9)")
+    logger.debug("🏭 Creating ServerConfigManager with v3.1 configuration format support")
     
     if not unified_config_manager:
         raise ValueError("UnifiedConfigManager is required for ServerConfigManager factory")
@@ -299,4 +389,4 @@ def create_server_config_manager(unified_config_manager) -> ServerConfigManager:
 
 __all__ = ['ServerConfigManager', 'create_server_config_manager']
 
-logger.info("✅ ServerConfigManager v3.1d Step 9 loaded - UnifiedConfigManager integration complete, direct os.getenv() calls eliminated")
+logger.info("✅ ServerConfigManager v3.1 loaded - v3.1 configuration format support added")

@@ -1,62 +1,155 @@
 {
+  "_metadata": {
+    "configuration_version": "3d.1",
+    "description": "Unified logging configuration for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "manager": "LoggingConfigManager",
+    "consolidation_source": "Phase 3d Step 6 - Standardized logging variables",
+    "environment_overrides": {
+      "description": "All logging settings support environment variable overrides",
+      "pattern": "${NLP_LOGGING_*CATEGORY*_*SETTING*}",
+      "global_preservation": "GLOBAL_LOG_LEVEL preserved for ecosystem compatibility",
+      "examples": [
+        "NLP_LOGGING_ENABLE_DETAILED",
+        "NLP_LOGGING_THRESHOLD_CHANGES",
+        "NLP_LOGGING_DEBUG_MODE"
+      ]
+    }
+  },
+
   "logging_configuration": {
-    "version": "3.1d",
-    "architecture": "clean-v3.1-unified",
-    "description": "Unified logging configuration - standardizes logging variable naming and centralizes all logging settings",
-    "documentation": "Phase 3d Step 6: Consolidates scattered logging variables into single, manageable configuration",
     "global_settings": {
-      "description": "Core logging settings - GLOBAL_LOG_LEVEL must be preserved for ecosystem compatibility",
+      "description": "Core logging settings - GLOBAL_LOG_LEVEL preserved for ecosystem compatibility",
       "log_level": "${GLOBAL_LOG_LEVEL}",
-      "log_file": "${NLP_STORAGE_LOG_FILE}",
-      "log_directory": "${NLP_STORAGE_LOGS_DIR}",
-      "enable_console_output": true,
-      "enable_file_output": true,
-      "log_format": "%(asctime)s %(levelname)s: %(name)s - %(message)s"
-    },
-    "detailed_logging": {
-      "description": "Granular logging controls for different system components",
-      "enable_detailed": "${NLP_LOGGING_ENABLE_DETAILED}",
-      "include_raw_labels": "${NLP_LOGGING_INCLUDE_RAW_LABELS}",
-      "analysis_steps": "${NLP_LOGGING_ANALYSIS_STEPS}",
-      "performance_metrics": "${NLP_LOGGING_PERFORMANCE_METRICS}",
-      "include_reasoning": "${NLP_LOGGING_INCLUDE_REASONING}"
-    },
-    "component_logging": {
-      "description": "Logging controls for specific system components",
-      "threshold_changes": "${NLP_LOGGING_THRESHOLD_CHANGES}",
-      "model_disagreements": "${NLP_LOGGING_MODEL_DISAGREEMENTS}",
-      "staff_review_triggers": "${NLP_LOGGING_STAFF_REVIEW_TRIGGERS}",
-      "pattern_adjustments": "${NLP_LOGGING_PATTERN_ADJUSTMENTS}",
-      "learning_updates": "${NLP_LOGGING_LEARNING_UPDATES}",
-      "label_mappings": "${NLP_LOGGING_LABEL_MAPPINGS}",
-      "ensemble_decisions": "${NLP_LOGGING_ENSEMBLE_DECISIONS}",
-      "crisis_detection": "${NLP_LOGGING_CRISIS_DETECTION}"
-    },
-    "development_logging": {
-      "description": "Logging settings for development and debugging",
-      "debug_mode": "${NLP_LOGGING_DEBUG_MODE}",
-      "trace_requests": "${NLP_LOGGING_TRACE_REQUESTS}",
-      "log_configuration_loading": "${NLP_LOGGING_CONFIG_LOADING}",
-      "log_manager_initialization": "${NLP_LOGGING_MANAGER_INIT}",
-      "log_environment_variables": "${NLP_LOGGING_ENV_VARS}"
-    },
-    "defaults": {
-      "global_settings": {
+      "log_file": "${NLP_LOGGING_GLOBAL_LOG_FILE}",
+      "log_directory": "${NLP_LOGGING_GLOBAL_LOG_DIRECTORY}",
+      "enable_console_output": "${NLP_LOGGING_GLOBAL_ENABLE_CONSOLE_OUTPUT}",
+      "enable_file_output": "${NLP_LOGGING_GLOBAL_ENABLE_FILE_OUTPUT}",
+      "log_format": "${NLP_LOGGING_GLOBAL_LOG_FORMAT}",
+      "log_rotation_enabled": "${NLP_LOGGING_GLOBAL_LOG_ROTATION_ENABLED}",
+      "max_log_size_mb": "${NLP_LOGGING_GLOBAL_MAX_LOG_SIZE_MB}",
+      "backup_count": "${NLP_LOGGING_GLOBAL_BACKUP_COUNT}",
+      "defaults": {
         "log_level": "INFO",
         "log_file": "nlp_service.log",
         "log_directory": "./logs",
         "enable_console_output": true,
         "enable_file_output": true,
-        "log_format": "%(asctime)s %(levelname)s: %(name)s - %(message)s"
+        "log_format": "%(asctime)s %(levelname)s: %(name)s - %(message)s",
+        "log_rotation_enabled": true,
+        "max_log_size_mb": 100,
+        "backup_count": 5
       },
-      "detailed_logging": {
+      "validation": {
+        "log_level": {
+          "type": "string",
+          "allowed_values": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+          "description": "Global logging level for the entire system"
+        },
+        "log_file": {
+          "type": "string",
+          "pattern": "^[\\w\\-_.]+\\.log$",
+          "description": "Primary log file name"
+        },
+        "log_directory": {
+          "type": "string",
+          "description": "Directory for log files (created if missing)"
+        },
+        "enable_console_output": {
+          "type": "boolean",
+          "description": "Enable logging output to console/stdout"
+        },
+        "enable_file_output": {
+          "type": "boolean",
+          "description": "Enable logging output to file"
+        },
+        "log_format": {
+          "type": "string",
+          "description": "Python logging format string"
+        },
+        "log_rotation_enabled": {
+          "type": "boolean",
+          "description": "Enable automatic log file rotation"
+        },
+        "max_log_size_mb": {
+          "type": "integer",
+          "range": [1, 1000],
+          "unit": "MB",
+          "description": "Maximum log file size before rotation"
+        },
+        "backup_count": {
+          "type": "integer",
+          "range": [1, 50],
+          "description": "Number of rotated log files to keep"
+        }
+      }
+    },
+
+    "detailed_logging": {
+      "description": "Granular logging controls for different system components",
+      "enable_detailed": "${NLP_LOGGING_DETAILED_ENABLE_DETAILED}",
+      "include_raw_labels": "${NLP_LOGGING_DETAILED_INCLUDE_RAW_LABELS}",
+      "analysis_steps": "${NLP_LOGGING_DETAILED_ANALYSIS_STEPS}",
+      "performance_metrics": "${NLP_LOGGING_DETAILED_PERFORMANCE_METRICS}",
+      "include_reasoning": "${NLP_LOGGING_DETAILED_INCLUDE_REASONING}",
+      "trace_function_calls": "${NLP_LOGGING_DETAILED_TRACE_FUNCTION_CALLS}",
+      "log_input_sanitization": "${NLP_LOGGING_DETAILED_LOG_INPUT_SANITIZATION}",
+      "defaults": {
         "enable_detailed": true,
         "include_raw_labels": true,
         "analysis_steps": false,
         "performance_metrics": true,
-        "include_reasoning": true
+        "include_reasoning": true,
+        "trace_function_calls": false,
+        "log_input_sanitization": false
       },
-      "component_logging": {
+      "validation": {
+        "enable_detailed": {
+          "type": "boolean",
+          "description": "Enable detailed logging across the system"
+        },
+        "include_raw_labels": {
+          "type": "boolean",
+          "description": "Include raw label data in log outputs"
+        },
+        "analysis_steps": {
+          "type": "boolean",
+          "description": "Log individual analysis processing steps"
+        },
+        "performance_metrics": {
+          "type": "boolean",
+          "description": "Log performance timing and metrics"
+        },
+        "include_reasoning": {
+          "type": "boolean",
+          "description": "Include AI reasoning in crisis detection logs"
+        },
+        "trace_function_calls": {
+          "type": "boolean",
+          "description": "Trace function calls for debugging (verbose)"
+        },
+        "log_input_sanitization": {
+          "type": "boolean",
+          "description": "Log input sanitization steps (security debugging)"
+        }
+      }
+    },
+
+    "component_logging": {
+      "description": "Logging controls for specific system components",
+      "threshold_changes": "${NLP_LOGGING_COMPONENT_THRESHOLD_CHANGES}",
+      "model_disagreements": "${NLP_LOGGING_COMPONENT_MODEL_DISAGREEMENTS}",
+      "staff_review_triggers": "${NLP_LOGGING_COMPONENT_STAFF_REVIEW_TRIGGERS}",
+      "pattern_adjustments": "${NLP_LOGGING_COMPONENT_PATTERN_ADJUSTMENTS}",
+      "learning_updates": "${NLP_LOGGING_COMPONENT_LEARNING_UPDATES}",
+      "label_mappings": "${NLP_LOGGING_COMPONENT_LABEL_MAPPINGS}",
+      "ensemble_decisions": "${NLP_LOGGING_COMPONENT_ENSEMBLE_DECISIONS}",
+      "crisis_detection": "${NLP_LOGGING_COMPONENT_CRISIS_DETECTION}",
+      "pattern_analysis": "${NLP_LOGGING_COMPONENT_PATTERN_ANALYSIS}",
+      "community_patterns": "${NLP_LOGGING_COMPONENT_COMMUNITY_PATTERNS}",
+      "defaults": {
         "threshold_changes": true,
         "model_disagreements": true,
         "staff_review_triggers": true,
@@ -64,57 +157,235 @@
         "learning_updates": true,
         "label_mappings": true,
         "ensemble_decisions": true,
-        "crisis_detection": true
+        "crisis_detection": true,
+        "pattern_analysis": false,
+        "community_patterns": true
       },
-      "development_logging": {
+      "validation": {
+        "threshold_changes": {
+          "type": "boolean",
+          "description": "Log threshold adjustment events"
+        },
+        "model_disagreements": {
+          "type": "boolean",
+          "description": "Log when ensemble models disagree significantly"
+        },
+        "staff_review_triggers": {
+          "type": "boolean",
+          "description": "Log events that trigger staff review workflows"
+        },
+        "pattern_adjustments": {
+          "type": "boolean",
+          "description": "Log crisis pattern adjustment events"
+        },
+        "learning_updates": {
+          "type": "boolean",
+          "description": "Log machine learning system updates"
+        },
+        "label_mappings": {
+          "type": "boolean",
+          "description": "Log label switching and mapping events"
+        },
+        "ensemble_decisions": {
+          "type": "boolean",
+          "description": "Log ensemble model decision processes"
+        },
+        "crisis_detection": {
+          "type": "boolean",
+          "description": "Log crisis detection events and results"
+        },
+        "pattern_analysis": {
+          "type": "boolean",
+          "description": "Log pattern analysis processing steps"
+        },
+        "community_patterns": {
+          "type": "boolean",
+          "description": "Log LGBTQIA+ community pattern detection events"
+        }
+      }
+    },
+
+    "development_logging": {
+      "description": "Logging settings for development and debugging",
+      "debug_mode": "${NLP_LOGGING_DEVELOPMENT_DEBUG_MODE}",
+      "trace_requests": "${NLP_LOGGING_DEVELOPMENT_TRACE_REQUESTS}",
+      "log_configuration_loading": "${NLP_LOGGING_DEVELOPMENT_LOG_CONFIGURATION_LOADING}",
+      "log_manager_initialization": "${NLP_LOGGING_DEVELOPMENT_LOG_MANAGER_INITIALIZATION}",
+      "log_environment_variables": "${NLP_LOGGING_DEVELOPMENT_LOG_ENVIRONMENT_VARIABLES}",
+      "log_api_requests": "${NLP_LOGGING_DEVELOPMENT_LOG_API_REQUESTS}",
+      "log_api_responses": "${NLP_LOGGING_DEVELOPMENT_LOG_API_RESPONSES}",
+      "benchmark_performance": "${NLP_LOGGING_DEVELOPMENT_BENCHMARK_PERFORMANCE}",
+      "defaults": {
         "debug_mode": false,
         "trace_requests": false,
         "log_configuration_loading": false,
         "log_manager_initialization": true,
-        "log_environment_variables": false
+        "log_environment_variables": false,
+        "log_api_requests": false,
+        "log_api_responses": false,
+        "benchmark_performance": false
+      },
+      "validation": {
+        "debug_mode": {
+          "type": "boolean",
+          "description": "Enable comprehensive debug logging (development only)"
+        },
+        "trace_requests": {
+          "type": "boolean",
+          "description": "Trace HTTP request processing lifecycle"
+        },
+        "log_configuration_loading": {
+          "type": "boolean",
+          "description": "Log configuration file loading events"
+        },
+        "log_manager_initialization": {
+          "type": "boolean",
+          "description": "Log manager initialization events"
+        },
+        "log_environment_variables": {
+          "type": "boolean",
+          "description": "Log environment variable usage (security sensitive)"
+        },
+        "log_api_requests": {
+          "type": "boolean",
+          "description": "Log incoming API request details"
+        },
+        "log_api_responses": {
+          "type": "boolean",
+          "description": "Log outgoing API response details"
+        },
+        "benchmark_performance": {
+          "type": "boolean",
+          "description": "Log detailed performance benchmarks"
+        }
       }
     },
-    "validation": {
-      "log_level": {
-        "choices": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-        "type": "string"
+
+    "security_logging": {
+      "description": "Security and audit logging configuration",
+      "log_authentication": "${NLP_LOGGING_SECURITY_LOG_AUTHENTICATION}",
+      "log_authorization": "${NLP_LOGGING_SECURITY_LOG_AUTHORIZATION}",
+      "log_failed_requests": "${NLP_LOGGING_SECURITY_LOG_FAILED_REQUESTS}",
+      "log_rate_limiting": "${NLP_LOGGING_SECURITY_LOG_RATE_LIMITING}",
+      "log_suspicious_activity": "${NLP_LOGGING_SECURITY_LOG_SUSPICIOUS_ACTIVITY}",
+      "sanitize_sensitive_data": "${NLP_LOGGING_SECURITY_SANITIZE_SENSITIVE_DATA}",
+      "audit_crisis_detections": "${NLP_LOGGING_SECURITY_AUDIT_CRISIS_DETECTIONS}",
+      "defaults": {
+        "log_authentication": true,
+        "log_authorization": true,
+        "log_failed_requests": true,
+        "log_rate_limiting": true,
+        "log_suspicious_activity": true,
+        "sanitize_sensitive_data": true,
+        "audit_crisis_detections": true
       },
-      "log_file": {
-        "type": "string",
-        "pattern": "^[\\w\\-_.]+\\.log$"
-      },
-      "log_directory": {
-        "type": "string",
-        "must_exist": false,
-        "create_if_missing": true
-      },
-      "boolean_settings": {
-        "type": "boolean",
-        "applies_to": [
-          "enable_detailed", "include_raw_labels", "analysis_steps", 
-          "performance_metrics", "include_reasoning", "threshold_changes",
-          "model_disagreements", "staff_review_triggers", "pattern_adjustments",
-          "learning_updates", "label_mappings", "ensemble_decisions",
-          "crisis_detection", "debug_mode", "trace_requests",
-          "log_configuration_loading", "log_manager_initialization",
-          "log_environment_variables", "enable_console_output", "enable_file_output"
-        ]
+      "validation": {
+        "log_authentication": {
+          "type": "boolean",
+          "description": "Log authentication events and attempts"
+        },
+        "log_authorization": {
+          "type": "boolean",
+          "description": "Log authorization decisions"
+        },
+        "log_failed_requests": {
+          "type": "boolean",
+          "description": "Log failed API requests for security analysis"
+        },
+        "log_rate_limiting": {
+          "type": "boolean",
+          "description": "Log rate limiting events"
+        },
+        "log_suspicious_activity": {
+          "type": "boolean",
+          "description": "Log potentially suspicious activity patterns"
+        },
+        "sanitize_sensitive_data": {
+          "type": "boolean",
+          "description": "Sanitize sensitive data in logs (recommended)"
+        },
+        "audit_crisis_detections": {
+          "type": "boolean",
+          "description": "Maintain audit trail for crisis detection events"
+        }
       }
-    },
-    "phase_3d_notes": {
-      "variables_consolidated": [
-        "NLP_ENABLE_DETAILED_LOGGING → NLP_LOGGING_ENABLE_DETAILED",
-        "NLP_LOG_THRESHOLD_CHANGES → NLP_LOGGING_THRESHOLD_CHANGES", 
-        "NLP_LOG_MODEL_DISAGREEMENTS → NLP_LOGGING_MODEL_DISAGREEMENTS",
-        "NLP_LOG_STAFF_REVIEW_TRIGGERS → NLP_LOGGING_STAFF_REVIEW_TRIGGERS",
-        "NLP_LOG_PATTERN_ADJUSTMENTS → NLP_LOGGING_PATTERN_ADJUSTMENTS",
-        "NLP_LOG_LEARNING_UPDATES → NLP_LOGGING_LEARNING_UPDATES",
-        "NLP_LOG_LABEL_MAPPINGS → NLP_LOGGING_LABEL_MAPPINGS"
-      ],
-      "global_variables_preserved": [
-        "GLOBAL_LOG_LEVEL - Unchanged for ecosystem compatibility"
-      ],
-      "architecture_compliance": "Clean v3.1 - Factory functions and dependency injection"
     }
+  },
+
+  "logging_profiles": {
+    "description": "Pre-configured logging profiles for different deployment scenarios",
+    "development": {
+      "description": "Development profile with verbose logging",
+      "log_level": "DEBUG",
+      "debug_mode": true,
+      "trace_requests": true,
+      "analysis_steps": true,
+      "trace_function_calls": true
+    },
+    "testing": {
+      "description": "Testing profile with moderate logging",
+      "log_level": "INFO",
+      "debug_mode": false,
+      "performance_metrics": true,
+      "component_logging": true,
+      "audit_crisis_detections": true
+    },
+    "staging": {
+      "description": "Staging profile mimicking production logging",
+      "log_level": "INFO",
+      "debug_mode": false,
+      "security_logging": true,
+      "audit_crisis_detections": true,
+      "sanitize_sensitive_data": true
+    },
+    "production": {
+      "description": "Production profile with essential logging only",
+      "log_level": "WARNING",
+      "debug_mode": false,
+      "enable_detailed": false,
+      "security_logging": true,
+      "audit_crisis_detections": true,
+      "sanitize_sensitive_data": true
+    },
+    "crisis_focus": {
+      "description": "Crisis detection focused logging for monitoring",
+      "log_level": "INFO",
+      "crisis_detection": true,
+      "community_patterns": true,
+      "staff_review_triggers": true,
+      "threshold_changes": true,
+      "model_disagreements": true
+    }
+  },
+
+  "legacy_compatibility": {
+    "description": "Phase 3d variable consolidation mapping for reference",
+    "variables_consolidated": [
+      "NLP_ENABLE_DETAILED_LOGGING → NLP_LOGGING_DETAILED_ENABLE_DETAILED",
+      "NLP_LOG_THRESHOLD_CHANGES → NLP_LOGGING_COMPONENT_THRESHOLD_CHANGES",
+      "NLP_LOG_MODEL_DISAGREEMENTS → NLP_LOGGING_COMPONENT_MODEL_DISAGREEMENTS",
+      "NLP_LOG_STAFF_REVIEW_TRIGGERS → NLP_LOGGING_COMPONENT_STAFF_REVIEW_TRIGGERS",
+      "NLP_LOG_PATTERN_ADJUSTMENTS → NLP_LOGGING_COMPONENT_PATTERN_ADJUSTMENTS",
+      "NLP_LOG_LEARNING_UPDATES → NLP_LOGGING_COMPONENT_LEARNING_UPDATES",
+      "NLP_LOG_LABEL_MAPPINGS → NLP_LOGGING_COMPONENT_LABEL_MAPPINGS"
+    ],
+    "global_variables_preserved": [
+      "GLOBAL_LOG_LEVEL - Unchanged for ecosystem compatibility",
+      "GLOBAL_LOGGING_ENABLE_CONSOLE - Preserved if used",
+      "GLOBAL_LOGGING_ENABLE_FILE - Preserved if used"
+    ]
+  },
+
+  "usage_instructions": {
+    "description": "Configuration usage and integration guidelines",
+    "manager_integration": "Use LoggingConfigManager with create_logging_config_manager(config_manager)",
+    "environment_override_pattern": "Set environment variables using NLP_LOGGING_*CATEGORY*_*SETTING* pattern",
+    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
+    "global_preservation": "GLOBAL_LOG_LEVEL preserved for ecosystem compatibility",
+    "security_considerations": "Enable sanitize_sensitive_data in production to protect user privacy",
+    "performance_impact": "Detailed logging may impact performance - adjust for production load",
+    "log_rotation": "Configure log rotation to prevent disk space issues",
+    "community_focus": "Community-specific logging helps monitor LGBTQIA+ crisis detection accuracy",
+    "production_notes": "Use 'production' or 'crisis_focus' profiles for live deployments"
   }
 }

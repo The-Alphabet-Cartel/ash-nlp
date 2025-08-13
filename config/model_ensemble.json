@@ -1,96 +1,119 @@
 {
-  "ensemble_info": {
-    "version": "3.1d-step9",
-    "architecture": "clean-v3.1-unified",
-    "description": "Model ensemble configuration following established Pattern A with defaults",
-    "phase": "Phase 3d Step 9 - Architecture-compliant placeholder + defaults pattern"
-  },
-  "model_ensemble": {
-    "model_definitions": {
-      "depression": {
-        "name": "${NLP_MODEL_DEPRESSION_NAME}",
-        "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
-        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-        "type": "zero-shot-classification",
-        "purpose": "Depression and mental health crisis detection using zero-shot classification",
-        "pipeline_task": "zero-shot-classification"
-      },
-      "sentiment": {
-        "name": "${NLP_MODEL_SENTIMENT_NAME}",
-        "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
-        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-        "type": "sentiment-analysis", 
-        "purpose": "Topic-based sentiment analysis",
-        "pipeline_task": "zero-shot-classification"
-      },
-      "emotional_distress": {
-        "name": "${NLP_MODEL_DISTRESS_NAME}",
-        "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
-        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-        "type": "natural-language-inference",
-        "purpose": "Emotional distress detection using multilingual NLI",
-        "pipeline_task": "zero-shot-classification"
-      }
-    },
-    "defaults": {
-      "model_definitions": {
-        "depression": {
-          "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-          "weight": 0.4
-        },
-        "sentiment": {
-          "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
-          "weight": 0.3
-        },
-        "emotional_distress": {
-          "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-          "weight": 0.3
-        }
-      },
-      "cache_dir": "./models/cache"
-    },
-    "ensemble_config": {
-      "mode": "${NLP_ENSEMBLE_MODE}",
-      "gap_detection": {
-        "enabled": "${NLP_ENSEMBLE_GAP_DETECTION_ENABLED}",
-        "disagreement_threshold": "${NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD}"
-      },
-      "defaults": {
-        "mode": "majority",
-        "gap_detection": {
-          "enabled": true,
-          "disagreement_threshold": 2
-        }
-      }
-    },
-    "hardware_config": {
-      "device": "${NLP_HARDWARE_DEVICE}",
-      "precision": "${NLP_HARDWARE_PRECISION}",
-      "max_batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
-      "inference_threads": "${NLP_HARDWARE_INFERENCE_THREADS}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "defaults": {
-        "device": "auto",
-        "precision": "float16",
-        "max_batch_size": 32,
-        "inference_threads": 16,
-        "cache_dir": "./models/cache"
-      }
+  "_metadata": {
+    "configuration_version": "3d.1",
+    "description": "AI model ensemble configuration for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "managers": ["ModelEnsembleManager", "ModelsManager"],
+    "environment_overrides": {
+      "description": "All model settings support environment variable overrides",
+      "pattern": "${NLP_MODEL_*CATEGORY*_*SETTING*}",
+      "examples": [
+        "NLP_MODEL_SENTIMENT_MODEL_NAME",
+        "NLP_MODEL_ENSEMBLE_MODE",
+        "NLP_MODEL_HARDWARE_DEVICE"
+      ]
     }
   },
-  "validation_rules": {
-    "model_weights": {
-      "ensure_sum_to_one": true,
-      "tolerance": 0.01,
-      "fail_on_invalid": true
+
+  "model_ensemble": {
+    "model_definitions": {
+      "sentiment": {
+        "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
+        "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
+        "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
+        "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_SENTIMENT_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}"
+      },
+      "emotional_distress": {
+        "name": "${NLP_MODEL_EMOTION_MODEL_NAME}",
+        "weight": "${NLP_MODEL_EMOTION_MODEL_WEIGHT}",
+        "type": "${NLP_MODEL_EMOTION_MODEL_TYPE}",
+        "pipeline_task": "${NLP_MODEL_EMOTION_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_EMOTION_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_EMOTION_ENABLED}"
+      },
+      "depression": {
+        "name": "${NLP_MODEL_MENTAL_HEALTH_MODEL_NAME}",
+        "weight": "${NLP_MODEL_MENTAL_HEALTH_MODEL_WEIGHT}",
+        "type": "${NLP_MODEL_MENTAL_HEALTH_MODEL_TYPE}",
+        "pipeline_task": "${NLP_MODEL_MENTAL_HEALTH_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_MENTAL_HEALTH_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_MENTAL_HEALTH_ENABLED}"
+      }
     },
-    "model_accessibility": {
-      "validate_on_startup": true,
-      "timeout_seconds": 30
+    "ensemble_config": {
+      "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
+      "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
+      "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
+      "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}"
+    }
+  },
+
+  "hardware_settings": {
+    "device": "${NLP_MODEL_HARDWARE_DEVICE}",
+    "device_map": "${NLP_MODEL_HARDWARE_DEVICE_MAP}",
+    "load_in_8bit": "${NLP_MODEL_HARDWARE_LOAD_IN_8BIT}",
+    "load_in_4bit": "${NLP_MODEL_HARDWARE_LOAD_IN_4BIT}",
+    "torch_dtype": "${NLP_MODEL_HARDWARE_TORCH_DTYPE}",
+    "max_memory": "${NLP_MODEL_HARDWARE_MAX_MEMORY}",
+    "offload_folder": "${NLP_MODEL_HARDWARE_OFFLOAD_FOLDER}"
+  },
+
+  "validation": {
+    "description": "Model ensemble validation rules and constraints",
+    "ensure_weights_sum_to_one": true,
+    "fail_on_invalid_weights": false,
+    "require_minimum_models": 2,
+    "allow_partial_ensemble": true,
+    "validate_model_compatibility": true
+  },
+
+  "defaults": {
+    "model_ensemble": {
+      "model_definitions": {
+        "sentiment": {
+          "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "weight": 0.4,
+          "type": "transformers",
+          "pipeline_task": "text-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        },
+        "emotional_distress": {
+          "name": "j-hartmann/emotion-english-distilroberta-base",
+          "weight": 0.35,
+          "type": "transformers", 
+          "pipeline_task": "text-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        },
+        "depression": {
+          "name": "martin-ha/toxic-comment-model",
+          "weight": 0.25,
+          "type": "transformers",
+          "pipeline_task": "text-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        }
+      },
+      "ensemble_config": {
+        "mode": "weighted",
+        "require_all_models": false,
+        "fallback_mode": "single_best",
+        "confidence_threshold": 0.5
+      }
     },
-    "ensemble_modes": {
-      "validate_mode_support": true,
-      "required_modes": ["consensus", "majority", "weighted"]
+    "hardware_settings": {
+      "device": "auto",
+      "device_map": "auto",
+      "load_in_8bit": false,
+      "load_in_4bit": false,
+      "torch_dtype": "float16",
+      "max_memory": null,
+      "offload_folder": null
     }
   }
 }
