@@ -555,6 +555,25 @@ class CrisisAnalyzer:
         }
 
     # ========================================================================
+    # BACKWARD COMPATIBILITY METHOD - analyze_message
+    # ========================================================================
+
+    async def analyze_message(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
+        """
+        Backward compatibility method for analyze_message (calls analyze_crisis)
+        
+        Args:
+            message: User message to analyze
+            user_id: User identifier  
+            channel_id: Channel identifier
+            
+        Returns:
+            Dictionary containing crisis analysis results
+        """
+        logger.debug(f"analyze_message called - delegating to analyze_crisis for backward compatibility")
+        return await self.analyze_crisis(message, user_id, channel_id)
+
+    # ========================================================================
     # STEP 10.6: CONSOLIDATED SCORING FUNCTIONS (Instance methods from utils/scoring_helpers.py)
     # ========================================================================
     
