@@ -1,3 +1,11 @@
+<!-- ash-nlp/README.md -->
+<!--
+README Documentation for Ash-NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Ash NLP Service v3.0 - Three-Model Crisis Detection Ensemble
 
 **Revolutionary mental health crisis detection using advanced AI ensemble methods**

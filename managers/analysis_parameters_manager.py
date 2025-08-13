@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """
-Analysis Parameters Manager for Ash NLP Service v3.1 - Hybrid v3.1 Compatible
-Clean v3.1 Architecture with Enhanced Functionality
+Analysis Parameters Manager for Ash NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

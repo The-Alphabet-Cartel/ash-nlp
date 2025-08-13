@@ -1,5 +1,8 @@
 {
   "_metadata": {
+    "file_version": "v3.1-3d-10-1",
+    "last_modified": "2025-08-13",
+    "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
     "description": "AI model ensemble configuration for NLP crisis detection system",
     "created_date": "2025-08-12",
@@ -10,7 +13,7 @@
       "description": "All model settings support environment variable overrides",
       "pattern": "${NLP_MODEL_*CATEGORY*_*SETTING*}",
       "examples": [
-        "NLP_MODEL_SENTIMENT_MODEL_NAME",
+        "NLP_MODEL_SENTIMENT_NAME",
         "NLP_MODEL_ENSEMBLE_MODE",
         "NLP_MODEL_HARDWARE_DEVICE"
       ]
@@ -19,29 +22,29 @@
 
   "model_ensemble": {
     "model_definitions": {
+      "depression": {
+        "name": "${NLP_MODEL_DEPRESSION_NAME}",
+        "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
+        "type": "${NLP_MODEL_DEPRESSION_TYPE}",
+        "pipeline_task": "${NLP_MODEL_DEPRESSION_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_DEPRESSION_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_DEPRESSION_ENABLED}"
+      },
       "sentiment": {
-        "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
-        "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
-        "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
+        "name": "${NLP_MODEL_SENTIMENT_NAME}",
+        "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
+        "type": "${NLP_MODEL_SENTIMENT_TYPE}",
         "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
         "cache_dir": "${NLP_MODEL_SENTIMENT_CACHE_DIR}",
         "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}"
       },
       "emotional_distress": {
-        "name": "${NLP_MODEL_EMOTION_MODEL_NAME}",
-        "weight": "${NLP_MODEL_EMOTION_MODEL_WEIGHT}",
-        "type": "${NLP_MODEL_EMOTION_MODEL_TYPE}",
-        "pipeline_task": "${NLP_MODEL_EMOTION_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODEL_EMOTION_CACHE_DIR}",
-        "enabled": "${NLP_MODEL_EMOTION_ENABLED}"
-      },
-      "depression": {
-        "name": "${NLP_MODEL_MENTAL_HEALTH_MODEL_NAME}",
-        "weight": "${NLP_MODEL_MENTAL_HEALTH_MODEL_WEIGHT}",
-        "type": "${NLP_MODEL_MENTAL_HEALTH_MODEL_TYPE}",
-        "pipeline_task": "${NLP_MODEL_MENTAL_HEALTH_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODEL_MENTAL_HEALTH_CACHE_DIR}",
-        "enabled": "${NLP_MODEL_MENTAL_HEALTH_ENABLED}"
+        "name": "${NLP_MODEL_DISTRESS_NAME}",
+        "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
+        "type": "${NLP_MODEL_DISTRESS_TYPE}",
+        "pipeline_task": "${NLP_MODEL_DISTRESS_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_DISTRESS_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_DISTRESS_ENABLED}"
       }
     },
     "ensemble_config": {
@@ -67,42 +70,42 @@
     "ensure_weights_sum_to_one": true,
     "fail_on_invalid_weights": false,
     "require_minimum_models": 2,
-    "allow_partial_ensemble": true,
+    "allow_partial_ensemble": false,
     "validate_model_compatibility": true
   },
 
   "defaults": {
     "model_ensemble": {
       "model_definitions": {
+        "depression": {
+          "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+          "weight": 0.75,
+          "type": "zero-shot-classification",
+          "pipeline_task": "zero-shot-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        },
         "sentiment": {
-          "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
-          "weight": 0.4,
-          "type": "transformers",
-          "pipeline_task": "text-classification",
+          "name": "Lowerated/lm6-deberta-v3-topic-sentiment",
+          "weight": 0.10,
+          "type": "zero-shot-classification",
+          "pipeline_task": "zero-shot-classification",
           "cache_dir": "./models/cache",
           "enabled": true
         },
         "emotional_distress": {
-          "name": "j-hartmann/emotion-english-distilroberta-base",
-          "weight": 0.35,
-          "type": "transformers", 
-          "pipeline_task": "text-classification",
-          "cache_dir": "./models/cache",
-          "enabled": true
-        },
-        "depression": {
-          "name": "martin-ha/toxic-comment-model",
-          "weight": 0.25,
-          "type": "transformers",
-          "pipeline_task": "text-classification",
+          "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
+          "weight": 0.15,
+          "type": "zero-shot-classification", 
+          "pipeline_task": "zero-shot-classification",
           "cache_dir": "./models/cache",
           "enabled": true
         }
       },
       "ensemble_config": {
-        "mode": "weighted",
-        "require_all_models": false,
-        "fallback_mode": "single_best",
+        "mode": "majority",
+        "require_all_models": true,
+        "fallback_mode": "consensus",
         "confidence_threshold": 0.5
       }
     },

@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/4/b/tracker.md -->
+<!--
+Documentation for Phase 4b for Ash-NLP Service v3.1
+FILE VERSION: v3.1-4b-1-1
+LAST MODIFIED: 2025-08-13
+PHASE: 4b
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 4b: Learning System Audit
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Phase 3c: Comprehensive Integration Tests - FIXED VERSION
+Phase 3c: Comprehensive Integration Tests
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests complete integration of ThresholdMappingManager with existing system components
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp

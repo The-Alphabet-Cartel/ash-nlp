@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/c/tracker.md -->
+<!--
+Tracker Documentation for Phase 3c for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3c-1-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3c
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3c: Threshold Mapping Configuration Migration - Tracker
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  

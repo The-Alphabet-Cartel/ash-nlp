@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/frequently_asked_questions_v3.1.md -->
+<!--
+Frequently Asked Questions for Ash-NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 10.6 - Documentation Update for File Versioning
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # ❓Frequently Asked Questions (FAQ)❓
 
 ## Phase 3d

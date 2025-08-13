@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/d/step_1.md -->
+<!--
+Documentation for Phase 3d, Step 1 for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3d-1-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 1
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3d: Environmental Variables Cleanup - Step 1 Status Update
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  

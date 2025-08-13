@@ -1,7 +1,10 @@
 # ash-nlp/managers/unified_config_manager.py
 """
-Unified Configuration Manager for Ash NLP Service v3.1
-Clean v3.1 Architecture with v3.1 Pattern File Consolidation Support
+Unified Configuration Manager for Ash NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

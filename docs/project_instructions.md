@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/project_instructions.md -->
+<!--
+Project Instructions for Ash-NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # The Alphabet Cartel
 We are an LGBTQIA+ Discord community centered around gaming, political discourse and activism, community, and societal advocacy.
 
