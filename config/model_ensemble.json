@@ -42,7 +42,7 @@
         "pipeline_task": "${NLP_MODEL_DISTRESS_PIPELINE_TASK}",
         "cache_dir": "${NLP_MODEL_DISTRESS_CACHE_DIR}",
         "enabled": "${NLP_MODEL_DISTRESS_ENABLED}"
-      },
+      }
     },
     "ensemble_config": {
       "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
@@ -93,11 +93,11 @@
         "emotional_distress": {
           "name": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
           "weight": 0.15,
-          "type": "transformers", 
+          "type": "zero-shot-classification", 
           "pipeline_task": "zero-shot-classification",
           "cache_dir": "./models/cache",
           "enabled": true
-        },
+        }
       },
       "ensemble_config": {
         "mode": "majority",
