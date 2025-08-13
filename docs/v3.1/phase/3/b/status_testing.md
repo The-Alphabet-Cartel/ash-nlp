@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/b/status_testing.md -->
+<!--
+Documentation for Phase 3b for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3b-1-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3b
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3b Testing Tracker - Session 1
 
 **Date**: August 5, 2025

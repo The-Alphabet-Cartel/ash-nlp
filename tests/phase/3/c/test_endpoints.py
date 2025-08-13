@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Phase 3c Endpoint Integration Test - Clean v3.1 Architecture Compliant
+Phase 3c Endpoint Integration Test
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests Phase 3c threshold mapping functionality through real HTTP endpoints
 
 Updated to match clean v3.1 architecture and actual endpoint implementation

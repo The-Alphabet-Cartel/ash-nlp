@@ -1,4 +1,14 @@
+<!-- ash-nlp/docs/v3.1/clean_architecture_charter_v3.1.md -->
+<!--
+Clean Architecture Charter for Ash-NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10.6 - Documentation Updated for File Versioning
+CLEAN ARCHITECTURE: v3.1 Compliant
+MIGRATION STATUS: Charter updated with file versioning requirements
+-->
 # Clean v3.1 Architecture Charter - Ash-NLP (Production Ready)
+
 ## Sacred Principles - NEVER TO BE VIOLATED
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
@@ -40,12 +50,57 @@
 - **System prioritizes **operational continuity** for life-saving functionality**
 - **Clear error logging for debugging while maintaining service availability**
 
+### **Rule #6: File Versioning System - MANDATORY** *(Phase 3d Step 10.6)*
+- **ALL code files MUST include version headers** in the format:
+  - `v[Major]-[Minor]-[Phase]-[Step]-[Increment]`
+- **Version format**:
+  - `v3.1-3d-10.6-1`
+  - (Clean Architecture v3.1, Phase 3d, Step 10.6, Increment 1)
+- **Header placement**:
+  - At the top of each file in comments or docstrings
+- **Version increments**:
+  - Required for each meaningful change within a step
+- **Cross-conversation continuity**:
+  - Ensures accurate file tracking across sessions
+- *Version Headers should include at the top of the header a file description of what the file code does*
+  - `[fileDescription] for Ash-NLP Service`
+
+
+#### **Required Version Header Format:**
+```python
+"""
+[fileDescription] for Ash-NLP Service
+FILE VERSION: v3.1-3d-10.6-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10.6 - Scoring Functions Consolidated
+CLEAN ARCHITECTURE: v3.1 Compliant
+MIGRATION STATUS: [Brief description of current state]
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
+"""
+```
+
+#### **Version Increment Guidelines:**
+- **Major changes**: New functionality, architectural modifications
+- **Minor changes**: Bug fixes, small improvements, documentation updates
+- **Step completion**: Always increment when completing a phase step
+- **Cross-session**: Always increment when continuing work across conversations
+
 ---
 
 ## 🔧 **MANAGER IMPLEMENTATION STANDARDS**
 
 ### **Required Manager Structure:**
 ```python
+"""
+[managerDescription] for Ash-NLP Service
+FILE VERSION: v3.1-3d-[step]-[increment]
+LAST MODIFIED: [date]
+PHASE: [current phase and step]
+CLEAN ARCHITECTURE: v3.1 Compliant
+MIGRATION STATUS: [current status]
+"""
+
 class [Manager]Manager:
     def __init__(self, config_manager, [additional_managers...]):
         """Constructor with dependency injection"""
@@ -97,7 +152,13 @@ except Exception as e:
 **JSON Structure**
 ```json
 {
-  [...]
+  "_metadata": {
+    "file_version": "v3.1-3d-[step]-[increment]",
+    "last_modified": "2025-08-13",
+    "phase": "3d Step [X] - [Description]",
+    "clean_architecture": "v3.1 Compliant",
+    "migration_status": "[Brief description]"
+  },
   "*setting_category*": {
     "description": "*settingDescription*",
     "*setting_name*": "${*ENV_VAR*}",
@@ -117,7 +178,13 @@ except Exception as e:
 **Example**
 ```json
 {
-  [...]
+  "_metadata": {
+    "file_version": "v3.1-3d-10.6-1",
+    "last_modified": "2025-08-13",
+    "phase": "3d Step 10.6 - Scoring Functions Consolidated",
+    "clean_architecture": "v3.1 Compliant",
+    "migration_status": "JSON configuration updated for consolidated architecture"
+  },
   "crisis_thresholds": {
     "description": "Core crisis level mapping thresholds for analysis algorithms",
     "high": "${NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH}",
@@ -134,8 +201,7 @@ except Exception as e:
       "ordering": "high > medium > low",
       "fallback_behavior": "use_defaults_with_logging"
     }
-  },
-  [...]
+  }
 }
 ```
 
@@ -192,12 +258,20 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - **Factory**: `create_unified_config_manager(config_dir)`
 - **Resilience**: Schema-based validation with intelligent type conversion
 
+### **Phase 3d Step 10.6: Scoring Function Consolidation** *(Current)*
+- **Principle**: Eliminate `utils/scoring_helpers.py` by consolidating functions into `CrisisAnalyzer`
+- **Integration**: All scoring functions as `CrisisAnalyzer` instance methods with dependency injection
+- **Factory**: Uses existing `create_crisis_analyzer()` factory function
+- **Resilience**: Manager-aware fallbacks when dependencies unavailable
+- **File Versioning**: All updated files include version headers for tracking
+
 ### **Future Phases**
 - **MUST follow established patterns**
 - **MUST use factory functions**
 - **MUST maintain cumulative integration**
 - **MUST preserve all previous phase functionality**
 - **MUST implement production-ready resilience**
+- **MUST include file versioning headers**
 
 ---
 
@@ -210,6 +284,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 4. **Does this maintain JSON + environment configuration?** ✅ Required
 5. **Does this implement resilient error handling?** ✅ **PRODUCTION CRITICAL**
 6. **Does this maintain operational continuity for crisis detection?** ✅ **LIFE-SAVING REQUIRED**
+7. **Does this include proper file versioning?** ✅ **TRACKING REQUIRED** *(Phase 3d Step 10.6)*
 
 ### **Red Flags - IMMEDIATE STOP:**
 - ❌ Direct constructor calls in production code
@@ -219,6 +294,8 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ❌ Bypassing factory functions
 - ❌ **NEW**: Implementing fail-fast for non-critical configuration issues
 - ❌ **NEW**: Allowing system crashes for recoverable problems
+- ❌ **NEW**: Missing file version headers in code files *(Phase 3d Step 10.6)*
+- ❌ **NEW**: Inconsistent version numbering across files *(Phase 3d Step 10.6)*
 
 ---
 
@@ -230,6 +307,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ✅ All phases cumulative and functional
 - ✅ Clean dependency injection throughout
 - ✅ **Production-ready resilient error handling**
+- ✅ **Consistent file versioning across all code files** *(Phase 3d Step 10.6)*
 
 ### **Integration Health:**
 - ✅ Tests use same patterns as production code
@@ -237,12 +315,14 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ✅ Managers properly integrated across phases
 - ✅ Configuration overrides working consistently
 - ✅ **System maintains availability under adverse conditions**
+- ✅ **File versions track accurately across conversations** *(Phase 3d Step 10.6)*
 
 ### **Production Readiness:**
 - ✅ **Operational continuity preserved** under configuration issues
 - ✅ **Comprehensive logging** for debugging and monitoring
 - ✅ **Safe fallback mechanisms** for all critical functionality
 - ✅ **Crisis detection capability** maintained regardless of configuration state
+- ✅ **Version tracking enables precise change management** *(Phase 3d Step 10.6)*
 
 ---
 
@@ -253,17 +333,19 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - **Maintainable and extensible codebase** with production-ready resilience
 - **Clear separation of concerns** with intelligent error recovery
 - **Professional-grade system design** optimized for life-saving service delivery
+- **Precise version tracking** for maintainable cross-conversation development *(Phase 3d Step 10.6)*
 
 **Every architectural decision supports the mission of providing continuous, reliable mental health support to LGBTQIA+ community members.**
 
 ---
 
-**Status**: Living Document - Updated for Production Resilience (Phase 3d)  
+**Status**: Living Document - Updated for Production Resilience (Phase 3d Step 10.6)  
 **Authority**: Project Lead + AI Assistant Collaboration  
 **Enforcement**: Mandatory for ALL code changes  
+**Version**: v3.1-3d-10.6-3
 
 ---
 
 ## 🏆 **ARCHITECTURE PLEDGE**
 
-*"I commit to maintaining Clean v3.1 architecture principles with production-ready resilience in every code change, recognizing that system availability and operational continuity directly impact the ability to provide life-saving mental health crisis detection for The Alphabet Cartel community."*
+*"I commit to maintaining Clean v3.1 architecture principles with production-ready resilience and consistent file versioning in every code change, recognizing that system availability, operational continuity, and precise change tracking directly impact the ability to provide life-saving mental health crisis detection for The Alphabet Cartel community."*

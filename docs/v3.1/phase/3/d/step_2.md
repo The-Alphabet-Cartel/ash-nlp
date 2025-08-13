@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/d/step_2.md -->
+<!--
+Documentation for Phase 3d, Step 2 for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3d-2-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 2
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3d: Unified Configuration Architecture Design
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  

@@ -1,7 +1,9 @@
 # ash-nlp/api/__init__.py
 """
 API Package for Ash NLP Service v3.1
-Clean v3.1 Architecture
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

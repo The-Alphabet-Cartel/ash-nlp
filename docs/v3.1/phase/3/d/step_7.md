@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/d/step_7.md -->
+<!--
+Documentation for Phase 3d, Step 7 for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3d-7-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 7
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3d: Step 7 - Feature Flags & Performance Cleanup - ✅ COMPLETE
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  

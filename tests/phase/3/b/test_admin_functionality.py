@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Admin Functionality Deep Validation - Label Management
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Specifically tests the admin functionality you're concerned about losing.
 
 Usage: docker compose exec ash-nlp python tests/test_admin_functionality.py

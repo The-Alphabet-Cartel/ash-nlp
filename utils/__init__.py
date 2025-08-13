@@ -1,5 +1,6 @@
 # ash-nlp/utils/__init__.py
 """
+Utility Packages for Ash-NLP Service v3.1
 FILE VERSION: v3.1-3d-10.6-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.6 - Scoring Functions Consolidated

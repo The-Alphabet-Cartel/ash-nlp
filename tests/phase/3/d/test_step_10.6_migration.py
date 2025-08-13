@@ -1,7 +1,10 @@
 # ash-nlp/tests/test_step_10_6_migration.py
 """
+Phase 3d, Step 10.6 Testing Suite for Ash-NLP Service v3.1
 FILE VERSION: v3.1-3d-10.6-1
 LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10.6 - Scoring Functions Consolidated
+CLEAN ARCHITECTURE: v3.1 Compliant
 Phase 3d Step 10.6 Migration Test: Validate Consolidated Scoring Functions
 Clean v3.1 Architecture Compliance Test
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
