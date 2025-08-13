@@ -19,69 +19,36 @@
 
   "model_ensemble": {
     "model_definitions": {
-    "model_definitions": {
       "sentiment": {
-      "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
-      "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
-      "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
-      "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
-      "cache_dir": "${NLP_MODEL_SENTIMENT_CACHE_DIR}",
-      "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}",
-      "defaults": {
-        "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
-        "weight": 0.4,
-        "type": "transformers",
-        "pipeline_task": "text-classification",
-        "cache_dir": "./models/cache",
-        "enabled": true
+        "name": "${NLP_MODEL_SENTIMENT_MODEL_NAME}",
+        "weight": "${NLP_MODEL_SENTIMENT_MODEL_WEIGHT}",
+        "type": "${NLP_MODEL_SENTIMENT_MODEL_TYPE}",
+        "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_SENTIMENT_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}"
       },
-      "ensemble_config": {
-        "mode": "weighted"
-      }
-    },
-    "emotional_distress": {
-      "name": "${NLP_MODEL_EMOTION_MODEL_NAME}",
-      "weight": "${NLP_MODEL_EMOTION_MODEL_WEIGHT}",
-      "type": "${NLP_MODEL_EMOTION_MODEL_TYPE}",
-      "pipeline_task": "${NLP_MODEL_EMOTION_PIPELINE_TASK}",
-      "cache_dir": "${NLP_MODEL_EMOTION_CACHE_DIR}",
-      "enabled": "${NLP_MODEL_EMOTION_ENABLED}",
-      "defaults": {
-        "name": "j-hartmann/emotion-english-distilroberta-base",
-        "weight": 0.35,
-        "type": "transformers",
-        "pipeline_task": "text-classification",
-        "cache_dir": "./models/cache",
-        "enabled": true
-      }
-    },
-    "depression": {
-      "name": "${NLP_MODEL_MENTAL_HEALTH_MODEL_NAME}",
-      "weight": "${NLP_MODEL_MENTAL_HEALTH_MODEL_WEIGHT}",
-      "type": "${NLP_MODEL_MENTAL_HEALTH_MODEL_TYPE}",
-      "pipeline_task": "${NLP_MODEL_MENTAL_HEALTH_PIPELINE_TASK}",
-      "cache_dir": "${NLP_MODEL_MENTAL_HEALTH_CACHE_DIR}",
-      "enabled": "${NLP_MODEL_MENTAL_HEALTH_ENABLED}",
-      "defaults": {
-        "name": "martin-ha/toxic-comment-model",
-        "weight": 0.25,
-        "type": "transformers",
-        "pipeline_task": "text-classification",
-        "cache_dir": "./models/cache",
-        "enabled": true
+      "emotional_distress": {
+        "name": "${NLP_MODEL_EMOTION_MODEL_NAME}",
+        "weight": "${NLP_MODEL_EMOTION_MODEL_WEIGHT}",
+        "type": "${NLP_MODEL_EMOTION_MODEL_TYPE}",
+        "pipeline_task": "${NLP_MODEL_EMOTION_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_EMOTION_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_EMOTION_ENABLED}"
+      },
+      "depression": {
+        "name": "${NLP_MODEL_MENTAL_HEALTH_MODEL_NAME}",
+        "weight": "${NLP_MODEL_MENTAL_HEALTH_MODEL_WEIGHT}",
+        "type": "${NLP_MODEL_MENTAL_HEALTH_MODEL_TYPE}",
+        "pipeline_task": "${NLP_MODEL_MENTAL_HEALTH_PIPELINE_TASK}",
+        "cache_dir": "${NLP_MODEL_MENTAL_HEALTH_CACHE_DIR}",
+        "enabled": "${NLP_MODEL_MENTAL_HEALTH_ENABLED}"
       }
     },
     "ensemble_config": {
       "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
       "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
       "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
-      "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
-      "defaults": {
-        "mode": "weighted",
-        "require_all_models": false,
-        "fallback_mode": "single_best",
-        "confidence_threshold": 0.5
-      }
+      "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}"
     }
   },
 
@@ -92,16 +59,7 @@
     "load_in_4bit": "${NLP_MODEL_HARDWARE_LOAD_IN_4BIT}",
     "torch_dtype": "${NLP_MODEL_HARDWARE_TORCH_DTYPE}",
     "max_memory": "${NLP_MODEL_HARDWARE_MAX_MEMORY}",
-    "offload_folder": "${NLP_MODEL_HARDWARE_OFFLOAD_FOLDER}",
-    "defaults": {
-      "device": "auto",
-      "device_map": "auto",
-      "load_in_8bit": false,
-      "load_in_4bit": false,
-      "torch_dtype": "float16",
-      "max_memory": null,
-      "offload_folder": null
-    }
+    "offload_folder": "${NLP_MODEL_HARDWARE_OFFLOAD_FOLDER}"
   },
 
   "validation": {
@@ -116,35 +74,46 @@
   "defaults": {
     "model_ensemble": {
       "model_definitions": {
-      "sentiment": {
-        "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
-        "weight": 0.4,
-        "type": "transformers",
-        "pipeline_task": "text-classification",
-        "cache_dir": "./models/cache",
-        "enabled": true
+        "sentiment": {
+          "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
+          "weight": 0.4,
+          "type": "transformers",
+          "pipeline_task": "text-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        },
+        "emotional_distress": {
+          "name": "j-hartmann/emotion-english-distilroberta-base",
+          "weight": 0.35,
+          "type": "transformers", 
+          "pipeline_task": "text-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        },
+        "depression": {
+          "name": "martin-ha/toxic-comment-model",
+          "weight": 0.25,
+          "type": "transformers",
+          "pipeline_task": "text-classification",
+          "cache_dir": "./models/cache",
+          "enabled": true
+        }
       },
-      "emotional_distress": {
-        "name": "j-hartmann/emotion-english-distilroberta-base",
-        "weight": 0.35,
-        "type": "transformers", 
-        "pipeline_task": "text-classification",
-        "cache_dir": "./models/cache",
-        "enabled": true
-      },
-      "depression": {
-        "name": "martin-ha/toxic-comment-model",
-        "weight": 0.25,
-        "type": "transformers",
-        "pipeline_task": "text-classification",
-        "cache_dir": "./models/cache",
-        "enabled": true
+      "ensemble_config": {
+        "mode": "weighted",
+        "require_all_models": false,
+        "fallback_mode": "single_best",
+        "confidence_threshold": 0.5
       }
     },
     "hardware_settings": {
       "device": "auto",
+      "device_map": "auto",
       "load_in_8bit": false,
-      "lazy_loading": true
+      "load_in_4bit": false,
+      "torch_dtype": "float16",
+      "max_memory": null,
+      "offload_folder": null
     }
   }
 }
