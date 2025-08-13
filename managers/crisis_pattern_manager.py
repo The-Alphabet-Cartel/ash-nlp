@@ -329,7 +329,7 @@ class CrisisPatternManager:
 
     def apply_context_weights(self, message: str, base_crisis_score: float) -> Tuple[float, Dict[str, Any]]:
         """
-        Apply context weights to modify crisis score (STEP 10.7: Added from community patterns)
+        Apply context weights to modify crisis score (STEP 10.7: Updated to use existing environment variables)
         
         Args:
             message: Message text to analyze
@@ -349,45 +349,84 @@ class CrisisPatternManager:
             weights_applied = []
             total_adjustment = 0.0
             
-            # Apply crisis amplifier weights with more aggressive defaults
+            # STEP 10.7 FIX: Use existing environment variables instead of undefined ones
+            # Get boost values from existing variables in .env.template
+            try:
+                # Use existing NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT (default 1.5 in template)
+                context_boost_weight = float(self.config_manager.get_env('NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT', 1.5))
+                # Convert to our crisis amplifier format (scale down from 1.5 to 0.15)
+                crisis_base_weight = context_boost_weight * 0.1  # 1.5 * 0.1 = 0.15
+                
+                # Use existing NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER (default 1.0 in template)  
+                crisis_multiplier = float(self.config_manager.get_env('NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER', 1.0))
+                max_boost = crisis_base_weight * crisis_multiplier * 2.0  # Calculate reasonable max
+                
+                logger.debug(f"Using existing env vars: context_boost={context_boost_weight}, multiplier={crisis_multiplier}")
+                logger.debug(f"Calculated: base_weight={crisis_base_weight:.3f}, max_boost={max_boost:.3f}")
+                
+            except Exception as e:
+                logger.warning(f"Error reading existing environment variables: {e}, using safe defaults")
+                crisis_base_weight = 0.15
+                max_boost = 0.35
+            
+            # Apply crisis amplifier weights using calculated values
             crisis_words = context_weights.get('crisis_context_words', {})
             if crisis_words and 'words' in crisis_words:
                 amplifier_words = crisis_words.get('words', [])
-                base_weight = self._safe_get_float(crisis_words, 'base_weight', 0.15)  # More aggressive default
-                max_boost = self._safe_get_float(crisis_words, 'max_cumulative_boost', 0.35)  # More aggressive default
                 
                 for word in amplifier_words:
                     if isinstance(word, str) and word.lower() in message_lower:
-                        adjustment = min(base_weight, max_boost - total_adjustment)
+                        adjustment = min(crisis_base_weight, max_boost - total_adjustment)
                         if adjustment > 0:
                             total_adjustment += adjustment
                             weights_applied.append({
                                 'word': word,
                                 'type': 'crisis_amplifier',
                                 'adjustment': adjustment,
-                                'weight': base_weight
+                                'weight': crisis_base_weight,
+                                'source': 'existing_env_vars'
                             })
-                            logger.debug(f"Crisis amplifier '{word}': +{adjustment:.3f}")
+                            logger.debug(f"Crisis amplifier '{word}': +{adjustment:.3f} (from existing env vars)")
             
-            # Apply positive reducer weights with more aggressive defaults
+            # Apply positive reducer weights with safe defaults (no existing variables for this)
             positive_words = context_weights.get('positive_context_words', {})
             if positive_words and 'words' in positive_words:
                 reducer_words = positive_words.get('words', [])
-                base_weight = self._safe_get_float(positive_words, 'base_weight', -0.10)  # More aggressive default
-                max_reduction = self._safe_get_float(positive_words, 'max_cumulative_reduction', -0.30)  # More aggressive default
+                positive_base_weight = -0.10  # Safe default
+                max_reduction = -0.30  # Safe default
                 
                 for word in reducer_words:
                     if isinstance(word, str) and word.lower() in message_lower:
-                        adjustment = max(base_weight, max_reduction - total_adjustment)
+                        adjustment = max(positive_base_weight, max_reduction - total_adjustment)
                         if adjustment < 0:
                             total_adjustment += adjustment
                             weights_applied.append({
                                 'word': word,
                                 'type': 'positive_reducer',
                                 'adjustment': adjustment,
-                                'weight': base_weight
+                                'weight': positive_base_weight,
+                                'source': 'safe_defaults'
                             })
-                            logger.debug(f"Positive reducer '{word}': {adjustment:.3f}")
+                            logger.debug(f"Positive reducer '{word}': {adjustment:.3f} (safe default)")
+            
+            # Additional context boost from hopelessness detection
+            if any(word in message_lower for word in ['hopeless', 'hope', 'despair', 'desperate']):
+                # Use existing NLP_CONFIG_ENHANCED_CRISIS_WEIGHT (default 1.2 in template)
+                try:
+                    enhanced_weight = float(self.config_manager.get_env('NLP_CONFIG_ENHANCED_CRISIS_WEIGHT', 1.2))
+                    hopelessness_boost = (enhanced_weight - 1.0) * 0.2  # Convert 1.2 to 0.04 boost
+                    if hopelessness_boost > 0:
+                        total_adjustment += hopelessness_boost
+                        weights_applied.append({
+                            'word': 'hopelessness_context',
+                            'type': 'enhanced_crisis_boost',
+                            'adjustment': hopelessness_boost,
+                            'weight': enhanced_weight,
+                            'source': 'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT'
+                        })
+                        logger.debug(f"Enhanced crisis boost for hopelessness: +{hopelessness_boost:.3f}")
+                except Exception as e:
+                    logger.warning(f"Error applying enhanced crisis weight: {e}")
             
             # Calculate final score with bounds checking
             modified_score = max(0.0, min(1.0, base_crisis_score + total_adjustment))
@@ -399,11 +438,14 @@ class CrisisPatternManager:
                 'modified_score': modified_score,
                 'crisis_words_found': len([w for w in weights_applied if w['type'] == 'crisis_amplifier']),
                 'positive_words_found': len([w for w in weights_applied if w['type'] == 'positive_reducer']),
-                'source': 'consolidated_context_weights'
+                'enhanced_boosts': len([w for w in weights_applied if w['type'] == 'enhanced_crisis_boost']),
+                'source': 'existing_environment_variables',
+                'uses_new_env_vars': False,
+                'reuses_existing_infrastructure': True
             }
             
             if total_adjustment != 0:
-                logger.info(f"Context weights: {base_crisis_score:.3f} → {modified_score:.3f} (Δ{total_adjustment:+.3f})")
+                logger.info(f"Context weights (using existing env vars): {base_crisis_score:.3f} → {modified_score:.3f} (Δ{total_adjustment:+.3f})")
             
             return modified_score, analysis_details
             
