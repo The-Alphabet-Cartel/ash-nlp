@@ -1,7 +1,7 @@
 # ash-nlp/main.py
 """
 Ash-NLP Main Application Entry Point for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.8-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -39,6 +39,7 @@ from managers.settings_manager import create_settings_manager
 from managers.storage_config_manager import create_storage_config_manager
 from managers.threshold_mapping_manager import create_threshold_mapping_manager
 from managers.zero_shot_manager import create_zero_shot_manager
+from managers.context_pattern_manager import create_context_pattern_manager
 
 # Analysis Components
 from analysis import create_crisis_analyzer
@@ -185,6 +186,10 @@ def initialize_unified_managers():
         zero_shot_manager = create_zero_shot_manager(unified_config)
         logger.info("✅ Zero shot manager initialized...")
         
+        logger.info("🔧 Initializing context pattern manager...")  # NEW: Step 10.8
+        context_pattern_manager = create_context_pattern_manager(unified_config)  # NEW: Step 10.8
+        logger.info("✅ Context pattern manager initialized...")  # NEW: Step 10.8
+
         logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
             unified_config,
@@ -212,25 +217,27 @@ def initialize_unified_managers():
             threshold_mapping_manager=threshold_mapping,
             feature_config_manager=feature_config,
             performance_config_manager=performance_config,
+            context_pattern_manager=context_pattern_manager,  # NEW: Step 10.8
         )
         logger.info("✅ Analysis components initialized")
         
         managers = {
             'unified_config': unified_config,
-            'crisis_pattern': crisis_pattern,
             'analysis_parameters': analysis_parameters,
-            'threshold_mapping': threshold_mapping,
-            'logging_config': logging_config,
+            'crisis_pattern': crisis_pattern,
+            'context_pattern': context_pattern_manager,  # NEW: Step 10.8
             'feature_config': feature_config,
-            'performance_config': performance_config,
-            'server_config': server_config,
-            'storage_config': storage_config,
+            'logging_config': logging_config,
             'model_ensemble': model_ensemble,
             'models_manager': models_manager,
-            'pydantic': pydantic_manager,
-            'settings': settings,
+            'performance_config': performance_config,
+            'pydantic_manager': pydantic_manager,
+            'server_config': server_config,
+            'storage_config': storage_config,
+            'threshold_mapping': threshold_mapping,
             'zero_shot_manager': zero_shot_manager,
-            'crisis_analyzer': crisis_analyzer
+            'settings': settings,
+            'crisis_analyzer': crisis_analyzer,
         }
         
         logger.info("🎉 All managers initialized successfully with unified configuration")
