@@ -1,9 +1,9 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+FILE VERSION: v3.1-3d-10.9-1
+LAST MODIFIED: 2025-08-14
+PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -32,36 +32,35 @@ class VariableSchema:
 
 class UnifiedConfigManager:
     """
-    Unified Configuration Manager for Ash-NLP v3.1d with Pattern File Consolidation Support
+    Unified Configuration Manager for Ash-NLP v3.1d with Enhanced Environment Variable Resolution
     
-    FOLLOWS ESTABLISHED PATTERN WITH DEFAULTS BLOCK:
+    STEP 10.9 ENHANCEMENT:
+    Enhanced substitute_environment_variables method to properly resolve placeholders using:
+    1. Environment variables (first priority)
+    2. JSON defaults block (second priority) 
+    3. Schema defaults (third priority)
+    4. Only leave placeholders if no resolution possible
+    
+    FOLLOWS ESTABLISHED PATTERN WITH ENHANCED DEFAULTS RESOLUTION:
     1. JSON files have main configuration with ${VAR_NAME} placeholders
     2. JSON files have separate "defaults" block with actual default values
     3. Environment variables substitute ${VAR_NAME} placeholders when present
-    4. Remaining placeholders fall back to values from "defaults" block
+    4. ENHANCED: Remaining placeholders immediately check JSON defaults block
+    5. ENHANCED: Still unresolved placeholders fall back to schema defaults
+    6. ENHANCED: Type conversion applied consistently across all resolution paths
     
     Example JSON structure:
     {
-      "model_ensemble": {
-        "model_definitions": {
-          "depression": {
-            "name": "${NLP_MODEL_DEPRESSION_NAME}",  // Environment placeholder
-            "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}"
-          }
-        },
-        "defaults": {  // Separate defaults block
-          "model_definitions": {
-            "depression": {
-              "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",  // Actual default
-              "weight": 0.4
-            }
-          }
+      "crisis_amplification_patterns": {
+        "crisis_amplifier_weight": "${NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST}",
+        "defaults": {
+          "crisis_amplifier_weight": 1.2  // Used when env var doesn't exist
         }
       }
     }
     
     This manager consolidates:
-    - UnifiedConfigManager: JSON loading with ${VAR} substitution (PRESERVED)
+    - UnifiedConfigManager: JSON loading with ${VAR} substitution (ENHANCED)
     - EnvConfigManager: Schema validation and type conversion (INTEGRATED)  
     - Direct os.getenv(): Centralized environment access (REPLACED)
     
@@ -69,7 +68,7 @@ class UnifiedConfigManager:
     - Factory function pattern  
     - Dependency injection support
     - Fail-fast validation
-    - JSON placeholders + defaults block pattern
+    - JSON placeholders + defaults block pattern (ENHANCED)
     
     v3.1 Pattern File Consolidation Support:
     - Supports consolidated context_patterns.json (crisis + positive + weights)
@@ -127,7 +126,7 @@ class UnifiedConfigManager:
         # Load and validate all environment variables
         self.env_config = self._load_all_environment_variables()
         
-        logger.info("UnifiedConfigManager v3.1 Consolidated initialized - Following established JSON patterns with consolidation support")
+        logger.info("UnifiedConfigManager v3.1d Step 10.9 initialized - Enhanced environment variable resolution with JSON defaults integration")
     
     def _initialize_schemas(self) -> Dict[str, VariableSchema]:
         """Initialize comprehensive schema definitions for all 150+ environment variables"""
@@ -227,6 +226,14 @@ class UnifiedConfigManager:
                 'enhanced_crisis',
                 choices=['enhanced_crisis', 'clinical_focused', 'conversational', 'safety_first'],
                 description='Fallback label set if primary fails'),
+
+            # STEP 10.9: Add schema for context pattern variables (from .env.template)
+            'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Enhanced crisis pattern weight multiplier'),
+            'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Hopelessness context crisis boost factor'),
 
             # Preserve GLOBAL_* variables (Ecosystem Compatibility)
             'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO',
@@ -710,125 +717,229 @@ class UnifiedConfigManager:
             return schema.default
     
     # ========================================================================
-    # JSON CONFIGURATION METHODS (FOLLOWS ESTABLISHED PATTERN)
+    # JSON CONFIGURATION METHODS - STEP 10.9 ENHANCED
     # ========================================================================
     
-    def substitute_environment_variables(self, value: Any) -> Any:
+    def substitute_environment_variables(self, value: Any, defaults_context: Dict[str, Any] = None) -> Any:
         """
-        Substitute environment variables in configuration values
-        FOLLOWS ESTABLISHED PATTERN: ${VAR} placeholders + defaults block fallback
+        STEP 10.9 ENHANCED: Substitute environment variables with immediate defaults fallback
+        
+        ENHANCED RESOLUTION ORDER:
+        1. Environment variables (os.getenv())
+        2. JSON defaults block (when available)
+        3. Schema defaults (when available)
+        4. Original placeholder (only if no resolution possible)
+        
+        Args:
+            value: Value to process (can be string, dict, list, or primitive)
+            defaults_context: Current defaults context for this configuration section
+            
+        Returns:
+            Processed value with placeholders resolved
         """
         if isinstance(value, str):
             def replace_env_var(match):
                 env_var = match.group(1)
-                # Use os.getenv() directly for substitution (following established pattern)
+                logger.debug(f"🔄 Step 10.9: Processing ${{{env_var}}}")
+                
+                # Step 1: Try environment variable first
                 env_value = os.getenv(env_var)
-                
-                logger.debug(f"🔄 Substituting ${{{env_var}}} = {env_value}")
-                
                 if env_value is not None:
-                    # Type conversion for substituted values (follows UnifiedConfigManager pattern)
-                    if env_value.lower() in ('true', 'false'):
-                        result = str(env_value.lower() == 'true')
-                        logger.debug(f"   → Converted to boolean: {result}")
-                        return result
-                    elif env_value.replace('.', '').replace('-', '').isdigit():
-                        try:
-                            # Try float first, then int
-                            if '.' in env_value:
-                                result = str(float(env_value))
-                                logger.debug(f"   → Converted to float: {result}")
-                                return result
-                            else:
-                                result = str(int(env_value))
-                                logger.debug(f"   → Converted to int: {result}")
-                                return result
-                        except ValueError:
-                            logger.debug(f"   → Kept as string: {env_value}")
-                            return env_value
-                    else:
-                        logger.debug(f"   → Used as string: {env_value}")
-                        return env_value
-                else:
-                    logger.debug(f"⚠️ Environment variable {env_var} not found, keeping placeholder for defaults fallback")
-                    return match.group(0)  # Return original placeholder for defaults processing
+                    logger.debug(f"   ✅ Environment: ${{{env_var}}} = {env_value}")
+                    return self._convert_value_type(env_value)
+                
+                # Step 2: Try JSON defaults context (new in Step 10.9)
+                if defaults_context:
+                    defaults_value = self._find_default_value(env_var, defaults_context)
+                    if defaults_value is not None:
+                        logger.debug(f"   ✅ JSON defaults: ${{{env_var}}} = {defaults_value}")
+                        return str(defaults_value)  # Convert to string for substitution
+                
+                # Step 3: Try schema defaults (existing fallback)
+                if env_var in self.variable_schemas:
+                    schema_default = self.variable_schemas[env_var].default
+                    logger.debug(f"   ✅ Schema default: ${{{env_var}}} = {schema_default}")
+                    return str(schema_default)
+                
+                # Step 4: No resolution possible - warn and keep placeholder
+                logger.warning(f"   ⚠️ No resolution found for ${{{env_var}}} - keeping placeholder")
+                return match.group(0)  # Return original placeholder
             
-            return self.env_override_pattern.sub(replace_env_var, value)
+            # Apply substitution with enhanced resolution
+            result = self.env_override_pattern.sub(replace_env_var, value)
+            logger.debug(f"🔄 Step 10.9: '{value}' → '{result}'")
+            return result
             
         elif isinstance(value, dict):
-            return {k: self.substitute_environment_variables(v) for k, v in value.items()}
+            # Process dictionaries recursively, passing defaults context
+            result = {}
+            current_defaults = defaults_context or value.get('defaults', {})
+            
+            for k, v in value.items():
+                if k == 'defaults':
+                    # Keep defaults block as-is for reference
+                    result[k] = v
+                else:
+                    # Get defaults for this key if available
+                    key_defaults = current_defaults.get(k, {}) if isinstance(current_defaults, dict) else {}
+                    result[k] = self.substitute_environment_variables(v, key_defaults)
+            return result
             
         elif isinstance(value, list):
-            return [self.substitute_environment_variables(item) for item in value]
+            # Process lists recursively
+            return [self.substitute_environment_variables(item, defaults_context) for item in value]
             
         else:
+            # Return primitive values as-is
             return value
+    
+    def _find_default_value(self, env_var: str, defaults_context: Dict[str, Any]) -> Any:
+        """
+        STEP 10.9 NEW: Find default value for environment variable in JSON defaults context
+        
+        This method searches through the defaults context to find a matching default value
+        for the given environment variable.
+        
+        Args:
+            env_var: Environment variable name (e.g., 'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST')
+            defaults_context: Current defaults context dictionary
+            
+        Returns:
+            Default value if found, None otherwise
+        """
+        if not isinstance(defaults_context, dict):
+            return None
+        
+        # Direct key lookup (most common case)
+        if env_var in defaults_context:
+            logger.debug(f"   🎯 Direct match for {env_var} in defaults")
+            return defaults_context[env_var]
+        
+        # Search through nested structures
+        for key, value in defaults_context.items():
+            # Skip metadata and other non-data keys
+            if key.startswith('_') or key == 'defaults':
+                continue
+                
+            if isinstance(value, dict):
+                # Recursive search in nested dictionaries
+                found = self._find_default_value(env_var, value)
+                if found is not None:
+                    logger.debug(f"   🎯 Nested match for {env_var} in defaults.{key}")
+                    return found
+            
+            # Pattern matching for common variable patterns
+            # Convert env var name to potential JSON key patterns
+            simplified_key = self._env_var_to_json_key(env_var)
+            if key == simplified_key:
+                logger.debug(f"   🎯 Pattern match for {env_var} → {key}")
+                return value
+        
+        return None
+    
+    def _env_var_to_json_key(self, env_var: str) -> str:
+        """
+        STEP 10.9 NEW: Convert environment variable name to potential JSON key
+        
+        Examples:
+        - NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST → crisis_amplifier_weight
+        - NLP_CONFIG_ENHANCED_CRISIS_WEIGHT → enhanced_crisis_weight
+        
+        Args:
+            env_var: Environment variable name
+            
+        Returns:
+            Potential JSON key name
+        """
+        # Remove common prefixes
+        key = env_var.replace('NLP_', '').replace('CONFIG_', '').replace('GLOBAL_', '')
+        
+        # Convert to lowercase with underscores
+        key = key.lower()
+        
+        # Common pattern mappings
+        pattern_mappings = {
+            'hopelessness_context_crisis_boost': 'crisis_amplifier_weight',
+            'enhanced_crisis_weight': 'enhanced_crisis_weight',
+            'crisis_context_boost_multiplier': 'crisis_amplifier_weight',
+            'lgbtqia_weight_multiplier': 'lgbtqia_weight_multiplier',
+            'burden_weight_multiplier': 'burden_weight_multiplier'
+        }
+        
+        return pattern_mappings.get(key, key)
+    
+    def _convert_value_type(self, value: str) -> str:
+        """
+        STEP 10.9 ENHANCED: Convert string value to appropriate type for substitution
+        
+        Args:
+            value: String value to convert
+            
+        Returns:
+            String representation of converted value
+        """
+        # Boolean conversion
+        if value.lower() in ('true', 'false'):
+            result = str(value.lower() == 'true')
+            logger.debug(f"   → Boolean conversion: {value} → {result}")
+            return result
+        
+        # Numeric conversion
+        if value.replace('.', '').replace('-', '').isdigit():
+            try:
+                if '.' in value:
+                    result = str(float(value))
+                    logger.debug(f"   → Float conversion: {value} → {result}")
+                    return result
+                else:
+                    result = str(int(value))
+                    logger.debug(f"   → Int conversion: {value} → {result}")
+                    return result
+            except ValueError:
+                logger.debug(f"   → String (conversion failed): {value}")
+                return value
+        
+        # String (no conversion)
+        logger.debug(f"   → String (no conversion): {value}")
+        return value
     
     def _apply_defaults_fallback(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Apply defaults block fallback for any remaining ${VAR} placeholders
-        Handles the established pattern: main config + defaults block
+        STEP 10.9 UPDATED: Legacy defaults fallback - now mostly redundant
+        
+        This method is kept for backward compatibility but most placeholder resolution
+        now happens in substitute_environment_variables() with immediate defaults lookup.
+        
+        Args:
+            config: Configuration dictionary
+            
+        Returns:
+            Configuration with any remaining placeholders resolved
         """
         defaults = config.get('defaults', {})
         if not defaults:
-            logger.debug("🔍 No defaults block found, skipping defaults fallback")
+            logger.debug("🔍 No defaults block found for legacy fallback")
             return config
         
-        logger.debug("🔧 Applying defaults block fallback for remaining placeholders...")
+        logger.debug("🔧 Step 10.9: Running legacy defaults fallback for any remaining placeholders...")
         
-        def apply_defaults_recursive(main_value: Any, defaults_value: Any) -> Any:
+        def apply_legacy_defaults_recursive(main_value: Any, defaults_value: Any) -> Any:
             if isinstance(main_value, str) and main_value.startswith('${') and main_value.endswith('}'):
-                # This is still a placeholder, use the default value with type conversion
-                logger.debug(f"🔄 Replacing placeholder {main_value} with default: {defaults_value}")
-                
-                # Apply type conversion to the default value
-                if isinstance(defaults_value, (int, float)):
-                    return defaults_value  # Already correct type
-                elif isinstance(defaults_value, str):
-                    # Try to convert string defaults to appropriate types
-                    if defaults_value.lower() in ('true', 'false'):
-                        return defaults_value.lower() == 'true'
-                    elif defaults_value.replace('.', '').replace('-', '').isdigit():
-                        try:
-                            if '.' in defaults_value:
-                                return float(defaults_value)
-                            else:
-                                return int(defaults_value)
-                        except ValueError:
-                            return defaults_value
-                    else:
-                        return defaults_value
-                else:
-                    return defaults_value
+                # This is still an unresolved placeholder - use the default
+                logger.debug(f"🔄 Legacy fallback: {main_value} → {defaults_value}")
+                return self._apply_type_conversion(defaults_value)
             elif isinstance(main_value, dict) and isinstance(defaults_value, dict):
                 # Recursively apply defaults to nested dictionaries
                 result = {}
                 for key in main_value:
                     if key in defaults_value:
-                        result[key] = apply_defaults_recursive(main_value[key], defaults_value[key])
+                        result[key] = apply_legacy_defaults_recursive(main_value[key], defaults_value[key])
                     else:
                         result[key] = main_value[key]
                 # Add any defaults that aren't in main config
                 for key in defaults_value:
                     if key not in result:
-                        # Apply type conversion to added defaults too
-                        if isinstance(defaults_value[key], (int, float, bool)):
-                            result[key] = defaults_value[key]
-                        elif isinstance(defaults_value[key], str):
-                            if defaults_value[key].lower() in ('true', 'false'):
-                                result[key] = defaults_value[key].lower() == 'true'
-                            elif defaults_value[key].replace('.', '').replace('-', '').isdigit():
-                                try:
-                                    if '.' in defaults_value[key]:
-                                        result[key] = float(defaults_value[key])
-                                    else:
-                                        result[key] = int(defaults_value[key])
-                                except ValueError:
-                                    result[key] = defaults_value[key]
-                            else:
-                                result[key] = defaults_value[key]
-                        else:
-                            result[key] = defaults_value[key]
+                        result[key] = self._apply_type_conversion(defaults_value[key])
                 return result
             elif isinstance(main_value, list) and isinstance(defaults_value, list):
                 # For lists, prefer main_value if it exists, otherwise use defaults
@@ -837,7 +948,7 @@ class UnifiedConfigManager:
                 # Use main value if it's not a placeholder
                 return main_value
         
-        # Apply defaults to the main configuration sections
+        # Apply legacy defaults to the main configuration sections
         result = {}
         for key, value in config.items():
             if key == 'defaults':
@@ -845,18 +956,51 @@ class UnifiedConfigManager:
                 result[key] = value
             elif key in defaults:
                 # Apply defaults to this section
-                result[key] = apply_defaults_recursive(value, defaults[key])
+                result[key] = apply_legacy_defaults_recursive(value, defaults[key])
             else:
                 # No defaults for this section, keep as-is
                 result[key] = value
         
-        logger.debug("✅ Defaults block fallback applied")
+        logger.debug("✅ Legacy defaults fallback completed")
         return result
+    
+    def _apply_type_conversion(self, value: Any) -> Any:
+        """
+        STEP 10.9 NEW: Apply type conversion to default values
+        
+        Args:
+            value: Value to convert
+            
+        Returns:
+            Type-converted value
+        """
+        if isinstance(value, str):
+            # Try to convert string defaults to appropriate types
+            if value.lower() in ('true', 'false'):
+                return value.lower() == 'true'
+            elif value.replace('.', '').replace('-', '').isdigit():
+                try:
+                    if '.' in value:
+                        return float(value)
+                    else:
+                        return int(value)
+                except ValueError:
+                    return value
+            else:
+                return value
+        else:
+            # Return non-string values as-is
+            return value
     
     def load_config_file(self, config_name: str) -> Dict[str, Any]:
         """
-        Load and parse a configuration file with environment variable substitution and defaults fallback
-        FOLLOWS ESTABLISHED PATTERN: ${VAR} placeholders + defaults block
+        STEP 10.9 ENHANCED: Load and parse configuration file with enhanced placeholder resolution
+        
+        Args:
+            config_name: Name of configuration to load
+            
+        Returns:
+            Processed configuration dictionary
         """
         if config_name in self.config_cache:
             logger.debug(f"📋 Using cached config for {config_name}")
@@ -876,25 +1020,24 @@ class UnifiedConfigManager:
             return {}
         
         try:
-            logger.debug(f"🔍 Loading config file: {config_path}")
+            logger.debug(f"🔍 Step 10.9: Loading config file: {config_path}")
             
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
             
             logger.debug(f"✅ JSON loaded successfully")
             
-            # Step 1: Substitute environment variables
-            logger.debug("🔄 Step 1: Starting environment variable substitution...")
-            env_substituted_config = self.substitute_environment_variables(raw_config)
+            # STEP 10.9 ENHANCED: Single-pass resolution with immediate defaults lookup
+            logger.debug("🔄 Step 10.9: Starting enhanced environment variable substitution with immediate defaults resolution...")
+            processed_config = self.substitute_environment_variables(raw_config)
             
-            # Step 2: Apply defaults block fallback for remaining placeholders
-            logger.debug("🔄 Step 2: Applying defaults block fallback...")
-            processed_config = self._apply_defaults_fallback(env_substituted_config)
+            # STEP 10.9: Legacy fallback for any remaining placeholders (should be minimal now)
+            processed_config = self._apply_defaults_fallback(processed_config)
             
             # Cache the processed configuration
             self.config_cache[config_name] = processed_config
             
-            logger.info(f"✅ Loaded configuration: {config_name} from {config_file}")
+            logger.info(f"✅ Step 10.9: Successfully loaded configuration: {config_name} from {config_file}")
             return processed_config
             
         except json.JSONDecodeError as e:
@@ -978,10 +1121,10 @@ class UnifiedConfigManager:
             
             logger.debug("✅ JSON loaded successfully")
             
-            # Apply environment variable substitutions
+            # STEP 10.9 ENHANCED: Apply enhanced environment variable substitutions
             processed_config = self.substitute_environment_variables(raw_config)
             
-            # Apply defaults fallback if present
+            # Apply legacy defaults fallback if present
             processed_config = self._apply_defaults_fallback(processed_config)
             
             # Cache the processed configuration
@@ -1068,12 +1211,13 @@ class UnifiedConfigManager:
         """
         return {
             'status': 'operational',
+            'version': 'v3.1d_step_10.9',
+            'enhancement': 'Enhanced Environment Variable Resolution',
             'config_files': len(self.config_files),
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
             'cache_size': len(self.config_cache),
             'config_directory': str(self.config_dir),
-            'version': 'v3.1_consolidated',
-            'architecture': 'Clean v3.1 with Unified Configuration and Pattern Consolidation',
+            'architecture': 'Clean v3.1 with Enhanced Configuration Resolution',
             'consolidation_status': {
                 'context_patterns_consolidated': 'context_patterns' in self.config_files,
                 'community_patterns_consolidated': 'community_vocabulary_patterns' in self.config_files,
@@ -1082,6 +1226,13 @@ class UnifiedConfigManager:
                     'crisis_lgbtqia_patterns', 'crisis_community_vocabulary'
                 ],
                 'consolidated_files': ['context_patterns', 'community_vocabulary_patterns']
+            },
+            'step_10_9_enhancements': {
+                'immediate_defaults_resolution': True,
+                'enhanced_placeholder_processing': True,
+                'json_defaults_integration': True,
+                'schema_fallback_support': True,
+                'type_conversion_consistency': True
             }
         }
 
@@ -1097,10 +1248,10 @@ def create_unified_config_manager(config_dir: str = "/app/config") -> UnifiedCon
         config_dir: Directory containing JSON configuration files
         
     Returns:
-        UnifiedConfigManager instance with consolidation support
+        UnifiedConfigManager instance with Step 10.9 enhancements
     """
     return UnifiedConfigManager(config_dir)
 
 __all__ = ['UnifiedConfigManager', 'create_unified_config_manager']
 
-logger.info("✅ UnifiedConfigManager v3.1 Consolidated loaded - JSON placeholders + defaults block pattern + pattern file consolidation support")
+logger.info("✅ UnifiedConfigManager v3.1d Step 10.9 loaded - Enhanced environment variable resolution with immediate JSON defaults integration")
