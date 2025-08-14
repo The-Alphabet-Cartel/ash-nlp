@@ -189,11 +189,23 @@ class UnifiedConfigManager:
             'NLP_SERVER_WORKERS': VariableSchema('int', 1, 
                 min_value=1, max_value=16,
                 description='Number of server workers'),
+            
+            # STEP 10.9 FIX: Add context pattern variables that are actively used in JSON configs
+            # These must be in essential core schemas because they're referenced in placeholder resolution
+            'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Enhanced crisis pattern weight multiplier'),
+            'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Hopelessness context crisis boost factor'),
+            'NLP_HOPELESSNESS_CONTEXT_BOOST_FACTOR': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Hopelessness context boost factor for pattern analysis'),
         }
     
     def _count_core_schemas(self) -> int:
         """Helper method to count core schemas for logging"""
-        return len(self._get_essential_core_schemas())
+        return len(self._get_essential_core_schemas())  # Should be 14 now (11 + 3 context variables)
     
     def _load_json_validation_schemas(self) -> Dict[str, VariableSchema]:
         """
