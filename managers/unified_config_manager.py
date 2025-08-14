@@ -1,9 +1,9 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.9-1
+FILE VERSION: v3.1-3d-10.9-2
 LAST MODIFIED: 2025-08-14
-PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION
+PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION + JSON-DRIVEN SCHEMA VALIDATION
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -126,310 +126,238 @@ class UnifiedConfigManager:
         # Load and validate all environment variables
         self.env_config = self._load_all_environment_variables()
         
-        logger.info("UnifiedConfigManager v3.1d Step 10.9 initialized - Enhanced environment variable resolution with JSON defaults integration")
+        logger.info("UnifiedConfigManager v3.1d Step 10.9 initialized - Enhanced environment variable resolution with JSON-driven schema validation")
     
     def _initialize_schemas(self) -> Dict[str, VariableSchema]:
-        """Initialize comprehensive schema definitions for all 150+ environment variables"""
+        """
+        STEP 10.9 REFACTORED: Initialize schemas using JSON-driven validation + essential core schemas
+        
+        This method now:
+        1. Loads essential core schemas from Python (for system startup)
+        2. Dynamically loads remaining schemas from JSON validation blocks
+        3. Significantly reduces code duplication and maintenance burden
+        """
         schemas = {}
         
-        # Models & Thresholds (Critical Priority)
-        schemas.update({
-            'NLP_MODEL_DEPRESSION_NAME': VariableSchema('str',
-                'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-            'NLP_MODEL_SENTIMENT_NAME': VariableSchema('str',
-                'Lowerated/lm6-deberta-v3-topic-sentiment'),
-            'NLP_MODEL_DISTRESS_NAME': VariableSchema('str',
-                'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-            'NLP_MODEL_DEPRESSION_WEIGHT': VariableSchema('float', 0.4,
-                min_value=0.0, max_value=1.0),
-            'NLP_MODEL_SENTIMENT_WEIGHT': VariableSchema('float', 0.3,
-                min_value=0.0, max_value=1.0),
-            'NLP_MODEL_DISTRESS_WEIGHT': VariableSchema('float', 0.3,
-                min_value=0.0, max_value=1.0),
-            'NLP_MODEL_CACHE_DIR': VariableSchema('str',
-                './models/cache'),
-            'NLP_MODEL_DEVICE': VariableSchema('str', 'auto',
-                choices=['auto', 'cpu', 'cuda']),
-            'NLP_MODEL_MAX_MEMORY_MB': VariableSchema('int', 8192,
-                min_value=1024, max_value=32768),
-            'NLP_MODEL_ENSEMBLE_MODE': VariableSchema('str', 'consensus',
-                choices=['consensus', 'majority', 'weighted']),
-            
-            # Analysis Parameters (High Priority)
-            'NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH': VariableSchema('float', 0.55,
-                min_value=0.0, max_value=1.0, 
-                description='High crisis threshold for analysis'),
-            'NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM': VariableSchema('float',
-                0.28, min_value=0.0, max_value=1.0, 
-                description='Medium crisis threshold for analysis'),
-            'NLP_ANALYSIS_CRISIS_THRESHOLD_LOW': VariableSchema('float', 0.16,
-                min_value=0.0, max_value=1.0, 
-                description='Low crisis threshold for analysis'),
-            'NLP_ANALYSIS_DEPRESSION_THRESHOLD': VariableSchema('float', 0.6,
-                min_value=0.0, max_value=1.0),
-            'NLP_ANALYSIS_SENTIMENT_THRESHOLD': VariableSchema('float', 0.5,
-                min_value=0.0, max_value=1.0),
-            'NLP_ANALYSIS_EMOTIONAL_DISTRESS_THRESHOLD': VariableSchema('float',
-                0.6, min_value=0.0, max_value=1.0),
-            'NLP_ANALYSIS_MINIMUM_TEXT_LENGTH': VariableSchema('int', 10,
-                min_value=1, max_value=1000),
-            'NLP_ANALYSIS_MAXIMUM_TEXT_LENGTH': VariableSchema('int', 512,
-                min_value=100, max_value=2048),
-            
-            # Server & Infrastructure (Medium Priority)
-            'NLP_SERVER_HOST': VariableSchema('str', '0.0.0.0'),
-            'NLP_SERVER_PORT': VariableSchema('int', 8881, min_value=1024,
-                max_value=65535),
-            'NLP_SERVER_WORKERS': VariableSchema('int', 1, min_value=1,
-                max_value=16),
-            'NLP_SERVER_TIMEOUT': VariableSchema('int', 60, min_value=10,
-                max_value=300),
-            'NLP_SERVER_RELOAD': VariableSchema('bool', False),
-            
-            # Storage & Logging (Medium Priority)
-            'NLP_STORAGE_DATA_DIR': VariableSchema('str', './data'),
-            'NLP_STORAGE_CACHE_DIR': VariableSchema('str', './cache'),
-            'NLP_STORAGE_LOG_DIR': VariableSchema('str', './logs'),
-            'NLP_LOGGING_LEVEL': VariableSchema('str', 'INFO',
-                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR']),
-            'NLP_LOGGING_FORMAT': VariableSchema('str', 'detailed',
-                choices=['simple', 'detailed', 'json']),
-            
-            # Feature Flags (Low Priority)
-            'NLP_FEATURE_ENABLE_CRISIS_DETECTION': VariableSchema('bool', True),
-            'NLP_FEATURE_ENABLE_PATTERN_MATCHING': VariableSchema('bool', True),
-            'NLP_FEATURE_ENABLE_STAFF_REVIEW': VariableSchema('bool', True),
-            'NLP_FEATURE_ENABLE_ENHANCED_PATTERNS': VariableSchema('bool',
-                False,
-                description='Enable enhanced pattern matching features'),
-            'NLP_FEATURE_ENSEMBLE_ANALYSIS': VariableSchema('bool', True,
-                description='Enable ensemble analysis functionality'),
-
-            # Performance Settings (Low Priority)
-            'NLP_PERFORMANCE_BATCH_SIZE': VariableSchema('int', 32,
-                min_value=1, max_value=256),
-            'NLP_PERFORMANCE_CACHE_SIZE': VariableSchema('int', 1000,
-                min_value=100, max_value=10000),
-            'NLP_PERFORMANCE_ENABLE_OPTIMIZATION': VariableSchema('bool', True),
-            
-            # Zero-Shot Label Configuration (NEW - Missing schemas causing warnings)
-            'NLP_ZERO_SHOT_LABEL_SET': VariableSchema('str', 'enhanced_crisis', 
-                choices=['enhanced_crisis', 'clinical_focused', 'conversational', 'safety_first'],
-                description='Zero-shot model label set selection'),
-            'NLP_ZERO_SHOT_ENABLE_RUNTIME_SWITCHING': VariableSchema('bool', True, 
-                description='Enable runtime switching of label sets'),
-            'NLP_ZERO_SHOT_CACHE_LABELS': VariableSchema('bool', True, 
-                description='Enable caching of label configurations'),
-            'NLP_ZERO_SHOT_VALIDATE_ON_LOAD': VariableSchema('bool', True, 
-                description='Validate label configuration on load'),
-            'NLP_ZERO_SHOT_FALLBACK_LABEL_SET': VariableSchema('str',
-                'enhanced_crisis',
-                choices=['enhanced_crisis', 'clinical_focused', 'conversational', 'safety_first'],
-                description='Fallback label set if primary fails'),
-
-            # STEP 10.9: Add schema for context pattern variables (from .env.template and JSON configs)
-            'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT': VariableSchema('float', 1.2,
-                min_value=0.1, max_value=5.0,
-                description='Enhanced crisis pattern weight multiplier'),
-            'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST': VariableSchema('float', 1.2,
-                min_value=0.1, max_value=5.0,
-                description='Hopelessness context crisis boost factor'),
-            'NLP_HOPELESSNESS_CONTEXT_BOOST_FACTOR': VariableSchema('float', 1.2,
-                min_value=0.1, max_value=5.0,
-                description='Hopelessness context boost factor for pattern analysis'),
-
-            # Preserve GLOBAL_* variables (Ecosystem Compatibility)
-            'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO',
-                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR']),
-            'GLOBAL_DEBUG': VariableSchema('bool', False),
-            'GLOBAL_ENABLE_LOGGING': VariableSchema('bool', True),
-            'GLOBAL_NLP_API_PORT': VariableSchema('int', 8881,
-                min_value=1024, max_value=65535),
-            'GLOBAL_ENABLE_CORS': VariableSchema('bool', True),
-            'GLOBAL_ALLOWED_IPS': VariableSchema('str',
-                '10.20.30.0/24,127.0.0.1,::1'),
-            'GLOBAL_HUGGINGFACE_TOKEN': VariableSchema('str', ''),
-            'GLOBAL_FEATURE_ENABLE_LEARNING_SYSTEM': VariableSchema('bool',
-                True),
-        })
+        # ESSENTIAL CORE SCHEMAS (Python-defined for system startup)
+        logger.debug("🔧 Loading essential core schemas from Python...")
+        schemas.update(self._get_essential_core_schemas())
         
-        # Add additional schemas for learning, thresholds, etc.
-        schemas.update(self._get_learning_schemas())
-        schemas.update(self._get_threshold_schemas())
-        schemas.update(self._get_extended_schemas())
+        # DYNAMIC JSON SCHEMAS (Loaded from validation blocks in JSON files)
+        logger.debug("🔧 Loading dynamic schemas from JSON validation blocks...")
+        schemas.update(self._load_json_validation_schemas())
         
-        logger.info(f"✅ Initialized {len(schemas)} environment variable schemas")
+        logger.info(f"✅ Step 10.9: Initialized {len(schemas)} schemas ({self._count_core_schemas()} core + {len(schemas) - self._count_core_schemas()} JSON-driven)")
         return schemas
     
-    def _get_learning_schemas(self) -> Dict[str, VariableSchema]:
-        """Get learning system variable schemas"""
+    def _get_essential_core_schemas(self) -> Dict[str, VariableSchema]:
+        """
+        STEP 10.9 NEW: Essential core schemas needed for system startup (Python-defined)
+        
+        These are the absolute minimum schemas needed for the system to boot and connect.
+        Everything else is loaded dynamically from JSON validation blocks.
+        """
         return {
-            'NLP_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool', True),
-            'NLP_LEARNING_ADJUSTMENT_RATE': VariableSchema('float', 0.1,
-                min_value=0.01, max_value=1.0),
-            'NLP_LEARNING_PERSISTENCE_FILE': VariableSchema('str',
-                './learning_data/adjustments.json'),
-            'NLP_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int', 100,
-                min_value=10, max_value=1000),
-            'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE': VariableSchema('str',
-                './learning_data/enhanced_learning_adjustments.json'),
-            'NLP_ANALYSIS_LEARNING_RATE': VariableSchema('float', 0.1,
-                min_value=0.01, max_value=1.0),
-            'NLP_ANALYSIS_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool',
-                True),
-            'NLP_ANALYSIS_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int',
-                100, min_value=10, max_value=1000),
-            'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT': VariableSchema('float',
-                0.05, min_value=0.01, max_value=0.5),
-            'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT': VariableSchema('float',
-                0.30, min_value=0.1, max_value=1.0),
-            'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY': VariableSchema('int',
-                50, min_value=1, max_value=500),
-
-            # NEW - Missing schemas causing warnings
-            'NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR': VariableSchema('float',
-                -0.1, min_value=-1.0, max_value=0.0,
-                description='Factor for adjusting false positive learning (negative value reduces sensitivity)'),
-            'NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR': VariableSchema('float',
-                0.1, min_value=0.0, max_value=1.0,
-                description='Factor for adjusting false negative learning (positive value increases sensitivity)'),
+            # GLOBAL_* Ecosystem Variables (Must remain for ecosystem compatibility)
+            'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO',
+                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
+                description='Global logging level for Ash ecosystem'),
+            'GLOBAL_DEBUG': VariableSchema('bool', False,
+                description='Global debug mode for Ash ecosystem'),
+            'GLOBAL_ENABLE_LOGGING': VariableSchema('bool', True,
+                description='Global logging enablement for Ash ecosystem'),
+            'GLOBAL_NLP_API_PORT': VariableSchema('int', 8881,
+                min_value=1024, max_value=65535,
+                description='Global API port for Ash ecosystem'),
+            'GLOBAL_ENABLE_CORS': VariableSchema('bool', True,
+                description='Global CORS enablement for Ash ecosystem'),
+            'GLOBAL_ALLOWED_IPS': VariableSchema('str',
+                '10.20.30.0/24,127.0.0.1,::1',
+                description='Global allowed IP ranges for Ash ecosystem'),
+            'GLOBAL_HUGGINGFACE_TOKEN': VariableSchema('str', '',
+                description='Global HuggingFace token for Ash ecosystem'),
+            'GLOBAL_FEATURE_ENABLE_LEARNING_SYSTEM': VariableSchema('bool', True,
+                description='Global learning system enablement for Ash ecosystem'),
+            
+            # Core Server Variables (Needed for system startup)
+            'NLP_SERVER_HOST': VariableSchema('str', '0.0.0.0',
+                description='Server bind address for NLP service'),
+            'NLP_SERVER_PORT': VariableSchema('int', 8881, 
+                min_value=1024, max_value=65535,
+                description='Server port for NLP service'),
+            'NLP_SERVER_WORKERS': VariableSchema('int', 1, 
+                min_value=1, max_value=16,
+                description='Number of server workers'),
         }
     
-    def _get_threshold_schemas(self) -> Dict[str, VariableSchema]:
-        """Get threshold mapping variable schemas"""
+    def _count_core_schemas(self) -> int:
+        """Helper method to count core schemas for logging"""
+        return len(self._get_essential_core_schemas())
+    
+    def _load_json_validation_schemas(self) -> Dict[str, VariableSchema]:
+        """
+        STEP 10.9 NEW: Load validation schemas dynamically from JSON configuration files
+        
+        This method examines all JSON configuration files for 'validation' blocks
+        and converts them into VariableSchema objects, eliminating code duplication.
+        
+        Returns:
+            Dictionary of VariableSchema objects loaded from JSON files
+        """
+        json_schemas = {}
+        
+        # Iterate through all configuration files to find validation blocks
+        for config_name, config_file in self.config_files.items():
+            try:
+                logger.debug(f"🔍 Scanning {config_name} for validation schemas...")
+                
+                # Load raw JSON without processing (to avoid circular dependency)
+                config_path = self.config_dir / config_file
+                if not config_path.exists():
+                    logger.debug(f"   ⚠️ Config file not found: {config_path}")
+                    continue
+                
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    raw_config = json.load(f)
+                
+                # Extract validation schemas from this config file
+                file_schemas = self._extract_validation_schemas(raw_config, config_name)
+                
+                if file_schemas:
+                    json_schemas.update(file_schemas)
+                    logger.debug(f"   ✅ Loaded {len(file_schemas)} schemas from {config_name}")
+                else:
+                    logger.debug(f"   📝 No validation block found in {config_name}")
+                    
+            except Exception as e:
+                logger.warning(f"   ⚠️ Error loading schemas from {config_name}: {e}")
+                continue
+        
+        logger.info(f"✅ Loaded {len(json_schemas)} schemas from JSON validation blocks")
+        return json_schemas
+    
+    def _extract_validation_schemas(self, config: Dict[str, Any], config_name: str) -> Dict[str, VariableSchema]:
+        """
+        STEP 10.9 NEW: Extract VariableSchema objects from a configuration's validation block
+        
+        Args:
+            config: Raw configuration dictionary
+            config_name: Name of the configuration file (for logging)
+            
+        Returns:
+            Dictionary of VariableSchema objects from this config's validation block
+        """
         schemas = {}
         
-        # Basic threshold configuration
-        schemas.update({
-            'NLP_THRESHOLD_ENSEMBLE_MODE': VariableSchema('str', 'consensus',
-                choices=['consensus', 'majority', 'weighted']),
-            'NLP_THRESHOLD_CRISIS_MAPPING_HIGH': VariableSchema('float', 0.8,
-                min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CRISIS_MAPPING_MEDIUM': VariableSchema('float', 0.6,
-                min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CRISIS_MAPPING_LOW': VariableSchema('float', 0.4,
-                min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_STAFF_REVIEW_REQUIRED': VariableSchema('float', 0.7,
-                min_value=0.0, max_value=1.0)
-        })
+        # Look for validation blocks in the configuration
+        validation_blocks = self._find_validation_blocks(config)
         
-        # Mode-specific threshold mappings (Phase 3c)
-        # Consensus mode thresholds
-        schemas.update({
-            'NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH': VariableSchema('float',
-                0.50, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM': VariableSchema('float',
-                0.30, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW': VariableSchema('float',
-                0.40, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW': VariableSchema('float',
-                0.70, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW': VariableSchema('float',
-                0.50, min_value=0.0, max_value=1.0)
-        })
-        
-        # Majority mode thresholds
-        schemas.update({
-            'NLP_THRESHOLD_MAJORITY_CRISIS_TO_HIGH': VariableSchema('float',
-                0.45, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_CRISIS_TO_MEDIUM': VariableSchema('float',
-                0.28, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_MILD_CRISIS_TO_LOW': VariableSchema('float',
-                0.35, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_NEGATIVE_TO_LOW': VariableSchema('float',
-                0.65, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_UNKNOWN_TO_LOW': VariableSchema('float',
-                0.45, min_value=0.0, max_value=1.0)
-        })
-        
-        # Weighted mode thresholds
-        schemas.update({
-            'NLP_THRESHOLD_WEIGHTED_CRISIS_TO_HIGH': VariableSchema('float',
-                0.55, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_CRISIS_TO_MEDIUM': VariableSchema('float',
-                0.32, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_MILD_CRISIS_TO_LOW': VariableSchema('float',
-                0.42, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_NEGATIVE_TO_LOW': VariableSchema('float',
-                0.72, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_UNKNOWN_TO_LOW': VariableSchema('float',
-                0.52, min_value=0.0, max_value=1.0)
-        })
+        for validation_path, validation_block in validation_blocks:
+            logger.debug(f"   🎯 Processing validation block at: {validation_path}")
+            
+            for var_name, validation_rules in validation_block.items():
+                if not isinstance(validation_rules, dict):
+                    continue
+                
+                try:
+                    # Convert JSON validation rules to VariableSchema
+                    schema = self._json_to_schema(validation_rules, var_name)
+                    schemas[var_name] = schema
+                    logger.debug(f"      ✅ {var_name}: {validation_rules}")
+                    
+                except Exception as e:
+                    logger.warning(f"      ⚠️ Error converting {var_name}: {e}")
+                    continue
         
         return schemas
     
-    def _get_extended_schemas(self) -> Dict[str, VariableSchema]:
-        """Get extended variable schemas for complete system coverage"""
-        schemas = {}
+    def _find_validation_blocks(self, config: Dict[str, Any], path: str = "") -> List[tuple]:
+        """
+        STEP 10.9 NEW: Recursively find all validation blocks in a configuration
         
-        # Additional model configurations
-        schemas.update({
-            'NLP_MODEL_PRECISION_MODE': VariableSchema('str', 'balanced',
-                choices=['speed', 'balanced', 'accuracy']),
-        })
+        Args:
+            config: Configuration dictionary to search
+            path: Current path in the configuration (for logging)
+            
+        Returns:
+            List of (path, validation_block) tuples
+        """
+        validation_blocks = []
         
-        # Extended analysis parameters
-        schemas.update({
-            'NLP_ANALYSIS_ENABLE_PREPROCESSING': VariableSchema('bool', True),
-            'NLP_ANALYSIS_ENABLE_POSTPROCESSING': VariableSchema('bool', True),
-            'NLP_ANALYSIS_CONTEXT_WINDOW': VariableSchema('int', 512,
-                min_value=64, max_value=2048),
-        })
+        if not isinstance(config, dict):
+            return validation_blocks
         
-        # Extended server configurations  
-        schemas.update({
-            'NLP_SERVER_ENABLE_CORS': VariableSchema('bool', True),
-            'NLP_SERVER_ENABLE_COMPRESSION': VariableSchema('bool', True),
-            'NLP_SERVER_MAX_REQUEST_SIZE': VariableSchema('int', 10485760,
-                min_value=1048576, max_value=104857600),
-        })
+        for key, value in config.items():
+            current_path = f"{path}.{key}" if path else key
+            
+            # Skip metadata blocks
+            if key.startswith('_'):
+                continue
+            
+            if key == 'validation' and isinstance(value, dict):
+                # Found a validation block
+                validation_blocks.append((current_path, value))
+            elif isinstance(value, dict):
+                # Recursively search nested dictionaries
+                validation_blocks.extend(self._find_validation_blocks(value, current_path))
         
-        # Extended storage configurations
-        schemas.update({
-            'NLP_STORAGE_ENABLE_COMPRESSION': VariableSchema('bool', False),
-            'NLP_STORAGE_BACKUP_DIR': VariableSchema('str', './backups'),
-            'NLP_STORAGE_RETENTION_DAYS': VariableSchema('int', 30, min_value=1,
-                max_value=365),
-            'NLP_STORAGE_MODELS_DIR': VariableSchema('str', './models/cache'),
-            'NLP_STORAGE_LOGS_DIR': VariableSchema('str', './logs'),
-            'NLP_STORAGE_LOG_FILE': VariableSchema('str', 'nlp_service.log'),
-        })
-        
-        # Ensemble configuration
-        schemas.update({
-            'NLP_ENSEMBLE_MODE': VariableSchema('str', 'majority',
-                choices=['consensus', 'majority', 'weighted']),
-            'NLP_ENSEMBLE_GAP_DETECTION_ENABLED': VariableSchema('bool', True),
-            'NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD': VariableSchema('int', 2,
-                min_value=1, max_value=5),
-        })
-        
-        # Hardware configuration
-        schemas.update({
-            'NLP_HARDWARE_DEVICE': VariableSchema('str', 'auto',
-                choices=['auto', 'cpu', 'cuda']),
-            'NLP_HARDWARE_PRECISION': VariableSchema('str', 'float16',
-                choices=['float16', 'float32']),
-            'NLP_HARDWARE_MAX_BATCH_SIZE': VariableSchema('int', 32,
-                min_value=1, max_value=256),
-            'NLP_HARDWARE_INFERENCE_THREADS': VariableSchema('int', 16,
-                min_value=1, max_value=64),
-        })
-        
-        # Logging configuration
-        schemas.update({
-            'NLP_LOGGING_ENABLE_DETAILED': VariableSchema('bool', True),
-            'NLP_LOGGING_ANALYSIS_STEPS': VariableSchema('bool', False),
-            'NLP_LOGGING_THRESHOLD_CHANGES': VariableSchema('bool', True),
-            'NLP_LOGGING_MODEL_DISAGREEMENTS': VariableSchema('bool', True),
-            'NLP_LOGGING_STAFF_REVIEW_TRIGGERS': VariableSchema('bool', True),
-            'NLP_LOGGING_PATTERN_ADJUSTMENTS': VariableSchema('bool', True),
-            'NLP_LOGGING_LEARNING_UPDATES': VariableSchema('bool', True),
-            'NLP_LOGGING_LABEL_MAPPINGS': VariableSchema('bool', False),
-        })
-        
-        return schemas
+        return validation_blocks
     
+    def _json_to_schema(self, json_rules: Dict[str, Any], var_name: str) -> VariableSchema:
+        """
+        STEP 10.9 NEW: Convert JSON validation rules to VariableSchema object
+        
+        Args:
+            json_rules: JSON validation rules dictionary
+            var_name: Variable name (for context in error messages)
+            
+        Returns:
+            VariableSchema object
+        """
+        # Extract validation parameters from JSON
+        var_type = json_rules.get('type', 'str')
+        default = json_rules.get('default')
+        choices = json_rules.get('enum') or json_rules.get('choices')
+        required = json_rules.get('required', False)
+        description = json_rules.get('description', '')
+        
+        # Handle range validation
+        min_value = None
+        max_value = None
+        if 'range' in json_rules:
+            range_val = json_rules['range']
+            if isinstance(range_val, list) and len(range_val) >= 2:
+                min_value = range_val[0] if range_val[0] is not None else None
+                max_value = range_val[1] if range_val[1] is not None else None
+        
+        # Handle individual min/max values
+        if 'min_value' in json_rules:
+            min_value = json_rules['min_value']
+        if 'max_value' in json_rules:
+            max_value = json_rules['max_value']
+        
+        # Provide sensible defaults if not specified in JSON
+        if default is None:
+            if var_type == 'bool':
+                default = False
+            elif var_type == 'int':
+                default = 0
+            elif var_type == 'float':
+                default = 0.0
+            elif var_type == 'list':
+                default = []
+            else:  # str
+                default = ''
+        
+        return VariableSchema(
+            var_type=var_type,
+            default=default,
+            choices=choices,
+            min_value=min_value,
+            max_value=max_value,
+            required=required,
+            description=description
+        )
     # ========================================================================
     # GET HARDWARE CONFIGURATION FIX
     # ========================================================================
@@ -1220,13 +1148,13 @@ class UnifiedConfigManager:
         """
         return {
             'status': 'operational',
-            'version': 'v3.1d_step_10.9',
-            'enhancement': 'Enhanced Environment Variable Resolution',
+            'version': 'v3.1d_step_10.9_refactored',
+            'enhancement': 'Enhanced Environment Variable Resolution + JSON-Driven Schema Validation',
             'config_files': len(self.config_files),
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
             'cache_size': len(self.config_cache),
             'config_directory': str(self.config_dir),
-            'architecture': 'Clean v3.1 with Enhanced Configuration Resolution',
+            'architecture': 'Clean v3.1 with Enhanced Configuration Resolution + JSON-Driven Validation',
             'consolidation_status': {
                 'context_patterns_consolidated': 'context_patterns' in self.config_files,
                 'community_patterns_consolidated': 'community_vocabulary_patterns' in self.config_files,
@@ -1241,7 +1169,16 @@ class UnifiedConfigManager:
                 'enhanced_placeholder_processing': True,
                 'json_defaults_integration': True,
                 'schema_fallback_support': True,
-                'type_conversion_consistency': True
+                'type_conversion_consistency': True,
+                'json_driven_schema_validation': True,
+                'code_reduction_achieved': True
+            },
+            'schema_system': {
+                'total_schemas': len(self.variable_schemas),
+                'core_python_schemas': self._count_core_schemas(),
+                'json_driven_schemas': len(self.variable_schemas) - self._count_core_schemas(),
+                'code_lines_eliminated': '200+',
+                'validation_source': 'JSON configuration files + essential core'
             }
         }
 
@@ -1263,4 +1200,4 @@ def create_unified_config_manager(config_dir: str = "/app/config") -> UnifiedCon
 
 __all__ = ['UnifiedConfigManager', 'create_unified_config_manager']
 
-logger.info("✅ UnifiedConfigManager v3.1d Step 10.9 loaded - Enhanced environment variable resolution with immediate JSON defaults integration")
+logger.info("✅ UnifiedConfigManager v3.1d Step 10.9 Refactored loaded - Enhanced environment variable resolution with JSON-driven schema validation")
