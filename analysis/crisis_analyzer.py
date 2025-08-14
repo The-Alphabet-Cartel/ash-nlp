@@ -256,6 +256,133 @@ class CrisisAnalyzer:
                     'parallel_analysis': False
                 }
 
+    def _determine_staff_review_requirement(self, final_score: float, crisis_level: str) -> bool:
+        """
+        Determine if staff review is required based on score and crisis level
+        
+        Args:
+            final_score: Final crisis score (0.0 to 1.0)
+            crisis_level: Determined crisis level ('none', 'low', 'medium', 'high', 'critical')
+            
+        Returns:
+            True if staff review is required, False otherwise
+        """
+        try:
+            # Use ThresholdMappingManager if available for staff review determination
+            if self.threshold_mapping_manager:
+                try:
+                    # Try different possible method names for staff review
+                    if hasattr(self.threshold_mapping_manager, 'requires_staff_review'):
+                        return self.threshold_mapping_manager.requires_staff_review(final_score, crisis_level)
+                    elif hasattr(self.threshold_mapping_manager, 'determine_staff_review'):
+                        return self.threshold_mapping_manager.determine_staff_review(final_score, crisis_level)
+                    elif hasattr(self.threshold_mapping_manager, 'get_staff_review_requirement'):
+                        return self.threshold_mapping_manager.get_staff_review_requirement(final_score, crisis_level)
+                    else:
+                        logger.debug("ThresholdMappingManager has no known staff review method - using fallback")
+                except Exception as e:
+                    logger.warning(f"⚠️ Staff review determination via manager failed: {e}")
+            
+            # Fallback logic for staff review determination
+            if crisis_level in ['critical', 'high']:
+                return True  # Always require review for high/critical
+            elif crisis_level == 'medium':
+                return final_score >= 0.45  # Medium with high confidence
+            elif crisis_level == 'low':
+                return final_score >= 0.75  # Low but very high confidence
+            else:
+                return False  # No review needed for 'none' level
+                
+        except Exception as e:
+            logger.error(f"❌ Staff review determination failed: {e}")
+            # Conservative fallback - require review for any significant score
+            return final_score >= 0.3
+
+    def _create_error_response(self, message: str, user_id: str, channel_id: str, error: str, start_time: float) -> Dict:
+        """
+        Create standardized error response for crisis analysis
+        
+        Args:
+            message: Original message
+            user_id: User identifier
+            channel_id: Channel identifier  
+            error: Error description
+            start_time: Analysis start time
+            
+        Returns:
+            Standardized error response dictionary
+        """
+        return {
+            'message': message,
+            'user_id': user_id,
+            'channel_id': channel_id,
+            'analysis_results': {
+                'crisis_score': 0.0,
+                'crisis_level': 'error',
+                'error': error,
+                'model_results': {},
+                'pattern_analysis': {},
+                'context_analysis': {},
+                'analysis_metadata': {
+                    'processing_time': time.time() - start_time,
+                    'timestamp': time.time(),
+                    'analysis_version': 'v3.1-3d-10.8',
+                    'error_occurred': True,
+                    'features_used': {
+                        'ensemble_analysis': False,
+                        'pattern_analysis': False,
+                        'context_analysis': False,
+                        'error_fallback': True
+                    }
+                }
+            },
+            'requires_staff_review': True,  # Always require review on errors
+            'processing_time': time.time() - start_time,
+            'status': 'error'
+        }
+
+    def _create_timeout_response(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
+        """
+        Create standardized timeout response for crisis analysis
+        
+        Args:
+            message: Original message
+            user_id: User identifier
+            channel_id: Channel identifier
+            start_time: Analysis start time
+            
+        Returns:
+            Standardized timeout response dictionary
+        """
+        return {
+            'message': message,
+            'user_id': user_id,
+            'channel_id': channel_id,
+            'analysis_results': {
+                'crisis_score': 0.0,
+                'crisis_level': 'timeout',
+                'timeout_occurred': True,
+                'model_results': {},
+                'pattern_analysis': {},
+                'context_analysis': {},
+                'analysis_metadata': {
+                    'processing_time': time.time() - start_time,
+                    'timestamp': time.time(),
+                    'analysis_version': 'v3.1-3d-10.8',
+                    'timeout_occurred': True,
+                    'features_used': {
+                        'ensemble_analysis': False,
+                        'pattern_analysis': False,
+                        'context_analysis': False,
+                        'timeout_fallback': True
+                    }
+                }
+            },
+            'requires_staff_review': True,  # Always require review on timeouts
+            'processing_time': time.time() - start_time,
+            'status': 'timeout'
+        }
+
     async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
         Perform comprehensive crisis analysis using ensemble of models and patterns
