@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # ash-nlp/managers/context_pattern_manager.py
 """
 Context Pattern Manager for Ash NLP Service
@@ -79,8 +80,20 @@ class ContextPatternManager:
                 logger.warning("⚠️ Context patterns configuration not found, using safe defaults")
                 self.context_config = self._get_safe_context_defaults()
             
-            # Load analysis parameters for semantic analysis
-            self.analysis_params = self.unified_config.load_config('analysis_parameters')
+            # Load analysis parameters for semantic analysis - FIXED: Use correct method
+            try:
+                # Try different methods to load analysis parameters
+                if hasattr(self.unified_config, 'load_config'):
+                    self.analysis_params = self.unified_config.load_config('analysis_parameters')
+                elif hasattr(self.unified_config, 'get_config'):
+                    self.analysis_params = self.unified_config.get_config('analysis_parameters')
+                else:
+                    # Fallback to loading from config cache if available
+                    self.analysis_params = getattr(self.unified_config, 'config_cache', {}).get('analysis_parameters', {})
+            except Exception as param_error:
+                logger.warning(f"⚠️ Could not load analysis parameters: {param_error}")
+                self.analysis_params = {}
+                
             if not self.analysis_params:
                 logger.warning("⚠️ Analysis parameters not found, using safe defaults")
                 self.analysis_params = self._get_safe_analysis_defaults()
