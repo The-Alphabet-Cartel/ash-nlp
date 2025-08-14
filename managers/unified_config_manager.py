@@ -87,9 +87,7 @@ class UnifiedConfigManager:
         self.config_cache = {}
         self.env_override_pattern = re.compile(r'\$\{([^}]+)\}')
         
-        # Initialize schema definitions for validation
-        self.variable_schemas = self._initialize_schemas()
-        
+        # STEP 10.9 FIX: Initialize config_files BEFORE schema initialization
         # Configuration file mappings - UPDATED for v3.1 consolidation
         self.config_files = {
             # Core algorithm configuration
@@ -122,6 +120,9 @@ class UnifiedConfigManager:
             # ❌ 'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',        # Merged into community_vocabulary_patterns.json
             # ❌ 'positive_context_patterns': 'positive_context_patterns.json',    # Merged into context_patterns.json
         }
+        
+        # Initialize schema definitions for validation (NOW config_files is available)
+        self.variable_schemas = self._initialize_schemas()
         
         # Load and validate all environment variables
         self.env_config = self._load_all_environment_variables()
