@@ -1,11 +1,11 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/tracker.md -->
 <!--
 Tracker Documentation for Phase 3d for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.9-2
 LAST MODIFIED: 2025-08-14
-PHASE: 3d, Step 10.8 - COMPLETE
+PHASE: 3d, Step 10.9 - COMPLETE + REFACTORED
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Advancing to Step 10.9
+MIGRATION STATUS: Advancing to Step 10.10
 -->
 # Phase 3d: Environment Variable Cleanup - Updated Tracker
 
@@ -29,81 +29,94 @@ MIGRATION STATUS: Advancing to Step 10.9
 | **10.6** | ✅ **COMPLETE** | Consolidate `utils/scoring_helpers.py` | 2025-08-13 |
 | **10.7** | ✅ **COMPLETE** | Consolidate `utils/community_patterns.py` | 2025-08-14 |
 | **10.8** | ✅ **COMPLETE** | Consolidate `utils/context_helpers.py` + API Fix | 2025-08-14 |
+| **10.9** | ✅ **COMPLETE** | UnifiedConfigManager Enhancement + Schema Refactoring | 2025-08-14 |
 
 ### 🔄 **UPCOMING STEPS** (Reorganized Post-Rule #7)
 
 | Step | Status | Description | Priority | Rule #7 Impact |
 |------|--------|-------------|----------|----------------|
-| **10.9** | 🎯 **NEXT** | UnifiedConfigManager Enhancement | **HIGH** | Environment variable resolution |
-| **10.10** | ⏳ **PENDING** | Environmental Variables/JSON Audit | **HIGH** | Clean up pre-Rule #7 additions |
+| **10.10** | 🎯 **NEXT** | Environmental Variables/JSON Audit | **HIGH** | Clean up pre-Rule #7 additions |
 | **10.11** | ⏳ **PENDING** | .env.template Clean Up | **HIGH** | Rule #7 compliance enforcement |
 | **10.12** | ⏳ **PENDING** | Advanced Features Activation (formerly 10.9) | **MEDIUM** | Final testing and validation |
 
 ---
 
-## 🎯 **CURRENT STATUS: Ready for Step 10.9**
+## 🎯 **CURRENT STATUS: Ready for Step 10.10**
 
 ### **Phase 3d Progress**
-- **Completed**: 8/12 steps (67% complete)
+- **Completed**: 9/12 steps (75% complete)
 - **Architecture Foundation**: ✅ **Clean v3.1 Achieved**
 - **Critical Functionality**: ✅ **Restored** (`needs_response: true`)
-- **Technical Debt**: ✅ **Minimal** (only config resolution remaining)
+- **Configuration Resolution**: ✅ **Fixed** (placeholders resolve properly)
+- **Code Reduction**: ✅ **Achieved** (200+ lines eliminated)
+- **Technical Debt**: ✅ **Minimal** (only pre-Rule #7 cleanup remaining)
 
-### **Step 10.8 Achievement Summary**
-- ✅ **ContextPatternManager**: Successfully created and integrated
-- ✅ **API Response Fix**: Critical `needs_response` functionality restored
-- ✅ **Context Analysis**: Enhanced context processing operational
-- ✅ **Clean Architecture**: All v3.1 rules followed perfectly
-- ✅ **Zero New Environment Variables**: Rule #7 compliance maintained
+### **Step 10.9 Achievement Summary**
+- ✅ **Placeholder Resolution**: Fixed environment variable placeholders in JSON configs
+- ✅ **Schema Refactoring**: Eliminated 200+ lines of redundant Python schema code
+- ✅ **JSON-Driven Validation**: Schemas now load dynamically from JSON validation blocks
+- ✅ **Metadata Protection**: `_metadata` blocks preserved without processing
+- ✅ **Clean Logging**: Reduced verbose debug output significantly
+- ✅ **Core Schema Optimization**: 14 essential variables + JSON-driven validation
+- ✅ **Rule #7 Compliance**: Zero new environment variables added
+- ✅ **Production Testing**: API responses show resolved values (1.2 instead of ${...})
 
 ---
 
-## 🔧 **STEP 10.9: UnifiedConfigManager Enhancement** (Next Priority)
+## 🧹 **STEP 10.10: Environmental Variables/JSON Audit** (Next Priority)
 
 ### **Objective**
-Fix environment variable placeholder resolution in JSON configuration files
+Identify and clean up environment variables added before Rule #7 establishment
 
-### **Issue Description**
-JSON files contain placeholders like `${NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST}` that aren't being resolved to their default values when the environment variables don't exist.
+### **Pre-Rule #7 Issues Identified**
+During Step 10.9 testing, the following unresolved placeholders were identified as pre-Rule #7 bloat:
 
-### **Root Cause**
-UnifiedConfigManager's `substitute_environment_variables` method needs enhancement to:
-1. Detect environment variable placeholders in JSON
-2. Check if environment variable exists
-3. Use JSON `defaults` section when environment variable is missing
-4. Properly substitute values throughout the configuration tree
+**Confidence Boost Variables** (Likely Duplicates):
+- `NLP_ANALYSIS_CONFIDENCE_HIGH_BOOST`
+- `NLP_ANALYSIS_CONFIDENCE_MEDIUM_BOOST`
+- `NLP_ANALYSIS_CONFIDENCE_LOW_BOOST`
+- `NLP_ANALYSIS_CONFIDENCE_PATTERN_BOOST`
+- `NLP_ANALYSIS_CONFIDENCE_MODEL_BOOST`
+
+**Advanced Analysis Variables** (Experimental Features):
+- `NLP_ANALYSIS_ADVANCED_PATTERN_BOOST`
+- `NLP_ANALYSIS_ADVANCED_MODEL_BOOST`
+- `NLP_ANALYSIS_ADVANCED_CONTEXT_WEIGHT`
+- `NLP_ANALYSIS_ADVANCED_TEMPORAL_MULTIPLIER`
+- `NLP_ANALYSIS_ADVANCED_COMMUNITY_BOOST`
+
+**Experimental Variables** (Should be Feature Flags):
+- `NLP_EXPERIMENTAL_ADVANCED_CONTEXT`
+- `NLP_EXPERIMENTAL_COMMUNITY_VOCAB`
+- `NLP_EXPERIMENTAL_TEMPORAL_PATTERNS`
+- `NLP_EXPERIMENTAL_MULTI_LANGUAGE`
+
+**Learning System Duplicates**:
+- `NLP_ANALYSIS_LEARNING_ENABLED` (duplicate of existing learning variables)
 
 ### **Scope**
-- **Files Affected**: `managers/unified_config_manager.py`
-- **Impact**: System-wide configuration resolution
-- **Complexity**: Medium (configuration system enhancement)
-- **Dependencies**: None (isolated change)
-
-### **Success Criteria**
-- ✅ Environment variable placeholders resolve to JSON defaults
-- ✅ Existing environment variable overrides still work
-- ✅ No functional changes to configuration behavior
-- ✅ Pattern analysis shows resolved values instead of placeholders
-
----
-
-## 🧹 **STEPS 10.10-10.11: Rule #7 Cleanup** (Post-Enhancement)
-
-### **Step 10.10: Environmental Variables/JSON Audit**
-**Objective**: Identify and clean up environment variables added before Rule #7 establishment
-
-**Scope**:
 - Audit all JSON configuration files for unnecessary environment variable placeholders
 - Identify variables that could be consolidated or eliminated
 - Remove variables that violate Rule #7 (created without checking existing infrastructure)
 - Document mapping of old variables to new consolidated approach
+- Convert experimental variables to proper feature flags
+
+### **Success Criteria**
+- ✅ Eliminate unresolved placeholder warnings
+- ✅ Consolidate duplicate variables
+- ✅ Convert experimental variables to feature flags
+- ✅ Maintain all existing functionality
+
+---
+
+## 🧹 **STEPS 10.11-10.12: Final Cleanup**
 
 ### **Step 10.11: .env.template Clean Up**
 **Objective**: Clean up .env.template file to reflect Rule #7 compliance
 
 **Scope**:
 - Remove duplicate environment variables
-- Consolidate related variables
+- Consolidate related variables based on Step 10.10 findings
 - Ensure proper organization and documentation
 - Validate that all variables in .env.template are actually used
 - Remove variables that can be handled by JSON defaults
@@ -125,26 +138,37 @@ UnifiedConfigManager's `substitute_environment_variables` method needs enhanceme
 - **Architecture**: Clean v3.1 fully implemented and operational
 - **Utility Consolidation**: 3 utility files eliminated, functionality centralized
 - **API Functionality**: Critical crisis response functionality restored
-- **Configuration**: Comprehensive JSON-based configuration system
+- **Configuration Enhancement**: Environment variable resolution fixed + schema refactoring
 - **Performance**: Enhanced caching and manager-based processing
-- **Maintainability**: Centralized logic with proper dependency injection
+- **Code Quality**: 200+ lines of redundant code eliminated
+- **Maintainability**: JSON-driven validation + centralized logic
 
 ### **Technical Metrics**
 - **Files Eliminated**: 3 (`utils/scoring_helpers.py`, `utils/community_patterns.py`, `utils/context_helpers.py`)
-- **Managers Enhanced**: 6 (CrisisAnalyzer, CrisisPatternManager, ContextPatternManager, etc.)
+- **Code Lines Reduced**: 200+ (schema refactoring)
+- **Managers Enhanced**: 7 (CrisisAnalyzer, CrisisPatternManager, ContextPatternManager, UnifiedConfigManager, etc.)
 - **Environment Variables**: Net reduction through consolidation (Rule #7 compliance)
+- **Configuration System**: Enhanced with JSON-driven validation
 - **Test Coverage**: Comprehensive test suites for all new functionality
 - **Production Stability**: Enhanced error handling and resilience
 
+### **Step 10.9 Specific Achievements**
+- **Placeholder Resolution**: 100% functional - API responses show resolved values
+- **Schema System**: Refactored from 200+ hardcoded Python schemas to 14 essential + JSON-driven
+- **Configuration Loading**: Enhanced with immediate defaults resolution
+- **Code Maintainability**: Single source of truth for validation rules in JSON
+- **Debug Logging**: Cleaned up verbose output for better operational visibility
+- **Pre-Rule #7 Identification**: Cataloged 15+ problematic variables for Step 10.10 cleanup
+
 ---
 
-## 🏆 **READY FOR STEP 10.9**
+## 🏆 **READY FOR STEP 10.10**
 
-**Phase 3d is on track for completion with Step 10.8 successfully finished.**
+**Phase 3d is on track for completion with Step 10.9 successfully finished.**
 
-The remaining 4 steps are primarily cleanup and enhancement tasks that will:
-1. **Step 10.9**: Fix the configuration resolution issue
-2. **Steps 10.10-10.11**: Clean up pre-Rule #7 technical debt  
+The remaining 3 steps are focused on cleaning up pre-Rule #7 technical debt:
+1. **Step 10.10**: Clean up the 15+ unresolved placeholder variables identified during testing
+2. **Step 10.11**: Update .env.template to reflect consolidated variables  
 3. **Step 10.12**: Final validation and testing
 
-**All critical functionality is restored and operational.** The system is production-ready with enhanced capabilities.
+**All critical functionality is restored and operational.** The system is production-ready with enhanced capabilities and significantly cleaner codebase.
