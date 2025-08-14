@@ -671,12 +671,8 @@ class CrisisAnalyzer:
         # Determine crisis level
         crisis_level = self._determine_crisis_level(final_score)
         
-        # Debug
-        logger.debug(f"🔍 Final response crisis_level={crisis_level}, confidence_score={final_score}")
-        logger.debug(f"🔍 Response structure keys: {list(response.keys())}")  # where response is your return dict
-
         # Build comprehensive response
-        return {
+        response = {
             'message': message,
             'user_id': user_id,
             'channel_id': channel_id,
@@ -702,6 +698,12 @@ class CrisisAnalyzer:
             'requires_staff_review': self._determine_staff_review_requirement(final_score, crisis_level),
             'processing_time': time.time() - start_time
         }
+
+        # Debug
+        logger.debug(f"🔍 Final response crisis_level={crisis_level}, confidence_score={final_score}")
+        logger.debug(f"🔍 Response structure keys: {list(response.keys())}")  # where response is your return dict
+
+        return response
 
     def _extract_categories(self, pattern_analysis: Dict) -> List[str]:
         """Extract detected categories from pattern analysis"""
