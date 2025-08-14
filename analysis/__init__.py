@@ -9,6 +9,9 @@ MIGRATION STATUS: Analysis package updated for scoring function consolidation
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Core analysis components
 from .crisis_analyzer import CrisisAnalyzer
