@@ -222,12 +222,9 @@ class UnifiedConfigManager:
         # Iterate through all configuration files to find validation blocks
         for config_name, config_file in self.config_files.items():
             try:
-                logger.debug(f"🔍 Scanning {config_name} for validation schemas...")
-                
                 # Load raw JSON without processing (to avoid circular dependency)
                 config_path = self.config_dir / config_file
                 if not config_path.exists():
-                    logger.debug(f"   ⚠️ Config file not found: {config_path}")
                     continue
                 
                 with open(config_path, 'r', encoding='utf-8') as f:
@@ -238,12 +235,10 @@ class UnifiedConfigManager:
                 
                 if file_schemas:
                     json_schemas.update(file_schemas)
-                    logger.debug(f"   ✅ Loaded {len(file_schemas)} schemas from {config_name}")
-                else:
-                    logger.debug(f"   📝 No validation block found in {config_name}")
+                    logger.debug(f"📋 Loaded {len(file_schemas)} schemas from {config_name}")
                     
             except Exception as e:
-                logger.warning(f"   ⚠️ Error loading schemas from {config_name}: {e}")
+                logger.warning(f"⚠️ Error loading schemas from {config_name}: {e}")
                 continue
         
         logger.info(f"✅ Loaded {len(json_schemas)} schemas from JSON validation blocks")
@@ -266,8 +261,6 @@ class UnifiedConfigManager:
         validation_blocks = self._find_validation_blocks(config)
         
         for validation_path, validation_block in validation_blocks:
-            logger.debug(f"   🎯 Processing validation block at: {validation_path}")
-            
             for var_name, validation_rules in validation_block.items():
                 if not isinstance(validation_rules, dict):
                     continue
@@ -276,10 +269,9 @@ class UnifiedConfigManager:
                     # Convert JSON validation rules to VariableSchema
                     schema = self._json_to_schema(validation_rules, var_name)
                     schemas[var_name] = schema
-                    logger.debug(f"      ✅ {var_name}: {validation_rules}")
                     
                 except Exception as e:
-                    logger.warning(f"      ⚠️ Error converting {var_name}: {e}")
+                    logger.warning(f"⚠️ Error converting {var_name} in {config_name}: {e}")
                     continue
         
         return schemas
@@ -688,34 +680,29 @@ class UnifiedConfigManager:
         if isinstance(value, str):
             def replace_env_var(match):
                 env_var = match.group(1)
-                logger.debug(f"🔄 Step 10.9: Processing ${{{env_var}}}")
                 
                 # Step 1: Try environment variable first
                 env_value = os.getenv(env_var)
                 if env_value is not None:
-                    logger.debug(f"   ✅ Environment: ${{{env_var}}} = {env_value}")
                     return self._convert_value_type(env_value)
                 
                 # Step 2: Try JSON defaults context (new in Step 10.9)
                 if defaults_context:
                     defaults_value = self._find_default_value(env_var, defaults_context)
                     if defaults_value is not None:
-                        logger.debug(f"   ✅ JSON defaults: ${{{env_var}}} = {defaults_value}")
                         return str(defaults_value)  # Convert to string for substitution
                 
                 # Step 3: Try schema defaults (existing fallback)
                 if env_var in self.variable_schemas:
                     schema_default = self.variable_schemas[env_var].default
-                    logger.debug(f"   ✅ Schema default: ${{{env_var}}} = {schema_default}")
                     return str(schema_default)
                 
                 # Step 4: No resolution possible - warn and keep placeholder
-                logger.warning(f"   ⚠️ No resolution found for ${{{env_var}}} - keeping placeholder")
+                logger.warning(f"⚠️ Unresolved placeholder: ${{{env_var}}}")
                 return match.group(0)  # Return original placeholder
             
             # Apply substitution with enhanced resolution
             result = self.env_override_pattern.sub(replace_env_var, value)
-            logger.debug(f"🔄 Step 10.9: '{value}' → '{result}'")
             return result
             
         elif isinstance(value, dict):
@@ -727,7 +714,6 @@ class UnifiedConfigManager:
             for k, v in value.items():
                 if k.startswith('_'):
                     # Skip metadata blocks (they contain documentation and examples, not real config)
-                    logger.debug(f"🔄 Step 10.9: Skipping metadata block: {k}")
                     result[k] = v  # Keep metadata as-is without processing
                 elif k == 'defaults':
                     # Keep defaults block as-is for reference
@@ -872,15 +858,11 @@ class UnifiedConfigManager:
         """
         defaults = config.get('defaults', {})
         if not defaults:
-            logger.debug("🔍 No defaults block found for legacy fallback")
             return config
-        
-        logger.debug("🔧 Step 10.9: Running legacy defaults fallback for any remaining placeholders...")
         
         def apply_legacy_defaults_recursive(main_value: Any, defaults_value: Any) -> Any:
             if isinstance(main_value, str) and main_value.startswith('${') and main_value.endswith('}'):
                 # This is still an unresolved placeholder - use the default
-                logger.debug(f"🔄 Legacy fallback: {main_value} → {defaults_value}")
                 return self._apply_type_conversion(defaults_value)
             elif isinstance(main_value, dict) and isinstance(defaults_value, dict):
                 # Recursively apply defaults to nested dictionaries
@@ -915,7 +897,6 @@ class UnifiedConfigManager:
                 # No defaults for this section, keep as-is
                 result[key] = value
         
-        logger.debug("✅ Legacy defaults fallback completed")
         return result
     
     def _apply_type_conversion(self, value: Any) -> Any:
@@ -957,32 +938,24 @@ class UnifiedConfigManager:
             Processed configuration dictionary
         """
         if config_name in self.config_cache:
-            logger.debug(f"📋 Using cached config for {config_name}")
             return self.config_cache[config_name]
         
         config_file = self.config_files.get(config_name)
         if not config_file:
             logger.error(f"❌ Unknown configuration: {config_name}")
-            logger.debug(f"🔍 Available configurations: {list(self.config_files.keys())}")
             return {}
         
         config_path = self.config_dir / config_file
         
         if not config_path.exists():
             logger.warning(f"⚠️ Configuration file not found: {config_path}")
-            logger.debug(f"🔍 Config directory contents: {list(self.config_dir.glob('*.json')) if self.config_dir.exists() else 'Directory does not exist'}")
             return {}
         
         try:
-            logger.debug(f"🔍 Step 10.9: Loading config file: {config_path}")
-            
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
             
-            logger.debug(f"✅ JSON loaded successfully")
-            
             # STEP 10.9 ENHANCED: Single-pass resolution with immediate defaults lookup
-            logger.debug("🔄 Step 10.9: Starting enhanced environment variable substitution with immediate defaults resolution...")
             processed_config = self.substitute_environment_variables(raw_config)
             
             # STEP 10.9: Legacy fallback for any remaining placeholders (should be minimal now)
@@ -991,7 +964,7 @@ class UnifiedConfigManager:
             # Cache the processed configuration
             self.config_cache[config_name] = processed_config
             
-            logger.info(f"✅ Step 10.9: Successfully loaded configuration: {config_name} from {config_file}")
+            logger.info(f"✅ Loaded configuration: {config_name}")
             return processed_config
             
         except json.JSONDecodeError as e:
