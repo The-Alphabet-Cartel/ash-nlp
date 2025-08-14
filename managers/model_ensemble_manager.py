@@ -1,7 +1,7 @@
 # ash-nlp/managers/model_ensemble_manager.py
 """
 Model Ensemble Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.8-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -430,15 +430,13 @@ class ModelEnsembleManager:
             'architecture': 'clean_v3_1'
         }
 
-    async def analyze_message_ensemble(self, message: str, user_id: str = "unknown", channel_id: str = "unknown") -> Dict[str, Any]:
+    async def analyze_message_ensemble(self, message: str, user_id: str, channel_id: str) -> Dict:
         """
-        Analyze message using ensemble models - CORRECTED VERSION
-        
-        This method is required by the API endpoints but delegates to CrisisAnalyzer
-        following Clean v3.1 Architecture principles
+        Perform ensemble analysis using CrisisAnalyzer with full manager integration
+        Updated for Step 10.8: ContextPatternManager integration
         
         Args:
-            message: Message text to analyze
+            message: Message to analyze for crisis indicators
             user_id: User ID for context
             channel_id: Channel ID for context
             
@@ -458,6 +456,7 @@ class ModelEnsembleManager:
                 from managers.threshold_mapping_manager import create_threshold_mapping_manager
                 from managers.feature_config_manager import create_feature_config_manager
                 from managers.performance_config_manager import create_performance_config_manager
+                from managers.context_pattern_manager import create_context_pattern_manager  # NEW: Step 10.8
                 
                 # Create managers using factory functions (Clean v3.1 compliance)
                 crisis_pattern_manager = create_crisis_pattern_manager(self.config_manager)
@@ -465,9 +464,9 @@ class ModelEnsembleManager:
                 threshold_mapping_manager = create_threshold_mapping_manager(self.config_manager, self)
                 feature_config_manager = create_feature_config_manager(self.config_manager)
                 performance_config_manager = create_performance_config_manager(self.config_manager)
+                context_pattern_manager = create_context_pattern_manager(self.config_manager)  # NEW: Step 10.8
                 
-                # CORRECTED: Create CrisisAnalyzer with the correct parameters (no config_manager)
-                # Based on analysis/__init__.py, the correct parameters are:
+                # UPDATED: Create CrisisAnalyzer with ContextPatternManager
                 crisis_analyzer = CrisisAnalyzer(
                     models_manager=self,  # ModelEnsembleManager acts as models_manager
                     crisis_pattern_manager=crisis_pattern_manager,
@@ -475,26 +474,32 @@ class ModelEnsembleManager:
                     analysis_parameters_manager=analysis_parameters_manager,
                     threshold_mapping_manager=threshold_mapping_manager,
                     feature_config_manager=feature_config_manager,
-                    performance_config_manager=performance_config_manager
+                    performance_config_manager=performance_config_manager,
+                    context_pattern_manager=context_pattern_manager  # NEW: Step 10.8
                 )
                 
-                # Delegate to CrisisAnalyzer's analyze_message method
-                logger.debug(f"✅ CrisisAnalyzer created with correct parameters, performing analysis...")
+                # Delegate to CrisisAnalyzer for analysis
+                logger.debug("🤖 Delegating to CrisisAnalyzer with full manager integration")
                 result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
                 
-                logger.debug(f"✅ Ensemble analysis complete via CrisisAnalyzer delegation")
+                # Wrap the result to indicate it came from ensemble manager
+                result['ensemble_manager_version'] = 'v3.1-3d-10.8'
+                result['delegation_target'] = 'CrisisAnalyzer'
+                result['context_manager_integrated'] = True  # NEW: Step 10.8
+                
                 return result
                 
+            except ImportError as e:
+                logger.error(f"❌ Manager import failed: {e}")
+                return self._create_manager_error_response(message, user_id, channel_id, f"Manager import failed: {e}")
             except Exception as e:
                 logger.error(f"❌ Failed to create CrisisAnalyzer or dependencies: {e}")
-                logger.exception("Full error details:")
-                # Fallback to basic response structure
-                return self._create_fallback_analysis_result(message, str(e))
+                logger.error(f"Full error details:\n{traceback.format_exc()}")
+                return self._create_manager_error_response(message, user_id, channel_id, str(e))
                 
         except Exception as e:
-            logger.error(f"❌ Error in analyze_message_ensemble: {e}")
-            logger.exception("Full error details:")
-            return self._create_fallback_analysis_result(message, str(e))
+            logger.error(f"❌ Ensemble analysis delegation failed: {e}")
+            return self._create_ensemble_error_response(message, user_id, channel_id, str(e))
 
     def _create_fallback_analysis_result(self, message: str, error_message: str) -> Dict[str, Any]:
         """
