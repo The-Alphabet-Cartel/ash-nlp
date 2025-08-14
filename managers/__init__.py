@@ -1,12 +1,15 @@
 # ash-nlp/managers/__init__.py
 """
-Service Managers for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+Managers Module for Ash NLP Service
+FILE VERSION: v3.1-3d-10.8-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d Step 10.8 - Added ContextPatternManager support
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
+
+This module provides centralized manager imports and factory functions
+following Clean v3.1 architecture principles with proper dependency injection.
 """
 
 import logging
@@ -14,8 +17,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# CLEAN V3.1 MANAGER IMPORTS - Step 9.8 Complete
+# MANAGER IMPORTS WITH RESILIENT ERROR HANDLING
 # ============================================================================
+
+logger.info("🏭 Loading managers v3.1 with Clean Architecture patterns...")
+
+# Analysis Parameter Manager (Phase 3B)
 try:
     from .analysis_parameters_manager import AnalysisParametersManager, create_analysis_parameters_manager
     ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = True
@@ -26,16 +33,29 @@ except ImportError as e:
     create_analysis_parameters_manager = None
     ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = False
 
+# Context Pattern Manager (Phase 3D Step 10.8) - NEW
+try:
+    from .context_pattern_manager import ContextPatternManager, create_context_pattern_manager
+    CONTEXT_PATTERN_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ContextPatternManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ ContextPatternManager v3.1 import failed: {e}")
+    ContextPatternManager = None
+    create_context_pattern_manager = None
+    CONTEXT_PATTERN_MANAGER_AVAILABLE = False
+
+# Crisis Pattern Manager (Phase 3A)
 try:
     from .crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
     CRISIS_PATTERN_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ CrisisPatternManager v3.1 Step 9.8 imported")
+    logger.debug("  ✅ CrisisPatternManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"  ❌ CrisisPatternManager v3.1 Step 9.8 import failed: {e}")
+    logger.error(f"  ❌ CrisisPatternManager v3.1 import failed: {e}")
     CrisisPatternManager = None
     create_crisis_pattern_manager = None
     CRISIS_PATTERN_MANAGER_AVAILABLE = False
 
+# Feature Configuration Manager
 try:
     from .feature_config_manager import FeatureConfigManager, create_feature_config_manager
     FEATURE_CONFIG_MANAGER_AVAILABLE = True
@@ -46,6 +66,7 @@ except ImportError as e:
     create_feature_config_manager = None
     FEATURE_CONFIG_MANAGER_AVAILABLE = False
 
+# Logging Configuration Manager
 try:
     from .logging_config_manager import LoggingConfigManager, create_logging_config_manager
     LOGGING_CONFIG_MANAGER_AVAILABLE = True
@@ -56,6 +77,7 @@ except ImportError as e:
     create_logging_config_manager = None
     LOGGING_CONFIG_MANAGER_AVAILABLE = False
 
+# Model Ensemble Manager
 try:
     from .model_ensemble_manager import ModelEnsembleManager, create_model_ensemble_manager
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = True
@@ -66,6 +88,7 @@ except ImportError as e:
     create_model_ensemble_manager = None
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = False
 
+# Models Manager
 try:
     from .models_manager import ModelsManager, create_models_manager
     MODELS_MANAGER_AVAILABLE = True
@@ -76,6 +99,7 @@ except ImportError as e:
     create_models_manager = None
     MODELS_MANAGER_AVAILABLE = False
 
+# Performance Configuration Manager
 try:
     from .performance_config_manager import PerformanceConfigManager, create_performance_config_manager
     PERFORMANCE_CONFIG_MANAGER_AVAILABLE = True
@@ -97,6 +121,7 @@ except ImportError as e:
     create_pydantic_manager = None
     PYDANTIC_MANAGER_AVAILABLE = False
 
+# Server Configuration Manager
 try:
     from .server_config_manager import ServerConfigManager, create_server_config_manager
     SERVER_CONFIG_MANAGER_AVAILABLE = True
@@ -107,6 +132,7 @@ except ImportError as e:
     create_server_config_manager = None
     SERVER_CONFIG_MANAGER_AVAILABLE = False
 
+# Settings Manager
 try:
     from .settings_manager import SettingsManager, create_settings_manager
     SETTINGS_MANAGER_AVAILABLE = True
@@ -117,6 +143,7 @@ except ImportError as e:
     create_settings_manager = None
     SETTINGS_MANAGER_AVAILABLE = False
 
+# Storage Configuration Manager
 try:
     from .storage_config_manager import StorageConfigManager, create_storage_config_manager
     STORAGE_CONFIG_MANAGER_AVAILABLE = True
@@ -127,6 +154,7 @@ except ImportError as e:
     create_storage_config_manager = None
     STORAGE_CONFIG_MANAGER_AVAILABLE = False
 
+# Threshold Mapping Manager (Phase 3C)
 try:
     from .threshold_mapping_manager import ThresholdMappingManager, create_threshold_mapping_manager
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = True
@@ -137,6 +165,7 @@ except ImportError as e:
     create_threshold_mapping_manager = None
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = False
 
+# Unified Configuration Manager (Core)
 try:
     from .unified_config_manager import UnifiedConfigManager, create_unified_config_manager
     UNIFIED_CONFIG_MANAGER_AVAILABLE = True
@@ -147,6 +176,7 @@ except ImportError as e:
     create_unified_config_manager = None
     UNIFIED_CONFIG_MANAGER_AVAILABLE = False
 
+# Zero Shot Manager
 try:
     from .zero_shot_manager import ZeroShotManager, create_zero_shot_manager
     ZERO_SHOT_MANAGER_AVAILABLE = True
@@ -170,6 +200,7 @@ def get_manager_status() -> dict:
     """
     return {
         'analysis_parameters_manager': ANALYSIS_PARAMETERS_MANAGER_AVAILABLE,
+        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,  # NEW
         'crisis_pattern_manager': CRISIS_PATTERN_MANAGER_AVAILABLE,
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
@@ -186,12 +217,14 @@ def get_manager_status() -> dict:
     }
 
 # ============================================================================
-# STEP 9.8: UNIFIED CONFIGURATION EXPORTS ONLY
+# STEP 10.8: UNIFIED CONFIGURATION EXPORTS WITH CONTEXT PATTERN MANAGER
 # ============================================================================
 
 __all__ = [
     'AnalysisParametersManager',
     'create_analysis_parameters_manager',
+    'ContextPatternManager',  # NEW
+    'create_context_pattern_manager',  # NEW
     'CrisisPatternManager',
     'create_crisis_pattern_manager',
     'FeatureConfigManager',
@@ -221,9 +254,10 @@ __all__ = [
 
     'get_manager_status'
 ]
+
 # ============================================================================
-# STEP 9.8 COMPLETION LOG
+# STEP 10.8 COMPLETION LOG
 # ============================================================================
 
-logger.info("✅ Managers __init__.py Step 9.8 complete - ConfigManager eliminated, UnifiedConfigManager only")
+logger.info("✅ Managers __init__.py Step 10.8 complete - ContextPatternManager added")
 logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")
