@@ -1,11 +1,11 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.8-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Community Pattern Consolidation + Manager Method Fixes
+FILE VERSION: v3.1-3d-10.8-2
+LAST MODIFIED: 2025-08-14
+PHASE: 3d Step 10.8 - Context Pattern Manager Integration + API Response Fix
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Fixed manager method calls and environment variable handling
+MIGRATION STATUS: Step 10.8 COMPLETE - ContextPatternManager integrated, needs_response fixed
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -24,13 +24,14 @@ logger = logging.getLogger(__name__)
 
 class CrisisAnalyzer:
     """
-    PHASE 3D STEP 10.7 COMPLETE: Three Zero-Shot Model Ensemble crisis analysis with consolidated community patterns
+    PHASE 3D STEP 10.8 COMPLETE: Three Zero-Shot Model Ensemble crisis analysis with ContextPatternManager integration
     Phase 3a: Clean v3.1 architecture with JSON-based patterns
     Phase 3b: Analysis parameters from AnalysisParametersManager  
     Phase 3c: Mode-aware thresholds from ThresholdMappingManager
     Phase 3d Step 7: Feature flags and performance settings from dedicated managers
     Phase 3d Step 10.6: Consolidated scoring functions (no more utils/scoring_helpers.py)
     Phase 3d Step 10.7: Consolidated community patterns (no more utils/community_patterns.py)
+    Phase 3d Step 10.8: ContextPatternManager integration (no more utils/context_helpers.py) + API response fix
     """
     
     def __init__(self, models_manager, crisis_pattern_manager=None, learning_manager=None,
@@ -80,7 +81,7 @@ class CrisisAnalyzer:
         # Performance tracking
         self.initialization_time = time.time()
         
-        logger.info("CrisisAnalyzer v3.1-3d-10.8 initialized with ContextPatternManager integration")
+        logger.info("CrisisAnalyzer v3.1-3d-10.8-2 initialized with ContextPatternManager integration and API response fix")
 
     def extract_context_signals(self, message: str) -> Dict[str, Any]:
         """
@@ -316,6 +317,10 @@ class CrisisAnalyzer:
             'message': message,
             'user_id': user_id,
             'channel_id': channel_id,
+            'needs_response': True,  # FIXED: Conservative - assume crisis on error
+            'crisis_level': 'high',  # FIXED: Conservative - assume high crisis on error
+            'confidence_score': 0.0,  # FIXED: Add missing field
+            'detected_categories': ['error'],  # FIXED: Add missing field
             'analysis_results': {
                 'crisis_score': 0.0,
                 'crisis_level': 'error',
@@ -326,7 +331,7 @@ class CrisisAnalyzer:
                 'analysis_metadata': {
                     'processing_time': time.time() - start_time,
                     'timestamp': time.time(),
-                    'analysis_version': 'v3.1-3d-10.8',
+                    'analysis_version': 'v3.1-3d-10.8-2',
                     'error_occurred': True,
                     'features_used': {
                         'ensemble_analysis': False,
@@ -358,6 +363,10 @@ class CrisisAnalyzer:
             'message': message,
             'user_id': user_id,
             'channel_id': channel_id,
+            'needs_response': True,  # FIXED: Conservative - assume crisis on timeout
+            'crisis_level': 'medium',  # FIXED: Conservative - assume medium crisis on timeout
+            'confidence_score': 0.5,  # FIXED: Add missing field
+            'detected_categories': ['timeout'],  # FIXED: Add missing field
             'analysis_results': {
                 'crisis_score': 0.0,
                 'crisis_level': 'timeout',
@@ -368,7 +377,7 @@ class CrisisAnalyzer:
                 'analysis_metadata': {
                     'processing_time': time.time() - start_time,
                     'timestamp': time.time(),
-                    'analysis_version': 'v3.1-3d-10.8',
+                    'analysis_version': 'v3.1-3d-10.8-2',
                     'timeout_occurred': True,
                     'features_used': {
                         'ensemble_analysis': False,
@@ -627,7 +636,7 @@ class CrisisAnalyzer:
                                 context_analysis: Dict, start_time: float) -> Dict:
         """
         Combine all analysis results with context integration
-        Updated for Step 10.8: Context analysis integration
+        Updated for Step 10.8: Context analysis integration + FIXED API response structure
         """
         
         # Calculate base scores from models
@@ -671,11 +680,16 @@ class CrisisAnalyzer:
         # Determine crisis level
         crisis_level = self._determine_crisis_level(final_score)
         
-        # Build comprehensive response
+        # FIXED: Build comprehensive response with ALL required API fields
         response = {
             'message': message,
             'user_id': user_id,
             'channel_id': channel_id,
+            'needs_response': crisis_level != 'none',  # FIXED: Step 10.8 - Add missing needs_response
+            'crisis_level': crisis_level,  # FIXED: Step 10.8 - Add top-level crisis_level for API compatibility
+            'confidence_score': final_score,  # FIXED: Step 10.8 - Add top-level confidence_score for API compatibility
+            'detected_categories': self._extract_categories(pattern_analysis),  # FIXED: Step 10.8 - Add missing categories
+            'method': 'crisis_analyzer_complete_v3d_step_10_8_fixed',  # FIXED: Updated method name
             'analysis_results': {
                 'crisis_score': final_score,
                 'crisis_level': crisis_level,
@@ -686,7 +700,7 @@ class CrisisAnalyzer:
                 'analysis_metadata': {
                     'processing_time': time.time() - start_time,
                     'timestamp': time.time(),
-                    'analysis_version': 'v3.1-3d-10.8',
+                    'analysis_version': 'v3.1-3d-10.8-2',
                     'features_used': {
                         'ensemble_analysis': bool(model_results),
                         'pattern_analysis': bool(pattern_analysis),
@@ -701,7 +715,8 @@ class CrisisAnalyzer:
 
         # Debug
         logger.debug(f"🔍 Final response crisis_level={crisis_level}, confidence_score={final_score}")
-        logger.debug(f"🔍 Response structure keys: {list(response.keys())}")  # where response is your return dict
+        logger.debug(f"🔍 FIXED: needs_response={crisis_level != 'none'}")  # FIXED: Log the fix
+        logger.debug(f"🔍 Response structure keys: {list(response.keys())}")
 
         return response
 
@@ -767,6 +782,7 @@ class CrisisAnalyzer:
         """
         Basic crisis analysis when ensemble is disabled by feature flag
         Updated for Step 10.7: Direct CrisisPatternManager usage
+        FIXED: Step 10.8 - Add missing needs_response and other required fields
         """
         logger.info("🔥 Running basic crisis analysis - ensemble disabled by feature flag")
         
@@ -811,160 +827,30 @@ class CrisisAnalyzer:
             crisis_level = 'none'
             confidence = 0.0
         
+        # FIXED: Return proper response structure with all required fields
         return {
-            'needs_response': crisis_level != 'none',
-            'crisis_level': crisis_level,
-            'confidence_score': confidence,
-            'detected_categories': [],
-            'pattern_analysis': {'enhanced_patterns': enhanced_patterns},
-            'method': 'basic_pattern_only_v3d10.7' if pattern_analysis_enabled else 'basic_disabled_v3d10.7',
-            'processing_time_ms': (time.time() - start_time) * 1000,
-            'metadata': {
-                'user_id': user_id,
-                'channel_id': channel_id,
-                'analysis_timestamp': time.time(),
-                'ensemble_disabled': True,
-                'step_10_7_consolidation': True
-            }
-        }
-
-    # =============================================================================
-    # NEW CONTEXT ANALYSIS METHODS - Using ContextPatternManager
-    # =============================================================================
-
-    def extract_context_signals(self, message: str) -> Dict[str, Any]:
-        """
-        Extract context signals from message using ContextPatternManager
-        
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            Dictionary containing context signals
-            
-        Note:
-            This method now uses the centralized ContextPatternManager instead of utils/context_helpers.py
-        """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.extract_context_signals(message)
-            else:
-                logger.warning("⚠️ ContextPatternManager not available, using basic fallback")
-                return self._basic_context_fallback(message)
-        except Exception as e:
-            logger.error(f"❌ Context signal extraction failed: {e}")
-            return self._basic_context_fallback(message)
-
-    def analyze_sentiment_context(self, message: str, base_sentiment: float = 0.0) -> Dict[str, Any]:
-        """
-        Analyze sentiment context using ContextPatternManager
-        
-        Args:
-            message: Message text to analyze
-            base_sentiment: Base sentiment score
-            
-        Returns:
-            Dictionary with sentiment context analysis
-        """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.analyze_sentiment_context(message, base_sentiment)
-            else:
-                logger.warning("⚠️ ContextPatternManager not available for sentiment context analysis")
-                return {'base_sentiment': base_sentiment, 'context_available': False}
-        except Exception as e:
-            logger.error(f"❌ Sentiment context analysis failed: {e}")
-            return {'base_sentiment': base_sentiment, 'error': str(e)}
-
-    def perform_enhanced_context_analysis(self, message: str) -> Dict[str, Any]:
-        """
-        Perform enhanced context analysis with crisis pattern integration
-        
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            Enhanced context analysis results
-        """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.perform_enhanced_context_analysis(
-                    message, self.crisis_pattern_manager
-                )
-            else:
-                logger.warning("⚠️ ContextPatternManager not available for enhanced analysis")
-                return {'enhanced_analysis': False, 'context_available': False}
-        except Exception as e:
-            logger.error(f"❌ Enhanced context analysis failed: {e}")
-            return {'enhanced_analysis': False, 'error': str(e)}
-
-    def score_term_in_context(self, term: str, message: str, context_window: Optional[int] = None) -> Dict[str, Any]:
-        """
-        Score term relevance in message context using ContextPatternManager
-        
-        Args:
-            term: Term to score
-            message: Full message text
-            context_window: Context window size (optional)
-            
-        Returns:
-            Term scoring results
-        """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.score_term_in_context(term, message, context_window)
-            else:
-                logger.warning("⚠️ ContextPatternManager not available for term scoring")
-                return {'term': term, 'found': False, 'context_available': False}
-        except Exception as e:
-            logger.error(f"❌ Term context scoring failed: {e}")
-            return {'term': term, 'found': False, 'error': str(e)}
-
-    def _basic_context_fallback(self, message: str) -> Dict[str, Any]:
-        """Basic context fallback when ContextPatternManager is not available"""
-        return {
-            'message_length': len(message),
-            'word_count': len(message.split()),
-            'has_question_mark': '?' in message,
-            'has_exclamation': '!' in message,
-            'fallback_mode': True,
-            'context_manager_available': False
-        }
-
-    def _create_error_response(self, message: str, user_id: str, channel_id: str, error: str, start_time: float) -> Dict:
-        """Create error response for failed analysis"""
-        return {
-            'needs_response': True,  # Conservative - assume crisis on error
-            'crisis_level': 'high',  # Conservative - assume high crisis on error
-            'confidence_score': 0.0,
-            'detected_categories': [],
-            'error': error,
-            'method': 'error_fallback_v3d10.7',
-            'processing_time_ms': (time.time() - start_time) * 1000,
-            'metadata': {
-                'user_id': user_id,
-                'channel_id': channel_id,
-                'analysis_timestamp': time.time(),
-                'error_occurred': True
-            }
-        }
-
-    def _create_timeout_response(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
-        """Create timeout response for analysis that takes too long"""
-        return {
-            'needs_response': True,  # Conservative - assume crisis on timeout
-            'crisis_level': 'medium',  # Conservative - assume medium crisis on timeout
-            'confidence_score': 0.5,
-            'detected_categories': [],
-            'error': 'Analysis timed out',
-            'method': 'timeout_fallback_v3d10.7',
-            'processing_time_ms': (time.time() - start_time) * 1000,
-            'metadata': {
-                'user_id': user_id,
-                'channel_id': channel_id,
-                'analysis_timestamp': time.time(),
-                'timeout_occurred': True
-            }
+            'message': message,
+            'user_id': user_id,
+            'channel_id': channel_id,
+            'needs_response': crisis_level != 'none',  # FIXED: Add missing needs_response
+            'crisis_level': crisis_level,  # FIXED: Top-level field
+            'confidence_score': confidence,  # FIXED: Top-level field
+            'detected_categories': self._extract_categories({'enhanced_patterns': enhanced_patterns}),  # FIXED: Add categories
+            'method': 'basic_pattern_only_v3d10.8_fixed' if pattern_analysis_enabled else 'basic_disabled_v3d10.8_fixed',
+            'analysis_results': {  # FIXED: Add nested analysis_results structure
+                'crisis_score': confidence,
+                'crisis_level': crisis_level,
+                'pattern_analysis': {'enhanced_patterns': enhanced_patterns},
+                'analysis_metadata': {
+                    'processing_time': time.time() - start_time,
+                    'timestamp': time.time(),
+                    'analysis_version': 'v3.1-3d-10.8-2',
+                    'ensemble_disabled': True,
+                    'step_10_8_integration': True
+                }
+            },
+            'requires_staff_review': self._determine_staff_review_requirement(confidence, crisis_level),  # FIXED: Add missing field
+            'processing_time': time.time() - start_time  # FIXED: Add missing field
         }
 
     # ========================================================================
@@ -1194,7 +1080,7 @@ class CrisisAnalyzer:
                 'detected_categories': detected_categories,
                 'adjustment_reasons': adjustment_reasons,
                 'sentiment_scores': sentiment_scores,
-                'analysis_method': 'enhanced_depression_v3d10.6',
+                'analysis_method': 'enhanced_depression_v3d10.8',
                 'success': True
             }
             
@@ -1208,7 +1094,7 @@ class CrisisAnalyzer:
                 'detected_categories': ['analysis_error'],
                 'adjustment_reasons': [f"error: {str(e)}"],
                 'sentiment_scores': {},
-                'analysis_method': 'enhanced_depression_v3d10.6',
+                'analysis_method': 'enhanced_depression_v3d10.8',
                 'success': False,
                 'error': str(e)
             }
@@ -1253,7 +1139,7 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
         context_pattern_manager: ContextPatternManager for context analysis (NEW)
         
     Returns:
-        CrisisAnalyzer instance with Step 10.8 context pattern integration
+        CrisisAnalyzer instance with Step 10.8 context pattern integration + API response fix
     """
     return CrisisAnalyzer(
         models_manager=models_manager,
@@ -1268,4 +1154,4 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
 
 __all__ = ['CrisisAnalyzer', 'create_crisis_analyzer']
 
-logger.info("✅ CrisisAnalyzer v3.1 Step 10.7 loaded - Community pattern consolidation complete")
+logger.info("✅ CrisisAnalyzer v3.1-3d-10.8-2 loaded - Step 10.8 COMPLETE with needs_response fix")
