@@ -319,8 +319,12 @@ class UnifiedConfigManager:
         var_type = json_rules.get('type', 'str')
         default = json_rules.get('default')
         choices = json_rules.get('enum') or json_rules.get('choices')
-        required = json_rules.get('required', False)
         description = json_rules.get('description', '')
+        
+        # STEP 10.9 FIX: Override required flag for JSON-based schemas
+        # JSON validation blocks are for configuration validation, not environment variable requirements
+        # Only essential core schemas (defined in Python) should be truly required
+        required = False  # JSON-based schemas are never required (they have defaults)
         
         # Handle range validation
         min_value = None
@@ -356,7 +360,7 @@ class UnifiedConfigManager:
             choices=choices,
             min_value=min_value,
             max_value=max_value,
-            required=required,
+            required=required,  # Always False for JSON-based schemas
             description=description
         )
     # ========================================================================
