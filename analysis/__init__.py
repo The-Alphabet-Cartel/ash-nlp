@@ -248,46 +248,16 @@ def get_migration_status():
         "version": "v3.1.3d.10.6.1"
     }
 
-    def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning_manager=None, 
-                              analysis_parameters_manager=None, threshold_mapping_manager=None,
-                              feature_config_manager=None, performance_config_manager=None,
-                              context_pattern_manager=None):  # NEW: Step 10.8
-        """
-        Create and return a CrisisAnalyzer instance with Phase 3d Step 10.8 support
-        
-        Args:
-            models_manager: ML model manager for ensemble analysis
-            crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
-            learning_manager: Optional learning manager for feedback
-            analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
-            threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds (Phase 3c)
-            feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
-            performance_config_manager: PerformanceConfigManager for performance settings (Phase 3d Step 7)
-            context_pattern_manager: ContextPatternManager for context analysis (Phase 3d Step 10.8) - NEW
-            
-        Returns:
-            CrisisAnalyzer instance with ContextPatternManager integration (Phase 3d Step 10.8)
-        """
-        return CrisisAnalyzer(
-            models_manager=models_manager,
-            crisis_pattern_manager=crisis_pattern_manager,
-            learning_manager=learning_manager,
-            analysis_parameters_manager=analysis_parameters_manager,
-            threshold_mapping_manager=threshold_mapping_manager,
-            feature_config_manager=feature_config_manager,
-            performance_config_manager=performance_config_manager,
-            context_pattern_manager=context_pattern_manager  # NEW: Step 10.8
-        )
-
 # ============================================================================
 # FACTORY FUNCTIONS - Clean v3.1 Architecture with Phase 3d Step 10.6 Support
 # ============================================================================
 
 def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning_manager=None, 
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
-                          feature_config_manager=None, performance_config_manager=None):
+                          feature_config_manager=None, performance_config_manager=None,
+                          context_pattern_manager=None):  # NEW: Step 10.8
     """
-    Create and return a CrisisAnalyzer instance with Phase 3d Step 10.6 support
+    Create and return a CrisisAnalyzer instance with Phase 3d Step 10.8 support
     
     Args:
         models_manager: ML model manager for ensemble analysis
@@ -297,9 +267,10 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
         threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds (Phase 3c)
         feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
         performance_config_manager: PerformanceConfigManager for performance settings (Phase 3d Step 7)
+        context_pattern_manager: ContextPatternManager for context analysis (Phase 3d Step 10.8) - NEW
         
     Returns:
-        CrisisAnalyzer instance with consolidated scoring functions (Phase 3d Step 10.6)
+        CrisisAnalyzer instance with ContextPatternManager integration (Phase 3d Step 10.8)
     """
     return CrisisAnalyzer(
         models_manager=models_manager,
@@ -308,7 +279,8 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
         analysis_parameters_manager=analysis_parameters_manager,
         threshold_mapping_manager=threshold_mapping_manager,
         feature_config_manager=feature_config_manager,
-        performance_config_manager=performance_config_manager
+        performance_config_manager=performance_config_manager,
+        context_pattern_manager=context_pattern_manager  # NEW: Step 10.8
     )
 
 __all__ = [
