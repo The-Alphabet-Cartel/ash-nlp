@@ -573,6 +573,8 @@ class CrisisAnalyzer:
                 model_results = {'error': str(e)}
 
         # Combine results with enhanced context integration
+        logger.info(f"🔍 DEBUG: Final response crisis_level={crisis_level}, confidence_score={final_score}")
+        logger.info(f"🔍 DEBUG: Response structure keys: {list(response.keys())}")  # where response is your return dict
         return self._combine_analysis_results(
             message, user_id, channel_id, model_results, pattern_analysis, context_analysis, start_time
         )
