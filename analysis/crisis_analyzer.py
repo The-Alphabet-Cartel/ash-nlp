@@ -15,10 +15,6 @@ import time
 import re
 import asyncio
 from typing import Dict, List, Tuple, Any, Optional
-from utils.context_helpers import extract_context_signals, analyze_sentiment_context, process_sentiment_with_flip
-# PHASE 3D STEP 10.6: Scoring functions consolidated as instance methods (imports removed)
-# PHASE 3D STEP 10.7: Community pattern imports removed - now use CrisisPatternManager directly
-from managers.crisis_pattern_manager import CrisisPatternManager
 
 logger = logging.getLogger(__name__)
 
@@ -878,7 +874,7 @@ class CrisisAnalyzer:
     
     def extract_depression_score(self, message: str, sentiment_model=None, 
                                 analysis_parameters_manager=None, context=None,
-                                crisis_pattern_manager: Optional[CrisisPatternManager] = None) -> Tuple[float, List[str]]:
+                                crisis_pattern_manager=None) -> Tuple[float, List[str]]:
         """
         Extract depression indicators from message text (STEP 10.6: Consolidated from utils)
         
@@ -983,7 +979,7 @@ class CrisisAnalyzer:
 
     def enhanced_depression_analysis(self, message: str, base_score: float = 0.0, sentiment_model=None, 
                                    analysis_parameters_manager=None, context=None,
-                                   crisis_pattern_manager: Optional[CrisisPatternManager] = None) -> Dict:
+                                   crisis_pattern_manager=None) -> Dict:
         """
         Enhanced depression analysis with detailed breakdown (STEP 10.6: Consolidated from utils)
         
