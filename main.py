@@ -315,7 +315,7 @@ def create_fastapi_app():
         add_ensemble_endpoints_v3c(
             app, 
             managers['model_ensemble'], 
-            managers['pydantic'], 
+            managers['pydantic_manager'], 
             crisis_pattern_manager=managers['crisis_pattern'],
             threshold_mapping_manager=managers['threshold_mapping']
         )
