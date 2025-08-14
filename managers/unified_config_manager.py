@@ -227,13 +227,16 @@ class UnifiedConfigManager:
                 choices=['enhanced_crisis', 'clinical_focused', 'conversational', 'safety_first'],
                 description='Fallback label set if primary fails'),
 
-            # STEP 10.9: Add schema for context pattern variables (from .env.template)
+            # STEP 10.9: Add schema for context pattern variables (from .env.template and JSON configs)
             'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT': VariableSchema('float', 1.2,
                 min_value=0.1, max_value=5.0,
                 description='Enhanced crisis pattern weight multiplier'),
             'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST': VariableSchema('float', 1.2,
                 min_value=0.1, max_value=5.0,
                 description='Hopelessness context crisis boost factor'),
+            'NLP_HOPELESSNESS_CONTEXT_BOOST_FACTOR': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Hopelessness context boost factor for pattern analysis'),
 
             # Preserve GLOBAL_* variables (Ecosystem Compatibility)
             'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO',
@@ -772,11 +775,16 @@ class UnifiedConfigManager:
             
         elif isinstance(value, dict):
             # Process dictionaries recursively, passing defaults context
+            # STEP 10.9 FIX: Skip _metadata blocks to avoid processing documentation examples
             result = {}
             current_defaults = defaults_context or value.get('defaults', {})
             
             for k, v in value.items():
-                if k == 'defaults':
+                if k.startswith('_'):
+                    # Skip metadata blocks (they contain documentation and examples, not real config)
+                    logger.debug(f"🔄 Step 10.9: Skipping metadata block: {k}")
+                    result[k] = v  # Keep metadata as-is without processing
+                elif k == 'defaults':
                     # Keep defaults block as-is for reference
                     result[k] = v
                 else:
@@ -860,6 +868,7 @@ class UnifiedConfigManager:
         # Common pattern mappings
         pattern_mappings = {
             'hopelessness_context_crisis_boost': 'crisis_amplifier_weight',
+            'hopelessness_context_boost_factor': 'crisis_amplifier_weight',
             'enhanced_crisis_weight': 'enhanced_crisis_weight',
             'crisis_context_boost_multiplier': 'crisis_amplifier_weight',
             'lgbtqia_weight_multiplier': 'lgbtqia_weight_multiplier',
