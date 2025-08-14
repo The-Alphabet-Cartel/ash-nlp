@@ -1,7 +1,7 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.7-3
+FILE VERSION: v3.1-3d-10.8-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.7 - Community Pattern Consolidation + Manager Method Fixes
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -40,6 +40,7 @@ class CrisisAnalyzer:
         """
         Initialize Crisis Analyzer with comprehensive manager integration
         Updated for Step 10.8: Context Pattern Manager integration
+        FIXED: Added all missing cache timing attributes
         
         Args:
             models_manager: ML model manager for ensemble analysis
@@ -51,6 +52,7 @@ class CrisisAnalyzer:
             performance_config_manager: PerformanceConfigManager for performance settings
             context_pattern_manager: ContextPatternManager for context analysis (NEW)
         """
+        # Manager dependencies
         self.models_manager = models_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.learning_manager = learning_manager
@@ -60,16 +62,121 @@ class CrisisAnalyzer:
         self.performance_config_manager = performance_config_manager
         self.context_pattern_manager = context_pattern_manager  # NEW: Step 10.8
         
-        # Initialize caches
+        # FIXED: Initialize all required cache attributes
         self._feature_cache = {}
         self._performance_cache = {}
-        self._last_feature_refresh = 0
-        self._last_performance_refresh = 0
         
-        # Cache refresh interval (seconds)
+        # FIXED: Add all missing timing attributes
+        self._last_feature_check = 0  # FIXED: Missing attribute causing the error
+        self._last_performance_check = 0  # FIXED: Missing attribute
+        self._last_feature_refresh = 0  # Keep existing name for compatibility
+        self._last_performance_refresh = 0  # Keep existing name for compatibility
+        
+        # FIXED: Add missing cache duration settings
         self._cache_refresh_interval = 30.0
+        self._feature_cache_duration = 30.0  # FIXED: Missing attribute
+        self._performance_cache_duration = 30.0  # FIXED: Missing attribute
+        
+        # Performance tracking
+        self.initialization_time = time.time()
         
         logger.info("CrisisAnalyzer v3.1-3d-10.8 initialized with ContextPatternManager integration")
+
+    def extract_context_signals(self, message: str) -> Dict[str, Any]:
+        """
+        Extract context signals from message using ContextPatternManager
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            Dictionary containing context signals
+        """
+        try:
+            if self.context_pattern_manager:
+                return self.context_pattern_manager.extract_context_signals(message)
+            else:
+                logger.warning("⚠️ ContextPatternManager not available, using basic fallback")
+                return self._basic_context_fallback(message)
+        except Exception as e:
+            logger.error(f"❌ Context signal extraction failed: {e}")
+            return self._basic_context_fallback(message)
+
+    def analyze_sentiment_context(self, message: str, base_sentiment: float = 0.0) -> Dict[str, Any]:
+        """
+        Analyze sentiment context using ContextPatternManager
+        
+        Args:
+            message: Message text to analyze
+            base_sentiment: Base sentiment score
+            
+        Returns:
+            Dictionary with sentiment context analysis
+        """
+        try:
+            if self.context_pattern_manager:
+                return self.context_pattern_manager.analyze_sentiment_context(message, base_sentiment)
+            else:
+                logger.warning("⚠️ ContextPatternManager not available for sentiment context analysis")
+                return {'base_sentiment': base_sentiment, 'context_available': False}
+        except Exception as e:
+            logger.error(f"❌ Sentiment context analysis failed: {e}")
+            return {'base_sentiment': base_sentiment, 'error': str(e)}
+
+    def perform_enhanced_context_analysis(self, message: str) -> Dict[str, Any]:
+        """
+        Perform enhanced context analysis with crisis pattern integration
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            Enhanced context analysis results
+        """
+        try:
+            if self.context_pattern_manager:
+                return self.context_pattern_manager.perform_enhanced_context_analysis(
+                    message, self.crisis_pattern_manager
+                )
+            else:
+                logger.warning("⚠️ ContextPatternManager not available for enhanced analysis")
+                return {'enhanced_analysis': False, 'context_available': False}
+        except Exception as e:
+            logger.error(f"❌ Enhanced context analysis failed: {e}")
+            return {'enhanced_analysis': False, 'error': str(e)}
+
+    def score_term_in_context(self, term: str, message: str, context_window: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Score term relevance in message context using ContextPatternManager
+        
+        Args:
+            term: Term to score
+            message: Full message text
+            context_window: Context window size (optional)
+            
+        Returns:
+            Term scoring results
+        """
+        try:
+            if self.context_pattern_manager:
+                return self.context_pattern_manager.score_term_in_context(term, message, context_window)
+            else:
+                logger.warning("⚠️ ContextPatternManager not available for term scoring")
+                return {'term': term, 'found': False, 'context_available': False}
+        except Exception as e:
+            logger.error(f"❌ Term context scoring failed: {e}")
+            return {'term': term, 'found': False, 'error': str(e)}
+
+    def _basic_context_fallback(self, message: str) -> Dict[str, Any]:
+        """Basic context fallback when ContextPatternManager is not available"""
+        return {
+            'message_length': len(message),
+            'word_count': len(message.split()),
+            'has_question_mark': '?' in message,
+            'has_exclamation': '!' in message,
+            'fallback_mode': True,
+            'context_manager_available': False
+        }
 
     def _refresh_feature_cache(self):
         """Refresh feature flag cache if needed (Phase 3d Step 7)"""
