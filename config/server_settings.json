@@ -1,30 +1,22 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10-1",
-    "last_modified": "2025-08-13",
+    "file_version": "v3.1-3d-10.10-1",
+    "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
-    "configuration_version": "3d.1",
+    "configuration_version": "3d.10.10",
     "description": "Server infrastructure configuration for NLP crisis detection system",
     "created_date": "2025-08-12",
-    "updated_date": "2025-08-12",
+    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards",
     "manager": "ServerConfigManager",
-    "environment_overrides": {
-      "description": "All server settings support environment variable overrides",
-      "pattern": "${NLP_SERVER_*CATEGORY*_*SETTING*}",
-      "examples": [
-        "NLP_SERVER_NETWORK_HOST",
-        "NLP_SERVER_NETWORK_PORT",
-        "NLP_SERVER_SECURITY_RATE_LIMIT_ENABLE"
-      ]
-    }
+    "cleanup_note": "Step 10.10 - MAJOR CONSOLIDATION achieved - eliminated server configuration chaos by mapping to existing variables"
   },
 
   "server_configuration": {
     "network_settings": {
       "description": "Network configuration for server binding and access",
-      "host": "${NLP_SERVER_NETWORK_HOST}",
-      "port": "${NLP_SERVER_NETWORK_PORT}",
+      "host": "${NLP_SERVER_HOST}",
+      "port": "${GLOBAL_NLP_API_PORT}",
       "enable_ssl": "${NLP_SERVER_NETWORK_ENABLE_SSL}",
       "ssl_cert_path": "${NLP_SERVER_NETWORK_SSL_CERT_PATH}",
       "ssl_key_path": "${NLP_SERVER_NETWORK_SSL_KEY_PATH}",
@@ -102,8 +94,8 @@
 
     "performance_settings": {
       "description": "Server performance and resource management settings",
-      "max_concurrent_requests": "${NLP_SERVER_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
-      "request_timeout": "${NLP_SERVER_PERFORMANCE_REQUEST_TIMEOUT}",
+      "max_concurrent_requests": "${NLP_MAX_CONCURRENT_REQUESTS}",
+      "request_timeout": "${NLP_REQUEST_TIMEOUT}",
       "worker_timeout": "${NLP_SERVER_PERFORMANCE_WORKER_TIMEOUT}",
       "keep_alive_timeout": "${NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT}",
       "max_request_size": "${NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE}",
@@ -141,39 +133,38 @@
         "max_request_size": {
           "type": "string",
           "pattern": "^\\d+[KMG]B$",
-          "description": "Maximum HTTP request body size"
+          "description": "Maximum HTTP request size"
         }
       }
     },
 
     "security_settings": {
-      "description": "Security configuration and access control settings",
+      "description": "Security controls and access management",
       "rate_limiting": {
-        "description": "Rate limiting configuration for API endpoints",
         "enable_rate_limiting": "${NLP_SERVER_SECURITY_RATE_LIMIT_ENABLE}",
-        "requests_per_minute": "${NLP_SERVER_SECURITY_RATE_LIMIT_PER_MINUTE}",
-        "requests_per_hour": "${NLP_SERVER_SECURITY_RATE_LIMIT_PER_HOUR}",
-        "burst_size": "${NLP_SERVER_SECURITY_RATE_LIMIT_BURST_SIZE}",
+        "requests_per_minute": "${NLP_MAX_REQUESTS_PER_MINUTE}",
+        "requests_per_hour": "${NLP_MAX_REQUESTS_PER_HOUR}",
+        "burst_size": "${NLP_SECURITY_BURST_LIMIT}",
         "defaults": {
           "enable_rate_limiting": true,
-          "requests_per_minute": 60,
-          "requests_per_hour": 1000,
-          "burst_size": 100
+          "requests_per_minute": 120,
+          "requests_per_hour": 2000,
+          "burst_size": 150
         },
         "validation": {
           "enable_rate_limiting": {
             "type": "boolean",
-            "description": "Enable API rate limiting"
+            "description": "Enable rate limiting protection"
           },
           "requests_per_minute": {
             "type": "integer",
             "range": [10, 1000],
-            "description": "Maximum requests per minute per client"
+            "description": "Maximum requests per minute"
           },
           "requests_per_hour": {
             "type": "integer",
             "range": [100, 10000],
-            "description": "Maximum requests per hour per client"
+            "description": "Maximum requests per hour"
           },
           "burst_size": {
             "type": "integer",
@@ -183,7 +174,6 @@
         }
       },
       "cors": {
-        "description": "Cross-Origin Resource Sharing (CORS) configuration",
         "enable_cors": "${NLP_SERVER_SECURITY_CORS_ENABLE}",
         "allowed_origins": "${NLP_SERVER_SECURITY_CORS_ALLOWED_ORIGINS}",
         "allowed_methods": "${NLP_SERVER_SECURITY_CORS_ALLOWED_METHODS}",
@@ -197,11 +187,11 @@
         "validation": {
           "enable_cors": {
             "type": "boolean",
-            "description": "Enable CORS support"
+            "description": "Enable Cross-Origin Resource Sharing"
           },
           "allowed_origins": {
             "type": "array",
-            "description": "List of allowed origin domains"
+            "description": "List of allowed CORS origins"
           },
           "allowed_methods": {
             "type": "array",
@@ -209,7 +199,7 @@
           },
           "allowed_headers": {
             "type": "array",
-            "description": "List of allowed HTTP headers"
+            "description": "List of allowed request headers"
           }
         }
       }
@@ -219,58 +209,41 @@
   "deployment_profiles": {
     "description": "Pre-configured deployment profiles for different environments",
     "development": {
-      "description": "Development environment with debugging enabled",
+      "description": "Development environment settings",
       "debug_mode": true,
       "workers": 1,
       "reload_on_changes": true,
+      "request_timeout": 60,
       "enable_ssl": false,
-      "enable_rate_limiting": false
+      "rate_limiting": {
+        "requests_per_minute": 200,
+        "requests_per_hour": 5000
+      }
     },
-    "testing": {
-      "description": "Testing environment with moderate security",
-      "debug_mode": false,
-      "workers": 2,
-      "reload_on_changes": false,
-      "enable_ssl": false,
-      "enable_rate_limiting": true
-    },
-    "staging": {
-      "description": "Staging environment mimicking production",
+    "production": {
+      "description": "Production environment settings",
       "debug_mode": false,
       "workers": 4,
       "reload_on_changes": false,
+      "request_timeout": 30,
       "enable_ssl": true,
-      "enable_rate_limiting": true
+      "rate_limiting": {
+        "requests_per_minute": 120,
+        "requests_per_hour": 2000
+      }
     },
-    "production": {
-      "description": "Production environment with full security",
+    "high_performance": {
+      "description": "High-performance production settings",
       "debug_mode": false,
       "workers": 8,
       "reload_on_changes": false,
+      "request_timeout": 20,
+      "max_concurrent_requests": 100,
       "enable_ssl": true,
-      "enable_rate_limiting": true
+      "rate_limiting": {
+        "requests_per_minute": 300,
+        "requests_per_hour": 5000
+      }
     }
-  },
-
-  "monitoring": {
-    "description": "Server monitoring and health check configuration",
-    "health_check_endpoint": "/health",
-    "metrics_endpoint": "/metrics",
-    "status_endpoint": "/status",
-    "enable_health_checks": true,
-    "health_check_interval": 30,
-    "log_health_status": true
-  },
-
-  "usage_instructions": {
-    "description": "Configuration usage and integration guidelines",
-    "manager_integration": "Use ServerConfigManager with create_server_config_manager(config_manager)",
-    "environment_override_pattern": "Set environment variables using NLP_SERVER_*CATEGORY*_*SETTING* pattern",
-    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
-    "ssl_setup": "For SSL, ensure certificate and key files exist at specified paths",
-    "rate_limiting_notes": "Rate limiting applies per client IP address",
-    "cors_security": "Use specific origins instead of '*' for production security",
-    "worker_scaling": "Adjust worker count based on CPU cores and expected load",
-    "production_checklist": "Disable debug_mode, enable SSL, configure proper rate limits"
   }
 }
