@@ -1,394 +1,280 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10-1",
-    "last_modified": "2025-08-13",
-    "clean_architecture": "v3.1 Compliant",
-    "configuration_version": "3d.1",
-    "description": "Label switching and zero-shot classification configuration for NLP crisis detection system",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-12",
-    "compliance": "Clean Architecture v3.1 Standards",
+    "file_version": "v3.1-3d-10.11-1",
+    "last_modified": "2025-08-15",
+    "description": "Zero-Shot Model Labels Configuration for Ash NLP Service",
+    "phase": "3d Step 10.11 - Rule #7 Compliant Configuration",
+    "architecture": "clean-v3.1-unified",
     "manager": "ZeroShotManager",
-    "environment_overrides": {
-      "description": "All label settings support environment variable overrides",
-      "pattern": "${NLP_LABEL_*CATEGORY*_*SETTING*}",
-      "examples": [
-        "NLP_LABEL_CRISIS_HIGH_CRISIS",
-        "NLP_LABEL_CRISIS_MEDIUM_CRISIS", 
-        "NLP_LABEL_MAPPING_ENABLE_LABEL_SWITCHING"
-      ]
-    }
+    "related_files": [
+      "managers/zero_shot_manager.py",
+      "managers/unified_config_manager.py"
+    ],
+    "environment_variables": [
+      "NLP_ZERO_SHOT_LABEL_SET",
+      "NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING",
+      "NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE"
+    ],
+    "change_log": [
+      "2025-08-15: Fixed placeholder variables to use existing .env.template infrastructure (Rule #7 compliance)",
+      "2025-08-15: Added proper _metadata block and validation structure",
+      "2025-08-10: Enhanced crisis detection labels added",
+      "2025-08-05: Initial Phase 3d migration"
+    ]
   },
 
-  "label_configuration": {
-    "crisis_labels": {
-      "description": "Crisis detection label definitions and mappings",
-      "high_crisis": "${NLP_LABEL_CRISIS_HIGH_CRISIS}",
-      "medium_crisis": "${NLP_LABEL_CRISIS_MEDIUM_CRISIS}",
-      "low_crisis": "${NLP_LABEL_CRISIS_LOW_CRISIS}",
-      "no_crisis": "${NLP_LABEL_CRISIS_NO_CRISIS}",
-      "defaults": {
-        "high_crisis": "high crisis",
-        "medium_crisis": "medium crisis", 
-        "low_crisis": "low crisis",
-        "no_crisis": "no crisis"
-      },
-      "validation": {
-        "high_crisis": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for high crisis detection"
-        },
-        "medium_crisis": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for medium crisis detection"
-        },
-        "low_crisis": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for low crisis detection"
-        },
-        "no_crisis": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for no crisis detection"
-        }
-      }
-    },
-
-    "sentiment_labels": {
-      "description": "Sentiment analysis label definitions",
-      "positive": "${NLP_LABEL_SENTIMENT_POSITIVE}",
-      "negative": "${NLP_LABEL_SENTIMENT_NEGATIVE}",
-      "neutral": "${NLP_LABEL_SENTIMENT_NEUTRAL}",
-      "defaults": {
-        "positive": "positive",
-        "negative": "negative",
-        "neutral": "neutral"
-      },
-      "validation": {
-        "positive": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for positive sentiment"
-        },
-        "negative": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for negative sentiment"
-        },
-        "neutral": {
-          "type": "string",
-          "required": true,
-          "description": "Label text for neutral sentiment"
-        }
-      }
-    },
-
-    "emotion_labels": {
-      "description": "Emotion detection label definitions",
-      "joy": "${NLP_LABEL_EMOTION_JOY}",
-      "sadness": "${NLP_LABEL_EMOTION_SADNESS}",
-      "anger": "${NLP_LABEL_EMOTION_ANGER}",
-      "fear": "${NLP_LABEL_EMOTION_FEAR}",
-      "surprise": "${NLP_LABEL_EMOTION_SURPRISE}",
-      "disgust": "${NLP_LABEL_EMOTION_DISGUST}",
-      "love": "${NLP_LABEL_EMOTION_LOVE}",
-      "defaults": {
-        "joy": "joy",
-        "sadness": "sadness",
-        "anger": "anger", 
-        "fear": "fear",
-        "surprise": "surprise",
-        "disgust": "disgust",
-        "love": "love"
-      },
-      "validation": {
-        "joy": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for joy emotion"
-        },
-        "sadness": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for sadness emotion"
-        },
-        "anger": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for anger emotion"
-        },
-        "fear": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for fear emotion"
-        },
-        "surprise": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for surprise emotion"
-        },
-        "disgust": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for disgust emotion"
-        },
-        "love": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for love emotion"
-        }
-      }
-    },
-
-    "mental_health_labels": {
-      "description": "Mental health specific label definitions",
-      "depression_risk": "${NLP_LABEL_MENTAL_HEALTH_DEPRESSION_RISK}",
-      "anxiety_risk": "${NLP_LABEL_MENTAL_HEALTH_ANXIETY_RISK}",
-      "suicidal_ideation": "${NLP_LABEL_MENTAL_HEALTH_SUICIDAL_IDEATION}",
-      "self_harm_risk": "${NLP_LABEL_MENTAL_HEALTH_SELF_HARM_RISK}",
-      "substance_abuse": "${NLP_LABEL_MENTAL_HEALTH_SUBSTANCE_ABUSE}",
-      "eating_disorder": "${NLP_LABEL_MENTAL_HEALTH_EATING_DISORDER}",
-      "trauma_indicators": "${NLP_LABEL_MENTAL_HEALTH_TRAUMA_INDICATORS}",
-      "defaults": {
-        "depression_risk": "depression risk",
-        "anxiety_risk": "anxiety risk",
-        "suicidal_ideation": "suicidal ideation",
-        "self_harm_risk": "self harm risk",
-        "substance_abuse": "substance abuse",
-        "eating_disorder": "eating disorder",
-        "trauma_indicators": "trauma indicators"
-      },
-      "validation": {
-        "depression_risk": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for depression risk detection"
-        },
-        "anxiety_risk": {
-          "type": "string", 
-          "required": false,
-          "description": "Label text for anxiety risk detection"
-        },
-        "suicidal_ideation": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for suicidal ideation detection"
-        },
-        "self_harm_risk": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for self harm risk detection"
-        },
-        "substance_abuse": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for substance abuse detection"
-        },
-        "eating_disorder": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for eating disorder detection"
-        },
-        "trauma_indicators": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for trauma indicators detection"
-        }
-      }
-    },
-
-    "community_labels": {
-      "description": "LGBTQIA+ community specific label definitions",
-      "identity_crisis": "${NLP_LABEL_COMMUNITY_IDENTITY_CRISIS}",
-      "discrimination_stress": "${NLP_LABEL_COMMUNITY_DISCRIMINATION_STRESS}",
-      "transition_anxiety": "${NLP_LABEL_COMMUNITY_TRANSITION_ANXIETY}",
-      "family_rejection": "${NLP_LABEL_COMMUNITY_FAMILY_REJECTION}",
-      "social_isolation": "${NLP_LABEL_COMMUNITY_SOCIAL_ISOLATION}",
-      "coming_out_stress": "${NLP_LABEL_COMMUNITY_COMING_OUT_STRESS}",
-      "defaults": {
-        "identity_crisis": "identity crisis",
-        "discrimination_stress": "discrimination stress",
-        "transition_anxiety": "transition anxiety",
-        "family_rejection": "family rejection",
-        "social_isolation": "social isolation",
-        "coming_out_stress": "coming out stress"
-      },
-      "validation": {
-        "identity_crisis": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for identity crisis detection"
-        },
-        "discrimination_stress": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for discrimination stress detection"
-        },
-        "transition_anxiety": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for transition anxiety detection"
-        },
-        "family_rejection": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for family rejection detection"
-        },
-        "social_isolation": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for social isolation detection"
-        },
-        "coming_out_stress": {
-          "type": "string",
-          "required": false,
-          "description": "Label text for coming out stress detection"
-        }
-      }
-    }
+  "configuration": {
+    "current_label_set": "${NLP_ZERO_SHOT_LABEL_SET}",
+    "enable_runtime_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
+    "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
+    "cache_labels": true,
+    "validate_on_load": true,
+    "fallback_label_set": "enhanced_crisis"
   },
 
-  "label_mapping": {
-    "description": "Label mapping and switching configuration",
-    "enable_label_switching": "${NLP_LABEL_MAPPING_ENABLE_LABEL_SWITCHING}",
-    "default_label_set": "${NLP_LABEL_MAPPING_DEFAULT_LABEL_SET}",
-    "fallback_behavior": "${NLP_LABEL_MAPPING_FALLBACK_BEHAVIOR}",
-    "case_sensitive": "${NLP_LABEL_MAPPING_CASE_SENSITIVE}",
-    "normalize_labels": "${NLP_LABEL_MAPPING_NORMALIZE_LABELS}",
-    "defaults": {
-      "enable_label_switching": true,
-      "default_label_set": "crisis_labels",
-      "fallback_behavior": "use_defaults",
-      "case_sensitive": false,
-      "normalize_labels": true
-    },
-    "validation": {
-      "enable_label_switching": {
-        "type": "boolean",
-        "description": "Enable dynamic label switching functionality"
-      },
-      "default_label_set": {
+  "defaults": {
+    "current_label_set": "enhanced_crisis",
+    "enable_runtime_switching": true,
+    "track_performance": true,
+    "cache_labels": true,
+    "validate_on_load": true,
+    "fallback_label_set": "enhanced_crisis"
+  },
+
+  "validation": {
+    "configuration": {
+      "current_label_set": {
         "type": "string",
-        "allowed_values": ["crisis_labels", "sentiment_labels", "emotion_labels", "mental_health_labels", "community_labels"],
-        "description": "Default label set to use for analysis"
+        "allowed_values": ["current", "enhanced_crisis", "clinical_focused", "conversational", "safety_first"],
+        "default": "enhanced_crisis",
+        "description": "Active label set for zero-shot classification"
       },
-      "fallback_behavior": {
+      "enable_runtime_switching": {
+        "type": "boolean",
+        "default": true,
+        "description": "Allow dynamic switching between label sets during runtime"
+      },
+      "track_performance": {
+        "type": "boolean", 
+        "default": true,
+        "description": "Enable performance tracking and metrics collection for label sets"
+      },
+      "cache_labels": {
+        "type": "boolean",
+        "default": true,
+        "description": "Enable caching of processed labels for performance optimization"
+      },
+      "validate_on_load": {
+        "type": "boolean",
+        "default": true,
+        "description": "Validate label set structure and content on manager initialization"
+      },
+      "fallback_label_set": {
         "type": "string",
-        "allowed_values": ["use_defaults", "fail", "skip"],
-        "description": "Behavior when label switching fails"
-      },
-      "case_sensitive": {
-        "type": "boolean",
-        "description": "Whether label matching is case sensitive"
-      },
-      "normalize_labels": {
-        "type": "boolean",
-        "description": "Normalize label text (lowercase, trim whitespace)"
-      }
-    },
-
-    "label_aliases": {
-      "description": "Alternative label text mappings for flexibility",
-      "crisis_aliases": {
-        "high_crisis": ["emergency", "urgent", "critical", "severe crisis"],
-        "medium_crisis": ["moderate", "concerning", "moderate crisis"],
-        "low_crisis": ["mild", "slight concern", "minor crisis"],
-        "no_crisis": ["safe", "stable", "no concern", "normal"]
-      },
-      "sentiment_aliases": {
-        "positive": ["good", "happy", "optimistic"],
-        "negative": ["bad", "sad", "pessimistic"],
-        "neutral": ["okay", "balanced", "neither"]
+        "allowed_values": ["current", "enhanced_crisis", "clinical_focused", "conversational", "safety_first"],
+        "default": "enhanced_crisis",
+        "description": "Fallback label set when primary set fails to load"
       }
     }
   },
 
-  "zero_shot_settings": {
-    "description": "Zero-shot classification specific configuration",
-    "hypothesis_template": "${NLP_LABEL_ZERO_SHOT_HYPOTHESIS_TEMPLATE}",
-    "multi_label": "${NLP_LABEL_ZERO_SHOT_MULTI_LABEL}",
-    "confidence_threshold": "${NLP_LABEL_ZERO_SHOT_CONFIDENCE_THRESHOLD}",
-    "max_labels": "${NLP_LABEL_ZERO_SHOT_MAX_LABELS}",
-    "normalize_scores": "${NLP_LABEL_ZERO_SHOT_NORMALIZE_SCORES}",
-    "defaults": {
-      "hypothesis_template": "This text expresses {}.",
-      "multi_label": false,
-      "confidence_threshold": 0.5,
-      "max_labels": 1,
-      "normalize_scores": true
+  "label_sets": {
+    "current": {
+      "name": "Current (Baseline)",
+      "description": "Original baseline labels from current implementation",
+      "optimized_for": "balanced_detection",
+      "sensitivity_level": "medium",
+      "labels": {
+        "depression": [
+          "person experiencing severe clinical depression with major functional impairment",
+          "person showing moderate depression with professional intervention needed",
+          "person with mild depressive episode with manageable symptoms and temporary low mood",
+          "person with stable mental health with normal emotional fluctuations and no depression signs",
+          "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
+        ],
+        "sentiment": [
+          "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
+          "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment", 
+          "person displaying mixed or neutral emotional state without strong positive or negative feelings",
+          "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
+          "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
+          "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
+        ],
+        "emotional_distress": [
+          "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
+          "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
+          "person showing moderate distress with some difficulty managing emotions and daily responsibilities", 
+          "person handling normal life stress with adequate coping strategies and emotional regulation",
+          "person demonstrating strong emotional resilience with healthy stress management and adaptation",
+          "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
+        ]
+      }
     },
-    "validation": {
-      "hypothesis_template": {
-        "type": "string",
-        "required": true,
-        "description": "Template for zero-shot hypothesis generation (use {} for label placeholder)"
+    "enhanced_crisis": {
+      "name": "Enhanced Crisis Detection",
+      "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
+      "optimized_for": "high_crisis_detection",
+      "sensitivity_level": "high",
+      "recommended": true,
+      "models_used": {
+        "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
+        "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment", 
+        "emotional_distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
       },
-      "multi_label": {
-        "type": "boolean",
-        "description": "Allow multiple labels to be assigned simultaneously"
-      },
-      "confidence_threshold": {
-        "type": "float",
-        "range": [0.0, 1.0],
-        "description": "Minimum confidence threshold for label assignment"
-      },
-      "max_labels": {
-        "type": "integer",
-        "range": [1, 10],
-        "description": "Maximum number of labels to return"
-      },
-      "normalize_scores": {
-        "type": "boolean",
-        "description": "Normalize confidence scores to sum to 1.0"
+      "labels": {
+        "depression": [
+          "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
+          "person stating they want to die, kill themselves, or commit suicide with immediate intent",
+          "person describing specific suicide methods, plans, preparations, or final arrangements",
+          "person expressing complete hopelessness, that nothing will ever get better, or life has no meaning",
+          "person stating they are beyond help, cannot be saved, or are past the point of return",
+          "person describing feeling trapped with no way out or escape from their situation",
+          "person describing active self-harm, cutting, burning, or intentional self-injury behaviors",
+          "person expressing desire to hurt themselves or engage in reckless dangerous behaviors",
+          "person showing severe depression with major breakdown and inability to function daily",
+          "person experiencing moderate depression, significant sadness, but maintaining some daily functioning",
+          "person expressing emotional difficulty, low mood, or distress but still coping with life",
+          "person describing temporary depression, bad periods, or situational emotional struggles",
+          "person showing stable mental health with normal emotional ups and downs and healthy coping",
+          "person demonstrating positive mental health, emotional resilience, and psychological wellbeing"
+        ],
+        "sentiment": [
+          "person expressing devastating emotional pain, complete despair, or overwhelming hopelessness with crisis-level intensity",
+          "person showing intense destructive emotions, uncontrollable rage, or violent emotional breakdown",
+          "person displaying emotional devastation, crushing sadness, or complete psychological collapse",
+          "person expressing significant emotional pain, deep sadness, intense fear, anxiety, or distressing emotions",
+          "person showing frustration, anger, disappointment, worry, or moderate negative emotional states",
+          "person displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
+          "person expressing neutral emotions, balanced feelings, or stable emotional state without extremes",
+          "person showing factual communication, casual conversation, or emotionally neutral expressions",
+          "person expressing contentment, satisfaction, mild happiness, gratitude, or positive emotions",
+          "person showing hope, optimism, appreciation, joy, or constructive positive emotional states",
+          "person expressing intense joy, excitement, euphoria, overwhelming happiness, or peak positive emotional highs"
+        ],
+        "emotional_distress": [
+          "person in acute psychological crisis, mental health emergency, completely unable to cope or function",
+          "person experiencing emotional breakdown, psychological emergency, or complete loss of emotional control",
+          "person showing total inability to manage emotions, daily life, or basic functioning",
+          "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities",
+          "person showing serious emotional distress that significantly impairs work, relationships, or functioning",
+          "person displaying major emotional strain affecting multiple important life areas",
+          "person experiencing moderate emotional distress with some difficulty managing daily activities",
+          "person showing emotional challenges, stress, or strain but maintaining basic life functioning",
+          "person displaying concerning emotional difficulty that interferes with some normal activities",
+          "person handling typical life stress with adequate emotional regulation and healthy coping strategies",
+          "person experiencing normal daily stressors but managing them appropriately with good coping",
+          "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
+        ]
+      }
+    },
+    "clinical_focused": {
+      "name": "Clinical/Medical Terminology",
+      "description": "Medical and clinical terminology focused labels for professional assessment contexts",
+      "optimized_for": "clinical_assessment",
+      "sensitivity_level": "medium",
+      "labels": {
+        "depression": [
+          "patient presenting with acute suicidal ideation requiring immediate psychiatric intervention",
+          "patient showing severe major depressive disorder with psychotic features and functional impairment",
+          "patient exhibiting moderate depression with significant symptoms requiring professional treatment",
+          "patient displaying mild depressive symptoms with minimal functional impact",
+          "patient demonstrating normal mood and affect with no signs of depressive disorder"
+        ],
+        "sentiment": [
+          "patient expressing severe psychological distress with marked negative affect",
+          "patient showing moderate negative emotions and mood disturbance",
+          "patient displaying neutral affect and mood state",
+          "patient expressing positive mood and emotional wellbeing",
+          "patient demonstrating elevated positive affect and mood"
+        ],
+        "emotional_distress": [
+          "patient in acute psychiatric crisis requiring immediate emergency intervention",
+          "patient experiencing severe psychological distress with marked functional impairment",
+          "patient showing moderate stress response with some coping difficulties",
+          "patient managing normal stress levels with adequate coping mechanisms",
+          "patient demonstrating optimal stress management and psychological resilience"
+        ]
+      }
+    },
+    "conversational": {
+      "name": "Conversational/Social Media",
+      "description": "Labels optimized for informal conversation and social media language patterns typical in Discord communities",
+      "optimized_for": "social_media_detection",
+      "sensitivity_level": "medium",
+      "labels": {
+        "depression": [
+          "someone saying they want to die, end it all, or expressing serious thoughts about suicide",
+          "someone describing feeling completely hopeless, broken, or like nothing will ever get better",
+          "someone talking about hurting themselves or feeling really depressed and struggling badly",
+          "someone having a rough time, feeling down, or going through some emotional difficulties",
+          "someone doing okay emotionally, handling life normally, or feeling generally stable"
+        ],
+        "sentiment": [
+          "someone expressing intense pain, devastation, or feeling completely destroyed emotionally",
+          "someone feeling really negative, upset, angry, or going through serious emotional difficulty",
+          "someone feeling neutral, okay, or just having normal everyday conversation",
+          "someone feeling pretty good, positive, happy, or expressing gratitude and hope",
+          "someone feeling amazing, incredibly happy, excited, or absolutely thrilled about something"
+        ],
+        "emotional_distress": [
+          "someone having a complete breakdown, crisis, or unable to cope with anything right now",
+          "someone feeling overwhelmed, severely stressed, or struggling to handle daily life",
+          "someone dealing with stress but managing okay, having some tough moments",
+          "someone handling normal life stress pretty well with good coping",
+          "someone feeling really strong emotionally, handling everything great, thriving"
+        ]
+      }
+    },
+    "safety_first": {
+      "name": "Safety First (Ultra-Sensitive)",
+      "description": "Ultra-sensitive labels designed to catch any potential crisis with maximum safety bias",
+      "optimized_for": "maximum_safety",
+      "sensitivity_level": "ultra_high",
+      "labels": {
+        "depression": [
+          "any expression of wanting to die, suicide thoughts, self-harm, or ending life",
+          "any statement about hopelessness, being beyond help, or having no future",
+          "any description of severe sadness, depression, or emotional breakdown",
+          "any mention of emotional struggle, difficult times, or feeling down",
+          "only clearly positive, stable, happy, or normal emotional expressions"
+        ],
+        "sentiment": [
+          "any negative, sad, angry, or distressing emotional expression",
+          "any neutral or mixed emotional state",
+          "only clearly positive, happy, grateful, or joyful expressions"
+        ],
+        "emotional_distress": [
+          "any sign of crisis, breakdown, inability to cope, or emergency situation",
+          "any expression of being overwhelmed, stressed, or struggling with life",
+          "any mention of emotional difficulty or challenges",
+          "only expressions of excellent coping and emotional strength"
+        ]
       }
     }
   },
 
-  "label_profiles": {
-    "description": "Pre-configured label profiles for different analysis modes",
-    "basic_crisis": {
-      "description": "Basic crisis detection with 4 levels",
-      "label_set": "crisis_labels",
-      "multi_label": false,
-      "max_labels": 1,
-      "confidence_threshold": 0.6
+  "performance_tracking": {
+    "enabled": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
+    "metrics": {
+      "accuracy_by_label_set": true,
+      "response_time_by_label_set": true,
+      "confidence_distribution": true,
+      "label_switching_frequency": true
     },
-    "detailed_mental_health": {
-      "description": "Detailed mental health risk assessment",
-      "label_set": "mental_health_labels", 
-      "multi_label": true,
-      "max_labels": 3,
-      "confidence_threshold": 0.4
-    },
-    "community_focused": {
-      "description": "LGBTQIA+ community specific analysis",
-      "label_set": "community_labels",
-      "multi_label": true,
-      "max_labels": 2,
-      "confidence_threshold": 0.5
-    },
-    "comprehensive": {
-      "description": "Multi-domain analysis across all label sets",
-      "label_set": "crisis_labels",
-      "multi_label": true,
-      "max_labels": 5,
-      "confidence_threshold": 0.3
+    "reporting": {
+      "daily_summary": true,
+      "weekly_analysis": true,
+      "label_set_comparison": true
     }
   },
 
   "usage_instructions": {
     "description": "Configuration usage and integration guidelines",
     "manager_integration": "Use ZeroShotManager with create_zero_shot_manager(config_manager)",
-    "environment_override_pattern": "Set environment variables using NLP_LABEL_*CATEGORY*_*SETTING* pattern",
-    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
-    "label_switching": "Use switch_labels(label_set_name) to change active label set dynamically",
-    "hypothesis_template": "Template must contain {} placeholder for label text insertion",
-    "multi_label_mode": "Enable multi_label for scenarios where multiple conditions may apply",
-    "confidence_tuning": "Adjust confidence_threshold based on precision/recall requirements",
-    "community_sensitivity": "Use community_labels for LGBTQIA+ specific crisis detection",
-    "production_notes": "Use appropriate label profiles for different analysis scenarios"
+    "environment_override_pattern": "Environment variables override JSON defaults using existing .env.template structure",
+    "resilient_operation": "System falls back to 'enhanced_crisis' label set when configuration is invalid or missing",
+    "label_set_switching": "Runtime switching requires enable_runtime_switching=true",
+    "performance_optimization": "Enable cache_labels for improved response times",
+    "validation_safety": "Enable validate_on_load for startup safety checks"
   }
 }
