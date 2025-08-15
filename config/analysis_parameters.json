@@ -1,28 +1,27 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-10-1",
+    "last_modified": "2025-08-13",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
     "description": "Analysis algorithm parameters for Ash-NLP crisis detection system - controls phrase extraction, pattern learning, semantic analysis, and performance settings",
     "created_date": "2025-08-12",
-    "updated_date": "2025-08-14",
+    "updated_date": "2025-08-12",
     "compliance": "Clean Architecture v3.1 Standards",
     "repository": "https://github.com/the-alphabet-cartel/ash-nlp",
-    "community": "The Alphabet Cartel - https://discord.gg/alphabetcartel",
-    "migration_status": "Step 10.10 - Environmental Variables Cleanup: Fixed duplicate placeholders to use existing .env.template variables"
+    "community": "The Alphabet Cartel - https://discord.gg/alphabetcartel"
   },
   
   "phrase_extraction": {
     "description": "Parameters for extracting meaningful phrases from text during analysis",
-    "min_phrase_length": "${NLP_ANALYSIS_MIN_PHRASE_LENGTH}",
-    "max_phrase_length": "${NLP_ANALYSIS_MAX_PHRASE_LENGTH}",
+    "min_phrase_length": "${NLP_ANALYSIS_PHRASE_MIN_LENGTH}",
+    "max_phrase_length": "${NLP_ANALYSIS_PHRASE_MAX_LENGTH}",
     "crisis_focus": "${NLP_ANALYSIS_PHRASE_CRISIS_FOCUS}",
     "community_specific": "${NLP_ANALYSIS_PHRASE_COMMUNITY_SPECIFIC}",
     "min_confidence": "${NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE}",
     "max_results": "${NLP_ANALYSIS_PHRASE_MAX_RESULTS}",
     "defaults": {
-      "min_phrase_length": 2,
+      "min_phrase_length": 3,
       "max_phrase_length": 6,
       "crisis_focus": true,
       "community_specific": true,
@@ -100,7 +99,7 @@
     "description": "Parameters for semantic and context analysis of crisis indicators",
     "context_window": "${NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW}",
     "similarity_threshold": "${NLP_ANALYSIS_SEMANTIC_SIMILARITY_THRESHOLD}",
-    "context_boost_weight": "${NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT}",
+    "context_boost_weight": "${NLP_ANALYSIS_SEMANTIC_CONTEXT_BOOST_WEIGHT}",
     "negative_threshold": "${NLP_ANALYSIS_SEMANTIC_NEGATIVE_THRESHOLD}",
     "boost_weights": {
       "high_relevance_boost": "${NLP_ANALYSIS_SEMANTIC_HIGH_RELEVANCE_BOOST}",
@@ -151,14 +150,14 @@
     "temporal_context_weight": "${NLP_ANALYSIS_CONTEXT_TEMPORAL_WEIGHT}",
     "social_context_weight": "${NLP_ANALYSIS_CONTEXT_SOCIAL_WEIGHT}",
     "context_signal_weight": "${NLP_ANALYSIS_CONTEXT_SIGNAL_WEIGHT}",
-    "temporal_urgency_multiplier": "${NLP_ANALYSIS_TEMPORAL_URGENCY_MULTIPLIER}",
-    "community_awareness_boost": "${NLP_ANALYSIS_COMMUNITY_AWARENESS_BOOST}",
+    "temporal_urgency_multiplier": "${NLP_ANALYSIS_CONTEXT_TEMPORAL_URGENCY}",
+    "community_awareness_boost": "${NLP_ANALYSIS_CONTEXT_COMMUNITY_AWARENESS}",
     "defaults": {
       "temporal_context_weight": 1.0,
       "social_context_weight": 1.2,
-      "context_signal_weight": 1.0,
-      "temporal_urgency_multiplier": 1.2,
-      "community_awareness_boost": 0.1
+      "context_signal_weight": 0.8,
+      "temporal_urgency_multiplier": 1.5,
+      "community_awareness_boost": 0.3
     },
     "validation": {
       "temporal_context_weight": {
@@ -216,9 +215,9 @@
     "defaults": {
       "timeout_ms": 5000,
       "max_concurrent": 10,
-      "enable_caching": false,
+      "enable_caching": true,
       "cache_ttl_seconds": 300,
-      "enable_parallel_processing": false
+      "enable_parallel_processing": true
     },
     "validation": {
       "timeout_ms": {
@@ -238,11 +237,12 @@
   
   "debugging_settings": {
     "description": "Parameters for debugging and development",
-    "enable_detailed_logging": "${NLP_LOGGING_ENABLE_DETAILED}",
-    "log_analysis_steps": "${NLP_LOGGING_ANALYSIS_STEPS}",
-    "include_reasoning": "${NLP_LOGGING_INCLUDE_REASONING}",
-    "enable_timing_metrics": "${NLP_LOGGING_PERFORMANCE_METRICS}",
-    "enable_performance_metrics": "${NLP_LOGGING_PERFORMANCE_METRICS}",
+    "enable_detailed_logging": "${NLP_FEATURE_DETAILED_LOGGING}",
+    "log_analysis_steps": "${NLP_DEBUG_LOG_ANALYSIS_STEPS}",
+    "include_reasoning": "${NLP_DEBUG_INCLUDE_REASONING}",
+    "save_intermediate_results": "${NLP_DEBUG_SAVE_INTERMEDIATE}",
+    "enable_timing_metrics": "${NLP_DEBUG_TIMING_METRICS}",
+    "enable_performance_metrics": "${NLP_DEBUG_PERFORMANCE_METRICS}",
     "defaults": {
       "enable_detailed_logging": true,
       "log_analysis_steps": false,
@@ -302,11 +302,11 @@
 
   "confidence_boost": {
     "description": "Confidence boost parameters for analysis algorithms",
-    "high_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_BOOST_HIGH}",
-    "medium_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_BOOST_MEDIUM}",
-    "low_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_BOOST_LOW}",
-    "pattern_confidence_boost": "${NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST}",
-    "model_confidence_boost": "${NLP_ANALYSIS_MODEL_CONFIDENCE_BOOST}",
+    "high_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_HIGH_BOOST}",
+    "medium_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_MEDIUM_BOOST}",
+    "low_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_LOW_BOOST}",
+    "pattern_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_PATTERN_BOOST}",
+    "model_confidence_boost": "${NLP_ANALYSIS_CONFIDENCE_MODEL_BOOST}",
     "defaults": {
       "high_confidence_boost": 0.15,
       "medium_confidence_boost": 0.10,
@@ -338,16 +338,54 @@
     }
   },
 
+  "advanced_parameters": {
+    "description": "Advanced analysis parameters for enhanced crisis detection",
+    "pattern_confidence_boost": "${NLP_ANALYSIS_ADVANCED_PATTERN_BOOST}",
+    "model_confidence_boost": "${NLP_ANALYSIS_ADVANCED_MODEL_BOOST}",
+    "context_signal_weight": "${NLP_ANALYSIS_ADVANCED_CONTEXT_WEIGHT}",
+    "temporal_urgency_multiplier": "${NLP_ANALYSIS_ADVANCED_TEMPORAL_MULTIPLIER}",
+    "community_awareness_boost": "${NLP_ANALYSIS_ADVANCED_COMMUNITY_BOOST}",
+    "defaults": {
+      "pattern_confidence_boost": 0.05,
+      "model_confidence_boost": 0.0,
+      "context_signal_weight": 1.0,
+      "temporal_urgency_multiplier": 1.2,
+      "community_awareness_boost": 0.1
+    },
+    "validation": {
+      "pattern_confidence_boost": {
+        "range": [0.0, 1.0],
+        "type": "float"
+      },
+      "model_confidence_boost": {
+        "range": [0.0, 1.0],
+        "type": "float"
+      },
+      "context_signal_weight": {
+        "range": [0.1, 5.0],
+        "type": "float"
+      },
+      "temporal_urgency_multiplier": {
+        "range": [0.5, 3.0],
+        "type": "float"
+      },
+      "community_awareness_boost": {
+        "range": [0.0, 1.0],
+        "type": "float"
+      }
+    }
+  },
+
   "experimental_features": {
     "description": "Experimental feature flags for testing new functionality",
-    "advanced_context": "${NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT}",
-    "community_vocab": "${NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB}",
-    "temporal_patterns": "${NLP_FEATURE_EXPERIMENTAL_TEMPORAL_PATTERNS}",
-    "multi_language": "${NLP_FEATURE_EXPERIMENTAL_MULTI_LANGUAGE}",
+    "advanced_context": "${NLP_EXPERIMENTAL_ADVANCED_CONTEXT}",
+    "community_vocab": "${NLP_EXPERIMENTAL_COMMUNITY_VOCAB}",
+    "temporal_patterns": "${NLP_EXPERIMENTAL_TEMPORAL_PATTERNS}",
+    "multi_language": "${NLP_EXPERIMENTAL_MULTI_LANGUAGE}",
     "defaults": {
       "advanced_context": false,
-      "community_vocab": false,
-      "temporal_patterns": false,
+      "community_vocab": true,
+      "temporal_patterns": true,
       "multi_language": false
     },
     "validation": {
@@ -368,7 +406,7 @@
 
   "learning_system": {
     "description": "Phase 3d Step 4 - Learning system parameters for adaptive threshold adjustment",
-    "enabled": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
+    "enabled": "${NLP_ANALYSIS_LEARNING_ENABLED}",
     "learning_rate": "${NLP_ANALYSIS_LEARNING_RATE}",
     "min_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
     "max_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
@@ -379,17 +417,17 @@
     "adjustment_limit": "${NLP_ANALYSIS_LEARNING_ADJUSTMENT_LIMIT}",
     "max_drift": "${NLP_ANALYSIS_LEARNING_MAX_DRIFT}",
     "sensitivity_bounds": {
-      "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_SENSITIVITY}",
-      "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_SENSITIVITY}"
+      "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_GLOBAL_SENSITIVITY}",
+      "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_GLOBAL_SENSITIVITY}"
     },
     "adjustment_factors": {
       "false_positive_factor": "${NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR}",
       "false_negative_factor": "${NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR}"
     },
     "severity_multipliers": {
-      "high_severity": "${NLP_ANALYSIS_LEARNING_SEVERITY_HIGH}",
-      "medium_severity": "${NLP_ANALYSIS_LEARNING_SEVERITY_MEDIUM}",
-      "low_severity": "${NLP_ANALYSIS_LEARNING_SEVERITY_LOW}"
+      "high_severity": "${NLP_ANALYSIS_LEARNING_HIGH_SEVERITY}",
+      "medium_severity": "${NLP_ANALYSIS_LEARNING_MEDIUM_SEVERITY}",
+      "low_severity": "${NLP_ANALYSIS_LEARNING_LOW_SEVERITY}"
     },
     "defaults": {
       "enabled": true,
