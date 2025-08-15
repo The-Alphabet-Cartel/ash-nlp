@@ -6,26 +6,19 @@
     "phase": "3d Step 10.11 - ZeroShotManager Compatible Structure",
     "architecture": "clean-v3.1-unified",
     "manager": "ZeroShotManager",
-    "related_files": [
-      "managers/zero_shot_manager.py",
-      "managers/unified_config_manager.py"
-    ],
     "environment_variables": [
       "NLP_ZERO_SHOT_LABEL_SET",
       "NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING",
       "NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE"
-    ],
-    "change_log": [
-      "2025-08-15: Fixed JSON structure to match ZeroShotManager expectations",
-      "2025-08-15: Added proper _metadata block and validation structure", 
-      "2025-08-10: Enhanced crisis detection labels added",
-      "2025-08-05: Initial Phase 3d migration"
     ]
   },
 
   "label_configuration": {
     "current": {
       "description": "Original baseline labels from current implementation",
+      "depression": "current_depression_labels",
+      "sentiment": "current_sentiment_labels", 
+      "emotional_distress": "current_distress_labels",
       "defaults": {
         "depression": [
           "person experiencing severe clinical depression with major functional impairment",
@@ -54,6 +47,9 @@
     },
     "enhanced_crisis": {
       "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
+      "depression": "enhanced_depression_labels",
+      "sentiment": "enhanced_sentiment_labels",
+      "emotional_distress": "enhanced_distress_labels",
       "defaults": {
         "depression": [
           "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
@@ -102,6 +98,9 @@
     },
     "clinical_focused": {
       "description": "Medical and clinical terminology focused labels for professional assessment contexts",
+      "depression": "clinical_depression_labels",
+      "sentiment": "clinical_sentiment_labels",
+      "emotional_distress": "clinical_distress_labels",
       "defaults": {
         "depression": [
           "patient presenting with acute suicidal ideation requiring immediate psychiatric intervention",
@@ -128,6 +127,9 @@
     },
     "conversational": {
       "description": "Labels optimized for informal conversation and social media language patterns typical in Discord communities",
+      "depression": "conversational_depression_labels",
+      "sentiment": "conversational_sentiment_labels",
+      "emotional_distress": "conversational_distress_labels",
       "defaults": {
         "depression": [
           "someone saying they want to die, end it all, or expressing serious thoughts about suicide",
@@ -154,6 +156,9 @@
     },
     "safety_first": {
       "description": "Ultra-sensitive labels designed to catch any potential crisis with maximum safety bias",
+      "depression": "safety_depression_labels",
+      "sentiment": "safety_sentiment_labels",
+      "emotional_distress": "safety_distress_labels",
       "defaults": {
         "depression": [
           "any expression of wanting to die, suicide thoughts, self-harm, or ending life",
@@ -180,7 +185,14 @@
       "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
       "fallback_behavior": "enhanced_crisis",
       "case_sensitive": false,
-      "normalize_labels": true
+      "normalize_labels": true,
+      "defaults": {
+        "default_label_set": "enhanced_crisis",
+        "enable_label_switching": true,
+        "fallback_behavior": "enhanced_crisis",
+        "case_sensitive": false,
+        "normalize_labels": true
+      }
     }
   },
 
@@ -190,17 +202,8 @@
     "multi_label": false,
     "confidence_threshold": 0.3,
     "max_labels": 5,
-    "normalize_scores": true
-  },
-  "defaults": {
-    "label_mapping": {
-      "default_label_set": "enhanced_crisis",
-      "enable_label_switching": true,
-      "fallback_behavior": "enhanced_crisis",
-      "case_sensitive": false,
-      "normalize_labels": true
-    },
-    "zero_shot_settings": {
+    "normalize_scores": true,
+    "defaults": {
       "track_performance": true,
       "hypothesis_template": "This text expresses {label}",
       "multi_label": false,
@@ -208,47 +211,5 @@
       "max_labels": 5,
       "normalize_scores": true
     }
-  },
-  "validation": {
-    "label_configuration": {
-      "required_label_categories": ["depression", "sentiment", "emotional_distress"],
-      "minimum_labels_per_category": 3,
-      "maximum_labels_per_category": 20,
-      "required_label_sets": ["enhanced_crisis", "current"]
-    },
-    "label_mapping": {
-      "default_label_set": {
-        "type": "string",
-        "allowed_values": ["current", "enhanced_crisis", "clinical_focused", "conversational", "safety_first"],
-        "default": "enhanced_crisis"
-      },
-      "enable_label_switching": {
-        "type": "boolean",
-        "default": true
-      }
-    },
-    "zero_shot_settings": {
-      "confidence_threshold": {
-        "type": "float",
-        "minimum": 0.0,
-        "maximum": 1.0,
-        "default": 0.3
-      },
-      "max_labels": {
-        "type": "integer",
-        "minimum": 1,
-        "maximum": 20,
-        "default": 5
-      }
-    }
-  },
-
-  "usage_instructions": {
-    "description": "Configuration usage and integration guidelines",
-    "manager_integration": "Use ZeroShotManager with create_zero_shot_manager(config_manager)",
-    "environment_override_pattern": "Environment variables override JSON defaults using existing .env.template structure",
-    "label_set_access": "Label sets are available under label_configuration section",
-    "label_switching": "Runtime switching controlled by label_mapping.enable_label_switching",
-    "performance_tracking": "Metrics controlled by zero_shot_settings.track_performance"
   }
 }
