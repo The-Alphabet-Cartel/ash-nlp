@@ -20,6 +20,7 @@ MIGRATION STATUS: In Progress
   - If an already created `GLOBAL_*` variable can do the job, use that instead of an `NLP_*` variable
     - Do not create new `GLOBAL_*` variables!
   - Modify the associated JSON configuration and manager file(s) to reflect variable consolidation
+- Validate that all variables follow Clean Architecture standards
 - Ensure proper organization and documentation
   - Consolidate variables into logical function categories with comments detailing which manager controls that category
   - Create a final, human readable, `.env.template` with comments detailing a variable's function
