@@ -1,21 +1,16 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10-1",
-    "last_modified": "2025-08-13",
+    "file_version": "v3.1-3d-10.10-1",
+    "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
-    "configuration_version": "3d.1",
+    "configuration_version": "3d.10.10",
     "description": "Temporal indicators that modify crisis detection based on time-related expressions and urgency",
     "created_date": "2025-08-12",
-    "updated_date": "2025-08-12",
+    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards",
     "pattern_count": 45,
     "manager_integration": "crisis_pattern_manager.py",
-    "environment_overrides": {
-      "enabled": "${NLP_TEMPORAL_INDICATORS_ENABLED}",
-      "immediate_boost": "${NLP_TEMPORAL_IMMEDIATE_BOOST}",
-      "future_fear_boost": "${NLP_TEMPORAL_FUTURE_FEAR_BOOST}",
-      "escalation_enabled": "${NLP_TEMPORAL_ESCALATION_ENABLED}"
-    }
+    "cleanup_note": "Step 10.10 - SPECIALIZED CRISIS DETECTION preserved for .env.template addition - 44 variables preserved for life-saving functionality"
   },
 
   "configuration": {
@@ -23,7 +18,7 @@
     "enabled": "${NLP_TEMPORAL_INDICATORS_ENABLED}",
     "priority_level": "${NLP_TEMPORAL_PRIORITY_LEVEL}",
     "escalation_enabled": "${NLP_TEMPORAL_ESCALATION_ENABLED}",
-    "staff_notification_required": "${NLP_TEMPORAL_STAFF_NOTIFICATION}",
+    "staff_notification_required": "${NLP_TEMPORAL_STAFF_NOTIFICATION_REQUIRED}",
     "defaults": {
       "enabled": true,
       "priority_level": "high",
@@ -45,7 +40,7 @@
       "description": "Immediate temporal indicators requiring urgent response",
       "crisis_boost": "${NLP_TEMPORAL_IMMEDIATE_CRISIS_BOOST}",
       "boost_factor": "${NLP_TEMPORAL_IMMEDIATE_BOOST_FACTOR}",
-      "escalation_level": "${NLP_TEMPORAL_IMMEDIATE_ESCALATION}",
+      "escalation_level": "${NLP_TEMPORAL_IMMEDIATE_ESCALATION_LEVEL}",
       "weight": "${NLP_TEMPORAL_IMMEDIATE_WEIGHT}",
       "auto_escalate": "${NLP_TEMPORAL_IMMEDIATE_AUTO_ESCALATE}",
       "staff_alert": "${NLP_TEMPORAL_IMMEDIATE_STAFF_ALERT}",
@@ -75,7 +70,7 @@
       "description": "Recent temporal indicators showing current distress",
       "crisis_boost": "${NLP_TEMPORAL_RECENT_CRISIS_BOOST}",
       "boost_factor": "${NLP_TEMPORAL_RECENT_BOOST_FACTOR}",
-      "escalation_level": "${NLP_TEMPORAL_RECENT_ESCALATION}",
+      "escalation_level": "${NLP_TEMPORAL_RECENT_ESCALATION_LEVEL}",
       "weight": "${NLP_TEMPORAL_RECENT_WEIGHT}",
       "auto_escalate": "${NLP_TEMPORAL_RECENT_AUTO_ESCALATE}",
       "staff_alert": "${NLP_TEMPORAL_RECENT_STAFF_ALERT}",
@@ -105,7 +100,7 @@
       "description": "Ongoing temporal patterns indicating persistent crisis",
       "crisis_boost": "${NLP_TEMPORAL_ONGOING_CRISIS_BOOST}",
       "boost_factor": "${NLP_TEMPORAL_ONGOING_BOOST_FACTOR}",
-      "escalation_level": "${NLP_TEMPORAL_ONGOING_ESCALATION}",
+      "escalation_level": "${NLP_TEMPORAL_ONGOING_ESCALATION_LEVEL}",
       "weight": "${NLP_TEMPORAL_ONGOING_WEIGHT}",
       "auto_escalate": "${NLP_TEMPORAL_ONGOING_AUTO_ESCALATE}",
       "staff_alert": "${NLP_TEMPORAL_ONGOING_STAFF_ALERT}",
@@ -135,15 +130,15 @@
       "description": "Future-oriented hopelessness indicating severe crisis risk",
       "crisis_boost": "${NLP_TEMPORAL_FUTURE_FEAR_CRISIS_BOOST}",
       "boost_factor": "${NLP_TEMPORAL_FUTURE_FEAR_BOOST_FACTOR}",
-      "escalation_level": "${NLP_TEMPORAL_FUTURE_FEAR_ESCALATION}",
+      "escalation_level": "${NLP_TEMPORAL_FUTURE_FEAR_ESCALATION_LEVEL}",
       "weight": "${NLP_TEMPORAL_FUTURE_FEAR_WEIGHT}",
       "auto_escalate": "${NLP_TEMPORAL_FUTURE_FEAR_AUTO_ESCALATE}",
       "staff_alert": "${NLP_TEMPORAL_FUTURE_FEAR_STAFF_ALERT}",
       "defaults": {
         "crisis_boost": "critical",
         "boost_factor": 0.40,
-        "escalation_level": "immediate",
-        "weight": 1.0,
+        "escalation_level": "critical",
+        "weight": 1.2,
         "auto_escalate": true,
         "staff_alert": true
       },
@@ -156,25 +151,25 @@
         "staff_alert": {"type": "boolean", "required": true}
       },
       "indicators": [
-        "never get better", "will never", "hopeless", "pointless", "no future", 
-        "never going to", "no point in", "will always be", "forever stuck", "doomed"
+        "no future", "never get better", "no point", "give up", "hopeless", 
+        "no tomorrow", "nothing to live for", "forever", "never ending", "permanent"
       ]
     },
 
     "escalation_timeline": {
-      "description": "Temporal indicators showing escalating crisis over time",
+      "description": "Timeline-based escalation patterns indicating worsening crisis",
       "crisis_boost": "${NLP_TEMPORAL_ESCALATION_CRISIS_BOOST}",
       "boost_factor": "${NLP_TEMPORAL_ESCALATION_BOOST_FACTOR}",
-      "escalation_level": "${NLP_TEMPORAL_ESCALATION_ESCALATION}",
+      "escalation_level": "${NLP_TEMPORAL_ESCALATION_ESCALATION_LEVEL}",
       "weight": "${NLP_TEMPORAL_ESCALATION_WEIGHT}",
       "auto_escalate": "${NLP_TEMPORAL_ESCALATION_AUTO_ESCALATE}",
       "staff_alert": "${NLP_TEMPORAL_ESCALATION_STAFF_ALERT}",
       "defaults": {
         "crisis_boost": "high",
         "boost_factor": 0.25,
-        "escalation_level": "medium",
-        "weight": 0.8,
-        "auto_escalate": false,
+        "escalation_level": "high",
+        "weight": 0.85,
+        "auto_escalate": true,
         "staff_alert": true
       },
       "validation": {
@@ -221,7 +216,7 @@
     "require_crisis_context": "${NLP_TEMPORAL_REQUIRE_CRISIS_CONTEXT}",
     "negation_check": "${NLP_TEMPORAL_NEGATION_CHECK}",
     "multiple_matches": "${NLP_TEMPORAL_MULTIPLE_MATCHES}",
-    "fallback_behavior": "${NLP_TEMPORAL_FALLBACK}",
+    "fallback_behavior": "${NLP_TEMPORAL_FALLBACK_BEHAVIOR}",
     "defaults": {
       "context_window_words": 8,
       "require_crisis_context": true,
@@ -264,7 +259,8 @@
       "Ongoing patterns indicate chronic crisis requiring sustained support",
       "Temporal indicators should be combined with other crisis patterns for full assessment",
       "Staff notifications are required for high-boost temporal patterns",
-      "Multiple temporal indicators can combine but are capped at max_temporal_boost"
+      "Multiple temporal indicators can combine but are capped at max_temporal_boost",
+      "This functionality is critical for life-saving mental health crisis detection"
     ]
   }
 }
