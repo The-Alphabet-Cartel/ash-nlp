@@ -1,29 +1,21 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10-1",
-    "last_modified": "2025-08-13",
+    "file_version": "v3.1-3d-10.10-1",
+    "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
-    "configuration_version": "3d.1",
+    "configuration_version": "3d.10.10",
     "description": "Performance optimization settings for NLP crisis detection system",
     "created_date": "2025-08-12",
-    "updated_date": "2025-08-12",
+    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards",
     "manager": "PerformanceConfigManager",
-    "environment_overrides": {
-      "description": "All performance settings support environment variable overrides",
-      "pattern": "${NLP_PERFORMANCE_*CATEGORY*_*SETTING*}",
-      "examples": [
-        "NLP_PERFORMANCE_ANALYSIS_TIMEOUT_SECONDS",
-        "NLP_PERFORMANCE_MODEL_MAX_WORKERS",
-        "NLP_PERFORMANCE_CACHE_SIZE_LIMIT"
-      ]
-    }
+    "cleanup_note": "Step 10.10 - Mapped many variables to existing .env.template variables, preserved others for .env.template addition"
   },
 
   "performance_settings": {
     "analysis_performance": {
       "description": "Analysis processing performance and timeout settings",
-      "timeout_seconds": "${NLP_PERFORMANCE_ANALYSIS_TIMEOUT_SECONDS}",
+      "timeout_seconds": "${NLP_REQUEST_TIMEOUT}",
       "retry_attempts": "${NLP_PERFORMANCE_ANALYSIS_RETRY_ATTEMPTS}",
       "enable_timeout": "${NLP_PERFORMANCE_ANALYSIS_ENABLE_TIMEOUT}",
       "batch_size": "${NLP_PERFORMANCE_ANALYSIS_BATCH_SIZE}",
@@ -61,8 +53,8 @@
       "description": "Server processing and worker management settings",
       "max_workers": "${NLP_PERFORMANCE_SERVER_MAX_WORKERS}",
       "worker_timeout": "${NLP_PERFORMANCE_SERVER_WORKER_TIMEOUT}",
-      "request_timeout": "${NLP_PERFORMANCE_SERVER_REQUEST_TIMEOUT}",
-      "max_concurrent_requests": "${NLP_PERFORMANCE_SERVER_MAX_CONCURRENT_REQUESTS}",
+      "request_timeout": "${NLP_REQUEST_TIMEOUT}",
+      "max_concurrent_requests": "${NLP_MAX_CONCURRENT_REQUESTS}",
       "workers": "${NLP_PERFORMANCE_SERVER_WORKERS}",
       "defaults": {
         "max_workers": 4,
@@ -121,41 +113,38 @@
       "validation": {
         "device": {
           "type": "string",
-          "allowed_values": ["auto", "cpu", "cuda", "cuda:0", "cuda:1"],
-          "description": "Device for model inference"
+          "allowed_values": ["auto", "cpu", "cuda", "cuda:0", "cuda:1", "mps"],
+          "description": "Hardware device for model inference"
         },
         "device_map": {
           "type": "string",
-          "allowed_values": ["auto", "balanced", "balanced_low_0", "sequential"],
-          "description": "Device mapping strategy for multi-GPU"
+          "description": "Device mapping strategy"
         },
         "load_in_8bit": {
           "type": "boolean",
-          "description": "Enable 8-bit quantization for memory efficiency"
+          "description": "Load models in 8-bit precision"
         },
         "load_in_4bit": {
           "type": "boolean",
-          "description": "Enable 4-bit quantization for memory efficiency"
+          "description": "Load models in 4-bit precision"
         },
         "max_memory": {
-          "type": "string",
-          "nullable": true,
+          "type": ["string", "null"],
           "pattern": "^\\d+[GMK]B$",
-          "description": "Maximum memory per device (e.g., '10GB')"
+          "description": "Maximum memory usage limit"
         },
         "offload_folder": {
-          "type": "string",
-          "nullable": true,
-          "description": "Folder for model offloading"
+          "type": ["string", "null"],
+          "description": "Folder for model weight offloading"
         }
       }
     },
 
     "rate_limiting_performance": {
       "description": "Rate limiting and traffic management settings",
-      "rate_limit_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
-      "rate_limit_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
-      "rate_limit_burst": "${NLP_PERFORMANCE_RATE_LIMIT_BURST}",
+      "rate_limit_per_minute": "${NLP_MAX_REQUESTS_PER_MINUTE}",
+      "rate_limit_per_hour": "${NLP_MAX_REQUESTS_PER_HOUR}",
+      "rate_limit_burst": "${NLP_PERFORMANCE_RATE_LIMITING_RATE_LIMIT_BURST}",
       "defaults": {
         "rate_limit_per_minute": 120,
         "rate_limit_per_hour": 2000,
@@ -232,54 +221,23 @@
       "max_workers": 2,
       "device": "cpu",
       "load_in_8bit": false,
-      "cache_expiry_hours": 1
+      "cache_expiry_hours": 12
     },
     "production": {
-      "description": "Production settings optimized for reliability",
-      "analysis_timeout": 45.0,
+      "description": "Production settings optimized for performance",
+      "analysis_timeout": 20.0,
       "max_workers": 8,
       "device": "auto",
       "load_in_8bit": true,
       "cache_expiry_hours": 48
     },
-    "high_throughput": {
-      "description": "High throughput settings for heavy load",
-      "analysis_timeout": 20.0,
-      "max_workers": 16,
+    "gpu_optimized": {
+      "description": "GPU-optimized settings for CUDA-enabled systems",
+      "analysis_timeout": 15.0,
+      "max_workers": 6,
       "device": "cuda",
       "load_in_8bit": true,
-      "cache_expiry_hours": 72
-    },
-    "low_resource": {
-      "description": "Low resource settings for constrained environments",
-      "analysis_timeout": 90.0,
-      "max_workers": 1,
-      "device": "cpu",
-      "load_in_4bit": true,
-      "cache_expiry_hours": 12
+      "cache_expiry_hours": 36
     }
-  },
-
-  "performance_monitoring": {
-    "description": "Performance monitoring and alerting thresholds",
-    "memory_usage_warning": 80,
-    "memory_usage_critical": 95,
-    "cpu_usage_warning": 85,
-    "cpu_usage_critical": 95,
-    "request_latency_warning": 5.0,
-    "request_latency_critical": 10.0,
-    "error_rate_warning": 5.0,
-    "error_rate_critical": 10.0
-  },
-
-  "usage_instructions": {
-    "description": "Configuration usage and integration guidelines",
-    "manager_integration": "Use PerformanceConfigManager with create_performance_config_manager(config_manager)",
-    "environment_override_pattern": "Set environment variables using NLP_PERFORMANCE_*CATEGORY*_*SETTING* pattern",
-    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
-    "profile_activation": "Use activate_profile(profile_name) to apply pre-configured performance settings",
-    "memory_string_format": "Memory values support '10GB', '2048MB', '1TB' format with automatic parsing",
-    "device_selection": "Device 'auto' allows system to choose optimal GPU/CPU configuration",
-    "production_notes": "Use 'production' or 'high_throughput' profiles for production deployments"
   }
 }
