@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
+    "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -18,7 +18,7 @@
       "description": "Core logging settings - GLOBAL_LOG_LEVEL preserved for ecosystem compatibility",
       "log_level": "${GLOBAL_LOG_LEVEL}",
       "log_file": "${NLP_LOG_FILE}",
-      "log_directory": "${NLP_LOGS_DIR}",
+      "log_directory": "${NLP_STORAGE_LOGS_DIR}",
       "enable_console_output": "${GLOBAL_LOGGING_ENABLE_CONSOLE}",
       "enable_file_output": "${GLOBAL_LOGGING_ENABLE_FILE}",
       "defaults": {

@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
+    "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -15,10 +15,10 @@
   "performance_settings": {
     "analysis_performance": {
       "description": "Analysis processing performance and timeout settings",
-      "timeout_seconds": "${NLP_REQUEST_TIMEOUT}",
+      "timeout_seconds": "${GLOBAL_REQUEST_TIMEOUT}",
       "retry_attempts": "${NLP_PERFORMANCE_ANALYSIS_RETRY_ATTEMPTS}",
       "enable_timeout": "${NLP_PERFORMANCE_ANALYSIS_ENABLE_TIMEOUT}",
-      "batch_size": "${NLP_PERFORMANCE_ANALYSIS_BATCH_SIZE}",
+      "batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
       "defaults": {
         "timeout_seconds": 30.0,
         "retry_attempts": 3,
@@ -51,11 +51,11 @@
 
     "server_performance": {
       "description": "Server processing and worker management settings",
-      "max_workers": "${NLP_PERFORMANCE_SERVER_MAX_WORKERS}",
-      "worker_timeout": "${NLP_PERFORMANCE_SERVER_WORKER_TIMEOUT}",
-      "request_timeout": "${NLP_REQUEST_TIMEOUT}",
-      "max_concurrent_requests": "${NLP_MAX_CONCURRENT_REQUESTS}",
-      "workers": "${NLP_PERFORMANCE_SERVER_WORKERS}",
+      "max_workers": "${NLP_PERFORMANCE_MAX_WORKERS}",
+      "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
+      "request_timeout": "${GLOBAL_REQUEST_TIMEOUT}",
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "workers": "${NLP_PERFORMANCE_WORKERS}",
       "defaults": {
         "max_workers": 4,
         "worker_timeout": 60,
@@ -96,12 +96,12 @@
 
     "model_performance": {
       "description": "AI model processing and memory management settings",
-      "device": "${NLP_PERFORMANCE_MODEL_DEVICE}",
-      "device_map": "${NLP_PERFORMANCE_MODEL_DEVICE_MAP}",
-      "load_in_8bit": "${NLP_PERFORMANCE_MODEL_LOAD_IN_8BIT}",
-      "load_in_4bit": "${NLP_PERFORMANCE_MODEL_LOAD_IN_4BIT}",
-      "max_memory": "${NLP_PERFORMANCE_MODEL_MAX_MEMORY}",
-      "offload_folder": "${NLP_PERFORMANCE_MODEL_OFFLOAD_FOLDER}",
+      "device": "${NLP_HARDWARE_DEVICE}",
+      "device_map": "${NLP_HARDWARE_DEVICE_MAP}",
+      "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
+      "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
+      "max_memory": "${NLP_HARDWARE_MAX_MEMORY}",
+      "offload_folder": "${NLP_HARDWARE_OFFLOAD_FOLDER}",
       "defaults": {
         "device": "auto",
         "device_map": "auto",
@@ -142,9 +142,9 @@
 
     "rate_limiting_performance": {
       "description": "Rate limiting and traffic management settings",
-      "rate_limit_per_minute": "${NLP_MAX_REQUESTS_PER_MINUTE}",
-      "rate_limit_per_hour": "${NLP_MAX_REQUESTS_PER_HOUR}",
-      "rate_limit_burst": "${NLP_PERFORMANCE_RATE_LIMITING_RATE_LIMIT_BURST}",
+      "rate_limit_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
+      "rate_limit_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
+      "rate_limit_burst": "${NLP_PERFORMANCE_RATE_LIMIT_BURST}",
       "defaults": {
         "rate_limit_per_minute": 120,
         "rate_limit_per_hour": 2000,

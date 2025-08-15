@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.9-2
+FILE VERSION: v3.1-3d-10.11-1
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION + JSON-DRIVEN SCHEMA VALIDATION
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -449,7 +449,7 @@ class UnifiedConfigManager:
         try:
             return {
                 'max_concurrent_requests': self.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                'request_timeout': self.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 40),
+                'request_timeout': self.get_env_int('GLOBAL_REQUEST_TIMEOUT', 30),
                 'worker_timeout': self.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
                 'analysis_timeout_ms': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS', 5000),
                 'analysis_cache_ttl': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL', 300),
@@ -1118,7 +1118,7 @@ class UnifiedConfigManager:
                     'pipeline_task': 'zero-shot-classification'
                 }
             },
-            'ensemble_mode': self.get_env_str('NLP_MODEL_ENSEMBLE_MODE', 'consensus'),
+            'ensemble_mode': self.get_env_str('NLP_ENSEMBLE_MODE', 'consensus'),
             'validation': {
                 'ensure_weights_sum_to_one': True,
                 'fail_on_invalid_weights': True

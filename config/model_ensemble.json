@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
+    "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -19,7 +19,7 @@
         "weight": "${NLP_ANALYSIS_ENSEMBLE_WEIGHT_DEPRESSION}",
         "type": "${NLP_MODEL_DEPRESSION_TYPE}",
         "pipeline_task": "${NLP_MODEL_DEPRESSION_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODELS_DIR}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
         "enabled": "${NLP_MODEL_DEPRESSION_ENABLED}"
       },
       "sentiment": {
@@ -27,7 +27,7 @@
         "weight": "${NLP_ANALYSIS_ENSEMBLE_WEIGHT_SENTIMENT}",
         "type": "${NLP_MODEL_SENTIMENT_TYPE}",
         "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODELS_DIR}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
         "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}"
       },
       "emotional_distress": {
@@ -35,12 +35,12 @@
         "weight": "${NLP_ANALYSIS_ENSEMBLE_WEIGHT_DISTRESS}",
         "type": "${NLP_MODEL_DISTRESS_TYPE}",
         "pipeline_task": "${NLP_MODEL_DISTRESS_PIPELINE_TASK}",
-        "cache_dir": "${NLP_MODELS_DIR}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
         "enabled": "${NLP_MODEL_DISTRESS_ENABLED}"
       }
     },
     "ensemble_config": {
-      "mode": "${NLP_MODEL_ENSEMBLE_MODE}",
+      "mode": "${NLP_ENSEMBLE_MODE}",
       "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
       "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
       "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}"
@@ -48,13 +48,13 @@
   },
 
   "hardware_settings": {
-    "device": "${NLP_MODEL_HARDWARE_DEVICE}",
-    "device_map": "${NLP_MODEL_HARDWARE_DEVICE_MAP}",
-    "load_in_8bit": "${NLP_MODEL_HARDWARE_LOAD_IN_8BIT}",
-    "load_in_4bit": "${NLP_MODEL_HARDWARE_LOAD_IN_4BIT}",
-    "torch_dtype": "${NLP_MODEL_HARDWARE_TORCH_DTYPE}",
-    "max_memory": "${NLP_MODEL_HARDWARE_MAX_MEMORY}",
-    "offload_folder": "${NLP_MODEL_HARDWARE_OFFLOAD_FOLDER}"
+    "device": "${NLP_HARDWARE_DEVICE}",
+    "device_map": "${NLP_HARDWARE_DEVICE_MAP}",
+    "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
+    "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
+    "torch_dtype": "${NLP_HARDWARE_TORCH_DTYPE}",
+    "max_memory": "${NLP_HARDWARE_MAX_MEMORY}",
+    "offload_folder": "${NLP_HARDWARE_OFFLOAD_FOLDER}"
   },
 
   "defaults": {
