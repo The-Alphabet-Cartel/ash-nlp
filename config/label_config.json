@@ -23,7 +23,7 @@
     ]
   },
 
-  "configuration": {
+  "label_configuration": {
     "current_label_set": "${NLP_ZERO_SHOT_LABEL_SET}",
     "enable_runtime_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
     "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
