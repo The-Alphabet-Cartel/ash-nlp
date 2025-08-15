@@ -1,54 +1,64 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-10-1",
+    "last_modified": "2025-08-13",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
-    "description": "Crisis idiom and metaphor patterns for enhanced crisis detection - MAJOR CLEANUP: Eliminated 25+ micro-management variables",
+    "description": "Crisis idiom patterns for detecting metaphorical and idiomatic expressions of distress",
     "created_date": "2025-08-12",
-    "updated_date": "2025-08-14",
+    "updated_date": "2025-08-12",
     "compliance": "Clean Architecture v3.1 Standards",
-    "repository": "https://github.com/the-alphabet-cartel/ash-nlp",
-    "community": "The Alphabet Cartel - https://discord.gg/alphabetcartel",
-    "migration_status": "Step 10.10 - MASSIVE Variable Elimination: 25+ micro-management variables converted to smart defaults"
-  },
-
-  "global_configuration": {
-    "description": "Global settings for crisis idiom pattern detection",
-    "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
-    "base_weight": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}",
-    "context_validation": true,
-    "defaults": {
-      "enabled": true,
-      "base_weight": 1.2,
-      "context_validation": true,
-      "context_window": 12,
-      "negation_awareness": true,
-      "multiple_metaphors_handling": "cumulative_boost"
-    },
-    "validation": {
-      "enabled": {
-        "type": "boolean"
-      },
-      "base_weight": {
-        "type": "float",
-        "range": [0.5, 2.0]
-      },
-      "context_validation": {
-        "type": "boolean"
-      }
+    "idiom_count": 35,
+    "manager_integration": "crisis_pattern_manager.py",
+    "environment_overrides": {
+      "enabled": "${NLP_CRISIS_IDIOMS_ENABLED}",
+      "detection_threshold": "${NLP_CRISIS_IDIOMS_THRESHOLD}",
+      "metaphor_weight": "${NLP_CRISIS_IDIOMS_METAPHOR_WEIGHT}",
+      "literal_weight": "${NLP_CRISIS_IDIOMS_LITERAL_WEIGHT}"
     }
   },
 
-  "crisis_metaphors": {
-    "description": "Crisis metaphor patterns with smart defaults - NO MICRO-MANAGEMENT",
-    
+  "configuration": {
+    "description": "Global configuration settings for crisis idiom pattern processing",
+    "enabled": "${NLP_CRISIS_IDIOMS_ENABLED}",
+    "detection_threshold": "${NLP_CRISIS_IDIOMS_THRESHOLD}",
+    "priority_level": "${NLP_CRISIS_IDIOMS_PRIORITY}",
+    "context_validation": "${NLP_CRISIS_IDIOMS_CONTEXT_VALIDATION}",
+    "defaults": {
+      "enabled": true,
+      "detection_threshold": 0.6,
+      "priority_level": "high",
+      "context_validation": true
+    },
+    "validation": {
+      "enabled": {"type": "boolean", "required": true},
+      "detection_threshold": {"type": "float", "range": [0.0, 1.0]},
+      "priority_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+      "context_validation": {"type": "boolean", "required": true}
+    }
+  },
+
+  "patterns": {
+    "description": "Crisis idiom patterns organized by metaphorical type",
+
     "drowning_metaphors": {
-      "description": "Metaphors expressing being overwhelmed or drowning",
-      "crisis_level": "medium",
-      "weight": 0.8,
-      "context_required": false,
-      "urgency": "medium",
+      "description": "Metaphors expressing feeling overwhelmed or drowning",
+      "crisis_level": "${NLP_DROWNING_METAPHORS_CRISIS_LEVEL}",
+      "weight": "${NLP_DROWNING_METAPHORS_WEIGHT}",
+      "context_required": "${NLP_DROWNING_METAPHORS_CONTEXT}",
+      "urgency": "${NLP_DROWNING_METAPHORS_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.8,
+        "context_required": false,
+        "urgency": "medium"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
       "idioms": [
         "drowning in", "in over my head", "sinking fast", "going under", 
         "can't keep my head above water", "feel like I'm drowning", "underwater", 
@@ -58,10 +68,22 @@
 
     "breaking_metaphors": {
       "description": "Metaphors expressing psychological breaking or shattering",
-      "crisis_level": "high",
-      "weight": 0.9,
-      "context_required": false,
-      "urgency": "high",
+      "crisis_level": "${NLP_BREAKING_METAPHORS_CRISIS_LEVEL}",
+      "weight": "${NLP_BREAKING_METAPHORS_WEIGHT}",
+      "context_required": "${NLP_BREAKING_METAPHORS_CONTEXT}",
+      "urgency": "${NLP_BREAKING_METAPHORS_URGENCY}",
+      "defaults": {
+        "crisis_level": "high",
+        "weight": 0.9,
+        "context_required": false,
+        "urgency": "high"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
       "idioms": [
         "falling apart", "breaking down", "cracking up", "coming undone", 
         "shattered", "broken inside", "pieces of myself", "falling to pieces", 
@@ -71,10 +93,22 @@
 
     "darkness_metaphors": {
       "description": "Metaphors expressing darkness, emptiness, or void",
-      "crisis_level": "high",
-      "weight": 0.85,
-      "context_required": true,
-      "urgency": "high",
+      "crisis_level": "${NLP_DARKNESS_METAPHORS_CRISIS_LEVEL}",
+      "weight": "${NLP_DARKNESS_METAPHORS_WEIGHT}",
+      "context_required": "${NLP_DARKNESS_METAPHORS_CONTEXT}",
+      "urgency": "${NLP_DARKNESS_METAPHORS_URGENCY}",
+      "defaults": {
+        "crisis_level": "high",
+        "weight": 0.85,
+        "context_required": true,
+        "urgency": "high"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
       "idioms": [
         "in a dark place", "black hole", "void inside", "empty shell", 
         "darkness consuming me", "lost in darkness", "can't see the light", 
@@ -84,10 +118,22 @@
 
     "trapped_metaphors": {
       "description": "Metaphors expressing feeling trapped or imprisoned",
-      "crisis_level": "medium",
-      "weight": 0.75,
-      "context_required": true,
-      "urgency": "medium",
+      "crisis_level": "${NLP_TRAPPED_METAPHORS_CRISIS_LEVEL}",
+      "weight": "${NLP_TRAPPED_METAPHORS_WEIGHT}",
+      "context_required": "${NLP_TRAPPED_METAPHORS_CONTEXT}",
+      "urgency": "${NLP_TRAPPED_METAPHORS_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.75,
+        "context_required": true,
+        "urgency": "medium"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
       "idioms": [
         "trapped in a cage", "prison of my mind", "can't escape", "stuck in a box", 
         "walls closing in", "no way out", "cornered", "backed into a corner", 
@@ -97,10 +143,22 @@
 
     "weight_metaphors": {
       "description": "Metaphors expressing crushing weight or burden",
-      "crisis_level": "medium",
-      "weight": 0.7,
-      "context_required": false,
-      "urgency": "medium",
+      "crisis_level": "${NLP_WEIGHT_METAPHORS_CRISIS_LEVEL}",
+      "weight": "${NLP_WEIGHT_METAPHORS_WEIGHT}",
+      "context_required": "${NLP_WEIGHT_METAPHORS_CONTEXT}",
+      "urgency": "${NLP_WEIGHT_METAPHORS_URGENCY}",
+      "defaults": {
+        "crisis_level": "medium",
+        "weight": 0.7,
+        "context_required": false,
+        "urgency": "medium"
+      },
+      "validation": {
+        "crisis_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+        "weight": {"type": "float", "range": [0.0, 2.0]},
+        "context_required": {"type": "boolean", "required": true},
+        "urgency": {"type": "string", "enum": ["low", "medium", "high", "critical"]}
+      },
       "idioms": [
         "weight of the world", "crushing me", "heavy burden", "can't carry this", 
         "weighing me down", "suffocating under", "pressure crushing", "avalanche", 
@@ -109,85 +167,56 @@
     }
   },
 
-  "processing_configuration": {
-    "description": "Intelligent processing rules with smart defaults - NO MICRO-MANAGEMENT",
+  "processing_rules": {
+    "description": "Rules for processing crisis idiom patterns",
+    "metaphor_detection": "${NLP_IDIOMS_METAPHOR_DETECTION}",
+    "literal_filtering": "${NLP_IDIOMS_LITERAL_FILTERING}",
+    "context_window": "${NLP_IDIOMS_CONTEXT_WINDOW}",
+    "multiple_metaphors": "${NLP_IDIOMS_MULTIPLE_HANDLING}",
+    "negation_awareness": "${NLP_IDIOMS_NEGATION_AWARENESS}",
     "defaults": {
       "metaphor_detection": "enabled",
       "literal_filtering": true,
       "context_window": 12,
       "multiple_metaphors": "cumulative_boost",
-      "negation_awareness": true,
-      "validation_tolerance": "medium",
-      "boost_accumulation": "logarithmic"
+      "negation_awareness": true
     },
     "validation": {
-      "metaphor_detection": {
-        "type": "string", 
-        "enum": ["enabled", "disabled", "selective"]
-      },
-      "literal_filtering": {
-        "type": "boolean"
-      },
-      "context_window": {
-        "type": "integer", 
-        "range": [1, 50]
-      },
-      "multiple_metaphors": {
-        "type": "string", 
-        "enum": ["cumulative_boost", "strongest_only", "average"]
-      },
-      "negation_awareness": {
-        "type": "boolean"
-      }
-    }
-  },
-
-  "pattern_weights": {
-    "description": "Intelligent weight distribution - NO INDIVIDUAL VARIABLE BLOAT",
-    "weight_categories": {
-      "critical": 1.0,
-      "high": 0.85,
-      "medium": 0.7,
-      "low": 0.5
-    },
-    "urgency_multipliers": {
-      "critical": 1.2,
-      "high": 1.1,
-      "medium": 1.0,
-      "low": 0.9
-    },
-    "context_modifiers": {
-      "required_and_present": 1.1,
-      "required_and_missing": 0.7,
-      "optional": 1.0
+      "metaphor_detection": {"type": "string", "enum": ["enabled", "disabled", "selective"]},
+      "literal_filtering": {"type": "boolean", "required": true},
+      "context_window": {"type": "integer", "range": [1, 50]},
+      "multiple_metaphors": {"type": "string", "enum": ["cumulative_boost", "strongest_only", "average"]},
+      "negation_awareness": {"type": "boolean", "required": true}
     }
   },
 
   "usage_instructions": {
     "integration": {
-      "description": "Simplified integration with crisis detection system",
+      "description": "How to integrate crisis idioms with the crisis detection system",
       "primary_manager": "crisis_pattern_manager.py",
       "loader_method": "get_idiom_patterns()",
       "access_pattern": "UnifiedConfigManager.get_crisis_patterns('crisis_idiom_patterns')",
-      "fallback_behavior": "Use smart defaults with comprehensive logging"
+      "fallback_behavior": "Use safe defaults with comprehensive logging if configuration fails"
     },
     "environment_override_examples": {
-      "enable_patterns": "NLP_CONFIG_ENABLE_CRISIS_PATTERNS=true",
-      "adjust_base_weight": "NLP_CONFIG_ENHANCED_CRISIS_WEIGHT=1.2"
+      "enable_patterns": "NLP_CRISIS_IDIOMS_ENABLED=true",
+      "adjust_threshold": "NLP_CRISIS_IDIOMS_THRESHOLD=0.7",
+      "modify_metaphor_weight": "NLP_DROWNING_METAPHORS_WEIGHT=0.9",
+      "set_context_validation": "NLP_CRISIS_IDIOMS_CONTEXT_VALIDATION=true"
     },
-    "major_cleanup_notes": [
-      "ELIMINATED 25+ micro-management variables in favor of smart defaults",
-      "Each metaphor type previously had 4 separate environment variables - now uses intelligent defaults",
-      "Processing rules consolidated from 5+ variables to smart configuration",
-      "Pattern weights calculated algorithmically instead of individual variables",
-      "System maintains full functionality with 95% fewer environment dependencies"
-    ],
     "resilient_operation": {
-      "description": "Enhanced resilience through smart defaults",
-      "pattern_weight_calculation": "Automatic based on crisis_level + urgency + context",
-      "missing_configuration": "Intelligent defaults ensure system never fails",
-      "invalid_weights": "Auto-correction with logging instead of system failure",
-      "performance_impact": "Significantly improved with reduced variable lookup overhead"
-    }
+      "description": "System behavior when configuration issues occur",
+      "invalid_weight": "Use safe default (0.8) with warning log",
+      "missing_idioms": "Load basic idiom set with info log",
+      "pattern_validation_error": "Skip invalid patterns, continue with valid ones, error log",
+      "file_not_found": "Use minimal built-in crisis idioms with warning log"
+    },
+    "implementation_notes": [
+      "Idioms require careful context validation to avoid false positives",
+      "Metaphorical expressions often indicate deeper emotional distress",
+      "Multiple metaphors in one message significantly increase crisis likelihood",
+      "Literal usage filtering helps distinguish actual metaphorical intent",
+      "Breaking and darkness metaphors typically indicate highest crisis levels"
+    ]
   }
 }
