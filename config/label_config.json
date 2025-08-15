@@ -3,7 +3,7 @@
     "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-15",
     "description": "Zero-Shot Model Labels Configuration for Ash NLP Service",
-    "phase": "3d Step 10.11 - Rule #7 Compliant Configuration",
+    "phase": "3d Step 10.11 - ZeroShotManager Compatible Structure",
     "architecture": "clean-v3.1-unified",
     "manager": "ZeroShotManager",
     "related_files": [
@@ -16,75 +16,17 @@
       "NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE"
     ],
     "change_log": [
-      "2025-08-15: Fixed placeholder variables to use existing .env.template infrastructure (Rule #7 compliance)",
-      "2025-08-15: Added proper _metadata block and validation structure",
+      "2025-08-15: Fixed JSON structure to match ZeroShotManager expectations",
+      "2025-08-15: Added proper _metadata block and validation structure", 
       "2025-08-10: Enhanced crisis detection labels added",
       "2025-08-05: Initial Phase 3d migration"
     ]
   },
 
   "label_configuration": {
-    "current_label_set": "${NLP_ZERO_SHOT_LABEL_SET}",
-    "enable_runtime_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
-    "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
-    "cache_labels": true,
-    "validate_on_load": true,
-    "fallback_label_set": "enhanced_crisis"
-  },
-
-  "defaults": {
-    "current_label_set": "enhanced_crisis",
-    "enable_runtime_switching": true,
-    "track_performance": true,
-    "cache_labels": true,
-    "validate_on_load": true,
-    "fallback_label_set": "enhanced_crisis"
-  },
-
-  "validation": {
-    "configuration": {
-      "current_label_set": {
-        "type": "string",
-        "allowed_values": ["current", "enhanced_crisis", "clinical_focused", "conversational", "safety_first"],
-        "default": "enhanced_crisis",
-        "description": "Active label set for zero-shot classification"
-      },
-      "enable_runtime_switching": {
-        "type": "boolean",
-        "default": true,
-        "description": "Allow dynamic switching between label sets during runtime"
-      },
-      "track_performance": {
-        "type": "boolean", 
-        "default": true,
-        "description": "Enable performance tracking and metrics collection for label sets"
-      },
-      "cache_labels": {
-        "type": "boolean",
-        "default": true,
-        "description": "Enable caching of processed labels for performance optimization"
-      },
-      "validate_on_load": {
-        "type": "boolean",
-        "default": true,
-        "description": "Validate label set structure and content on manager initialization"
-      },
-      "fallback_label_set": {
-        "type": "string",
-        "allowed_values": ["current", "enhanced_crisis", "clinical_focused", "conversational", "safety_first"],
-        "default": "enhanced_crisis",
-        "description": "Fallback label set when primary set fails to load"
-      }
-    }
-  },
-
-  "label_sets": {
     "current": {
-      "name": "Current (Baseline)",
       "description": "Original baseline labels from current implementation",
-      "optimized_for": "balanced_detection",
-      "sensitivity_level": "medium",
-      "labels": {
+      "defaults": {
         "depression": [
           "person experiencing severe clinical depression with major functional impairment",
           "person showing moderate depression with professional intervention needed",
@@ -111,17 +53,8 @@
       }
     },
     "enhanced_crisis": {
-      "name": "Enhanced Crisis Detection",
       "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
-      "optimized_for": "high_crisis_detection",
-      "sensitivity_level": "high",
-      "recommended": true,
-      "models_used": {
-        "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-        "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment", 
-        "emotional_distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
-      },
-      "labels": {
+      "defaults": {
         "depression": [
           "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
           "person stating they want to die, kill themselves, or commit suicide with immediate intent",
@@ -168,11 +101,8 @@
       }
     },
     "clinical_focused": {
-      "name": "Clinical/Medical Terminology",
       "description": "Medical and clinical terminology focused labels for professional assessment contexts",
-      "optimized_for": "clinical_assessment",
-      "sensitivity_level": "medium",
-      "labels": {
+      "defaults": {
         "depression": [
           "patient presenting with acute suicidal ideation requiring immediate psychiatric intervention",
           "patient showing severe major depressive disorder with psychotic features and functional impairment",
@@ -197,11 +127,8 @@
       }
     },
     "conversational": {
-      "name": "Conversational/Social Media",
       "description": "Labels optimized for informal conversation and social media language patterns typical in Discord communities",
-      "optimized_for": "social_media_detection",
-      "sensitivity_level": "medium",
-      "labels": {
+      "defaults": {
         "depression": [
           "someone saying they want to die, end it all, or expressing serious thoughts about suicide",
           "someone describing feeling completely hopeless, broken, or like nothing will ever get better",
@@ -226,11 +153,8 @@
       }
     },
     "safety_first": {
-      "name": "Safety First (Ultra-Sensitive)",
       "description": "Ultra-sensitive labels designed to catch any potential crisis with maximum safety bias",
-      "optimized_for": "maximum_safety",
-      "sensitivity_level": "ultra_high",
-      "labels": {
+      "defaults": {
         "depression": [
           "any expression of wanting to die, suicide thoughts, self-harm, or ending life",
           "any statement about hopelessness, being beyond help, or having no future",
@@ -250,21 +174,72 @@
           "only expressions of excellent coping and emotional strength"
         ]
       }
+    },
+    "label_mapping": {
+      "default_label_set": "${NLP_ZERO_SHOT_LABEL_SET}",
+      "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
+      "fallback_behavior": "enhanced_crisis",
+      "case_sensitive": false,
+      "normalize_labels": true
     }
   },
 
-  "performance_tracking": {
-    "enabled": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
-    "metrics": {
-      "accuracy_by_label_set": true,
-      "response_time_by_label_set": true,
-      "confidence_distribution": true,
-      "label_switching_frequency": true
+  "zero_shot_settings": {
+    "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
+    "hypothesis_template": "This text expresses {label}",
+    "multi_label": false,
+    "confidence_threshold": 0.3,
+    "max_labels": 5,
+    "normalize_scores": true
+  },
+  "defaults": {
+    "label_mapping": {
+      "default_label_set": "enhanced_crisis",
+      "enable_label_switching": true,
+      "fallback_behavior": "enhanced_crisis",
+      "case_sensitive": false,
+      "normalize_labels": true
     },
-    "reporting": {
-      "daily_summary": true,
-      "weekly_analysis": true,
-      "label_set_comparison": true
+    "zero_shot_settings": {
+      "track_performance": true,
+      "hypothesis_template": "This text expresses {label}",
+      "multi_label": false,
+      "confidence_threshold": 0.3,
+      "max_labels": 5,
+      "normalize_scores": true
+    }
+  },
+  "validation": {
+    "label_configuration": {
+      "required_label_categories": ["depression", "sentiment", "emotional_distress"],
+      "minimum_labels_per_category": 3,
+      "maximum_labels_per_category": 20,
+      "required_label_sets": ["enhanced_crisis", "current"]
+    },
+    "label_mapping": {
+      "default_label_set": {
+        "type": "string",
+        "allowed_values": ["current", "enhanced_crisis", "clinical_focused", "conversational", "safety_first"],
+        "default": "enhanced_crisis"
+      },
+      "enable_label_switching": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "zero_shot_settings": {
+      "confidence_threshold": {
+        "type": "float",
+        "minimum": 0.0,
+        "maximum": 1.0,
+        "default": 0.3
+      },
+      "max_labels": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 5
+      }
     }
   },
 
@@ -272,9 +247,8 @@
     "description": "Configuration usage and integration guidelines",
     "manager_integration": "Use ZeroShotManager with create_zero_shot_manager(config_manager)",
     "environment_override_pattern": "Environment variables override JSON defaults using existing .env.template structure",
-    "resilient_operation": "System falls back to 'enhanced_crisis' label set when configuration is invalid or missing",
-    "label_set_switching": "Runtime switching requires enable_runtime_switching=true",
-    "performance_optimization": "Enable cache_labels for improved response times",
-    "validation_safety": "Enable validate_on_load for startup safety checks"
+    "label_set_access": "Label sets are available under label_configuration section",
+    "label_switching": "Runtime switching controlled by label_mapping.enable_label_switching",
+    "performance_tracking": "Metrics controlled by zero_shot_settings.track_performance"
   }
 }
