@@ -85,13 +85,13 @@ class ModelsManager:
             
             # Get cache_dir using unified config (NO MORE os.getenv calls)
             cache_dir = (
-                self.unified_config.get_env('NLP_STORAGE_MODELS_DIR') or
-                './models/cache'
+                self.unified_config.get_env('NLP_STORAGE_MODELS_DIR')# or
+                #'./models/cache'
             )
             
             # Extract ensemble mode from nested structure or unified config
             ensemble_mode = (
-                full_model_config.get('ensemble_config', {}).get('mode') or
+                #full_model_config.get('ensemble_config', {}).get('mode') or
                 self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
             )
             
