@@ -154,7 +154,7 @@ def initialize_unified_managers():
         logger.info("✅ Logging config manager initialized...")
 
         logger.info("🔧 Initializing models ensemble manager...")
-        model_ensemble = create_model_ensemble_manager(unified_config)
+        model_ensemble_manager = create_model_ensemble_manager(unified_config)
         logger.info("✅ Models ensemble manager initialized...")
 
         logger.info("🔧 Initializing performance config manager...")
@@ -192,7 +192,7 @@ def initialize_unified_managers():
             crisis_pattern_manager=crisis_pattern,
             feature_config_manager=feature_config,
             logging_config_manager=logging_config,
-            model_ensemble_manager=model_ensemble,
+            model_ensemble_manager=model_ensemble_manager,
             performance_config_manager=performance_config,
             pydantic_manager=pydantic_manager,
             server_config_manager=server_config,
@@ -204,7 +204,7 @@ def initialize_unified_managers():
 
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
-            model_ensemble_manager=model_ensemble,
+            model_ensemble_manager=model_ensemble_manager,
             crisis_pattern_manager=crisis_pattern,
             learning_manager=None,
             analysis_parameters_manager=analysis_parameters,
@@ -222,7 +222,7 @@ def initialize_unified_managers():
             'context_pattern': context_pattern_manager,  # NEW: Step 10.8
             'feature_config': feature_config,
             'logging_config': logging_config,
-            'model_ensemble': model_ensemble,
+            'model_ensemble_manager': model_ensemble_manager,
             'performance_config': performance_config,
             'pydantic_manager': pydantic_manager,
             'server_config': server_config,
@@ -307,7 +307,7 @@ def create_fastapi_app():
         # Ensemble endpoints
         add_ensemble_endpoints_v3c(
             app, 
-            managers['model_ensemble'], 
+            managers['model_ensemble_manager'], 
             managers['pydantic_manager'], 
             crisis_pattern_manager=managers['crisis_pattern'],
             threshold_mapping_manager=managers['threshold_mapping']
