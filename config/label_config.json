@@ -240,11 +240,11 @@
       },
       "confidence_threshold": {
         "type": "float",
-        "range": [0.0, 1.0],
+        "range": [0.0, 1.0]
       },
       "max_labels": {
         "type": "integer",
-        "range": [1, 10],
+        "range": [1, 10]
       },
       "normalize_scores": {
         "type": "boolean"
