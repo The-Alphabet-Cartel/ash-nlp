@@ -223,11 +223,14 @@ class UnifiedConfigManager:
         for config_name, config_file in self.config_files.items():
             try:
                 # Load raw JSON without processing (to avoid circular dependency)
+                logger.debug("📋 Loading Config ...")
                 config_path = self.config_dir / config_file
                 if not config_path.exists():
+                    logger.debug("📋 Config not found ...")
                     continue
                 
                 with open(config_path, 'r', encoding='utf-8') as f:
+                    logger.debug("📋 Config found!")
                     raw_config = json.load(f)
                 
                 # Extract validation schemas from this config file
