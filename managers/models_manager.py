@@ -2,7 +2,7 @@
 """
 Advanced Model Ensemble Management for handling three zero-shot model ensemble
 with GPU optimization, model caching, and comprehensive validation for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.11-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -86,8 +86,6 @@ class ModelsManager:
             # Get cache_dir using unified config (NO MORE os.getenv calls)
             cache_dir = (
                 self.unified_config.get_env('NLP_STORAGE_MODELS_DIR') or
-                self.unified_config.get_env('NLP_MODEL_CACHE_DIR') or
-                self.unified_config.get_env('NLP_HUGGINGFACE_CACHE_DIR') or
                 './models/cache'
             )
             

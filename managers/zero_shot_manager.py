@@ -341,7 +341,7 @@ class ZeroShotManager:
     def get_configuration_summary(self) -> Dict[str, Any]:
         """Get summary of configuration and current state"""
         # Get configuration from unified config manager
-        configured_set = self.unified_config.get_env('NLP_LABEL_MAPPING_DEFAULT_LABEL_SET', 'crisis_labels')
+        configured_set = self.unified_config.get_env('NLP_ZERO_SHOT_LABEL_SET', 'crisis_labels')
         label_switching_enabled = self.unified_config.get_env('NLP_LABEL_MAPPING_ENABLE_LABEL_SWITCHING', True)
         
         return {
@@ -361,7 +361,7 @@ class ZeroShotManager:
     
     def validate_label_set_configuration(self) -> Dict[str, Any]:
         """Validate that the configured label set is available and properly loaded"""
-        configured_set = self.unified_config.get_env('NLP_LABEL_MAPPING_DEFAULT_LABEL_SET', 'crisis_labels')
+        configured_set = self.unified_config.get_env('NLP_ZERO_SHOT_LABEL_SET', 'crisis_labels')
         available_sets = self.get_available_label_sets()
         
         validation_result = {

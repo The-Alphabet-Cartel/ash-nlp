@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.11-2",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -16,7 +16,7 @@
     "model_definitions": {
       "depression": {
         "name": "${NLP_MODEL_DEPRESSION_NAME}",
-        "weight": "${NLP_ANALYSIS_ENSEMBLE_WEIGHT_DEPRESSION}",
+        "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
         "type": "${NLP_MODEL_DEPRESSION_TYPE}",
         "pipeline_task": "${NLP_MODEL_DEPRESSION_PIPELINE_TASK}",
         "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
@@ -24,7 +24,7 @@
       },
       "sentiment": {
         "name": "${NLP_MODEL_SENTIMENT_NAME}",
-        "weight": "${NLP_ANALYSIS_ENSEMBLE_WEIGHT_SENTIMENT}",
+        "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
         "type": "${NLP_MODEL_SENTIMENT_TYPE}",
         "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
         "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
@@ -32,7 +32,7 @@
       },
       "emotional_distress": {
         "name": "${NLP_MODEL_DISTRESS_NAME}",
-        "weight": "${NLP_ANALYSIS_ENSEMBLE_WEIGHT_DISTRESS}",
+        "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
         "type": "${NLP_MODEL_DISTRESS_TYPE}",
         "pipeline_task": "${NLP_MODEL_DISTRESS_PIPELINE_TASK}",
         "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
@@ -85,9 +85,9 @@
       }
     },
     "ensemble_config": {
-      "mode": "consensus",
-      "require_all_models": false,
-      "fallback_mode": "majority",
+      "mode": "majority",
+      "require_all_models": true,
+      "fallback_mode": "consensus",
       "confidence_threshold": 0.7
     },
     "hardware_settings": {

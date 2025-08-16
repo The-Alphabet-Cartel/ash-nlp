@@ -1,7 +1,7 @@
 <!-- ash-nlp/README.md -->
 <!--
 README Documentation for Ash-NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.11-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -122,7 +122,7 @@ NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
 NLP_EMOTIONAL_DISTRESS_MODEL=MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
 
 # Ensemble Configuration
-NLP_ENSEMBLE_MODE=weighted  # consensus, majority, weighted
+NLP_ENSEMBLE_MODE=majority  # consensus, majority, weighted
 NLP_GAP_DETECTION_THRESHOLD=0.4
 NLP_THRESHOLD_GAP_DISAGREEMENT=0.5
 
