@@ -95,21 +95,12 @@ class CrisisPatternManager:
     def _load_all_patterns(self) -> None:
         """Load all crisis pattern configurations with v3.1 consolidation support"""
         pattern_files = [
-            # NEW: Consolidated context patterns file (replaces 3 files)
             'context_patterns',
-            # Core v3.1 compliant pattern files (all updated in this conversation)
             'temporal_indicators_patterns',
-            'community_vocabulary_patterns',  # ✅ CONSOLIDATED (merged crisis_lgbtqia + crisis_community_vocabulary)
-            'enhanced_crisis_patterns',       # ✅ v3.1 COMPLIANT
-            'crisis_idiom_patterns',          # ✅ v3.1 COMPLIANT
-            'crisis_burden_patterns',         # ✅ v3.1 COMPLIANT
-            # DEPRECATED: These are now consolidated into context_patterns
-            # 'crisis_context_patterns',     # ❌ REMOVED - now in context_patterns
-            # 'positive_context_patterns',   # ❌ REMOVED - now in context_patterns  
-            # 'context_weights_patterns',    # ❌ REMOVED - now in context_patterns
-            # ELIMINATED: These files were consolidated/eliminated in this conversation
-            # 'crisis_lgbtqia_patterns',     # ❌ ELIMINATED - merged into community_vocabulary_patterns
-            # 'crisis_community_vocabulary', # ❌ ELIMINATED - merged into community_vocabulary_patterns
+            'community_vocabulary_patterns',
+            'enhanced_crisis_patterns',
+            'crisis_idiom_patterns',
+            'crisis_burden_patterns',
         ]
         
         for pattern_type in pattern_files:
@@ -123,27 +114,6 @@ class CrisisPatternManager:
             except Exception as e:
                 logger.error(f"Failed to load {pattern_type}: {e}")
                 self._patterns_cache[pattern_type] = {}
-
-        # Check for any remaining legacy files with detailed deprecation warnings
-        legacy_files = [
-            'crisis_context_patterns', 
-            'positive_context_patterns', 
-            'context_weights_patterns',
-            'crisis_lgbtqia_patterns',      # Should be merged into community_vocabulary_patterns
-            'crisis_community_vocabulary'   # Should be merged into community_vocabulary_patterns  
-        ]
-        for legacy_file in legacy_files:
-            try:
-                patterns = self.config_manager.get_crisis_patterns(legacy_file)
-                if patterns:
-                    if legacy_file in ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary']:
-                        logger.warning(f"⚠️ DEPRECATED: {legacy_file} found - content should be merged into community_vocabulary_patterns.json")
-                    else:
-                        logger.warning(f"⚠️ DEPRECATED: {legacy_file} found - should be migrated to context_patterns.json")
-                    self._patterns_cache[legacy_file] = patterns
-            except Exception:
-                # Expected - these files should not exist after consolidation
-                pass
 
     # ========================================================================
     # ENHANCED PATTERNS ACCESS - v3.1 Compatible (UNCHANGED)
