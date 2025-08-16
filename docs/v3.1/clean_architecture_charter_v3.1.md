@@ -1,9 +1,9 @@
 <!-- ash-nlp/docs/v3.1/clean_architecture_charter_v3.1.md -->
 <!--
 Clean Architecture Charter for Ash-NLP Service
-FILE VERSION: v3.1-3d-10.7-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7
+PHASE: 3d, Step 10.11
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Charter updated with environment variables requirements
 -->
@@ -22,7 +22,7 @@ MIGRATION STATUS: Charter updated with environment variables requirements
 - **ALL managers MUST use factory functions** - `create_[manager_name]()`
 - **NEVER call constructors directly**
 - **Factory functions enable**: dependency injection, testing, consistency
-- **Examples**: `create_models_manager()`, `create_crisis_pattern_manager()`, `create_settings_manager()`
+- **Examples**: `create_model_ensemble_manager()`, `create_crisis_pattern_manager()`, `create_settings_manager()`
 
 ### **Rule #2: Dependency Injection - REQUIRED**
 - **All managers accept dependencies through constructor parameters**

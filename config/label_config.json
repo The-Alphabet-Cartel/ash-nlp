@@ -179,19 +179,37 @@
           "only expressions of excellent coping and emotional strength"
         ]
       }
-    },
-    "label_mapping": {
-      "default_label_set": "${NLP_LABEL_MAPPING_DEFAULT_LABEL_SET}",
-      "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
+    }
+  },
+
+  "label_mapping": {
+    "default_label_set": "${NLP_LABEL_MAPPING_DEFAULT_LABEL_SET}",
+    "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
+    "fallback_behavior": "enhanced_crisis",
+    "case_sensitive": false,
+    "normalize_labels": true,
+    "defaults": {
+      "default_label_set": "enhanced_crisis",
+      "enable_label_switching": true,
       "fallback_behavior": "enhanced_crisis",
       "case_sensitive": false,
-      "normalize_labels": true,
-      "defaults": {
-        "default_label_set": "enhanced_crisis",
-        "enable_label_switching": true,
-        "fallback_behavior": "enhanced_crisis",
-        "case_sensitive": false,
-        "normalize_labels": true
+      "normalize_labels": true
+    },
+    "validation": {
+      "default_label_set": {
+        "type": "string"
+      },
+      "enable_label_switching": {
+        "type": "boolean"
+      },
+      "fallback_behavior": {
+        "type": "string"
+      },
+      "case_sensitive": {
+        "type": "boolean"
+      },
+      "normalize_labels": {
+        "type": "boolean"
       }
     }
   },
@@ -210,6 +228,28 @@
       "confidence_threshold": 0.3,
       "max_labels": 5,
       "normalize_scores": true
+    },
+    "validation": {
+      "track_performance": {
+        "type": "boolean"
+      },
+      "hypothesis_template": {
+        "type": "string"
+      },
+      "multi_label": {
+        "type": "boolean"
+      },
+      "confidence_threshold": {
+        "type": "float",
+        "range": [0.0, 1.0]
+      },
+      "max_labels": {
+        "type": "integer",
+        "range": [1, 10]
+      },
+      "normalize_scores": {
+        "type": "boolean"
+      }
     }
   }
 }

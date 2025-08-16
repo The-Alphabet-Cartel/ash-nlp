@@ -1,7 +1,7 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/step_10.5.md -->
 <!--
 Documentation for Phase 3d, Step 10.5 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.5-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.5
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -40,7 +40,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
   - `settings_manager.py` → server configuration delegation ✅
   - `zero_shot_manager.py` → `label_config.json` ✅
   - `model_ensemble_manager.py` → `model_ensemble.json` ✅
-  - `models_manager.py` → model configuration extraction ✅
+  - `model_ensemble_manager.py` → model configuration extraction ✅
 
 - **✅ JSON Structure Fixes**: Critical configuration file structure corrections
   - Fixed `model_ensemble.json` structure to match UnifiedConfigManager expectations

@@ -1,9 +1,9 @@
 <!-- ash-nlp/docs/v3.1/migration_guide_v3.1.md -->
 <!--
 Migration Guide v3.1 for Ash-NLP Service
-FILE VERSION: v3.1-3d-10.9-4
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-14
-PHASE: 3d Step 10.9 - JSON-Driven Schema System + Enhanced Variable Resolution
+PHASE: 3d, Step 10.11
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Migration guide updated with JSON-driven schema system and enhanced placeholder resolution
 -->
@@ -471,7 +471,6 @@ ash/ash-nlp/
 │   ├── feature_config_manager.py
 │   ├── loggin_config_manager.py
 │   ├── model_ensemble_manager.py
-│   ├── models_manager.py
 │   ├── performance_config_manager.py
 │   ├── pydantic_manager.py
 │   ├── server_config_manager.py

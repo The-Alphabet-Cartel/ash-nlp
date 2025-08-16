@@ -1,7 +1,7 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/step_3.md -->
 <!--
 Documentation for Phase 3d, Step 3 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-3-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -112,7 +112,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 - **✅ Health Endpoint**: Returns healthy status with all managers operational  
 - **✅ Component Status**: All managers reporting as available
   - config_manager: ✅ true
-  - models_manager: ✅ true
+  - model_ensemble_manager: ✅ true
   - crisis_pattern_manager: ✅ true
   - analysis_parameters_manager: ✅ true  
   - threshold_mapping_manager: ✅ true

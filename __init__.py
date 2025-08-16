@@ -1,9 +1,9 @@
 # ash-nlp/__init__.py
 """
 Ash NLP Service for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 try:
     from .managers import (
         UnifiedConfigManager, create_unified_config_manager,
-        ModelsManager, create_models_manager,
+        ModelEnsembleManager, create_model_ensemble_manager,
         PydanticManager, create_pydantic_manager,
         CrisisPatternManager, create_crisis_pattern_manager,
         SettingsManager, create_settings_manager,
@@ -34,8 +34,8 @@ except ImportError as e:
     # Set all to None for graceful degradation
     UnifiedConfigManager = None
     create_unified_config_manager = None
-    ModelsManager = None
-    create_models_manager = None
+    ModelEnsembleManager = None
+    create_model_ensemble_manager = None
     PydanticManager = None
     create_pydantic_manager = None
     CrisisPatternManager = None
@@ -77,25 +77,25 @@ def get_pydantic_models():
             "Check configuration and dependencies."
         )
 
-def create_models_manager():
+def create_model_ensemble_manager():
     """
-    Create ModelsManager instance with proper dependency injection
+    Create ModelEnsembleManager instance with proper dependency injection
     
     Returns:
-        ModelsManager instance for external usage
+        ModelEnsembleManager instance for external usage
         
     Raises:
-        RuntimeError: If ModelsManager v3.1 not available
+        RuntimeError: If ModelEnsembleManager not available
     """
-    if not MANAGERS_AVAILABLE or not ModelsManager:
+    if not MANAGERS_AVAILABLE or not ModelEnsembleManager:
         raise RuntimeError(
-            "Clean v3.1: ModelsManager not available. "
+            "Clean v3.1: ModelEnsembleManager not available. "
             "Ensure managers are properly installed in managers/ directory."
         )
     
     # Import factory function
-    from .managers import create_models_manager as _create_models_manager
-    return _create_models_manager()
+    from .managers import create_model_ensemble_manager as _create_model_ensemble_manager
+    return _create_model_ensemble_manager()
 
 def create_crisis_pattern_manager_instance(config_manager=None):
     """
@@ -196,8 +196,8 @@ __all__ = [
     'create_unified_config_manager_instance',
     
     # Core Managers
-    'ModelsManager',
-    'create_models_manager',
+    'ModelEnsembleManager',
+    'create_model_ensemble_manager',
     'PydanticManager',
     'create_pydantic_manager',
     'CrisisPatternManager',
