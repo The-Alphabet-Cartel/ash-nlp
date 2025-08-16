@@ -1,9 +1,9 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.6 - Scoring Functions Consolidated
+PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Analysis package updated for scoring function consolidation
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -55,7 +55,7 @@ ANALYSIS_CAPABILITIES = {
             "ThresholdMappingManager",
             "AnalysisParametersManager", 
             "CrisisPatternManager",
-            "ModelsManager"
+            "ModelEnsembleManager"
         ]
     },
     "feature_management": {
@@ -171,7 +171,7 @@ def get_implemented_features():
         "core_analysis": {
             "status": "implemented",
             "description": "Three-model ensemble crisis detection",
-            "managers": ["ModelsManager", "CrisisPatternManager", "AnalysisParametersManager", "ThresholdMappingManager"]
+            "managers": ["ModelEnsembleManager", "CrisisPatternManager", "AnalysisParametersManager", "ThresholdMappingManager"]
         },
         "pattern_integration": {
             "status": "implemented", 
@@ -252,7 +252,7 @@ def get_migration_status():
 # FACTORY FUNCTIONS - Clean v3.1 Architecture with Phase 3d Step 10.6 Support
 # ============================================================================
 
-def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning_manager=None, 
+def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, learning_manager=None, 
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None):  # NEW: Step 10.8
@@ -260,7 +260,7 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
     Create and return a CrisisAnalyzer instance with Phase 3d Step 10.8 support
     
     Args:
-        models_manager: ML model manager for ensemble analysis
+        model_ensemble_manager: Model ensemble manager for ensemble analysis
         crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
         learning_manager: Optional learning manager for feedback
         analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
@@ -273,7 +273,7 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
         CrisisAnalyzer instance with ContextPatternManager integration (Phase 3d Step 10.8)
     """
     return CrisisAnalyzer(
-        models_manager=models_manager,
+        model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         learning_manager=learning_manager,
         analysis_parameters_manager=analysis_parameters_manager,

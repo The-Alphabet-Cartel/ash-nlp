@@ -1,9 +1,9 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/step_10.6.md -->
 <!--
 Documentation for Phase 3d, Step 10.6 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.6-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.6
+PHASE: 3d, Step 10.6
 CLEAN ARCHITECTURE: v3.1 Compliant
 -->
 # Phase 3d Step 10.6: Consolidate `utils/scoring_helpers.py` - COMPLETE
@@ -32,7 +32,7 @@ Eliminate `utils/scoring_helpers.py` by moving all functions to `CrisisAnalyzer`
 ### **✅ Core Scoring Functions**
 1. **`extract_depression_score()`** → `CrisisAnalyzer.extract_depression_score()`
    - Extract depression score from model output
-   - Uses injected models_manager for model access
+   - Uses injected model_ensemble_manager for model access
    
 2. **`enhanced_depression_analysis()`** → `CrisisAnalyzer.enhanced_depression_analysis()`
    - Enhanced depression analysis with pattern integration
@@ -56,7 +56,7 @@ Eliminate `utils/scoring_helpers.py` by moving all functions to `CrisisAnalyzer`
 ### **✅ Phrase Processing Functions**
 7. **`score_phrases_with_models()`** → `CrisisAnalyzer.score_phrases_with_models()`
    - Score extracted phrases using ML models
-   - Uses injected models_manager for model access
+   - Uses injected model_ensemble_manager for model access
    
 8. **`filter_and_rank_phrases()`** → `CrisisAnalyzer.filter_and_rank_phrases()`
    - Filter and rank phrases by relevance and confidence

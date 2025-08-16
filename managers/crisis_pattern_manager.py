@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Crisis Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.7-2
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Community Pattern Consolidation + Environment Variable Fixes
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Added missing methods + environment variable error handling
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -1141,11 +1141,11 @@ class CrisisPatternManager:
     # SEMANTIC PATTERN ANALYSIS - Preserved Original Functionality (UNCHANGED)
     # ========================================================================
 
-    def find_triggered_patterns(self, message: str, models_manager=None) -> List[Dict[str, Any]]:
+    def find_triggered_patterns(self, message: str, model_ensemble_manager=None) -> List[Dict[str, Any]]:
         """Find triggered crisis patterns using semantic NLP classification"""
         try:
-            if models_manager:
-                semantic_patterns = self._find_patterns_semantic(message, models_manager)
+            if model_ensemble_manager:
+                semantic_patterns = self._find_patterns_semantic(message, model_ensemble_manager)
                 if semantic_patterns:
                     logger.info(f"✅ Semantic classification found {len(semantic_patterns)} patterns")
                     return semantic_patterns
@@ -1157,7 +1157,7 @@ class CrisisPatternManager:
             logger.error(f"❌ Error in find_triggered_patterns: {e}")
             return []
 
-    def _find_patterns_semantic(self, message: str, models_manager) -> List[Dict[str, Any]]:
+    def _find_patterns_semantic(self, message: str, model_ensemble_manager) -> List[Dict[str, Any]]:
         """Use zero-shot classification models for semantic pattern detection"""
         try:
             triggered_patterns = []
@@ -1196,7 +1196,7 @@ class CrisisPatternManager:
             }
             
             try:
-                model_definitions = models_manager.get_model_definitions()
+                model_definitions = model_ensemble_manager.get_model_definitions()
                 
                 zero_shot_model = None
                 for model_type, model_config in model_definitions.items():
@@ -1215,7 +1215,7 @@ class CrisisPatternManager:
                         hypothesis = category_info['hypothesis_template']
                         
                         classification_score = self._classify_with_model(
-                            message, hypothesis, zero_shot_model, models_manager
+                            message, hypothesis, zero_shot_model, model_ensemble_manager
                         )
                         
                         threshold = category_info['confidence_threshold']
@@ -1253,7 +1253,7 @@ class CrisisPatternManager:
             logger.error(f"❌ Error in _find_patterns_semantic: {e}")
             return []
 
-    def _classify_with_model(self, message: str, hypothesis: str, model_type: str, models_manager) -> float:
+    def _classify_with_model(self, message: str, hypothesis: str, model_type: str, model_ensemble_manager) -> float:
         """Perform zero-shot classification using the loaded model"""
         try:
             return self._demo_classification(message, hypothesis)

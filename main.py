@@ -1,9 +1,9 @@
 # ash-nlp/main.py
 """
 Ash-NLP Main Application Entry Point for Ash NLP Service
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -31,7 +31,6 @@ from managers.crisis_pattern_manager import create_crisis_pattern_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.logging_config_manager import create_logging_config_manager
 from managers.model_ensemble_manager import create_model_ensemble_manager
-from managers.models_manager import create_models_manager
 from managers.performance_config_manager import create_performance_config_manager
 from managers.pydantic_manager import create_pydantic_manager
 from managers.server_config_manager import create_server_config_manager
@@ -158,10 +157,6 @@ def initialize_unified_managers():
         model_ensemble = create_model_ensemble_manager(unified_config)
         logger.info("✅ Models ensemble manager initialized...")
 
-        logger.info("🔧 Initializing models manager...")
-        models_manager = create_models_manager(unified_config)
-        logger.info("✅ Models manager initialized...")
-
         logger.info("🔧 Initializing performance config manager...")
         performance_config = create_performance_config_manager(unified_config)
         logger.info("✅ Performance config manager initialized...")
@@ -198,7 +193,6 @@ def initialize_unified_managers():
             feature_config_manager=feature_config,
             logging_config_manager=logging_config,
             model_ensemble_manager=model_ensemble,
-            models_manager=models_manager,
             performance_config_manager=performance_config,
             pydantic_manager=pydantic_manager,
             server_config_manager=server_config,
@@ -210,7 +204,7 @@ def initialize_unified_managers():
 
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
-            models_manager=models_manager,
+            model_ensemble_manager=model_ensemble,
             crisis_pattern_manager=crisis_pattern,
             learning_manager=None,
             analysis_parameters_manager=analysis_parameters,
@@ -229,7 +223,6 @@ def initialize_unified_managers():
             'feature_config': feature_config,
             'logging_config': logging_config,
             'model_ensemble': model_ensemble,
-            'models_manager': models_manager,
             'performance_config': performance_config,
             'pydantic_manager': pydantic_manager,
             'server_config': server_config,
@@ -327,7 +320,6 @@ def create_fastapi_app():
             threshold_mapping_manager=managers['threshold_mapping']
         )
         
-        # Admin endpoints - STEP 9 FIX: Graceful ModelsManager handling
         # Admin endpoints with ZeroShotManager
         try:
             add_admin_endpoints(
@@ -336,14 +328,14 @@ def create_fastapi_app():
                 managers['settings'], 
                 zero_shot_manager=managers['zero_shot_manager'],  # FIX: Pass actual ZeroShotManager
                 crisis_pattern_manager=managers['crisis_pattern'],
-                models_manager=managers['models_manager'],
+                model_ensemble_manager=managers['model_ensemble_manager'],
                 analysis_parameters_manager=managers['analysis_parameters'],
                 threshold_mapping_manager=managers['threshold_mapping']
             )
-            if managers['models_manager'] and managers['zero_shot_manager']:
-                logger.info("✅ Full admin endpoints registered with ModelsManager and ZeroShotManager")
-            elif managers['models_manager']:
-                logger.info("✅ Limited admin endpoints registered with ModelsManager only")
+            if managers['model_ensemble_manager'] and managers['zero_shot_manager']:
+                logger.info("✅ Full admin endpoints registered with Model Ensemble Manager and ZeroShotManager")
+            elif managers['model_ensemble_manager']:
+                logger.info("✅ Limited admin endpoints registered with Model Ensemble Manager only")
             else:
                 logger.info("✅ Basic admin endpoints registered")
         except Exception as e:

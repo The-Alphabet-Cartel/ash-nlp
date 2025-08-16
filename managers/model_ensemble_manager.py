@@ -1,9 +1,9 @@
 # ash-nlp/managers/model_ensemble_manager.py
 """
 Model Ensemble Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -468,7 +468,7 @@ class ModelEnsembleManager:
                 
                 # UPDATED: Create CrisisAnalyzer with ContextPatternManager
                 crisis_analyzer = CrisisAnalyzer(
-                    models_manager=self,  # ModelEnsembleManager acts as models_manager
+                    model_ensemble_manager=self,  # ModelEnsembleManager acts as model_ensemble_manager
                     crisis_pattern_manager=crisis_pattern_manager,
                     learning_manager=None,  # Optional
                     analysis_parameters_manager=analysis_parameters_manager,
@@ -828,7 +828,7 @@ class ModelEnsembleManager:
     def models_loaded(self) -> bool:
         """
         Check if models are loaded and ready for analysis - IMPROVED VERSION
-        This method is required for API compatibility with ModelsManager interface
+        This method is required for API compatibility with ModelEnsembleManager interface
         
         More lenient validation that focuses on essential requirements
         
@@ -898,7 +898,7 @@ class ModelEnsembleManager:
     def get_model_info(self) -> Dict[str, Any]:
         """
         Get comprehensive model information for API responses - IMPROVED VERSION
-        This method is required for API compatibility with ModelsManager interface
+        This method is required for API compatibility with ModelEnsembleManager interface
         
         More robust error handling and comprehensive information
         

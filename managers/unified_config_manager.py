@@ -1,9 +1,9 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-14
-PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION + JSON-DRIVEN SCHEMA VALIDATION
+PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -377,7 +377,7 @@ class UnifiedConfigManager:
 
     def get_hardware_configuration(self) -> Dict[str, Any]:
         """
-        Get hardware configuration for models - MISSING METHOD FOR MODELSMANAGER
+        Get hardware configuration for models - MISSING METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing hardware configuration settings
@@ -407,7 +407,7 @@ class UnifiedConfigManager:
 
     def get_model_configuration(self) -> Dict[str, Any]:
         """
-        Get model configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get model configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing model configuration
@@ -445,7 +445,7 @@ class UnifiedConfigManager:
 
     def get_performance_configuration(self) -> Dict[str, Any]:
         """
-        Get performance configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get performance configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing performance settings
@@ -477,7 +477,7 @@ class UnifiedConfigManager:
 
     def get_storage_configuration(self) -> Dict[str, Any]:
         """
-        Get storage configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get storage configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing storage settings
