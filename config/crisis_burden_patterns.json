@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-4",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -18,7 +18,7 @@
       "achievement": "RECORD BREAKING - zero new variables needed"
     },
     "environment_overrides": {
-      "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
+      "enabled": "${NLP_FEATURE_PATTERN_ANALYSIS}",
       "burden_weight": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
       "enhanced_crisis": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}"
     }
@@ -26,7 +26,7 @@
 
   "configuration": {
     "description": "Completely simplified configuration using existing crisis pattern infrastructure",
-    "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
+    "enabled": "${NLP_FEATURE_PATTERN_ANALYSIS}",
     "burden_weight_multiplier": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
     "enhanced_crisis_weight": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}",
     "defaults": {
@@ -174,7 +174,7 @@
       "infrastructure_reuse": "100% reuse of existing NLP_CONFIG_* variables - zero new variables"
     },
     "environment_override_examples": {
-      "enable_patterns": "NLP_CONFIG_ENABLE_CRISIS_PATTERNS=true",
+      "enable_patterns": "NLP_FEATURE_PATTERN_ANALYSIS=true",
       "adjust_burden_weight": "NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER=1.5",
       "enhance_crisis_weight": "NLP_CONFIG_ENHANCED_CRISIS_WEIGHT=1.3"
     },

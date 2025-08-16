@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-13",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -14,7 +14,7 @@
       "pattern": "${NLP_FEATURE_*CATEGORY*_*FUNCTION*_*SETTING*}",
       "examples": [
         "NLP_FEATURE_CORE_ENSEMBLE_ANALYSIS",
-        "NLP_FEATURE_ANALYSIS_PATTERN_ANALYSIS",
+        "NLP_FEATURE_PATTERN_ANALYSIS",
         "NLP_FEATURE_COMMUNITY_VOCAB"
       ]
     }
@@ -59,19 +59,13 @@
 
     "analysis_component_features": {
       "description": "Analysis component feature toggles for processing pipeline",
-      "pattern_analysis": "${NLP_FEATURE_ANALYSIS_PATTERN_ANALYSIS}",
-      "semantic_analysis": "${NLP_FEATURE_ANALYSIS_SEMANTIC_ANALYSIS}",
-      "context_analysis": "${NLP_FEATURE_ANALYSIS_CONTEXT_ANALYSIS}",
-      "phrase_extraction": "${NLP_FEATURE_ANALYSIS_PHRASE_EXTRACTION}",
-      "analysis_caching": "${NLP_FEATURE_ANALYSIS_CACHING}",
-      "parallel_processing": "${NLP_FEATURE_ANALYSIS_PARALLEL_PROCESSING}",
+      "pattern_analysis": "${NLP_FEATURE_PATTERN_ANALYSIS}",
+      "semantic_analysis": "${NLP_FEATURE_SEMANTIC_ANALYSIS}",
+      "context_analysis": "${NLP_FEATURE_CONTEXT_ANALYSIS}",
       "defaults": {
         "pattern_analysis": true,
         "semantic_analysis": true,
-        "context_analysis": true,
-        "phrase_extraction": true,
-        "analysis_caching": true,
-        "parallel_processing": true
+        "context_analysis": true
       },
       "validation": {
         "pattern_analysis": {
@@ -88,43 +82,21 @@
           "type": "boolean",
           "required": false,
           "description": "Contextual analysis of surrounding text"
-        },
-        "phrase_extraction": {
-          "type": "boolean",
-          "required": false,
-          "description": "Key phrase extraction from input text"
-        },
-        "analysis_caching": {
-          "type": "boolean",
-          "required": false,
-          "description": "Cache analysis results for performance"
-        },
-        "parallel_processing": {
-          "type": "boolean",
-          "required": false,
-          "description": "Parallel processing for performance optimization"
         }
       }
     },
 
     "learning_features": {
       "description": "Machine learning and adaptation feature toggles",
-      "threshold_learning": "${NLP_FEATURE_LEARNING_THRESHOLD_LEARNING}",
-      "pattern_learning": "${NLP_FEATURE_LEARNING_PATTERN_LEARNING}",
+      "threshold_learning": "${NLP_FEATURE_THRESHOLD_LEARNING}",
       "defaults": {
-        "threshold_learning": false,
-        "pattern_learning": false
+        "threshold_learning": false
       },
       "validation": {
         "threshold_learning": {
           "type": "boolean",
           "required": false,
           "description": "Adaptive threshold learning based on outcomes"
-        },
-        "pattern_learning": {
-          "type": "boolean",
-          "required": false,
-          "description": "Learn new crisis patterns from data"
         }
       }
     },
@@ -134,12 +106,10 @@
       "advanced_context": "${NLP_FEATURE_ADVANCED_CONTEXT}",
       "community_vocab": "${NLP_FEATURE_COMMUNITY_VOCAB}",
       "temporal_patterns": "${NLP_FEATURE_TEMPORAL_PATTERNS}",
-      "multi_language": "${NLP_FEATURE_MULTI_LANGUAGE}",
       "defaults": {
         "advanced_context": false,
         "community_vocab": true,
-        "temporal_patterns": true,
-        "multi_language": false
+        "temporal_patterns": true
       },
       "validation": {
         "advanced_context": {
@@ -156,11 +126,6 @@
           "type": "boolean",
           "required": false,
           "description": "Time-based pattern analysis"
-        },
-        "multi_language": {
-          "type": "boolean",
-          "required": false,
-          "description": "Multi-language support for analysis"
         }
       }
     },

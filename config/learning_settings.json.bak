@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-13",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -25,7 +25,7 @@
   "learning_configuration": {
     "system_settings": {
       "description": "Core learning system activation and control settings",
-      "enable": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
+      "enable": "${GLOBAL_LEARNING_SYSTEM_ENABLED}",
       "learning_mode": "${NLP_LEARNING_SYSTEM_LEARNING_MODE}",
       "auto_adaptation": "${NLP_LEARNING_SYSTEM_AUTO_ADAPTATION}",
       "require_human_approval": "${NLP_LEARNING_SYSTEM_REQUIRE_HUMAN_APPROVAL}",
@@ -452,7 +452,7 @@
     "manager_integration": "Use AnalysisParametersManager.get_learning_system_parameters() for access",
     "environment_override_pattern": "Set environment variables using NLP_LEARNING_*CATEGORY*_*SETTING* pattern",
     "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
-    "global_enable_preservation": "GLOBAL_ENABLE_LEARNING_SYSTEM preserved for ecosystem compatibility",
+    "global_enable_preservation": "GLOBAL_LEARNING_SYSTEM_ENABLED preserved for ecosystem compatibility",
     "safety_first": "All learning operations respect safety constraints and require human oversight",
     "future_ready": "Configuration structured for future machine learning implementation",
     "community_focus": "Specialized settings for LGBTQIA+ community crisis detection patterns",

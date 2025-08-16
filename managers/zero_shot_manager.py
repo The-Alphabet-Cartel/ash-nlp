@@ -1,7 +1,7 @@
 # ash-nlp/managers/zero_shot_manager.py
 """
 Zero-Shot Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -44,7 +44,7 @@ class ZeroShotManager:
         self._load_v31_label_configuration()
         
         # Set initial label set from unified config
-        initial_set = self.unified_config.get_env('NLP_LABEL_MAPPING_DEFAULT_LABEL_SET', 'crisis_labels')
+        initial_set = self.unified_config.get_env('NLP_ZERO_SHOT_DEFAULT_LABEL_SET', 'crisis_labels')
         self.switch_label_set(initial_set)
     
     def _load_v31_label_configuration(self):
@@ -342,7 +342,7 @@ class ZeroShotManager:
         """Get summary of configuration and current state"""
         # Get configuration from unified config manager
         configured_set = self.unified_config.get_env('NLP_ZERO_SHOT_LABEL_SET', 'crisis_labels')
-        label_switching_enabled = self.unified_config.get_env('NLP_LABEL_MAPPING_ENABLE_LABEL_SWITCHING', True)
+        label_switching_enabled = self.unified_config.get_env('NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING', True)
         
         return {
             'configured_label_set': configured_set,

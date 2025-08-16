@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -21,15 +21,13 @@
       "learning_directory": "${NLP_STORAGE_LEARNING_DIR}",
       "cache_directory": "${NLP_STORAGE_CACHE_DIR}",
       "backup_directory": "${NLP_STORAGE_BACKUP_DIR}",
-      "temp_directory": "${NLP_STORAGE_TEMP_DIR}",
       "defaults": {
         "data_directory": "./data",
         "models_directory": "./models/cache",
         "logs_directory": "./logs",
         "learning_directory": "./learning_data",
         "cache_directory": "./cache",
-        "backup_directory": "./backups",
-        "temp_directory": "./temp"
+        "backup_directory": "./backups"
       },
       "validation": {
         "data_directory": {
@@ -59,10 +57,6 @@
         "backup_directory": {
           "type": "string",
           "description": "Backup files storage directory"
-        },
-        "temp_directory": {
-          "type": "string",
-          "description": "Temporary files directory"
         }
       }
     },
@@ -171,15 +165,13 @@
       "log_rotation_enabled": "${NLP_STORAGE_LOG_ROTATION_ENABLED}",
       "log_max_size_mb": "${NLP_STORAGE_LOG_MAX_SIZE_MB}",
       "log_backup_count": "${NLP_STORAGE_LOG_BACKUP_COUNT}",
-      "cleanup_interval_hours": "${NLP_STORAGE_CLEANUP_INTERVAL_HOURS}",
       "defaults": {
         "enable_automatic_cleanup": true,
         "cleanup_temp_files": true,
         "temp_file_max_age_hours": 24,
         "log_rotation_enabled": true,
         "log_max_size_mb": 100,
-        "log_backup_count": 5,
-        "cleanup_interval_hours": 12
+        "log_backup_count": 5
       },
       "validation": {
         "enable_automatic_cleanup": {
@@ -210,40 +202,6 @@
           "type": "integer",
           "range": [1, 20],
           "description": "Number of rotated log files to keep"
-        },
-        "cleanup_interval_hours": {
-          "type": "integer",
-          "range": [1, 72],
-          "unit": "hours",
-          "description": "Hours between cleanup operations"
-        }
-      }
-    },
-
-    "file_permissions": {
-      "description": "File and directory permission settings",
-      "directory_permissions": "${NLP_STORAGE_DIRECTORY_PERMISSIONS}",
-      "file_permissions": "${NLP_STORAGE_FILE_PERMISSIONS}",
-      "enable_permission_checks": "${NLP_STORAGE_ENABLE_PERMISSION_CHECKS}",
-      "defaults": {
-        "directory_permissions": "755",
-        "file_permissions": "644",
-        "enable_permission_checks": true
-      },
-      "validation": {
-        "directory_permissions": {
-          "type": "string",
-          "pattern": "^[0-7]{3}$",
-          "description": "Octal permissions for directories (e.g., '755')"
-        },
-        "file_permissions": {
-          "type": "string",
-          "pattern": "^[0-7]{3}$",
-          "description": "Octal permissions for files (e.g., '644')"
-        },
-        "enable_permission_checks": {
-          "type": "boolean",
-          "description": "Verify file permissions on access"
         }
       }
     }

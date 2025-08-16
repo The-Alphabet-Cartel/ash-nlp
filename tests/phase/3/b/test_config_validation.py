@@ -314,7 +314,6 @@ class TestEnvironmentVariableValidation:
             'NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS': '7000',
             
             # Boolean values
-            'NLP_ANALYSIS_PHRASE_CRISIS_FOCUS': 'true',
             'NLP_FEATURE_DETAILED_LOGGING': 'false',
             'NLP_FEATURE_ADVANCED_CONTEXT': '1',
             

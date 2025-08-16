@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-2",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-15",
     "description": "Zero-Shot Model Labels Configuration for Ash NLP Service",
     "phase": "3d Step 10.11 - ZeroShotManager Compatible Structure",
@@ -183,7 +183,7 @@
   },
 
   "label_mapping": {
-    "default_label_set": "${NLP_LABEL_MAPPING_DEFAULT_LABEL_SET}",
+    "default_label_set": "${NLP_ZERO_SHOT_DEFAULT_LABEL_SET}",
     "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
     "fallback_behavior": "enhanced_crisis",
     "case_sensitive": false,
@@ -216,7 +216,7 @@
 
   "zero_shot_settings": {
     "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
-    "hypothesis_template": "This text expresses {label}",
+    "hypothesis_template": "${NLP_ZERO_SHOT_HYPOTHESIS_TEMPLATE}",
     "multi_label": false,
     "confidence_threshold": 0.3,
     "max_labels": 5,

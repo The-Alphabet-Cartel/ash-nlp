@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -17,15 +17,9 @@
       "description": "Network configuration for server binding and access",
       "host": "${NLP_SERVER_HOST}",
       "port": "${GLOBAL_NLP_API_PORT}",
-      "enable_ssl": "${NLP_SERVER_NETWORK_ENABLE_SSL}",
-      "ssl_cert_path": "${NLP_SERVER_NETWORK_SSL_CERT_PATH}",
-      "ssl_key_path": "${NLP_SERVER_NETWORK_SSL_KEY_PATH}",
       "defaults": {
         "host": "0.0.0.0",
-        "port": 8881,
-        "enable_ssl": false,
-        "ssl_cert_path": "./certs/server.crt",
-        "ssl_key_path": "./certs/server.key"
+        "port": 8881
       },
       "validation": {
         "host": {
@@ -37,18 +31,6 @@
           "type": "integer",
           "range": [1024, 65535],
           "description": "Server port number"
-        },
-        "enable_ssl": {
-          "type": "boolean",
-          "description": "Enable SSL/TLS encryption"
-        },
-        "ssl_cert_path": {
-          "type": "string",
-          "description": "Path to SSL certificate file"
-        },
-        "ssl_key_path": {
-          "type": "string",
-          "description": "Path to SSL private key file"
         }
       }
     },
@@ -58,14 +40,10 @@
       "debug_mode": "${NLP_SERVER_APPLICATION_DEBUG_MODE}",
       "workers": "${NLP_SERVER_APPLICATION_WORKERS}",
       "reload_on_changes": "${NLP_SERVER_APPLICATION_RELOAD_ON_CHANGES}",
-      "access_log": "${NLP_SERVER_APPLICATION_ACCESS_LOG}",
-      "error_log": "${NLP_SERVER_APPLICATION_ERROR_LOG}",
       "defaults": {
         "debug_mode": false,
         "workers": 1,
-        "reload_on_changes": false,
-        "access_log": true,
-        "error_log": true
+        "reload_on_changes": false
       },
       "validation": {
         "debug_mode": {
@@ -80,14 +58,6 @@
         "reload_on_changes": {
           "type": "boolean",
           "description": "Auto-reload server on code changes"
-        },
-        "access_log": {
-          "type": "boolean",
-          "description": "Enable access request logging"
-        },
-        "error_log": {
-          "type": "boolean",
-          "description": "Enable error logging"
         }
       }
     },
@@ -97,14 +67,10 @@
       "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
       "request_timeout": "${GLOBAL_REQUEST_TIMEOUT}",
       "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
-      "keep_alive_timeout": "${NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT}",
-      "max_request_size": "${NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE}",
       "defaults": {
         "max_concurrent_requests": 20,
         "request_timeout": 40,
-        "worker_timeout": 60,
-        "keep_alive_timeout": 2,
-        "max_request_size": "10MB"
+        "worker_timeout": 60
       },
       "validation": {
         "max_concurrent_requests": {
@@ -123,17 +89,6 @@
           "range": [10, 600],
           "unit": "seconds",
           "description": "Worker process timeout"
-        },
-        "keep_alive_timeout": {
-          "type": "integer",
-          "range": [1, 30],
-          "unit": "seconds",
-          "description": "HTTP keep-alive timeout"
-        },
-        "max_request_size": {
-          "type": "string",
-          "pattern": "^\\d+[KMG]B$",
-          "description": "Maximum HTTP request size"
         }
       }
     },

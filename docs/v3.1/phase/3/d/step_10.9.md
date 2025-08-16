@@ -1,7 +1,7 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/step_10.9.md -->
 <!--
 Documentation for Phase 3d, Step 10.9 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.9-3
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-14
 PHASE: 3d, Step 10.9
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -188,7 +188,7 @@ The following unresolved placeholders were identified during testing and will be
 - `NLP_ANALYSIS_CONFIDENCE_*` variables (likely duplicates requiring consolidation)
 - `NLP_ANALYSIS_ADVANCED_*` variables (experimental features needing cleanup)
 - `NLP_EXPERIMENTAL_*` variables (should be converted to feature flags)
-- `NLP_ANALYSIS_LEARNING_ENABLED` (duplicate of existing learning variables)
+- `GLOBAL_LEARNING_SYSTEM_ENABLED` (duplicate of existing learning variables)
 
 These are pre-Rule #7 variables that demonstrate the exact type of bloat Rule #7 was designed to prevent.
 
