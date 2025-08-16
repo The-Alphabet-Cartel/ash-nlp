@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -825,7 +825,7 @@ class UnifiedConfigManager:
         # Boolean conversion
         if value.lower() in ('true', 'false'):
             result = str(value.lower() == 'true')
-            logger.debug(f"   {env_var}: → Boolean conversion: {value} → {result}")
+            logger.debug(f"   {env_var} → Boolean conversion: {value} → {result}")
             return result
         
         # Numeric conversion
@@ -833,18 +833,18 @@ class UnifiedConfigManager:
             try:
                 if '.' in value:
                     result = str(float(value))
-                    logger.debug(f"   {env_var}: → Float conversion: {value} → {result}")
+                    logger.debug(f"   {env_var} → Float conversion: {value} → {result}")
                     return result
                 else:
                     result = str(int(value))
-                    logger.debug(f"   {env_var}: → Int conversion: {value} → {result}")
+                    logger.debug(f"   {env_var} → Int conversion: {value} → {result}")
                     return result
             except ValueError:
-                logger.debug(f"   {env_var}: → String (conversion failed): {value}")
+                logger.debug(f"   {env_var} → String (conversion failed): {value}")
                 return value
         
         # String (no conversion)
-        logger.debug(f"   {env_var}: → String (no conversion): {value}")
+        logger.debug(f"   {env_var} → String (no conversion): {value}")
         return value
     
     def _apply_defaults_fallback(self, config: Dict[str, Any]) -> Dict[str, Any]:
