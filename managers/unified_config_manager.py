@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-2
+FILE VERSION: v3.1-3d-10.11-3
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION + JSON-DRIVEN SCHEMA VALIDATION
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -1097,24 +1097,24 @@ class UnifiedConfigManager:
         return {
             'models': {  # ModelEnsembleManager expects 'models' key
                 'depression': {
-                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'cardiffnlp/twitter-roberta-base-sentiment'),
+                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                     'weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
                     'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
                     'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'sentiment': {
-                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                     'weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
                     'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
-                    'type': 'sentiment-analysis',
+                    'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'emotional_distress': {
-                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
+                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                     'weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
                     'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
-                    'type': 'natural-language-inference',
+                    'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 }
             },
