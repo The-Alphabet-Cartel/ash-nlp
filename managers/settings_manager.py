@@ -1,9 +1,9 @@
 # ash-nlp/managers/settings_manager.py
 """
 Runtime Settings and Configuration Overrides for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -36,7 +36,6 @@ class SettingsManager:
     - Feature flags: FeatureConfigManager
     - Logging settings: LoggingConfigManager
     - Model Ensemble settings: ModelEnsembleManager
-    - Models settings: ModelsManager
     - Performance settings: PerformanceConfigManager
     - Pydantic settings: PydanticManager
     - Server settings: ServerConfigManager
@@ -48,7 +47,7 @@ class SettingsManager:
     def __init__(self, unified_config_manager,
         analysis_parameters_manager=None, crisis_pattern_manager=None,
         feature_config_manager=None, logging_config_manager=None,
-        model_ensemble_manager=None, models_manager=None,
+        model_ensemble_manager=None,
         performance_config_manager=None, pydantic_manager=None,
         server_config_manager=None, storage_config_manager=None,
         threshold_mapping_manager=None, zero_shot_manager=None):
@@ -62,7 +61,6 @@ class SettingsManager:
             analysis_parameters_manager: AnalysisParametersManager instance
             logging_config_manager: LoggingConfigManager instance
             model_ensemble_manager: ModelEnsembleManager instance
-            models_manager: ModelsManager instance
             performance_config_manager: PerformanceConfigManager instance
             pydantic_manager: PydanticManager instance
             server_config_manager: ServerConfigManager instance
@@ -77,7 +75,6 @@ class SettingsManager:
         self.feature_config_manager = feature_config_manager
         self.logging_config_manager = logging_config_manager
         self.model_ensemble_manager = model_ensemble_manager
-        self.models_manager = models_manager
         self.performance_config_manager = performance_config_manager
         self.pydantic_manager = pydantic_manager
         self.server_config_manager = server_config_manager
@@ -161,7 +158,6 @@ class SettingsManager:
             'FeatureConfigManager': self.feature_config_manager,
             'LoggingConfigManager': self.logging_config_manager,
             'ModelEnsembleManager': self.model_ensemble_manager,
-            'ModelsManager': self.models_manager,
             'PerformanceConfigManager': self.performance_config_manager,
             'PydanticManager': self.pydantic_manager,
             'ServerConfigManager': self.server_config_manager,
@@ -421,7 +417,7 @@ class SettingsManager:
 def create_settings_manager(unified_config_manager,
     analysis_parameters_manager=None, crisis_pattern_manager=None,
     feature_config_manager=None, logging_config_manager=None,
-    model_ensemble_manager=None, models_manager=None,
+    model_ensemble_manager=None,
     performance_config_manager=None, pydantic_manager=None,
     server_config_manager=None, storage_config_manager=None,
     threshold_mapping_manager=None, zero_shot_manager=None) -> SettingsManager:
@@ -435,7 +431,6 @@ def create_settings_manager(unified_config_manager,
         feature_config_manager: FeatureConfigManager instance
         logging_config_manager: LoggingConfigManager instance
         model_ensemble_manager: ModelEnsembleManager instance
-        models_manager: ModelsManager instance
         performance_config_manager: PerformanceConfigManager instance
         pydantic_manager: PydanticManager instance
         server_config_manager: ServerConfigManager instance
@@ -453,7 +448,6 @@ def create_settings_manager(unified_config_manager,
         feature_config_manager=feature_config_manager,
         logging_config_manager=logging_config_manager,
         model_ensemble_manager=model_ensemble_manager,
-        models_manager=models_manager,
         performance_config_manager=performance_config_manager,
         pydantic_manager=pydantic_manager,
         server_config_manager=server_config_manager,

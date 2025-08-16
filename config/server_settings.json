@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
+    "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -94,9 +94,9 @@
 
     "performance_settings": {
       "description": "Server performance and resource management settings",
-      "max_concurrent_requests": "${NLP_MAX_CONCURRENT_REQUESTS}",
-      "request_timeout": "${NLP_REQUEST_TIMEOUT}",
-      "worker_timeout": "${NLP_SERVER_PERFORMANCE_WORKER_TIMEOUT}",
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "request_timeout": "${GLOBAL_REQUEST_TIMEOUT}",
+      "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
       "keep_alive_timeout": "${NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT}",
       "max_request_size": "${NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE}",
       "defaults": {
@@ -142,8 +142,8 @@
       "description": "Security controls and access management",
       "rate_limiting": {
         "enable_rate_limiting": "${NLP_SERVER_SECURITY_RATE_LIMIT_ENABLE}",
-        "requests_per_minute": "${NLP_MAX_REQUESTS_PER_MINUTE}",
-        "requests_per_hour": "${NLP_MAX_REQUESTS_PER_HOUR}",
+        "requests_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
+        "requests_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
         "burst_size": "${NLP_SECURITY_BURST_LIMIT}",
         "defaults": {
           "enable_rate_limiting": true,
@@ -174,10 +174,10 @@
         }
       },
       "cors": {
-        "enable_cors": "${NLP_SERVER_SECURITY_CORS_ENABLE}",
-        "allowed_origins": "${NLP_SERVER_SECURITY_CORS_ALLOWED_ORIGINS}",
-        "allowed_methods": "${NLP_SERVER_SECURITY_CORS_ALLOWED_METHODS}",
-        "allowed_headers": "${NLP_SERVER_SECURITY_CORS_ALLOWED_HEADERS}",
+        "enable_cors": "${GLOBAL_ENABLE_CORS}",
+        "allowed_origins": "${GLOBAL_CORS_ALLOWED_ORIGINS}",
+        "allowed_methods": "${GLOBAL_CORS_ALLOWED_METHODS}",
+        "allowed_headers": "${GLOBAL_CORS_ALLOWED_HEADERS}",
         "defaults": {
           "enable_cors": true,
           "allowed_origins": ["*"],

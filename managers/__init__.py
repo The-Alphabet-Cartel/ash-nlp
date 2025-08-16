@@ -1,9 +1,9 @@
 # ash-nlp/managers/__init__.py
 """
 Managers Module for Ash NLP Service
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.8 - Added ContextPatternManager support
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -87,17 +87,6 @@ except ImportError as e:
     ModelEnsembleManager = None
     create_model_ensemble_manager = None
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = False
-
-# Models Manager
-try:
-    from .models_manager import ModelsManager, create_models_manager
-    MODELS_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ ModelsManager v3.1 imported")
-except ImportError as e:
-    logger.error(f"  ❌ ModelsManager v3.1 import failed: {e}")
-    ModelsManager = None
-    create_models_manager = None
-    MODELS_MANAGER_AVAILABLE = False
 
 # Performance Configuration Manager
 try:
@@ -205,7 +194,6 @@ def get_manager_status() -> dict:
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
         'model_ensemble_manager': MODEL_ENSEMBLE_MANAGER_AVAILABLE,
-        'models_manager': MODELS_MANAGER_AVAILABLE,
         'performance_config_manager': PERFORMANCE_CONFIG_MANAGER_AVAILABLE,
         'pydantic_manager': PYDANTIC_MANAGER_AVAILABLE,
         'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
@@ -233,8 +221,6 @@ __all__ = [
     'create_logging_config_manager',
     'ModelEnsembleManager',
     'create_model_ensemble_manager',
-    'ModelsManager',
-    'create_models_manager',
     'PerformanceConfigManager',
     'create_performance_config_manager',
     'PydanticManager', 

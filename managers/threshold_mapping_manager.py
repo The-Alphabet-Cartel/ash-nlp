@@ -1,7 +1,7 @@
 # ash-nlp/managers/threshold_mapping_manager.py
 """
 Mode-Aware Threshold Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.7-3
+FILE VERSION: v3.1-3d-10.11-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.7 - Environment Variable Fixes + Crisis Level Determination Method Added
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -528,7 +528,7 @@ class ThresholdMappingManager:
             return self.model_ensemble_manager.get_current_ensemble_mode()
         else:
             # STEP 9 CHANGE: Use unified_config instead of os.getenv()
-            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'consensus')
+            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
             logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
             return mode
     

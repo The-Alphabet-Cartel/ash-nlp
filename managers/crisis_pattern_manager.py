@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Crisis Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.7-2
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Community Pattern Consolidation + Environment Variable Fixes
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Added missing methods + environment variable error handling
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -95,21 +95,12 @@ class CrisisPatternManager:
     def _load_all_patterns(self) -> None:
         """Load all crisis pattern configurations with v3.1 consolidation support"""
         pattern_files = [
-            # NEW: Consolidated context patterns file (replaces 3 files)
             'context_patterns',
-            # Core v3.1 compliant pattern files (all updated in this conversation)
             'temporal_indicators_patterns',
-            'community_vocabulary_patterns',  # ✅ CONSOLIDATED (merged crisis_lgbtqia + crisis_community_vocabulary)
-            'enhanced_crisis_patterns',       # ✅ v3.1 COMPLIANT
-            'crisis_idiom_patterns',          # ✅ v3.1 COMPLIANT
-            'crisis_burden_patterns',         # ✅ v3.1 COMPLIANT
-            # DEPRECATED: These are now consolidated into context_patterns
-            # 'crisis_context_patterns',     # ❌ REMOVED - now in context_patterns
-            # 'positive_context_patterns',   # ❌ REMOVED - now in context_patterns  
-            # 'context_weights_patterns',    # ❌ REMOVED - now in context_patterns
-            # ELIMINATED: These files were consolidated/eliminated in this conversation
-            # 'crisis_lgbtqia_patterns',     # ❌ ELIMINATED - merged into community_vocabulary_patterns
-            # 'crisis_community_vocabulary', # ❌ ELIMINATED - merged into community_vocabulary_patterns
+            'community_vocabulary_patterns',
+            'enhanced_crisis_patterns',
+            'crisis_idiom_patterns',
+            'crisis_burden_patterns',
         ]
         
         for pattern_type in pattern_files:
@@ -123,27 +114,6 @@ class CrisisPatternManager:
             except Exception as e:
                 logger.error(f"Failed to load {pattern_type}: {e}")
                 self._patterns_cache[pattern_type] = {}
-
-        # Check for any remaining legacy files with detailed deprecation warnings
-        legacy_files = [
-            'crisis_context_patterns', 
-            'positive_context_patterns', 
-            'context_weights_patterns',
-            'crisis_lgbtqia_patterns',      # Should be merged into community_vocabulary_patterns
-            'crisis_community_vocabulary'   # Should be merged into community_vocabulary_patterns  
-        ]
-        for legacy_file in legacy_files:
-            try:
-                patterns = self.config_manager.get_crisis_patterns(legacy_file)
-                if patterns:
-                    if legacy_file in ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary']:
-                        logger.warning(f"⚠️ DEPRECATED: {legacy_file} found - content should be merged into community_vocabulary_patterns.json")
-                    else:
-                        logger.warning(f"⚠️ DEPRECATED: {legacy_file} found - should be migrated to context_patterns.json")
-                    self._patterns_cache[legacy_file] = patterns
-            except Exception:
-                # Expected - these files should not exist after consolidation
-                pass
 
     # ========================================================================
     # ENHANCED PATTERNS ACCESS - v3.1 Compatible (UNCHANGED)
@@ -1141,11 +1111,11 @@ class CrisisPatternManager:
     # SEMANTIC PATTERN ANALYSIS - Preserved Original Functionality (UNCHANGED)
     # ========================================================================
 
-    def find_triggered_patterns(self, message: str, models_manager=None) -> List[Dict[str, Any]]:
+    def find_triggered_patterns(self, message: str, model_ensemble_manager=None) -> List[Dict[str, Any]]:
         """Find triggered crisis patterns using semantic NLP classification"""
         try:
-            if models_manager:
-                semantic_patterns = self._find_patterns_semantic(message, models_manager)
+            if model_ensemble_manager:
+                semantic_patterns = self._find_patterns_semantic(message, model_ensemble_manager)
                 if semantic_patterns:
                     logger.info(f"✅ Semantic classification found {len(semantic_patterns)} patterns")
                     return semantic_patterns
@@ -1157,7 +1127,7 @@ class CrisisPatternManager:
             logger.error(f"❌ Error in find_triggered_patterns: {e}")
             return []
 
-    def _find_patterns_semantic(self, message: str, models_manager) -> List[Dict[str, Any]]:
+    def _find_patterns_semantic(self, message: str, model_ensemble_manager) -> List[Dict[str, Any]]:
         """Use zero-shot classification models for semantic pattern detection"""
         try:
             triggered_patterns = []
@@ -1196,7 +1166,7 @@ class CrisisPatternManager:
             }
             
             try:
-                model_definitions = models_manager.get_model_definitions()
+                model_definitions = model_ensemble_manager.get_model_definitions()
                 
                 zero_shot_model = None
                 for model_type, model_config in model_definitions.items():
@@ -1215,7 +1185,7 @@ class CrisisPatternManager:
                         hypothesis = category_info['hypothesis_template']
                         
                         classification_score = self._classify_with_model(
-                            message, hypothesis, zero_shot_model, models_manager
+                            message, hypothesis, zero_shot_model, model_ensemble_manager
                         )
                         
                         threshold = category_info['confidence_threshold']
@@ -1253,7 +1223,7 @@ class CrisisPatternManager:
             logger.error(f"❌ Error in _find_patterns_semantic: {e}")
             return []
 
-    def _classify_with_model(self, message: str, hypothesis: str, model_type: str, models_manager) -> float:
+    def _classify_with_model(self, message: str, hypothesis: str, model_type: str, model_ensemble_manager) -> float:
         """Perform zero-shot classification using the loaded model"""
         try:
             return self._demo_classification(message, hypothesis)

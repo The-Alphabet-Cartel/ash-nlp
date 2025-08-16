@@ -6,7 +6,7 @@ LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 8
 CLEAN ARCHITECTURE: v3.1 Compliant
 -->
-# Phase 3d: Step 8 - Create Final Clean .env.template
+# Phase 3d: Step 8 - Create Clean `.env.template`
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1-3d branch)  
 **Project**: Ash-NLP v3.1 Configuration Migration  

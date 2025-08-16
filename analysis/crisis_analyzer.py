@@ -1,9 +1,9 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.8-2
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-14
-PHASE: 3d Step 10.8 - Context Pattern Manager Integration + API Response Fix
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Step 10.8 COMPLETE - ContextPatternManager integrated, needs_response fixed
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -30,7 +30,7 @@ class CrisisAnalyzer:
     Phase 3d Step 10.8: ContextPatternManager integration (no more utils/context_helpers.py) + API response fix
     """
     
-    def __init__(self, models_manager, crisis_pattern_manager=None, learning_manager=None,
+    def __init__(self, model_ensemble_manager, crisis_pattern_manager=None, learning_manager=None,
                  analysis_parameters_manager=None, threshold_mapping_manager=None,
                  feature_config_manager=None, performance_config_manager=None,
                  context_pattern_manager=None):  # NEW: Step 10.8
@@ -40,7 +40,7 @@ class CrisisAnalyzer:
         FIXED: Added all missing cache timing attributes
         
         Args:
-            models_manager: ML model manager for ensemble analysis
+            model_ensemble_manager: Model ensemble manager for ensemble analysis
             crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
             learning_manager: Optional learning manager for feedback
             analysis_parameters_manager: AnalysisParametersManager for configurable parameters
@@ -50,7 +50,7 @@ class CrisisAnalyzer:
             context_pattern_manager: ContextPatternManager for context analysis (NEW)
         """
         # Manager dependencies
-        self.models_manager = models_manager
+        self.model_ensemble_manager = model_ensemble_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.learning_manager = learning_manager
         self.analysis_parameters_manager = analysis_parameters_manager
@@ -542,7 +542,7 @@ class CrisisAnalyzer:
 
         # Model ensemble analysis (existing code continues...)
         model_results = {}
-        if self.models_manager:
+        if self.model_ensemble_manager:
             try:
                 logger.debug("🤖 Starting model ensemble analysis...")
                 
@@ -599,7 +599,7 @@ class CrisisAnalyzer:
         """Analyze sentiment using sentiment model"""
         try:
             # Placeholder for actual sentiment analysis
-            # This would use self.models_manager to get the sentiment model
+            # This would use self.model_ensemble_manager to get the sentiment model
             logger.debug("🎭 Analyzing sentiment...")
             return {
                 'score': 0.3,  # Placeholder
@@ -615,7 +615,7 @@ class CrisisAnalyzer:
         """Analyze depression indicators using depression model"""
         try:
             # Placeholder for actual depression analysis
-            # This would use self.models_manager to get the depression model
+            # This would use self.model_ensemble_manager to get the depression model
             logger.debug("😔 Analyzing depression indicators...")
             return {
                 'score': 0.4,  # Placeholder
@@ -1116,7 +1116,7 @@ class CrisisAnalyzer:
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
 # ============================================================================
 
-def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning_manager=None,
+def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, learning_manager=None,
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None) -> CrisisAnalyzer:  # NEW parameter
@@ -1125,7 +1125,7 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
     Updated for Step 10.8: Context Pattern Manager integration
     
     Args:
-        models_manager: ML model manager for ensemble analysis
+        model_ensemble_manager: Model ensemble manager for ensemble analysis
         crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
         learning_manager: Optional learning manager for feedback
         analysis_parameters_manager: AnalysisParametersManager for configurable parameters
@@ -1138,7 +1138,7 @@ def create_crisis_analyzer(models_manager, crisis_pattern_manager=None, learning
         CrisisAnalyzer instance with Step 10.8 context pattern integration + API response fix
     """
     return CrisisAnalyzer(
-        models_manager=models_manager,
+        model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         learning_manager=learning_manager,
         analysis_parameters_manager=analysis_parameters_manager,

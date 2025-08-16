@@ -1,7 +1,7 @@
 # ash-nlp/managers/server_config_manager.py
 """
 Centralized Server Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-11-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -94,7 +94,7 @@ class ServerConfigManager:
                 'performance_settings': {
                     'max_concurrent_requests': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
                     'request_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_REQUEST_TIMEOUT', 40),
-                    'worker_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_WORKER_TIMEOUT', 60),
+                    'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
                     'keep_alive_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT', 2),
                     'max_request_size': self.unified_config.get_env('NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE', '10MB'),
                     'defaults': {
@@ -119,10 +119,10 @@ class ServerConfigManager:
                         }
                     },
                     'cors': {
-                        'enable_cors': self.unified_config.get_env_bool('NLP_SERVER_SECURITY_CORS_ENABLE', True),
-                        'allowed_origins': self.unified_config.get_env('NLP_SERVER_SECURITY_CORS_ALLOWED_ORIGINS', '["*"]'),
-                        'allowed_methods': self.unified_config.get_env('NLP_SERVER_SECURITY_CORS_ALLOWED_METHODS', '["GET", "POST", "OPTIONS"]'),
-                        'allowed_headers': self.unified_config.get_env('NLP_SERVER_SECURITY_CORS_ALLOWED_HEADERS', '["Content-Type", "Authorization"]'),
+                        'enable_cors': self.unified_config.get_env_bool('GLOBAL_ENABLE_CORS', True),
+                        'allowed_origins': self.unified_config.get_env('GLOBAL_CORS_ALLOWED_ORIGINS', '["*"]'),
+                        'allowed_methods': self.unified_config.get_env('GLOBAL_CORS_ALLOWED_METHODS', '["GET", "POST", "OPTIONS"]'),
+                        'allowed_headers': self.unified_config.get_env('GLOBAL_CORS_ALLOWED_HEADERS', '["Content-Type", "Authorization"]'),
                         'defaults': {
                             'enable_cors': True,
                             'allowed_origins': ['*'],

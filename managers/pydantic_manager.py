@@ -189,7 +189,7 @@ class PydanticManager:
         model_performance_trends: Optional[Dict] = {}
 
     # ============================================================================
-    # MODEL ACCESS METHODS - Following ModelsManager v3.1 Pattern
+    # MODEL ACCESS METHODS - Following ModelEnsembleManager Pattern
     # ============================================================================
     
     def get_core_models(self) -> Dict[str, type]:

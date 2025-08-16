@@ -1,9 +1,10 @@
 # ash-nlp/api/ensemble_endpoints.py
 """
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service v3.1
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-14
 CLEAN ARCHITECTURE: v3.1 Compliant
+PHASE: 3d, Step 10.11-3
 MIGRATION STATUS: Step 10.8 API response extraction fixed
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -298,7 +299,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
     
     return reverse_hierarchy.get(max(level1_value, level2_value), 'none')
 
-def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager, 
+def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_manager, 
                               crisis_pattern_manager=None, threshold_mapping_manager=None):
     """
     PHASE 3C: Add Three Zero-Shot Model Ensemble endpoints with ThresholdMappingManager integration
@@ -306,7 +307,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     
     Args:
         app: FastAPI application instance
-        models_manager: ModelsManager v3.1 instance (required)
+        model_ensemble_manager: Model Ensemble Manager instance (required)
         pydantic_manager: PydanticManager v3.1 instance (required)
         crisis_pattern_manager: CrisisPatternManager instance (optional)
         threshold_mapping_manager: ThresholdMappingManager instance (optional but recommended)
@@ -316,9 +317,9 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
-    if not models_manager:
-        logger.error("❌ ModelsManager v3.1 is required but not provided")
-        raise RuntimeError("ModelsManager v3.1 required for ensemble endpoints")
+    if not model_ensemble_manager:
+        logger.error("❌ ModelEnsembleManager is required but not provided")
+        raise RuntimeError("ModelEnsembleManager required for ensemble endpoints")
     
     if not pydantic_manager:
         logger.error("❌ PydanticManager v3.1 is required but not provided")
@@ -375,7 +376,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             # - Integration logic
             # ========================================================================
             
-            if not models_manager:
+            if not model_ensemble_manager:
                 raise HTTPException(
                     status_code=500,
                     detail="Models manager not available"
@@ -383,7 +384,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             
             try:
                 # Single analysis call - CrisisAnalyzer does everything
-                complete_analysis = await models_manager.analyze_message_ensemble(
+                complete_analysis = await model_ensemble_manager.analyze_message_ensemble(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
@@ -492,8 +493,8 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
         
         try:
             # Check models manager
-            models_loaded = models_manager.models_loaded()
-            model_info = models_manager.get_model_info() if models_loaded else {}
+            models_loaded = model_ensemble_manager.models_loaded()
+            model_info = model_ensemble_manager.get_model_info() if models_loaded else {}
             
             # Check pattern manager
             pattern_manager_status = crisis_pattern_manager is not None
@@ -577,16 +578,16 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
         try:
             config = {
                 "ensemble_method": "three_zero_shot_models",
-                "models_loaded": models_manager.models_loaded() if models_manager else False,
+                "models_loaded": model_ensemble_manager.models_loaded() if model_ensemble_manager else False,
                 "phase": "3d",  # Updated for Step 10.8
                 "architecture": "clean_v3_1",
                 "step_10_8_integration": True
             }
             
             # Add model info if available
-            if models_manager:
+            if model_ensemble_manager:
                 try:
-                    model_info = models_manager.get_model_info()
+                    model_info = model_ensemble_manager.get_model_info()
                     config["model_details"] = model_info
                 except:
                     config["model_details"] = "unavailable"
@@ -628,7 +629,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             start_time = time.time()
             
             # Check core components
-            models_status = models_manager.models_loaded() if models_manager else False
+            models_status = model_ensemble_manager.models_loaded() if model_ensemble_manager else False
             pattern_status = crisis_pattern_manager is not None
             threshold_status = threshold_mapping_manager is not None
             
@@ -647,9 +648,9 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             }
             
             # Add detailed component info
-            if models_manager and models_status:
+            if model_ensemble_manager and models_status:
                 try:
-                    model_info = models_manager.get_model_info()
+                    model_info = model_ensemble_manager.get_model_info()
                     health["model_details"] = model_info
                 except:
                     health["model_details"] = "unavailable"
@@ -688,10 +689,10 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             components = {}
             
             # Models status
-            if models_manager:
+            if model_ensemble_manager:
                 try:
-                    models_loaded = models_manager.models_loaded()
-                    model_info = models_manager.get_model_info() if models_loaded else {}
+                    models_loaded = model_ensemble_manager.models_loaded()
+                    model_info = model_ensemble_manager.get_model_info() if models_loaded else {}
                     components["models"] = {
                         "status": "operational" if models_loaded else "unavailable",
                         "loaded": models_loaded,
@@ -757,8 +758,8 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             logger.warning(f"⚠️ Could not log threshold configuration: {e}")
 
 # Legacy function name for backward compatibility during transition
-def add_ensemble_endpoints(app: FastAPI, models_manager, pydantic_manager, 
+def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manager, 
                           crisis_pattern_manager=None, threshold_mapping_manager=None):
     """Legacy wrapper for add_ensemble_endpoints_v3c"""
-    return add_ensemble_endpoints_v3c(app, models_manager, pydantic_manager, 
+    return add_ensemble_endpoints_v3c(app, model_ensemble_manager, pydantic_manager, 
                                      crisis_pattern_manager, threshold_mapping_manager)

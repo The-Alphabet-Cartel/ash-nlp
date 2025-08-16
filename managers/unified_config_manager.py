@@ -1,9 +1,9 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.9-2
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-14
-PHASE: 3d Step 10.9 - ENHANCED ENVIRONMENT VARIABLE RESOLUTION + JSON-DRIVEN SCHEMA VALIDATION
+PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -223,14 +223,18 @@ class UnifiedConfigManager:
         for config_name, config_file in self.config_files.items():
             try:
                 # Load raw JSON without processing (to avoid circular dependency)
+                logger.debug("📋 Loading Config ...")
                 config_path = self.config_dir / config_file
                 if not config_path.exists():
+                    logger.debug("📋 Config not found ...")
                     continue
                 
                 with open(config_path, 'r', encoding='utf-8') as f:
+                    logger.debug("📋 Config found!")
                     raw_config = json.load(f)
                 
                 # Extract validation schemas from this config file
+                logger.debug("📋 Extracting Validation Schemas ...")
                 file_schemas = self._extract_validation_schemas(raw_config, config_name)
                 
                 if file_schemas:
@@ -373,7 +377,7 @@ class UnifiedConfigManager:
 
     def get_hardware_configuration(self) -> Dict[str, Any]:
         """
-        Get hardware configuration for models - MISSING METHOD FOR MODELSMANAGER
+        Get hardware configuration for models - MISSING METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing hardware configuration settings
@@ -386,7 +390,7 @@ class UnifiedConfigManager:
                 'inference_threads': self.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
                 'max_memory': self.get_env('NLP_MODEL_MAX_MEMORY', None),
                 'offload_folder': self.get_env('NLP_MODEL_OFFLOAD_FOLDER', './models/offload'),
-                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIR', './models/cache')
+                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache')
             }
         except Exception as e:
             logger.error(f"❌ Error getting hardware configuration: {e}")
@@ -403,7 +407,7 @@ class UnifiedConfigManager:
 
     def get_model_configuration(self) -> Dict[str, Any]:
         """
-        Get model configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get model configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing model configuration
@@ -416,10 +420,10 @@ class UnifiedConfigManager:
                 'sentiment_weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
                 'emotional_distress_model': self.get_env('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'consensus'),
+                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'majority'),
                 'gap_detection_enabled': self.get_env_bool('NLP_ENSEMBLE_GAP_DETECTION_ENABLED', True),
                 'disagreement_threshold': self.get_env_int('NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD', 2),
-                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIR', './models/cache'),
+                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
                 'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
             }
         except Exception as e:
@@ -441,7 +445,7 @@ class UnifiedConfigManager:
 
     def get_performance_configuration(self) -> Dict[str, Any]:
         """
-        Get performance configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get performance configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing performance settings
@@ -449,7 +453,7 @@ class UnifiedConfigManager:
         try:
             return {
                 'max_concurrent_requests': self.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                'request_timeout': self.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 40),
+                'request_timeout': self.get_env_int('GLOBAL_REQUEST_TIMEOUT', 30),
                 'worker_timeout': self.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
                 'analysis_timeout_ms': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS', 5000),
                 'analysis_cache_ttl': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL', 300),
@@ -473,7 +477,7 @@ class UnifiedConfigManager:
 
     def get_storage_configuration(self) -> Dict[str, Any]:
         """
-        Get storage configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get storage configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing storage settings
@@ -1029,10 +1033,10 @@ class UnifiedConfigManager:
         
         try:
             # Check if we have a cached version first
-            cache_key = f"crisis_patterns_{pattern_type}"
-            if cache_key in self.config_cache:
-                logger.debug(f"📋 Using cached config for {pattern_type}")
-                return self.config_cache[cache_key]
+            #cache_key = f"crisis_patterns_{pattern_type}"
+            #if cache_key in self.config_cache:
+            #    logger.debug(f"📋 Using cached config for {pattern_type}")
+            #    return self.config_cache[cache_key]
             
             # Load the specific pattern configuration file (follows established pattern)
             config_file_path = self.config_dir / f"{pattern_type}.json"
@@ -1055,7 +1059,7 @@ class UnifiedConfigManager:
             processed_config = self._apply_defaults_fallback(processed_config)
             
             # Cache the processed configuration
-            self.config_cache[cache_key] = processed_config
+            #self.config_cache[cache_key] = processed_config
             
             logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
             
@@ -1097,28 +1101,28 @@ class UnifiedConfigManager:
         return {
             'models': {  # ModelEnsembleManager expects 'models' key
                 'depression': {
-                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'cardiffnlp/twitter-roberta-base-sentiment'),
+                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                     'weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIR', './model_cache'),
+                    'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
                     'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'sentiment': {
-                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                     'weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIR', './model_cache'),
-                    'type': 'sentiment-analysis',
+                    'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
+                    'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'emotional_distress': {
-                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
+                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                     'weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIR', './model_cache'),
-                    'type': 'natural-language-inference',
+                    'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
+                    'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 }
             },
-            'ensemble_mode': self.get_env_str('NLP_MODEL_ENSEMBLE_MODE', 'consensus'),
+            'ensemble_mode': self.get_env_str('NLP_ENSEMBLE_MODE', 'majority'),
             'validation': {
                 'ensure_weights_sum_to_one': True,
                 'fail_on_invalid_weights': True

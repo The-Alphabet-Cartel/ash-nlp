@@ -1,12 +1,10 @@
 # ash-nlp/tests/test_step_10_6_migration.py
 """
 Phase 3d, Step 10.6 Testing Suite for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.6-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.6 - Scoring Functions Consolidated
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
-Phase 3d Step 10.6 Migration Test: Validate Consolidated Scoring Functions
-Clean v3.1 Architecture Compliance Test
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -36,9 +34,9 @@ class TestStep106Migration:
         return config_manager
     
     @pytest.fixture
-    def sample_models_manager(self):
+    def sample_model_ensemble_manager(self):
         """Create a mock models manager for testing"""
-        models_manager = Mock()
+        model_ensemble_manager = Mock()
         
         # Mock depression model
         depression_model = Mock()
@@ -61,16 +59,16 @@ class TestStep106Migration:
             {'label': 'no_crisis', 'score': 0.40}
         ]
         
-        models_manager.get_model.side_effect = lambda model_type: {
+        model_ensemble_manager.get_model.side_effect = lambda model_type: {
             'depression': depression_model,
             'sentiment': sentiment_model,
             'crisis': crisis_model
         }.get(model_type)
         
-        return models_manager
+        return model_ensemble_manager
     
     @pytest.fixture
-    def sample_crisis_analyzer(self, sample_models_manager, sample_config_manager):
+    def sample_crisis_analyzer(self, sample_model_ensemble_manager, sample_config_manager):
         """Create a CrisisAnalyzer instance for testing"""
         # Create mock managers
         crisis_pattern_manager = Mock()
@@ -101,7 +99,7 @@ class TestStep106Migration:
         }
         
         return CrisisAnalyzer(
-            models_manager=sample_models_manager,
+            model_ensemble_manager=sample_model_ensemble_manager,
             crisis_pattern_manager=crisis_pattern_manager,
             analysis_parameters_manager=analysis_parameters_manager,
             threshold_mapping_manager=threshold_mapping_manager,
@@ -109,11 +107,11 @@ class TestStep106Migration:
             performance_config_manager=performance_config_manager
         )
 
-    def test_extract_depression_score_migration(self, sample_crisis_analyzer, sample_models_manager):
+    def test_extract_depression_score_migration(self, sample_crisis_analyzer, sample_model_ensemble_manager):
         """Test that extract_depression_score works as CrisisAnalyzer instance method"""
         
         # Get the depression model
-        depression_model = sample_models_manager.get_model('depression')
+        depression_model = sample_model_ensemble_manager.get_model('depression')
         
         # Test the migrated method
         score = sample_crisis_analyzer.extract_depression_score(
@@ -128,12 +126,12 @@ class TestStep106Migration:
         
         logger.info(f"✅ extract_depression_score migration test passed: score={score}")
 
-    def test_enhanced_depression_analysis_migration(self, sample_crisis_analyzer, sample_models_manager):
+    def test_enhanced_depression_analysis_migration(self, sample_crisis_analyzer, sample_model_ensemble_manager):
         """Test that enhanced_depression_analysis works as CrisisAnalyzer instance method"""
         
         # Get models
-        depression_model = sample_models_manager.get_model('depression')
-        sentiment_model = sample_models_manager.get_model('sentiment')
+        depression_model = sample_model_ensemble_manager.get_model('depression')
+        sentiment_model = sample_model_ensemble_manager.get_model('sentiment')
         
         # Test the migrated method
         result = sample_crisis_analyzer.enhanced_depression_analysis(
@@ -343,8 +341,8 @@ async def test_step_10_6_comprehensive_validation():
     
     # Create fixtures
     config_manager = test_instance.sample_config_manager()
-    models_manager = test_instance.sample_models_manager()
-    crisis_analyzer = test_instance.sample_crisis_analyzer(models_manager, config_manager)
+    model_ensemble_manager = test_instance.sample_model_ensemble_manager()
+    crisis_analyzer = test_instance.sample_crisis_analyzer(model_ensemble_manager, config_manager)
     
     # Run all tests
     test_methods = [
@@ -367,8 +365,8 @@ async def test_step_10_6_comprehensive_validation():
         method = getattr(test_instance, method_name)
         if 'crisis_analyzer' in method.__code__.co_varnames:
             method(crisis_analyzer)
-        elif 'models_manager' in method.__code__.co_varnames:
-            method(crisis_analyzer, models_manager)
+        elif 'model_ensemble_manager' in method.__code__.co_varnames:
+            method(crisis_analyzer, model_ensemble_manager)
         else:
             method()
     

@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-3",
+    "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -22,7 +22,7 @@
       "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
       "crisis_amplification": "${NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER}",
       "positive_reduction": "${NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS}",
-      "context_window": "${NLP_CONTEXT_WINDOW}"
+      "context_window": "${NLP_TEMPORAL_CONTEXT_WINDOW}"
     }
   },
 
@@ -31,7 +31,7 @@
     "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
     "crisis_amplification": "${NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER}",
     "positive_reduction": "${NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS}",
-    "context_window": "${NLP_CONTEXT_WINDOW}",
+    "context_window": "${NLP_TEMPORAL_CONTEXT_WINDOW}",
     "defaults": {
       "enabled": true,
       "crisis_amplification": 1.0,
@@ -163,7 +163,7 @@
       "enable_patterns": "NLP_CONFIG_ENABLE_CRISIS_PATTERNS=true",
       "adjust_crisis_amplification": "NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.2",
       "enable_positive_contexts": "NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS=true",
-      "adjust_context_window": "NLP_CONTEXT_WINDOW=12"
+      "adjust_context_window": "NLP_TEMPORAL_CONTEXT_WINDOW=12"
     },
     "simplification_benefits": [
       "98% reduction in environment variables (46 → 1)",

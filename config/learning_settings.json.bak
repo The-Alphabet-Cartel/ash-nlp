@@ -15,7 +15,7 @@
       "description": "All learning settings support environment variable overrides",
       "pattern": "${NLP_LEARNING_*CATEGORY*_*SETTING*}",
       "examples": [
-        "NLP_LEARNING_SYSTEM_ENABLE",
+        "NLP_LEARNING_SYSTEM_LEARNING_MODE",
         "NLP_LEARNING_ALGORITHM_LEARNING_RATE",
         "NLP_LEARNING_ADAPTATION_MIN_CONFIDENCE_ADJUSTMENT"
       ]
@@ -25,14 +25,12 @@
   "learning_configuration": {
     "system_settings": {
       "description": "Core learning system activation and control settings",
-      "enable": "${NLP_LEARNING_SYSTEM_ENABLE}",
-      "global_enable": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
+      "enable": "${GLOBAL_ENABLE_LEARNING_SYSTEM}",
       "learning_mode": "${NLP_LEARNING_SYSTEM_LEARNING_MODE}",
       "auto_adaptation": "${NLP_LEARNING_SYSTEM_AUTO_ADAPTATION}",
       "require_human_approval": "${NLP_LEARNING_SYSTEM_REQUIRE_HUMAN_APPROVAL}",
       "defaults": {
         "enable": true,
-        "global_enable": true,
         "learning_mode": "supervised",
         "auto_adaptation": false,
         "require_human_approval": true
@@ -41,10 +39,6 @@
         "enable": {
           "type": "boolean",
           "description": "Enable the machine learning adaptation system"
-        },
-        "global_enable": {
-          "type": "boolean",
-          "description": "Global ecosystem learning system enabler (preserved for compatibility)"
         },
         "learning_mode": {
           "type": "string",

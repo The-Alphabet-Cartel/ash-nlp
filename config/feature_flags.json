@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10-1",
+    "file_version": "v3.1-3d-10.11-1",
     "last_modified": "2025-08-13",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -15,7 +15,7 @@
       "examples": [
         "NLP_FEATURE_CORE_ENSEMBLE_ANALYSIS",
         "NLP_FEATURE_ANALYSIS_PATTERN_ANALYSIS",
-        "NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB"
+        "NLP_FEATURE_COMMUNITY_VOCAB"
       ]
     }
   },
@@ -131,10 +131,10 @@
 
     "experimental_features": {
       "description": "Experimental and beta feature toggles",
-      "advanced_context": "${NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT}",
-      "community_vocab": "${NLP_FEATURE_EXPERIMENTAL_COMMUNITY_VOCAB}",
-      "temporal_patterns": "${NLP_FEATURE_EXPERIMENTAL_TEMPORAL_PATTERNS}",
-      "multi_language": "${NLP_FEATURE_EXPERIMENTAL_MULTI_LANGUAGE}",
+      "advanced_context": "${NLP_FEATURE_ADVANCED_CONTEXT}",
+      "community_vocab": "${NLP_FEATURE_COMMUNITY_VOCAB}",
+      "temporal_patterns": "${NLP_FEATURE_TEMPORAL_PATTERNS}",
+      "multi_language": "${NLP_FEATURE_MULTI_LANGUAGE}",
       "defaults": {
         "advanced_context": false,
         "community_vocab": true,
