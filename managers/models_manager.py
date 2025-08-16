@@ -2,7 +2,7 @@
 """
 Advanced Model Ensemble Management for handling three zero-shot model ensemble
 with GPU optimization, model caching, and comprehensive validation for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-1
+FILE VERSION: v3.1-3d-10.11-2
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -167,9 +167,9 @@ class ModelsManager:
         
         return {
             # Use Phase 3d standardized variable names
-            'depression_model': self.unified_config.get_env('NLP_MODEL_DEPRESSION_NAME', 'martin-ha/toxic-comment-model'),
-            'sentiment_model': self.unified_config.get_env('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
-            'emotional_distress_model': self.unified_config.get_env('NLP_MODEL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
+            'depression_model': self.unified_config.get_env('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
+            'sentiment_model': self.unified_config.get_env('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+            'emotional_distress_model': self.unified_config.get_env('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
             
             'depression_weight': self.unified_config.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
             'sentiment_weight': self.unified_config.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
