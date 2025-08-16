@@ -1,7 +1,7 @@
 # ash-nlp/managers/__init__.py
 """
 Managers Module for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.11-3
 LAST MODIFIED: 2025-08-15
 PHASE: 3d Step 10.11-3 - Models Manager Consolidation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -150,7 +150,7 @@ except ImportError as e:
     create_storage_config_manager = None
     STORAGE_CONFIG_MANAGER_AVAILABLE = False
 
-# Threshold Mapping Manager
+# Threshold Mapping Manager (Phase 3C)
 try:
     from .threshold_mapping_manager import ThresholdMappingManager, create_threshold_mapping_manager
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = True
@@ -161,31 +161,40 @@ except ImportError as e:
     create_threshold_mapping_manager = None
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = False
 
-# Zero-Shot Manager
+# Unified Configuration Manager (Core)
+try:
+    from .unified_config_manager import UnifiedConfigManager, create_unified_config_manager
+    UNIFIED_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ Unified configuration managers imported")
+except ImportError as e:
+    logger.error(f"  ❌ Unified configuration manager imports failed: {e}")
+    UnifiedConfigManager = None
+    create_unified_config_manager = None
+    UNIFIED_CONFIG_MANAGER_AVAILABLE = False
+
+# Zero Shot Manager
 try:
     from .zero_shot_manager import ZeroShotManager, create_zero_shot_manager
     ZERO_SHOT_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ ZeroShotManager v3.1 imported")
+    logger.debug("  ✅ ZeroShotManager imported")
 except ImportError as e:
-    logger.error(f"  ❌ ZeroShotManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ ZeroShotManager import failed: {e}")
     ZeroShotManager = None
     create_zero_shot_manager = None
     ZERO_SHOT_MANAGER_AVAILABLE = False
 
 # ============================================================================
-# MANAGER STATUS FUNCTION - Updated for Step 10.11-3
+# MANAGER AVAILABILITY SUMMARY - Updated for Step 10.11-3
 # ============================================================================
 
 def get_manager_status() -> dict:
     """
-    Get availability status of all managers
-    Updated for Step 10.11-3 Models Manager Consolidation
+    Get status of all available managers - Updated for Step 10.11-3
     
     Returns:
-        Dictionary with manager availability status
+        Dictionary showing availability of all manager types
     """
     return {
-        'unified_config_manager': UNIFIED_CONFIG_MANAGER_AVAILABLE,
         'analysis_parameters_manager': ANALYSIS_PARAMETERS_MANAGER_AVAILABLE,
         'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,
         'crisis_pattern_manager': CRISIS_PATTERN_MANAGER_AVAILABLE,
@@ -199,6 +208,7 @@ def get_manager_status() -> dict:
         'settings_manager': SETTINGS_MANAGER_AVAILABLE,
         'storage_config_manager': STORAGE_CONFIG_MANAGER_AVAILABLE,
         'threshold_mapping_manager': THRESHOLD_MAPPING_MANAGER_AVAILABLE,
+        'unified_config_manager': UNIFIED_CONFIG_MANAGER_AVAILABLE,  # Fixed: Use correct variable name
         'zero_shot_manager': ZERO_SHOT_MANAGER_AVAILABLE,
         'step_10_11_3_consolidation': True,
         'primary_model_manager': 'ModelEnsembleManager'
