@@ -1057,14 +1057,14 @@ class UnifiedConfigManager:
             return self._get_fallback_model_config()
         
         # Extract model definitions from the nested structure
-        model_defs = config.get('model_definitions', {})
+        model_defs = config.get('ensemble_models', {}).get('model_definitions', {})
         ensemble_config = config.get('ensemble_config', {})
         
         # Return in the format expected by ModelEnsembleManager
         result = {
             'models': model_defs,  # ModelEnsembleManager expects 'models' key
             'ensemble_mode': ensemble_config.get('mode', 'majority'),
-            'validation': config.get('validation', {})
+            'validation': model_defs.get('validation', {})
         }
         
         logger.debug(f"✅ Model configuration loaded successfully: {len(model_defs)} models found")
