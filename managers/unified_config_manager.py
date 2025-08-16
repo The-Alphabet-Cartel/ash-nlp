@@ -93,13 +93,13 @@ class UnifiedConfigManager:
             'analysis_parameters': 'analysis_parameters.json',
             'threshold_mapping': 'threshold_mapping.json',
             
-            # v3.1 compliant pattern files (consolidated and individual)
-            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',  # ✅ Consolidated
-            'context_patterns': 'context_patterns.json',                           # ✅ Consolidated (NEW)
-            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',   # ✅ v3.1 compliant
-            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',           # ✅ v3.1 compliant
-            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',                 # ✅ v3.1 compliant
-            'crisis_burden_patterns': 'crisis_burden_patterns.json',               # ✅ v3.1 compliant
+            # Pattern files
+            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
+            'context_patterns': 'context_patterns.json',
+            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
+            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
+            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
+            'crisis_burden_patterns': 'crisis_burden_patterns.json',
             
             # Core system configuration
             'feature_flags': 'feature_flags.json',
@@ -111,13 +111,6 @@ class UnifiedConfigManager:
             'performance_settings': 'performance_settings.json',
             'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
-            
-            # ELIMINATED FILES - Removed from config_files mapping
-            # ❌ 'context_weight_patterns': 'context_weight_patterns.json',        # Merged into context_patterns.json
-            # ❌ 'crisis_community_vocabulary': 'crisis_community_vocabulary.json', # Merged into community_vocabulary_patterns.json
-            # ❌ 'crisis_context_patterns': 'crisis_context_patterns.json',        # Merged into context_patterns.json
-            # ❌ 'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',        # Merged into community_vocabulary_patterns.json
-            # ❌ 'positive_context_patterns': 'positive_context_patterns.json',    # Merged into context_patterns.json
         }
         
         # Initialize schema definitions for validation (NOW config_files is available)
@@ -1070,9 +1063,8 @@ class UnifiedConfigManager:
         # Return in the format expected by ModelEnsembleManager
         result = {
             'models': model_defs,  # ModelEnsembleManager expects 'models' key
-            'ensemble_mode': ensemble_config.get('mode', 'consensus'),
-            'validation': config.get('model_ensemble', {}).get('validation', {}),
-            'performance': config.get('model_ensemble', {}).get('performance', {})
+            'ensemble_mode': ensemble_config.get('mode', 'majority'),
+            'validation': config.get('model_ensemble', {}).get('validation', {})
         }
         
         logger.debug(f"✅ Model configuration loaded successfully: {len(model_defs)} models found")
@@ -1110,10 +1102,6 @@ class UnifiedConfigManager:
             'validation': {
                 'ensure_weights_sum_to_one': True,
                 'fail_on_invalid_weights': True
-            },
-            'performance': {
-                'device': self.get_env_str('NLP_MODEL_DEVICE', 'auto'),
-                'max_memory_mb': self.get_env_int('NLP_MODEL_MAX_MEMORY_MB', 8192)
             }
         }
 
