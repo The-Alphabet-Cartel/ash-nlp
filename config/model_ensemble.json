@@ -12,30 +12,32 @@
     "cleanup_note": "Step 10.10 - Mapped model weights to existing .env.template variables, preserved others for .env.template addition"
   },
 
-  "model_definitions": {
-    "depression": {
-      "name": "${NLP_MODEL_DEPRESSION_NAME}",
-      "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
-      "type": "${NLP_MODEL_DEPRESSION_TYPE}",
-      "pipeline_task": "${NLP_MODEL_DEPRESSION_PIPELINE_TASK}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "enabled": "${NLP_MODEL_DEPRESSION_ENABLED}"
-    },
-    "sentiment": {
-      "name": "${NLP_MODEL_SENTIMENT_NAME}",
-      "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
-      "type": "${NLP_MODEL_SENTIMENT_TYPE}",
-      "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}"
-    },
-    "emotional_distress": {
-      "name": "${NLP_MODEL_DISTRESS_NAME}",
-      "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
-      "type": "${NLP_MODEL_DISTRESS_TYPE}",
-      "pipeline_task": "${NLP_MODEL_DISTRESS_PIPELINE_TASK}",
-      "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
-      "enabled": "${NLP_MODEL_DISTRESS_ENABLED}"
+  "ensemble_models":{
+    "model_definitions": {
+      "depression": {
+        "name": "${NLP_MODEL_DEPRESSION_NAME}",
+        "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}",
+        "type": "${NLP_MODEL_DEPRESSION_TYPE}",
+        "pipeline_task": "${NLP_MODEL_DEPRESSION_PIPELINE_TASK}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+        "enabled": "${NLP_MODEL_DEPRESSION_ENABLED}"
+      },
+      "sentiment": {
+        "name": "${NLP_MODEL_SENTIMENT_NAME}",
+        "weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
+        "type": "${NLP_MODEL_SENTIMENT_TYPE}",
+        "pipeline_task": "${NLP_MODEL_SENTIMENT_PIPELINE_TASK}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+        "enabled": "${NLP_MODEL_SENTIMENT_ENABLED}"
+      },
+      "emotional_distress": {
+        "name": "${NLP_MODEL_DISTRESS_NAME}",
+        "weight": "${NLP_MODEL_DISTRESS_WEIGHT}",
+        "type": "${NLP_MODEL_DISTRESS_TYPE}",
+        "pipeline_task": "${NLP_MODEL_DISTRESS_PIPELINE_TASK}",
+        "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
+        "enabled": "${NLP_MODEL_DISTRESS_ENABLED}"
+      }
     },
     "defaults": {
       "depression": {
