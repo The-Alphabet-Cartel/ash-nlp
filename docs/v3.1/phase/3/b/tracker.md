@@ -1,9 +1,9 @@
 <!-- ash-nlp/docs/v3.1/phase/3/b/tracker.md -->
 <!--
 Tracker Documentation for Phase 3b for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3b-1-1
+FILE VERSION: v3.1-3b-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3b
+PHASE: 3d, Step 10.11
 CLEAN ARCHITECTURE: v3.1 Compliant
 -->
 # Phase 3b: Analysis Parameters Configuration Migration - Tracker
@@ -33,7 +33,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 
 ### **🔧 Key Fixes Applied During Implementation**
 1. **ConfigManager Interface**: Fixed `AnalysisParametersManager` to load JSON directly and use `substitute_environment_variables()`
-2. **Import Names**: Fixed `create_models_manager` → `create_model_manager` in main.py
+2. **Import Names**: Fixed `create_model_ensemble_manager` → `create_model_manager` in main.py
 3. **Method Calls**: Fixed calls to non-existent methods in new initialization code
 4. **Dependency Injection**: Proper clean v3.1 architecture maintained throughout
 

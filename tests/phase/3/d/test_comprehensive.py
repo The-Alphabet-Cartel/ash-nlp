@@ -1,9 +1,9 @@
 # tests/phase/3/d/test_step_10_comprehensive_integration.py
 """
 Phase 3d Step 10: Comprehensive Testing & Validation
-FILE VERSION: v3.1-3d-10-1
+FILE VERSION: v3.1-3d-10.11-3-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10
+PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -102,7 +102,6 @@ class Step10ComprehensiveTestSuite:
                 ("managers.feature_config_manager", "create_feature_config_manager"),
                 ("managers.logging_config_manager", "create_logging_config_manager"),
                 ("managers.model_ensemble_manager", "create_model_ensemble_manager"),
-                ("managers.models_manager", "create_models_manager"),
                 ("managers.performance_config_manager", "create_performance_config_manager"),
                 ("managers.pydantic_manager", "create_pydantic_manager"),
                 ("managers.server_config_manager", "create_server_config_manager"),
@@ -169,7 +168,6 @@ class Step10ComprehensiveTestSuite:
                 ("feature_config_manager", "create_feature_config_manager", unified_config),
                 ("logging_config_manager", "create_logging_config_manager", unified_config),
                 ("model_ensemble_manager", "create_model_ensemble_manager", unified_config),
-                ("models_manager", "create_models_manager", unified_config),
                 ("performance_config_manager", "create_performance_config_manager", unified_config),
                 ("pydantic_manager", "create_pydantic_manager", unified_config),
                 ("server_config_manager", "create_server_config_manager", unified_config),
@@ -304,7 +302,6 @@ class Step10ComprehensiveTestSuite:
                 from managers.threshold_mapping_manager import create_threshold_mapping_manager
                 from managers.feature_config_manager import create_feature_config_manager
                 from managers.performance_config_manager import create_performance_config_manager
-                from managers.models_manager import create_models_manager
                 from managers.model_ensemble_manager import create_model_ensemble_manager
                 
                 # Step 1: Create UnifiedConfigManager
@@ -323,18 +320,16 @@ class Step10ComprehensiveTestSuite:
                 logger.info("   ✅ Phase 3a-3d managers created")
                 
                 # Model managers - handle gracefully if not available
-                models_manager = None
-                try:
-                    models_manager = create_models_manager(unified_config)
-                    logger.info("   ✅ ModelsManager created")
-                except Exception as e:
-                    logger.warning(f"   ⚠️ ModelsManager not available: {e}")
-                
-                # Threshold manager needs model ensemble manager
                 model_ensemble_manager = None
-                threshold_mapping_manager = None
                 try:
                     model_ensemble_manager = create_model_ensemble_manager(unified_config)
+                    logger.info("   ✅ ModelEnsembleManager created")
+                except Exception as e:
+                    logger.warning(f"   ⚠️ ModelEnsembleManager not available: {e}")
+                
+                # Threshold manager needs model ensemble manager
+                threshold_mapping_manager = None
+                try:
                     threshold_mapping_manager = create_threshold_mapping_manager(unified_config, model_ensemble_manager)
                     logger.info("   ✅ ThresholdMappingManager created")
                 except Exception as e:
@@ -342,7 +337,7 @@ class Step10ComprehensiveTestSuite:
                 
                 # Step 3: Create CrisisAnalyzer with FULL integration (like main.py)
                 crisis_analyzer = create_crisis_analyzer(
-                    models_manager=models_manager,
+                    model_ensemble_manager=model_ensemble_manager,
                     crisis_pattern_manager=crisis_pattern_manager,
                     learning_manager=None,  # Optional
                     analysis_parameters_manager=analysis_parameters_manager,
@@ -437,7 +432,7 @@ class Step10ComprehensiveTestSuite:
                     1 if threshold_mapping_manager else 0,
                     1 if feature_config_manager else 0,
                     1 if performance_config_manager else 0,
-                    1 if models_manager else 0
+                    1 if model_ensemble_manager else 0
                 ])
                 
                 logger.info(f"   📊 Core functionality: {len(required_methods)}/{len(required_methods)} required methods available")
