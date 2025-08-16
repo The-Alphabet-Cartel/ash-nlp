@@ -96,8 +96,7 @@ class PerformanceConfigManager:
             'analysis_performance',
             'server_performance', 
             'model_performance',
-            'rate_limiting_performance',
-            'cache_performance'
+            'rate_limiting_performance'
         ]
         
         for section in required_perf_sections:
