@@ -761,7 +761,8 @@ class ModelEnsembleManager:
     
     def get_ensemble_mode(self) -> str:
         """Get current ensemble mode"""
-        return self.config.get('mode', 'majority')
+        logger.debug(self.config.get('ensemble_models', {}))
+        return self.config.get('ensemble_models', {}).get('model_definitions', {}).get('mode', 'majority')
     
     def get_ensemble_settings(self) -> Dict[str, Any]:
         """Get ensemble settings including validation"""
