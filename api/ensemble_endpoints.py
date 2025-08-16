@@ -1,7 +1,7 @@
 # ash-nlp/api/ensemble_endpoints.py
 """
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service v3.1
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-14
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
