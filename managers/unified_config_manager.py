@@ -231,6 +231,7 @@ class UnifiedConfigManager:
                     raw_config = json.load(f)
                 
                 # Extract validation schemas from this config file
+                logger.debug("📋 Extracting Validation Schemas ...")
                 file_schemas = self._extract_validation_schemas(raw_config, config_name)
                 
                 if file_schemas:
