@@ -688,7 +688,7 @@ class UnifiedConfigManager:
                 # Step 1: Try environment variable first
                 env_value = os.getenv(env_var)
                 if env_value is not None:
-                    return self._convert_value_type(env_value)
+                    return self._convert_value_type(env_var, env_value)
                 
                 # Step 2: Try JSON defaults context (new in Step 10.9)
                 if defaults_context:
@@ -812,7 +812,7 @@ class UnifiedConfigManager:
         
         return pattern_mappings.get(key, key)
     
-    def _convert_value_type(self, value: str) -> str:
+    def _convert_value_type(self, env_var: str, value: str) -> str:
         """
         STEP 10.9 ENHANCED: Convert string value to appropriate type for substitution
         
@@ -825,7 +825,7 @@ class UnifiedConfigManager:
         # Boolean conversion
         if value.lower() in ('true', 'false'):
             result = str(value.lower() == 'true')
-            logger.debug(f"   → Boolean conversion: {value} → {result}")
+            logger.debug(f"   {env_var}: → Boolean conversion: {value} → {result}")
             return result
         
         # Numeric conversion
@@ -833,18 +833,18 @@ class UnifiedConfigManager:
             try:
                 if '.' in value:
                     result = str(float(value))
-                    logger.debug(f"   → Float conversion: {value} → {result}")
+                    logger.debug(f"   {env_var}: → Float conversion: {value} → {result}")
                     return result
                 else:
                     result = str(int(value))
-                    logger.debug(f"   → Int conversion: {value} → {result}")
+                    logger.debug(f"   {env_var}: → Int conversion: {value} → {result}")
                     return result
             except ValueError:
-                logger.debug(f"   → String (conversion failed): {value}")
+                logger.debug(f"   {env_var}: → String (conversion failed): {value}")
                 return value
         
         # String (no conversion)
-        logger.debug(f"   → String (no conversion): {value}")
+        logger.debug(f"   {env_var}: → String (no conversion): {value}")
         return value
     
     def _apply_defaults_fallback(self, config: Dict[str, Any]) -> Dict[str, Any]:
