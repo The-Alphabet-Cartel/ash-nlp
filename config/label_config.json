@@ -14,37 +14,6 @@
   },
 
   "label_configuration": {
-    "current": {
-      "description": "Original baseline labels from current implementation",
-      "depression": "current_depression_labels",
-      "sentiment": "current_sentiment_labels", 
-      "emotional_distress": "current_distress_labels",
-      "defaults": {
-        "depression": [
-          "person experiencing severe clinical depression with major functional impairment",
-          "person showing moderate depression with professional intervention needed",
-          "person with mild depressive episode with manageable symptoms and temporary low mood",
-          "person with stable mental health with normal emotional fluctuations and no depression signs",
-          "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
-        ],
-        "sentiment": [
-          "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
-          "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment", 
-          "person displaying mixed or neutral emotional state without strong positive or negative feelings",
-          "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
-          "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
-          "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
-        ],
-        "emotional_distress": [
-          "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
-          "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
-          "person showing moderate distress with some difficulty managing emotions and daily responsibilities", 
-          "person handling normal life stress with adequate coping strategies and emotional regulation",
-          "person demonstrating strong emotional resilience with healthy stress management and adaptation",
-          "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
-        ]
-      }
-    },
     "enhanced_crisis": {
       "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
       "depression": "enhanced_depression_labels",
@@ -94,6 +63,17 @@
           "person experiencing normal daily stressors but managing them appropriately with good coping",
           "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
         ]
+      },
+      "validation": {
+        "depression": {
+          "type": "list"
+        },
+        "sentiment": {
+          "type": "list"
+        },
+        "emotional_distress": {
+          "type": "list"
+        }
       }
     },
     "clinical_focused": {
@@ -123,6 +103,17 @@
           "patient managing normal stress levels with adequate coping mechanisms",
           "patient demonstrating optimal stress management and psychological resilience"
         ]
+      },
+      "validation": {
+        "depression": {
+          "type": "list"
+        },
+        "sentiment": {
+          "type": "list"
+        },
+        "emotional_distress": {
+          "type": "list"
+        }
       }
     },
     "conversational": {
@@ -152,6 +143,17 @@
           "someone handling normal life stress pretty well with good coping",
           "someone feeling really strong emotionally, handling everything great, thriving"
         ]
+      },
+      "validation": {
+        "depression": {
+          "type": "list"
+        },
+        "sentiment": {
+          "type": "list"
+        },
+        "emotional_distress": {
+          "type": "list"
+        }
       }
     },
     "safety_first": {
@@ -178,10 +180,21 @@
           "any mention of emotional difficulty or challenges",
           "only expressions of excellent coping and emotional strength"
         ]
+      },
+      "validation": {
+        "depression": {
+          "type": "list"
+        },
+        "sentiment": {
+          "type": "list"
+        },
+        "emotional_distress": {
+          "type": "list"
+        }
       }
     }
   },
-
+ 
   "label_mapping": {
     "default_label_set": "${NLP_ZERO_SHOT_DEFAULT_LABEL_SET}",
     "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
@@ -222,7 +235,7 @@
     "max_labels": 5,
     "normalize_scores": true,
     "defaults": {
-      "track_performance": true,
+      "track_performance": false,
       "hypothesis_template": "This text expresses {label}",
       "multi_label": false,
       "confidence_threshold": 0.3,
