@@ -1,15 +1,15 @@
 # ash-nlp/managers/__init__.py
 """
 Managers Module for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3
-LAST MODIFIED: 2025-08-15
-PHASE: 3d Step 10.11-3 - Models Manager Consolidation
+FILE VERSION: v3.1-3d-10.8-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10.8 - Added ContextPatternManager support
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-STEP 10.11-3 CHANGE: Removed ModelsManager imports and references.
-All model functionality consolidated into ModelEnsembleManager.
+This module provides centralized manager imports and factory functions
+following Clean v3.1 architecture principles with proper dependency injection.
 """
 
 import logging
@@ -17,10 +17,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# MANAGER IMPORTS WITH RESILIENT ERROR HANDLING - Step 10.11-3 Updated
+# MANAGER IMPORTS WITH RESILIENT ERROR HANDLING
 # ============================================================================
 
-logger.info("🏭 Loading managers v3.1 with Step 10.11-3 Models Manager Consolidation...")
+logger.info("🏭 Loading managers v3.1 with Clean Architecture patterns...")
 
 # Analysis Parameter Manager (Phase 3B)
 try:
@@ -77,23 +77,27 @@ except ImportError as e:
     create_logging_config_manager = None
     LOGGING_CONFIG_MANAGER_AVAILABLE = False
 
-# Model Ensemble Manager (PRIMARY MODEL MANAGER - Step 10.11-3)
+# Model Ensemble Manager
 try:
     from .model_ensemble_manager import ModelEnsembleManager, create_model_ensemble_manager
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ ModelEnsembleManager v3.1 imported (Primary Model Manager)")
+    logger.debug("  ✅ ModelEnsembleManager v3.1 imported")
 except ImportError as e:
     logger.error(f"  ❌ ModelEnsembleManager v3.1 import failed: {e}")
     ModelEnsembleManager = None
     create_model_ensemble_manager = None
     MODEL_ENSEMBLE_MANAGER_AVAILABLE = False
 
-# STEP 10.11-3 CONSOLIDATION: Models Manager REMOVED
-# ModelsManager functionality consolidated into ModelEnsembleManager
-logger.debug("  🗑️ ModelsManager removed in Step 10.11-3 - functionality consolidated into ModelEnsembleManager")
-MODELS_MANAGER_AVAILABLE = False
-ModelsManager = None
-create_models_manager = None
+# Models Manager
+try:
+    from .models_manager import ModelsManager, create_models_manager
+    MODELS_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ModelsManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ ModelsManager v3.1 import failed: {e}")
+    ModelsManager = None
+    create_models_manager = None
+    MODELS_MANAGER_AVAILABLE = False
 
 # Performance Configuration Manager
 try:
@@ -184,55 +188,53 @@ except ImportError as e:
     ZERO_SHOT_MANAGER_AVAILABLE = False
 
 # ============================================================================
-# MANAGER AVAILABILITY SUMMARY - Updated for Step 10.11-3
+# MANAGER AVAILABILITY SUMMARY
 # ============================================================================
 
 def get_manager_status() -> dict:
     """
-    Get status of all available managers - Updated for Step 10.11-3
+    Get status of all available managers
     
     Returns:
         Dictionary showing availability of all manager types
     """
     return {
         'analysis_parameters_manager': ANALYSIS_PARAMETERS_MANAGER_AVAILABLE,
-        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,
+        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,  # NEW
         'crisis_pattern_manager': CRISIS_PATTERN_MANAGER_AVAILABLE,
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
-        'model_ensemble_manager': MODEL_ENSEMBLE_MANAGER_AVAILABLE,  # Primary model manager
-        'models_manager': False,  # STEP 10.11-3: Removed/consolidated
+        'model_ensemble_manager': MODEL_ENSEMBLE_MANAGER_AVAILABLE,
+        'models_manager': MODELS_MANAGER_AVAILABLE,
         'performance_config_manager': PERFORMANCE_CONFIG_MANAGER_AVAILABLE,
         'pydantic_manager': PYDANTIC_MANAGER_AVAILABLE,
         'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
         'settings_manager': SETTINGS_MANAGER_AVAILABLE,
         'storage_config_manager': STORAGE_CONFIG_MANAGER_AVAILABLE,
         'threshold_mapping_manager': THRESHOLD_MAPPING_MANAGER_AVAILABLE,
-        'unified_config_manager': UNIFIED_CONFIG_MANAGER_AVAILABLE,  # Fixed: Use correct variable name
+        'unified_config_managers': UNIFIED_CONFIG_MANAGER_AVAILABLE,
         'zero_shot_manager': ZERO_SHOT_MANAGER_AVAILABLE,
-        'step_10_11_3_consolidation': True,
-        'primary_model_manager': 'ModelEnsembleManager'
     }
 
 # ============================================================================
-# STEP 10.11-3: UNIFIED CONFIGURATION EXPORTS - MODELS MANAGER CONSOLIDATED
+# STEP 10.8: UNIFIED CONFIGURATION EXPORTS WITH CONTEXT PATTERN MANAGER
 # ============================================================================
 
 __all__ = [
     'AnalysisParametersManager',
     'create_analysis_parameters_manager',
-    'ContextPatternManager',
-    'create_context_pattern_manager',
+    'ContextPatternManager',  # NEW
+    'create_context_pattern_manager',  # NEW
     'CrisisPatternManager',
     'create_crisis_pattern_manager',
     'FeatureConfigManager',
     'create_feature_config_manager',
     'LoggingConfigManager',
     'create_logging_config_manager',
-    'ModelEnsembleManager',  # Primary model manager (Step 10.11-3)
-    'create_model_ensemble_manager',  # Primary model manager factory (Step 10.11-3)
-    # 'ModelsManager',  # REMOVED in Step 10.11-3
-    # 'create_models_manager',  # REMOVED in Step 10.11-3
+    'ModelEnsembleManager',
+    'create_model_ensemble_manager',
+    'ModelsManager',
+    'create_models_manager',
     'PerformanceConfigManager',
     'create_performance_config_manager',
     'PydanticManager', 
@@ -254,9 +256,8 @@ __all__ = [
 ]
 
 # ============================================================================
-# STEP 10.11-3 COMPLETION LOG
+# STEP 10.8 COMPLETION LOG
 # ============================================================================
 
-logger.info("✅ Managers __init__.py Step 10.11-3 complete - ModelsManager consolidated into ModelEnsembleManager")
-#logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")
-logger.info("🎯 Step 10.11-3: Primary model manager is now ModelEnsembleManager")
+logger.info("✅ Managers __init__.py Step 10.8 complete - ContextPatternManager added")
+logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")
