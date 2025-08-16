@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-2",
+    "file_version": "v3.1-3d-10.11-3",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -104,34 +104,98 @@
   "validation": {
     "description": "Model ensemble validation rules and constraints",
     "model_definitions": {
-      "name": {
-        "type": "string",
-        "required": true,
-        "min_length": 5,
-        "description": "HuggingFace model name"
+      "depression": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "min_length": 5,
+          "description": "HuggingFace model name"
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 1.0],
+          "description": "Model weight in ensemble (should sum to 1.0 across all models)"
+        },
+        "type": {
+          "type": "string",
+          "allowed_values": ["text-classification", "sequence-classification"],
+          "description": "Model type classification"
+        },
+        "pipeline_task": {
+          "type": "string",
+          "allowed_values": ["text-classification", "sentiment-analysis"],
+          "description": "HuggingFace pipeline task"
+        },
+        "cache_dir": {
+          "type": "string",
+          "description": "Model cache directory path"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether model is enabled for ensemble"
+        }
       },
-      "weight": {
-        "type": "float",
-        "range": [0.0, 1.0],
-        "description": "Model weight in ensemble (should sum to 1.0 across all models)"
+      "sentiment": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "min_length": 5,
+          "description": "HuggingFace model name"
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 1.0],
+          "description": "Model weight in ensemble (should sum to 1.0 across all models)"
+        },
+        "type": {
+          "type": "string",
+          "allowed_values": ["text-classification", "sequence-classification"],
+          "description": "Model type classification"
+        },
+        "pipeline_task": {
+          "type": "string",
+          "allowed_values": ["text-classification", "sentiment-analysis"],
+          "description": "HuggingFace pipeline task"
+        },
+        "cache_dir": {
+          "type": "string",
+          "description": "Model cache directory path"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether model is enabled for ensemble"
+        }
       },
-      "type": {
-        "type": "string",
-        "allowed_values": ["text-classification", "sequence-classification"],
-        "description": "Model type classification"
-      },
-      "pipeline_task": {
-        "type": "string",
-        "allowed_values": ["text-classification", "sentiment-analysis"],
-        "description": "HuggingFace pipeline task"
-      },
-      "cache_dir": {
-        "type": "string",
-        "description": "Model cache directory path"
-      },
-      "enabled": {
-        "type": "boolean",
-        "description": "Whether model is enabled for ensemble"
+      "emotional_distress": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "min_length": 5,
+          "description": "HuggingFace model name"
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 1.0],
+          "description": "Model weight in ensemble (should sum to 1.0 across all models)"
+        },
+        "type": {
+          "type": "string",
+          "allowed_values": ["text-classification", "sequence-classification"],
+          "description": "Model type classification"
+        },
+        "pipeline_task": {
+          "type": "string",
+          "allowed_values": ["text-classification", "sentiment-analysis"],
+          "description": "HuggingFace pipeline task"
+        },
+        "cache_dir": {
+          "type": "string",
+          "description": "Model cache directory path"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether model is enabled for ensemble"
+        }
       }
     },
     "ensemble_config": {
