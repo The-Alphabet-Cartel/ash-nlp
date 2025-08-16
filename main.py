@@ -1,7 +1,7 @@
 # ash-nlp/main.py
 """
 Ash-NLP Main Application Entry Point for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.11-3-2
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
