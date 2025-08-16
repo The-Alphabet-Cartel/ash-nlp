@@ -35,6 +35,7 @@ class ThresholdMappingManager:
         # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
         self.unified_config = unified_config_manager
         self.model_ensemble_manager = model_ensemble_manager
+        self.config = None
         self._validation_errors = []
         
         # Load threshold mapping configuration using unified manager
@@ -523,13 +524,25 @@ class ThresholdMappingManager:
     # ========================================================================
      
     def get_current_ensemble_mode(self) -> str:
-        """Get current ensemble mode from ModelEnsembleManager or unified config"""
-        if self.model_ensemble_manager:
-            return self.model_ensemble_manager.get_ensemble_mode()
+        """Get current ensemble mode UnifiedConfigManager"""
+        logger.debug("📋 Getting ensemble mode...")
+        self.config = self.unified_config.get_model_configuration()
+        if self.config:
+            mode = self.config.get('ensemble_config', {}).get('mode', 'majority')
+            logger.debug(f"🔧 Ensemble mode: {mode}")
+            return mode
         else:
             mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
-            logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
+            logger.error("⚠️ Ensemble mode not found...")
             return mode
+
+#        if self.model_ensemble_manager:
+#            return self.model_ensemble_manager.get_ensemble_mode()
+#            logger.debug(f"🔧 Ensemble mode from model_ensemble_manager: {mode}")
+#        else:
+#            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
+#            logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
+#            return mode
     
     def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
         """
