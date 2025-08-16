@@ -258,5 +258,5 @@ __all__ = [
 # ============================================================================
 
 logger.info("✅ Managers __init__.py Step 10.11-3 complete - ModelsManager consolidated into ModelEnsembleManager")
-logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")
+#logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")
 logger.info("🎯 Step 10.11-3: Primary model manager is now ModelEnsembleManager")
