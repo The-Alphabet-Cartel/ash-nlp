@@ -71,7 +71,7 @@ class AnalysisParametersManager:
             logger.info("✅ Analysis parameters loaded from JSON configuration with environment overrides")
             logger.debug(f"📋 Configuration version: {config_version}")
             logger.debug(f"🏗️ Compliance: {compliance}")
-            logger.debug(f"🔧 Architecture: {self.analysis_config.get('architecture', 'v3.1-hybrid')}")
+            logger.debug(f"🔧 Architecture: {self.analysis_config.get('architecture', 'v3.1')}")
             
         except Exception as e:
             logger.error(f"❌ Failed to load analysis parameters: {e}")
