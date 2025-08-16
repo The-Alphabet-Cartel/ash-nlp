@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-1
+FILE VERSION: v3.1-3d-10.12-2
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -84,7 +84,6 @@ class UnifiedConfigManager:
             config_dir: Directory containing JSON configuration files
         """
         self.config_dir = Path(config_dir)
-        self.config_cache = {}
         self.env_override_pattern = re.compile(r'\$\{([^}]+)\}')
         
         # STEP 10.9 FIX: Initialize config_files BEFORE schema initialization
@@ -941,9 +940,6 @@ class UnifiedConfigManager:
         Returns:
             Processed configuration dictionary
         """
-        if config_name in self.config_cache:
-            return self.config_cache[config_name]
-        
         config_file = self.config_files.get(config_name)
         if not config_file:
             logger.error(f"❌ Unknown configuration: {config_name}")
@@ -964,9 +960,6 @@ class UnifiedConfigManager:
             
             # STEP 10.9: Legacy fallback for any remaining placeholders (should be minimal now)
             processed_config = self._apply_defaults_fallback(processed_config)
-            
-            # Cache the processed configuration
-            self.config_cache[config_name] = processed_config
             
             logger.info(f"✅ Loaded configuration: {config_name}")
             return processed_config
@@ -1032,12 +1025,6 @@ class UnifiedConfigManager:
                 return consolidated_config
         
         try:
-            # Check if we have a cached version first
-            #cache_key = f"crisis_patterns_{pattern_type}"
-            #if cache_key in self.config_cache:
-            #    logger.debug(f"📋 Using cached config for {pattern_type}")
-            #    return self.config_cache[cache_key]
-            
             # Load the specific pattern configuration file (follows established pattern)
             config_file_path = self.config_dir / f"{pattern_type}.json"
             
@@ -1057,9 +1044,6 @@ class UnifiedConfigManager:
             
             # Apply legacy defaults fallback if present
             processed_config = self._apply_defaults_fallback(processed_config)
-            
-            # Cache the processed configuration
-            #self.config_cache[cache_key] = processed_config
             
             logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
             
@@ -1146,7 +1130,6 @@ class UnifiedConfigManager:
             'enhancement': 'Enhanced Environment Variable Resolution + JSON-Driven Schema Validation',
             'config_files': len(self.config_files),
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
-            'cache_size': len(self.config_cache),
             'config_directory': str(self.config_dir),
             'architecture': 'Clean v3.1 with Enhanced Configuration Resolution + JSON-Driven Validation',
             'consolidation_status': {
