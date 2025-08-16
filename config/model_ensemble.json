@@ -205,7 +205,7 @@
       "device_map": "auto",
       "load_in_8bit": false,
       "load_in_4bit": false,
-      "torch_dtype": "float16",
+      "torch_dtype": "float16"
     },
     "validation": {
       "device": {
