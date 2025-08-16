@@ -1033,10 +1033,10 @@ class UnifiedConfigManager:
         
         try:
             # Check if we have a cached version first
-            cache_key = f"crisis_patterns_{pattern_type}"
-            if cache_key in self.config_cache:
-                logger.debug(f"📋 Using cached config for {pattern_type}")
-                return self.config_cache[cache_key]
+            #cache_key = f"crisis_patterns_{pattern_type}"
+            #if cache_key in self.config_cache:
+            #    logger.debug(f"📋 Using cached config for {pattern_type}")
+            #    return self.config_cache[cache_key]
             
             # Load the specific pattern configuration file (follows established pattern)
             config_file_path = self.config_dir / f"{pattern_type}.json"
@@ -1059,7 +1059,7 @@ class UnifiedConfigManager:
             processed_config = self._apply_defaults_fallback(processed_config)
             
             # Cache the processed configuration
-            self.config_cache[cache_key] = processed_config
+            #self.config_cache[cache_key] = processed_config
             
             logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
             
