@@ -761,14 +761,13 @@ class ModelEnsembleManager:
     
     def get_ensemble_mode(self) -> str:
         """Get current ensemble mode"""
-        return self.config.get('ensemble_mode', 'consensus')
+        return self.config.get('mode', 'majority')
     
     def get_ensemble_settings(self) -> Dict[str, Any]:
-        """Get ensemble settings including validation and performance"""
+        """Get ensemble settings including validation"""
         return {
             'mode': self.get_ensemble_mode(),
-            'validation': self.config.get('validation', {}),
-            'performance': self.config.get('performance', {})
+            'validation': self.config.get('validation', {})
         }
     
     def get_current_ensemble_mode(self) -> str:
