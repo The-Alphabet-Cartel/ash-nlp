@@ -192,6 +192,23 @@
         "fallback_behavior": "enhanced_crisis",
         "case_sensitive": false,
         "normalize_labels": true
+      },
+      "validation": {
+        "default_label_set": {
+          "type": "string"
+        },
+        "enable_label_switching": {
+          "type": "boolean"
+        },
+        "fallback_behavior": {
+          "type": "string"
+        },
+        "case_sensitive": {
+          "type": "boolean"
+        },
+        "normalize_labels": {
+          "type": "boolean"
+        }
       }
     }
   },
@@ -210,6 +227,28 @@
       "confidence_threshold": 0.3,
       "max_labels": 5,
       "normalize_scores": true
+    },
+    "validation": {
+      "track_performance": {
+        "type": "boolean"
+      },
+      "hypothesis_template": {
+        "type": "string"
+      },
+      "multi_label": {
+        "type": "boolean"
+      },
+      "confidence_threshold": {
+        "type": "float",
+        "range": [0.0, 1.0],
+      },
+      "max_labels": {
+        "type": "integer",
+        "range": [1, 10],
+      },
+      "normalize_scores": {
+        "type": "boolean"
+      }
     }
   }
 }
