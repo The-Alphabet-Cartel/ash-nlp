@@ -521,13 +521,12 @@ class ThresholdMappingManager:
     # ========================================================================
     # MODE-AWARE THRESHOLD ACCESS METHODS (PRESERVED)
     # ========================================================================
-    
+     
     def get_current_ensemble_mode(self) -> str:
         """Get current ensemble mode from ModelEnsembleManager or unified config"""
         if self.model_ensemble_manager:
-            return self.model_ensemble_manager.get_current_ensemble_mode()
+            return self.model_ensemble_manager.get_ensemble_mode()
         else:
-            # STEP 9 CHANGE: Use unified_config instead of os.getenv()
             mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
             logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
             return mode
