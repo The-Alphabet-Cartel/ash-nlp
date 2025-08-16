@@ -32,7 +32,7 @@ class ZeroShotManager:
             raise ValueError("UnifiedConfigManager is required for ZeroShotManager")
         
         self.unified_config = unified_config_manager
-        self.current_label_set = "crisis_labels"  # Default to crisis detection
+        self.current_label_set = "enhanced_crisis"
         self.label_configuration = {}
         self.current_labels = {}
         self.zero_shot_settings = {}
@@ -60,7 +60,7 @@ class ZeroShotManager:
             
             # Extract v3.1 configuration structure
             self.label_configuration = label_config.get('label_configuration', {})
-            self.label_mapping_config = self.label_configuration.get('label_mapping', {})
+            self.label_mapping_config = label_config.get('label_mapping', {})
             self.zero_shot_settings = label_config.get('zero_shot_settings', {})
             
             if not self.label_configuration:
@@ -87,53 +87,116 @@ class ZeroShotManager:
         logger.warning("⚠️ Using fallback label configuration - limited functionality")
         
         self.label_configuration = {
-            'crisis_labels': {
-                'description': 'Crisis detection label definitions (fallback)',
-                'high_crisis': 'high crisis',
-                'medium_crisis': 'medium crisis',
-                'low_crisis': 'low crisis',
-                'no_crisis': 'no crisis',
-                'defaults': {
-                    'high_crisis': 'high crisis',
-                    'medium_crisis': 'medium crisis', 
-                    'low_crisis': 'low crisis',
-                    'no_crisis': 'no crisis'
-                }
+            "description": "Fallback baseline labels",
+            "depression": "fallback_depression_labels",
+            "sentiment": "fallback_sentiment_labels", 
+            "emotional_distress": "fallback_distress_labels",
+            "defaults": {
+                "depression": [
+                    "person experiencing severe clinical depression with major functional impairment",
+                    "person showing moderate depression with professional intervention needed",
+                    "person with mild depressive episode with manageable symptoms and temporary low mood",
+                    "person with stable mental health with normal emotional fluctuations and no depression signs",
+                    "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
+                ],
+                "sentiment": [
+                    "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
+                    "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment",
+                    "person displaying mixed or neutral emotional state without strong positive or negative feelings",
+                    "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
+                    "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
+                    "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
+                ],
+                "emotional_distress": [
+                    "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
+                    "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
+                    "person showing moderate distress with some difficulty managing emotions and daily responsibilities",
+                    "person handling normal life stress with adequate coping strategies and emotional regulation",
+                    "person demonstrating strong emotional resilience with healthy stress management and adaptation",
+                    "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
+                ]
             },
-            'sentiment_labels': {
-                'description': 'Sentiment analysis label definitions (fallback)',
-                'positive': 'positive',
-                'negative': 'negative',
-                'neutral': 'neutral',
-                'defaults': {
-                    'positive': 'positive',
-                    'negative': 'negative',
-                    'neutral': 'neutral'
-                }
-            },
-            'label_mapping': {
-                'enable_label_switching': True,
-                'default_label_set': 'crisis_labels',
-                'fallback_behavior': 'use_defaults',
-                'defaults': {
-                    'enable_label_switching': True,
-                    'default_label_set': 'crisis_labels',
-                    'fallback_behavior': 'use_defaults'
+            "validation": {
+                "depression": {
+                    "type": "list"
+                },
+                "sentiment": {
+                    "type": "list"
+                },
+                "emotional_distress": {
+                    "type": "list"
                 }
             }
         }
         
-        self.label_mapping_config = self.label_configuration.get('label_mapping', {})
+        self.label_mapping_config = {
+            "default_label_set": "enhanced_crisis",
+            "enable_label_switching": true,
+            "fallback_behavior": "enhanced_crisis",
+            "case_sensitive": false,
+            "normalize_labels": true,
+            "defaults": {
+                "default_label_set": "enhanced_crisis",
+                "enable_label_switching": true,
+                "fallback_behavior": "enhanced_crisis",
+                "case_sensitive": false,
+                "normalize_labels": true
+            },
+            "validation": {
+                "default_label_set": {
+                    "type": "string"
+                },
+                "enable_label_switching": {
+                    "type": "boolean"
+                },
+                "fallback_behavior": {
+                    "type": "string"
+                },
+                "case_sensitive": {
+                    "type": "boolean"
+                },
+                "normalize_labels": {
+                    "type": "boolean"
+                }
+            }
+        }
+        
         self.zero_shot_settings = {
-            'hypothesis_template': 'This text expresses {}.',
-            'multi_label': False,
-            'confidence_threshold': 0.5,
-            'max_labels': 1,
-            'defaults': {
-                'hypothesis_template': 'This text expresses {}.',
-                'multi_label': False,
-                'confidence_threshold': 0.5,
-                'max_labels': 1
+            "track_performance": false,
+            "hypothesis_template": "This text expresses {}.",
+            "multi_label": false,
+            "confidence_threshold": 0.3,
+            "max_labels": 5,
+            "normalize_scores": true,
+            "defaults": {
+                "track_performance": false,
+                "hypothesis_template": "This text expresses {label}",
+                "multi_label": false,
+                "confidence_threshold": 0.3,
+                "max_labels": 5,
+                "normalize_scores": true
+            },
+            "validation": {
+                "track_performance": {
+                    "type": "boolean"
+                },
+                "hypothesis_template": {
+                    "type": "string"
+                },
+                "multi_label": {
+                    "type": "boolean"
+                },
+                "confidence_threshold": {
+                    "type": "float",
+                    "range": [0.0, 1.0]
+                },
+                "max_labels": {
+                    "type": "integer",
+                    "range": [1, 10]
+                },
+                "normalize_scores": {
+                    "type": "boolean"
+                }
             }
         }
     
