@@ -181,9 +181,9 @@ def initialize_unified_managers():
         zero_shot_manager = create_zero_shot_manager(unified_config)
         logger.info("✅ Zero shot manager initialized...")
         
-        logger.info("🔧 Initializing context pattern manager...")  # NEW: Step 10.8
-        context_pattern_manager = create_context_pattern_manager(unified_config)  # NEW: Step 10.8
-        logger.info("✅ Context pattern manager initialized...")  # NEW: Step 10.8
+        logger.info("🔧 Initializing context pattern manager...")
+        context_pattern_manager = create_context_pattern_manager(unified_config)
+        logger.info("✅ Context pattern manager initialized...")
 
         logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
@@ -211,7 +211,7 @@ def initialize_unified_managers():
             threshold_mapping_manager=threshold_mapping,
             feature_config_manager=feature_config,
             performance_config_manager=performance_config,
-            context_pattern_manager=context_pattern_manager,  # NEW: Step 10.8
+            context_pattern_manager=context_pattern_manager,
         )
         logger.info("✅ Analysis components initialized")
         
@@ -219,7 +219,7 @@ def initialize_unified_managers():
             'unified_config': unified_config,
             'analysis_parameters': analysis_parameters,
             'crisis_pattern': crisis_pattern,
-            'context_pattern': context_pattern_manager,  # NEW: Step 10.8
+            'context_pattern': context_pattern_manager,
             'feature_config': feature_config,
             'logging_config': logging_config,
             'model_ensemble_manager': model_ensemble_manager,
@@ -326,7 +326,7 @@ def create_fastapi_app():
                 app, 
                 managers['unified_config'], 
                 managers['settings'], 
-                zero_shot_manager=managers['zero_shot_manager'],  # FIX: Pass actual ZeroShotManager
+                zero_shot_manager=managers['zero_shot_manager'],
                 crisis_pattern_manager=managers['crisis_pattern'],
                 model_ensemble_manager=managers['model_ensemble_manager'],
                 analysis_parameters_manager=managers['analysis_parameters'],
