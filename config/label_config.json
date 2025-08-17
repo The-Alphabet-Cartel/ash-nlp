@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-1",
+    "file_version": "v3.1-3d-10.12-2",
     "last_modified": "2025-08-15",
     "description": "Zero-Shot Model Labels Configuration for Ash NLP Service",
     "phase": "3d Step 10.11 - ZeroShotManager Compatible Structure",
@@ -12,7 +12,7 @@
       "NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE"
     ]
   },
-
+ 
   "label_configuration": {
     "enhanced_crisis": {
       "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
