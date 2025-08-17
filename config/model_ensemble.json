@@ -12,7 +12,7 @@
     "cleanup_note": "Step 10.10 - Mapped model weights to existing .env.template variables, preserved others for .env.template addition"
   },
 
-  "ensemble_models":{
+  "ensemble_models": {
     "model_definitions": {
       "depression": {
         "name": "${NLP_MODEL_DEPRESSION_NAME}",
