@@ -449,29 +449,40 @@ class LearningSystemManager:
             adjustment_amount = base_adjustment * severity_multiplier * learning_rate
             new_threshold = current_threshold + adjustment_amount
             
-            # Apply bounds and drift limits
-            new_threshold = self._apply_threshold_bounds(new_threshold, params)
-            drift = abs(new_threshold - current_threshold)
+            # Apply bounds and drift limits BEFORE recording
+            bounded_threshold = self._apply_threshold_bounds(new_threshold, params)
+            final_adjustment = bounded_threshold - current_threshold
+            drift = abs(final_adjustment)
             
+            # Check drift limits
             if drift > params['max_drift']:
-                new_threshold = current_threshold + (params['max_drift'] * (-1 if adjustment_amount < 0 else 1))
-                adjustment_amount = new_threshold - current_threshold
+                direction = -1 if adjustment_amount < 0 else 1
+                bounded_threshold = current_threshold + (params['max_drift'] * direction)
+                bounded_threshold = self._apply_threshold_bounds(bounded_threshold, params)
+                final_adjustment = bounded_threshold - current_threshold
+                drift = abs(final_adjustment)
             
-            # Record adjustment
-            self._record_adjustment("false_positive", current_threshold, new_threshold, 
-                                  adjustment_amount, crisis_level)
-            
-            return self._generate_adjustment_result(
-                current_threshold, new_threshold, 
-                f"Threshold reduced for false positive ({crisis_level} severity)", True,
-                adjustment_amount, drift
-            )
+            # Only record adjustment if there's an actual change
+            if abs(final_adjustment) > 0.0001:  # Avoid floating point precision issues
+                self._record_adjustment("false_positive", current_threshold, bounded_threshold, 
+                                      final_adjustment, crisis_level)
+                
+                return self._generate_adjustment_result(
+                    current_threshold, bounded_threshold, 
+                    f"Threshold reduced for false positive ({crisis_level} severity)", True,
+                    final_adjustment, drift
+                )
+            else:
+                return self._generate_adjustment_result(
+                    current_threshold, current_threshold, 
+                    "No adjustment needed - threshold already at optimal value", False
+                )
             
         except Exception as e:
-            return self.shared_utils.handle_error_with_fallback(
-                e, self._generate_adjustment_result(current_threshold, current_threshold, 
-                                                   f"Adjustment failed: {str(e)}", False),
-                "false_positive_adjustment", "adjust_threshold_for_false_positive"
+            self.logger.error(f"❌ Error in false positive adjustment: {e}")
+            return self._generate_adjustment_result(
+                current_threshold, current_threshold, 
+                f"Adjustment failed: {str(e)}", False
             )
     
     def adjust_threshold_for_false_negative(self, current_threshold: float, 
@@ -506,29 +517,40 @@ class LearningSystemManager:
             adjustment_amount = base_adjustment * severity_multiplier * learning_rate
             new_threshold = current_threshold + adjustment_amount
             
-            # Apply bounds and drift limits
-            new_threshold = self._apply_threshold_bounds(new_threshold, params)
-            drift = abs(new_threshold - current_threshold)
+            # Apply bounds and drift limits BEFORE recording
+            bounded_threshold = self._apply_threshold_bounds(new_threshold, params)
+            final_adjustment = bounded_threshold - current_threshold
+            drift = abs(final_adjustment)
             
+            # Check drift limits
             if drift > params['max_drift']:
-                new_threshold = current_threshold + (params['max_drift'] * (1 if adjustment_amount > 0 else -1))
-                adjustment_amount = new_threshold - current_threshold
+                direction = 1 if adjustment_amount > 0 else -1
+                bounded_threshold = current_threshold + (params['max_drift'] * direction)
+                bounded_threshold = self._apply_threshold_bounds(bounded_threshold, params)
+                final_adjustment = bounded_threshold - current_threshold
+                drift = abs(final_adjustment)
             
-            # Record adjustment
-            self._record_adjustment("false_negative", current_threshold, new_threshold, 
-                                  adjustment_amount, crisis_level)
-            
-            return self._generate_adjustment_result(
-                current_threshold, new_threshold, 
-                f"Threshold increased for false negative ({crisis_level} severity)", True,
-                adjustment_amount, drift
-            )
+            # Only record adjustment if there's an actual change
+            if abs(final_adjustment) > 0.0001:  # Avoid floating point precision issues
+                self._record_adjustment("false_negative", current_threshold, bounded_threshold, 
+                                      final_adjustment, crisis_level)
+                
+                return self._generate_adjustment_result(
+                    current_threshold, bounded_threshold, 
+                    f"Threshold increased for false negative ({crisis_level} severity)", True,
+                    final_adjustment, drift
+                )
+            else:
+                return self._generate_adjustment_result(
+                    current_threshold, current_threshold, 
+                    "No adjustment needed - threshold already at optimal value", False
+                )
             
         except Exception as e:
-            return self.shared_utils.handle_error_with_fallback(
-                e, self._generate_adjustment_result(current_threshold, current_threshold, 
-                                                   f"Adjustment failed: {str(e)}", False),
-                "false_negative_adjustment", "adjust_threshold_for_false_negative"
+            self.logger.error(f"❌ Error in false negative adjustment: {e}")
+            return self._generate_adjustment_result(
+                current_threshold, current_threshold, 
+                f"Adjustment failed: {str(e)}", False
             )
     
     def process_learning_feedback(self, feedback_type: str, current_thresholds: Dict[str, float], 
@@ -611,12 +633,26 @@ class LearningSystemManager:
             self.logger.info(f"✅ Daily adjustment count reset for {today}")
     
     def _apply_threshold_bounds(self, threshold: float, params: Dict[str, Any]) -> float:
-        """Apply sensitivity bounds to threshold value"""
-        bounds = params['sensitivity_bounds']
-        min_threshold = bounds['min_global_sensitivity']
-        max_threshold = bounds['max_global_sensitivity']
-        
-        return max(min_threshold, min(threshold, max_threshold))
+        """Apply sensitivity bounds to threshold value with strict enforcement"""
+        try:
+            bounds = params['sensitivity_bounds']
+            min_threshold = bounds['min_global_sensitivity']
+            max_threshold = bounds['max_global_sensitivity']
+            
+            # Strict bounds enforcement
+            bounded_value = max(min_threshold, min(threshold, max_threshold))
+            
+            # Log bounds enforcement if applied
+            if bounded_value != threshold:
+                self.logger.debug(f"🔒 Bounds enforced: {threshold:.4f} → {bounded_value:.4f} "
+                                f"[{min_threshold}, {max_threshold}]")
+            
+            return bounded_value
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error applying threshold bounds: {e}")
+            # Return safe fallback value
+            return max(0.1, min(threshold, 2.0))
     
     def _record_adjustment(self, adjustment_type: str, old_threshold: float, 
                           new_threshold: float, adjustment_amount: float, 
