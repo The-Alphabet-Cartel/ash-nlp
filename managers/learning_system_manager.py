@@ -280,7 +280,8 @@ class LearningSystemManager:
             
         except Exception as e:
             self.logger.error(f"❌ Error loading learning system parameters: {e}")
-            return self._get_default_learning_config()
+            # Re-raise the exception to prevent adjustments when SharedUtils fails
+            raise RuntimeError(f"Failed to load learning parameters: {str(e)}")
     
     def get_learning_thresholds(self) -> Dict[str, Any]:
         """
