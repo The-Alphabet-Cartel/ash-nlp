@@ -621,9 +621,14 @@ class LearningSystemManager:
     
     def _can_make_adjustment(self) -> bool:
         """Check if daily adjustment limit allows new adjustment"""
-        self._reset_daily_count_if_needed()
-        params = self.get_learning_parameters()
-        return self._daily_adjustment_count < params['max_adjustments_per_day']
+        try:
+            self._reset_daily_count_if_needed()
+            params = self.get_learning_parameters()
+            return self._daily_adjustment_count < params['max_adjustments_per_day']
+        except Exception as e:
+            # If we can't load parameters, don't allow adjustments
+            self.logger.warning(f"⚠️ Cannot verify adjustment limits, blocking adjustment: {e}")
+            return False
     
     def _reset_daily_count_if_needed(self) -> None:
         """Reset daily adjustment count if new day"""
@@ -732,9 +737,14 @@ class LearningSystemManager:
     
     def get_remaining_daily_adjustments(self) -> int:
         """Get remaining adjustment count for today"""
-        self._reset_daily_count_if_needed()
-        params = self.get_learning_parameters()
-        return max(0, params['max_adjustments_per_day'] - self._daily_adjustment_count)
+        try:
+            self._reset_daily_count_if_needed()
+            params = self.get_learning_parameters()
+            return max(0, params['max_adjustments_per_day'] - self._daily_adjustment_count)
+        except Exception as e:
+            # Return safe default when parameter loading fails
+            self.logger.warning(f"⚠️ Could not get remaining adjustments, using default: {e}")
+            return max(0, 50 - self._daily_adjustment_count)  # Default max_adjustments_per_day = 50
     
     def get_adjustment_history(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get recent adjustment history"""
