@@ -1,7 +1,7 @@
 # ash-nlp/managers/zero_shot_manager.py
 """
 Zero-Shot Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-1
+FILE VERSION: v3.1-3d-10.12-2
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -41,13 +41,13 @@ class ZeroShotManager:
         logger.info("✅ ZeroShotManager v3.1 initialized with UnifiedConfigManager integration")
         
         # Load v3.1 label configuration
-        self._load_v31_label_configuration()
+        self._load_label_configuration()
         
         # Set initial label set from unified config
         initial_set = self.unified_config.get_env('NLP_ZERO_SHOT_DEFAULT_LABEL_SET', 'crisis_labels')
         self.switch_label_set(initial_set)
     
-    def _load_v31_label_configuration(self):
+    def _load_label_configuration(self):
         """Load v3.1 label configuration from JSON with environment overrides"""
         try:
             # Load label configuration using unified config manager
@@ -233,10 +233,10 @@ class ZeroShotManager:
             
             # Try fallback from configuration
             try:
-                fallback_set = self.label_mapping_config.get('default_label_set', 'crisis_labels')
+                fallback_set = self.label_mapping_config.get('default_label_set', 'enhanced_crisis')
                 defaults = self.label_mapping_config.get('defaults', {})
                 if not fallback_set:
-                    fallback_set = defaults.get('default_label_set', 'crisis_labels')
+                    fallback_set = defaults.get('default_label_set', 'enhanced_crisis')
                 
                 if fallback_set in available_sets:
                     logger.info(f"🔧 Using configured fallback label set: {fallback_set}")
@@ -280,41 +280,10 @@ class ZeroShotManager:
             logger.error(f"❌ Error switching to label set {label_set_name}: {e}")
             return False
     
-    def get_label_set_info(self, label_set_name: str = None) -> Dict[str, Any]:
-        """
-        Get detailed information about a label set
-        
-        Args:
-            label_set_name: Name of label set (uses current if None)
-            
-        Returns:
-            Dictionary with label set information
-        """
-        if label_set_name is None:
-            label_set_name = self.current_label_set
-        
-        available_sets = self.get_available_label_sets()
-        if label_set_name not in available_sets:
-            return {'error': f'Label set {label_set_name} not found'}
-        
-        set_config = self.label_configuration[label_set_name]
-        
-        return {
-            'name': label_set_name,
-            'description': set_config.get('description', ''),
-            'total_labels': len([k for k, v in set_config.items() 
-                               if k not in ['description', 'defaults', 'validation'] and isinstance(v, str)]),
-            'labels': [k for k, v in set_config.items() 
-                      if k not in ['description', 'defaults', 'validation'] and isinstance(v, str)],
-            'is_current': label_set_name == self.current_label_set,
-            'v31_compliant': True
-        }
-    
     def get_current_label_set_name(self) -> str:
         """Get current label set name"""
         return self.current_label_set
     
-    # Legacy method names for backward compatibility with admin endpoints
     def get_current_label_set(self) -> str:
         """Get current label set name (legacy alias)"""
         return self.get_current_label_set_name()
@@ -322,68 +291,6 @@ class ZeroShotManager:
     def get_all_labels(self) -> Dict[str, str]:
         """Get all labels for current set"""
         return self.current_labels.copy()
-    
-    def get_labels_for_category(self, category: str) -> str:
-        """
-        Get label for a specific category
-        
-        Args:
-            category: Category name (e.g., 'high_crisis', 'positive', etc.)
-            
-        Returns:
-            Label string for the category
-        """
-        return self.current_labels.get(category, '')
-    
-    # Specific label getters for different categories
-    def get_crisis_labels(self) -> Dict[str, str]:
-        """Get crisis detection labels"""
-        if self.current_label_set == 'crisis_labels':
-            return self.current_labels.copy()
-        return {}
-    
-    def get_sentiment_labels(self) -> Dict[str, str]:
-        """Get sentiment analysis labels"""
-        if self.current_label_set == 'sentiment_labels':
-            return self.current_labels.copy()
-        return {}
-    
-    def get_emotion_labels(self) -> Dict[str, str]:
-        """Get emotion detection labels"""
-        if self.current_label_set == 'emotion_labels':
-            return self.current_labels.copy()
-        return {}
-    
-    def get_mental_health_labels(self) -> Dict[str, str]:
-        """Get mental health specific labels"""
-        if self.current_label_set == 'mental_health_labels':
-            return self.current_labels.copy()
-        return {}
-    
-    def get_community_labels(self) -> Dict[str, str]:
-        """Get LGBTQIA+ community specific labels"""
-        if self.current_label_set == 'community_labels':
-            return self.current_labels.copy()
-        return {}
-    
-    # Legacy compatibility methods for old admin endpoints
-    def get_depression_labels(self) -> List[str]:
-        """Get depression detection labels (legacy compatibility)"""
-        if 'depression_risk' in self.current_labels:
-            return [self.current_labels['depression_risk']]
-        return list(self.current_labels.values())[:4] if len(self.current_labels) >= 4 else list(self.current_labels.values())
-    
-    def get_sentiment_labels_list(self) -> List[str]:
-        """Get sentiment analysis labels as list (legacy compatibility)"""
-        if self.current_label_set == 'sentiment_labels':
-            return list(self.current_labels.values())
-        return ['positive', 'negative', 'neutral']  # Fallback
-    
-    def get_emotional_distress_labels(self) -> List[str]:
-        """Get emotional distress labels (legacy compatibility)"""
-        if self.current_label_set == 'mental_health_labels':
-            return list(self.current_labels.values())
-        return list(self.current_labels.values()) if self.current_labels else []
     
     def get_manager_status(self) -> Dict[str, Any]:
         """Get current manager status"""
@@ -421,55 +328,6 @@ class ZeroShotManager:
             'unified_config_manager': 'operational',
             'v31_format': True
         }
-    
-    def validate_label_set_configuration(self) -> Dict[str, Any]:
-        """Validate that the configured label set is available and properly loaded"""
-        configured_set = self.unified_config.get_env('NLP_ZERO_SHOT_LABEL_SET', 'crisis_labels')
-        available_sets = self.get_available_label_sets()
-        
-        validation_result = {
-            'valid': True,
-            'configured_set': configured_set,
-            'active_set': self.current_label_set,
-            'issues': [],
-            'v31_compliant': True
-        }
-        
-        # Check if configured set exists
-        if configured_set not in available_sets:
-            validation_result['valid'] = False
-            validation_result['issues'].append(f"Configured label set '{configured_set}' not found")
-        
-        # Check if current set matches configuration
-        if configured_set != self.current_label_set:
-            validation_result['issues'].append(f"Active set '{self.current_label_set}' differs from configured '{configured_set}'")
-        
-        # Check if current labels are loaded
-        if not self.current_labels:
-            validation_result['valid'] = False
-            validation_result['issues'].append("No labels currently loaded")
-        
-        # Validate zero-shot settings
-        hypothesis_template = self.zero_shot_settings.get('hypothesis_template', '')
-        if '{}' not in hypothesis_template:
-            validation_result['issues'].append("Hypothesis template missing '{}' placeholder")
-        
-        return validation_result
-    
-    def get_zero_shot_settings(self) -> Dict[str, Any]:
-        """Get zero-shot classification settings"""
-        defaults = self.zero_shot_settings.get('defaults', {})
-        
-        settings = {}
-        for key, value in self.zero_shot_settings.items():
-            if key != 'defaults':
-                # Handle environment variable placeholders
-                if isinstance(value, str) and value.startswith('${') and value.endswith('}'):
-                    settings[key] = defaults.get(key, value)
-                else:
-                    settings[key] = value
-        
-        return settings
     
     def activate_profile(self, profile_name: str) -> bool:
         """
