@@ -1,7 +1,7 @@
 # ash-nlp/managers/server_config_manager.py
 """
 Centralized Server Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-11-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -66,43 +66,29 @@ class ServerConfigManager:
                 'network_settings': {
                     'host': self.unified_config.get_env('NLP_SERVER_NETWORK_HOST', '0.0.0.0'),
                     'port': self.unified_config.get_env_int('NLP_SERVER_NETWORK_PORT', 8881),
-                    'enable_ssl': self.unified_config.get_env_bool('NLP_SERVER_NETWORK_ENABLE_SSL', False),
-                    'ssl_cert_path': self.unified_config.get_env('NLP_SERVER_NETWORK_SSL_CERT_PATH', './certs/server.crt'),
-                    'ssl_key_path': self.unified_config.get_env('NLP_SERVER_NETWORK_SSL_KEY_PATH', './certs/server.key'),
                     'defaults': {
                         'host': '0.0.0.0',
                         'port': 8881,
-                        'enable_ssl': False,
-                        'ssl_cert_path': './certs/server.crt',
-                        'ssl_key_path': './certs/server.key'
                     }
                 },
                 'application_settings': {
                     'debug_mode': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_DEBUG_MODE', False),
                     'workers': self.unified_config.get_env_int('NLP_SERVER_APPLICATION_WORKERS', 1),
                     'reload_on_changes': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_RELOAD_ON_CHANGES', False),
-                    'access_log': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_ACCESS_LOG', True),
-                    'error_log': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_ERROR_LOG', True),
                     'defaults': {
                         'debug_mode': False,
                         'workers': 1,
                         'reload_on_changes': False,
-                        'access_log': True,
-                        'error_log': True
                     }
                 },
                 'performance_settings': {
                     'max_concurrent_requests': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
                     'request_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_REQUEST_TIMEOUT', 40),
                     'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
-                    'keep_alive_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT', 2),
-                    'max_request_size': self.unified_config.get_env('NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE', '10MB'),
                     'defaults': {
                         'max_concurrent_requests': 20,
                         'request_timeout': 40,
                         'worker_timeout': 60,
-                        'keep_alive_timeout': 2,
-                        'max_request_size': '10MB'
                     }
                 },
                 'security_settings': {

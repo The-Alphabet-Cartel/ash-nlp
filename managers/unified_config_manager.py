@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.12-4
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -84,7 +84,6 @@ class UnifiedConfigManager:
             config_dir: Directory containing JSON configuration files
         """
         self.config_dir = Path(config_dir)
-        self.config_cache = {}
         self.env_override_pattern = re.compile(r'\$\{([^}]+)\}')
         
         # STEP 10.9 FIX: Initialize config_files BEFORE schema initialization
@@ -94,13 +93,13 @@ class UnifiedConfigManager:
             'analysis_parameters': 'analysis_parameters.json',
             'threshold_mapping': 'threshold_mapping.json',
             
-            # v3.1 compliant pattern files (consolidated and individual)
-            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',  # ✅ Consolidated
-            'context_patterns': 'context_patterns.json',                           # ✅ Consolidated (NEW)
-            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',   # ✅ v3.1 compliant
-            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',           # ✅ v3.1 compliant
-            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',                 # ✅ v3.1 compliant
-            'crisis_burden_patterns': 'crisis_burden_patterns.json',               # ✅ v3.1 compliant
+            # Pattern files
+            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
+            'context_patterns': 'context_patterns.json',
+            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
+            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
+            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
+            'crisis_burden_patterns': 'crisis_burden_patterns.json',
             
             # Core system configuration
             'feature_flags': 'feature_flags.json',
@@ -112,13 +111,6 @@ class UnifiedConfigManager:
             'performance_settings': 'performance_settings.json',
             'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
-            
-            # ELIMINATED FILES - Removed from config_files mapping
-            # ❌ 'context_weight_patterns': 'context_weight_patterns.json',        # Merged into context_patterns.json
-            # ❌ 'crisis_community_vocabulary': 'crisis_community_vocabulary.json', # Merged into community_vocabulary_patterns.json
-            # ❌ 'crisis_context_patterns': 'crisis_context_patterns.json',        # Merged into context_patterns.json
-            # ❌ 'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',        # Merged into community_vocabulary_patterns.json
-            # ❌ 'positive_context_patterns': 'positive_context_patterns.json',    # Merged into context_patterns.json
         }
         
         # Initialize schema definitions for validation (NOW config_files is available)
@@ -688,7 +680,7 @@ class UnifiedConfigManager:
                 # Step 1: Try environment variable first
                 env_value = os.getenv(env_var)
                 if env_value is not None:
-                    return self._convert_value_type(env_value)
+                    return self._convert_value_type(env_var, env_value)
                 
                 # Step 2: Try JSON defaults context (new in Step 10.9)
                 if defaults_context:
@@ -812,7 +804,7 @@ class UnifiedConfigManager:
         
         return pattern_mappings.get(key, key)
     
-    def _convert_value_type(self, value: str) -> str:
+    def _convert_value_type(self, env_var: str, value: str) -> str:
         """
         STEP 10.9 ENHANCED: Convert string value to appropriate type for substitution
         
@@ -825,7 +817,7 @@ class UnifiedConfigManager:
         # Boolean conversion
         if value.lower() in ('true', 'false'):
             result = str(value.lower() == 'true')
-            logger.debug(f"   → Boolean conversion: {value} → {result}")
+            logger.debug(f"   {env_var} → Boolean conversion: {value} → {result}")
             return result
         
         # Numeric conversion
@@ -833,18 +825,18 @@ class UnifiedConfigManager:
             try:
                 if '.' in value:
                     result = str(float(value))
-                    logger.debug(f"   → Float conversion: {value} → {result}")
+                    logger.debug(f"   {env_var} → Float conversion: {value} → {result}")
                     return result
                 else:
                     result = str(int(value))
-                    logger.debug(f"   → Int conversion: {value} → {result}")
+                    logger.debug(f"   {env_var} → Int conversion: {value} → {result}")
                     return result
             except ValueError:
-                logger.debug(f"   → String (conversion failed): {value}")
+                logger.debug(f"   {env_var} → String (conversion failed): {value}")
                 return value
         
         # String (no conversion)
-        logger.debug(f"   → String (no conversion): {value}")
+        logger.debug(f"   {env_var} → String (no conversion): {value}")
         return value
     
     def _apply_defaults_fallback(self, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -941,9 +933,6 @@ class UnifiedConfigManager:
         Returns:
             Processed configuration dictionary
         """
-        if config_name in self.config_cache:
-            return self.config_cache[config_name]
-        
         config_file = self.config_files.get(config_name)
         if not config_file:
             logger.error(f"❌ Unknown configuration: {config_name}")
@@ -964,9 +953,6 @@ class UnifiedConfigManager:
             
             # STEP 10.9: Legacy fallback for any remaining placeholders (should be minimal now)
             processed_config = self._apply_defaults_fallback(processed_config)
-            
-            # Cache the processed configuration
-            self.config_cache[config_name] = processed_config
             
             logger.info(f"✅ Loaded configuration: {config_name}")
             return processed_config
@@ -1032,12 +1018,6 @@ class UnifiedConfigManager:
                 return consolidated_config
         
         try:
-            # Check if we have a cached version first
-            #cache_key = f"crisis_patterns_{pattern_type}"
-            #if cache_key in self.config_cache:
-            #    logger.debug(f"📋 Using cached config for {pattern_type}")
-            #    return self.config_cache[cache_key]
-            
             # Load the specific pattern configuration file (follows established pattern)
             config_file_path = self.config_dir / f"{pattern_type}.json"
             
@@ -1058,9 +1038,6 @@ class UnifiedConfigManager:
             # Apply legacy defaults fallback if present
             processed_config = self._apply_defaults_fallback(processed_config)
             
-            # Cache the processed configuration
-            #self.config_cache[cache_key] = processed_config
-            
             logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
             
             return processed_config
@@ -1080,15 +1057,14 @@ class UnifiedConfigManager:
             return self._get_fallback_model_config()
         
         # Extract model definitions from the nested structure
-        model_defs = config.get('model_ensemble', {}).get('model_definitions', {})
-        ensemble_config = config.get('model_ensemble', {}).get('ensemble_config', {})
+        model_defs = config.get('ensemble_models', {}).get('model_definitions', {})
+        ensemble_config = config.get('ensemble_config', {})
         
         # Return in the format expected by ModelEnsembleManager
         result = {
             'models': model_defs,  # ModelEnsembleManager expects 'models' key
-            'ensemble_mode': ensemble_config.get('mode', 'consensus'),
-            'validation': config.get('model_ensemble', {}).get('validation', {}),
-            'performance': config.get('model_ensemble', {}).get('performance', {})
+            'ensemble_mode': ensemble_config.get('mode', 'majority'),
+            'validation': model_defs.get('validation', {})
         }
         
         logger.debug(f"✅ Model configuration loaded successfully: {len(model_defs)} models found")
@@ -1126,10 +1102,6 @@ class UnifiedConfigManager:
             'validation': {
                 'ensure_weights_sum_to_one': True,
                 'fail_on_invalid_weights': True
-            },
-            'performance': {
-                'device': self.get_env_str('NLP_MODEL_DEVICE', 'auto'),
-                'max_memory_mb': self.get_env_int('NLP_MODEL_MAX_MEMORY_MB', 8192)
             }
         }
 
@@ -1146,7 +1118,6 @@ class UnifiedConfigManager:
             'enhancement': 'Enhanced Environment Variable Resolution + JSON-Driven Schema Validation',
             'config_files': len(self.config_files),
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
-            'cache_size': len(self.config_cache),
             'config_directory': str(self.config_dir),
             'architecture': 'Clean v3.1 with Enhanced Configuration Resolution + JSON-Driven Validation',
             'consolidation_status': {

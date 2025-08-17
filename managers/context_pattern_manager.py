@@ -2,7 +2,7 @@
 # ash-nlp/managers/context_pattern_manager.py
 """
 Context Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.8-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.8 - Context Pattern Management
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -73,25 +73,30 @@ class ContextPatternManager:
 
     def _load_configuration(self) -> None:
         """Load context patterns and analysis parameters from configuration"""
+        logger.debug("📋 Loading Context Patterns and Analysis Parameters...")
         try:
             # Load context patterns configuration
+            logger.debug("📋 Loading Context Patterns...")
             self.context_config = self.unified_config.get_crisis_patterns('context_patterns')
             if not self.context_config:
                 logger.warning("⚠️ Context patterns configuration not found, using safe defaults")
                 self.context_config = self._get_safe_context_defaults()
+            else:
+                logger.debug("✅ Context Patterns Loaded.")
             
             # Load analysis parameters for semantic analysis - FIXED: Use correct method
             try:
                 # Try different methods to load analysis parameters
-                if hasattr(self.unified_config, 'load_config'):
-                    self.analysis_params = self.unified_config.load_config('analysis_parameters')
-                elif hasattr(self.unified_config, 'get_config'):
-                    self.analysis_params = self.unified_config.get_config('analysis_parameters')
+                logger.debug("📋 Loading Analysis Parameters...")
+                if hasattr(self.unified_config, 'load_config_file'):
+                    logger.debug("📋 Trying 'load_config_file'...")
+                    self.analysis_params = self.unified_config.load_config_file('analysis_parameters')
                 else:
                     # Fallback to loading from config cache if available
+                    logger.debug("❌ Neither 'load_config', 'load_config_file', nor 'get_config' worked, trying cache (this should not work ... we've removed the cache)...")
                     self.analysis_params = getattr(self.unified_config, 'config_cache', {}).get('analysis_parameters', {})
             except Exception as param_error:
-                logger.warning(f"⚠️ Could not load analysis parameters: {param_error}")
+                logger.warning(f"❌ Could not load analysis parameters: {param_error}")
                 self.analysis_params = {}
                 
             if not self.analysis_params:

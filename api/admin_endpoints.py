@@ -1,7 +1,7 @@
 # ash/ash-nlp/api/admin_endpoints.py
 """
 Admin endpoints for label management and system administration for Ash NLP Service v3.1
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-13
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
@@ -290,11 +290,10 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
     async def get_label_status():
         """Get current label configuration status - Clean v3.1 Implementation"""
         try:
-            # Direct manager access - no fallbacks
             model_status = {}
             if model_ensemble_manager.models_loaded():
                 try:
-                    model_status = models_ensemble_manager.get_model_info()
+                    model_status = model_ensemble_manager.get_model_info()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model status: {e}")
                     model_status = {"error": str(e)}
@@ -736,7 +735,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
 # Enhanced Admin Endpoints Function Signature
 # ========================================================================
 def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, 
-                       model_ensemble_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None):
+                       model_ensemble_manager, analysis_parameters_manager=None, threshold_mapping_manager=None):
     """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
     logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
     
@@ -747,8 +746,8 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
             model_ensemble_manager=model_ensemble_manager,
             zero_shot_manager=zero_shot_manager,
             crisis_pattern_manager=crisis_pattern_manager,
-            analysis_parameters_manager=analysis_parameters_manager,  # Phase 3b - NEW
-            threshold_mapping_manager=threshold_mapping_manager  # Phase 3c - NEW
+            analysis_parameters_manager=analysis_parameters_manager,
+            threshold_mapping_manager=threshold_mapping_manager
         )
         
         # Include the admin router

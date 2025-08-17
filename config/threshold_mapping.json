@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
+    "file_version": "v3.1-3d-10.12-2",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -242,29 +242,6 @@
       }
     },
     
-    "learning_system": {
-      "description": "Learning system threshold adjustment parameters",
-      "feedback_weight": "${NLP_LEARNING_SYSTEM_FEEDBACK_WEIGHT}",
-      "adaptation_rate": "${NLP_LEARNING_SYSTEM_ADAPTATION_RATE}",
-      "confidence_threshold": "${NLP_LEARNING_SYSTEM_CONFIDENCE_THRESHOLD}",
-      "pattern_learning_enabled": "${NLP_LEARNING_SYSTEM_PATTERN_LEARNING_ENABLED}",
-      "threshold_adjustment_limit": "${NLP_LEARNING_SYSTEM_THRESHOLD_ADJUSTMENT_LIMIT}",
-      "defaults": {
-        "feedback_weight": 0.1,
-        "adaptation_rate": 0.05,
-        "confidence_threshold": 0.8,
-        "pattern_learning_enabled": false,
-        "threshold_adjustment_limit": 0.2
-      },
-      "validation": {
-        "feedback_weight": {"type": "float", "range": [0.0, 1.0]},
-        "adaptation_rate": {"type": "float", "range": [0.0, 0.5]},
-        "confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-        "pattern_learning_enabled": {"type": "boolean"},
-        "threshold_adjustment_limit": {"type": "float", "range": [0.0, 0.5]}
-      }
-    },
-
     "gap_detection": {
       "description": "Model disagreement and gap detection configuration",
       "sensitivity_threshold": "${NLP_GAP_DETECTION_SENSITIVITY_THRESHOLD}",
@@ -282,32 +259,6 @@
         "auto_escalation": {"type": "boolean"},
         "max_confidence_spread": {"type": "float", "range": [0.0, 1.0]},
         "min_agreement_score": {"type": "float", "range": [0.0, 1.0]}
-      }
-    },
-
-    "safety_controls": {
-      "description": "Safety mechanisms and bias controls",
-      "bias_threshold": "${NLP_THRESHOLD_SAFETY_BIAS}",
-      "override_enabled": "${NLP_THRESHOLD_ENABLE_SAFETY_OVERRIDE}",
-      "minimum_response": "${NLP_THRESHOLD_MINIMUM_RESPONSE}",
-      "fail_safe_escalation": "${NLP_THRESHOLD_FAIL_SAFE_ESCALATION}",
-      "max_confidence_cap": "${NLP_THRESHOLD_MAX_CONFIDENCE_CAP}",
-      "min_confidence_floor": "${NLP_THRESHOLD_MIN_CONFIDENCE_FLOOR}",
-      "defaults": {
-        "bias_threshold": 0.03,
-        "override_enabled": true,
-        "minimum_response": 0.10,
-        "fail_safe_escalation": true,
-        "max_confidence_cap": 0.95,
-        "min_confidence_floor": 0.05
-      },
-      "validation": {
-        "bias_threshold": {"type": "float", "range": [0.0, 0.1]},
-        "override_enabled": {"type": "boolean"},
-        "minimum_response": {"type": "float", "range": [0.0, 0.5]},
-        "fail_safe_escalation": {"type": "boolean"},
-        "max_confidence_cap": {"type": "float", "range": [0.5, 1.0]},
-        "min_confidence_floor": {"type": "float", "range": [0.0, 0.5]}
       }
     },
 

@@ -1,7 +1,7 @@
 # ash-nlp/managers/threshold_mapping_manager.py
 """
 Mode-Aware Threshold Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.7 - Environment Variable Fixes + Crisis Level Determination Method Added
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -35,6 +35,7 @@ class ThresholdMappingManager:
         # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
         self.unified_config = unified_config_manager
         self.model_ensemble_manager = model_ensemble_manager
+        self.config = None
         self._validation_errors = []
         
         # Load threshold mapping configuration using unified manager
@@ -521,17 +522,20 @@ class ThresholdMappingManager:
     # ========================================================================
     # MODE-AWARE THRESHOLD ACCESS METHODS (PRESERVED)
     # ========================================================================
-    
+     
     def get_current_ensemble_mode(self) -> str:
-        """Get current ensemble mode from ModelEnsembleManager or unified config"""
-        if self.model_ensemble_manager:
-            return self.model_ensemble_manager.get_current_ensemble_mode()
-        else:
-            # STEP 9 CHANGE: Use unified_config instead of os.getenv()
-            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
-            logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
+        """Get current ensemble mode UnifiedConfigManager"""
+        logger.debug("📋 Getting ensemble mode...")
+        self.config = self.unified_config.get_model_configuration()
+        if self.config:
+            mode = self.config.get('ensemble_config', {}).get('mode', 'majority')
+            logger.debug(f"🔧 Ensemble mode: {mode}")
             return mode
-    
+        else:
+            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
+            logger.error("⚠️ Ensemble mode not found...")
+            return mode
+
     def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
         """
         Get ensemble thresholds for specific mode

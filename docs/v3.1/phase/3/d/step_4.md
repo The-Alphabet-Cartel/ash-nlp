@@ -1,7 +1,7 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/step_4.md -->
 <!--
 Documentation for Phase 3d, Step 4 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-4-1
+FILE VERSION: v3.1-3d-10.12-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 4
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -66,12 +66,12 @@ NLP_ANALYSIS_PATTERN_MIN_CONFIDENCE=0.25
 #### **📚 Learning System Parameters (SCATTERED)**
 ```bash
 # Current state (inconsistent locations)
-GLOBAL_ENABLE_LEARNING_SYSTEM=true  # ✅ PRESERVE - ecosystem requirement
+GLOBAL_LEARNING_SYSTEM_ENABLED=true  # ✅ PRESERVE - ecosystem requirement
 NLP_THRESHOLD_LEARNING_RATE=0.1  # In threshold_mapping.json
 NLP_LEARNING_CONFIDENCE_MIN=0.60  # ❌ Missing standardization
 
 # Target consolidation  
-GLOBAL_ENABLE_LEARNING_SYSTEM=true  # ✅ Unchanged
+GLOBAL_LEARNING_SYSTEM_ENABLED=true  # ✅ Unchanged
 NLP_ANALYSIS_LEARNING_RATE=0.1      # Move to analysis_parameters.json
 NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE=0.60  # Add to analysis_parameters.json
 ```
@@ -115,7 +115,7 @@ NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB=true
 **Key Achievements**:
 - **New learning_system section**: Complete consolidation of learning parameters
 - **Standardized variable naming**: All learning parameters use `NLP_ANALYSIS_LEARNING_*` pattern
-- **Preserved GLOBAL_ENABLE_LEARNING_SYSTEM**: Ecosystem compatibility maintained
+- **Preserved GLOBAL_LEARNING_SYSTEM_ENABLED**: Ecosystem compatibility maintained
 - **Comprehensive validation**: Range checking and type validation for all learning parameters
 - **JSON + ENV pattern**: All learning parameters have JSON defaults with environment overrides
 
@@ -131,7 +131,7 @@ NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB=true
 
 **Key Achievements**:
 - **16 new standardized learning variables**: Complete `NLP_ANALYSIS_LEARNING_*` pattern
-- **GLOBAL_ENABLE_LEARNING_SYSTEM preserved**: Ecosystem compatibility maintained
+- **GLOBAL_LEARNING_SYSTEM_ENABLED preserved**: Ecosystem compatibility maintained
 - **Clear migration path**: From `NLP_THRESHOLD_LEARNING_*` to `NLP_ANALYSIS_LEARNING_*`
 - **Comprehensive documentation**: All learning parameters documented with descriptions
 

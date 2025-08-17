@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -146,12 +146,10 @@
     "advanced_context": "${NLP_FEATURE_ADVANCED_CONTEXT}",
     "community_vocab": "${NLP_FEATURE_COMMUNITY_VOCAB}",
     "temporal_patterns": "${NLP_FEATURE_TEMPORAL_PATTERNS}",
-    "multi_language": "${NLP_FEATURE_MULTI_LANGUAGE}",
     "defaults": {
       "advanced_context": false,
       "community_vocab": true,
-      "temporal_patterns": true,
-      "multi_language": false
+      "temporal_patterns": true
     },
     "validation": {
       "advanced_context": {
@@ -162,16 +160,13 @@
       },
       "temporal_patterns": {
         "type": "boolean"
-      },
-      "multi_language": {
-        "type": "boolean"
       }
     }
   },
 
   "learning_system": {
     "description": "Phase 3d Step 4 - Learning system parameters for adaptive threshold adjustment",
-    "enabled": "${NLP_ANALYSIS_LEARNING_ENABLED}",
+    "enabled": "${GLOBAL_LEARNING_SYSTEM_ENABLED}",
     "learning_rate": "${NLP_ANALYSIS_LEARNING_RATE}",
     "min_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
     "max_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",

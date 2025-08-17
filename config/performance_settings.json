@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -16,13 +16,9 @@
     "analysis_performance": {
       "description": "Analysis processing performance and timeout settings",
       "timeout_seconds": "${GLOBAL_REQUEST_TIMEOUT}",
-      "retry_attempts": "${NLP_PERFORMANCE_ANALYSIS_RETRY_ATTEMPTS}",
-      "enable_timeout": "${NLP_PERFORMANCE_ANALYSIS_ENABLE_TIMEOUT}",
       "batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
       "defaults": {
         "timeout_seconds": 30.0,
-        "retry_attempts": 3,
-        "enable_timeout": true,
         "batch_size": 10
       },
       "validation": {
@@ -31,15 +27,6 @@
           "range": [5.0, 300.0],
           "unit": "seconds",
           "description": "Maximum time to wait for analysis completion"
-        },
-        "retry_attempts": {
-          "type": "integer", 
-          "range": [0, 10],
-          "description": "Number of retry attempts for failed analysis"
-        },
-        "enable_timeout": {
-          "type": "boolean",
-          "description": "Whether to enforce analysis timeouts"
         },
         "batch_size": {
           "type": "integer",
@@ -51,7 +38,7 @@
 
     "server_performance": {
       "description": "Server processing and worker management settings",
-      "max_workers": "${NLP_PERFORMANCE_MAX_WORKERS}",
+      "max_workers": "${NLP_PERFORMANCE_WORKERS}",
       "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
       "request_timeout": "${GLOBAL_REQUEST_TIMEOUT}",
       "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
@@ -168,38 +155,6 @@
           "range": [10, 500],
           "unit": "burst_requests",
           "description": "Maximum burst requests allowed"
-        }
-      }
-    },
-
-    "cache_performance": {
-      "description": "Cache performance and memory management settings",
-      "model_cache_size_limit": "${NLP_PERFORMANCE_MODEL_CACHE_SIZE_LIMIT}",
-      "analysis_cache_size_limit": "${NLP_PERFORMANCE_ANALYSIS_CACHE_SIZE_LIMIT}",
-      "cache_expiry_hours": "${NLP_PERFORMANCE_CACHE_EXPIRY_HOURS}",
-      "defaults": {
-        "model_cache_size_limit": "10GB",
-        "analysis_cache_size_limit": "2GB",
-        "cache_expiry_hours": 24
-      },
-      "validation": {
-        "model_cache_size_limit": {
-          "type": "string",
-          "pattern": "^\\d+[GMK]B$",
-          "unit": "storage_size",
-          "description": "Maximum model cache size"
-        },
-        "analysis_cache_size_limit": {
-          "type": "string",
-          "pattern": "^\\d+[GMK]B$",
-          "unit": "storage_size",
-          "description": "Maximum analysis cache size"
-        },
-        "cache_expiry_hours": {
-          "type": "integer",
-          "range": [1, 168],
-          "unit": "hours",
-          "description": "Cache expiration time in hours"
         }
       }
     }

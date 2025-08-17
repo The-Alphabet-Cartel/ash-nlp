@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-3-1",
+    "file_version": "v3.1-3d-10.12-2",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.11-3",
@@ -12,7 +12,7 @@
     "cleanup_note": "Step 10.10 - Mapped model weights to existing .env.template variables, preserved others for .env.template addition"
   },
 
-  "model_ensemble": {
+  "ensemble_models":{
     "model_definitions": {
       "depression": {
         "name": "${NLP_MODEL_DEPRESSION_NAME}",
@@ -39,26 +39,7 @@
         "enabled": "${NLP_MODEL_DISTRESS_ENABLED}"
       }
     },
-    "ensemble_config": {
-      "mode": "${NLP_ENSEMBLE_MODE}",
-      "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
-      "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
-      "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}"
-    }
-  },
-
-  "hardware_settings": {
-    "device": "${NLP_HARDWARE_DEVICE}",
-    "device_map": "${NLP_HARDWARE_DEVICE_MAP}",
-    "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
-    "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
-    "torch_dtype": "${NLP_HARDWARE_TORCH_DTYPE}",
-    "max_memory": "${NLP_HARDWARE_MAX_MEMORY}",
-    "offload_folder": "${NLP_HARDWARE_OFFLOAD_FOLDER}"
-  },
-
-  "defaults": {
-    "model_definitions": {
+    "defaults": {
       "depression": {
         "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
         "weight": 0.4,
@@ -84,26 +65,7 @@
         "enabled": true
       }
     },
-    "ensemble_config": {
-      "mode": "majority",
-      "require_all_models": true,
-      "fallback_mode": "consensus",
-      "confidence_threshold": 0.7
-    },
-    "hardware_settings": {
-      "device": "auto",
-      "device_map": "auto",
-      "load_in_8bit": false,
-      "load_in_4bit": false,
-      "torch_dtype": "float16",
-      "max_memory": null,
-      "offload_folder": null
-    }
-  },
-
-  "validation": {
-    "description": "Model ensemble validation rules and constraints",
-    "model_definitions": {
+    "validation": {
       "depression": {
         "name": {
           "type": "string",
@@ -197,8 +159,21 @@
           "description": "Whether model is enabled for ensemble"
         }
       }
+    }
+  },
+
+  "ensemble_config": {
+    "mode": "${NLP_ENSEMBLE_MODE}",
+    "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
+    "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
+    "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
+    "defaults": {
+      "mode": "majority",
+      "require_all_models": true,
+      "fallback_mode": "consensus",
+      "confidence_threshold": 0.7
     },
-    "ensemble_config": {
+    "validation": {
       "mode": {
         "type": "string",
         "allowed_values": ["consensus", "majority", "weighted"],
@@ -218,8 +193,23 @@
         "range": [0.0, 1.0],
         "description": "Minimum confidence for ensemble decisions"
       }
+    }
+  },
+
+  "hardware_settings": {
+    "device": "${NLP_HARDWARE_DEVICE}",
+    "device_map": "${NLP_HARDWARE_DEVICE_MAP}",
+    "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
+    "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
+    "torch_dtype": "${NLP_HARDWARE_TORCH_DTYPE}",
+    "defaults": {
+      "device": "auto",
+      "device_map": "auto",
+      "load_in_8bit": false,
+      "load_in_4bit": false,
+      "torch_dtype": "float16"
     },
-    "hardware_settings": {
+    "validation": {
       "device": {
         "type": "string",
         "allowed_values": ["auto", "cpu", "cuda", "mps"],

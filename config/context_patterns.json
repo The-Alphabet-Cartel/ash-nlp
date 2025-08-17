@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.11-1",
+    "file_version": "v3.1-3d-10.12-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -19,18 +19,18 @@
       "infrastructure_reuse": "Perfect mapping to existing NLP_CONFIG_* variables"
     },
     "environment_overrides": {
-      "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
+      "enabled": "${NLP_FEATURE_PATTERN_ANALYSIS}",
       "crisis_amplification": "${NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER}",
-      "positive_reduction": "${NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS}",
+      "positive_reduction": "${NLP_FEATURE_CONTEXT_ANALYSIS}",
       "context_window": "${NLP_TEMPORAL_CONTEXT_WINDOW}"
     }
   },
 
   "configuration": {
     "description": "Simplified global configuration using existing infrastructure",
-    "enabled": "${NLP_CONFIG_ENABLE_CRISIS_PATTERNS}",
+    "enabled": "${NLP_FEATURE_PATTERN_ANALYSIS}",
     "crisis_amplification": "${NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER}",
-    "positive_reduction": "${NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS}",
+    "positive_reduction": "${NLP_FEATURE_CONTEXT_ANALYSIS}",
     "context_window": "${NLP_TEMPORAL_CONTEXT_WINDOW}",
     "defaults": {
       "enabled": true,
@@ -112,8 +112,7 @@
 
   "positive_context_patterns": {
     "description": "Patterns that reduce crisis likelihood when positive contexts are enabled",
-    "enabled": "${NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS}",
-    
+    "enabled": "${NLP_FEATURE_CONTEXT_ANALYSIS}",
     "support_seeking": {
       "description": "Indicators that someone is actively seeking support",
       "defaults": {
@@ -160,9 +159,9 @@
       "infrastructure_reuse": "Leverages all existing NLP_CONFIG_* variables - zero new variables needed"
     },
     "environment_override_examples": {
-      "enable_patterns": "NLP_CONFIG_ENABLE_CRISIS_PATTERNS=true",
+      "enable_patterns": "NLP_FEATURE_PATTERN_ANALYSIS=true",
       "adjust_crisis_amplification": "NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.2",
-      "enable_positive_contexts": "NLP_CONFIG_ENABLE_POSITIVE_CONTEXTS=true",
+      "enable_positive_contexts": "NLP_FEATURE_CONTEXT_ANALYSIS=true",
       "adjust_context_window": "NLP_TEMPORAL_CONTEXT_WINDOW=12"
     },
     "simplification_benefits": [

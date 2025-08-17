@@ -1,7 +1,7 @@
 # ash-nlp/api/ensemble_endpoints.py
 """
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service v3.1
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3d-10.12-3
 LAST MODIFIED: 2025-08-14
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
@@ -418,7 +418,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_ma
                 crisis_level = complete_analysis.get('crisis_level', 'none')
                 confidence_score = complete_analysis.get('confidence_score', 0.0)
             
-            logger.debug(f"🔍 Step 10.8 Fix: Extracted crisis_level={crisis_level}, confidence_score={confidence_score}")
+            logger.debug(f"🔍 Extracted crisis_level={crisis_level}, confidence_score={confidence_score}")
             logger.debug(f"🔍 Analysis structure: has_analysis_results={bool(analysis_results)}")
             
             response = models['CrisisResponse'](
@@ -432,7 +432,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_ma
                 reasoning=complete_analysis.get('reasoning', 'Single analysis via CrisisAnalyzer with ContextPatternManager'),
                 analysis={
                     'complete_analysis': complete_analysis,
-                    'architecture': 'clean_v3_1_single_source_of_truth',
+                    'architecture': 'clean_v3.1',
                     'redundant_processing': False,
                     'feature_flags_respected': True,
                     'api_processing_time_ms': processing_time_ms,
