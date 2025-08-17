@@ -536,14 +536,6 @@ class ThresholdMappingManager:
             logger.error("⚠️ Ensemble mode not found...")
             return mode
 
-#        if self.model_ensemble_manager:
-#            return self.model_ensemble_manager.get_ensemble_mode()
-#            logger.debug(f"🔧 Ensemble mode from model_ensemble_manager: {mode}")
-#        else:
-#            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
-#            logger.debug(f"🔧 Ensemble mode from unified config: {mode}")
-#            return mode
-    
     def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
         """
         Get ensemble thresholds for specific mode
