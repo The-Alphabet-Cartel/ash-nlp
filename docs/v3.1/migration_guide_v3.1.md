@@ -198,6 +198,7 @@ ash/ash-nlp/
 |   |   │   │   └── e/
 |   |   │   │       ├── learning_methods_inventory.md
 |   |   │   │       ├── method_overlap_matrix.md
+|   |   │   │       ├── shared_utilities_architecture_design.md
 |   |   │   │       ├── step_1.md
 |   |   │   │       ├── step_2.md
 |   |   │   │       ├── step_3.md
@@ -229,6 +230,7 @@ ash/ash-nlp/
 │   ├── pydantic_manager.py
 │   ├── server_config_manager.py
 │   ├── settings_manager.py
+│   ├── shared_utilities.py
 │   ├── storage_config_manager.py
 │   ├── threshold_mapping_manager.py
 │   ├── unified_config_manager.py
@@ -239,20 +241,8 @@ ash/ash-nlp/
 ├── tests/                                   # Testing Scripts
 │   └── phase/
 |       ├── 3/
-|       │   ├── a/
-|       |   │   └── test_crisis_patterns.py
-|       │   ├── b/
-|       |   │   ├── test_admin_functionality.py
-|       |   │   ├── test_config_validation.py
-|       |   │   └── test_integration.py
-|       │   ├── c/
-|       |   │   ├── test_analysis_parameters_manager.py
-|       |   │   ├── test_config_validation.py
-|       |   │   ├── test_endpoints.py
-|       |   │   ├── test_integration.py
-|       |   │   └── test_threshold_mapping_manager.py
-|       │   └── d/
-|       |       └── test_comprehensive.py
+|       │   └── e/
+|       |       └── test_shared_utilities_manager.py
 |       └── 4/
 |           ├── a/
 |           └── b/
