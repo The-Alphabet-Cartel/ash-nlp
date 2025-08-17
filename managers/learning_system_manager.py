@@ -1,11 +1,11 @@
 # ash-nlp/managers/learning_system_manager.py
 """
 Learning System Manager for Ash-NLP Service
-FILE VERSION: v3.1-3e-3.2-1
+FILE VERSION: v3.1-3e-3.2-2
 LAST MODIFIED: 2025-08-17
-PHASE: 3e Step 3.2 - LearningSystemManager Implementation
-CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Learning methods extracted and consolidated
+PHASE: 3e Step 3.2 - LearningSystemManager Implementation (Corrected)
+CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
+MIGRATION STATUS: Learning methods extracted from both AnalysisParametersManager and ThresholdMappingManager
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -31,11 +31,12 @@ class LearningSystemManager:
     Manages adaptive threshold adjustments and learning system configuration
     for enhanced crisis detection accuracy through feedback-based learning.
     
-    Phase 3e Step 3: Extracted from AnalysisParametersManager and enhanced
-    with threshold adjustment capabilities for ThresholdMappingManager integration.
+    Phase 3e Step 3: Extracted from AnalysisParametersManager and ThresholdMappingManager
+    with enhanced threshold adjustment capabilities for comprehensive learning integration.
     
     Core Responsibilities:
-    - Learning system parameter access and validation
+    - Learning system parameter access and validation (from AnalysisParametersManager)
+    - Learning threshold configuration (from ThresholdMappingManager)
     - False positive/negative threshold adjustments  
     - Learning feedback processing and persistence
     - Threshold drift management and bounds checking
@@ -73,7 +74,7 @@ class LearningSystemManager:
         # Load learning system configuration
         self._load_learning_configuration()
         
-        self.logger.info("✅ LearningSystemManager v3.1-3e-3.2 initialized with Clean v3.1 compliance")
+        self.logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 initialized with Clean v3.1 compliance")
     
     # ========================================================================
     # CORE LEARNING CONFIGURATION - Extracted from AnalysisParametersManager
@@ -327,42 +328,6 @@ class LearningSystemManager:
                 'max_adjustments_per_day': 50,
                 'min_confidence_for_learning': 0.3
             }
-                    param_name='false_negative_factor'
-                )
-            }
-            
-            # Add severity multipliers
-            severity_config = learning_config.get('severity_multipliers', {})
-            severity_defaults = defaults.get('severity_multipliers', {})
-            core_params['severity_multipliers'] = {
-                'high_severity': self.shared_utils.safe_float_convert(
-                    severity_config.get('high_severity', severity_defaults.get('high_severity', 3.0)),
-                    default=3.0,
-                    min_val=0.1,
-                    max_val=10.0,
-                    param_name='high_severity'
-                ),
-                'medium_severity': self.shared_utils.safe_float_convert(
-                    severity_config.get('medium_severity', severity_defaults.get('medium_severity', 2.0)),
-                    default=2.0,
-                    min_val=0.1,
-                    max_val=10.0,
-                    param_name='medium_severity'
-                ),
-                'low_severity': self.shared_utils.safe_float_convert(
-                    severity_config.get('low_severity', severity_defaults.get('low_severity', 1.0)),
-                    default=1.0,
-                    min_val=0.1,
-                    max_val=10.0,
-                    param_name='low_severity'
-                )
-            }
-            
-            return core_params
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error loading learning system parameters: {e}")
-            return self._get_default_learning_config()
     
     def validate_learning_parameters(self) -> Dict[str, Any]:
         """
@@ -904,4 +869,4 @@ __all__ = [
     'create_learning_system_manager'
 ]
 
-logger.info("✅ LearningSystemManager v3.1-3e-3.2 loaded - False positive/negative learning capability for enhanced crisis detection")
+logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 loaded - Complete learning system with methods from both AnalysisParametersManager and ThresholdMappingManager")
