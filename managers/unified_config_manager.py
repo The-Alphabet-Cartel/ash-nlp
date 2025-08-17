@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-3
+FILE VERSION: v3.1-3d-10.12-4
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
