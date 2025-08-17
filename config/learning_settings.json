@@ -1,0 +1,157 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3d-10.12-2",
+    "last_modified": "2025-08-13",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.1",
+    "description": "Machine learning system configuration for adaptive NLP crisis detection (Future Implementation)",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "consolidation_source": "learning_parameters.json + learning_settings.json",
+    "status": "future_ready",
+    "managers": ["AnalysisParametersManager", "LearningSystem"],
+    "environment_overrides": {
+      "description": "All learning settings support environment variable overrides",
+      "pattern": "${NLP_LEARNING_*CATEGORY*_*SETTING*}",
+      "examples": [
+        "GLOBAL_LEARNING_SYSTEM_ENABLED",
+        "NLP_ANALYSIS_LEARNING_RATE",
+        "NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT"
+      ]
+    }
+  },
+
+  "learning_configuration": {
+    "system_settings": {
+      "description": "Core learning system activation and control settings",
+      "enable": "${GLOBAL_LEARNING_SYSTEM_ENABLED}",
+      "defaults": {
+        "enable": true
+      },
+      "validation": {
+        "enable": {
+          "type": "boolean",
+          "description": "Enable the machine learning adaptation system"
+        }
+      }
+    },
+
+    "algorithm_parameters": {
+      "description": "Core machine learning algorithm parameters",
+      "learning_rate": "${NLP_ANALYSIS_LEARNING_RATE}",
+      "defaults": {
+        "learning_rate": 0.01
+      },
+      "validation": {
+        "learning_rate": {
+          "type": "float",
+          "range": [0.0001, 1.0],
+          "description": "Learning rate for gradient descent optimization"
+        }
+      }
+    },
+
+    "threshold_adaptation": {
+      "description": "Adaptive threshold adjustment parameters",
+      "min_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
+      "max_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
+      "sensitivity_bounds": {
+        "description": "Global sensitivity bounds for safety",
+        "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_GLOBAL_SENSITIVITY}",
+        "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_GLOBAL_SENSITIVITY}"
+      },
+      "defaults": {
+        "min_confidence_adjustment": 0.05,
+        "max_confidence_adjustment": 0.30,
+        "sensitivity_bounds": {
+          "min_global_sensitivity": 0.5,
+          "max_global_sensitivity": 1.5
+        }
+      },
+      "validation": {
+        "min_confidence_adjustment": {
+          "type": "float",
+          "range": [0.01, 0.5],
+          "description": "Minimum confidence adjustment per adaptation cycle"
+        },
+        "max_confidence_adjustment": {
+          "type": "float",
+          "range": [0.1, 1.0],
+          "description": "Maximum confidence adjustment per adaptation cycle"
+        },
+        "sensitivity_bounds": {
+          "min_global_sensitivity": {
+            "type": "float",
+            "range": [0.1, 1.0],
+            "description": "Minimum allowed global sensitivity multiplier"
+          },
+          "max_global_sensitivity": {
+            "type": "float",
+            "range": [1.0, 3.0],
+            "description": "Maximum allowed global sensitivity multiplier"
+          }
+        }
+      }
+    },
+
+    "feedback_processing": {
+      "description": "Human feedback processing and incorporation parameters",
+      "feedback_weight": "${NLP_ANALYSIS_LEARNING_FEEDBACK_WEIGHT}",
+      "false_positive_factor": "${NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR}",
+      "false_negative_factor": "${NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR}",
+      "defaults": {
+        "feedback_weight": 0.1,
+        "false_positive_factor": -0.1,
+        "false_negative_factor": 0.1
+      },
+      "validation": {
+        "feedback_weight": {
+          "type": "float",
+          "range": [0.01, 1.0],
+          "description": "Weight given to human feedback in learning algorithm"
+        },
+        "false_positive_factor": {
+          "type": "float",
+          "range": [-1.0, 0.0],
+          "description": "Adjustment factor for false positive feedback (negative reduces sensitivity)"
+        },
+        "false_negative_factor": {
+          "type": "float",
+          "range": [0.0, 1.0],
+          "description": "Adjustment factor for false negative feedback (positive increases sensitivity)"
+        }
+      }
+    },
+
+    "safety_constraints": {
+      "description": "Safety constraints and limits for learning system",
+      "max_adjustments_per_day": "${NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
+      "defaults": {
+        "max_adjustments_per_day": 50
+      },
+      "validation": {
+        "max_adjustments_per_day": {
+          "type": "integer",
+          "range": [1, 500],
+          "description": "Maximum threshold adjustments allowed per day"
+        }
+      }
+    },
+
+    "data_management": {
+      "description": "Learning data storage and management settings",
+      "persistence_file": "${NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE}",
+      "defaults": {
+        "persistence_file": "./learning_data/learning_adjustments.json"
+      },
+      "validation": {
+        "persistence_file": {
+          "type": "string",
+          "required": true,
+          "description": "File path for learning adjustment persistence"
+        }
+      }
+    }
+  }
+}
