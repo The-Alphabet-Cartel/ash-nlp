@@ -767,7 +767,7 @@ class ModelEnsembleManager:
         """Get ensemble settings including validation"""
         return {
             'mode': self.get_ensemble_mode(),
-            'validation': self.config.get('validation', {})
+            'validation': self.config.get('ensemble_config', {}).get('validation', {})
         }
     
     def get_current_ensemble_mode(self) -> str:
