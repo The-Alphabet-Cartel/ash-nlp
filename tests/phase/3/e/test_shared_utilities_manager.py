@@ -93,7 +93,7 @@ class TestSharedUtilitiesManager(unittest.TestCase):
         self.assertEqual(status['status'], 'healthy')
         self.assertEqual(status['utilities_available'], 15)
     
-    @patch('managers.shared_utilities.create_unified_config_manager')
+    @patch('managers.unified_config_manager.create_unified_config_manager')
     def test_factory_function_without_config(self, mock_create_config):
         """Test factory function creates config when none provided"""
         mock_create_config.return_value = self.mock_config
@@ -114,7 +114,7 @@ class TestSharedUtilitiesManager(unittest.TestCase):
     
     def test_factory_function_none_config_input(self):
         """Test factory function handles None config gracefully"""
-        with patch('managers.shared_utilities.create_unified_config_manager') as mock_create:
+        with patch('managers.unified_config_manager.create_unified_config_manager') as mock_create:
             mock_create.return_value = self.mock_config
             
             manager = create_shared_utilities_manager(None)
