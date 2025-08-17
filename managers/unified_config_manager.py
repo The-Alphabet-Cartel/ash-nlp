@@ -1,7 +1,10 @@
+# ash-nlp/managers/unified_config_manager.py
 """
-Unified Configuration Manager for Ash-NLP v3.1d Step 9 - CORRECTLY FIXED
-Follows the established JSON defaults block pattern and eliminates all direct os.getenv() calls
-
+Unified Configuration Manager for Ash NLP Service
+FILE VERSION: v3.1-3d-10.12-4
+LAST MODIFIED: 2025-08-14
+PHASE: 3d Step 10.11-3
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -29,36 +32,35 @@ class VariableSchema:
 
 class UnifiedConfigManager:
     """
-    Unified Configuration Manager for Ash-NLP v3.1d Step 9 - CORRECTLY FIXED
+    Unified Configuration Manager for Ash-NLP v3.1d with Enhanced Environment Variable Resolution
     
-    FOLLOWS ESTABLISHED PATTERN WITH DEFAULTS BLOCK:
+    STEP 10.9 ENHANCEMENT:
+    Enhanced substitute_environment_variables method to properly resolve placeholders using:
+    1. Environment variables (first priority)
+    2. JSON defaults block (second priority) 
+    3. Schema defaults (third priority)
+    4. Only leave placeholders if no resolution possible
+    
+    FOLLOWS ESTABLISHED PATTERN WITH ENHANCED DEFAULTS RESOLUTION:
     1. JSON files have main configuration with ${VAR_NAME} placeholders
     2. JSON files have separate "defaults" block with actual default values
     3. Environment variables substitute ${VAR_NAME} placeholders when present
-    4. Remaining placeholders fall back to values from "defaults" block
+    4. ENHANCED: Remaining placeholders immediately check JSON defaults block
+    5. ENHANCED: Still unresolved placeholders fall back to schema defaults
+    6. ENHANCED: Type conversion applied consistently across all resolution paths
     
     Example JSON structure:
     {
-      "model_ensemble": {
-        "model_definitions": {
-          "depression": {
-            "name": "${NLP_MODEL_DEPRESSION_NAME}",  // Environment placeholder
-            "weight": "${NLP_MODEL_DEPRESSION_WEIGHT}"
-          }
-        },
-        "defaults": {  // Separate defaults block
-          "model_definitions": {
-            "depression": {
-              "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",  // Actual default
-              "weight": 0.4
-            }
-          }
+      "crisis_amplification_patterns": {
+        "crisis_amplifier_weight": "${NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST}",
+        "defaults": {
+          "crisis_amplifier_weight": 1.2  // Used when env var doesn't exist
         }
       }
     }
     
     This manager consolidates:
-    - UnifiedConfigManager: JSON loading with ${VAR} substitution (PRESERVED)
+    - UnifiedConfigManager: JSON loading with ${VAR} substitution (ENHANCED)
     - EnvConfigManager: Schema validation and type conversion (INTEGRATED)  
     - Direct os.getenv(): Centralized environment access (REPLACED)
     
@@ -66,7 +68,12 @@ class UnifiedConfigManager:
     - Factory function pattern  
     - Dependency injection support
     - Fail-fast validation
-    - JSON placeholders + defaults block pattern
+    - JSON placeholders + defaults block pattern (ENHANCED)
+    
+    v3.1 Pattern File Consolidation Support:
+    - Supports consolidated context_patterns.json (crisis + positive + weights)
+    - Supports consolidated community_vocabulary_patterns.json
+    - Backward compatibility with legacy pattern files
     """
     
     def __init__(self, config_dir: str = "/app/config"):
@@ -77,23 +84,24 @@ class UnifiedConfigManager:
             config_dir: Directory containing JSON configuration files
         """
         self.config_dir = Path(config_dir)
-        self.config_cache = {}
         self.env_override_pattern = re.compile(r'\$\{([^}]+)\}')
         
-        # Initialize schema definitions for validation
-        self.variable_schemas = self._initialize_schemas()
-        
-        # Configuration file mappings (follows established pattern)
+        # STEP 10.9 FIX: Initialize config_files BEFORE schema initialization
+        # Configuration file mappings - UPDATED for v3.1 consolidation
         self.config_files = {
+            # Core algorithm configuration
             'analysis_parameters': 'analysis_parameters.json',
+            'threshold_mapping': 'threshold_mapping.json',
+            
+            # Pattern files
             'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
-            'context_weight_patterns': 'context_weight_patterns.json',
-            'crisis_burden_patterns': 'crisis_burden_patterns.json',
-            'crisis_community_vocabulary': 'crisis_community_vocabulary.json',
-            'crisis_context_patterns': 'crisis_context_patterns.json',
-            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
-            'crisis_lgbtqia_patterns': 'crisis_lgbtqia_patterns.json',
+            'context_patterns': 'context_patterns.json',
+            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
             'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
+            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
+            'crisis_burden_patterns': 'crisis_burden_patterns.json',
+            
+            # Core system configuration
             'feature_flags': 'feature_flags.json',
             'label_config': 'label_config.json',
             'learning_parameters': 'learning_parameters.json',
@@ -101,314 +109,267 @@ class UnifiedConfigManager:
             'logging_settings': 'logging_settings.json',
             'model_ensemble': 'model_ensemble.json',
             'performance_settings': 'performance_settings.json',
-            'positive_context_patterns': 'positive_context_patterns.json',
             'server_settings': 'server_settings.json',
             'storage_settings': 'storage_settings.json',
-            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
-            'threshold_mapping': 'threshold_mapping.json',
         }
+        
+        # Initialize schema definitions for validation (NOW config_files is available)
+        self.variable_schemas = self._initialize_schemas()
         
         # Load and validate all environment variables
         self.env_config = self._load_all_environment_variables()
         
-        logger.info("UnifiedConfigManager v3.1d Step 9 initialized - Following established JSON patterns")
+        logger.info("UnifiedConfigManager v3.1d Step 10.9 initialized - Enhanced environment variable resolution with JSON-driven schema validation")
     
     def _initialize_schemas(self) -> Dict[str, VariableSchema]:
-        """Initialize comprehensive schema definitions for all 150+ environment variables"""
+        """
+        STEP 10.9 REFACTORED: Initialize schemas using JSON-driven validation + essential core schemas
+        
+        This method now:
+        1. Loads essential core schemas from Python (for system startup)
+        2. Dynamically loads remaining schemas from JSON validation blocks
+        3. Significantly reduces code duplication and maintenance burden
+        """
         schemas = {}
         
-        # Models & Thresholds (Critical Priority)
-        schemas.update({
-            'NLP_MODEL_DEPRESSION_NAME': VariableSchema('str',
-                'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-            'NLP_MODEL_SENTIMENT_NAME': VariableSchema('str',
-                'Lowerated/lm6-deberta-v3-topic-sentiment'),
-            'NLP_MODEL_DISTRESS_NAME': VariableSchema('str',
-                'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-            'NLP_MODEL_DEPRESSION_WEIGHT': VariableSchema('float', 0.4,
-                min_value=0.0, max_value=1.0),
-            'NLP_MODEL_SENTIMENT_WEIGHT': VariableSchema('float', 0.3,
-                min_value=0.0, max_value=1.0),
-            'NLP_MODEL_DISTRESS_WEIGHT': VariableSchema('float', 0.3,
-                min_value=0.0, max_value=1.0),
-            'NLP_MODEL_CACHE_DIRECTORY': VariableSchema('str',
-                './models/cache'),
-            'NLP_MODEL_DEVICE': VariableSchema('str', 'auto',
-                choices=['auto', 'cpu', 'cuda']),
-            'NLP_MODEL_MAX_MEMORY_MB': VariableSchema('int', 8192,
-                min_value=1024, max_value=32768),
-            'NLP_MODEL_ENSEMBLE_MODE': VariableSchema('str', 'consensus',
-                choices=['consensus', 'majority', 'weighted']),
-            
-            # Analysis Parameters (High Priority)
-            'NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH': VariableSchema('float', 0.55,
-                min_value=0.0, max_value=1.0, 
-                description='High crisis threshold for analysis'),
-            'NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM': VariableSchema('float',
-                0.28, min_value=0.0, max_value=1.0, 
-                description='Medium crisis threshold for analysis'),
-            'NLP_ANALYSIS_CRISIS_THRESHOLD_LOW': VariableSchema('float', 0.16,
-                min_value=0.0, max_value=1.0, 
-                description='Low crisis threshold for analysis'),
-            'NLP_ANALYSIS_DEPRESSION_THRESHOLD': VariableSchema('float', 0.6,
-                min_value=0.0, max_value=1.0),
-            'NLP_ANALYSIS_SENTIMENT_THRESHOLD': VariableSchema('float', 0.5,
-                min_value=0.0, max_value=1.0),
-            'NLP_ANALYSIS_EMOTIONAL_DISTRESS_THRESHOLD': VariableSchema('float',
-                0.6, min_value=0.0, max_value=1.0),
-            'NLP_ANALYSIS_MINIMUM_TEXT_LENGTH': VariableSchema('int', 10,
-                min_value=1, max_value=1000),
-            'NLP_ANALYSIS_MAXIMUM_TEXT_LENGTH': VariableSchema('int', 512,
-                min_value=100, max_value=2048),
-            
-            # Server & Infrastructure (Medium Priority)
-            'NLP_SERVER_HOST': VariableSchema('str', '0.0.0.0'),
-            'NLP_SERVER_PORT': VariableSchema('int', 8881, min_value=1024,
-                max_value=65535),
-            'NLP_SERVER_WORKERS': VariableSchema('int', 1, min_value=1,
-                max_value=16),
-            'NLP_SERVER_TIMEOUT': VariableSchema('int', 60, min_value=10,
-                max_value=300),
-            'NLP_SERVER_RELOAD': VariableSchema('bool', False),
-            
-            # Storage & Logging (Medium Priority)
-            'NLP_STORAGE_DATA_DIRECTORY': VariableSchema('str', './data'),
-            'NLP_STORAGE_CACHE_DIRECTORY': VariableSchema('str', './cache'),
-            'NLP_STORAGE_LOG_DIRECTORY': VariableSchema('str', './logs'),
-            'NLP_LOGGING_LEVEL': VariableSchema('str', 'INFO',
-                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR']),
-            'NLP_LOGGING_FORMAT': VariableSchema('str', 'detailed',
-                choices=['simple', 'detailed', 'json']),
-            
-            # Feature Flags (Low Priority)
-            'NLP_FEATURE_ENABLE_CRISIS_DETECTION': VariableSchema('bool', True),
-            'NLP_FEATURE_ENABLE_PATTERN_MATCHING': VariableSchema('bool', True),
-            'NLP_FEATURE_ENABLE_STAFF_REVIEW': VariableSchema('bool', True),
-            'NLP_FEATURE_ENABLE_ENHANCED_PATTERNS': VariableSchema('bool',
-                False,
-                description='Enable enhanced pattern matching features'),
-            
-            # Performance Settings (Low Priority)
-            'NLP_PERFORMANCE_BATCH_SIZE': VariableSchema('int', 32,
-                min_value=1, max_value=256),
-            'NLP_PERFORMANCE_CACHE_SIZE': VariableSchema('int', 1000,
-                min_value=100, max_value=10000),
-            'NLP_PERFORMANCE_ENABLE_OPTIMIZATION': VariableSchema('bool', True),
-            
-            # Zero-Shot Label Configuration (NEW - Missing schemas causing warnings)
-            'NLP_ZERO_SHOT_LABEL_SET': VariableSchema('str', 'enhanced_crisis', 
-                choices=['enhanced_crisis', 'clinical_focused', 'conversational', 'safety_first'],
-                description='Zero-shot model label set selection'),
-            'NLP_ZERO_SHOT_ENABLE_RUNTIME_SWITCHING': VariableSchema('bool', True, 
-                description='Enable runtime switching of label sets'),
-            'NLP_ZERO_SHOT_CACHE_LABELS': VariableSchema('bool', True, 
-                description='Enable caching of label configurations'),
-            'NLP_ZERO_SHOT_VALIDATE_ON_LOAD': VariableSchema('bool', True, 
-                description='Validate label configuration on load'),
-            'NLP_ZERO_SHOT_FALLBACK_LABEL_SET': VariableSchema('str',
-                'enhanced_crisis',
-                choices=['enhanced_crisis', 'clinical_focused', 'conversational', 'safety_first'],
-                description='Fallback label set if primary fails'),
-
-            # Preserve GLOBAL_* variables (Ecosystem Compatibility)
-            'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO',
-                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR']),
-            'GLOBAL_DEBUG': VariableSchema('bool', False),
-            'GLOBAL_ENABLE_LOGGING': VariableSchema('bool', True),
-            'GLOBAL_NLP_API_PORT': VariableSchema('int', 8881,
-                min_value=1024, max_value=65535),
-            'GLOBAL_ENABLE_CORS': VariableSchema('bool', True),
-            'GLOBAL_ALLOWED_IPS': VariableSchema('str',
-                '10.20.30.0/24,127.0.0.1,::1'),
-            'GLOBAL_HUGGINGFACE_TOKEN': VariableSchema('str', ''),
-            'GLOBAL_FEATURE_ENABLE_LEARNING_SYSTEM': VariableSchema('bool',
-                True),
-        })
+        # ESSENTIAL CORE SCHEMAS (Python-defined for system startup)
+        logger.debug("🔧 Loading essential core schemas from Python...")
+        schemas.update(self._get_essential_core_schemas())
         
-        # Add additional schemas for learning, thresholds, etc.
-        schemas.update(self._get_learning_schemas())
-        schemas.update(self._get_threshold_schemas())
-        schemas.update(self._get_extended_schemas())
+        # DYNAMIC JSON SCHEMAS (Loaded from validation blocks in JSON files)
+        logger.debug("🔧 Loading dynamic schemas from JSON validation blocks...")
+        schemas.update(self._load_json_validation_schemas())
         
-        logger.info(f"✅ Initialized {len(schemas)} environment variable schemas")
+        logger.info(f"✅ Step 10.9: Initialized {len(schemas)} schemas ({self._count_core_schemas()} core + {len(schemas) - self._count_core_schemas()} JSON-driven)")
         return schemas
     
-    def _get_learning_schemas(self) -> Dict[str, VariableSchema]:
-        """Get learning system variable schemas"""
+    def _get_essential_core_schemas(self) -> Dict[str, VariableSchema]:
+        """
+        STEP 10.9 NEW: Essential core schemas needed for system startup (Python-defined)
+        
+        These are the absolute minimum schemas needed for the system to boot and connect.
+        Everything else is loaded dynamically from JSON validation blocks.
+        """
         return {
-            'NLP_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool', True),
-            'NLP_LEARNING_ADJUSTMENT_RATE': VariableSchema('float', 0.1,
-                min_value=0.01, max_value=1.0),
-            'NLP_LEARNING_PERSISTENCE_FILE': VariableSchema('str',
-                './learning_data/adjustments.json'),
-            'NLP_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int', 100,
-                min_value=10, max_value=1000),
-            'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE': VariableSchema('str',
-                './learning_data/enhanced_learning_adjustments.json'),
-            'NLP_ANALYSIS_LEARNING_RATE': VariableSchema('float', 0.1,
-                min_value=0.01, max_value=1.0),
-            'NLP_ANALYSIS_LEARNING_ENABLE_ADJUSTMENTS': VariableSchema('bool',
-                True),
-            'NLP_ANALYSIS_LEARNING_MAXIMUM_ADJUSTMENTS': VariableSchema('int',
-                100, min_value=10, max_value=1000),
-            'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT': VariableSchema('float',
-                0.05, min_value=0.01, max_value=0.5),
-            'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT': VariableSchema('float',
-                0.30, min_value=0.1, max_value=1.0),
-            'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY': VariableSchema('int',
-                50, min_value=1, max_value=500),
-
-            # NEW - Missing schemas causing warnings
-            'NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR': VariableSchema('float',
-                -0.1, min_value=-1.0, max_value=0.0,
-                description='Factor for adjusting false positive learning (negative value reduces sensitivity)'),
-            'NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR': VariableSchema('float',
-                0.1, min_value=0.0, max_value=1.0,
-                description='Factor for adjusting false negative learning (positive value increases sensitivity)'),
+            # GLOBAL_* Ecosystem Variables (Must remain for ecosystem compatibility)
+            'GLOBAL_LOG_LEVEL': VariableSchema('str', 'INFO',
+                choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
+                description='Global logging level for Ash ecosystem'),
+            'GLOBAL_DEBUG': VariableSchema('bool', False,
+                description='Global debug mode for Ash ecosystem'),
+            'GLOBAL_ENABLE_LOGGING': VariableSchema('bool', True,
+                description='Global logging enablement for Ash ecosystem'),
+            'GLOBAL_NLP_API_PORT': VariableSchema('int', 8881,
+                min_value=1024, max_value=65535,
+                description='Global API port for Ash ecosystem'),
+            'GLOBAL_ENABLE_CORS': VariableSchema('bool', True,
+                description='Global CORS enablement for Ash ecosystem'),
+            'GLOBAL_ALLOWED_IPS': VariableSchema('str',
+                '10.20.30.0/24,127.0.0.1,::1',
+                description='Global allowed IP ranges for Ash ecosystem'),
+            'GLOBAL_HUGGINGFACE_TOKEN': VariableSchema('str', '',
+                description='Global HuggingFace token for Ash ecosystem'),
+            'GLOBAL_FEATURE_ENABLE_LEARNING_SYSTEM': VariableSchema('bool', True,
+                description='Global learning system enablement for Ash ecosystem'),
+            
+            # Core Server Variables (Needed for system startup)
+            'NLP_SERVER_HOST': VariableSchema('str', '0.0.0.0',
+                description='Server bind address for NLP service'),
+            'NLP_SERVER_PORT': VariableSchema('int', 8881, 
+                min_value=1024, max_value=65535,
+                description='Server port for NLP service'),
+            'NLP_SERVER_WORKERS': VariableSchema('int', 1, 
+                min_value=1, max_value=16,
+                description='Number of server workers'),
+            
+            # STEP 10.9 FIX: Add context pattern variables that are actively used in JSON configs
+            # These must be in essential core schemas because they're referenced in placeholder resolution
+            'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Enhanced crisis pattern weight multiplier'),
+            'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Hopelessness context crisis boost factor'),
+            'NLP_HOPELESSNESS_CONTEXT_BOOST_FACTOR': VariableSchema('float', 1.2,
+                min_value=0.1, max_value=5.0,
+                description='Hopelessness context boost factor for pattern analysis'),
         }
     
-    def _get_threshold_schemas(self) -> Dict[str, VariableSchema]:
-        """Get threshold mapping variable schemas"""
+    def _count_core_schemas(self) -> int:
+        """Helper method to count core schemas for logging"""
+        return len(self._get_essential_core_schemas())  # Should be 14 now (11 + 3 context variables)
+    
+    def _load_json_validation_schemas(self) -> Dict[str, VariableSchema]:
+        """
+        STEP 10.9 NEW: Load validation schemas dynamically from JSON configuration files
+        
+        This method examines all JSON configuration files for 'validation' blocks
+        and converts them into VariableSchema objects, eliminating code duplication.
+        
+        Returns:
+            Dictionary of VariableSchema objects loaded from JSON files
+        """
+        json_schemas = {}
+        
+        # Iterate through all configuration files to find validation blocks
+        for config_name, config_file in self.config_files.items():
+            try:
+                # Load raw JSON without processing (to avoid circular dependency)
+                logger.debug("📋 Loading Config ...")
+                config_path = self.config_dir / config_file
+                if not config_path.exists():
+                    logger.debug("📋 Config not found ...")
+                    continue
+                
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    logger.debug("📋 Config found!")
+                    raw_config = json.load(f)
+                
+                # Extract validation schemas from this config file
+                logger.debug("📋 Extracting Validation Schemas ...")
+                file_schemas = self._extract_validation_schemas(raw_config, config_name)
+                
+                if file_schemas:
+                    json_schemas.update(file_schemas)
+                    logger.debug(f"📋 Loaded {len(file_schemas)} schemas from {config_name}")
+                    
+            except Exception as e:
+                logger.warning(f"⚠️ Error loading schemas from {config_name}: {e}")
+                continue
+        
+        logger.info(f"✅ Loaded {len(json_schemas)} schemas from JSON validation blocks")
+        return json_schemas
+    
+    def _extract_validation_schemas(self, config: Dict[str, Any], config_name: str) -> Dict[str, VariableSchema]:
+        """
+        STEP 10.9 NEW: Extract VariableSchema objects from a configuration's validation block
+        
+        Args:
+            config: Raw configuration dictionary
+            config_name: Name of the configuration file (for logging)
+            
+        Returns:
+            Dictionary of VariableSchema objects from this config's validation block
+        """
         schemas = {}
         
-        # Basic threshold configuration
-        schemas.update({
-            'NLP_THRESHOLD_ENSEMBLE_MODE': VariableSchema('str', 'consensus',
-                choices=['consensus', 'majority', 'weighted']),
-            'NLP_THRESHOLD_CRISIS_MAPPING_HIGH': VariableSchema('float', 0.8,
-                min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CRISIS_MAPPING_MEDIUM': VariableSchema('float', 0.6,
-                min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CRISIS_MAPPING_LOW': VariableSchema('float', 0.4,
-                min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_STAFF_REVIEW_REQUIRED': VariableSchema('float', 0.7,
-                min_value=0.0, max_value=1.0)
-        })
+        # Look for validation blocks in the configuration
+        validation_blocks = self._find_validation_blocks(config)
         
-        # Mode-specific threshold mappings (Phase 3c)
-        # Consensus mode thresholds
-        schemas.update({
-            'NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH': VariableSchema('float',
-                0.50, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM': VariableSchema('float',
-                0.30, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW': VariableSchema('float',
-                0.40, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW': VariableSchema('float',
-                0.70, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW': VariableSchema('float',
-                0.50, min_value=0.0, max_value=1.0)
-        })
-        
-        # Majority mode thresholds
-        schemas.update({
-            'NLP_THRESHOLD_MAJORITY_CRISIS_TO_HIGH': VariableSchema('float',
-                0.45, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_CRISIS_TO_MEDIUM': VariableSchema('float',
-                0.28, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_MILD_CRISIS_TO_LOW': VariableSchema('float',
-                0.35, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_NEGATIVE_TO_LOW': VariableSchema('float',
-                0.65, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_MAJORITY_UNKNOWN_TO_LOW': VariableSchema('float',
-                0.45, min_value=0.0, max_value=1.0)
-        })
-        
-        # Weighted mode thresholds
-        schemas.update({
-            'NLP_THRESHOLD_WEIGHTED_CRISIS_TO_HIGH': VariableSchema('float',
-                0.55, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_CRISIS_TO_MEDIUM': VariableSchema('float',
-                0.32, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_MILD_CRISIS_TO_LOW': VariableSchema('float',
-                0.42, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_NEGATIVE_TO_LOW': VariableSchema('float',
-                0.72, min_value=0.0, max_value=1.0),
-            'NLP_THRESHOLD_WEIGHTED_UNKNOWN_TO_LOW': VariableSchema('float',
-                0.52, min_value=0.0, max_value=1.0)
-        })
+        for validation_path, validation_block in validation_blocks:
+            for var_name, validation_rules in validation_block.items():
+                if not isinstance(validation_rules, dict):
+                    continue
+                
+                try:
+                    # Convert JSON validation rules to VariableSchema
+                    schema = self._json_to_schema(validation_rules, var_name)
+                    schemas[var_name] = schema
+                    
+                except Exception as e:
+                    logger.warning(f"⚠️ Error converting {var_name} in {config_name}: {e}")
+                    continue
         
         return schemas
     
-    def _get_extended_schemas(self) -> Dict[str, VariableSchema]:
-        """Get extended variable schemas for complete system coverage"""
-        schemas = {}
+    def _find_validation_blocks(self, config: Dict[str, Any], path: str = "") -> List[tuple]:
+        """
+        STEP 10.9 NEW: Recursively find all validation blocks in a configuration
         
-        # Additional model configurations
-        schemas.update({
-            'NLP_MODEL_PRECISION_MODE': VariableSchema('str', 'balanced',
-                choices=['speed', 'balanced', 'accuracy']),
-        })
+        Args:
+            config: Configuration dictionary to search
+            path: Current path in the configuration (for logging)
+            
+        Returns:
+            List of (path, validation_block) tuples
+        """
+        validation_blocks = []
         
-        # Extended analysis parameters
-        schemas.update({
-            'NLP_ANALYSIS_ENABLE_PREPROCESSING': VariableSchema('bool', True),
-            'NLP_ANALYSIS_ENABLE_POSTPROCESSING': VariableSchema('bool', True),
-            'NLP_ANALYSIS_CONTEXT_WINDOW': VariableSchema('int', 512,
-                min_value=64, max_value=2048),
-        })
+        if not isinstance(config, dict):
+            return validation_blocks
         
-        # Extended server configurations  
-        schemas.update({
-            'NLP_SERVER_ENABLE_CORS': VariableSchema('bool', True),
-            'NLP_SERVER_ENABLE_COMPRESSION': VariableSchema('bool', True),
-            'NLP_SERVER_MAX_REQUEST_SIZE': VariableSchema('int', 10485760,
-                min_value=1048576, max_value=104857600),
-        })
+        for key, value in config.items():
+            current_path = f"{path}.{key}" if path else key
+            
+            # Skip metadata blocks
+            if key.startswith('_'):
+                continue
+            
+            if key == 'validation' and isinstance(value, dict):
+                # Found a validation block
+                validation_blocks.append((current_path, value))
+            elif isinstance(value, dict):
+                # Recursively search nested dictionaries
+                validation_blocks.extend(self._find_validation_blocks(value, current_path))
         
-        # Extended storage configurations
-        schemas.update({
-            'NLP_STORAGE_ENABLE_COMPRESSION': VariableSchema('bool', False),
-            'NLP_STORAGE_BACKUP_DIRECTORY': VariableSchema('str', './backups'),
-            'NLP_STORAGE_RETENTION_DAYS': VariableSchema('int', 30, min_value=1,
-                max_value=365),
-            'NLP_STORAGE_MODELS_DIR': VariableSchema('str', './models/cache'),
-            'NLP_STORAGE_LOGS_DIR': VariableSchema('str', './logs'),
-            'NLP_STORAGE_LOG_FILE': VariableSchema('str', 'nlp_service.log'),
-        })
-        
-        # Ensemble configuration
-        schemas.update({
-            'NLP_ENSEMBLE_MODE': VariableSchema('str', 'majority',
-                choices=['consensus', 'majority', 'weighted']),
-            'NLP_ENSEMBLE_GAP_DETECTION_ENABLED': VariableSchema('bool', True),
-            'NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD': VariableSchema('int', 2,
-                min_value=1, max_value=5),
-        })
-        
-        # Hardware configuration
-        schemas.update({
-            'NLP_HARDWARE_DEVICE': VariableSchema('str', 'auto',
-                choices=['auto', 'cpu', 'cuda']),
-            'NLP_HARDWARE_PRECISION': VariableSchema('str', 'float16',
-                choices=['float16', 'float32']),
-            'NLP_HARDWARE_MAX_BATCH_SIZE': VariableSchema('int', 32,
-                min_value=1, max_value=256),
-            'NLP_HARDWARE_INFERENCE_THREADS': VariableSchema('int', 16,
-                min_value=1, max_value=64),
-        })
-        
-        # Logging configuration
-        schemas.update({
-            'NLP_LOGGING_ENABLE_DETAILED': VariableSchema('bool', True),
-            'NLP_LOGGING_ANALYSIS_STEPS': VariableSchema('bool', False),
-            'NLP_LOGGING_THRESHOLD_CHANGES': VariableSchema('bool', True),
-            'NLP_LOGGING_MODEL_DISAGREEMENTS': VariableSchema('bool', True),
-            'NLP_LOGGING_STAFF_REVIEW_TRIGGERS': VariableSchema('bool', True),
-            'NLP_LOGGING_PATTERN_ADJUSTMENTS': VariableSchema('bool', True),
-            'NLP_LOGGING_LEARNING_UPDATES': VariableSchema('bool', True),
-            'NLP_LOGGING_LABEL_MAPPINGS': VariableSchema('bool', False),
-        })
-        
-        return schemas
+        return validation_blocks
     
+    def _json_to_schema(self, json_rules: Dict[str, Any], var_name: str) -> VariableSchema:
+        """
+        STEP 10.9 NEW: Convert JSON validation rules to VariableSchema object
+        
+        Args:
+            json_rules: JSON validation rules dictionary
+            var_name: Variable name (for context in error messages)
+            
+        Returns:
+            VariableSchema object
+        """
+        # Extract validation parameters from JSON
+        var_type = json_rules.get('type', 'str')
+        default = json_rules.get('default')
+        choices = json_rules.get('enum') or json_rules.get('choices')
+        description = json_rules.get('description', '')
+        
+        # STEP 10.9 FIX: Override required flag for JSON-based schemas
+        # JSON validation blocks are for configuration validation, not environment variable requirements
+        # Only essential core schemas (defined in Python) should be truly required
+        required = False  # JSON-based schemas are never required (they have defaults)
+        
+        # Handle range validation
+        min_value = None
+        max_value = None
+        if 'range' in json_rules:
+            range_val = json_rules['range']
+            if isinstance(range_val, list) and len(range_val) >= 2:
+                min_value = range_val[0] if range_val[0] is not None else None
+                max_value = range_val[1] if range_val[1] is not None else None
+        
+        # Handle individual min/max values
+        if 'min_value' in json_rules:
+            min_value = json_rules['min_value']
+        if 'max_value' in json_rules:
+            max_value = json_rules['max_value']
+        
+        # Provide sensible defaults if not specified in JSON
+        if default is None:
+            if var_type == 'bool':
+                default = False
+            elif var_type == 'int':
+                default = 0
+            elif var_type == 'float':
+                default = 0.0
+            elif var_type == 'list':
+                default = []
+            else:  # str
+                default = ''
+        
+        return VariableSchema(
+            var_type=var_type,
+            default=default,
+            choices=choices,
+            min_value=min_value,
+            max_value=max_value,
+            required=required,  # Always False for JSON-based schemas
+            description=description
+        )
     # ========================================================================
     # GET HARDWARE CONFIGURATION FIX
     # ========================================================================
 
     def get_hardware_configuration(self) -> Dict[str, Any]:
         """
-        Get hardware configuration for models - MISSING METHOD FOR MODELSMANAGER
+        Get hardware configuration for models - MISSING METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing hardware configuration settings
@@ -421,7 +382,7 @@ class UnifiedConfigManager:
                 'inference_threads': self.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
                 'max_memory': self.get_env('NLP_MODEL_MAX_MEMORY', None),
                 'offload_folder': self.get_env('NLP_MODEL_OFFLOAD_FOLDER', './models/offload'),
-                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIRECTORY', './models/cache')
+                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache')
             }
         except Exception as e:
             logger.error(f"❌ Error getting hardware configuration: {e}")
@@ -438,7 +399,7 @@ class UnifiedConfigManager:
 
     def get_model_configuration(self) -> Dict[str, Any]:
         """
-        Get model configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get model configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing model configuration
@@ -451,10 +412,10 @@ class UnifiedConfigManager:
                 'sentiment_weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
                 'emotional_distress_model': self.get_env('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'consensus'),
+                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'majority'),
                 'gap_detection_enabled': self.get_env_bool('NLP_ENSEMBLE_GAP_DETECTION_ENABLED', True),
                 'disagreement_threshold': self.get_env_int('NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD', 2),
-                'cache_directory': self.get_env('NLP_MODEL_CACHE_DIRECTORY', './models/cache'),
+                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
                 'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
             }
         except Exception as e:
@@ -476,7 +437,7 @@ class UnifiedConfigManager:
 
     def get_performance_configuration(self) -> Dict[str, Any]:
         """
-        Get performance configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get performance configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing performance settings
@@ -484,7 +445,7 @@ class UnifiedConfigManager:
         try:
             return {
                 'max_concurrent_requests': self.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                'request_timeout': self.get_env_int('NLP_PERFORMANCE_REQUEST_TIMEOUT', 40),
+                'request_timeout': self.get_env_int('GLOBAL_REQUEST_TIMEOUT', 30),
                 'worker_timeout': self.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
                 'analysis_timeout_ms': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS', 5000),
                 'analysis_cache_ttl': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL', 300),
@@ -508,17 +469,17 @@ class UnifiedConfigManager:
 
     def get_storage_configuration(self) -> Dict[str, Any]:
         """
-        Get storage configuration settings - ADDITIONAL METHOD FOR MODELSMANAGER
+        Get storage configuration settings - ADDITIONAL METHOD FOR MODELENSEMBLEMANAGER
         
         Returns:
             Dictionary containing storage settings
         """
         try:
             return {
-                'data_directory': self.get_env('NLP_STORAGE_DATA_DIRECTORY', './data'),
-                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIRECTORY', './cache'),
-                'log_directory': self.get_env('NLP_STORAGE_LOG_DIRECTORY', './logs'),
-                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIRECTORY', './backups'),
+                'data_directory': self.get_env('NLP_STORAGE_DATA_DIR', './data'),
+                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIR', './cache'),
+                'log_directory': self.get_env('NLP_STORAGE_LOG_DIR', './logs'),
+                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIR', './backups'),
                 'models_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
                 'enable_compression': self.get_env_bool('NLP_STORAGE_ENABLE_COMPRESSION', False),
                 'retention_days': self.get_env_int('NLP_STORAGE_RETENTION_DAYS', 30),
@@ -581,68 +542,6 @@ class UnifiedConfigManager:
         
         logger.info(f"✅ Successfully loaded and validated {len(env_config)} environment variables")
         return env_config
-        
-    def _validate_and_convert(self, var_name: str, value: str) -> Any:
-        """Validate and convert environment variable value according to schema"""
-        schema = self.variable_schemas[var_name]
-        
-        try:
-            # Type conversion
-            if schema.var_type == 'bool':
-                converted = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
-            elif schema.var_type == 'int':
-                converted = int(value)
-            elif schema.var_type == 'float':
-                converted = float(value)
-            elif schema.var_type == 'list':
-                converted = [item.strip() for item in value.split(',')]
-            else:  # str
-                converted = value
-            
-            # Validation
-            if schema.choices and converted not in schema.choices:
-                logger.error(f"❌ Invalid choice for {var_name}: {converted} not in {schema.choices}")
-                return schema.default
-                
-            if schema.min_value is not None and isinstance(converted, (int, float)):
-                if converted < schema.min_value:
-                    logger.error(f"❌ Value too low for {var_name}: {converted} < {schema.min_value}")
-                    return schema.default
-                    
-            if schema.max_value is not None and isinstance(converted, (int, float)):
-                if converted > schema.max_value:
-                    logger.error(f"❌ Value too high for {var_name}: {converted} > {schema.max_value}")
-                    return schema.default
-            
-            logger.debug(f"✅ Validated {var_name}: {converted}")
-            return converted
-            
-        except (ValueError, TypeError) as e:
-            logger.error(f"❌ Conversion error for {var_name}: {e}")
-            return schema.default
-        """
-        Get environment variable with schema validation and type conversion
-        FOR UNIFIED MANAGER USE ONLY - JSON loading uses os.getenv() directly
-        """
-        # Get raw environment value
-        env_value = os.getenv(var_name)
-        
-        # If no environment value, use schema default or provided default
-        if env_value is None:
-            if var_name in self.variable_schemas:
-                result = self.variable_schemas[var_name].default
-                logger.debug(f"🔧 Using schema default for {var_name}: {result}")
-                return result
-            else:
-                logger.debug(f"🔧 Using provided default for {var_name}: {default}")
-                return default
-        
-        # Validate and convert using schema
-        if var_name in self.variable_schemas:
-            return self._validate_and_convert(var_name, env_value)
-        else:
-            logger.warning(f"⚠️ No schema found for {var_name}, returning raw value: {env_value}")
-            return env_value
     
     # ========================================================================
     # UNIFIED ENVIRONMENT VARIABLE ACCESS (CRITICAL METHODS)
@@ -754,125 +653,225 @@ class UnifiedConfigManager:
             return schema.default
     
     # ========================================================================
-    # JSON CONFIGURATION METHODS (FOLLOWS ESTABLISHED PATTERN)
+    # JSON CONFIGURATION METHODS - STEP 10.9 ENHANCED
     # ========================================================================
     
-    def substitute_environment_variables(self, value: Any) -> Any:
+    def substitute_environment_variables(self, value: Any, defaults_context: Dict[str, Any] = None) -> Any:
         """
-        Substitute environment variables in configuration values
-        FOLLOWS ESTABLISHED PATTERN: ${VAR} placeholders + defaults block fallback
+        STEP 10.9 ENHANCED: Substitute environment variables with immediate defaults fallback
+        
+        ENHANCED RESOLUTION ORDER:
+        1. Environment variables (os.getenv())
+        2. JSON defaults block (when available)
+        3. Schema defaults (when available)
+        4. Original placeholder (only if no resolution possible)
+        
+        Args:
+            value: Value to process (can be string, dict, list, or primitive)
+            defaults_context: Current defaults context for this configuration section
+            
+        Returns:
+            Processed value with placeholders resolved
         """
         if isinstance(value, str):
             def replace_env_var(match):
                 env_var = match.group(1)
-                # Use os.getenv() directly for substitution (following established pattern)
+                
+                # Step 1: Try environment variable first
                 env_value = os.getenv(env_var)
-                
-                logger.debug(f"🔄 Substituting ${{{env_var}}} = {env_value}")
-                
                 if env_value is not None:
-                    # Type conversion for substituted values (follows UnifiedConfigManager pattern)
-                    if env_value.lower() in ('true', 'false'):
-                        result = str(env_value.lower() == 'true')
-                        logger.debug(f"   → Converted to boolean: {result}")
-                        return result
-                    elif env_value.replace('.', '').replace('-', '').isdigit():
-                        try:
-                            # Try float first, then int
-                            if '.' in env_value:
-                                result = str(float(env_value))
-                                logger.debug(f"   → Converted to float: {result}")
-                                return result
-                            else:
-                                result = str(int(env_value))
-                                logger.debug(f"   → Converted to int: {result}")
-                                return result
-                        except ValueError:
-                            logger.debug(f"   → Kept as string: {env_value}")
-                            return env_value
-                    else:
-                        logger.debug(f"   → Used as string: {env_value}")
-                        return env_value
-                else:
-                    logger.debug(f"⚠️ Environment variable {env_var} not found, keeping placeholder for defaults fallback")
-                    return match.group(0)  # Return original placeholder for defaults processing
+                    return self._convert_value_type(env_var, env_value)
+                
+                # Step 2: Try JSON defaults context (new in Step 10.9)
+                if defaults_context:
+                    defaults_value = self._find_default_value(env_var, defaults_context)
+                    if defaults_value is not None:
+                        return str(defaults_value)  # Convert to string for substitution
+                
+                # Step 3: Try schema defaults (existing fallback)
+                if env_var in self.variable_schemas:
+                    schema_default = self.variable_schemas[env_var].default
+                    return str(schema_default)
+                
+                # Step 4: No resolution possible - warn and keep placeholder
+                logger.warning(f"⚠️ Unresolved placeholder: ${{{env_var}}}")
+                return match.group(0)  # Return original placeholder
             
-            return self.env_override_pattern.sub(replace_env_var, value)
+            # Apply substitution with enhanced resolution
+            result = self.env_override_pattern.sub(replace_env_var, value)
+            return result
             
         elif isinstance(value, dict):
-            return {k: self.substitute_environment_variables(v) for k, v in value.items()}
+            # Process dictionaries recursively, passing defaults context
+            # STEP 10.9 FIX: Skip _metadata blocks to avoid processing documentation examples
+            result = {}
+            current_defaults = defaults_context or value.get('defaults', {})
+            
+            for k, v in value.items():
+                if k.startswith('_'):
+                    # Skip metadata blocks (they contain documentation and examples, not real config)
+                    result[k] = v  # Keep metadata as-is without processing
+                elif k == 'defaults':
+                    # Keep defaults block as-is for reference
+                    result[k] = v
+                else:
+                    # Get defaults for this key if available
+                    key_defaults = current_defaults.get(k, {}) if isinstance(current_defaults, dict) else {}
+                    result[k] = self.substitute_environment_variables(v, key_defaults)
+            return result
             
         elif isinstance(value, list):
-            return [self.substitute_environment_variables(item) for item in value]
+            # Process lists recursively
+            return [self.substitute_environment_variables(item, defaults_context) for item in value]
             
         else:
+            # Return primitive values as-is
             return value
+    
+    def _find_default_value(self, env_var: str, defaults_context: Dict[str, Any]) -> Any:
+        """
+        STEP 10.9 NEW: Find default value for environment variable in JSON defaults context
+        
+        This method searches through the defaults context to find a matching default value
+        for the given environment variable.
+        
+        Args:
+            env_var: Environment variable name (e.g., 'NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST')
+            defaults_context: Current defaults context dictionary
+            
+        Returns:
+            Default value if found, None otherwise
+        """
+        if not isinstance(defaults_context, dict):
+            return None
+        
+        # Direct key lookup (most common case)
+        if env_var in defaults_context:
+            logger.debug(f"   🎯 Direct match for {env_var} in defaults")
+            return defaults_context[env_var]
+        
+        # Search through nested structures
+        for key, value in defaults_context.items():
+            # Skip metadata and other non-data keys
+            if key.startswith('_') or key == 'defaults':
+                continue
+                
+            if isinstance(value, dict):
+                # Recursive search in nested dictionaries
+                found = self._find_default_value(env_var, value)
+                if found is not None:
+                    logger.debug(f"   🎯 Nested match for {env_var} in defaults.{key}")
+                    return found
+            
+            # Pattern matching for common variable patterns
+            # Convert env var name to potential JSON key patterns
+            simplified_key = self._env_var_to_json_key(env_var)
+            if key == simplified_key:
+                logger.debug(f"   🎯 Pattern match for {env_var} → {key}")
+                return value
+        
+        return None
+    
+    def _env_var_to_json_key(self, env_var: str) -> str:
+        """
+        STEP 10.9 NEW: Convert environment variable name to potential JSON key
+        
+        Examples:
+        - NLP_HOPELESSNESS_CONTEXT_CRISIS_BOOST → crisis_amplifier_weight
+        - NLP_CONFIG_ENHANCED_CRISIS_WEIGHT → enhanced_crisis_weight
+        
+        Args:
+            env_var: Environment variable name
+            
+        Returns:
+            Potential JSON key name
+        """
+        # Remove common prefixes
+        key = env_var.replace('NLP_', '').replace('CONFIG_', '').replace('GLOBAL_', '')
+        
+        # Convert to lowercase with underscores
+        key = key.lower()
+        
+        # Common pattern mappings
+        pattern_mappings = {
+            'hopelessness_context_crisis_boost': 'crisis_amplifier_weight',
+            'hopelessness_context_boost_factor': 'crisis_amplifier_weight',
+            'enhanced_crisis_weight': 'enhanced_crisis_weight',
+            'crisis_context_boost_multiplier': 'crisis_amplifier_weight',
+            'lgbtqia_weight_multiplier': 'lgbtqia_weight_multiplier',
+            'burden_weight_multiplier': 'burden_weight_multiplier'
+        }
+        
+        return pattern_mappings.get(key, key)
+    
+    def _convert_value_type(self, env_var: str, value: str) -> str:
+        """
+        STEP 10.9 ENHANCED: Convert string value to appropriate type for substitution
+        
+        Args:
+            value: String value to convert
+            
+        Returns:
+            String representation of converted value
+        """
+        # Boolean conversion
+        if value.lower() in ('true', 'false'):
+            result = str(value.lower() == 'true')
+            logger.debug(f"   {env_var} → Boolean conversion: {value} → {result}")
+            return result
+        
+        # Numeric conversion
+        if value.replace('.', '').replace('-', '').isdigit():
+            try:
+                if '.' in value:
+                    result = str(float(value))
+                    logger.debug(f"   {env_var} → Float conversion: {value} → {result}")
+                    return result
+                else:
+                    result = str(int(value))
+                    logger.debug(f"   {env_var} → Int conversion: {value} → {result}")
+                    return result
+            except ValueError:
+                logger.debug(f"   {env_var} → String (conversion failed): {value}")
+                return value
+        
+        # String (no conversion)
+        logger.debug(f"   {env_var} → String (no conversion): {value}")
+        return value
     
     def _apply_defaults_fallback(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Apply defaults block fallback for any remaining ${VAR} placeholders
-        Handles the established pattern: main config + defaults block
+        STEP 10.9 UPDATED: Legacy defaults fallback - now mostly redundant
+        
+        This method is kept for backward compatibility but most placeholder resolution
+        now happens in substitute_environment_variables() with immediate defaults lookup.
+        
+        Args:
+            config: Configuration dictionary
+            
+        Returns:
+            Configuration with any remaining placeholders resolved
         """
         defaults = config.get('defaults', {})
         if not defaults:
-            logger.debug("🔍 No defaults block found, skipping defaults fallback")
             return config
         
-        logger.debug("🔧 Applying defaults block fallback for remaining placeholders...")
-        
-        def apply_defaults_recursive(main_value: Any, defaults_value: Any) -> Any:
+        def apply_legacy_defaults_recursive(main_value: Any, defaults_value: Any) -> Any:
             if isinstance(main_value, str) and main_value.startswith('${') and main_value.endswith('}'):
-                # This is still a placeholder, use the default value with type conversion
-                logger.debug(f"🔄 Replacing placeholder {main_value} with default: {defaults_value}")
-                
-                # Apply type conversion to the default value
-                if isinstance(defaults_value, (int, float)):
-                    return defaults_value  # Already correct type
-                elif isinstance(defaults_value, str):
-                    # Try to convert string defaults to appropriate types
-                    if defaults_value.lower() in ('true', 'false'):
-                        return defaults_value.lower() == 'true'
-                    elif defaults_value.replace('.', '').replace('-', '').isdigit():
-                        try:
-                            if '.' in defaults_value:
-                                return float(defaults_value)
-                            else:
-                                return int(defaults_value)
-                        except ValueError:
-                            return defaults_value
-                    else:
-                        return defaults_value
-                else:
-                    return defaults_value
+                # This is still an unresolved placeholder - use the default
+                return self._apply_type_conversion(defaults_value)
             elif isinstance(main_value, dict) and isinstance(defaults_value, dict):
                 # Recursively apply defaults to nested dictionaries
                 result = {}
                 for key in main_value:
                     if key in defaults_value:
-                        result[key] = apply_defaults_recursive(main_value[key], defaults_value[key])
+                        result[key] = apply_legacy_defaults_recursive(main_value[key], defaults_value[key])
                     else:
                         result[key] = main_value[key]
                 # Add any defaults that aren't in main config
                 for key in defaults_value:
                     if key not in result:
-                        # Apply type conversion to added defaults too
-                        if isinstance(defaults_value[key], (int, float, bool)):
-                            result[key] = defaults_value[key]
-                        elif isinstance(defaults_value[key], str):
-                            if defaults_value[key].lower() in ('true', 'false'):
-                                result[key] = defaults_value[key].lower() == 'true'
-                            elif defaults_value[key].replace('.', '').replace('-', '').isdigit():
-                                try:
-                                    if '.' in defaults_value[key]:
-                                        result[key] = float(defaults_value[key])
-                                    else:
-                                        result[key] = int(defaults_value[key])
-                                except ValueError:
-                                    result[key] = defaults_value[key]
-                            else:
-                                result[key] = defaults_value[key]
-                        else:
-                            result[key] = defaults_value[key]
+                        result[key] = self._apply_type_conversion(defaults_value[key])
                 return result
             elif isinstance(main_value, list) and isinstance(defaults_value, list):
                 # For lists, prefer main_value if it exists, otherwise use defaults
@@ -881,7 +880,7 @@ class UnifiedConfigManager:
                 # Use main value if it's not a placeholder
                 return main_value
         
-        # Apply defaults to the main configuration sections
+        # Apply legacy defaults to the main configuration sections
         result = {}
         for key, value in config.items():
             if key == 'defaults':
@@ -889,56 +888,73 @@ class UnifiedConfigManager:
                 result[key] = value
             elif key in defaults:
                 # Apply defaults to this section
-                result[key] = apply_defaults_recursive(value, defaults[key])
+                result[key] = apply_legacy_defaults_recursive(value, defaults[key])
             else:
                 # No defaults for this section, keep as-is
                 result[key] = value
         
-        logger.debug("✅ Defaults block fallback applied")
         return result
+    
+    def _apply_type_conversion(self, value: Any) -> Any:
+        """
+        STEP 10.9 NEW: Apply type conversion to default values
+        
+        Args:
+            value: Value to convert
+            
+        Returns:
+            Type-converted value
+        """
+        if isinstance(value, str):
+            # Try to convert string defaults to appropriate types
+            if value.lower() in ('true', 'false'):
+                return value.lower() == 'true'
+            elif value.replace('.', '').replace('-', '').isdigit():
+                try:
+                    if '.' in value:
+                        return float(value)
+                    else:
+                        return int(value)
+                except ValueError:
+                    return value
+            else:
+                return value
+        else:
+            # Return non-string values as-is
+            return value
     
     def load_config_file(self, config_name: str) -> Dict[str, Any]:
         """
-        Load and parse a configuration file with environment variable substitution and defaults fallback
-        FOLLOWS ESTABLISHED PATTERN: ${VAR} placeholders + defaults block
-        """
-        if config_name in self.config_cache:
-            logger.debug(f"📋 Using cached config for {config_name}")
-            return self.config_cache[config_name]
+        STEP 10.9 ENHANCED: Load and parse configuration file with enhanced placeholder resolution
         
+        Args:
+            config_name: Name of configuration to load
+            
+        Returns:
+            Processed configuration dictionary
+        """
         config_file = self.config_files.get(config_name)
         if not config_file:
             logger.error(f"❌ Unknown configuration: {config_name}")
-            logger.debug(f"🔍 Available configurations: {list(self.config_files.keys())}")
             return {}
         
         config_path = self.config_dir / config_file
         
         if not config_path.exists():
             logger.warning(f"⚠️ Configuration file not found: {config_path}")
-            logger.debug(f"🔍 Config directory contents: {list(self.config_dir.glob('*.json')) if self.config_dir.exists() else 'Directory does not exist'}")
             return {}
         
         try:
-            logger.debug(f"📁 Loading config file: {config_path}")
-            
             with open(config_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
             
-            logger.debug(f"✅ JSON loaded successfully")
+            # STEP 10.9 ENHANCED: Single-pass resolution with immediate defaults lookup
+            processed_config = self.substitute_environment_variables(raw_config)
             
-            # Step 1: Substitute environment variables
-            logger.debug("🔄 Step 1: Starting environment variable substitution...")
-            env_substituted_config = self.substitute_environment_variables(raw_config)
+            # STEP 10.9: Legacy fallback for any remaining placeholders (should be minimal now)
+            processed_config = self._apply_defaults_fallback(processed_config)
             
-            # Step 2: Apply defaults block fallback for remaining placeholders
-            logger.debug("🔄 Step 2: Applying defaults block fallback...")
-            processed_config = self._apply_defaults_fallback(env_substituted_config)
-            
-            # Cache the processed configuration
-            self.config_cache[config_name] = processed_config
-            
-            logger.info(f"✅ Loaded configuration: {config_name} from {config_file}")
+            logger.info(f"✅ Loaded configuration: {config_name}")
             return processed_config
             
         except json.JSONDecodeError as e:
@@ -953,16 +969,55 @@ class UnifiedConfigManager:
     # ========================================================================
     
     def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
-        """Get crisis pattern configuration by type - PRESERVED from Phase 3a"""
+        """
+        Get crisis pattern configuration by type - UPDATED for consolidation support
+        
+        This method now handles both consolidated and individual pattern files:
+        - For consolidated files: Loads the new consolidated JSON structure
+        - For individual files: Loads individual pattern files as before
+        - For eliminated files: Returns empty dict with info message
+        """
         logger.debug(f"🔍 Getting crisis patterns: {pattern_type}")
         
-        try:
-            # Check if we have a cached version first
-            cache_key = f"crisis_patterns_{pattern_type}"
-            if cache_key in self.config_cache:
-                logger.debug(f"📋 Using cached config for {pattern_type}")
-                return self.config_cache[cache_key]
+        # Handle requests for eliminated files
+        eliminated_files = {
+            'crisis_context_patterns': 'context_patterns',
+            'positive_context_patterns': 'context_patterns', 
+            'context_weights_patterns': 'context_patterns',
+            'crisis_lgbtqia_patterns': 'community_vocabulary_patterns',
+            'crisis_community_vocabulary': 'community_vocabulary_patterns'
+        }
+        
+        if pattern_type in eliminated_files:
+            target_file = eliminated_files[pattern_type]
+            logger.info(f"ℹ️ {pattern_type}.json was consolidated into {target_file}.json")
             
+            # Load the consolidated file instead
+            consolidated_config = self.get_crisis_patterns(target_file)
+            if not consolidated_config:
+                logger.warning(f"⚠️ Consolidated file {target_file}.json not found")
+                return {}
+            
+            # Extract the relevant section based on pattern type
+            if pattern_type == 'crisis_context_patterns':
+                return consolidated_config.get('crisis_amplification_patterns', {})
+            elif pattern_type == 'positive_context_patterns':
+                return consolidated_config.get('positive_reduction_patterns', {})
+            elif pattern_type == 'context_weights_patterns':
+                # Reconstruct the weights structure from consolidated file
+                weights = {}
+                crisis_amp = consolidated_config.get('crisis_amplification_patterns', {})
+                if 'crisis_amplifier_words' in crisis_amp:
+                    weights['crisis_context_words'] = crisis_amp['crisis_amplifier_words']
+                positive_red = consolidated_config.get('positive_reduction_patterns', {})
+                if 'positive_reducer_words' in positive_red:
+                    weights['positive_context_words'] = positive_red['positive_reducer_words']
+                return weights
+            elif pattern_type in ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary']:
+                # Return the full consolidated community vocabulary
+                return consolidated_config
+        
+        try:
             # Load the specific pattern configuration file (follows established pattern)
             config_file_path = self.config_dir / f"{pattern_type}.json"
             
@@ -970,18 +1025,18 @@ class UnifiedConfigManager:
                 logger.warning(f"⚠️ Crisis pattern file not found: {config_file_path}")
                 return {}
             
-            logger.debug(f"📁 Loading config file: {config_file_path}")
+            logger.debug(f"🔍 Loading config file: {config_file_path}")
             
             with open(config_file_path, 'r', encoding='utf-8') as f:
                 raw_config = json.load(f)
             
             logger.debug("✅ JSON loaded successfully")
             
-            # Apply environment variable substitutions
+            # STEP 10.9 ENHANCED: Apply enhanced environment variable substitutions
             processed_config = self.substitute_environment_variables(raw_config)
             
-            # Cache the processed configuration
-            self.config_cache[cache_key] = processed_config
+            # Apply legacy defaults fallback if present
+            processed_config = self._apply_defaults_fallback(processed_config)
             
             logger.debug(f"✅ Loaded crisis patterns: {pattern_type}")
             
@@ -1002,15 +1057,14 @@ class UnifiedConfigManager:
             return self._get_fallback_model_config()
         
         # Extract model definitions from the nested structure
-        model_defs = config.get('model_ensemble', {}).get('model_definitions', {})
-        ensemble_config = config.get('model_ensemble', {}).get('ensemble_config', {})
+        model_defs = config.get('ensemble_models', {}).get('model_definitions', {})
+        ensemble_config = config.get('ensemble_config', {})
         
         # Return in the format expected by ModelEnsembleManager
         result = {
             'models': model_defs,  # ModelEnsembleManager expects 'models' key
-            'ensemble_mode': ensemble_config.get('mode', 'consensus'),
-            'validation': config.get('model_ensemble', {}).get('validation', {}),
-            'performance': config.get('model_ensemble', {}).get('performance', {})
+            'ensemble_mode': ensemble_config.get('mode', 'majority'),
+            'validation': model_defs.get('validation', {})
         }
         
         logger.debug(f"✅ Model configuration loaded successfully: {len(model_defs)} models found")
@@ -1023,53 +1077,74 @@ class UnifiedConfigManager:
         return {
             'models': {  # ModelEnsembleManager expects 'models' key
                 'depression': {
-                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'cardiffnlp/twitter-roberta-base-sentiment'),
+                    'name': self.get_env_str('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
                     'weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
+                    'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
                     'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'sentiment': {
-                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'cardiffnlp/twitter-roberta-base-sentiment-latest'),
+                    'name': self.get_env_str('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
                     'weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
-                    'type': 'sentiment-analysis',
+                    'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
+                    'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 },
                 'emotional_distress': {
-                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'j-hartmann/emotion-english-distilroberta-base'),
+                    'name': self.get_env_str('NLP_MODEL_EMOTIONAL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                     'weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                    'cache_dir': self.get_env_str('NLP_MODEL_CACHE_DIRECTORY', './model_cache'),
-                    'type': 'natural-language-inference',
+                    'cache_dir': self.get_env_str('NLP_STORAGE_MODELS_DIR', './model_cache'),
+                    'type': 'zero-shot-classification',
                     'pipeline_task': 'zero-shot-classification'
                 }
             },
-            'ensemble_mode': self.get_env_str('NLP_MODEL_ENSEMBLE_MODE', 'consensus'),
+            'ensemble_mode': self.get_env_str('NLP_ENSEMBLE_MODE', 'majority'),
             'validation': {
                 'ensure_weights_sum_to_one': True,
                 'fail_on_invalid_weights': True
-            },
-            'performance': {
-                'device': self.get_env_str('NLP_MODEL_DEVICE', 'auto'),
-                'max_memory_mb': self.get_env_int('NLP_MODEL_MAX_MEMORY_MB', 8192)
             }
         }
 
     def get_status(self) -> Dict[str, Any]:
         """
-        Get status of UnifiedConfigManager
+        Get status of UnifiedConfigManager with consolidation info
         
         Returns:
             Dictionary containing manager status and operational info
         """
         return {
             'status': 'operational',
+            'version': 'v3.1d_step_10.9_refactored',
+            'enhancement': 'Enhanced Environment Variable Resolution + JSON-Driven Schema Validation',
             'config_files': len(self.config_files),
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
-            'cache_size': len(self.config_cache),
             'config_directory': str(self.config_dir),
-            'version': 'v3.1_step_9',
-            'architecture': 'Clean v3.1 with Unified Configuration'
+            'architecture': 'Clean v3.1 with Enhanced Configuration Resolution + JSON-Driven Validation',
+            'consolidation_status': {
+                'context_patterns_consolidated': 'context_patterns' in self.config_files,
+                'community_patterns_consolidated': 'community_vocabulary_patterns' in self.config_files,
+                'eliminated_files': [
+                    'crisis_context_patterns', 'positive_context_patterns', 'context_weights_patterns',
+                    'crisis_lgbtqia_patterns', 'crisis_community_vocabulary'
+                ],
+                'consolidated_files': ['context_patterns', 'community_vocabulary_patterns']
+            },
+            'step_10_9_enhancements': {
+                'immediate_defaults_resolution': True,
+                'enhanced_placeholder_processing': True,
+                'json_defaults_integration': True,
+                'schema_fallback_support': True,
+                'type_conversion_consistency': True,
+                'json_driven_schema_validation': True,
+                'code_reduction_achieved': True
+            },
+            'schema_system': {
+                'total_schemas': len(self.variable_schemas),
+                'core_python_schemas': self._count_core_schemas(),
+                'json_driven_schemas': len(self.variable_schemas) - self._count_core_schemas(),
+                'code_lines_eliminated': '200+',
+                'validation_source': 'JSON configuration files + essential core'
+            }
         }
 
 # ============================================================================
@@ -1084,10 +1159,10 @@ def create_unified_config_manager(config_dir: str = "/app/config") -> UnifiedCon
         config_dir: Directory containing JSON configuration files
         
     Returns:
-        UnifiedConfigManager instance
+        UnifiedConfigManager instance with Step 10.9 enhancements
     """
     return UnifiedConfigManager(config_dir)
 
 __all__ = ['UnifiedConfigManager', 'create_unified_config_manager']
 
-logger.info("✅ UnifiedConfigManager v3.1d Step 9 CORRECTLY FIXED - JSON placeholders + defaults block pattern implemented, complete environment variable unification achieved")
+logger.info("✅ UnifiedConfigManager v3.1d Step 10.9 Refactored loaded - Enhanced environment variable resolution with JSON-driven schema validation")

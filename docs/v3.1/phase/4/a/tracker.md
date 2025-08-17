@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/4/a/tracker.md -->
+<!--
+Documentation for Phase 4a for Ash-NLP Service v3.1
+FILE VERSION: v3.1-4a-1-1
+LAST MODIFIED: 2025-08-13
+PHASE: 4a
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 4a: Crisis Detection Functionality Audit
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  

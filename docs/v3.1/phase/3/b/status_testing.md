@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/b/status_testing.md -->
+<!--
+Documentation for Phase 3b for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3b-10.11-3-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3b
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3b Testing Tracker - Session 1
 
 **Date**: August 5, 2025
@@ -11,7 +19,7 @@
 
 **Root Cause**: 
 - In `main.py` line ~XX, CrisisAnalyzer is being initialized with `analysis_parameters_manager` parameter
-- However, `analysis/crisis_analyzer.py` constructor only accepts: `models_manager`, `crisis_pattern_manager`, `learning_manager`
+- However, `analysis/crisis_analyzer.py` constructor only accepts: `model_ensemble_manager`, `crisis_pattern_manager`, `learning_manager`
 - The `analysis_parameters_manager` parameter was added to main.py but not to the CrisisAnalyzer constructor
 
 **Impact**: 

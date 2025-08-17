@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Phase 3c: Comprehensive Integration Tests - FIXED VERSION
+Phase 3c: Comprehensive Integration Tests
+FILE VERSION: v3.1-3d-10.11-3-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 10.11-3
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests complete integration of ThresholdMappingManager with existing system components
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -139,15 +143,15 @@ class TestPhase3cSystemIntegration:
         logger.info("🧪 Testing CrisisAnalyzer integration with Phase 3c components...")
         
         # Create mock models manager
-        mock_models_manager = Mock()
-        mock_models_manager.is_ready.return_value = True
+        mock_model_ensemble_manager = Mock()
+        mock_model_ensemble_manager.is_ready.return_value = True
         
         # Create CrisisAnalyzer with Phase 3c integration
         try:
             # Test that CrisisAnalyzer can be created with threshold manager
             # Note: This tests the integration pattern, actual implementation may vary
             analyzer_components = {
-                'models_manager': mock_models_manager,
+                'model_ensemble_manager': mock_model_ensemble_manager,
                 'crisis_pattern_manager': mock_crisis_pattern_manager,
                 'analysis_parameters_manager': mock_analysis_parameters_manager,
                 'threshold_mapping_manager': mock_threshold_manager

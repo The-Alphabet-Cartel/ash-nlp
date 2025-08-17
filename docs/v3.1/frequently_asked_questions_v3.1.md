@@ -1,10 +1,18 @@
+<!-- ash-nlp/docs/v3.1/frequently_asked_questions_v3.1.md -->
+<!--
+Frequently Asked Questions for Ash-NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 10.6 - Documentation Update for File Versioning
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # ❓Frequently Asked Questions (FAQ)❓
 
 ## Phase 3d
 1. **Migration Strategy**
   - *Should we maintain backward compatibility for the old variable names during a transition period, or do a complete cutover?*
     - I would prefer to break the system (as we are using GitHub's sub-versioning, so rolling back if needed is not a big deal) and get things working from there, so let's just cutover and rip the band-aids off.
-  - *Should we create migration and/or confirugation scripts to help with changes?*
+  - *Should we create migration and/or configuration scripts to help with changes?*
     - No
       - I work on one rig, and test on another.
       - Migration / configuration scripting will only break the server rig.
@@ -15,12 +23,12 @@
   - *Which category of variables should we tackle first?*
     - We'll be starting with the most critical (models, threshold) and working toward less critical (logging, features).
   - *What naming convention for variables will we be using?*
-    - `NLP_CATEGORY_SPECIFIC_FUNCTION=value`
+    - `NLP_CATEGORY_FUNCTION_SETTING=value`
   - *How do we handle existing JSON files?*
     - We keep, extend, and enhance any existing JSON files.
   - *Should we consolidate all duplicate and similar variables into a unified variable?*
     - Yes
-      - Any variables that are obvious duplicates and/or similar in functionality should be consolidated into a unified variable using the `NLP_CATEGORY_SPECIFIC_FUNCTION=value` naming convention given previously.
+      - Any variables that are obvious duplicates and/or similar in functionality should be consolidated into a unified variable using the `NLP_CATEGORY_FUNCTION_SETTING=value` naming convention given previously.
       - Note: All `GLOBAL_*` that are assigned must stay and be used as `GLOBAL_*` variables within the code.
         - These variables are utilized within the greater 'Ash' ecosystem.
   - *How do we handle existing managers?*

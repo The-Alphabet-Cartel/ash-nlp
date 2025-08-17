@@ -1,0 +1,394 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3d-10-1",
+    "last_modified": "2025-08-13",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.1",
+    "description": "Label switching and zero-shot classification configuration for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "manager": "ZeroShotManager",
+    "environment_overrides": {
+      "description": "All label settings support environment variable overrides",
+      "pattern": "${NLP_LABEL_*CATEGORY*_*SETTING*}",
+      "examples": [
+        "NLP_LABEL_CRISIS_HIGH_CRISIS",
+        "NLP_LABEL_CRISIS_MEDIUM_CRISIS", 
+        "NLP_LABEL_MAPPING_ENABLE_LABEL_SWITCHING"
+      ]
+    }
+  },
+
+  "label_configuration": {
+    "crisis_labels": {
+      "description": "Crisis detection label definitions and mappings",
+      "high_crisis": "${NLP_LABEL_CRISIS_HIGH_CRISIS}",
+      "medium_crisis": "${NLP_LABEL_CRISIS_MEDIUM_CRISIS}",
+      "low_crisis": "${NLP_LABEL_CRISIS_LOW_CRISIS}",
+      "no_crisis": "${NLP_LABEL_CRISIS_NO_CRISIS}",
+      "defaults": {
+        "high_crisis": "high crisis",
+        "medium_crisis": "medium crisis", 
+        "low_crisis": "low crisis",
+        "no_crisis": "no crisis"
+      },
+      "validation": {
+        "high_crisis": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for high crisis detection"
+        },
+        "medium_crisis": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for medium crisis detection"
+        },
+        "low_crisis": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for low crisis detection"
+        },
+        "no_crisis": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for no crisis detection"
+        }
+      }
+    },
+
+    "sentiment_labels": {
+      "description": "Sentiment analysis label definitions",
+      "positive": "${NLP_LABEL_SENTIMENT_POSITIVE}",
+      "negative": "${NLP_LABEL_SENTIMENT_NEGATIVE}",
+      "neutral": "${NLP_LABEL_SENTIMENT_NEUTRAL}",
+      "defaults": {
+        "positive": "positive",
+        "negative": "negative",
+        "neutral": "neutral"
+      },
+      "validation": {
+        "positive": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for positive sentiment"
+        },
+        "negative": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for negative sentiment"
+        },
+        "neutral": {
+          "type": "string",
+          "required": true,
+          "description": "Label text for neutral sentiment"
+        }
+      }
+    },
+
+    "emotion_labels": {
+      "description": "Emotion detection label definitions",
+      "joy": "${NLP_LABEL_EMOTION_JOY}",
+      "sadness": "${NLP_LABEL_EMOTION_SADNESS}",
+      "anger": "${NLP_LABEL_EMOTION_ANGER}",
+      "fear": "${NLP_LABEL_EMOTION_FEAR}",
+      "surprise": "${NLP_LABEL_EMOTION_SURPRISE}",
+      "disgust": "${NLP_LABEL_EMOTION_DISGUST}",
+      "love": "${NLP_LABEL_EMOTION_LOVE}",
+      "defaults": {
+        "joy": "joy",
+        "sadness": "sadness",
+        "anger": "anger", 
+        "fear": "fear",
+        "surprise": "surprise",
+        "disgust": "disgust",
+        "love": "love"
+      },
+      "validation": {
+        "joy": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for joy emotion"
+        },
+        "sadness": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for sadness emotion"
+        },
+        "anger": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for anger emotion"
+        },
+        "fear": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for fear emotion"
+        },
+        "surprise": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for surprise emotion"
+        },
+        "disgust": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for disgust emotion"
+        },
+        "love": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for love emotion"
+        }
+      }
+    },
+
+    "mental_health_labels": {
+      "description": "Mental health specific label definitions",
+      "depression_risk": "${NLP_LABEL_MENTAL_HEALTH_DEPRESSION_RISK}",
+      "anxiety_risk": "${NLP_LABEL_MENTAL_HEALTH_ANXIETY_RISK}",
+      "suicidal_ideation": "${NLP_LABEL_MENTAL_HEALTH_SUICIDAL_IDEATION}",
+      "self_harm_risk": "${NLP_LABEL_MENTAL_HEALTH_SELF_HARM_RISK}",
+      "substance_abuse": "${NLP_LABEL_MENTAL_HEALTH_SUBSTANCE_ABUSE}",
+      "eating_disorder": "${NLP_LABEL_MENTAL_HEALTH_EATING_DISORDER}",
+      "trauma_indicators": "${NLP_LABEL_MENTAL_HEALTH_TRAUMA_INDICATORS}",
+      "defaults": {
+        "depression_risk": "depression risk",
+        "anxiety_risk": "anxiety risk",
+        "suicidal_ideation": "suicidal ideation",
+        "self_harm_risk": "self harm risk",
+        "substance_abuse": "substance abuse",
+        "eating_disorder": "eating disorder",
+        "trauma_indicators": "trauma indicators"
+      },
+      "validation": {
+        "depression_risk": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for depression risk detection"
+        },
+        "anxiety_risk": {
+          "type": "string", 
+          "required": false,
+          "description": "Label text for anxiety risk detection"
+        },
+        "suicidal_ideation": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for suicidal ideation detection"
+        },
+        "self_harm_risk": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for self harm risk detection"
+        },
+        "substance_abuse": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for substance abuse detection"
+        },
+        "eating_disorder": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for eating disorder detection"
+        },
+        "trauma_indicators": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for trauma indicators detection"
+        }
+      }
+    },
+
+    "community_labels": {
+      "description": "LGBTQIA+ community specific label definitions",
+      "identity_crisis": "${NLP_LABEL_COMMUNITY_IDENTITY_CRISIS}",
+      "discrimination_stress": "${NLP_LABEL_COMMUNITY_DISCRIMINATION_STRESS}",
+      "transition_anxiety": "${NLP_LABEL_COMMUNITY_TRANSITION_ANXIETY}",
+      "family_rejection": "${NLP_LABEL_COMMUNITY_FAMILY_REJECTION}",
+      "social_isolation": "${NLP_LABEL_COMMUNITY_SOCIAL_ISOLATION}",
+      "coming_out_stress": "${NLP_LABEL_COMMUNITY_COMING_OUT_STRESS}",
+      "defaults": {
+        "identity_crisis": "identity crisis",
+        "discrimination_stress": "discrimination stress",
+        "transition_anxiety": "transition anxiety",
+        "family_rejection": "family rejection",
+        "social_isolation": "social isolation",
+        "coming_out_stress": "coming out stress"
+      },
+      "validation": {
+        "identity_crisis": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for identity crisis detection"
+        },
+        "discrimination_stress": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for discrimination stress detection"
+        },
+        "transition_anxiety": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for transition anxiety detection"
+        },
+        "family_rejection": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for family rejection detection"
+        },
+        "social_isolation": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for social isolation detection"
+        },
+        "coming_out_stress": {
+          "type": "string",
+          "required": false,
+          "description": "Label text for coming out stress detection"
+        }
+      }
+    }
+  },
+
+  "label_mapping": {
+    "description": "Label mapping and switching configuration",
+    "enable_label_switching": "${NLP_LABEL_MAPPING_ENABLE_LABEL_SWITCHING}",
+    "default_label_set": "${NLP_LABEL_MAPPING_DEFAULT_LABEL_SET}",
+    "fallback_behavior": "${NLP_LABEL_MAPPING_FALLBACK_BEHAVIOR}",
+    "case_sensitive": "${NLP_LABEL_MAPPING_CASE_SENSITIVE}",
+    "normalize_labels": "${NLP_LABEL_MAPPING_NORMALIZE_LABELS}",
+    "defaults": {
+      "enable_label_switching": true,
+      "default_label_set": "crisis_labels",
+      "fallback_behavior": "use_defaults",
+      "case_sensitive": false,
+      "normalize_labels": true
+    },
+    "validation": {
+      "enable_label_switching": {
+        "type": "boolean",
+        "description": "Enable dynamic label switching functionality"
+      },
+      "default_label_set": {
+        "type": "string",
+        "allowed_values": ["crisis_labels", "sentiment_labels", "emotion_labels", "mental_health_labels", "community_labels"],
+        "description": "Default label set to use for analysis"
+      },
+      "fallback_behavior": {
+        "type": "string",
+        "allowed_values": ["use_defaults", "fail", "skip"],
+        "description": "Behavior when label switching fails"
+      },
+      "case_sensitive": {
+        "type": "boolean",
+        "description": "Whether label matching is case sensitive"
+      },
+      "normalize_labels": {
+        "type": "boolean",
+        "description": "Normalize label text (lowercase, trim whitespace)"
+      }
+    },
+
+    "label_aliases": {
+      "description": "Alternative label text mappings for flexibility",
+      "crisis_aliases": {
+        "high_crisis": ["emergency", "urgent", "critical", "severe crisis"],
+        "medium_crisis": ["moderate", "concerning", "moderate crisis"],
+        "low_crisis": ["mild", "slight concern", "minor crisis"],
+        "no_crisis": ["safe", "stable", "no concern", "normal"]
+      },
+      "sentiment_aliases": {
+        "positive": ["good", "happy", "optimistic"],
+        "negative": ["bad", "sad", "pessimistic"],
+        "neutral": ["okay", "balanced", "neither"]
+      }
+    }
+  },
+
+  "zero_shot_settings": {
+    "description": "Zero-shot classification specific configuration",
+    "hypothesis_template": "${NLP_LABEL_ZERO_SHOT_HYPOTHESIS_TEMPLATE}",
+    "multi_label": "${NLP_LABEL_ZERO_SHOT_MULTI_LABEL}",
+    "confidence_threshold": "${NLP_LABEL_ZERO_SHOT_CONFIDENCE_THRESHOLD}",
+    "max_labels": "${NLP_LABEL_ZERO_SHOT_MAX_LABELS}",
+    "normalize_scores": "${NLP_LABEL_ZERO_SHOT_NORMALIZE_SCORES}",
+    "defaults": {
+      "hypothesis_template": "This text expresses {}.",
+      "multi_label": false,
+      "confidence_threshold": 0.5,
+      "max_labels": 1,
+      "normalize_scores": true
+    },
+    "validation": {
+      "hypothesis_template": {
+        "type": "string",
+        "required": true,
+        "description": "Template for zero-shot hypothesis generation (use {} for label placeholder)"
+      },
+      "multi_label": {
+        "type": "boolean",
+        "description": "Allow multiple labels to be assigned simultaneously"
+      },
+      "confidence_threshold": {
+        "type": "float",
+        "range": [0.0, 1.0],
+        "description": "Minimum confidence threshold for label assignment"
+      },
+      "max_labels": {
+        "type": "integer",
+        "range": [1, 10],
+        "description": "Maximum number of labels to return"
+      },
+      "normalize_scores": {
+        "type": "boolean",
+        "description": "Normalize confidence scores to sum to 1.0"
+      }
+    }
+  },
+
+  "label_profiles": {
+    "description": "Pre-configured label profiles for different analysis modes",
+    "basic_crisis": {
+      "description": "Basic crisis detection with 4 levels",
+      "label_set": "crisis_labels",
+      "multi_label": false,
+      "max_labels": 1,
+      "confidence_threshold": 0.6
+    },
+    "detailed_mental_health": {
+      "description": "Detailed mental health risk assessment",
+      "label_set": "mental_health_labels", 
+      "multi_label": true,
+      "max_labels": 3,
+      "confidence_threshold": 0.4
+    },
+    "community_focused": {
+      "description": "LGBTQIA+ community specific analysis",
+      "label_set": "community_labels",
+      "multi_label": true,
+      "max_labels": 2,
+      "confidence_threshold": 0.5
+    },
+    "comprehensive": {
+      "description": "Multi-domain analysis across all label sets",
+      "label_set": "crisis_labels",
+      "multi_label": true,
+      "max_labels": 5,
+      "confidence_threshold": 0.3
+    }
+  },
+
+  "usage_instructions": {
+    "description": "Configuration usage and integration guidelines",
+    "manager_integration": "Use ZeroShotManager with create_zero_shot_manager(config_manager)",
+    "environment_override_pattern": "Set environment variables using NLP_LABEL_*CATEGORY*_*SETTING* pattern",
+    "resilient_operation": "System falls back to safe defaults when configuration is invalid or missing",
+    "label_switching": "Use switch_labels(label_set_name) to change active label set dynamically",
+    "hypothesis_template": "Template must contain {} placeholder for label text insertion",
+    "multi_label_mode": "Enable multi_label for scenarios where multiple conditions may apply",
+    "confidence_tuning": "Adjust confidence_threshold based on precision/recall requirements",
+    "community_sensitivity": "Use community_labels for LGBTQIA+ specific crisis detection",
+    "production_notes": "Use appropriate label profiles for different analysis scenarios"
+  }
+}

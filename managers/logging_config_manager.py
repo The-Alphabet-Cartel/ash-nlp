@@ -1,7 +1,10 @@
+# ash-nlp/managers/logging_config_manager.py
 """
-LoggingConfigManager - Centralized Logging Configuration Manager
-Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
-
+Centralized Logging Configuration Manager for Ash NLP Service
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

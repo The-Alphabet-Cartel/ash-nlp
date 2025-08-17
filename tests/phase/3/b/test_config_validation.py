@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Phase 3b Configuration Validation Tests
+FILE VERSION: v3.1-3d-10.11-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests JSON configuration loading, environment variable validation, and parameter validation
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -310,9 +314,8 @@ class TestEnvironmentVariableValidation:
             'NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS': '7000',
             
             # Boolean values
-            'NLP_ANALYSIS_PHRASE_CRISIS_FOCUS': 'true',
             'NLP_FEATURE_DETAILED_LOGGING': 'false',
-            'NLP_FEATURE_EXPERIMENTAL_ADVANCED_CONTEXT': '1',
+            'NLP_FEATURE_ADVANCED_CONTEXT': '1',
             
             # String values
             'NLP_ANALYSIS_INTEGRATION_MODE': 'enhanced'

@@ -1,7 +1,9 @@
+# ash-nlp/api/learning_endpoints.py
 """
-Learning Endpoints for Ash-NLP v3.1d Step 9 - FIXED VERSION
-Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
-
+Learning Endpoints for Ash NLP Service v3.1
+FILE VERSION: v3.1-3d-10.12-1
+LAST MODIFIED: 2025-08-13
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -40,72 +42,43 @@ class LearningSystemManager:
     def _load_configuration(self):
         """Load learning configuration using UnifiedConfigManager (NO MORE os.getenv())"""
         try:
-            # STEP 9 FIX: Try to load learning configuration, handle missing file gracefully
             learning_config = None
             try:
                 learning_config = self.unified_config.load_config_file('learning_settings')
                 logger.info("✅ Learning configuration loaded from learning_settings.json")
+
             except Exception as e:
                 logger.warning(f"⚠️ learning_settings.json not found: {e}")
                 logger.info("🔄 Using environment variables only")
             
             if learning_config:
-                # STEP 9 FIX: Handle corrected JSON structure (value, defaults, validation pattern)
-                
                 # Extract configuration values using the correct JSON structure
-                persistence_config = learning_config.get('learning_persistence', {})
-                self.learning_data_path = self.unified_config.get_env(
-                    'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE',
-                    persistence_config.get('defaults', {}).get('file', './learning_data/adjustments.json')
-                )
+                persistence_config = learning_config.get('learning_configuration', {}).get('data_management', {})
+                self.learning_data_path = persistence_config.get('persistence_file', './learning_data/adjustments.json')
                 
-                learning_rate_config = learning_config.get('learning_rate', {})
-                self.learning_rate = self.unified_config.get_env_float(
-                    'NLP_ANALYSIS_LEARNING_RATE',
-                    learning_rate_config.get('defaults', {}).get('value', 0.01)
-                )
+                learning_rate_config = learning_config.get('learning_configuration', {}).get('algorithm_parameters', {})
+                self.learning_rate = learning_rate_config.get('learning_rate', 0.01)
                 
-                confidence_config = learning_config.get('confidence_adjustments', {})
-                self.min_adjustment = self.unified_config.get_env_float(
-                    'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT',
-                    confidence_config.get('defaults', {}).get('min_adjustment', 0.05)
-                )
+                confidence_config = learning_config.get('learning_configuration', {}).get('threshold_adaptation', {})
+                self.min_adjustment = confidence_config.get('min_confidence_adjustment', 0.05)
+                self.max_adjustment = confidence_config.get('max_confidence_adjustment', 0.05)
                 
-                self.max_adjustment = self.unified_config.get_env_float(
-                    'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT',
-                    confidence_config.get('defaults', {}).get('max_adjustment', 0.30)
-                )
-                
-                daily_limits_config = learning_config.get('daily_limits', {})
-                self.max_adjustments_per_day = self.unified_config.get_env_int(
-                    'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY',
-                    daily_limits_config.get('defaults', {}).get('max_adjustments_per_day', 50)
-                )
-                
-                # Additional configuration from corrected JSON structure
-                feedback_config = learning_config.get('feedback_factors', {})
-                self.false_positive_factor = self.unified_config.get_env_float(
-                    'NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR',
-                    feedback_config.get('defaults', {}).get('false_positive_factor', -0.1)
-                )
-                self.false_negative_factor = self.unified_config.get_env_float(
-                    'NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR',
-                    feedback_config.get('defaults', {}).get('false_negative_factor', 0.1)
-                )
-                
-                severity_config = learning_config.get('severity_multipliers', {})
-                severity_defaults = severity_config.get('defaults', {})
-                self.severity_multipliers = {
-                    'high': severity_defaults.get('high', 3.0),
-                    'medium': severity_defaults.get('medium', 2.0),
-                    'low': severity_defaults.get('low', 1.0)
-                }
-                
+                daily_limits_config = learning_config.get('learning_configuration', {}).get('safety_constraints', {})
+                self.max_adjustments_per_day = daily_limits_config.get('max_adjustments_per_day', 50)
+
+                sensitivity_bounds = learning_config.get('learning_configuration', {}).get('threshold_adaptation', {}).get('sensitivity_bounds', {})
+                self.min_global_sensitivity = sensitivity_bounds.get('min_global_sensitivity', 0.5)
+                self.max_global_sensitivity = sensitivity_bounds.get('max_global_sensitivity', 0.5)
+
+                feedback_config = learning_config.get('learning_configuration', {}).get('feedback_processing', {})
+                self.false_positive_factor = feedback_config.get('false_positive_factor', -0.1)
+                self.false_negative_factor = feedback_config.get('false_negative_factor', 0.1)
+
                 # Pattern learning configuration (if available)
                 self.false_positive_indicators = []
                 self.false_negative_indicators = []
                 
-                logger.info("✅ Learning configuration loaded from JSON + ENV using UnifiedConfigManager")
+                logger.info("✅ Learning configuration loaded from ENV + JSON using UnifiedConfigManager")
                 
             else:
                 logger.info("🔄 Loading configuration from environment variables only")
@@ -118,43 +91,24 @@ class LearningSystemManager:
     
     def _load_from_environment_only(self):
         """Load configuration from environment variables only using UnifiedConfigManager"""
-        # STEP 9 CHANGE: Use unified_config instead of os.getenv() for all variables
-        self.learning_data_path = self.unified_config.get_env(
-            'NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE',
-            self.unified_config.get_env('NLP_THRESHOLD_LEARNING_PERSISTENCE_FILE', 
-                                       './learning_data/adjustments.json')
-        )
+        self.learning_data_path = self.unified_config.get_env('NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE', './learning_data/adjustments.json')
         
-        self.learning_rate = self.unified_config.get_env_float(
-            'NLP_ANALYSIS_LEARNING_RATE',
-            self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_RATE', 0.01)
-        )
+        self.learning_rate = self.unified_config.get_env_float('NLP_ANALYSIS_LEARNING_RATE', 0.01)
         
-        self.min_adjustment = self.unified_config.get_env_float(
-            'NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT',
-            self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', 0.05)
-        )
+        self.min_adjustment = self.unified_config.get_env_float('NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT', 0.05)
+        self.max_adjustment = self.unified_config.get_env_float('NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', 0.30)
         
-        self.max_adjustment = self.unified_config.get_env_float(
-            'NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT',
-            self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_MAX_CONFIDENCE_ADJUSTMENT', 0.30)
-        )
+        self.max_adjustments_per_day = self.unified_config.get_env_int('NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY', 50)
         
-        self.max_adjustments_per_day = self.unified_config.get_env_int(
-            'NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY',
-            self.unified_config.get_env_int('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', 50)
-        )
-        
-        # Phase 3d Step 9 - Updated variable names with unified config access
         self.min_global_sensitivity = self.unified_config.get_env_float('NLP_MIN_GLOBAL_SENSITIVITY', 0.5)
         self.max_global_sensitivity = self.unified_config.get_env_float('NLP_MAX_GLOBAL_SENSITIVITY', 1.5)
+
         self.false_positive_factor = self.unified_config.get_env_float('NLP_FALSE_POSITIVE_FACTOR', -0.1)
         self.false_negative_factor = self.unified_config.get_env_float('NLP_FALSE_NEGATIVE_FACTOR', 0.1)
         
         # Default indicators and multipliers
         self.false_positive_indicators = []
         self.false_negative_indicators = []
-        self.severity_multipliers = {'high': 3.0, 'medium': 2.0, 'low': 1.0}
         
         logger.info("✅ Learning configuration loaded from environment variables using UnifiedConfigManager")
     

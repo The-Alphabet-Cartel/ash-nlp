@@ -1,156 +1,108 @@
 {
-  "metadata": {
-    "pattern_type": "enhanced_idiom_patterns",
-    "version": "3.1.0",
-    "description": "Enhanced idiom patterns with complex logic for false positive reduction",
-    "last_updated": "2025-08-04",
-    "total_patterns": 15,
-    "source": "Migrated from managers/settings_manager.py lines 203-244",
-    "environment_overrides": {
-      "enabled": "NLP_CONFIG_ENABLE_IDIOM_FILTERING",
-      "reduction_strength": "NLP_CONFIG_IDIOM_REDUCTION_STRENGTH",
-      "context_sensitivity": "NLP_CONFIG_IDIOM_CONTEXT_SENSITIVITY"
-    }
+  "_metadata": {
+    "file_version": "v3.1-3d-10.10-1",
+    "last_modified": "2025-08-14",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.10.10",
+    "description": "Crisis idiom patterns for detecting metaphorical and idiomatic expressions of distress",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-14",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "idiom_count": 35,
+    "manager_integration": "crisis_pattern_manager.py",
+    "step_10_10_changes": "Removed all unused environment variable configuration overhead"
   },
-  "configuration": {
-    "enabled": true,
-    "global_reduction_multiplier": 1.0,
-    "context_validation_required": true,
-    "priority_level": "medium"
-  },
+
   "patterns": {
-    "fatigue_idiom": {
-      "name": "fatigue_idiom",
-      "description": "Common fatigue expressions that should not trigger crisis detection",
-      "reduction_factor": 0.15,
-      "max_score_after": 0.10,
-      "patterns": [
-        {
-          "pattern": "\\b(dead|dying) (tired|exhausted|beat)\\b",
-          "type": "regex",
-          "case_sensitive": false
-        }
-      ],
-      "required_context": {
-        "type": "absence_of_keywords",
-        "keywords": ["depressed", "sad", "hopeless", "hate", "kill myself"],
-        "description": "Must NOT contain crisis keywords"
-      },
-      "context_validation": "lambda msg: not any(word in msg.lower() for word in ['depressed', 'sad', 'hopeless', 'hate', 'kill myself'])"
+    "description": "Crisis idiom patterns organized by metaphorical type",
+
+    "drowning_metaphors": {
+      "description": "Metaphors expressing feeling overwhelmed or drowning",
+      "idioms": [
+        "drowning in", "in over my head", "sinking fast", "going under", 
+        "can't keep my head above water", "feel like I'm drowning", "underwater", 
+        "gasping for air", "treading water", "swept away"
+      ]
     },
-    "humor_idiom": {
-      "name": "humor_idiom", 
-      "description": "Humor-related expressions with death/violence metaphors",
-      "reduction_factor": 0.05,
-      "max_score_after": 0.08,
-      "patterns": [
-        {
-          "pattern": "\\b(joke|that|it) (killed|murdered) me\\b",
-          "type": "regex",
-          "case_sensitive": false
-        },
-        {
-          "pattern": "\\bdying of laughter\\b",
-          "type": "regex",
-          "case_sensitive": false
-        }
-      ],
-      "required_context": {
-        "type": "presence_of_keywords",
-        "keywords": ["funny", "hilarious", "laugh", "lol", "haha"],
-        "description": "Must contain humor indicators"
-      },
-      "context_validation": "lambda msg: any(word in msg.lower() for word in ['funny', 'hilarious', 'laugh', 'lol', 'haha'])"
+
+    "breaking_metaphors": {
+      "description": "Metaphors expressing psychological breaking or shattering",
+      "idioms": [
+        "falling apart", "breaking down", "cracking up", "coming undone", 
+        "shattered", "broken inside", "pieces of myself", "falling to pieces", 
+        "crumbling", "at my breaking point"
+      ]
     },
-    "success_idiom": {
-      "name": "success_idiom",
-      "description": "Success and achievement expressions with violent metaphors",
-      "reduction_factor": 0.10,
-      "max_score_after": 0.05,
-      "patterns": [
-        {
-          "pattern": "\\b(killing|slaying|crushing) it\\b",
-          "type": "regex",
-          "case_sensitive": false
-        }
-      ],
-      "required_context": {
-        "type": "presence_of_keywords",
-        "keywords": ["work", "job", "performance", "success"],
-        "description": "Must contain success/work context"
-      },
-      "context_validation": "lambda msg: any(word in msg.lower() for word in ['work', 'job', 'performance', 'success'])"
+
+    "darkness_metaphors": {
+      "description": "Metaphors expressing darkness, emptiness, or void",
+      "idioms": [
+        "in a dark place", "black hole", "void inside", "empty shell", 
+        "darkness consuming me", "lost in darkness", "can't see the light", 
+        "tunnel with no end", "abyss", "bottomless pit"
+      ]
     },
-    "food_craving_idiom": {
-      "name": "food_craving_idiom",
-      "description": "Food craving expressions with violent metaphors",
-      "reduction_factor": 0.08,
-      "max_score_after": 0.05,
-      "patterns": [
-        {
-          "pattern": "\\bmurder (a|some) \\w+\\b",
-          "type": "regex",
-          "case_sensitive": false
-        },
-        {
-          "pattern": "\\bcould kill for\\b",
-          "type": "regex",
-          "case_sensitive": false
-        }
-      ],
-      "required_context": {
-        "type": "presence_of_keywords",
-        "keywords": ["food", "hungry", "eat", "burger", "pizza"],
-        "description": "Must contain food-related context"
-      },
-      "context_validation": "lambda msg: any(word in msg.lower() for word in ['food', 'hungry', 'eat', 'burger', 'pizza'])"
+
+    "trapped_metaphors": {
+      "description": "Metaphors expressing feeling trapped or imprisoned",
+      "idioms": [
+        "trapped in a cage", "prison of my mind", "can't escape", "stuck in a box",
+        "walls closing in", "no way out", "locked inside", "confined",
+        "restrained", "held captive"
+      ]
     },
-    "frustration_idiom": {
-      "name": "frustration_idiom",
-      "description": "Common frustration expressions with violent/crazy metaphors",
-      "reduction_factor": 0.12,
-      "max_score_after": 0.08,
-      "patterns": [
-        {
-          "pattern": "\\bdriving me (crazy|insane|nuts)\\b",
-          "type": "regex",
-          "case_sensitive": false
-        },
-        {
-          "pattern": "\\b(brutal|killer) (test|exam|homework)\\b",
-          "type": "regex",
-          "case_sensitive": false
-        }
-      ],
-      "required_context": {
-        "type": "presence_of_keywords",
-        "keywords": ["traffic", "homework", "test", "exam", "work"],
-        "description": "Must contain frustration context indicators"
-      },
-      "context_validation": "lambda msg: any(word in msg.lower() for word in ['traffic', 'homework', 'test', 'exam', 'work'])"
+
+    "weight_metaphors": {
+      "description": "Metaphors expressing heavy emotional burden",
+      "idioms": [
+        "weight of the world", "crushing burden", "heavy heart", "carrying too much",
+        "burden on my shoulders", "weighing me down", "heavy load", "can't bear it",
+        "weight pressing down", "suffocating under pressure"
+      ]
+    },
+
+    "emptiness_metaphors": {
+      "description": "Metaphors expressing emotional emptiness or void",
+      "idioms": [
+        "empty inside", "hollow feeling", "void in my chest", "nothing left",
+        "emotionally drained", "vacant", "stripped bare", "running on empty",
+        "soul sucked out", "feeling vacant"
+      ]
+    },
+
+    "storm_metaphors": {
+      "description": "Metaphors expressing internal turmoil and chaos",
+      "idioms": [
+        "storm inside me", "emotional hurricane", "tornado of feelings", "chaos in my head",
+        "tempest in my mind", "raging storm", "whirlwind of emotions", "thunder in my chest",
+        "lightning in my thoughts", "eye of the storm"
+      ]
     }
   },
-  "processing_rules": {
-    "apply_order": ["fatigue_idiom", "humor_idiom", "success_idiom", "food_craving_idiom", "frustration_idiom"],
-    "multiple_matches": "apply_strongest_reduction",
-    "context_check_required": true,
-    "fallback_behavior": "no_reduction"
-  },
-  "integration_notes": {
-    "lambda_functions": "Context validation uses lambda functions - convert to method calls in Python implementation",
-    "regex_flags": "All regex patterns should use re.IGNORECASE flag",
-    "max_score_enforcement": "Ensure crisis scores never exceed max_score_after when idiom detected",
-    "context_window": "Check 10 words before and after the idiom match for context keywords"
-  },
+
   "usage_instructions": {
-    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('enhanced_idiom_patterns')",
-    "access_method": "SettingsManager.get_enhanced_idiom_patterns()",
-    "environment_override_example": "NLP_CONFIG_IDIOM_REDUCTION_STRENGTH=0.8",
+    "integration": {
+      "description": "How to integrate crisis idioms with the crisis detection system",
+      "primary_manager": "crisis_pattern_manager.py",
+      "loader_method": "get_idiom_patterns()",
+      "access_pattern": "UnifiedConfigManager.get_crisis_patterns('crisis_idiom_patterns')",
+      "fallback_behavior": "Use safe defaults with comprehensive logging if configuration fails"
+    },
+    "resilient_operation": {
+      "description": "System behavior when configuration issues occur",
+      "invalid_weight": "Use safe default (0.8) with warning log",
+      "missing_idioms": "Load basic idiom set with info log",
+      "pattern_validation_error": "Skip invalid patterns, continue with valid ones, error log",
+      "file_not_found": "Use minimal built-in crisis idioms with warning log"
+    },
     "implementation_notes": [
-      "Each idiom type has specific context validation requirements",
-      "Reduction factors are multiplied against crisis scores",
-      "Max score caps prevent any score from exceeding threshold after reduction",
-      "Context validation must pass before applying reduction"
+      "Idioms require careful context validation to avoid false positives",
+      "Metaphorical expressions often indicate deeper emotional distress",
+      "Multiple metaphors in one message significantly increase crisis likelihood",
+      "Literal usage filtering helps distinguish actual metaphorical intent",
+      "Breaking and darkness metaphors typically indicate highest crisis levels",
+      "STEP 10.10: Removed all unused environment variable configuration overhead",
+      "Core detection functionality preserved - idiom lists and pattern structure intact"
     ]
   }
 }

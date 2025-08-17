@@ -1,3 +1,11 @@
+<!-- ash-nlp/docs/v3.1/phase/3/d/step_5.md -->
+<!--
+Documentation for Phase 3d, Step 5 for Ash-NLP Service v3.1
+FILE VERSION: v3.1-3d-10.12-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 5
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Phase 3d: Environmental Variables Cleanup - Tracker Update
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp (v3.1 branch)  
@@ -52,9 +60,6 @@ NLP_SERVER_WORKER_TIMEOUT=60
 NLP_SECURITY_REQUESTS_PER_MINUTE=120
 NLP_SECURITY_REQUESTS_PER_HOUR=2000
 NLP_SECURITY_BURST_LIMIT=150
-NLP_SERVER_HEALTH_CHECK_INTERVAL=30
-NLP_SERVER_SHUTDOWN_TIMEOUT=10
-NLP_SERVER_STARTUP_TIMEOUT=120
 ```
 
 ### **Step 6: Implement Storage & Logging Cleanup** ⏳ **PENDING**

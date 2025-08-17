@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Phase 3b Integration Tests
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests complete integration of AnalysisParametersManager with the analysis pipeline
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
