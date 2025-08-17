@@ -44,7 +44,7 @@ class ZeroShotManager:
         self._load_label_configuration()
         
         # Set initial label set from unified config
-        initial_set = self.unified_config.get_env('NLP_ZERO_SHOT_DEFAULT_LABEL_SET', 'crisis_labels')
+        initial_set = self.label_mapping_config.get('default_label_set', 'enhanced_crisis')
         self.switch_label_set(initial_set)
     
     def _load_label_configuration(self):
