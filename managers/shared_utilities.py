@@ -1,4 +1,3 @@
-# ash-nlp/managers/shared_utilities.py
 """
 SharedUtilitiesManager for Ash-NLP Service
 FILE VERSION: v3.1-3e-2.2-1
@@ -64,8 +63,13 @@ class SharedUtilitiesManager:
         self._validation_errors = []
         self._last_operation_status = {}
         
-        # Initialize utility status
-        self.initialization_time = unified_config.get_env_str('SHARED_UTILS_INIT_TIME', str(id(self)))
+        # Initialize utility status with error handling
+        try:
+            self.initialization_time = unified_config.get_env_str('SHARED_UTILS_INIT_TIME', str(id(self)))
+        except Exception as e:
+            self.initialization_time = str(id(self))
+            self.logger.warning(f"⚠️ Could not get initialization time from config: {e}")
+            
         self.logger.info(f"✅ SharedUtilitiesManager initialized (ID: {self.initialization_time})")
     
     # ========================================================================
@@ -525,8 +529,8 @@ class SharedUtilitiesManager:
         
         Args:
             value: Numeric value to validate
-            min_val: Minimum allowed value
-            max_val: Maximum allowed value
+            min_val: Minimum allowed value (None means no minimum)
+            max_val: Maximum allowed value (None means no maximum)
             param_name: Parameter name for logging context
             
         Returns:
@@ -568,13 +572,14 @@ class SharedUtilitiesManager:
             if isinstance(value, expected_type):
                 return True
             
-            # Special handling for numeric types
+            # Special handling for numeric types - allow cross-compatibility
             if expected_type in (int, float) and isinstance(value, (int, float)):
                 return True
             
-            # Special handling for string representations
+            # Special handling for string conversions - most types can become strings
             if expected_type == str and value is not None:
-                return True
+                # Only return True if it's already a string, otherwise it's a type mismatch
+                return isinstance(value, str)
             
             expected_name = expected_type.__name__ if hasattr(expected_type, '__name__') else str(expected_type)
             actual_name = type(value).__name__
