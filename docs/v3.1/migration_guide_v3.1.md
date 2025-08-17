@@ -162,19 +162,6 @@ ash/ash-nlp/
 |   |   │   └── zero_shot.md
 │   │   ├── phase/
 |   │   │   ├── 3/
-|   |   │   │   ├── a/
-|   |   │   │   │   ├── status_testing.md
-|   |   │   │   |   └── tracker.md
-|   │   │   ├── 3/
-|   |   │   │   ├── b/
-|   |   │   │   |   ├── status_testing.md
-|   |   │   │   │   └── tracker.md
-|   │   │   ├── 3/
-|   |   │   │   ├── c/
-|   |   │   │   |   ├── status_testing.md
-|   |   │   │   |   ├── status_update.md
-|   |   │   │   │   └── tracker.md
-|   │   │   ├── 3/
 |   |   │   │   ├── d/
 |   |   │   │   |   ├── step_1.md
 |   |   │   │   |   ├── step_2.md
@@ -194,7 +181,6 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_10.9.md
 |   |   │   │   |   ├── step_10.10.md
 |   |   │   │   │   └── tracker.md
-|   │   │   ├── 3/
 |   |   │   │   └── e/
 |   |   │   │       ├── learning_methods_inventory.md
 |   |   │   │       ├── method_overlap_matrix.md
@@ -224,6 +210,7 @@ ash/ash-nlp/
 │   ├── context_pattern_manager.py
 │   ├── crisis_pattern_manager.py
 │   ├── feature_config_manager.py
+│   ├── learning_system_manager.py
 │   ├── logging_config_manager.py
 │   ├── model_ensemble_manager.py
 │   ├── performance_config_manager.py
@@ -242,6 +229,7 @@ ash/ash-nlp/
 │   └── phase/
 |       ├── 3/
 |       │   └── e/
+|       |       ├── test_learning_system_manager_integration.py
 |       |       └── test_shared_utilities_manager.py
 |       └── 4/
 |           ├── a/
