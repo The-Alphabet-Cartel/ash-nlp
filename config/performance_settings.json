@@ -1,0 +1,198 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3d-10.12-1",
+    "last_modified": "2025-08-14",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.10.10",
+    "description": "Performance optimization settings for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-14",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "manager": "PerformanceConfigManager",
+    "cleanup_note": "Step 10.10 - Mapped many variables to existing .env.template variables, preserved others for .env.template addition"
+  },
+
+  "performance_settings": {
+    "analysis_performance": {
+      "description": "Analysis processing performance and timeout settings",
+      "timeout_seconds": "${GLOBAL_REQUEST_TIMEOUT}",
+      "batch_size": "${NLP_HARDWARE_MAX_BATCH_SIZE}",
+      "defaults": {
+        "timeout_seconds": 30.0,
+        "batch_size": 10
+      },
+      "validation": {
+        "timeout_seconds": {
+          "type": "float",
+          "range": [5.0, 300.0],
+          "unit": "seconds",
+          "description": "Maximum time to wait for analysis completion"
+        },
+        "batch_size": {
+          "type": "integer",
+          "range": [1, 100],
+          "description": "Number of requests to process in each batch"
+        }
+      }
+    },
+
+    "server_performance": {
+      "description": "Server processing and worker management settings",
+      "max_workers": "${NLP_PERFORMANCE_WORKERS}",
+      "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
+      "request_timeout": "${GLOBAL_REQUEST_TIMEOUT}",
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "workers": "${NLP_PERFORMANCE_WORKERS}",
+      "defaults": {
+        "max_workers": 4,
+        "worker_timeout": 60,
+        "request_timeout": 30,
+        "max_concurrent_requests": 20,
+        "workers": 1
+      },
+      "validation": {
+        "max_workers": {
+          "type": "integer",
+          "range": [1, 32],
+          "description": "Maximum number of worker threads"
+        },
+        "worker_timeout": {
+          "type": "integer",
+          "range": [10, 300],
+          "unit": "seconds",
+          "description": "Worker thread timeout"
+        },
+        "request_timeout": {
+          "type": "integer",
+          "range": [5, 120],
+          "unit": "seconds",
+          "description": "HTTP request timeout"
+        },
+        "max_concurrent_requests": {
+          "type": "integer",
+          "range": [1, 1000],
+          "description": "Maximum concurrent HTTP requests"
+        },
+        "workers": {
+          "type": "integer",
+          "range": [1, 8],
+          "description": "Number of server worker processes"
+        }
+      }
+    },
+
+    "model_performance": {
+      "description": "AI model processing and memory management settings",
+      "device": "${NLP_HARDWARE_DEVICE}",
+      "device_map": "${NLP_HARDWARE_DEVICE_MAP}",
+      "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
+      "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
+      "max_memory": "${NLP_HARDWARE_MAX_MEMORY}",
+      "offload_folder": "${NLP_HARDWARE_OFFLOAD_FOLDER}",
+      "defaults": {
+        "device": "auto",
+        "device_map": "auto",
+        "load_in_8bit": false,
+        "load_in_4bit": false,
+        "max_memory": null,
+        "offload_folder": null
+      },
+      "validation": {
+        "device": {
+          "type": "string",
+          "allowed_values": ["auto", "cpu", "cuda", "cuda:0", "cuda:1", "mps"],
+          "description": "Hardware device for model inference"
+        },
+        "device_map": {
+          "type": "string",
+          "description": "Device mapping strategy"
+        },
+        "load_in_8bit": {
+          "type": "boolean",
+          "description": "Load models in 8-bit precision"
+        },
+        "load_in_4bit": {
+          "type": "boolean",
+          "description": "Load models in 4-bit precision"
+        },
+        "max_memory": {
+          "type": ["string", "null"],
+          "pattern": "^\\d+[GMK]B$",
+          "description": "Maximum memory usage limit"
+        },
+        "offload_folder": {
+          "type": ["string", "null"],
+          "description": "Folder for model weight offloading"
+        }
+      }
+    },
+
+    "rate_limiting_performance": {
+      "description": "Rate limiting and traffic management settings",
+      "rate_limit_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
+      "rate_limit_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
+      "rate_limit_burst": "${NLP_PERFORMANCE_RATE_LIMIT_BURST}",
+      "defaults": {
+        "rate_limit_per_minute": 120,
+        "rate_limit_per_hour": 2000,
+        "rate_limit_burst": 150
+      },
+      "validation": {
+        "rate_limit_per_minute": {
+          "type": "integer",
+          "range": [10, 1000],
+          "unit": "requests_per_minute",
+          "description": "Maximum requests per minute"
+        },
+        "rate_limit_per_hour": {
+          "type": "integer",
+          "range": [100, 10000],
+          "unit": "requests_per_hour",
+          "description": "Maximum requests per hour"
+        },
+        "rate_limit_burst": {
+          "type": "integer",
+          "range": [10, 500],
+          "unit": "burst_requests",
+          "description": "Maximum burst requests allowed"
+        }
+      }
+    }
+  },
+
+  "performance_profiles": {
+    "description": "Pre-configured performance profiles for different deployment scenarios",
+    "balanced": {
+      "description": "Balanced settings for general production use",
+      "analysis_timeout": 30.0,
+      "max_workers": 4,
+      "device": "auto",
+      "load_in_8bit": false,
+      "cache_expiry_hours": 24
+    },
+    "development": {
+      "description": "Development settings with faster iteration",
+      "analysis_timeout": 60.0,
+      "max_workers": 2,
+      "device": "cpu",
+      "load_in_8bit": false,
+      "cache_expiry_hours": 12
+    },
+    "production": {
+      "description": "Production settings optimized for performance",
+      "analysis_timeout": 20.0,
+      "max_workers": 8,
+      "device": "auto",
+      "load_in_8bit": true,
+      "cache_expiry_hours": 48
+    },
+    "gpu_optimized": {
+      "description": "GPU-optimized settings for CUDA-enabled systems",
+      "analysis_timeout": 15.0,
+      "max_workers": 6,
+      "device": "cuda",
+      "load_in_8bit": true,
+      "cache_expiry_hours": 36
+    }
+  }
+}

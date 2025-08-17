@@ -1,7 +1,12 @@
-# ash/ash-nlp/api/admin_endpoints.py (Clean v3.1 Architecture - FIXED)
+# ash/ash-nlp/api/admin_endpoints.py
 """
-Admin endpoints for label management and system administration
-FIXED: Corrected method names, manager usage, and async issues
+Admin endpoints for label management and system administration for Ash NLP Service v3.1
+FILE VERSION: v3.1-3d-10.12-1
+LAST MODIFIED: 2025-08-13
+CLEAN ARCHITECTURE: v3.1 Compliant
+PHASE: 3d, Step 10.11-3
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 from fastapi import APIRouter, HTTPException
@@ -44,14 +49,14 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern_manager=None,
+def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis_pattern_manager=None,
                          analysis_parameters_manager=None, threshold_mapping_manager=None):
     """
     Setup admin endpoints with complete Phase 3c manager architecture
     
     Args:
         app: FastAPI application instance
-        models_manager: ModelsManager v3.1 instance (required)
+        model_ensemble_manager: Model Ensemble Manager instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
         crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
         analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b) - NEW
@@ -62,9 +67,9 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
-    if not models_manager:
-        logger.error("❌ ModelsManager v3.1 is required for admin endpoints")
-        raise RuntimeError("ModelsManager v3.1 required for admin endpoints")
+    if not model_ensemble_manager:
+        logger.error("❌ Model Ensemble Manager is required for admin endpoints")
+        raise RuntimeError("Model Ensemble Manager required for admin endpoints")
     
     if not zero_shot_manager:
         logger.error("❌ ZeroShotManager is required for admin endpoints")
@@ -96,7 +101,7 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
                 ],
                 "managers": {
                     "zero_shot_manager": zero_shot_manager is not None,
-                    "models_manager": models_manager is not None,
+                    "model_ensemble_manager": model_ensemble_manager is not None,
                     "crisis_pattern_manager": crisis_pattern_manager is not None,
                     "analysis_parameters_manager": analysis_parameters_manager is not None,
                     "threshold_mapping_manager": threshold_mapping_manager is not None
@@ -285,11 +290,10 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
     async def get_label_status():
         """Get current label configuration status - Clean v3.1 Implementation"""
         try:
-            # Direct manager access - no fallbacks
             model_status = {}
-            if models_manager.models_loaded():
+            if model_ensemble_manager.models_loaded():
                 try:
-                    model_status = models_manager.get_model_status()
+                    model_status = model_ensemble_manager.get_model_info()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model status: {e}")
                     model_status = {"error": str(e)}
@@ -309,19 +313,19 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
                 "current_label_set": zero_shot_status.get('current_label_set', 'unknown'),
                 "available_sets": zero_shot_status.get('available_sets', []),
                 "label_stats": zero_shot_status.get('label_stats', {}),
-                "models_loaded": models_manager.models_loaded(),
+                "models_loaded": model_ensemble_manager.models_loaded(),
                 "model_status": model_status,
                 "admin_endpoints_available": True,
                 "manager_integration": {
-                    "models_manager_v3_1": True,
+                    "model_ensemble_manager": True,
                     "zero_shot_manager": True,
                     "direct_access_only": True,
                     "backward_compatibility": "removed"
                 },
                 "models_in_use": {
                     "depression": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-                    "sentiment": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-                    "distress": "Lowerated/lm6-deberta-v3-topic-sentiment"
+                    "sentiment": "Lowerated/lm6-deberta-v3-topic-sentiment",
+                    "distress": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli"
                 }
             }
         except Exception as e:
@@ -731,7 +735,7 @@ def setup_admin_endpoints(app, models_manager, zero_shot_manager, crisis_pattern
 # Enhanced Admin Endpoints Function Signature
 # ========================================================================
 def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, 
-                       models_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None):
+                       model_ensemble_manager, analysis_parameters_manager=None, threshold_mapping_manager=None):
     """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
     logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
     
@@ -739,11 +743,11 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
     try:
         setup_admin_endpoints(
             app=app,
-            models_manager=models_manager,
+            model_ensemble_manager=model_ensemble_manager,
             zero_shot_manager=zero_shot_manager,
             crisis_pattern_manager=crisis_pattern_manager,
-            analysis_parameters_manager=analysis_parameters_manager,  # Phase 3b - NEW
-            threshold_mapping_manager=threshold_mapping_manager  # Phase 3c - NEW
+            analysis_parameters_manager=analysis_parameters_manager,
+            threshold_mapping_manager=threshold_mapping_manager
         )
         
         # Include the admin router

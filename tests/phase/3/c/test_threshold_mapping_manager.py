@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
-Phase 3c Threshold Mapping Manager Tests - FIXED VERSION
+Phase 3c Threshold Mapping Manager Tests
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests ThresholdMappingManager with proper logging and correct validation approach
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -31,7 +35,7 @@ sys.path.insert(0, '/app')
 
 try:
     from managers.threshold_mapping_manager import ThresholdMappingManager, create_threshold_mapping_manager
-    from managers.config_manager import ConfigManager
+    from managers.unified_config_manager import UnifiedConfigManager
     logger.info("✅ Successfully imported ThresholdMappingManager")
 except ImportError as e:
     logger.error(f"❌ Failed to import ThresholdMappingManager: {e}")
@@ -115,7 +119,7 @@ class TestThresholdMappingManager:
     
     @pytest.fixture
     def mock_config_manager(self):
-        """Create mock ConfigManager for testing"""
+        """Create mock UnifiedConfigManager for testing"""
         mock_config = Mock()
         mock_config.load_config_file.return_value = self.get_test_threshold_config()
         return mock_config
@@ -476,8 +480,8 @@ class TestThresholdMappingManagerIntegration:
             with open(config_file, 'w') as f:
                 json.dump(test_config, f)
             
-            # Create real ConfigManager
-            config_manager = ConfigManager(temp_dir)
+            # Create real UnifiedConfigManager
+            config_manager = UnifiedConfigManager(temp_dir)
             mock_ensemble_manager = Mock()
             mock_ensemble_manager.get_current_ensemble_mode.return_value = 'consensus'
             

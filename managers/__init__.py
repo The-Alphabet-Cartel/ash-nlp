@@ -1,10 +1,15 @@
-# ash/ash-nlp/managers/__init__.py (Clean v3.1 Architecture - Phase 3a Updated)
+# ash-nlp/managers/__init__.py
 """
-Ash NLP Service Managers - Clean v3.1 Architecture
-Phase 3a: Crisis Pattern Manager Integration Complete
+Managers Module for Ash NLP Service
+FILE VERSION: v3.1-3d-10.11-3-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 10.11-3
+CLEAN ARCHITECTURE: v3.1 Compliant
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-Provides centralized access to all manager components following clean v3.1 patterns.
-All managers use dependency injection and fail-fast design.
+This module provides centralized manager imports and factory functions
+following Clean v3.1 architecture principles with proper dependency injection.
 """
 
 import logging
@@ -12,188 +17,233 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# CLEAN V3.1 MANAGER IMPORTS - Phase 3a Updated
+# MANAGER IMPORTS WITH RESILIENT ERROR HANDLING
 # ============================================================================
 
-# Core Configuration Managers
-try:
-    from .config_manager import ConfigManager
-    from .settings_manager import SettingsManager, create_settings_manager
-    from .zero_shot_manager import ZeroShotManager
-    CONFIG_MANAGERS_AVAILABLE = True
-    logger.debug("✅ Core configuration managers imported")
-except ImportError as e:
-    logger.error(f"❌ Core configuration manager imports failed: {e}")
-    ConfigManager = None
-    SettingsManager = None
-    create_settings_manager = None
-    ZeroShotManager = None
-    CONFIG_MANAGERS_AVAILABLE = False
+logger.info("🏭 Loading managers v3.1 with Clean Architecture patterns...")
 
-# ML Model Managers (Phase 2A)
+# Analysis Parameter Manager (Phase 3B)
 try:
-    from .models_manager import ModelsManager, create_models_manager
-    MODELS_MANAGER_AVAILABLE = True
-    logger.debug("✅ ModelsManager v3.1 imported (Phase 2A)")
+    from .analysis_parameters_manager import AnalysisParametersManager, create_analysis_parameters_manager
+    ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ AnalysisParametersManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ ModelsManager v3.1 import failed: {e}")
-    ModelsManager = None
-    create_models_manager = None
-    MODELS_MANAGER_AVAILABLE = False
+    logger.error(f"  ❌ AnalysisParametersManager v3.1 import failed: {e}")
+    AnalysisParametersManager = None
+    create_analysis_parameters_manager = None
+    ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = False
+
+# Context Pattern Manager (Phase 3D Step 10.8) - NEW
+try:
+    from .context_pattern_manager import ContextPatternManager, create_context_pattern_manager
+    CONTEXT_PATTERN_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ContextPatternManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ ContextPatternManager v3.1 import failed: {e}")
+    ContextPatternManager = None
+    create_context_pattern_manager = None
+    CONTEXT_PATTERN_MANAGER_AVAILABLE = False
+
+# Crisis Pattern Manager (Phase 3A)
+try:
+    from .crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
+    CRISIS_PATTERN_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ CrisisPatternManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ CrisisPatternManager v3.1 import failed: {e}")
+    CrisisPatternManager = None
+    create_crisis_pattern_manager = None
+    CRISIS_PATTERN_MANAGER_AVAILABLE = False
+
+# Feature Configuration Manager
+try:
+    from .feature_config_manager import FeatureConfigManager, create_feature_config_manager
+    FEATURE_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ FeatureConfigManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ FeatureConfigManager v3.1 import failed: {e}")
+    FeatureConfigManager = None
+    create_feature_config_manager = None
+    FEATURE_CONFIG_MANAGER_AVAILABLE = False
+
+# Logging Configuration Manager
+try:
+    from .logging_config_manager import LoggingConfigManager, create_logging_config_manager
+    LOGGING_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ LoggingConfigManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ LoggingConfigManager v3.1 import failed: {e}")
+    LoggingConfigManager = None
+    create_logging_config_manager = None
+    LOGGING_CONFIG_MANAGER_AVAILABLE = False
+
+# Model Ensemble Manager
+try:
+    from .model_ensemble_manager import ModelEnsembleManager, create_model_ensemble_manager
+    MODEL_ENSEMBLE_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ModelEnsembleManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ ModelEnsembleManager v3.1 import failed: {e}")
+    ModelEnsembleManager = None
+    create_model_ensemble_manager = None
+    MODEL_ENSEMBLE_MANAGER_AVAILABLE = False
+
+# Performance Configuration Manager
+try:
+    from .performance_config_manager import PerformanceConfigManager, create_performance_config_manager
+    PERFORMANCE_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ PerformanceConfigManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ PerformanceConfigManager v3.1 import failed: {e}")
+    PerformanceConfigManager = None
+    create_performance_config_manager = None
+    PERFORMANCE_CONFIG_MANAGER_AVAILABLE = False
 
 # Pydantic Model Managers (Phase 2B)
 try:
     from .pydantic_manager import PydanticManager, create_pydantic_manager
     PYDANTIC_MANAGER_AVAILABLE = True
-    logger.debug("✅ PydanticManager v3.1 imported (Phase 2B)")
+    logger.debug("  ✅ PydanticManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ PydanticManager v3.1 import failed: {e}")
+    logger.error(f"  ❌ PydanticManager v3.1 import failed: {e}")
     PydanticManager = None
     create_pydantic_manager = None
     PYDANTIC_MANAGER_AVAILABLE = False
 
-# Crisis Pattern Manager (Phase 3a) 
+# Server Configuration Manager
 try:
-    from .crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
-    CRISIS_PATTERN_MANAGER_AVAILABLE = True
-    logger.debug("✅ CrisisPatternManager v3.1 imported (Phase 3a)")
+    from .server_config_manager import ServerConfigManager, create_server_config_manager
+    SERVER_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ServerConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"❌ CrisisPatternManager v3.1 import failed: {e}")
-    CrisisPatternManager = None
-    create_crisis_pattern_manager = None
-    CRISIS_PATTERN_MANAGER_AVAILABLE = False
+    logger.error(f"  ❌ ServerConfigManager v3.1 import failed: {e}")
+    ServerConfigManager = None
+    create_server_config_manager = None
+    SERVER_CONFIG_MANAGER_AVAILABLE = False
+
+# Settings Manager
+try:
+    from .settings_manager import SettingsManager, create_settings_manager
+    SETTINGS_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ SettingsManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ SettingsManager v3.1 import failed: {e}")
+    SettingsManager = None
+    create_settings_manager = None
+    SETTINGS_MANAGER_AVAILABLE = False
+
+# Storage Configuration Manager
+try:
+    from .storage_config_manager import StorageConfigManager, create_storage_config_manager
+    STORAGE_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ StorageConfigManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ StorageConfigManager v3.1 import failed: {e}")
+    StorageConfigManager = None
+    create_storage_config_manager = None
+    STORAGE_CONFIG_MANAGER_AVAILABLE = False
+
+# Threshold Mapping Manager (Phase 3C)
+try:
+    from .threshold_mapping_manager import ThresholdMappingManager, create_threshold_mapping_manager
+    THRESHOLD_MAPPING_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ThresholdMappingManager v3.1 imported")
+except ImportError as e:
+    logger.error(f"  ❌ ThresholdMappingManager v3.1 import failed: {e}")
+    ThresholdMappingManager = None
+    create_threshold_mapping_manager = None
+    THRESHOLD_MAPPING_MANAGER_AVAILABLE = False
+
+# Unified Configuration Manager (Core)
+try:
+    from .unified_config_manager import UnifiedConfigManager, create_unified_config_manager
+    UNIFIED_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ Unified configuration managers imported")
+except ImportError as e:
+    logger.error(f"  ❌ Unified configuration manager imports failed: {e}")
+    UnifiedConfigManager = None
+    create_unified_config_manager = None
+    UNIFIED_CONFIG_MANAGER_AVAILABLE = False
+
+# Zero Shot Manager
+try:
+    from .zero_shot_manager import ZeroShotManager, create_zero_shot_manager
+    ZERO_SHOT_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ZeroShotManager imported")
+except ImportError as e:
+    logger.error(f"  ❌ ZeroShotManager import failed: {e}")
+    ZeroShotManager = None
+    create_zero_shot_manager = None
+    ZERO_SHOT_MANAGER_AVAILABLE = False
 
 # ============================================================================
-# MANAGER AVAILABILITY STATUS
+# MANAGER AVAILABILITY SUMMARY
 # ============================================================================
 
-MANAGERS_AVAILABLE = all([
-    CONFIG_MANAGERS_AVAILABLE,
-    MODELS_MANAGER_AVAILABLE,
-    PYDANTIC_MANAGER_AVAILABLE,
-    CRISIS_PATTERN_MANAGER_AVAILABLE
-])
-
-SERVICE_INFO = {
-    "service": "Ash NLP Service",
-    "version": "3.1.0",
-    "architecture": "clean_v3.1_phase_3a_complete",
-    "description": "Enhanced Mental Health Crisis Detection with Crisis Pattern Manager",
-    "phases_complete": ["2A", "2B", "2C", "3a"],
-    "managers": {
-        "config_managers": CONFIG_MANAGERS_AVAILABLE,
-        "models_manager_v3_1": MODELS_MANAGER_AVAILABLE,
-        "pydantic_manager_v3_1": PYDANTIC_MANAGER_AVAILABLE,
-        "crisis_pattern_manager_v3_1": CRISIS_PATTERN_MANAGER_AVAILABLE
-    }
-}
-
-# ============================================================================
-# SERVICE INFORMATION FUNCTIONS
-# ============================================================================
-
-def get_service_info():
-    """Get comprehensive service information"""
-    return SERVICE_INFO
-
-def get_version_info():
-    """Get version and architecture information"""
+def get_manager_status() -> dict:
+    """
+    Get status of all available managers
+    
+    Returns:
+        Dictionary showing availability of all manager types
+    """
     return {
-        "version": "3.1.0",
-        "architecture": "clean_v3.1_phase_3a_complete",
-        "phase_status": {
-            "phase_2a_models_manager": "complete",
-            "phase_2b_pydantic_manager": "complete", 
-            "phase_2c_cleanup": "complete",
-            "phase_3a_crisis_patterns": "complete"
-        },
-        "backward_compatibility": "removed_phase_2c",
-        "manager_integration": {
-            "config_manager": ConfigManager is not None,
-            "settings_manager": SettingsManager is not None,
-            "zero_shot_manager": ZeroShotManager is not None,
-            "models_manager_v3_1": ModelsManager is not None,
-            "pydantic_manager_v3_1": PydanticManager is not None,
-            "crisis_pattern_manager_v3_1": CrisisPatternManager is not None
-        }
-    }
-
-def get_manager_status():
-    """Get detailed manager availability status for clean v3.1 architecture"""
-    return {
-        "managers_available": MANAGERS_AVAILABLE,
-        "architecture": "clean_v3.1_phase_3a_complete",
-        "manager_components": {
-            "ConfigManager": ConfigManager is not None,
-            "SettingsManager": SettingsManager is not None,
-            "ZeroShotManager": ZeroShotManager is not None,
-            "ModelsManager_v3_1": ModelsManager is not None,
-            "PydanticManager_v3_1": PydanticManager is not None,
-            "CrisisPatternManager_v3_1": CrisisPatternManager is not None
-        },
-        "phase_status": {
-            "phase_2a_models_manager": "complete",
-            "phase_2b_pydantic_manager": "complete",
-            "phase_2c_cleanup": "complete",
-            "phase_3a_crisis_patterns": "complete"
-        },
-        "usage_notes": {
-            "manager_initialization": "Use create_*_manager() factory functions with dependency injection",
-            "direct_access_only": "No global functions or legacy imports",
-            "fail_fast_design": "Clear errors when managers unavailable",
-            "crisis_patterns": "Use create_crisis_pattern_manager(config_manager) for pattern access"
-        }
+        'analysis_parameters_manager': ANALYSIS_PARAMETERS_MANAGER_AVAILABLE,
+        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,  # NEW
+        'crisis_pattern_manager': CRISIS_PATTERN_MANAGER_AVAILABLE,
+        'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
+        'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
+        'model_ensemble_manager': MODEL_ENSEMBLE_MANAGER_AVAILABLE,
+        'performance_config_manager': PERFORMANCE_CONFIG_MANAGER_AVAILABLE,
+        'pydantic_manager': PYDANTIC_MANAGER_AVAILABLE,
+        'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
+        'settings_manager': SETTINGS_MANAGER_AVAILABLE,
+        'storage_config_manager': STORAGE_CONFIG_MANAGER_AVAILABLE,
+        'threshold_mapping_manager': THRESHOLD_MAPPING_MANAGER_AVAILABLE,
+        'unified_config_managers': UNIFIED_CONFIG_MANAGER_AVAILABLE,
+        'zero_shot_manager': ZERO_SHOT_MANAGER_AVAILABLE,
     }
 
 # ============================================================================
-# CLEAN V3.1 PUBLIC API - Phase 3a Updated
+# STEP 10.8: UNIFIED CONFIGURATION EXPORTS WITH CONTEXT PATTERN MANAGER
 # ============================================================================
 
 __all__ = [
-    # Core Configuration Managers
-    "ConfigManager",
-    "SettingsManager", 
-    "create_settings_manager",
-    "ZeroShotManager",
-    
-    # ML Model Managers (Phase 2A)
-    "ModelsManager",
-    "create_models_manager",
-    
-    # Pydantic Model Managers (Phase 2B) 
-    "PydanticManager",
-    "create_pydantic_manager",
-    
-    # Crisis Pattern Manager (Phase 3a)
-    "CrisisPatternManager",
-    "create_crisis_pattern_manager",
-    
-    # Service info functions
-    "SERVICE_INFO",
-    "get_service_info",
-    "get_version_info",
-    "get_manager_status",
-    
-    # Status flags
-    "MANAGERS_AVAILABLE",
-    "CONFIG_MANAGERS_AVAILABLE",
-    "MODELS_MANAGER_AVAILABLE", 
-    "PYDANTIC_MANAGER_AVAILABLE",
-    "CRISIS_PATTERN_MANAGER_AVAILABLE"
+    'AnalysisParametersManager',
+    'create_analysis_parameters_manager',
+    'ContextPatternManager',  # NEW
+    'create_context_pattern_manager',  # NEW
+    'CrisisPatternManager',
+    'create_crisis_pattern_manager',
+    'FeatureConfigManager',
+    'create_feature_config_manager',
+    'LoggingConfigManager',
+    'create_logging_config_manager',
+    'ModelEnsembleManager',
+    'create_model_ensemble_manager',
+    'PerformanceConfigManager',
+    'create_performance_config_manager',
+    'PydanticManager', 
+    'create_pydantic_manager',
+    'ServerConfigManager',
+    'create_server_config_manager',
+    'SettingsManager',
+    'create_settings_manager',
+    'StorageConfigManager',
+    'create_storage_config_manager',
+    'ThresholdMappingManager',
+    'create_threshold_mapping_manager',
+    'UnifiedConfigManager',
+    'create_unified_config_manager',
+    'ZeroShotManager',
+    'create_zero_shot_manager',
+
+    'get_manager_status'
 ]
 
 # ============================================================================
-# CLEAN V3.1 PHASE 3A INITIALIZATION COMPLETE
+# STEP 10.8 COMPLETION LOG
 # ============================================================================
 
-# Log initialization status
-if MANAGERS_AVAILABLE:
-    logger.info("✅ Ash NLP Service v3.1 - Clean Manager Architecture with Crisis Patterns initialized")
-    logger.info("🎉 Phase 3a Complete - Crisis Pattern Manager integrated")
-    logger.debug(f"📊 Managers available: {sum(1 for flag in [CONFIG_MANAGERS_AVAILABLE, MODELS_MANAGER_AVAILABLE, PYDANTIC_MANAGER_AVAILABLE, CRISIS_PATTERN_MANAGER_AVAILABLE] if flag)}/4 manager groups")
-else:
-    # Managers not available - log warning but don't fail import
-    logger.warning("⚠️ Ash NLP Service v3.1 - Some managers not available")
-    logger.warning("💡 Check managers/ directory for proper installation")
-    if not CRISIS_PATTERN_MANAGER_AVAILABLE:
-        logger.warning("🔍 CrisisPatternManager not available - Phase 3a integration incomplete")
+logger.info("✅ Managers __init__.py Step 10.8 complete - ContextPatternManager added")
+logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")

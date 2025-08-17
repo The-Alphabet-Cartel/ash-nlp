@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Phase 3b Configuration Validation Tests
+FILE VERSION: v3.1-3d-10.11-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests JSON configuration loading, environment variable validation, and parameter validation
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -20,7 +24,7 @@ import sys
 sys.path.append('/app')
 
 from managers.analysis_parameters_manager import AnalysisParametersManager
-from managers.config_manager import ConfigManager
+from managers.unified_config_manager import UnifiedConfigManager
 
 # Configure logging for tests
 logging.basicConfig(level=logging.DEBUG)
@@ -307,19 +311,18 @@ class TestEnvironmentVariableValidation:
             # Integer values
             'NLP_ANALYSIS_MIN_PHRASE_LENGTH': '3',
             'NLP_ANALYSIS_MAX_PHRASE_LENGTH': '8',
-            'NLP_ANALYSIS_TIMEOUT_MS': '7000',
+            'NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS': '7000',
             
             # Boolean values
-            'NLP_ANALYSIS_PHRASE_CRISIS_FOCUS': 'true',
-            'NLP_ANALYSIS_ENABLE_DETAILED_LOGGING': 'false',
-            'NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT': '1',
+            'NLP_FEATURE_DETAILED_LOGGING': 'false',
+            'NLP_FEATURE_ADVANCED_CONTEXT': '1',
             
             # String values
             'NLP_ANALYSIS_INTEGRATION_MODE': 'enhanced'
         }
         
         with patch.dict(os.environ, env_vars):
-            # Create a configuration that would have been processed by ConfigManager
+            # Create a configuration that would have been processed by UnifiedConfigManager
             processed_config = {
                 "crisis_thresholds": {
                     "high": 0.75,      # Converted from string
@@ -402,7 +405,7 @@ class TestEnvironmentVariableValidation:
             'NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH': '1.5',    # > 1.0
             'NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM': '-0.1', # < 0.0
             'NLP_ANALYSIS_MIN_PHRASE_LENGTH': '0',          # < 1
-            'NLP_ANALYSIS_TIMEOUT_MS': '-1000'              # < 0
+            'NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS': '-1000'              # < 0
         }
         
         with patch.dict(os.environ, invalid_env_vars):

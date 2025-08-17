@@ -1,6 +1,10 @@
 # ash-nlp/tests/test_phase_3c_config_validation.py
 """
-Phase 3c Configuration Validation Tests - FIXED VERSION
+Phase 3c Configuration Validation Tests
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests ThresholdMappingManager configuration validation using environment variables
 
 Fixed to follow correct architecture:
@@ -33,7 +37,7 @@ sys.path.insert(0, '/app')
 
 try:
     from managers.threshold_mapping_manager import ThresholdMappingManager
-    from managers.config_manager import ConfigManager
+    from managers.unified_config_manager import UnifiedConfigManager
     logger.info("✅ Successfully imported ThresholdMappingManager")
 except ImportError as e:
     logger.error(f"❌ Failed to import ThresholdMappingManager: {e}")

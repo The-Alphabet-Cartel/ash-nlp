@@ -1,4 +1,12 @@
-# Ash NLP Service v3.1 - Three-Model Crisis Detection Ensemble
+<!-- ash-nlp/README.md -->
+<!--
+README Documentation for Ash-NLP Service
+FILE VERSION: v3.1-3d-10.11-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
+# Ash NLP Service v3.0 - Three-Model Crisis Detection Ensemble
 
 **Revolutionary mental health crisis detection using advanced AI ensemble methods**
 
@@ -6,9 +14,9 @@
 [![Website](https://img.shields.io/badge/Website-alphabetcartel.org-blue)](http://alphabetcartel.org)
 [![GitHub](https://img.shields.io/badge/Branch-Main-green)](https://github.com/the-alphabet-cartel/ash-nlp)
 
-## 🚀 What is Ash NLP v3.1?
+## 🚀 What is Ash NLP v3.0?
 
-Ash NLP v3.1 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
+Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
 
 - **🧠 Enhanced accuracy** through model consensus and disagreement detection
 - **⚡ Sub-35ms response times** optimized for real-time Discord interactions
@@ -25,13 +33,13 @@ Ash NLP v3.1 is a cutting-edge **Three Zero-Shot Model Ensemble system** designe
 - **Labels**: `[Dynamic Zero-Shot Labels]`
 
 ### Model 2: Sentiment Analysis 💭
-- **Model**: `MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`
+- **Model**: `Lowerated/lm6-deberta-v3-topic-sentiment`
 - **Architecture**: DeBERTa-based sentiment analysis
 - **Purpose**: Contextual validation and emotional tone analysis
 - **Labels**: `[Dynamic Zero-Shot Labels]`
 
 ### Model 3: Emotional Distress Detection 😰
-- **Model**: `Lowerated/lm6-deberta-v3-topic-sentiment`
+- **Model**: `MoritzLaurer/mDeBERTa-v3-base-mnli-xnli`
 - **Architecture**: DeBERTa-based emotional analysis
 - **Purpose**: Additional emotional state detection and validation
 - **Labels**: `[Dynamic Zero-Shot]`
@@ -110,18 +118,18 @@ Key configuration options in `.env`:
 ```bash
 # Three-Model Configuration
 NLP_DEPRESSION_MODEL=MoritzLaurer/deberta-v3-base-zeroshot-v2.0
-NLP_SENTIMENT_MODEL=MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
-NLP_EMOTIONAL_DISTRESS_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
+NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
+NLP_EMOTIONAL_DISTRESS_MODEL=MoritzLaurer/mDeBERTa-v3-base-mnli-xnli
 
 # Ensemble Configuration
-NLP_ENSEMBLE_MODE=weighted  # consensus, majority, weighted
+NLP_ENSEMBLE_MODE=majority  # consensus, majority, weighted
 NLP_GAP_DETECTION_THRESHOLD=0.4
 NLP_THRESHOLD_GAP_DISAGREEMENT=0.5
 
 # Hardware Optimization
-NLP_MAX_BATCH_SIZE=32
-NLP_INFERENCE_THREADS=16
-NLP_MAX_CONCURRENT_REQUESTS=20
+NLP_HARDWARE_MAX_BATCH_SIZE=32
+NLP_HARDWARE_INFERENCE_THREADS=16
+NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS=20
 ```
 
 ## 🏗️ Architecture Overview
@@ -159,7 +167,7 @@ NLP_MAX_CONCURRENT_REQUESTS=20
 >
 ## 🤝 Integration with Ash Ecosystem
 
-Ash NLP v3.1 integrates seamlessly with:
+Ash NLP v3.0 integrates seamlessly with:
 
 - **[Ash Bot](https://github.com/the-alphabet-cartel/ash-bot)** - Discord crisis response bot
 - **[Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash)** - Analytics and monitoring (Not Yet Implemented)

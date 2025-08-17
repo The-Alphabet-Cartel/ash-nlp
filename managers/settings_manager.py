@@ -1,436 +1,403 @@
-# ash/ash-nlp/managers/settings_manager.py
+# ash-nlp/managers/settings_manager.py
 """
-Settings Manager for Ash NLP Service v3.1 - Phase 3b Complete
-Handles runtime settings and configuration overrides
-
-Phase 3a: Crisis patterns migrated to CrisisPatternManager and JSON configuration
-Phase 3b: Analysis parameters migrated to AnalysisParametersManager and JSON configuration
+Runtime Settings and Configuration Overrides for Ash NLP Service
+FILE VERSION: v3.1-3d-10.11-3-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d, Step 10.11-3
+CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
-import os
 import logging
-from typing import Dict, Any, Optional, Union, List
-from pathlib import Path
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# CORE CONFIGURATION CONSTANTS (Non-migratable server info)
+# SERVER CONFIGURATION (NON-MIGRATABLE LEGACY CONSTANTS)
 # ============================================================================
 
-# Server configuration - Core system info, not migrated
 SERVER_CONFIG = {
-    "version": "3.1",
-    "architecture": "modular_v3.1_phase_3b_complete",
-    "hardware_info": {
-        "cpu": "Ryzen 7 5800x",
-        "gpu": "RTX 3060 (12GB VRAM)",
-        "ram": "64GB",
-        "inference_device": "GPU",
-        "models_loaded": 3
-    },
-    "capabilities": {
-        "crisis_analysis": "Enhanced ensemble + pattern analysis",
-        "phrase_extraction": "Extract crisis keywords using model scoring",
-        "pattern_learning": "Learn distinctive crisis patterns from community messages", 
-        "semantic_analysis": "Enhanced crisis detection with community context",
-        "community_awareness": "LGBTQIA+ specific pattern recognition via CrisisPatternManager",
-        "json_configuration": "All configuration managed via JSON files with environment overrides",
-        "analysis_parameters": "Analysis algorithm parameters managed via AnalysisParametersManager"
-    }
+    "description": "Phase 3d: Server configuration managed by UnifiedConfigManager",
+    "note": "These legacy constants preserved for backward compatibility only",
+    "version": "3.1d",
+    "unified_config": True
 }
-
-# ============================================================================
-# SETTINGS MANAGER CLASS - v3.1 Clean Architecture (Phase 3b Updated)
-# ============================================================================
 
 class SettingsManager:
     """
     Manages runtime settings and configuration overrides
-    Phase 3a: Crisis patterns now managed by CrisisPatternManager
-    Phase 3b: Analysis parameters now managed by AnalysisParametersManager
+    Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
+    
+    All configuration now accessed through specialized managers:
+    - Analysis parameters: AnalysisParametersManager
+    - Crisis patterns: CrisisPatternManager
+    - Feature flags: FeatureConfigManager
+    - Logging settings: LoggingConfigManager
+    - Model Ensemble settings: ModelEnsembleManager
+    - Performance settings: PerformanceConfigManager
+    - Pydantic settings: PydanticManager
+    - Server settings: ServerConfigManager
+    - Storage settings: StorageConfigManager
+    - Threshold mappings: ThresholdMappingManager
+    - Zero Shot settings: ZeroShotManager
     """
     
-    def __init__(self, config_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None):
+    def __init__(self, unified_config_manager,
+        analysis_parameters_manager=None, crisis_pattern_manager=None,
+        feature_config_manager=None, logging_config_manager=None,
+        model_ensemble_manager=None,
+        performance_config_manager=None, pydantic_manager=None,
+        server_config_manager=None, storage_config_manager=None,
+        threshold_mapping_manager=None, zero_shot_manager=None):
         """
-        Initialize SettingsManager with ConfigManager and all Phase 3c managers
+        Initialize SettingsManager with UnifiedConfigManager and all Phase 3d managers
         
         Args:
-            config_manager: ConfigManager instance for dependency injection
-            crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
-            analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b)
-            threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
+            unified_config_manager: UnifiedConfigManager instance for dependency injection
+            analysis_parameters_manager: AnalysisParametersManager instance
+            crisis_pattern_manager: CrisisPatternManager instance
+            analysis_parameters_manager: AnalysisParametersManager instance
+            logging_config_manager: LoggingConfigManager instance
+            model_ensemble_manager: ModelEnsembleManager instance
+            performance_config_manager: PerformanceConfigManager instance
+            pydantic_manager: PydanticManager instance
+            server_config_manager: ServerConfigManager instance
+            storage_config_manager: StorageConfigManager instance
+            threshold_mapping_manager: ThresholdMappingManager instance
+            zero_shot_manager: ZeroShotManager instance
         """
-        self.config_manager = config_manager
-        self.crisis_pattern_manager = crisis_pattern_manager
+        # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
+        self.unified_config = unified_config_manager
         self.analysis_parameters_manager = analysis_parameters_manager
-        self.threshold_mapping_manager = threshold_mapping_manager  # Phase 3c
+        self.crisis_pattern_manager = crisis_pattern_manager
+        self.feature_config_manager = feature_config_manager
+        self.logging_config_manager = logging_config_manager
+        self.model_ensemble_manager = model_ensemble_manager
+        self.performance_config_manager = performance_config_manager
+        self.pydantic_manager = pydantic_manager
+        self.server_config_manager = server_config_manager
+        self.storage_config_manager = storage_config_manager
+        self.threshold_mapping_manager = threshold_mapping_manager
+        self.zero_shot_manager = zero_shot_manager
 
         self.setting_overrides = {}
         self.runtime_settings = {}
         
-        # Load runtime settings
+        # Load runtime settings using unified configuration
         self._load_runtime_settings()
         
-        # Validate analysis parameters manager integration
-        if self.analysis_parameters_manager is None:
-            logger.warning("⚠️ AnalysisParametersManager not provided - analysis parameter methods will use fallbacks")
+        # Validate manager integration
+        self._validate_manager_integration()
         
-        logger.info("SettingsManager v3.1 initialized (Phase 3b - Analysis parameters externalized)")
+        logger.info("SettingsManager v3.1d Step 9 initialized - UnifiedConfigManager integration complete")
     
     def _load_runtime_settings(self):
-        """Load runtime settings from environment variables and config"""
+        """Load runtime settings using UnifiedConfigManager (NO MORE os.getenv())"""
         try:
-            # Load basic runtime settings (non-migratable)
+            # STEP 9 CHANGE: Use unified configuration instead of os.getenv()
             self.runtime_settings = {
                 'server': SERVER_CONFIG,
                 'phase_status': {
+                    'unified_config_manager': 'operational',  # NEW
                     'phase_2a': 'complete',
                     'phase_2b': 'complete', 
                     'phase_2c': 'complete',
                     'phase_3a': 'complete',
                     'phase_3b': 'complete',
+                    'phase_3c': 'complete',
+                    'phase_3d_step_5': 'complete',
+                    'phase_3d_step_6': 'complete', 
+                    'phase_3d_step_7': 'complete',
+                    'phase_3d_step_8': 'complete',
+                    'phase_3d_step_9': 'complete',  # NEW
                     'crisis_patterns': 'externalized_to_json',
-                    'analysis_parameters': 'externalized_to_json'
+                    'analysis_parameters': 'externalized_to_json',
+                    'threshold_mappings': 'externalized_to_json',
+                    'server_configuration': 'externalized_to_json',
+                    'logging_configuration': 'externalized_to_json',
+                    'feature_flags': 'externalized_to_json',
+                    'performance_settings': 'externalized_to_json',
+                    'direct_os_getenv_calls': 'eliminated'    # NEW
                 }
             }
             
-            # Load environment overrides for non-migratable settings
+            # Load environment overrides using unified configuration
             self._load_environment_overrides()
             
         except Exception as e:
             logger.error(f"Error loading runtime settings: {e}")
     
     def _load_environment_overrides(self):
-        """Load setting overrides from environment variables for non-migratable settings only"""
+        """Load setting overrides using UnifiedConfigManager (NO MORE os.getenv())"""
         try:
-            # NOTE: Analysis parameter overrides now handled by AnalysisParametersManager
-            # Only load overrides for non-migratable settings here
+            # STEP 9 CHANGE: Use unified configuration instead of os.getenv()
             
-            # Device and performance settings (non-migratable)
-            if os.getenv('NLP_DEVICE'):
-                self.setting_overrides['device'] = os.getenv('NLP_DEVICE')
-            if os.getenv('NLP_PRECISION'):
-                self.setting_overrides['precision'] = os.getenv('NLP_PRECISION')
+            # Legacy device and precision settings (maintained for backward compatibility)
+            # Now accessed through UnifiedConfigManager instead of direct os.getenv()
+            legacy_device = self.unified_config.get_env('NLP_DEVICE')
+            if legacy_device:
+                self.setting_overrides['device'] = legacy_device
+                
+            legacy_precision = self.unified_config.get_env('NLP_PRECISION')
+            if legacy_precision:
+                self.setting_overrides['precision'] = legacy_precision
             
-            logger.debug("✅ Environment overrides loaded for non-migratable settings")
+            logger.debug("✅ Environment overrides loaded using UnifiedConfigManager")
             
         except Exception as e:
             logger.error(f"Error loading environment overrides: {e}")
     
-    # ========================================================================
-    # DEVICE AND PERFORMANCE SETTINGS (Non-migratable)
-    # ========================================================================
-    
-    def get_device_setting(self) -> str:
-        """Get device setting (cpu/cuda/auto)"""
-        return self.setting_overrides.get('device', os.getenv('NLP_DEVICE', 'auto'))
-    
-    def get_precision_setting(self) -> str:
-        """Get precision setting (float16/float32/auto)"""
-        return self.setting_overrides.get('precision', os.getenv('NLP_PRECISION', 'auto'))
-    
-    def get_cache_dir_setting(self) -> str:
-        """Get model cache directory setting"""
-        return os.getenv('NLP_CACHE_DIR', '/app/models/cache')
-    
-    def get_max_memory_setting(self) -> Optional[str]:
-        """Get maximum memory setting"""
-        return os.getenv('NLP_MAX_MEMORY')
-    
-    def get_offload_folder_setting(self) -> Optional[str]:
-        """Get model offload folder setting"""
-        return os.getenv('NLP_OFFLOAD_FOLDER')
-    
-    # ========================================================================
-    # ANALYSIS SETTINGS - Now delegated to AnalysisParametersManager
-    # ========================================================================
-    
-    def get_ensemble_analysis_enabled_setting(self) -> bool:
-        """Get ensemble analysis enabled setting"""
-        return os.getenv('NLP_ENSEMBLE_ANALYSIS_ENABLED', 'true').lower() == 'true'
-    
-    def get_crisis_threshold_settings(self) -> Dict[str, float]:
-        """
-        Get crisis threshold settings - MIGRATED to AnalysisParametersManager
-        
-        Returns:
-            Dictionary with crisis thresholds from AnalysisParametersManager or fallback
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_crisis_thresholds()
-        else:
-            # Fallback to environment variables if manager not available
-            logger.warning("⚠️ Using fallback crisis thresholds - AnalysisParametersManager not available")
-            return {
-                'high': float(os.getenv('NLP_ANALYSIS_CRISIS_THRESHOLD_HIGH', '0.55')),
-                'medium': float(os.getenv('NLP_ANALYSIS_CRISIS_THRESHOLD_MEDIUM', '0.28')),
-                'low': float(os.getenv('NLP_ANALYSIS_CRISIS_THRESHOLD_LOW', '0.16'))
-            }
-    
-    def get_phrase_extraction_settings(self) -> Dict[str, Any]:
-        """
-        Get phrase extraction settings - MIGRATED to AnalysisParametersManager
-        
-        Returns:
-            Dictionary with phrase extraction parameters from AnalysisParametersManager or fallback
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_phrase_extraction_parameters()
-        else:
-            # Fallback to environment variables if manager not available
-            logger.warning("⚠️ Using fallback phrase extraction settings - AnalysisParametersManager not available")
-            return {
-                'min_phrase_length': int(os.getenv('NLP_ANALYSIS_MIN_PHRASE_LENGTH', '2')),
-                'max_phrase_length': int(os.getenv('NLP_ANALYSIS_MAX_PHRASE_LENGTH', '6')),
-                'crisis_focus': os.getenv('NLP_ANALYSIS_PHRASE_CRISIS_FOCUS', 'true').lower() == 'true',
-                'community_specific': os.getenv('NLP_ANALYSIS_PHRASE_COMMUNITY_SPECIFIC', 'true').lower() == 'true',
-                'min_confidence': float(os.getenv('NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE', '0.3')),
-                'max_results': int(os.getenv('NLP_ANALYSIS_PHRASE_MAX_RESULTS', '20'))
-            }
-    
-    def get_pattern_learning_settings(self) -> Dict[str, Any]:
-        """
-        Get pattern learning settings - MIGRATED to AnalysisParametersManager
-        
-        Returns:
-            Dictionary with pattern learning parameters from AnalysisParametersManager or fallback
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_pattern_learning_parameters()
-        else:
-            # Fallback to environment variables if manager not available
-            logger.warning("⚠️ Using fallback pattern learning settings - AnalysisParametersManager not available")
-            return {
-                'min_crisis_messages': int(os.getenv('NLP_ANALYSIS_PATTERN_MIN_CRISIS_MESSAGES', '10')),
-                'max_phrases_to_analyze': int(os.getenv('NLP_ANALYSIS_PATTERN_MAX_PHRASES_TO_ANALYZE', '200')),
-                'min_distinctiveness_ratio': float(os.getenv('NLP_ANALYSIS_PATTERN_MIN_DISTINCTIVENESS_RATIO', '2.0')),
-                'min_frequency': int(os.getenv('NLP_ANALYSIS_PATTERN_MIN_FREQUENCY', '3')),
-                'confidence_thresholds': {
-                    'high_confidence': float(os.getenv('NLP_ANALYSIS_PATTERN_HIGH_CONFIDENCE', '0.7')),
-                    'medium_confidence': float(os.getenv('NLP_ANALYSIS_PATTERN_MEDIUM_CONFIDENCE', '0.4')),
-                    'low_confidence': float(os.getenv('NLP_ANALYSIS_PATTERN_LOW_CONFIDENCE', '0.1'))
-                }
-            }
-    
-    def get_semantic_analysis_settings(self) -> Dict[str, Any]:
-        """
-        Get semantic analysis settings - MIGRATED to AnalysisParametersManager
-        
-        Returns:
-            Dictionary with semantic analysis parameters from AnalysisParametersManager or fallback
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_semantic_analysis_parameters()
-        else:
-            # Fallback to environment variables if manager not available
-            logger.warning("⚠️ Using fallback semantic analysis settings - AnalysisParametersManager not available")
-            return {
-                'context_window': int(os.getenv('NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW', '3')),
-                'boost_weights': {
-                    'high_relevance': float(os.getenv('NLP_ANALYSIS_SEMANTIC_HIGH_RELEVANCE_BOOST', '0.1')),
-                    'medium_relevance': float(os.getenv('NLP_ANALYSIS_SEMANTIC_MEDIUM_RELEVANCE_BOOST', '0.05')),
-                    'family_rejection': float(os.getenv('NLP_ANALYSIS_SEMANTIC_FAMILY_REJECTION_BOOST', '0.15')),
-                    'discrimination_fear': float(os.getenv('NLP_ANALYSIS_SEMANTIC_DISCRIMINATION_FEAR_BOOST', '0.15')),
-                    'support_seeking': float(os.getenv('NLP_ANALYSIS_SEMANTIC_SUPPORT_SEEKING_BOOST', '-0.05'))
-                }
-            }
-    
-    # ========================================================================
-    # NEW ANALYSIS PARAMETER ACCESS METHODS (Phase 3b)
-    # ========================================================================
-    
-    def get_advanced_analysis_parameters(self) -> Dict[str, Any]:
-        """
-        Get advanced analysis parameters - NEW in Phase 3b
-        
-        Returns:
-            Dictionary with advanced analysis parameters
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_advanced_parameters()
-        else:
-            logger.warning("⚠️ Using fallback advanced parameters - AnalysisParametersManager not available")
-            return {
-                'pattern_confidence_boost': float(os.getenv('NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST', '0.05')),
-                'model_confidence_boost': float(os.getenv('NLP_ANALYSIS_MODEL_CONFIDENCE_BOOST', '0.0')),
-                'context_signal_weight': float(os.getenv('NLP_ANALYSIS_CONTEXT_SIGNAL_WEIGHT', '1.0')),
-                'temporal_urgency_multiplier': float(os.getenv('NLP_ANALYSIS_TEMPORAL_URGENCY_MULTIPLIER', '1.2')),
-                'community_awareness_boost': float(os.getenv('NLP_ANALYSIS_COMMUNITY_AWARENESS_BOOST', '0.1'))
-            }
-    
-    def get_integration_settings(self) -> Dict[str, Any]:
-        """
-        Get integration settings for analysis components - NEW in Phase 3b
-        
-        Returns:
-            Dictionary with integration settings
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_integration_settings()
-        else:
-            logger.warning("⚠️ Using fallback integration settings - AnalysisParametersManager not available")
-            return {
-                'enable_pattern_analysis': os.getenv('NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS', 'true').lower() == 'true',
-                'enable_semantic_analysis': os.getenv('NLP_ANALYSIS_ENABLE_SEMANTIC_ANALYSIS', 'true').lower() == 'true',
-                'enable_phrase_extraction': os.getenv('NLP_ANALYSIS_ENABLE_PHRASE_EXTRACTION', 'true').lower() == 'true',
-                'enable_pattern_learning': os.getenv('NLP_ANALYSIS_ENABLE_PATTERN_LEARNING', 'true').lower() == 'true',
-                'integration_mode': os.getenv('NLP_ANALYSIS_INTEGRATION_MODE', 'full')
-            }
-    
-    def get_performance_settings(self) -> Dict[str, Any]:
-        """
-        Get performance settings for analysis - NEW in Phase 3b
-        
-        Returns:
-            Dictionary with performance settings
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_performance_settings()
-        else:
-            logger.warning("⚠️ Using fallback performance settings - AnalysisParametersManager not available")
-            return {
-                'analysis_timeout_ms': int(os.getenv('NLP_ANALYSIS_TIMEOUT_MS', '5000')),
-                'max_concurrent_analyses': int(os.getenv('NLP_ANALYSIS_MAX_CONCURRENT', '10')),
-                'cache_analysis_results': os.getenv('NLP_ANALYSIS_ENABLE_CACHING', 'true').lower() == 'true',
-                'cache_ttl_seconds': int(os.getenv('NLP_ANALYSIS_CACHE_TTL_SECONDS', '300')),
-                'enable_parallel_processing': os.getenv('NLP_ANALYSIS_ENABLE_PARALLEL_PROCESSING', 'true').lower() == 'true'
-            }
-    
-    def get_debugging_settings(self) -> Dict[str, Any]:
-        """
-        Get debugging settings for analysis - NEW in Phase 3b
-        
-        Returns:
-            Dictionary with debugging settings
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_debugging_settings()
-        else:
-            logger.warning("⚠️ Using fallback debugging settings - AnalysisParametersManager not available")
-            return {
-                'enable_detailed_logging': os.getenv('NLP_ANALYSIS_ENABLE_DETAILED_LOGGING', 'false').lower() == 'true',
-                'log_analysis_steps': os.getenv('NLP_ANALYSIS_LOG_ANALYSIS_STEPS', 'false').lower() == 'true',
-                'include_reasoning_in_response': os.getenv('NLP_ANALYSIS_INCLUDE_REASONING', 'true').lower() == 'true',
-                'enable_performance_metrics': os.getenv('NLP_ANALYSIS_ENABLE_PERFORMANCE_METRICS', 'true').lower() == 'true'
-            }
-    
-    def get_experimental_features(self) -> Dict[str, Any]:
-        """
-        Get experimental feature flags - NEW in Phase 3b
-        
-        Returns:
-            Dictionary with experimental feature flags
-        """
-        if self.analysis_parameters_manager:
-            return self.analysis_parameters_manager.get_experimental_features()
-        else:
-            logger.warning("⚠️ Using fallback experimental features - AnalysisParametersManager not available")
-            return {
-                'enable_advanced_context_analysis': os.getenv('NLP_ANALYSIS_EXPERIMENTAL_ADVANCED_CONTEXT', 'false').lower() == 'true',
-                'enable_community_vocabulary_boost': os.getenv('NLP_ANALYSIS_EXPERIMENTAL_COMMUNITY_VOCAB', 'false').lower() == 'true',
-                'enable_temporal_pattern_detection': os.getenv('NLP_ANALYSIS_EXPERIMENTAL_TEMPORAL_PATTERNS', 'false').lower() == 'true',
-                'enable_multi_language_support': os.getenv('NLP_ANALYSIS_EXPERIMENTAL_MULTI_LANGUAGE', 'false').lower() == 'true'
-            }
-    
-    # ========================================================================
-    # MIGRATION NOTIFICATION METHODS (Phase 3a & 3b)
-    # ========================================================================
-    
-    def get_crisis_patterns_migration_notice(self) -> Dict[str, str]:
-        """
-        Get migration notice for crisis patterns (Phase 3a)
-        
-        Returns:
-            Dictionary with migration information
-        """
-        return {
-            'status': 'migrated_to_json_configuration',
-            'phase': '3a_complete',
-            'new_location': 'CrisisPatternManager with JSON configuration files',
-            'config_directory': '/app/config/',
-            'manager_class': 'CrisisPatternManager',
-            'access_method': 'Use create_crisis_pattern_manager(config_manager)',
-            'migration_date': '2025-08-04',
-            'note': 'Crisis patterns are no longer available from SettingsManager. Use CrisisPatternManager for pattern access.'
-        }
-    
-    def get_analysis_parameters_migration_notice(self) -> Dict[str, str]:
-        """
-        Get migration notice for analysis parameters (Phase 3b)
-        
-        Returns:
-            Dictionary with migration information
-        """
-        return {
-            'status': 'migrated_to_json_configuration',
-            'phase': '3b_complete',
-            'new_location': 'AnalysisParametersManager with JSON configuration files',
-            'config_directory': '/app/config/',
-            'manager_class': 'AnalysisParametersManager',
-            'access_method': 'Use create_analysis_parameters_manager(config_manager)',
-            'migration_date': '2025-08-05',
-            'note': 'Analysis parameters (DEFAULT_PARAMS, CRISIS_THRESHOLDS) are no longer available from SettingsManager. Use AnalysisParametersManager for parameter access.'
-        }
-    
-    # ========================================================================
-    # VALIDATION
-    # ========================================================================
-    
-    def validate_settings(self) -> Dict[str, Any]:
-        """Validate settings configuration"""
-        validation_result = {
-            'valid': True,
-            'errors': [],
-            'warnings': []
+    def _validate_manager_integration(self):
+        """Validate manager integration for Phase 3d Step 9"""
+        managers = {
+            'UnifiedConfigManager': self.unified_config,
+            'AnalysisParametersManager': self.analysis_parameters_manager,
+            'CrisisPatternManager': self.crisis_pattern_manager,
+            'FeatureConfigManager': self.feature_config_manager,
+            'LoggingConfigManager': self.logging_config_manager,
+            'ModelEnsembleManager': self.model_ensemble_manager,
+            'PerformanceConfigManager': self.performance_config_manager,
+            'PydanticManager': self.pydantic_manager,
+            'ServerConfigManager': self.server_config_manager,
+            'StorageConfigManager': self.storage_config_manager,
+            'ThresholdMappingManager': self.threshold_mapping_manager,
+            'ZeroShotManager': self.zero_shot_manager,
         }
         
+        available_managers = [name for name, mgr in managers.items() if mgr is not None]
+        missing_managers = [name for name, mgr in managers.items() if mgr is None]
+        
+        logger.info(f"✅ Available managers: {available_managers}")
+        if missing_managers:
+            logger.warning(f"⚠️ Missing managers: {missing_managers}")
+        
+        # Validate that UnifiedConfigManager is available (critical for Step 9)
+        if not self.unified_config:
+            raise ValueError("UnifiedConfigManager is required for SettingsManager in Phase 3d Step 9")
+    
+    # ========================================================================
+    # UNIFIED CONFIGURATION ACCESS METHODS (NEW IN STEP 9)
+    # ========================================================================
+    
+    def get_environment_variable(self, var_name: str, default: Any = None) -> Any:
+        """
+        Get environment variable through UnifiedConfigManager
+        REPLACES all direct os.getenv() calls throughout the system
+        
+        Args:
+            var_name: Environment variable name
+            default: Default value if not found
+            
+        Returns:
+            Environment variable value or default
+        """
+        return self.unified_config.get_env(var_name, default)
+    
+    def get_environment_bool(self, var_name: str, default: bool = False) -> bool:
+        """Get boolean environment variable through UnifiedConfigManager"""
+        return self.unified_config.get_env_bool(var_name, default)
+    
+    def get_environment_int(self, var_name: str, default: int = 0) -> int:
+        """Get integer environment variable through UnifiedConfigManager"""
+        return self.unified_config.get_env_int(var_name, default)
+    
+    def get_environment_float(self, var_name: str, default: float = 0.0) -> float:
+        """Get float environment variable through UnifiedConfigManager"""
+        return self.unified_config.get_env_float(var_name, default)
+    
+    def get_storage_configuration(self) -> Dict[str, Any]:
+        """
+        Get comprehensive storage configuration settings
+        Uses StorageConfigManager if available, otherwise falls back to UnifiedConfigManager
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_complete_configuration()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to UnifiedConfigManager storage configuration
         try:
-            # Validate device setting
-            device = self.get_device_setting()
-            valid_devices = ['auto', 'cpu', 'cuda', 'cuda:0', 'cuda:1']
-            if device not in valid_devices:
-                validation_result['warnings'].append(f"Unusual device setting: {device}")
-            
-            # Validate precision setting
-            precision = self.get_precision_setting()
-            if precision not in ['float16', 'float32', 'auto']:
-                validation_result['warnings'].append(f"Unusual precision setting: {precision}")
-            
-            # Validate cache directory exists
-            cache_dir = self.get_cache_dir_setting()
-            if not Path(cache_dir).exists():
-                validation_result['warnings'].append(f"Cache directory does not exist: {cache_dir}")
-            
-            # Validate crisis thresholds via AnalysisParametersManager
-            if self.analysis_parameters_manager:
-                param_validation = self.analysis_parameters_manager.validate_parameters()
-                if not param_validation['valid']:
-                    validation_result['errors'].extend(param_validation['errors'])
-                    validation_result['warnings'].extend(param_validation['warnings'])
-                    validation_result['valid'] = False
-            else:
-                # Fallback validation if manager not available
-                thresholds = self.get_crisis_threshold_settings()
-                if thresholds['high'] <= thresholds['medium'] or thresholds['medium'] <= thresholds['low']:
-                    validation_result['errors'].append("Crisis thresholds must be: high > medium > low")
-                    validation_result['valid'] = False
-            
+            return self.unified_config.get_storage_configuration()
         except Exception as e:
-            validation_result['errors'].append(f"Settings validation error: {e}")
-            validation_result['valid'] = False
+            logger.warning(f"⚠️ Could not get storage configuration: {e}")
+            # Return basic fallback configuration
+            return {
+                'directories': {
+                    'data_directory': './data',
+                    'cache_directory': './cache',
+                    'logs_directory': './logs',
+                    'backup_directory': './backups',
+                    'models_directory': './models/cache'
+                },
+                'cache_settings': {
+                    'enable_model_cache': True,
+                    'enable_analysis_cache': True
+                },
+                'status': 'fallback_configuration'
+            }
+
+    def get_storage_directories(self) -> Dict[str, str]:
+        """
+        Get storage directory configuration
+        Uses StorageConfigManager if available, otherwise falls back to basic directories
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_directories()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
         
-        return validation_result
+        # Fallback to basic directories from environment or defaults
+        return {
+            'data_directory': self.unified_config.get_env('NLP_STORAGE_DATA_DIRECTORY', './data'),
+            'cache_directory': self.unified_config.get_env('NLP_STORAGE_CACHE_DIRECTORY', './cache'),
+            'logs_directory': self.unified_config.get_env('NLP_STORAGE_LOG_DIRECTORY', './logs'),
+            'backup_directory': self.unified_config.get_env('NLP_STORAGE_BACKUP_DIRECTORY', './backups'),
+            'models_directory': self.unified_config.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
+            'learning_directory': self.unified_config.get_env('NLP_STORAGE_LEARNING_DIRECTORY', './learning_data')
+        }
+
+    def get_cache_settings(self) -> Dict[str, Any]:
+        """
+        Get cache configuration settings
+        Uses StorageConfigManager if available, otherwise falls back to environment variables
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_cache_settings()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to individual environment variables
+        return {
+            'enable_model_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_MODEL_CACHE', True),
+            'enable_analysis_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_ANALYSIS_CACHE', True),
+            'cache_cleanup_on_startup': self.unified_config.get_env_bool('NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP', False),
+            'model_cache_size_limit': self.unified_config.get_env('NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT', 1000),
+            'analysis_cache_size_limit': self.unified_config.get_env('NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT', 500),
+            'cache_expiry_hours': self.unified_config.get_env('NLP_STORAGE_CACHE_EXPIRY_HOURS', 24)
+        }
+
+    def is_storage_cache_enabled(self) -> bool:
+        """
+        Check if storage caching is enabled
+        Uses StorageConfigManager if available, otherwise checks environment
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.is_model_cache_enabled()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        return self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_MODEL_CACHE', True)
+
+    def get_backup_settings(self) -> Dict[str, Any]:
+        """
+        Get backup configuration settings
+        Uses StorageConfigManager if available, otherwise falls back to environment variables
+        """
+        if self.storage_config_manager:
+            try:
+                return self.storage_config_manager.get_backup_settings()
+            except Exception as e:
+                logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
+        
+        # Fallback to individual environment variables
+        return {
+            'enable_automatic_backup': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_AUTO_BACKUP', False),
+            'backup_interval_hours': self.unified_config.get_env('NLP_STORAGE_BACKUP_INTERVAL_HOURS', 24),
+            'backup_retention_days': self.unified_config.get_env('NLP_STORAGE_BACKUP_RETENTION_DAYS', 30),
+            'compress_backups': self.unified_config.get_env_bool('NLP_STORAGE_COMPRESS_BACKUPS', True),
+            'backup_learning_data': self.unified_config.get_env_bool('NLP_STORAGE_BACKUP_LEARNING_DATA', True),
+            'backup_configuration': self.unified_config.get_env_bool('NLP_STORAGE_BACKUP_CONFIG', True)
+        }
+
+    # ========================================================================
+    # MANAGER-DELEGATED METHODS (PRESERVED FROM PREVIOUS PHASES)
+    # ========================================================================
+
+    def get_crisis_patterns_migration_notice(self):
+        """Provides migration notice for deprecated crisis pattern methods"""
+        return {
+            'status': 'migrated',
+            'message': 'Crisis patterns have been migrated to CrisisPatternManager in Phase 3a',
+            'access_method': 'Use CrisisPatternManager methods directly',
+            'documentation': 'See Phase 3a migration guide for details'
+        }
+    
+    def get_analysis_parameters_migration_notice(self):
+        """Provides migration notice for deprecated analysis parameter methods"""
+        return {
+            'status': 'migrated',
+            'message': 'Analysis parameters have been migrated to AnalysisParametersManager in Phase 3b',
+            'access_method': 'Use AnalysisParametersManager methods directly',
+            'documentation': 'See Phase 3b migration guide for details'
+        }
+    
+    def get_threshold_mapping_migration_notice(self):
+        """Provides migration notice for deprecated threshold mapping methods"""
+        return {
+            'status': 'migrated',
+            'message': 'Threshold mappings have been migrated to ThresholdMappingManager in Phase 3c',
+            'access_method': 'Use ThresholdMappingManager methods directly',
+            'documentation': 'See Phase 3c migration guide for details'
+        }
     
     # ========================================================================
-    # LEGACY METHOD STUBS FOR BACKWARD COMPATIBILITY WARNINGS
+    # RUNTIME SETTINGS ACCESS
     # ========================================================================
     
-    # Crisis patterns (Phase 3a migration)
-    def get_lgbtqia_patterns(self):
+    def get_runtime_setting(self, key: str, default: Any = None) -> Any:
+        """Get runtime setting with override support"""
+        # Check overrides first
+        if key in self.setting_overrides:
+            return self.setting_overrides[key]
+        
+        # Then check runtime settings
+        return self.runtime_settings.get(key, default)
+    
+    def set_runtime_override(self, key: str, value: Any):
+        """Set runtime setting override"""
+        logger.info(f"Setting runtime override: {key} = {value}")
+        self.setting_overrides[key] = value
+    
+    def clear_runtime_override(self, key: str):
+        """Clear runtime setting override"""
+        if key in self.setting_overrides:
+            logger.info(f"Clearing runtime override: {key}")
+            del self.setting_overrides[key]
+    
+    def get_all_settings(self) -> Dict[str, Any]:
+        """Get all runtime settings with overrides applied"""
+        combined_settings = self.runtime_settings.copy()
+        combined_settings.update(self.setting_overrides)
+        return combined_settings
+    
+    # ========================================================================
+    # DEPRECATED METHODS WITH MIGRATION NOTICES (PRESERVED FOR COMPATIBILITY)
+    # ========================================================================
+    
+    def get_crisis_patterns(self):
         """DEPRECATED: Crisis patterns migrated to CrisisPatternManager in Phase 3a"""
-        logger.warning("get_lgbtqia_patterns() is deprecated. Use CrisisPatternManager.get_lgbtqia_patterns() instead.")
+        logger.warning("get_crisis_patterns() is deprecated. Use CrisisPatternManager.get_crisis_patterns() instead.")
+        return self.get_crisis_patterns_migration_notice()
+    
+    def get_enhanced_crisis_patterns(self):
+        """DEPRECATED: Enhanced crisis patterns migrated to CrisisPatternManager in Phase 3a"""
+        logger.warning("get_enhanced_crisis_patterns() is deprecated. Use CrisisPatternManager.get_enhanced_crisis_patterns() instead.")
+        return self.get_crisis_patterns_migration_notice()
+    
+    def get_community_vocabulary_patterns(self):
+        """DEPRECATED: Community vocabulary patterns migrated to CrisisPatternManager in Phase 3a"""
+        logger.warning("get_community_vocabulary_patterns() is deprecated. Use CrisisPatternManager.get_community_vocabulary_patterns() instead.")
+        return self.get_crisis_patterns_migration_notice()
+    
+    def get_lgbtqia_crisis_patterns(self):
+        """DEPRECATED: LGBTQIA+ crisis patterns migrated to CrisisPatternManager in Phase 3a"""
+        logger.warning("get_lgbtqia_crisis_patterns() is deprecated. Use CrisisPatternManager.get_lgbtqia_patterns() instead.")
         return self.get_crisis_patterns_migration_notice()
     
     def get_crisis_contexts(self):
@@ -445,46 +412,58 @@ class SettingsManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION
+# FACTORY FUNCTION - Updated for Phase 3d Step 9
 # ============================================================================
-def create_settings_manager(config_manager, analysis_parameters_manager=None, crisis_pattern_manager=None, threshold_mapping_manager=None) -> SettingsManager:
+def create_settings_manager(unified_config_manager,
+    analysis_parameters_manager=None, crisis_pattern_manager=None,
+    feature_config_manager=None, logging_config_manager=None,
+    model_ensemble_manager=None,
+    performance_config_manager=None, pydantic_manager=None,
+    server_config_manager=None, storage_config_manager=None,
+    threshold_mapping_manager=None, zero_shot_manager=None) -> SettingsManager:
     """
-    Factory function to create SettingsManager instance - Phase 3c Complete
+    Factory function to create SettingsManager instance - Phase 3d Step 9 Complete
     
     Args:
-        config_manager: ConfigManager instance for dependency injection
-        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b)
-        crisis_pattern_manager: CrisisPatternManager instance (Phase 3a) 
-        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c)
-        
+        unified_config_manager: UnifiedConfigManager instance
+        analysis_parameters_manager: AnalysisParametersManager instance
+        crisis_pattern_manager: CrisisPatternManager instance
+        feature_config_manager: FeatureConfigManager instance
+        logging_config_manager: LoggingConfigManager instance
+        model_ensemble_manager: ModelEnsembleManager instance
+        performance_config_manager: PerformanceConfigManager instance
+        pydantic_manager: PydanticManager instance
+        server_config_manager: ServerConfigManager instance
+        storage_config_manager: StorageConfigManager instance
+        threshold_mapping_manager: ThresholdMappingManager instance
+        zero_shot_manager: ZeroShotManager instance
+
     Returns:
         SettingsManager instance
     """
-    return SettingsManager(config_manager, crisis_pattern_manager, analysis_parameters_manager, threshold_mapping_manager)
+    return SettingsManager(
+        unified_config_manager=unified_config_manager,
+        analysis_parameters_manager=analysis_parameters_manager,
+        crisis_pattern_manager=crisis_pattern_manager,
+        feature_config_manager=feature_config_manager,
+        logging_config_manager=logging_config_manager,
+        model_ensemble_manager=model_ensemble_manager,
+        performance_config_manager=performance_config_manager,
+        pydantic_manager=pydantic_manager,
+        server_config_manager=server_config_manager,
+        storage_config_manager=storage_config_manager,
+        threshold_mapping_manager=threshold_mapping_manager,
+        zero_shot_manager=zero_shot_manager,
+    )
 
 # ============================================================================
-# CLEAN ARCHITECTURE EXPORTS (Phase 3b Complete)
+# CLEAN ARCHITECTURE EXPORTS (Phase 3d Step 9 Complete)
 # ============================================================================
 
 __all__ = [
     'SettingsManager',
     'create_settings_manager',
-    # Core constants (non-migratable server information)
-    'SERVER_CONFIG'
-    # NOTE: 
-    # - Crisis pattern constants removed in Phase 3a - now available via CrisisPatternManager
-    # - Analysis parameter constants (DEFAULT_PARAMS, CRISIS_THRESHOLDS) removed in Phase 3b - now available via AnalysisParametersManager
-    # To access crisis patterns, use: create_crisis_pattern_manager(config_manager)
-    # To access analysis parameters, use: create_analysis_parameters_manager(config_manager)
+    'SERVER_CONFIG'  # Non-migratable server info
 ]
 
-# ============================================================================
-# PHASE 3B MIGRATION COMPLETE
-# ============================================================================
-
-logger.info("✅ SettingsManager v3.1 - Phase 3b Migration Complete")
-logger.info("🔄 Analysis parameters migrated from hardcoded constants to AnalysisParametersManager with JSON configuration")
-logger.debug("📋 Remaining constants: SERVER_CONFIG (non-migratable server information)")
-logger.debug("🎯 For crisis patterns, use CrisisPatternManager")
-logger.debug("🎯 For analysis parameters, use AnalysisParametersManager")
-logger.debug("✨ Phase 3b: All analysis algorithm parameters now externalized to JSON configuration")
+logger.info("✅ SettingsManager v3.1d Step 9 loaded - UnifiedConfigManager integration complete, direct os.getenv() calls eliminated")

@@ -1,9 +1,13 @@
-# ash-nlp/api/ensemble_endpoints.py - PHASE 3C UPDATED
+# ash-nlp/api/ensemble_endpoints.py
 """
-Phase 3c UPDATED: Clean Three Zero-Shot Model Ensemble API Endpoints with ThresholdMappingManager
-Mode-aware threshold integration with fail-fast validation and staff review logic
-
-Clean v3.1 Architecture - NO Backward Compatibility
+Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service v3.1
+FILE VERSION: v3.1-3d-10.12-3
+LAST MODIFIED: 2025-08-14
+CLEAN ARCHITECTURE: v3.1 Compliant
+PHASE: 3d, Step 10.11-3
+MIGRATION STATUS: Step 10.8 API response extraction fixed
+Repository: https://github.com/the-alphabet-cartel/ash-nlp
+Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
 
 import logging
@@ -295,7 +299,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
     
     return reverse_hierarchy.get(max(level1_value, level2_value), 'none')
 
-def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager, 
+def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_manager, 
                               crisis_pattern_manager=None, threshold_mapping_manager=None):
     """
     PHASE 3C: Add Three Zero-Shot Model Ensemble endpoints with ThresholdMappingManager integration
@@ -303,7 +307,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     
     Args:
         app: FastAPI application instance
-        models_manager: ModelsManager v3.1 instance (required)
+        model_ensemble_manager: Model Ensemble Manager instance (required)
         pydantic_manager: PydanticManager v3.1 instance (required)
         crisis_pattern_manager: CrisisPatternManager instance (optional)
         threshold_mapping_manager: ThresholdMappingManager instance (optional but recommended)
@@ -313,9 +317,9 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
-    if not models_manager:
-        logger.error("❌ ModelsManager v3.1 is required but not provided")
-        raise RuntimeError("ModelsManager v3.1 required for ensemble endpoints")
+    if not model_ensemble_manager:
+        logger.error("❌ ModelEnsembleManager is required but not provided")
+        raise RuntimeError("ModelEnsembleManager required for ensemble endpoints")
     
     if not pydantic_manager:
         logger.error("❌ PydanticManager v3.1 is required but not provided")
@@ -347,127 +351,133 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
     logger.info("🚀 Adding Clean v3.1 Three Zero-Shot Model Ensemble endpoints (Phase 3c)")
     
     # ========================================================================
-    # ENSEMBLE ANALYSIS ENDPOINT - PHASE 3C UPDATED
+    # ENSEMBLE ANALYSIS ENDPOINT - STEP 10.8 FIXED
     # ========================================================================
-    
     @app.post("/analyze", response_model=models['CrisisResponse'])
-    async def analyze_message_ensemble_v3c(request: models['MessageRequest']):
+    async def analyze_message_v3d_clean(request: models['MessageRequest']):
         """
-        PHASE 3C: Analyze message using Three Zero-Shot Model Ensemble + Crisis Patterns + ThresholdMappingManager
-        Clean v3.1 implementation with mode-aware threshold integration
-        """
-        start_time = time.time()
+        CLEAN v3.1 Architecture: Single Analysis via CrisisAnalyzer
+        STEP 10.8 FIX: Updated response extraction for new CrisisAnalyzer structure
         
+        Removed redundant API-level analysis - CrisisAnalyzer is the single source of truth
+        """
         try:
-            logger.debug(f"🔍 Clean v3.1 Phase 3c: Analyzing message from user {request.user_id}")
+            start_time = time.time()
+            logger.debug(f"🔍 Clean v3.1 Architecture: Analyzing message from user {request.user_id}")
             
-            # Validate models are loaded - Direct manager check
-            if not models_manager.models_loaded():
-                logger.error("❌ Three Zero-Shot Model Ensemble not loaded")
+            # ========================================================================
+            # CLEAN ARCHITECTURE: SINGLE SOURCE OF TRUTH
+            # CrisisAnalyzer handles all analysis logic including:
+            # - Feature flag enforcement
+            # - Ensemble analysis
+            # - Pattern analysis (if enabled)
+            # - Context analysis (Step 10.8)
+            # - Threshold mapping
+            # - Integration logic
+            # ========================================================================
+            
+            if not model_ensemble_manager:
                 raise HTTPException(
-                    status_code=503, 
-                    detail="Three Zero-Shot Model Ensemble not available"
+                    status_code=500,
+                    detail="Models manager not available"
                 )
             
-            # STEP 1: Perform ensemble analysis - Direct manager usage
             try:
-                ensemble_analysis = await models_manager.analyze_message_ensemble(
+                # Single analysis call - CrisisAnalyzer does everything
+                complete_analysis = await model_ensemble_manager.analyze_message_ensemble(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
                 )
-                logger.debug(f"✅ Ensemble analysis complete")
+                logger.debug(f"✅ Complete analysis via CrisisAnalyzer: {complete_analysis.get('method', 'unknown')}")
+                
             except Exception as e:
-                logger.error(f"❌ Ensemble analysis failed: {e}")
+                logger.error(f"❌ CrisisAnalyzer analysis failed: {e}")
                 raise HTTPException(
                     status_code=500,
-                    detail=f"Ensemble analysis failed: {str(e)}"
+                    detail=f"Analysis failed: {str(e)}"
                 )
-            
-            # STEP 2: CRISIS PATTERN ANALYSIS INTEGRATION (Phase 3a compatibility)
-            pattern_analysis = {}
-            if crisis_pattern_manager:
-                try:
-                    logger.debug("🔍 Running crisis pattern analysis...")
-                    pattern_analysis = crisis_pattern_manager.analyze_message(
-                        message=request.message,
-                        user_id=request.user_id,
-                        channel_id=request.channel_id
-                    )
-                    patterns_found = pattern_analysis.get('patterns_triggered', [])
-                    logger.debug(f"✅ Pattern analysis complete: {len(patterns_found)} patterns triggered")
-                    
-                    if patterns_found:
-                        logger.info(f"🚨 Crisis patterns detected: {[p.get('pattern_name', 'unknown') for p in patterns_found]}")
-                except Exception as e:
-                    logger.warning(f"⚠️ Pattern analysis failed: {e}")
-                    pattern_analysis = {
-                        "error": str(e), 
-                        "patterns_triggered": [],
-                        "analysis_available": False
-                    }
-            else:
-                logger.debug("⚠️ No crisis pattern manager available - skipping pattern analysis")
-                pattern_analysis = {
-                    "error": "CrisisPatternManager not available", 
-                    "patterns_triggered": [],
-                    "analysis_available": False
-                }
-            
-            # STEP 3: PHASE 3C - COMBINE ENSEMBLE AND PATTERN RESULTS WITH THRESHOLDMAPPINGMANAGER
-            combined_analysis = integrate_pattern_and_ensemble_analysis_v3c(
-                ensemble_analysis, pattern_analysis, threshold_mapping_manager
-            )
             
             processing_time_ms = (time.time() - start_time) * 1000
             
-            # Create response using PydanticManager models with combined analysis
+            # ========================================================================
+            # STEP 10.8 FIX: RESPONSE EXTRACTION FROM NESTED STRUCTURE
+            # CrisisAnalyzer now returns nested analysis_results structure
+            # ========================================================================
+            
+            # Extract from nested analysis_results structure (Step 10.8 fix)
+            analysis_results = complete_analysis.get('analysis_results', {})
+            
+            # Map crisis_score -> confidence_score for API compatibility
+            crisis_level = analysis_results.get('crisis_level', 'none')
+            confidence_score = analysis_results.get('crisis_score', 0.0)  # Note: crisis_score, not confidence_score
+            
+            # Use fallback to top-level keys if nested structure not found (backward compatibility)
+            if not analysis_results:
+                logger.debug("🔄 Falling back to top-level keys for backward compatibility")
+                crisis_level = complete_analysis.get('crisis_level', 'none')
+                confidence_score = complete_analysis.get('confidence_score', 0.0)
+            
+            logger.debug(f"🔍 Extracted crisis_level={crisis_level}, confidence_score={confidence_score}")
+            logger.debug(f"🔍 Analysis structure: has_analysis_results={bool(analysis_results)}")
+            
             response = models['CrisisResponse'](
-                needs_response=combined_analysis.get('needs_response', False),
-                crisis_level=combined_analysis.get('crisis_level', 'none'),
-                confidence_score=combined_analysis.get('confidence_score', 0.0),
-                detected_categories=combined_analysis.get('detected_categories', []),
-                method=combined_analysis.get('method', 'ensemble_and_patterns_v3c'),
+                needs_response=complete_analysis.get('needs_response', False),
+                crisis_level=crisis_level,  # From analysis_results.crisis_level
+                confidence_score=confidence_score,  # From analysis_results.crisis_score
+                detected_categories=complete_analysis.get('detected_categories', []),
+                method=complete_analysis.get('method', 'crisis_analyzer_complete_v3d_step_10_8'),
                 processing_time_ms=processing_time_ms,
-                model_info=combined_analysis.get('model_info', 'Clean v3.1 Ensemble + Patterns + ThresholdMapping'),
-                reasoning=combined_analysis.get('reasoning'),
+                model_info=complete_analysis.get('model_info', 'Clean v3.1 Architecture - CrisisAnalyzer Complete (Step 10.8)'),
+                reasoning=complete_analysis.get('reasoning', 'Single analysis via CrisisAnalyzer with ContextPatternManager'),
                 analysis={
-                    'ensemble_analysis': ensemble_analysis,
-                    'pattern_analysis': pattern_analysis,
-                    'combined_result': combined_analysis,
-                    'threshold_configuration': combined_analysis.get('threshold_mode', 'unknown'),
-                    'staff_review_required': combined_analysis.get('staff_review_required', False)
+                    'complete_analysis': complete_analysis,
+                    'architecture': 'clean_v3.1',
+                    'redundant_processing': False,
+                    'feature_flags_respected': True,
+                    'api_processing_time_ms': processing_time_ms,
+                    'step_10_8_integration': True,
+                    'context_analysis_available': bool(analysis_results.get('context_analysis')),
+                    'note': 'Step 10.8: CrisisAnalyzer with ContextPatternManager integration'
                 }
             )
             
-            # Phase 3c: Log comprehensive analysis summary
-            crisis_level = combined_analysis.get('crisis_level', 'none')
-            staff_review = combined_analysis.get('staff_review_required', False)
-            threshold_mode = combined_analysis.get('threshold_mode', 'unknown')
+            # ========================================================================
+            # LOGGING - FINAL RESULT
+            # ========================================================================
             
-            logger.debug(f"✅ Clean v3.1 Phase 3c: Analysis complete - {crisis_level} level detected "
-                        f"(mode={threshold_mode}, staff_review={staff_review})")
+            method = complete_analysis.get('method', 'unknown')
+            feature_flags = complete_analysis.get('feature_flags_applied', {})
+            
+            logger.debug(f"✅ Clean Architecture Result: {crisis_level} (conf: {confidence_score:.3f}) via {method}")
+            logger.debug(f"🗣️ Feature flags applied: {feature_flags}")
+            logger.info(f"🎯 Step 10.8 Fix Applied: API response extraction successful")
             
             return response
             
         except HTTPException:
             raise
         except Exception as e:
-            processing_time_ms = (time.time() - start_time) * 1000
-            logger.error(f"❌ Unexpected error in analysis: {e}")
-            logger.exception("Full analysis error:")
+            processing_time_ms = (time.time() - start_time) * 1000 if 'start_time' in locals() else 0.0
+            logger.error(f"❌ Unexpected error in clean analysis endpoint: {e}")
+            logger.exception("Full error details:")
             
-            # Return error response using PydanticManager models  
+            # Return clean error response
             return models['CrisisResponse'](
                 needs_response=False,
                 crisis_level='none',
                 confidence_score=0.0,
                 detected_categories=[],
-                method='error',
+                method='error_clean_architecture_step_10_8',
                 processing_time_ms=processing_time_ms,
-                model_info='Clean v3.1 Phase 3c - Analysis Error',
-                reasoning=f"Error during analysis: {str(e)}",
-                analysis={'error': str(e), 'staff_review_required': True}
+                model_info='Clean v3.1 Architecture - Error (Step 10.8)',
+                reasoning=f"Error during clean analysis: {str(e)}",
+                analysis={
+                    'error': str(e),
+                    'architecture': 'clean_v3_1_error_handling',
+                    'processing_time_ms': processing_time_ms,
+                    'step_10_8_context': True
+                }
             )
     
     # ========================================================================
@@ -483,8 +493,8 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
         
         try:
             # Check models manager
-            models_loaded = models_manager.models_loaded()
-            model_info = models_manager.get_model_info() if models_loaded else {}
+            models_loaded = model_ensemble_manager.models_loaded()
+            model_info = model_ensemble_manager.get_model_info() if models_loaded else {}
             
             # Check pattern manager
             pattern_manager_status = crisis_pattern_manager is not None
@@ -520,8 +530,9 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
                 "status": overall_status,
                 "timestamp": time.time(),
                 "processing_time_ms": processing_time_ms,
-                "phase": "3c",
+                "phase": "3d",  # Updated for Step 10.8
                 "architecture": "clean_v3_1",
+                "step_10_8_integration": True,
                 "components": {
                     "ensemble_models": {
                         "status": "healthy" if models_loaded else "error",
@@ -539,6 +550,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
                 "capabilities": {
                     "ensemble_analysis": models_loaded,
                     "pattern_integration": pattern_manager_status,
+                    "context_analysis": True,  # Step 10.8 capability
                     "mode_aware_thresholds": threshold_manager_status,
                     "staff_review_logic": threshold_manager_status,
                     "learning_system_ready": threshold_manager_status and threshold_info.get('validation_status', {}).get('configuration_loaded', False)
@@ -551,8 +563,9 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
                 "timestamp": time.time(),
                 "processing_time_ms": (time.time() - start_time) * 1000,
                 "error": str(e),
-                "phase": "3c",
-                "architecture": "clean_v3_1"
+                "phase": "3d",  # Updated for Step 10.8
+                "architecture": "clean_v3_1",
+                "step_10_8_context": True
             }
     
     # ========================================================================
@@ -565,15 +578,16 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
         try:
             config = {
                 "ensemble_method": "three_zero_shot_models",
-                "models_loaded": models_manager.models_loaded() if models_manager else False,
-                "phase": "3c",
-                "architecture": "clean_v3_1"
+                "models_loaded": model_ensemble_manager.models_loaded() if model_ensemble_manager else False,
+                "phase": "3d",  # Updated for Step 10.8
+                "architecture": "clean_v3_1",
+                "step_10_8_integration": True
             }
             
             # Add model info if available
-            if models_manager:
+            if model_ensemble_manager:
                 try:
-                    model_info = models_manager.get_model_info()
+                    model_info = model_ensemble_manager.get_model_info()
                     config["model_details"] = model_info
                 except:
                     config["model_details"] = "unavailable"
@@ -615,7 +629,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             start_time = time.time()
             
             # Check core components
-            models_status = models_manager.models_loaded() if models_manager else False
+            models_status = model_ensemble_manager.models_loaded() if model_ensemble_manager else False
             pattern_status = crisis_pattern_manager is not None
             threshold_status = threshold_mapping_manager is not None
             
@@ -628,14 +642,15 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
                     "patterns": pattern_status,
                     "thresholds": threshold_status
                 },
-                "phase": "3c",
+                "phase": "3d",  # Updated for Step 10.8
+                "step_10_8_integration": True,
                 "processing_time_ms": (time.time() - start_time) * 1000
             }
             
             # Add detailed component info
-            if models_manager and models_status:
+            if model_ensemble_manager and models_status:
                 try:
-                    model_info = models_manager.get_model_info()
+                    model_info = model_ensemble_manager.get_model_info()
                     health["model_details"] = model_info
                 except:
                     health["model_details"] = "unavailable"
@@ -664,8 +679,9 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
         try:
             status = {
                 "ensemble_operational": False,
-                "phase": "3c",
+                "phase": "3d",  # Updated for Step 10.8
                 "architecture": "clean_v3_1",
+                "step_10_8_integration": True,
                 "timestamp": time.time()
             }
             
@@ -673,10 +689,10 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             components = {}
             
             # Models status
-            if models_manager:
+            if model_ensemble_manager:
                 try:
-                    models_loaded = models_manager.models_loaded()
-                    model_info = models_manager.get_model_info() if models_loaded else {}
+                    models_loaded = model_ensemble_manager.models_loaded()
+                    model_info = model_ensemble_manager.get_model_info() if models_loaded else {}
                     components["models"] = {
                         "status": "operational" if models_loaded else "unavailable",
                         "loaded": models_loaded,
@@ -728,7 +744,8 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             logger.error(f"❌ Error getting ensemble status: {e}")
             raise HTTPException(status_code=500, detail=f"Status error: {str(e)}")
 
-    logger.info("✅ Clean v3.1 Phase 3c Three Zero-Shot Model Ensemble endpoints configured successfully")
+    logger.info("✅ Clean v3.1 Phase 3d Three Zero-Shot Model Ensemble endpoints configured successfully")
+    logger.info("🎯 Step 10.8 Fix Applied: API response extraction updated for CrisisAnalyzer structure")
     
     # Phase 3c: Log configuration summary
     if threshold_mapping_manager:
@@ -741,8 +758,8 @@ def add_ensemble_endpoints_v3c(app: FastAPI, models_manager, pydantic_manager,
             logger.warning(f"⚠️ Could not log threshold configuration: {e}")
 
 # Legacy function name for backward compatibility during transition
-def add_ensemble_endpoints(app: FastAPI, models_manager, pydantic_manager, 
+def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manager, 
                           crisis_pattern_manager=None, threshold_mapping_manager=None):
     """Legacy wrapper for add_ensemble_endpoints_v3c"""
-    return add_ensemble_endpoints_v3c(app, models_manager, pydantic_manager, 
+    return add_ensemble_endpoints_v3c(app, model_ensemble_manager, pydantic_manager, 
                                      crisis_pattern_manager, threshold_mapping_manager)

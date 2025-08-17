@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Phase 3b Integration Tests
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
+CLEAN ARCHITECTURE: v3.1 Compliant
 Tests complete integration of AnalysisParametersManager with the analysis pipeline
 
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -31,7 +35,7 @@ class TestPhase3bIntegration:
     
     @pytest.fixture
     def mock_config_manager(self):
-        """FIXED: Create properly configured mock ConfigManager"""
+        """FIXED: Create properly configured mock UnifiedConfigManager"""
         mock_manager = Mock()
         
         # Complete analysis parameters configuration
@@ -409,10 +413,10 @@ class TestPhase3bEnvironmentVariableIntegration:
             'NLP_ANALYSIS_PHRASE_MIN_CONFIDENCE': '0.25',
             'NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW': '5',
             'NLP_ANALYSIS_PATTERN_CONFIDENCE_BOOST': '0.10',
-            'NLP_ANALYSIS_ENABLE_PATTERN_ANALYSIS': 'true',
+            'NLP_FEATURE_PATTERN_ANALYSIS': 'true',
             'NLP_ANALYSIS_INTEGRATION_MODE': 'enhanced',
-            'NLP_ANALYSIS_TIMEOUT_MS': '7000',
-            'NLP_ANALYSIS_ENABLE_DETAILED_LOGGING': 'true'
+            'NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS': '7000',
+            'NLP_FEATURE_DETAILED_LOGGING': 'true'
         }
         
         with patch.dict(os.environ, env_vars):
