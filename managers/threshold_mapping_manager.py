@@ -246,13 +246,9 @@ class ThresholdMappingManager:
     # ========================================================================
     
     def get_current_ensemble_mode(self) -> str:
-        """Get current ensemble mode from ModelEnsembleManager"""
+        """Get current ensemble mode from UnifiedConfdigManager"""
         try:
-            if self.model_ensemble_manager:
-                return self.model_ensemble_manager.get_current_ensemble_mode()
-            else:
-                # Fallback to environment variable
-                return self.unified_config.get_env_str('NLP_ENSEMBLE_MODE', 'consensus')
+            mode = self.config.get('ensemble_config', {}).get('mode', 'majority')
                 
         except Exception as e:
             logger.warning(f"⚠️ Error getting ensemble mode: {e}, using default")
