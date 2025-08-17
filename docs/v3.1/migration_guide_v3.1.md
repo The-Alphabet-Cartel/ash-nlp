@@ -145,6 +145,21 @@ ash/ash-nlp/
 ├── data/                                    # DATA Storage
 ├── docs/                                    # Documentation
 │   ├── v3.1/
+│   │   ├── managers/
+|   |   │   ├── analysis_parameters.md
+|   |   │   ├── context_pattern.md
+|   |   │   ├── crisis_pattern.md
+|   |   │   ├── feature_config.md
+|   |   │   ├── logging_config.md
+|   |   │   ├── model_ensemble.md
+|   |   │   ├── performance_config.md
+|   |   │   ├── pydantic.md
+|   |   │   ├── server_config.md
+|   |   │   ├── settings.md
+|   |   │   ├── storage_config.md
+|   |   │   ├── threshold_mapping.md
+|   |   │   ├── unified_config.md
+|   |   │   └── zero_shot.md
 │   │   ├── phase/
 |   │   │   ├── 3/
 |   |   │   │   ├── a/
@@ -181,6 +196,13 @@ ash/ash-nlp/
 |   |   │   │   │   └── tracker.md
 |   │   │   ├── 3/
 |   |   │   │   └── e/
+|   |   │   │       ├── learning_methods_inventory.md
+|   |   │   │       ├── method_overlap_matrix.md
+|   |   │   │       ├── step_1.md
+|   |   │   │       ├── step_2.md
+|   |   │   │       ├── step_3.md
+|   |   │   │       ├── step_4.md
+|   |   │   │       ├── step_5-8.md
 |   |   │   │       └── tracker.md
 |   │   │   └── 4/
 |   |   │       ├── a/
