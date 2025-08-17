@@ -248,7 +248,8 @@ class ThresholdMappingManager:
     def get_current_ensemble_mode(self) -> str:
         """Get current ensemble mode from UnifiedConfdigManager"""
         try:
-            mode = self.config.get('ensemble_config', {}).get('mode', 'majority')
+            config = self.unified_config.get_config('model_ensemble')
+            mode = config.get('ensemble_config', {}).get('mode', 'majority')
                 
         except Exception as e:
             logger.warning(f"⚠️ Error getting ensemble mode: {e}, using default")
