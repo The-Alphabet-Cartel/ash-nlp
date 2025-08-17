@@ -45,7 +45,7 @@ class ThresholdMappingManager:
         logger.info("ThresholdMappingManager v3.1e Step 3.3 initialized - Learning integration points added")
     
     def _load_threshold_mapping_config(self):
-        """Load threshold mapping configuration using UnifiedConfigManager - UPDATED for v3.1 compliance"""
+        """Load threshold mapping configuration using UnifiedConfigManager correctly"""
         try:
             # Load threshold mapping configuration through unified manager
             raw_config = self.unified_config.load_config_file('threshold_mapping')
@@ -54,8 +54,9 @@ class ThresholdMappingManager:
                 logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
                 self.threshold_config = self._get_fallback_threshold_config()
             else:
-                # NEW: Process v3.1 compliant configuration with environment variable resolution
-                self.threshold_config = self._process_v31_config(raw_config)
+                # FIXED: Use UCM's substitute_environment_variables() method like other managers
+                self.threshold_config = self.unified_config.substitute_environment_variables(raw_config)
+                logger.debug("✅ Environment variable substitution complete via UnifiedConfigManager")
             
             # Validate threshold configuration
             self._validate_threshold_config()
@@ -66,147 +67,11 @@ class ThresholdMappingManager:
             logger.error(f"❌ Error loading threshold mapping configuration: {e}")
             self._validation_errors.append(f"Configuration loading error: {str(e)}")
     
-    def _process_v31_config(self, raw_config: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Process v3.1 compliant configuration with environment variable resolution
-        This replaces the old _apply_environment_overrides method
-        """
-        processed_config = {}
-        
-        try:
-            # Copy metadata
-            if '_metadata' in raw_config:
-                processed_config['_metadata'] = raw_config['_metadata']
-            
-            # Process mode-specific configurations
-            if 'threshold_mapping_by_mode' in raw_config:
-                processed_config['threshold_mapping_by_mode'] = {}
-                
-                for mode, mode_config in raw_config['threshold_mapping_by_mode'].items():
-                    if isinstance(mode_config, dict):
-                        processed_config['threshold_mapping_by_mode'][mode] = self._resolve_mode_config(mode, mode_config)
-            
-            # Process shared configuration
-            if 'shared_configuration' in raw_config:
-                processed_config['shared_configuration'] = self._resolve_shared_config(raw_config['shared_configuration'])
-            
-            # Handle legacy configurations for backward compatibility
-            for legacy_key in ['global_staff_review', 'learning_thresholds']:
-                if legacy_key in raw_config:
-                    processed_config[legacy_key] = raw_config[legacy_key]
-            
-            logger.debug("✅ v3.1 configuration processing complete")
-            return processed_config
-            
-        except Exception as e:
-            logger.error(f"❌ Error processing v3.1 configuration: {e}")
-            # Fall back to applying environment overrides to raw config
-            return self._apply_environment_overrides(raw_config)
     
-    def _resolve_mode_config(self, mode: str, mode_config: Dict[str, Any]) -> Dict[str, Any]:
-        """Resolve environment variables for mode-specific configuration"""
-        resolved = {}
-        
-        # Copy description and other non-resolvable fields
-        for key in ['description']:
-            if key in mode_config:
-                resolved[key] = mode_config[key]
-        
-        # Resolve crisis level mapping with environment variables
-        if 'crisis_level_mapping' in mode_config:
-            resolved['crisis_level_mapping'] = {}
-            defaults = mode_config.get('defaults', {}).get('crisis_level_mapping', {})
-            
-            for threshold_key, env_var_or_value in mode_config['crisis_level_mapping'].items():
-                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
-                    # Extract environment variable name
-                    env_name = env_var_or_value[2:-1]  # Remove ${} wrapper
-                    default_value = defaults.get(threshold_key, 0.5)
-                    resolved['crisis_level_mapping'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
-                else:
-                    # Use direct value (for non-environment variable values)
-                    resolved['crisis_level_mapping'][threshold_key] = env_var_or_value
-        
-        # Resolve ensemble thresholds with environment variables
-        if 'ensemble_thresholds' in mode_config:
-            resolved['ensemble_thresholds'] = {}
-            defaults = mode_config.get('defaults', {}).get('ensemble_thresholds', {})
-            
-            for threshold_key, env_var_or_value in mode_config['ensemble_thresholds'].items():
-                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
-                    env_name = env_var_or_value[2:-1]
-                    default_value = defaults.get(threshold_key, 0.3)
-                    resolved['ensemble_thresholds'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
-                else:
-                    resolved['ensemble_thresholds'][threshold_key] = env_var_or_value
-        
-        # Resolve staff review thresholds with environment variables (THIS FIXES THE WARNING!)
-        if 'staff_review_thresholds' in mode_config:
-            resolved['staff_review_thresholds'] = {}
-            defaults = mode_config.get('defaults', {}).get('staff_review_thresholds', {})
-            
-            for threshold_key, env_var_or_value in mode_config['staff_review_thresholds'].items():
-                if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
-                    env_name = env_var_or_value[2:-1]
-                    default_value = defaults.get(threshold_key, True if 'always' in threshold_key or 'review' in threshold_key else 0.5)
-                    
-                    # Use appropriate type conversion based on default value
-                    if isinstance(default_value, bool):
-                        resolved['staff_review_thresholds'][threshold_key] = self.unified_config.get_env_bool(env_name, default_value)
-                    else:
-                        resolved['staff_review_thresholds'][threshold_key] = self.unified_config.get_env_float(env_name, default_value)
-                else:
-                    resolved['staff_review_thresholds'][threshold_key] = env_var_or_value
-        
-        # Copy defaults and validation for reference
-        for meta_key in ['defaults', 'validation']:
-            if meta_key in mode_config:
-                resolved[meta_key] = mode_config[meta_key]
-        
-        return resolved
+    # NOTE: Custom v3.1 config processing methods removed - now using UCM.substitute_environment_variables()
+    # This eliminates ~200 lines of duplicate environment variable resolution code
+    # and ensures consistent behavior with other managers like AnalysisParametersManager
     
-    def _resolve_shared_config(self, shared_config: Dict[str, Any]) -> Dict[str, Any]:
-        """Resolve environment variables for shared configuration"""
-        resolved = {}
-        
-        if 'description' in shared_config:
-            resolved['description'] = shared_config['description']
-        
-        for section_name, section_config in shared_config.items():
-            if section_name == 'description':
-                continue
-                
-            if isinstance(section_config, dict):
-                resolved[section_name] = {}
-                
-                # Copy description
-                if 'description' in section_config:
-                    resolved[section_name]['description'] = section_config['description']
-                
-                # Resolve environment variables
-                defaults = section_config.get('defaults', {})
-                for key, env_var_or_value in section_config.items():
-                    if key in ['description', 'defaults', 'validation']:
-                        resolved[section_name][key] = section_config[key]
-                        continue
-                    
-                    if isinstance(env_var_or_value, str) and env_var_or_value.startswith('${') and env_var_or_value.endswith('}'):
-                        env_name = env_var_or_value[2:-1]
-                        default_value = defaults.get(key, 1.0 if 'multiplier' in key else 0.5)
-                        
-                        # Use appropriate type conversion
-                        if isinstance(default_value, bool):
-                            resolved[section_name][key] = self.unified_config.get_env_bool(env_name, default_value)
-                        elif isinstance(default_value, int):
-                            resolved[section_name][key] = self.unified_config.get_env_int(env_name, default_value)
-                        elif isinstance(default_value, str):
-                            resolved[section_name][key] = self.unified_config.get_env_str(env_name, default_value)
-                        else:
-                            resolved[section_name][key] = self.unified_config.get_env_float(env_name, default_value)
-                    else:
-                        resolved[section_name][key] = env_var_or_value
-        
-        return resolved
 
     def _apply_environment_overrides(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Apply environment variable overrides using UnifiedConfigManager (NO MORE os.getenv())"""
@@ -613,7 +478,12 @@ class ThresholdMappingManager:
     # ========================================================================
     
     def _validate_threshold_config(self):
-        """Validate threshold configuration consistency"""
+        """
+        Validate threshold configuration consistency with proper type conversion
+        
+        FIXED: Ensures all threshold values are converted to floats before comparison
+        to prevent "TypeError: '<=' not supported between instances of 'float' and 'str'"
+        """
         try:
             self._validation_errors = []
             
@@ -623,24 +493,65 @@ class ThresholdMappingManager:
                     if 'crisis_level_mapping' in mode_config:
                         mapping = mode_config['crisis_level_mapping']
                         
-                        # Validate threshold ordering
-                        crisis_high = mapping.get('crisis_to_high', 0.5)
-                        crisis_medium = mapping.get('crisis_to_medium', 0.3)
+                        # FIXED: Safely convert threshold values to floats before comparison
+                        try:
+                            crisis_high = float(mapping.get('crisis_to_high', 0.5))
+                        except (ValueError, TypeError):
+                            logger.warning(f"⚠️ Invalid crisis_to_high value in {mode} mode: {mapping.get('crisis_to_high')}, using default 0.5")
+                            crisis_high = 0.5
                         
+                        try:
+                            crisis_medium = float(mapping.get('crisis_to_medium', 0.3))
+                        except (ValueError, TypeError):
+                            logger.warning(f"⚠️ Invalid crisis_to_medium value in {mode} mode: {mapping.get('crisis_to_medium')}, using default 0.3")
+                            crisis_medium = 0.3
+                        
+                        # Now we can safely compare floats
                         if crisis_high <= crisis_medium:
                             error_msg = f"Invalid threshold ordering in {mode} mode: crisis_to_high ({crisis_high}) <= crisis_to_medium ({crisis_medium})"
                             logger.warning(f"⚠️ {error_msg}")
                             self._validation_errors.append(error_msg)
                         
-                        # Validate threshold ranges
+                        # Validate all threshold values are within valid range [0.0, 1.0]
                         for threshold_name, threshold_value in mapping.items():
-                            if not 0.0 <= threshold_value <= 1.0:
-                                error_msg = f"Threshold {threshold_name} in {mode} mode outside valid range [0.0, 1.0]: {threshold_value}"
+                            try:
+                                threshold_float = float(threshold_value)
+                                if not 0.0 <= threshold_float <= 1.0:
+                                    error_msg = f"Threshold {threshold_name} in {mode} mode outside valid range [0.0, 1.0]: {threshold_float}"
+                                    logger.warning(f"⚠️ {error_msg}")
+                                    self._validation_errors.append(error_msg)
+                            except (ValueError, TypeError):
+                                error_msg = f"Invalid threshold value for {threshold_name} in {mode} mode: {threshold_value} (not convertible to float)"
                                 logger.warning(f"⚠️ {error_msg}")
                                 self._validation_errors.append(error_msg)
             
+            # Validate ensemble thresholds if present
+            if 'threshold_mapping_by_mode' in self.threshold_config:
+                for mode, mode_config in self.threshold_config['threshold_mapping_by_mode'].items():
+                    if 'ensemble_thresholds' in mode_config:
+                        ensemble_thresholds = mode_config['ensemble_thresholds']
+                        
+                        # Validate ensemble threshold ordering (high > medium > low)
+                        try:
+                            high_thresh = float(ensemble_thresholds.get('high', 0.5))
+                            medium_thresh = float(ensemble_thresholds.get('medium', 0.3))
+                            low_thresh = float(ensemble_thresholds.get('low', 0.15))
+                            
+                            if not (high_thresh > medium_thresh > low_thresh):
+                                error_msg = f"Invalid ensemble threshold ordering in {mode} mode: high ({high_thresh}) should be > medium ({medium_thresh}) should be > low ({low_thresh})"
+                                logger.warning(f"⚠️ {error_msg}")
+                                self._validation_errors.append(error_msg)
+                                
+                        except (ValueError, TypeError) as e:
+                            error_msg = f"Invalid ensemble threshold values in {mode} mode: {e}"
+                            logger.warning(f"⚠️ {error_msg}")
+                            self._validation_errors.append(error_msg)
+            
+            # Report validation results
             if self._validation_errors:
                 logger.warning(f"⚠️ Threshold validation found {len(self._validation_errors)} issues")
+                for error in self._validation_errors:
+                    logger.debug(f"   - {error}")
             else:
                 logger.info("✅ Threshold configuration validation passed")
                 
@@ -648,6 +559,10 @@ class ThresholdMappingManager:
             error_msg = f"Threshold validation error: {str(e)}"
             logger.error(f"❌ {error_msg}")
             self._validation_errors.append(error_msg)
+            
+            # Log the problematic configuration for debugging
+            logger.debug(f"Problematic threshold config: {self.threshold_config}")
+    
     
     def get_validation_status(self) -> Dict[str, Any]:
         """Get validation status of threshold configuration"""
