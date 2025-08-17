@@ -1,4 +1,3 @@
-# ash-nlp/tests/phase/3/e/test_shared_utilities_integration.py
 """
 Integration tests for SharedUtilitiesManager
 FILE VERSION: v3.1-3e-2.3-1
@@ -514,10 +513,10 @@ class TestSharedUtilitiesManager(unittest.TestCase):
         self.assertFalse(self.manager.validate_range('not_numeric', 1, 10, 'test_param'))
         self.assertFalse(self.manager.validate_range(None, 1, 10, 'test_param'))
         
-        # Test with None bounds
-        self.assertTrue(self.manager.validate_range(100, None, None, 'test_param'))
-        self.assertTrue(self.manager.validate_range(-100, None, 10, 'test_param'))
-        self.assertFalse(self.manager.validate_range(100, 1, None, 'test_param'))
+        # Test with None bounds (None means no limit)
+        self.assertTrue(self.manager.validate_range(100, None, None, 'test_param'))  # No limits
+        self.assertTrue(self.manager.validate_range(-100, None, 10, 'test_param'))   # Only max limit
+        self.assertTrue(self.manager.validate_range(100, 1, None, 'test_param'))     # Only min limit, value above min
     
     def test_validate_type(self):
         """Test validate_type"""
@@ -529,20 +528,21 @@ class TestSharedUtilitiesManager(unittest.TestCase):
         
         # Test type mismatches
         self.assertFalse(self.manager.validate_type('test', int, 'mismatch_param'))
-        self.assertFalse(self.manager.validate_type(42, str, 'mismatch_param'))
+        self.assertFalse(self.manager.validate_type(42, str, 'mismatch_param'))  # int is not str
         
         # Test tuple of types
         self.assertTrue(self.manager.validate_type(42, (int, float), 'numeric_param'))
         self.assertTrue(self.manager.validate_type(3.14, (int, float), 'numeric_param'))
         self.assertFalse(self.manager.validate_type('test', (int, float), 'numeric_param'))
         
-        # Test special cases - numeric types
+        # Test special cases - numeric types (cross-compatibility)
         self.assertTrue(self.manager.validate_type(42, float, 'int_as_float'))  # int can be float
         self.assertTrue(self.manager.validate_type(3.14, int, 'float_as_int'))  # float can be int
         
-        # Test string conversion
-        self.assertTrue(self.manager.validate_type(42, str, 'int_as_string'))
-        self.assertTrue(self.manager.validate_type(None, str, 'none_as_string'))
+        # Test string type validation (strict)
+        self.assertTrue(self.manager.validate_type('string', str, 'string_param'))
+        self.assertFalse(self.manager.validate_type(42, str, 'int_as_string'))  # int is not automatically str
+        self.assertFalse(self.manager.validate_type(None, str, 'none_as_string'))  # None is not str
     
     def test_validate_bounds(self):
         """Test validate_bounds"""
@@ -769,8 +769,9 @@ class TestSharedUtilitiesManager(unittest.TestCase):
             self.assertEqual(result, {})  # Should return empty dict fallback
             
         except Exception as e:
-            # If constructor fails, that's acceptable for severely broken config
-            self.assertIsInstance(e, ConfigurationError)
+            # If constructor fails due to config error, that's acceptable
+            # The manager is resilient to config errors after construction
+            self.assertIn("Config error", str(e))
     
     def test_json_file_error_conditions(self):
         """Test JSON file loading error conditions"""
@@ -857,11 +858,12 @@ class TestCleanArchitectureCompliance(unittest.TestCase):
 
 if __name__ == '__main__':
     # Create test suite
+    loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     
-    # Add all test cases
-    suite.addTest(unittest.makeSuite(TestSharedUtilitiesManager))
-    suite.addTest(unittest.makeSuite(TestCleanArchitectureCompliance))
+    # Add all test cases using the modern approach
+    suite.addTest(loader.loadTestsFromTestCase(TestSharedUtilitiesManager))
+    suite.addTest(loader.loadTestsFromTestCase(TestCleanArchitectureCompliance))
     
     # Run tests with detailed output
     runner = unittest.TextTestRunner(
