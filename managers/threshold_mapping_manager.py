@@ -1,9 +1,9 @@
 # ash-nlp/managers/threshold_mapping_manager.py
 """
 Mode-Aware Threshold Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-1
+FILE VERSION: v3.1-3e-3.2-1
 LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.7 - Environment Variable Fixes + Crisis Level Determination Method Added
+PHASE: 3e, Step 3.2
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Added missing determine_crisis_level method, fixed environment variable resolution
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -872,24 +872,33 @@ class ThresholdMappingManager:
             logger.warning(f"⚠️ Using fallback staff review logic: {fallback_required}")
             return fallback_required
 
-    def get_learning_thresholds(self) -> Dict[str, Union[float, int]]:
-        """Get learning system thresholds"""
-        try:
-            learning_config = self.threshold_config.get('learning_thresholds', {})
-            
-            return {
-                'learning_rate': learning_config.get('learning_rate', 0.1),
-                'max_adjustments_per_day': learning_config.get('max_adjustments_per_day', 50),
-                'min_confidence_for_learning': learning_config.get('min_confidence_for_learning', 0.3)
-            }
-            
-        except Exception as e:
-            logger.error(f"❌ Error getting learning thresholds: {e}")
-            return {
-                'learning_rate': 0.1,
-                'max_adjustments_per_day': 50,
-                'min_confidence_for_learning': 0.3
-            }
+    def get_learning_thresholds(self) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 3: Learning threshold configuration now managed by LearningSystemManager
+        
+        This method has been migrated to LearningSystemManager for better consolidation
+        of all learning-related functionality.
+        
+        Returns:
+            Dictionary indicating where to get learning threshold configuration
+        """
+        logger.info("ℹ️ Phase 3e: Learning threshold configuration now managed by LearningSystemManager")
+        logger.info("💡 Use LearningSystemManager.get_learning_thresholds() for learning threshold configuration")
+        
+        return {
+            'note': 'Learning threshold configuration managed by LearningSystemManager',
+            'use_instead': 'LearningSystemManager.get_learning_thresholds()',
+            'reason': 'Phase 3e Step 3 learning method consolidation - moved to specialized learning manager',
+            'migration_date': '2025-08-17',
+            'phase': '3e.3',
+            'benefits': [
+                'Consolidated learning functionality management',
+                'Specialized threshold learning configuration',
+                'Enhanced learning system integration',
+                'Better separation of concerns between threshold mapping and learning',
+                'Improved maintainability and testing'
+            ]
+        }
     
     def get_pattern_integration_config(self) -> Dict[str, Any]:
         """
@@ -1033,9 +1042,14 @@ class ThresholdMappingManager:
             'current_mode': current_mode,
             'crisis_level_mapping': self.get_crisis_level_mapping_for_mode(),
             'staff_review_thresholds': self.get_staff_review_thresholds_for_mode(),
-            'learning_thresholds': self.get_learning_thresholds(),
+            'learning_thresholds_note': self.get_learning_thresholds(),  # Now returns migration info
             'validation_status': self.get_validation_status(),
-            'available_modes': list(self.threshold_config.get('threshold_mapping_by_mode', {}).keys()) if self.threshold_config else []
+            'available_modes': list(self.threshold_config.get('threshold_mapping_by_mode', {}).keys()) if self.threshold_config else [],
+            'phase_3e_changes': {
+                'learning_consolidation': 'Learning threshold methods moved to LearningSystemManager',
+                'enhanced_specialization': 'Better separation of threshold mapping vs learning concerns',
+                'preserved_functionality': 'All core threshold mapping functionality maintained'
+            }
         }
 
 # ============================================================================
