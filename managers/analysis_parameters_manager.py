@@ -1,9 +1,9 @@
-# ash-nlp/managers/analysis_parameters_manager.py
+#!/usr/bin/env python3
 """
 Analysis Parameters Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-3.3-1
-LAST MODIFIED: 2025-08-17
-PHASE: 3e Step 3.3 - Learning Methods Removed and Replaced with References
+FILE VERSION: v3.1-3d-10-1
+LAST MODIFIED: 2025-08-13
+PHASE: 3d Step 10
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -19,12 +19,7 @@ logger = logging.getLogger(__name__)
 
 class AnalysisParametersManager:
     """
-    Analysis Parameters Manager with Phase 3e Step 3.3 learning method consolidation
-    
-    Phase 3e Changes:
-    - Learning methods extracted to LearningSystemManager
-    - References added to guide users to new location
-    - Core analysis functionality preserved
+    Analysis Parameters Manager with Phase 3d functionality and v3.1 JSON compatibility
     
     Hybrid approach: Preserves all current enhanced functionality while ensuring
     compatibility with Clean v3.1 JSON configuration standards.
@@ -47,7 +42,7 @@ class AnalysisParametersManager:
         self.analysis_config = {}
         self._full_config = {}
         
-        logger.info("✅ AnalysisParametersManager v3.1e initialized - Phase 3e + learning consolidation")
+        logger.info("✅ AnalysisParametersManager v3.1d initialized - Phase 3d + v3.1 compatibility")
         
         # Load configuration
         self._load_configuration()
@@ -75,7 +70,7 @@ class AnalysisParametersManager:
             
             logger.info("✅ Analysis parameters loaded from JSON configuration with environment overrides")
             logger.debug(f"📋 Configuration version: {config_version}")
-            logger.debug(f"🗂️ Compliance: {compliance}")
+            logger.debug(f"🏗️ Compliance: {compliance}")
             logger.debug(f"🔧 Architecture: {self.analysis_config.get('architecture', 'v3.1')}")
             
         except Exception as e:
@@ -491,84 +486,165 @@ class AnalysisParametersManager:
         }
     
     # ========================================================================
-    # LEARNING SYSTEM METHODS - PHASE 3E STEP 3.3: EXTRACTED TO LEARNINGSYSTEMMANAGER
+    # LEARNING SYSTEM PARAMETERS - PHASE 3D STEP 4 FUNCTIONALITY
     # ========================================================================
 
     def get_learning_system_parameters(self) -> Dict[str, Any]:
         """
-        PHASE 3E STEP 3.3: Learning parameters now managed by LearningSystemManager
-        
-        This method has been extracted to LearningSystemManager to eliminate method overlap
-        and provide centralized false positive/negative management.
+        PHASE 3D STEP 4: Get learning system parameters for adaptive threshold adjustment
         
         Returns:
-            Dictionary indicating where to get learning parameters
+            Dictionary with learning system configuration
         """
-        logger.info("ℹ️ Phase 3e: Learning parameters now managed by LearningSystemManager")
-        logger.info("💡 Use LearningSystemManager.get_learning_parameters() for learning configuration")
-        
-        return {
-            'note': 'Learning parameters managed by LearningSystemManager',
-            'use_instead': 'LearningSystemManager.get_learning_parameters()',
-            'reason': 'Phase 3e Step 3 consolidation - extracted learning methods to dedicated manager',
-            'migration_guide': {
-                'new_manager': 'LearningSystemManager',
-                'factory_function': 'create_learning_system_manager(unified_config, shared_utilities)',
-                'key_methods': [
-                    'get_learning_parameters()',
-                    'validate_learning_parameters()',
-                    'adjust_threshold_false_positive()',
-                    'adjust_threshold_false_negative()',
-                    'process_feedback()'
-                ]
-            },
-            'extracted_functionality': {
-                'learning_rate': 'Dynamic learning rate configuration',
-                'confidence_adjustments': 'Min/max confidence adjustment bounds',
-                'daily_limits': 'Max adjustments per day tracking',
-                'persistence': 'Learning adjustment history tracking',
-                'false_positive_adjustment': 'Threshold reduction after false positives',
-                'false_negative_adjustment': 'Threshold increase after false negatives',
-                'severity_multipliers': 'Crisis severity-based learning factors',
-                'sensitivity_bounds': 'Global sensitivity limit enforcement'
+        try:
+            learning_config = self._full_config.get('learning_system', {})
+            defaults = learning_config.get('defaults', {})
+            
+            # Core learning parameters
+            core_params = {
+                'enabled': learning_config.get('enabled', defaults.get('enabled', True)),
+                'learning_rate': float(learning_config.get('learning_rate', defaults.get('learning_rate', 0.01))),
+                'min_confidence_adjustment': float(learning_config.get('min_confidence_adjustment', defaults.get('min_confidence_adjustment', 0.05))),
+                'max_confidence_adjustment': float(learning_config.get('max_confidence_adjustment', defaults.get('max_confidence_adjustment', 0.30))),
+                'max_adjustments_per_day': int(learning_config.get('max_adjustments_per_day', defaults.get('max_adjustments_per_day', 50))),
+                'persistence_file': learning_config.get('persistence_file', defaults.get('persistence_file', './learning_data/adjustments.json')),
+                'feedback_weight': float(learning_config.get('feedback_weight', defaults.get('feedback_weight', 0.1))),
+                'min_samples': int(learning_config.get('min_samples', defaults.get('min_samples', 5))),
+                'adjustment_limit': float(learning_config.get('adjustment_limit', defaults.get('adjustment_limit', 0.05))),
+                'max_drift': float(learning_config.get('max_drift', defaults.get('max_drift', 0.1)))
             }
-        }
+            
+            # Sensitivity bounds
+            sensitivity_bounds = learning_config.get('sensitivity_bounds', {})
+            sensitivity_defaults = defaults.get('sensitivity_bounds', {})
+            core_params['sensitivity_bounds'] = {
+                'min_global_sensitivity': float(sensitivity_bounds.get('min_global_sensitivity', sensitivity_defaults.get('min_global_sensitivity', 0.5))),
+                'max_global_sensitivity': float(sensitivity_bounds.get('max_global_sensitivity', sensitivity_defaults.get('max_global_sensitivity', 1.5)))
+            }
+            
+            # Adjustment factors
+            adjustment_factors = learning_config.get('adjustment_factors', {})
+            adjustment_defaults = defaults.get('adjustment_factors', {})
+            core_params['adjustment_factors'] = {
+                'false_positive_factor': float(adjustment_factors.get('false_positive_factor', adjustment_defaults.get('false_positive_factor', -0.1))),
+                'false_negative_factor': float(adjustment_factors.get('false_negative_factor', adjustment_defaults.get('false_negative_factor', 0.1)))
+            }
+            
+            # Severity multipliers
+            severity_multipliers = learning_config.get('severity_multipliers', {})
+            severity_defaults = defaults.get('severity_multipliers', {})
+            core_params['severity_multipliers'] = {
+                'high_severity': float(severity_multipliers.get('high_severity', severity_defaults.get('high_severity', 3.0))),
+                'medium_severity': float(severity_multipliers.get('medium_severity', severity_defaults.get('medium_severity', 2.0))),
+                'low_severity': float(severity_multipliers.get('low_severity', severity_defaults.get('low_severity', 1.0)))
+            }
+            
+            return core_params
+            
+        except Exception as e:
+            logger.error(f"❌ Error loading learning system parameters: {e}")
+            return {
+                'enabled': True,
+                'learning_rate': 0.01,
+                'min_confidence_adjustment': 0.05,
+                'max_confidence_adjustment': 0.30,
+                'max_adjustments_per_day': 50,
+                'persistence_file': './learning_data/adjustments.json',
+                'feedback_weight': 0.1,
+                'min_samples': 5,
+                'adjustment_limit': 0.05,
+                'max_drift': 0.1,
+                'sensitivity_bounds': {
+                    'min_global_sensitivity': 0.5,
+                    'max_global_sensitivity': 1.5
+                },
+                'adjustment_factors': {
+                    'false_positive_factor': -0.1,
+                    'false_negative_factor': 0.1
+                },
+                'severity_multipliers': {
+                    'high_severity': 3.0,
+                    'medium_severity': 2.0,
+                    'low_severity': 1.0
+                }
+            }
 
     def validate_learning_system_parameters(self) -> Dict[str, Any]:
         """
-        PHASE 3E STEP 3.3: Learning validation now managed by LearningSystemManager
-        
-        This validation method has been extracted to LearningSystemManager to eliminate
-        method overlap and provide centralized learning parameter validation.
+        PHASE 3D STEP 4: Validate learning system parameter ranges and types
         
         Returns:
-            Dictionary indicating where to get learning validation
+            Dictionary with validation results
         """
-        logger.info("ℹ️ Phase 3e: Learning validation now managed by LearningSystemManager")
-        logger.info("💡 Use LearningSystemManager.validate_learning_parameters() for learning validation")
-        
-        return {
-            'note': 'Learning validation managed by LearningSystemManager',
-            'use_instead': 'LearningSystemManager.validate_learning_parameters()',
-            'reason': 'Phase 3e Step 3 consolidation - extracted learning validation to dedicated manager',
-            'validation_features': [
-                'Learning rate bounds checking (0.001 to 1.0)',
-                'Confidence adjustment range validation (0.01 to 1.0)',
-                'Daily adjustment limits validation (1 to 1000)',
-                'Sensitivity bounds consistency checking',
-                'Severity multiplier ordering validation',
-                'Adjustment factor range validation (-1.0 to 1.0)',
-                'Logical parameter relationship validation'
-            ],
-            'extracted_validations': {
-                'learning_rate': 'Validates learning rate is within operational bounds',
-                'confidence_adjustments': 'Ensures min < max confidence adjustment values',
-                'sensitivity_bounds': 'Validates min < max global sensitivity values',
-                'adjustment_factors': 'Validates false positive/negative factors',
-                'severity_multipliers': 'Ensures high >= medium >= low severity ordering',
-                'logical_consistency': 'Cross-parameter validation and relationship checks'
+        try:
+            params = self.get_learning_system_parameters()
+            errors = []
+            warnings = []
+            
+            # Validate learning rate
+            if not 0.001 <= params['learning_rate'] <= 1.0:
+                errors.append(f"Learning rate {params['learning_rate']} outside valid range [0.001, 1.0]")
+            
+            # Validate confidence adjustments
+            if not 0.01 <= params['min_confidence_adjustment'] <= 1.0:
+                errors.append(f"Min confidence adjustment {params['min_confidence_adjustment']} outside valid range [0.01, 1.0]")
+            
+            if not 0.05 <= params['max_confidence_adjustment'] <= 1.0:
+                errors.append(f"Max confidence adjustment {params['max_confidence_adjustment']} outside valid range [0.05, 1.0]")
+            
+            if params['min_confidence_adjustment'] >= params['max_confidence_adjustment']:
+                errors.append(f"Min confidence adjustment {params['min_confidence_adjustment']} must be less than max {params['max_confidence_adjustment']}")
+            
+            # Validate adjustments per day
+            if not 1 <= params['max_adjustments_per_day'] <= 1000:
+                errors.append(f"Max adjustments per day {params['max_adjustments_per_day']} outside valid range [1, 1000]")
+            
+            # Validate sensitivity bounds
+            sensitivity = params['sensitivity_bounds']
+            if not 0.1 <= sensitivity['min_global_sensitivity'] <= 5.0:
+                errors.append(f"Min global sensitivity {sensitivity['min_global_sensitivity']} outside valid range [0.1, 5.0]")
+            
+            if not 0.1 <= sensitivity['max_global_sensitivity'] <= 5.0:
+                errors.append(f"Max global sensitivity {sensitivity['max_global_sensitivity']} outside valid range [0.1, 5.0]")
+            
+            if sensitivity['min_global_sensitivity'] >= sensitivity['max_global_sensitivity']:
+                errors.append(f"Min global sensitivity {sensitivity['min_global_sensitivity']} must be less than max {sensitivity['max_global_sensitivity']}")
+            
+            # Validate adjustment factors
+            factors = params['adjustment_factors']
+            if not -1.0 <= factors['false_positive_factor'] <= 1.0:
+                errors.append(f"False positive factor {factors['false_positive_factor']} outside valid range [-1.0, 1.0]")
+            
+            if not -1.0 <= factors['false_negative_factor'] <= 1.0:
+                errors.append(f"False negative factor {factors['false_negative_factor']} outside valid range [-1.0, 1.0]")
+            
+            # Validate severity multipliers
+            multipliers = params['severity_multipliers']
+            for severity, multiplier in multipliers.items():
+                if not 0.1 <= multiplier <= 10.0:
+                    errors.append(f"Severity multiplier {severity} value {multiplier} outside valid range [0.1, 10.0]")
+            
+            # Check logical ordering of severity multipliers
+            if not (multipliers['high_severity'] >= multipliers['medium_severity'] >= multipliers['low_severity']):
+                warnings.append("Severity multipliers should follow pattern: high >= medium >= low")
+            
+            return {
+                'valid': len(errors) == 0,
+                'errors': errors,
+                'warnings': warnings,
+                'parameters_validated': len(params),
+                'validation_timestamp': str(datetime.now())
             }
-        }
+            
+        except Exception as e:
+            logger.error(f"❌ Error validating learning system parameters: {e}")
+            return {
+                'valid': False,
+                'errors': [f"Validation failed: {str(e)}"],
+                'warnings': [],
+                'parameters_validated': 0,
+                'validation_timestamp': str(datetime.now())
+            }
     
     # ========================================================================
     # AGGREGATE ACCESS METHODS - Enhanced for v3.1
@@ -582,38 +658,29 @@ class AnalysisParametersManager:
         metadata = self._full_config.get('_metadata', {})
         
         return {
-            'version': '3.1e-consolidated',
-            'architecture': 'clean-v3.1-unified-consolidated',
+            'version': '3.1d-hybrid',
+            'architecture': 'clean-v3.1-unified-hybrid',
             'json_version': metadata.get('configuration_version', 'unknown'),
             'compliance': metadata.get('compliance', 'unknown'),
-            'phase_3e_changes': {
-                'learning_consolidation': 'Learning methods extracted to LearningSystemManager',
-                'method_overlap_elimination': 'Duplicate learning methods removed',
-                'centralized_learning': 'Single source of truth for learning functionality',
-                'architecture_improvement': 'Clean separation of analysis vs learning concerns',
-                'maintained_functionality': 'All non-learning analysis methods preserved'
-            },
             'phase_3d_changes': {
                 'hybrid_approach': 'Preserves enhanced functionality with v3.1 compliance',
-                'learning_system': 'Phase 3d Step 4 learning system parameters - NOW EXTRACTED',
+                'learning_system': 'Phase 3d Step 4 learning system parameters',
                 'contextual_weighting': 'NEW v3.1 contextual weighting support',
-                'consolidated': 'Learning parameters from multiple locations - NOW CENTRALIZED',
+                'consolidated': 'Learning parameters from multiple locations',
                 'standardized': 'All learning variables use NLP_ANALYSIS_LEARNING_* naming'
             },
-            'analysis_parameters': {
-                'crisis_thresholds': self.get_crisis_thresholds(),
-                'confidence_boost': self.get_confidence_boost_parameters(),
-                'phrase_extraction': self.get_phrase_extraction_parameters(),
-                'pattern_learning': self.get_pattern_learning_parameters(),
-                'semantic_analysis': self.get_semantic_analysis_parameters(),
-                'contextual_weighting': self.get_contextual_weighting_parameters(),
-                'advanced_parameters': self.get_advanced_parameters(),
-                'integration_settings': self.get_integration_settings(),
-                'performance_settings': self.get_performance_parameters(),
-                'debugging_settings': self.get_debugging_settings(),
-                'experimental_features': self.get_experimental_features()
-            },
-            'learning_system_info': self.get_learning_system_parameters(),
+            'crisis_thresholds': self.get_crisis_thresholds(),
+            'confidence_boost': self.get_confidence_boost_parameters(),
+            'phrase_extraction': self.get_phrase_extraction_parameters(),
+            'pattern_learning': self.get_pattern_learning_parameters(),
+            'semantic_analysis': self.get_semantic_analysis_parameters(),
+            'contextual_weighting': self.get_contextual_weighting_parameters(),
+            'advanced_parameters': self.get_advanced_parameters(),
+            'integration_settings': self.get_integration_settings(),
+            'performance_settings': self.get_performance_parameters(),
+            'debugging_settings': self.get_debugging_settings(),
+            'experimental_features': self.get_experimental_features(),
+            'learning_system': self.get_learning_system_parameters(),
             'ensemble_weights_info': self.get_ensemble_weights()
         }
         
@@ -663,9 +730,8 @@ class AnalysisParametersManager:
                 'valid': len(errors) == 0,
                 'errors': errors,
                 'warnings': warnings,
-                'parameters_validated': 'analysis-only-consolidated',
+                'parameters_validated': 'all-hybrid-v3.1',
                 'json_compliance': 'v3.1' if metadata else 'partial',
-                'learning_system_note': 'Learning parameters now validated by LearningSystemManager',
                 'validation_timestamp': str(datetime.now())
             }
             
@@ -681,7 +747,7 @@ class AnalysisParametersManager:
     def get_configuration_summary(self) -> Dict[str, Any]:
         """
         Get summary of current configuration for monitoring and debugging
-        Enhanced for v3.1 hybrid compatibility with Phase 3e consolidation updates
+        Enhanced for v3.1 hybrid compatibility
         
         Returns:
             Dictionary with configuration summary
@@ -690,26 +756,20 @@ class AnalysisParametersManager:
             metadata = self._full_config.get('_metadata', {})
             
             return {
-                'manager_version': 'v3.1e-consolidated',
+                'manager_version': 'v3.1d-hybrid',
                 'json_configuration_version': metadata.get('configuration_version', 'unknown'),
                 'json_compliance': metadata.get('compliance', 'unknown'),
                 'last_updated': metadata.get('updated_date', 'unknown'),
-                'total_parameter_categories': 10,  # Analysis parameter categories (learning extracted)
+                'total_parameter_categories': 11,  # All parameter categories including new ones
                 'integration_mode': self.get_integration_settings().get('integration_mode', 'unknown'),
                 'performance_timeout_ms': self.get_performance_parameters().get('timeout_ms', 'unknown'),
                 'debug_logging_enabled': self.get_debugging_settings().get('enable_detailed_logging', False),
-                'learning_system_note': 'Learning parameters managed by LearningSystemManager',
+                'learning_system_enabled': self.get_learning_system_parameters().get('enabled', False),
                 'contextual_weighting_enabled': True,  # New v3.1 feature
                 'manager_initialized': True,
                 'configuration_loaded': self._full_config is not None,
-                'phase_3e_features': {
-                    'learning_consolidation_complete': True,
-                    'method_overlap_eliminated': True,
-                    'learning_system_manager_reference': True,
-                    'clean_architecture_v3_1_compliant': True
-                },
                 'hybrid_features': {
-                    'phase_3d_analysis_system': True,
+                    'phase_3d_learning_system': True,
                     'v3_1_contextual_weighting': True,
                     'enhanced_validation': True,
                     'metadata_tracking': bool(metadata)
@@ -719,12 +779,11 @@ class AnalysisParametersManager:
         except Exception as e:
             logger.error(f"❌ Error getting configuration summary: {e}")
             return {
-                'manager_version': 'v3.1e-consolidated',
+                'manager_version': 'v3.1d-hybrid',
                 'json_configuration_version': 'error',
                 'error': str(e),
                 'manager_initialized': False
             }
-
 
 # ============================================================================
 # Factory Function - Clean v3.1 Architecture Compliance
@@ -738,10 +797,10 @@ def create_analysis_parameters_manager(config_manager) -> AnalysisParametersMana
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        AnalysisParametersManager instance with v3.1 compatibility and Phase 3e consolidation
+        AnalysisParametersManager instance with hybrid v3.1 compatibility
     """
     return AnalysisParametersManager(config_manager)
 
 __all__ = ['AnalysisParametersManager', 'create_analysis_parameters_manager']
 
-logger.info("✅ Consolidated AnalysisParametersManager v3.1e loaded - Learning methods extracted to LearningSystemManager")
+logger.info("✅ Hybrid AnalysisParametersManager v3.1d loaded - Phase 3d functionality + v3.1 compliance")
