@@ -17,7 +17,7 @@ from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, Any
 
 # Import the manager under test
-from managers.shared_utilities_manager import (
+from managers.shared_utilities import (
     SharedUtilitiesManager, 
     create_shared_utilities_manager,
     ConfigurationError
