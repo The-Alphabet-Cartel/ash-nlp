@@ -508,7 +508,7 @@ def create_enhanced_crisis_analyzer(unified_config, model_ensemble_manager, shar
         **kwargs
     )
 
-def validate_crisis_analyzer_dependencies(unified_config, model_ensemble_manager=None, shared_utilities_manager=None,
+def validate_crisis_analyzer_dependencies(unified_config=None, model_ensemble_manager=None, shared_utilities_manager=None,
                                          learning_system_manager=None, **kwargs):
     """
     Validate dependencies for CrisisAnalyzer creation
