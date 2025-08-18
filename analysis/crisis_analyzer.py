@@ -105,38 +105,61 @@ class CrisisAnalyzer:
     # PHASE 3E STEP 4.2: CONSOLIDATED ANALYSIS METHODS FROM ANALYSISPARAMETERSMANAGER
     # ========================================================================
     
-    def get_analysis_crisis_thresholds(self) -> Dict[str, float]:
+    def get_analysis_crisis_thresholds(self, mode: str = 'consensus') -> Dict[str, float]:
         """
         Get crisis thresholds for analysis (consolidated from AnalysisParametersManager)
+        Updated for Phase 3d Step 10.10: Now delegates to ThresholdMappingManager for mode-specific thresholds
         
+        Args:
+            mode: Ensemble mode ('consensus', 'majority', 'weighted')
+            
         Returns:
-            Dictionary of crisis threshold settings
+            Dictionary of crisis threshold settings for the specified mode
         """
         try:
+            if self.threshold_mapping_manager:
+                # Use ThresholdMappingManager for mode-specific thresholds (Phase 3d Step 10.10)
+                if hasattr(self.threshold_mapping_manager, 'get_thresholds_for_mode'):
+                    return self.threshold_mapping_manager.get_thresholds_for_mode(mode)
+                elif hasattr(self.threshold_mapping_manager, 'get_ensemble_thresholds'):
+                    return self.threshold_mapping_manager.get_ensemble_thresholds(mode)
+                elif hasattr(self.threshold_mapping_manager, f'get_{mode}_thresholds'):
+                    # Try mode-specific method (e.g., get_consensus_thresholds)
+                    method = getattr(self.threshold_mapping_manager, f'get_{mode}_thresholds')
+                    return method()
+                else:
+                    logger.warning(f"⚠️ ThresholdMappingManager has no method for mode '{mode}' - using fallback")
+            
+            # Fallback: Use SharedUtilities if available
             if self.shared_utilities_manager:
-                return self.shared_utilities_manager.get_config_section_safely(
-                    'analysis_parameters', 'crisis_thresholds', {
-                        'low': 0.2,
-                        'medium': 0.4,
-                        'high': 0.6,
-                        'critical': 0.8
-                    }
+                # Try to get mode-specific thresholds from threshold_mapping config
+                threshold_config = self.shared_utilities_manager.get_config_section_safely(
+                    'threshold_mapping', f'{mode}_thresholds', None
                 )
-            elif self.analysis_parameters_manager:
-                # Fallback to legacy manager
-                return self.analysis_parameters_manager.get_crisis_thresholds()
-            else:
-                logger.warning("⚠️ No config manager available - using hardcoded crisis thresholds")
-                return {
-                    'low': 0.2,
-                    'medium': 0.4,
-                    'high': 0.6,
-                    'critical': 0.8
-                }
+                if threshold_config:
+                    return {
+                        'low': threshold_config.get('ensemble_low', 0.12),
+                        'medium': threshold_config.get('ensemble_medium', 0.25),
+                        'high': threshold_config.get('ensemble_high', 0.45),
+                        'critical': threshold_config.get('ensemble_critical', 0.7)
+                    }
+            
+            # Final fallback: Mode-specific defaults based on Phase 3d configuration
+            mode_defaults = {
+                'consensus': {'low': 0.12, 'medium': 0.30, 'high': 0.50, 'critical': 0.7},
+                'majority': {'low': 0.11, 'medium': 0.28, 'high': 0.45, 'critical': 0.65},
+                'weighted': {'low': 0.13, 'medium': 0.32, 'high': 0.55, 'critical': 0.75}
+            }
+            
+            thresholds = mode_defaults.get(mode, mode_defaults['consensus'])
+            logger.warning(f"⚠️ Using fallback thresholds for mode '{mode}': {thresholds}")
+            return thresholds
+            
         except Exception as e:
+            logger.error(f"❌ Failed to get crisis thresholds for mode '{mode}': {e}")
             return self._safe_analysis_execution(
                 "get_analysis_crisis_thresholds", 
-                lambda: {'low': 0.2, 'medium': 0.4, 'high': 0.6, 'critical': 0.8}
+                lambda: {'low': 0.12, 'medium': 0.25, 'high': 0.45, 'critical': 0.7}
             )
 
     def get_analysis_timeouts(self) -> Dict[str, int]:
@@ -279,42 +302,62 @@ class CrisisAnalyzer:
     # PHASE 3E STEP 4.2: CONSOLIDATED ANALYSIS METHODS FROM THRESHOLDMAPPINGMANAGER
     # ========================================================================
     
-    def apply_crisis_thresholds(self, confidence: float, mode: str = 'default') -> str:
+    def apply_crisis_thresholds(self, confidence: float, mode: str = 'consensus') -> str:
         """
         Apply thresholds to determine crisis level (consolidated from ThresholdMappingManager)
+        Updated for Phase 3d Step 10.10: Uses proper ensemble mode-specific thresholds
         
         Args:
             confidence: Confidence score (0.0 to 1.0)
-            mode: Analysis mode for threshold selection
+            mode: Analysis mode ('consensus', 'majority', 'weighted', 'sensitive', 'conservative')
             
         Returns:
             Crisis level string ('none', 'low', 'medium', 'high', 'critical')
         """
         try:
-            # Get mode-specific thresholds
+            # First, try to use ThresholdMappingManager directly (preferred approach)
+            if self.threshold_mapping_manager:
+                try:
+                    # Try different possible method names for threshold application
+                    if hasattr(self.threshold_mapping_manager, 'determine_crisis_level'):
+                        return self.threshold_mapping_manager.determine_crisis_level(confidence, mode)
+                    elif hasattr(self.threshold_mapping_manager, 'apply_thresholds'):
+                        return self.threshold_mapping_manager.apply_thresholds(confidence, mode)
+                    elif hasattr(self.threshold_mapping_manager, 'get_crisis_level'):
+                        return self.threshold_mapping_manager.get_crisis_level(confidence, mode)
+                    else:
+                        logger.debug("ThresholdMappingManager has no known threshold application method - using consolidated logic")
+                except Exception as e:
+                    logger.warning(f"⚠️ ThresholdMappingManager threshold application failed: {e}")
+            
+            # Fallback: Get mode-specific thresholds and apply them
             thresholds = self.get_crisis_threshold_for_mode(mode)
             
             # Apply learning adjustments if available
             if self.learning_system_manager:
-                adjusted_confidence = self.learning_system_manager.apply_threshold_adjustments(
-                    confidence, mode
-                )
-                logger.debug(f"Learning adjustment: {confidence:.3f} → {adjusted_confidence:.3f}")
-                confidence = adjusted_confidence
+                try:
+                    adjusted_confidence = self.learning_system_manager.apply_threshold_adjustments(
+                        confidence, mode
+                    )
+                    logger.debug(f"Learning adjustment: {confidence:.3f} → {adjusted_confidence:.3f}")
+                    confidence = adjusted_confidence
+                except Exception as e:
+                    logger.warning(f"⚠️ Learning adjustment failed: {e}")
             
-            # Determine crisis level
-            if confidence >= thresholds.get('critical', 0.8):
+            # Determine crisis level using mode-specific thresholds
+            if confidence >= thresholds.get('critical', 0.7):
                 return 'critical'
-            elif confidence >= thresholds.get('high', 0.6):
+            elif confidence >= thresholds.get('high', 0.45):
                 return 'high'
-            elif confidence >= thresholds.get('medium', 0.4):
+            elif confidence >= thresholds.get('medium', 0.25):
                 return 'medium'
-            elif confidence >= thresholds.get('low', 0.2):
+            elif confidence >= thresholds.get('low', 0.12):
                 return 'low'
             else:
                 return 'none'
                 
         except Exception as e:
+            logger.error(f"❌ Crisis threshold application failed: {e}")
             return self._safe_analysis_execution(
                 "apply_crisis_thresholds",
                 lambda: self._fallback_crisis_level(confidence)
@@ -333,22 +376,35 @@ class CrisisAnalyzer:
         """
         return self.apply_crisis_thresholds(confidence, mode)
 
-    def validate_crisis_analysis_thresholds(self) -> Dict[str, bool]:
+    def validate_crisis_analysis_thresholds(self, mode: str = 'consensus') -> Dict[str, bool]:
         """
         Validate analysis thresholds (consolidated from ThresholdMappingManager)
+        Updated for Phase 3d Step 10.10: Validates mode-specific thresholds
         
+        Args:
+            mode: Ensemble mode to validate ('consensus', 'majority', 'weighted')
+            
         Returns:
             Dictionary of validation results
         """
         try:
             validation_results = {}
             
-            # Validate crisis thresholds
-            crisis_thresholds = self.get_analysis_crisis_thresholds()
-            validation_results['crisis_thresholds_valid'] = all(
+            # Validate crisis thresholds for specified mode
+            crisis_thresholds = self.get_analysis_crisis_thresholds(mode)
+            validation_results[f'{mode}_crisis_thresholds_valid'] = all(
                 isinstance(v, (int, float)) and 0 <= v <= 1 
                 for v in crisis_thresholds.values()
             )
+            
+            # Validate threshold ordering (low < medium < high < critical)
+            thresholds_ordered = (
+                crisis_thresholds.get('low', 0) <= 
+                crisis_thresholds.get('medium', 0) <= 
+                crisis_thresholds.get('high', 0) <= 
+                crisis_thresholds.get('critical', 1)
+            )
+            validation_results[f'{mode}_thresholds_ordered'] = thresholds_ordered
             
             # Validate confidence boosts
             confidence_boosts = self.get_analysis_confidence_boosts()
@@ -364,48 +420,76 @@ class CrisisAnalyzer:
                 for v in pattern_weights.values()
             )
             
-            # Use shared utilities for validation if available
+            # If ThresholdMappingManager available, use its validation
+            if self.threshold_mapping_manager:
+                try:
+                    if hasattr(self.threshold_mapping_manager, 'validate_thresholds'):
+                        manager_validation = self.threshold_mapping_manager.validate_thresholds(mode)
+                        if isinstance(manager_validation, dict):
+                            validation_results.update(manager_validation)
+                    elif hasattr(self.threshold_mapping_manager, f'validate_{mode}_thresholds'):
+                        method = getattr(self.threshold_mapping_manager, f'validate_{mode}_thresholds')
+                        mode_validation = method()
+                        if isinstance(mode_validation, dict):
+                            validation_results.update(mode_validation)
+                except Exception as e:
+                    logger.warning(f"⚠️ ThresholdMappingManager validation failed: {e}")
+            
+            # Use shared utilities for validation logging if available
             if self.shared_utilities_manager:
                 for key, value in validation_results.items():
                     if not value:
-                        logger.warning(f"⚠️ Validation failed for {key}")
+                        logger.warning(f"⚠️ Validation failed for {key} in mode {mode}")
             
             validation_results['overall_valid'] = all(validation_results.values())
+            validation_results['mode_validated'] = mode
             return validation_results
             
         except Exception as e:
+            logger.error(f"❌ Threshold validation failed for mode '{mode}': {e}")
             return self._safe_analysis_execution(
                 "validate_crisis_analysis_thresholds",
-                lambda: {'overall_valid': False, 'error': str(e)}
+                lambda: {'overall_valid': False, 'mode_validated': mode, 'error': str(e)}
             )
 
     def get_crisis_threshold_for_mode(self, mode: str) -> Dict[str, float]:
         """
         Get mode-specific crisis thresholds (consolidated from ThresholdMappingManager)
+        Updated for Phase 3d Step 10.10: Uses proper ThresholdMappingManager delegation
         
         Args:
-            mode: Analysis mode ('default', 'sensitive', 'conservative')
+            mode: Analysis mode ('consensus', 'majority', 'weighted', 'sensitive', 'conservative')
             
         Returns:
             Dictionary of mode-specific thresholds
         """
         try:
-            base_thresholds = self.get_analysis_crisis_thresholds()
+            # Handle ensemble modes first (Phase 3d Step 10.10)
+            if mode in ['consensus', 'majority', 'weighted']:
+                return self.get_analysis_crisis_thresholds(mode)
             
-            # Mode-specific adjustments
-            if mode == 'sensitive':
-                # Lower thresholds for more sensitive detection
-                return {k: max(0.0, v - 0.1) for k, v in base_thresholds.items()}
-            elif mode == 'conservative':
-                # Higher thresholds for more conservative detection
-                return {k: min(1.0, v + 0.1) for k, v in base_thresholds.items()}
-            else:  # default mode
-                return base_thresholds
+            # Handle analysis sensitivity modes (legacy behavior)
+            if mode in ['sensitive', 'conservative', 'default']:
+                base_thresholds = self.get_analysis_crisis_thresholds('consensus')  # Use consensus as base
+                
+                if mode == 'sensitive':
+                    # Lower thresholds for more sensitive detection
+                    return {k: max(0.0, v - 0.1) for k, v in base_thresholds.items()}
+                elif mode == 'conservative':
+                    # Higher thresholds for more conservative detection
+                    return {k: min(1.0, v + 0.1) for k, v in base_thresholds.items()}
+                else:  # default mode
+                    return base_thresholds
+            
+            # Unknown mode - use consensus as fallback
+            logger.warning(f"⚠️ Unknown mode '{mode}', using consensus thresholds")
+            return self.get_analysis_crisis_thresholds('consensus')
                 
         except Exception as e:
+            logger.error(f"❌ Failed to get thresholds for mode '{mode}': {e}")
             return self._safe_analysis_execution(
                 "get_crisis_threshold_for_mode",
-                lambda: {'low': 0.2, 'medium': 0.4, 'high': 0.6, 'critical': 0.8}
+                lambda: {'low': 0.12, 'medium': 0.25, 'high': 0.45, 'critical': 0.7}
             )
 
     # ========================================================================
@@ -1372,13 +1456,13 @@ class CrisisAnalyzer:
         
         return list(set(categories))
 
-    def _determine_crisis_level(self, score: float) -> str:
+    def _determine_crisis_level(self, score: float, mode: str = 'consensus') -> str:
         """
         Determine crisis level from score using consolidated method
-        Updated for Phase 3e: Uses consolidated apply_crisis_thresholds method
+        Updated for Phase 3e: Uses consolidated apply_crisis_thresholds method with proper mode support
         """
         try:
-            return self.apply_crisis_thresholds(score)
+            return self.apply_crisis_thresholds(score, mode)
         except Exception as e:
             logger.error(f"❌ Crisis level determination failed: {e}")
             return self._fallback_crisis_level(score)
