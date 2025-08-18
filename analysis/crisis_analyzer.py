@@ -1,7 +1,7 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-3
+FILE VERSION: v3.1-3e-4.2-6
 LAST MODIFIED: 2025-08-18
 PHASE: 3e, Step 4.2 - Enhanced CrisisAnalyzer with SharedUtilities and LearningSystem integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -38,10 +38,10 @@ class CrisisAnalyzer:
     - Learning system integration for adaptive analysis
     """
     
-    def __init__(self, model_ensemble_manager, crisis_pattern_manager=None,
-                 analysis_parameters_manager=None, threshold_mapping_manager=None,
-                 feature_config_manager=None, performance_config_manager=None,
-                 context_pattern_manager=None,
+    def __init__(self, unified_config_manager, model_ensemble_manager,
+                crisis_pattern_manager=None, analysis_parameters_manager=None,
+                threshold_mapping_manager=None, feature_config_manager=None,
+                performance_config_manager=None, context_pattern_manager=None,
                  # NEW Phase 3e dependencies
                  shared_utilities_manager=None, learning_system_manager=None):
         """
@@ -63,6 +63,7 @@ class CrisisAnalyzer:
             learning_system_manager: LearningSystemManager for adaptive learning (Step 3)
         """
         # Existing manager dependencies (maintained)
+        self.unified_config_manager = unified_config_manager
         self.model_ensemble_manager = model_ensemble_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.analysis_parameters_manager = analysis_parameters_manager
@@ -103,7 +104,7 @@ class CrisisAnalyzer:
     # PHASE 3E STEP 4.2: CONSOLIDATED ANALYSIS METHODS FROM ANALYSISPARAMETERSMANAGER
     # ========================================================================
     
-    def get_analysis_crisis_thresholds(self, mode: str = 'consensus') -> Dict[str, float]:
+    def get_analysis_crisis_thresholds(self, mode: str = 'majority') -> Dict[str, float]:
         """
         Get crisis thresholds for analysis (consolidated from AnalysisParametersManager)
         Updated for Phase 3d Step 10.10: Now delegates to ThresholdMappingManager for mode-specific thresholds
@@ -115,31 +116,17 @@ class CrisisAnalyzer:
             Dictionary of crisis threshold settings for the specified mode
         """
         try:
-            if self.threshold_mapping_manager:
-                # Use ThresholdMappingManager for mode-specific thresholds (Phase 3d Step 10.10)
-                if hasattr(self.threshold_mapping_manager, 'get_thresholds_for_mode'):
-                    return self.threshold_mapping_manager.get_thresholds_for_mode(mode)
-                elif hasattr(self.threshold_mapping_manager, 'get_ensemble_thresholds'):
-                    return self.threshold_mapping_manager.get_ensemble_thresholds(mode)
-                elif hasattr(self.threshold_mapping_manager, f'get_{mode}_thresholds'):
-                    # Try mode-specific method (e.g., get_consensus_thresholds)
-                    method = getattr(self.threshold_mapping_manager, f'get_{mode}_thresholds')
-                    return method()
-                else:
-                    logger.warning(f"⚠️ ThresholdMappingManager has no method for mode '{mode}' - using fallback")
-            
-            # Fallback: Use SharedUtilities if available
-            if self.shared_utilities_manager:
+            if self.unified_config_manager:
                 # Try to get mode-specific thresholds from threshold_mapping config
-                threshold_config = self.shared_utilities_manager.get_config_section_safely(
-                    'threshold_mapping', f'{mode}_thresholds', None
+                threshold_config = self.unified_config_manager.get_config_section(
+                    'threshold_mapping', f'threshold_mapping_by_mode.{mode}.ensemble_thresholds', None
                 )
                 if threshold_config:
                     return {
-                        'low': threshold_config.get('ensemble_low', 0.12),
-                        'medium': threshold_config.get('ensemble_medium', 0.25),
-                        'high': threshold_config.get('ensemble_high', 0.45),
-                        'critical': threshold_config.get('ensemble_critical', 0.7)
+                        'low': threshold_config.get('low', 0.12),
+                        'medium': threshold_config.get('medium', 0.25),
+                        'high': threshold_config.get('high', 0.45),
+                        'critical': threshold_config.get('critical', 0.7)
                     }
             
             # Final fallback: Mode-specific defaults based on Phase 3d configuration
@@ -149,7 +136,7 @@ class CrisisAnalyzer:
                 'weighted': {'low': 0.13, 'medium': 0.32, 'high': 0.55, 'critical': 0.75}
             }
             
-            thresholds = mode_defaults.get(mode, mode_defaults['consensus'])
+            thresholds = mode_defaults.get(mode, mode_defaults[f'{mode}'])
             logger.warning(f"⚠️ Using fallback thresholds for mode '{mode}': {thresholds}")
             return thresholds
             
@@ -1814,7 +1801,7 @@ class CrisisAnalyzer:
 # ENHANCED FACTORY FUNCTION - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None,
+def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None,
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None,
@@ -1842,6 +1829,7 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None,
         Enhanced CrisisAnalyzer instance with Phase 3e capabilities
     """
     return CrisisAnalyzer(
+        unified_config,
         model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         analysis_parameters_manager=analysis_parameters_manager,
