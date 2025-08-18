@@ -468,7 +468,7 @@ class ModelEnsembleManager:
                 
                 # UPDATED: Create CrisisAnalyzer with ContextPatternManager
                 crisis_analyzer = CrisisAnalyzer(
-                    unified_config=config_manager,
+                    unified_config=self.config_manager,
                     model_ensemble_manager=self,  # ModelEnsembleManager acts as model_ensemble_manager
                     crisis_pattern_manager=crisis_pattern_manager,
                     analysis_parameters_manager=analysis_parameters_manager,
