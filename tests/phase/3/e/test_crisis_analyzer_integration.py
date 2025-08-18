@@ -1,7 +1,7 @@
 # ash-nlp/tests/phase/3/e/test_real_crisis_analyzer_integration.py
 """
 Real-World Integration Tests for Phase 3e Step 4: CrisisAnalyzer Consolidation
-FILE VERSION: v3.1-3e-4.3-2
+FILE VERSION: v3.1-3e-4.3-3
 LAST MODIFIED: 2025-08-18
 PHASE: 3e Step 4.3 - Real-World CrisisAnalyzer Integration Testing
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -30,7 +30,7 @@ from managers.context_pattern_manager import create_context_pattern_manager
 # Import the enhanced CrisisAnalyzer
 from analysis.crisis_analyzer import CrisisAnalyzer, create_crisis_analyzer
 from analysis import (
-    create_enhanced_crisis_analyzer_v3e,
+    create_enhanced_crisis_analyzer,
     validate_crisis_analyzer_dependencies,
     get_consolidation_summary
 )
