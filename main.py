@@ -154,10 +154,6 @@ def initialize_unified_managers():
         feature_config = create_feature_config_manager(unified_config)
         logger.info("✅ Feature config manager initialized...")
 
-        logger.info("🔧 Initializing learning system manager...")
-        learning_system = create_learning_system_manager(unified_config)
-        logger.info("✅ Learning system manager initialized...")
-
         logger.info("🔧 Initializing logging config manager...")
         logging_config = create_logging_config_manager(unified_config)
         logger.info("✅ Logging config manager initialized...")
@@ -193,6 +189,13 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing context pattern manager...")
         context_pattern_manager = create_context_pattern_manager(unified_config)
         logger.info("✅ Context pattern manager initialized...")
+
+        logger.info("🔧 Initializing learning system manager...")
+        learning_system = create_learning_system_manager(
+            unified_config,
+            shared_utils=shared_utilities
+        )
+        logger.info("✅ Learning system manager initialized...")
 
         logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
