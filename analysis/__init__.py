@@ -1,7 +1,7 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-1
+FILE VERSION: v3.1-3e-4.2-2
 LAST MODIFIED: 2025-08-18
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -144,7 +144,7 @@ ANALYSIS_CAPABILITIES = {
 }
 
 ANALYSIS_WORKFLOWS = {
-    "enhanced_crisis_detection_v3e": {  # Phase 3e Step 4.2 Enhanced
+    "enhanced_crisis_detection": {  # Phase 3e Step 4.2 Enhanced
         "description": "Full crisis detection with consolidated methods and learning",
         "steps": [
             "validate_input_with_shared_utilities",     # Phase 3e Step 4.2 NEW
@@ -431,7 +431,7 @@ def get_consolidation_summary():
 # ENHANCED FACTORY FUNCTIONS - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, learning_manager=None, 
+def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None,
@@ -450,7 +450,6 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
         # Existing parameters (maintained for backward compatibility)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
         crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
-        learning_manager: Optional learning manager for feedback (legacy support)
         analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
         threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds (Phase 3c)
         feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
@@ -472,7 +471,6 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
         # Existing dependencies (maintained)
         model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
-        learning_manager=learning_manager,
         analysis_parameters_manager=analysis_parameters_manager,
         threshold_mapping_manager=threshold_mapping_manager,
         feature_config_manager=feature_config_manager,
@@ -484,7 +482,7 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
         learning_system_manager=learning_system_manager
     )
 
-def create_enhanced_crisis_analyzer_v3e(model_ensemble_manager, shared_utilities_manager, 
+def create_enhanced_crisis_analyzer(model_ensemble_manager, shared_utilities_manager, 
                                         learning_system_manager, **kwargs):
     """
     Convenience factory function for Phase 3e enhanced CrisisAnalyzer
@@ -580,7 +578,7 @@ __all__ = [
     
     # Factory functions
     "create_crisis_analyzer",                    # Enhanced for Phase 3e
-    "create_enhanced_crisis_analyzer_v3e",       # Phase 3e Step 4.2 NEW
+    "create_enhanced_crisis_analyzer",       # Phase 3e Step 4.2 NEW
     "validate_crisis_analyzer_dependencies",     # Phase 3e Step 4.2 NEW
 ]
 
