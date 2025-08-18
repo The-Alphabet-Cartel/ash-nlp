@@ -1,6 +1,6 @@
 """
 SharedUtilitiesManager for Ash-NLP Service
-FILE VERSION: v3.1-3e-2.2-1
+FILE VERSION: v3.1-3e-4-1
 LAST MODIFIED: 2025-08-17
 PHASE: 3e Step 2.2 - SharedUtilitiesManager Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -751,6 +751,263 @@ class SharedUtilitiesManager:
         except Exception as e:
             return [f"Error validating section '{section_name}': {e}"]
 
+
+    def safe_aggregate_results(self, results: List[Dict[str, Any]], 
+                              aggregation_method: str = "weighted_average") -> Dict[str, Any]:
+        """
+        Safely aggregate ensemble results with error handling
+        
+        Args:
+            results: List of individual model results to aggregate
+            aggregation_method: Method for aggregation ("weighted_average", "majority", "max")
+            
+        Returns:
+            Aggregated results with metadata
+        """
+        try:
+            if not results:
+                return {
+                    'aggregated': False,
+                    'error': 'No results to aggregate',
+                    'confidence': 0.0,
+                    'method': aggregation_method
+                }
+            
+            # Filter out invalid results
+            valid_results = [r for r in results if isinstance(r, dict) and 'confidence' in r]
+            
+            if not valid_results:
+                return {
+                    'aggregated': False,
+                    'error': 'No valid results found',
+                    'confidence': 0.0,
+                    'method': aggregation_method
+                }
+            
+            aggregated = {
+                'aggregated': True,
+                'method': aggregation_method,
+                'input_count': len(results),
+                'valid_count': len(valid_results),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            if aggregation_method == "weighted_average":
+                # Weighted average based on confidence or weights
+                total_weight = 0.0
+                weighted_confidence = 0.0
+                
+                for result in valid_results:
+                    weight = result.get('weight', 1.0)
+                    confidence = self.safe_float_convert(result.get('confidence', 0.0), 0.0, 0.0, 1.0)
+                    
+                    weighted_confidence += confidence * weight
+                    total_weight += weight
+                
+                if total_weight > 0:
+                    aggregated['confidence'] = weighted_confidence / total_weight
+                else:
+                    aggregated['confidence'] = sum(r.get('confidence', 0.0) for r in valid_results) / len(valid_results)
+            
+            elif aggregation_method == "majority":
+                # Majority vote based on binary decisions
+                positive_votes = sum(1 for r in valid_results if r.get('confidence', 0.0) > 0.5)
+                total_votes = len(valid_results)
+                aggregated['confidence'] = positive_votes / total_votes if total_votes > 0 else 0.0
+                aggregated['positive_votes'] = positive_votes
+                aggregated['total_votes'] = total_votes
+            
+            elif aggregation_method == "max":
+                # Maximum confidence
+                aggregated['confidence'] = max(r.get('confidence', 0.0) for r in valid_results)
+                aggregated['max_source'] = next((i for i, r in enumerate(valid_results) 
+                                               if r.get('confidence', 0.0) == aggregated['confidence']), 0)
+            
+            else:
+                # Default to simple average
+                aggregated['confidence'] = sum(r.get('confidence', 0.0) for r in valid_results) / len(valid_results)
+                aggregated['method'] = 'simple_average'
+            
+            # Add additional metadata
+            aggregated['individual_confidences'] = [r.get('confidence', 0.0) for r in valid_results]
+            aggregated['confidence_std'] = self._calculate_std_deviation(aggregated['individual_confidences'])
+            aggregated['confidence_range'] = {
+                'min': min(aggregated['individual_confidences']),
+                'max': max(aggregated['individual_confidences'])
+            }
+            
+            return aggregated
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error aggregating results: {e}")
+            return {
+                'aggregated': False,
+                'error': str(e),
+                'confidence': 0.0,
+                'method': aggregation_method,
+                'timestamp': datetime.now().isoformat()
+            }
+
+    def validate_nested_config(self, config: Dict[str, Any], schema: Dict[str, Any], 
+                              path: str = "") -> Dict[str, Any]:
+        """
+        Validate nested configuration against a schema
+        
+        Args:
+            config: Configuration dictionary to validate
+            schema: Schema definition for validation
+            path: Current path in nested structure (for error reporting)
+            
+        Returns:
+            Validation results with errors and warnings
+        """
+        try:
+            validation_result = {
+                'valid': True,
+                'errors': [],
+                'warnings': [],
+                'validated_keys': 0,
+                'missing_keys': [],
+                'extra_keys': [],
+                'type_mismatches': []
+            }
+            
+            if not isinstance(config, dict):
+                validation_result['valid'] = False
+                validation_result['errors'].append(f"Config at path '{path}' is not a dictionary")
+                return validation_result
+            
+            if not isinstance(schema, dict):
+                validation_result['errors'].append(f"Schema at path '{path}' is not a dictionary")
+                return validation_result
+            
+            # Check required keys
+            required_keys = schema.get('required', [])
+            for key in required_keys:
+                if key not in config:
+                    validation_result['valid'] = False
+                    validation_result['missing_keys'].append(f"{path}.{key}" if path else key)
+                    validation_result['errors'].append(f"Required key '{key}' missing at path '{path}'")
+            
+            # Check optional keys and types
+            properties = schema.get('properties', {})
+            
+            for key, value in config.items():
+                current_path = f"{path}.{key}" if path else key
+                validation_result['validated_keys'] += 1
+                
+                if key in properties:
+                    # Validate against schema
+                    key_schema = properties[key]
+                    expected_type = key_schema.get('type')
+                    
+                    # Type validation
+                    if expected_type:
+                        if expected_type == 'string' and not isinstance(value, str):
+                            validation_result['type_mismatches'].append({
+                                'path': current_path,
+                                'expected': 'string',
+                                'actual': type(value).__name__,
+                                'value': value
+                            })
+                        elif expected_type == 'number' and not isinstance(value, (int, float)):
+                            validation_result['type_mismatches'].append({
+                                'path': current_path,
+                                'expected': 'number',
+                                'actual': type(value).__name__,
+                                'value': value
+                            })
+                        elif expected_type == 'boolean' and not isinstance(value, bool):
+                            validation_result['type_mismatches'].append({
+                                'path': current_path,
+                                'expected': 'boolean',
+                                'actual': type(value).__name__,
+                                'value': value
+                            })
+                        elif expected_type == 'object' and isinstance(value, dict):
+                            # Recursively validate nested objects
+                            nested_schema = key_schema.get('properties', {})
+                            if nested_schema:
+                                nested_result = self.validate_nested_config(value, key_schema, current_path)
+                                validation_result['errors'].extend(nested_result['errors'])
+                                validation_result['warnings'].extend(nested_result['warnings'])
+                                validation_result['missing_keys'].extend(nested_result['missing_keys'])
+                                validation_result['extra_keys'].extend(nested_result['extra_keys'])
+                                validation_result['type_mismatches'].extend(nested_result['type_mismatches'])
+                                if not nested_result['valid']:
+                                    validation_result['valid'] = False
+                    
+                    # Range validation for numbers
+                    if isinstance(value, (int, float)):
+                        minimum = key_schema.get('minimum')
+                        maximum = key_schema.get('maximum')
+                        
+                        if minimum is not None and value < minimum:
+                            validation_result['warnings'].append(
+                                f"Value {value} at '{current_path}' below minimum {minimum}"
+                            )
+                        
+                        if maximum is not None and value > maximum:
+                            validation_result['warnings'].append(
+                                f"Value {value} at '{current_path}' above maximum {maximum}"
+                            )
+                    
+                    # String length validation
+                    if isinstance(value, str):
+                        min_length = key_schema.get('minLength')
+                        max_length = key_schema.get('maxLength')
+                        
+                        if min_length is not None and len(value) < min_length:
+                            validation_result['warnings'].append(
+                                f"String at '{current_path}' shorter than minimum length {min_length}"
+                            )
+                        
+                        if max_length is not None and len(value) > max_length:
+                            validation_result['warnings'].append(
+                                f"String at '{current_path}' longer than maximum length {max_length}"
+                            )
+                
+                else:
+                    # Extra key not in schema
+                    validation_result['extra_keys'].append(current_path)
+                    validation_result['warnings'].append(f"Extra key '{key}' found at path '{path}'")
+            
+            # Update validity based on type mismatches
+            if validation_result['type_mismatches']:
+                validation_result['valid'] = False
+                for mismatch in validation_result['type_mismatches']:
+                    validation_result['errors'].append(
+                        f"Type mismatch at '{mismatch['path']}': expected {mismatch['expected']}, "
+                        f"got {mismatch['actual']}"
+                    )
+            
+            return validation_result
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error validating nested config: {e}")
+            return {
+                'valid': False,
+                'errors': [f"Validation failed: {str(e)}"],
+                'warnings': [],
+                'validated_keys': 0,
+                'missing_keys': [],
+                'extra_keys': [],
+                'type_mismatches': []
+            }
+
+    def _calculate_std_deviation(self, values: List[float]) -> float:
+        """Calculate standard deviation of a list of values"""
+        try:
+            if not values or len(values) < 2:
+                return 0.0
+            
+            mean = sum(values) / len(values)
+            variance = sum((x - mean) ** 2 for x in values) / len(values)
+            return variance ** 0.5
+            
+        except Exception as e:
+            self.logger.error(f"❌ Error calculating standard deviation: {e}")
+            return 0.0
 
 # ============================================================================
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
