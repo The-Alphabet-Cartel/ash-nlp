@@ -1,0 +1,127 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3d-10.12-3",
+    "last_modified": "2025-08-13",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.1",
+    "description": "Machine learning system configuration for adaptive NLP crisis detection (Future Implementation)",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-12",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "consolidation_source": "learning_parameters.json + learning_settings.json",
+    "status": "future_ready",
+    "managers": ["AnalysisParametersManager", "LearningSystem"],
+    "environment_overrides": {
+      "description": "All learning settings support environment variable overrides",
+      "pattern": "${NLP_LEARNING_*CATEGORY*_*SETTING*}",
+      "examples": [
+        "GLOBAL_LEARNING_SYSTEM_ENABLED",
+        "NLP_ANALYSIS_LEARNING_RATE",
+        "NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT"
+      ]
+    }
+  },
+
+  "learning_configuration": {
+    "description": "Phase 3d Step 4 - Learning system parameters for adaptive threshold adjustment",
+    "enabled": "${GLOBAL_LEARNING_SYSTEM_ENABLED}",
+    "learning_rate": "${NLP_ANALYSIS_LEARNING_RATE}",
+    "min_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
+    "max_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MAX_CONFIDENCE_ADJUSTMENT}",
+    "max_adjustments_per_day": "${NLP_ANALYSIS_LEARNING_MAX_ADJUSTMENTS_PER_DAY}",
+    "persistence_file": "${NLP_ANALYSIS_LEARNING_PERSISTENCE_FILE}",
+    "feedback_weight": "${NLP_ANALYSIS_LEARNING_FEEDBACK_WEIGHT}",
+    "min_samples": "${NLP_ANALYSIS_LEARNING_MIN_SAMPLES}",
+    "adjustment_limit": "${NLP_ANALYSIS_LEARNING_ADJUSTMENT_LIMIT}",
+    "max_drift": "${NLP_ANALYSIS_LEARNING_MAX_DRIFT}",
+    "sensitivity_bounds": {
+      "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_GLOBAL_SENSITIVITY}",
+      "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_GLOBAL_SENSITIVITY}"
+    },
+    "adjustment_factors": {
+      "false_positive_factor": "${NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR}",
+      "false_negative_factor": "${NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR}"
+    },
+    "severity_multipliers": {
+      "high_severity": "${NLP_ANALYSIS_LEARNING_HIGH_SEVERITY}",
+      "medium_severity": "${NLP_ANALYSIS_LEARNING_MEDIUM_SEVERITY}",
+      "low_severity": "${NLP_ANALYSIS_LEARNING_LOW_SEVERITY}"
+    },
+    "defaults": {
+      "enabled": true,
+      "learning_rate": 0.01,
+      "min_confidence_adjustment": 0.05,
+      "max_confidence_adjustment": 0.30,
+      "max_adjustments_per_day": 50,
+      "persistence_file": "./learning_data/adjustments.json",
+      "feedback_weight": 0.1,
+      "min_samples": 5,
+      "adjustment_limit": 0.05,
+      "max_drift": 0.1,
+      "sensitivity_bounds": {
+        "min_global_sensitivity": 0.5,
+        "max_global_sensitivity": 1.5
+      },
+      "adjustment_factors": {
+        "false_positive_factor": -0.1,
+        "false_negative_factor": 0.1
+      },
+      "severity_multipliers": {
+        "high_severity": 3.0,
+        "medium_severity": 2.0,
+        "low_severity": 1.0
+      }
+    },
+    "validation": {
+      "enabled": {
+        "type": "boolean"
+      },
+      "learning_rate": {
+        "range": [0.001, 1.0],
+        "type": "float"
+      },
+      "min_confidence_adjustment": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "max_confidence_adjustment": {
+        "range": [0.05, 1.0],
+        "type": "float"
+      },
+      "max_adjustments_per_day": {
+        "range": [1, 1000],
+        "type": "integer"
+      },
+      "feedback_weight": {
+        "range": [0.0, 1.0],
+        "type": "float"
+      },
+      "min_samples": {
+        "range": [1, 100],
+        "type": "integer"
+      },
+      "adjustment_limit": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "max_drift": {
+        "range": [0.01, 1.0],
+        "type": "float"
+      },
+      "sensitivity_bounds": {
+        "range": [0.1, 5.0],
+        "type": "float",
+        "ordering": "max_global_sensitivity > min_global_sensitivity"
+      },
+      "adjustment_factors": {
+        "range": [-1.0, 1.0],
+        "type": "float"
+      },
+      "severity_multipliers": {
+        "range": [0.1, 10.0],
+        "type": "float",
+        "ordering": "high_severity >= medium_severity >= low_severity"
+      }
+    }
+  }
+}
