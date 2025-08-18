@@ -1,7 +1,7 @@
 # ash-nlp/managers/learning_system_manager.py
 """
 Learning System Manager for Ash-NLP Service
-FILE VERSION: v3.1-3e-4-3
+FILE VERSION: v3.1-3e-4-4
 LAST MODIFIED: 2025-08-17
 PHASE: 3e Step 4 - LearningSystemManager Enhancement (Missing Methods Added)
 CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
@@ -417,57 +417,146 @@ class LearningSystemManager:
             return enhanced_results
     
     def adjust_thresholds_for_context(self, thresholds: Dict[str, float], 
-                                    context: Dict[str, Any]) -> Dict[str, float]:
+                                    mode: str, confidence: float) -> Dict[str, float]:
         """
-        Adjust thresholds based on specific context (user, time, message type)
+        Adjust thresholds based on ensemble mode and confidence score
+        
+        Works with existing JSON configuration structure without requiring changes.
         
         Args:
             thresholds: Base thresholds to adjust
-            context: Context information for adjustment
+            mode: Ensemble mode from caller ('consensus', 'majority', 'weighted')
+            confidence: Current confidence score
             
         Returns:
             Context-adjusted thresholds
         """
         try:
-            if not context or not self.get_learning_parameters().get('enabled', False):
+            if not self.get_learning_parameters().get('enabled', False):
                 return thresholds
             
+            # Validate mode (use simple validation without requiring config changes)
+            valid_modes = ['consensus', 'majority', 'weighted']
+            effective_mode = mode if mode in valid_modes else 'weighted'
+            
+            if effective_mode != mode:
+                self.logger.warning(f"⚠️ Invalid mode '{mode}', using fallback: {effective_mode}")
+            
+            # Create context from parameters for internal processing
+            context = {
+                'ensemble_mode': effective_mode,
+                'original_mode': mode,
+                'confidence_score': confidence,
+                'adjustment_type': 'ensemble_based',
+                'timestamp': datetime.now().isoformat()
+            }
+            
             adjusted_thresholds = thresholds.copy()
+            learning_params = self.get_learning_parameters()
             
-            # Context-based adjustments
+            # Mode-specific threshold adjustments (using hardcoded sensible defaults)
+            if effective_mode == 'consensus':
+                # Consensus mode - slightly lower thresholds for better agreement detection
+                adjustment_factor = 0.95
+                for key, value in adjusted_thresholds.items():
+                    adjusted_thresholds[key] = value * adjustment_factor
+                    
+            elif effective_mode == 'majority':
+                # Majority mode - confidence-based adjustment
+                if confidence > 0.8:
+                    adjustment_factor = 1.05  # High confidence - can afford higher thresholds
+                elif confidence < 0.5:
+                    adjustment_factor = 0.92  # Low confidence - lower thresholds
+                else:
+                    adjustment_factor = 0.98  # Medium confidence - minimal adjustment
+                
+                for key, value in adjusted_thresholds.items():
+                    adjusted_thresholds[key] = value * adjustment_factor
+                    
+            elif effective_mode == 'weighted':
+                # Weighted mode - most dynamic adjustment based on confidence
+                if confidence > 0.9:
+                    adjustment_factor = 1.08   # Very high confidence
+                elif confidence > 0.7:
+                    adjustment_factor = 1.02   # Good confidence
+                elif confidence < 0.4:
+                    adjustment_factor = 0.88   # Low confidence
+                else:
+                    adjustment_factor = 0.95   # Medium confidence
+                
+                for key, value in adjusted_thresholds.items():
+                    adjusted_thresholds[key] = value * adjustment_factor
+            
+            # Apply learning-based user/historical adjustments if available
             user_id = context.get('user_id')
-            message_type = context.get('message_type', 'default')
-            time_of_day = context.get('time_of_day')
-            
-            # User-specific adjustments based on history
             if user_id:
                 user_adjustments = self._get_user_threshold_adjustments(user_id)
                 for threshold_name, adjustment in user_adjustments.items():
                     if threshold_name in adjusted_thresholds:
                         adjusted_thresholds[threshold_name] += adjustment
             
-            # Message type adjustments
-            if message_type == 'urgent':
-                # Lower thresholds for urgent messages (more sensitive)
-                for key in adjusted_thresholds:
-                    adjusted_thresholds[key] *= 0.9
-            elif message_type == 'casual':
-                # Higher thresholds for casual messages (less sensitive)
-                for key in adjusted_thresholds:
-                    adjusted_thresholds[key] *= 1.1
-            
             # Apply bounds to all adjusted thresholds
-            learning_params = self.get_learning_parameters()
             for key, value in adjusted_thresholds.items():
                 adjusted_thresholds[key] = self._apply_threshold_bounds(value, learning_params)
             
-            self.logger.info(f"✅ Thresholds adjusted for context: {list(context.keys())}")
+            self.logger.info(f"✅ Thresholds adjusted for mode '{effective_mode}' with confidence {confidence:.3f}")
+            return adjusted_thresholds
+            
+            adjusted_thresholds = thresholds.copy()
+            learning_params = self.get_learning_parameters()
+            
+            # Mode-specific threshold adjustments (using hardcoded sensible defaults)
+            if effective_mode == 'consensus':
+                # Consensus mode - slightly lower thresholds for better agreement detection
+                adjustment_factor = 0.95
+                for key, value in adjusted_thresholds.items():
+                    adjusted_thresholds[key] = value * adjustment_factor
+                    
+            elif effective_mode == 'majority':
+                # Majority mode - confidence-based adjustment
+                if confidence > 0.8:
+                    adjustment_factor = 1.05  # High confidence - can afford higher thresholds
+                elif confidence < 0.5:
+                    adjustment_factor = 0.92  # Low confidence - lower thresholds
+                else:
+                    adjustment_factor = 0.98  # Medium confidence - minimal adjustment
+                
+                for key, value in adjusted_thresholds.items():
+                    adjusted_thresholds[key] = value * adjustment_factor
+                    
+            elif effective_mode == 'weighted':
+                # Weighted mode - most dynamic adjustment based on confidence
+                if confidence > 0.9:
+                    adjustment_factor = 1.08   # Very high confidence
+                elif confidence > 0.7:
+                    adjustment_factor = 1.02   # Good confidence
+                elif confidence < 0.4:
+                    adjustment_factor = 0.88   # Low confidence
+                else:
+                    adjustment_factor = 0.95   # Medium confidence
+                
+                for key, value in adjusted_thresholds.items():
+                    adjusted_thresholds[key] = value * adjustment_factor
+            
+            # Apply learning-based user/historical adjustments if available
+            user_id = context.get('user_id')
+            if user_id:
+                user_adjustments = self._get_user_threshold_adjustments(user_id)
+                for threshold_name, adjustment in user_adjustments.items():
+                    if threshold_name in adjusted_thresholds:
+                        adjusted_thresholds[threshold_name] += adjustment
+            
+            # Apply bounds to all adjusted thresholds
+            for key, value in adjusted_thresholds.items():
+                adjusted_thresholds[key] = self._apply_threshold_bounds(value, learning_params)
+            
+            self.logger.info(f"✅ Thresholds adjusted for mode '{effective_mode}' with confidence {confidence:.3f}")
             return adjusted_thresholds
             
         except Exception as e:
             self.logger.error(f"❌ Error adjusting thresholds for context: {e}")
             return thresholds
-    
+            
     def get_context_insights(self, context: Dict[str, Any] = None) -> Dict[str, Any]:
         """
         Get learning-based insights for the given context
