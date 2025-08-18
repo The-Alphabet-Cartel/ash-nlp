@@ -15,7 +15,6 @@ from typing import Dict, Any, Optional
 
 # Import core analyzer (updated for Phase 3e)
 from .crisis_analyzer import CrisisAnalyzer
-from .phrase_extractor import PhraseExtractor
 
 logger = logging.getLogger(__name__)
 
@@ -249,7 +248,6 @@ def get_available_analyzers():
     """Get list of available analyzer classes with Phase 3e status"""
     return {
         "CrisisAnalyzer": "Phase 3e enhanced crisis detection with consolidated analysis methods",
-        "PhraseExtractor": "Phrase extraction and analysis",
         "consolidation_status": "Phase 3e Step 4.2 - Analysis method consolidation complete"
     }
 
@@ -319,7 +317,6 @@ def get_migration_status():
 __all__ = [
     # Core analyzer classes
     "CrisisAnalyzer",
-    "PhraseExtractor", 
     
     # Metadata
     "ANALYSIS_CAPABILITIES",
