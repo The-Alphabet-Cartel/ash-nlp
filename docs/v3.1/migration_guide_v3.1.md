@@ -182,6 +182,7 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_10.10.md
 |   |   │   │   │   └── tracker.md
 |   |   │   │   └── e/
+|   |   │   │       ├── learning_method_extraction_plan.md
 |   |   │   │       ├── learning_methods_inventory.md
 |   |   │   │       ├── method_overlap_matrix.md
 |   |   │   │       ├── shared_utilities_architecture_design.md
@@ -229,7 +230,7 @@ ash/ash-nlp/
 │   └── phase/
 |       ├── 3/
 |       │   └── e/
-|       |       ├── test_learning_system_manager_integration.py
+|       |       ├── test_learning_system_manager.py
 |       |       └── test_shared_utilities_manager.py
 |       └── 4/
 |           ├── a/
