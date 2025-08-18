@@ -197,7 +197,6 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
             unified_config,
-            shared_utilities_manager=shared_utilities,
             analysis_parameters_manager=analysis_parameters,
             crisis_pattern_manager=crisis_pattern,
             feature_config_manager=feature_config,
