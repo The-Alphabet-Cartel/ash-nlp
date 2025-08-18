@@ -1,7 +1,7 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-1
+FILE VERSION: v3.1-3e-4.2-3
 LAST MODIFIED: 2025-08-18
 PHASE: 3e, Step 4.2 - Enhanced CrisisAnalyzer with SharedUtilities and LearningSystem integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -38,7 +38,7 @@ class CrisisAnalyzer:
     - Learning system integration for adaptive analysis
     """
     
-    def __init__(self, model_ensemble_manager, crisis_pattern_manager=None, learning_manager=None,
+    def __init__(self, model_ensemble_manager, crisis_pattern_manager=None,
                  analysis_parameters_manager=None, threshold_mapping_manager=None,
                  feature_config_manager=None, performance_config_manager=None,
                  context_pattern_manager=None,
@@ -52,7 +52,6 @@ class CrisisAnalyzer:
             # Existing dependencies (maintained)
             model_ensemble_manager: Model ensemble manager for ensemble analysis
             crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
-            learning_manager: Optional learning manager for feedback (legacy)
             analysis_parameters_manager: AnalysisParametersManager for configurable parameters
             threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds
             feature_config_manager: FeatureConfigManager for feature flags
@@ -66,7 +65,6 @@ class CrisisAnalyzer:
         # Existing manager dependencies (maintained)
         self.model_ensemble_manager = model_ensemble_manager
         self.crisis_pattern_manager = crisis_pattern_manager
-        self.learning_manager = learning_manager  # legacy support
         self.analysis_parameters_manager = analysis_parameters_manager
         self.threshold_mapping_manager = threshold_mapping_manager
         self.feature_config_manager = feature_config_manager
@@ -547,7 +545,7 @@ class CrisisAnalyzer:
                 'processing_time': time.time() - start_time,
                 'ensemble_weights_used': ensemble_weights,
                 'learning_applied': bool(self.learning_system_manager),
-                'consolidation_method': 'enhanced_ensemble_v3e4.2'
+                'consolidation_method': 'enhanced_ensemble'
             }
             
             return weighted_result
@@ -637,7 +635,7 @@ class CrisisAnalyzer:
             updated_results = results.copy()
             updated_results['weighted_crisis_score'] = weighted_score
             updated_results['weights_applied'] = weights
-            updated_results['weighting_method'] = 'ensemble_weighted_v3e4.2'
+            updated_results['weighting_method'] = 'ensemble_weighted'
             
             return updated_results
             
@@ -1404,7 +1402,7 @@ class CrisisAnalyzer:
             'crisis_level': crisis_level,
             'confidence_score': final_score,
             'detected_categories': self._extract_categories(pattern_analysis),
-            'method': 'enhanced_crisis_analyzer_v3e_4.2',
+            'method': 'enhanced_crisis_analyzer',
             'analysis_results': {
                 'crisis_score': final_score,
                 'crisis_level': crisis_level,
@@ -1524,7 +1522,7 @@ class CrisisAnalyzer:
             'crisis_level': crisis_level,
             'confidence_score': confidence,
             'detected_categories': self._extract_categories({'enhanced_patterns': enhanced_patterns}),
-            'method': 'basic_pattern_only_v3e4.2' if pattern_analysis_enabled else 'basic_disabled_v3e4.2',
+            'method': 'basic_pattern_only' if pattern_analysis_enabled else 'basic_disabled',
             'analysis_results': {
                 'crisis_score': confidence,
                 'crisis_level': crisis_level,
@@ -1757,7 +1755,7 @@ class CrisisAnalyzer:
                 'detected_categories': detected_categories,
                 'adjustment_reasons': adjustment_reasons,
                 'sentiment_scores': sentiment_scores,
-                'analysis_method': 'enhanced_depression_v3e4.2',
+                'analysis_method': 'enhanced_depression',
                 'success': True
             }
             
@@ -1771,7 +1769,7 @@ class CrisisAnalyzer:
                 'detected_categories': ['analysis_error'],
                 'adjustment_reasons': [f"error: {str(e)}"],
                 'sentiment_scores': {},
-                'analysis_method': 'enhanced_depression_v3e4.2',
+                'analysis_method': 'enhanced_depression',
                 'success': False,
                 'error': str(e)
             }
@@ -1816,7 +1814,7 @@ class CrisisAnalyzer:
 # ENHANCED FACTORY FUNCTION - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, learning_manager=None,
+def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None,
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None,
@@ -1830,7 +1828,6 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
         # Existing parameters (maintained)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
         crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
-        learning_manager: Optional learning manager for feedback (legacy)
         analysis_parameters_manager: AnalysisParametersManager for configurable parameters
         threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds
         feature_config_manager: FeatureConfigManager for feature flags
@@ -1847,7 +1844,6 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
     return CrisisAnalyzer(
         model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
-        learning_manager=learning_manager,
         analysis_parameters_manager=analysis_parameters_manager,
         threshold_mapping_manager=threshold_mapping_manager,
         feature_config_manager=feature_config_manager,
