@@ -1,7 +1,7 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-2
+FILE VERSION: v3.1-3e-4.2-5
 LAST MODIFIED: 2025-08-18
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -431,7 +431,7 @@ def get_consolidation_summary():
 # ENHANCED FACTORY FUNCTIONS - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
+def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None, 
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None,
@@ -468,6 +468,7 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None,
         - Backward compatibility with existing functionality
     """
     return CrisisAnalyzer(
+        unified_config,
         # Existing dependencies (maintained)
         model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
@@ -482,7 +483,7 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None,
         learning_system_manager=learning_system_manager
     )
 
-def create_enhanced_crisis_analyzer(model_ensemble_manager, shared_utilities_manager, 
+def create_enhanced_crisis_analyzer(unified_config, model_ensemble_manager, shared_utilities_manager, 
                                         learning_system_manager, **kwargs):
     """
     Convenience factory function for Phase 3e enhanced CrisisAnalyzer
@@ -500,13 +501,14 @@ def create_enhanced_crisis_analyzer(model_ensemble_manager, shared_utilities_man
         Enhanced CrisisAnalyzer with Phase 3e capabilities
     """
     return create_crisis_analyzer(
+        unified_config,
         model_ensemble_manager=model_ensemble_manager,
         shared_utilities_manager=shared_utilities_manager,
         learning_system_manager=learning_system_manager,
         **kwargs
     )
 
-def validate_crisis_analyzer_dependencies(model_ensemble_manager=None, shared_utilities_manager=None,
+def validate_crisis_analyzer_dependencies(unified_config, model_ensemble_manager=None, shared_utilities_manager=None,
                                          learning_system_manager=None, **kwargs):
     """
     Validate dependencies for CrisisAnalyzer creation
@@ -529,6 +531,10 @@ def validate_crisis_analyzer_dependencies(model_ensemble_manager=None, shared_ut
     }
     
     # Required dependencies
+    if not unified_config:
+        validation_result["valid"] = False
+        validation_result["errors"].append("unified_config_manager is required")
+
     if not model_ensemble_manager:
         validation_result["valid"] = False
         validation_result["errors"].append("model_ensemble_manager is required")
