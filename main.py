@@ -1,7 +1,7 @@
 # ash-nlp/main.py
 """
 Ash-NLP Main Application Entry Point for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-1
+FILE VERSION: v3.1-3e-4.2-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -44,9 +44,8 @@ from managers.context_pattern_manager import create_context_pattern_manager
 from analysis import create_crisis_analyzer
 
 # API Endpoint Registration - FIXED IMPORTS
-from api.ensemble_endpoints import add_ensemble_endpoints_v3c  # FIXED: Use correct function name
-from api.learning_endpoints import register_learning_endpoints
-from api.admin_endpoints import add_admin_endpoints  # FIXED: Use correct function name
+from api.admin_endpoints import add_admin_endpoints
+from api.ensemble_endpoints import add_ensemble_endpoints
 
 # ============================================================================
 # PHASE 3D STEP 9: UNIFIED CONFIGURATION LOGGING SETUP
@@ -206,7 +205,6 @@ def initialize_unified_managers():
         crisis_analyzer = create_crisis_analyzer(
             model_ensemble_manager=model_ensemble_manager,
             crisis_pattern_manager=crisis_pattern,
-            learning_manager=None,
             analysis_parameters_manager=analysis_parameters,
             threshold_mapping_manager=threshold_mapping,
             feature_config_manager=feature_config,
@@ -305,18 +303,11 @@ def create_fastapi_app():
         logger.info("🔗 Registering API endpoints...")
         
         # Ensemble endpoints
-        add_ensemble_endpoints_v3c(
+        add_ensemble_endpoints(
             app, 
             managers['model_ensemble_manager'], 
             managers['pydantic_manager'], 
             crisis_pattern_manager=managers['crisis_pattern'],
-            threshold_mapping_manager=managers['threshold_mapping']
-        )
-        
-        # Learning endpoints - STEP 9 FIX: Correct parameters
-        register_learning_endpoints(
-            app, 
-            managers['unified_config'], 
             threshold_mapping_manager=managers['threshold_mapping']
         )
         
