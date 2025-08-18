@@ -118,8 +118,12 @@ class CrisisAnalyzer:
         try:
             if self.unified_config_manager:
                 # Try to get mode-specific thresholds from threshold_mapping config
+                config_section = f'threshold_mapping_by_mode.{mode}.ensemble_thresholds'
+                logger.debug(f'Here is the config_section for threshold_mapping_by_mode: {config_section}')
                 threshold_config = self.unified_config_manager.get_config_section(
-                    'threshold_mapping', f'threshold_mapping_by_mode.{mode}.ensemble_thresholds', None
+                    'threshold_mapping',
+                    config_section,
+                    None
                 )
                 if threshold_config:
                     return {
