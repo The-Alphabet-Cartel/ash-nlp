@@ -1,9 +1,9 @@
 # ash-nlp/managers/learning_system_manager.py
 """
 Learning System Manager for Ash-NLP Service
-FILE VERSION: v3.1-3e-4-4
+FILE VERSION: v3.1-3e-3.2-2
 LAST MODIFIED: 2025-08-17
-PHASE: 3e Step 4 - LearningSystemManager Enhancement (Missing Methods Added)
+PHASE: 3e Step 3.2 - LearningSystemManager Implementation (Corrected)
 CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
 MIGRATION STATUS: Learning methods extracted from both AnalysisParametersManager and ThresholdMappingManager
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -74,21 +74,17 @@ class LearningSystemManager:
         # Load learning system configuration
         self._load_learning_configuration()
         
-        self.logger.info("✅ LearningSystemManager v3.1-3e-3.2-3 initialized with Clean v3.1 compliance")
+        self.logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 initialized with Clean v3.1 compliance")
     
     # ========================================================================
     # CORE LEARNING CONFIGURATION - Extracted from AnalysisParametersManager
     # ========================================================================
     
     def _load_learning_configuration(self) -> None:
-        """Load learning system configuration from UnifiedConfigManager (FIXED)"""
+        """Load learning system configuration from UnifiedConfigManager"""
         try:
-            # ✅ FIXED: Use correct UnifiedConfigManager method
-            # OLD (BROKEN): self.config_manager.get_analysis_config().get('learning_system', {})
-            # NEW (CORRECT): get_config_section() method
-            self._learning_config = self.config_manager.get_config_section(
-                'analysis_parameters', 'learning_system', {}
-            )
+            # Access learning configuration through UnifiedConfigManager
+            self._learning_config = self.config_manager.get_analysis_config().get('learning_system', {})
             
             if not self._learning_config:
                 self.logger.warning("⚠️ No learning_system configuration found, using defaults")
@@ -130,74 +126,210 @@ class LearningSystemManager:
     
     def get_learning_parameters(self) -> Dict[str, Any]:
         """
-        Get complete learning system parameters (FIXED - correct UnifiedConfigManager usage)
+        Get complete learning system parameters (Extracted from AnalysisParametersManager)
         
         Accesses learning configuration via UnifiedConfigManager with environment
         variable overrides following Rule #7 compliance (existing variables only).
         
         Returns:
-            Dict containing complete learning system configuration
+            Dictionary with complete learning system configuration
         """
         try:
-            # ✅ FIXED: Use correct UnifiedConfigManager method
-            learning_params = self.config_manager.get_config_section(
-                'analysis_parameters', 'learning_system', {}
-            )
+            learning_config = self._learning_config or {}
+            defaults = learning_config.get('defaults', {})
             
-            if not learning_params:
-                self.logger.warning("⚠️ No learning parameters found, using defaults")
-                return self._get_default_learning_config()
+            # Build core parameters using existing environment variables
+            core_params = {
+                'enabled': self.shared_utils.safe_bool_convert(
+                    learning_config.get('enabled', defaults.get('enabled', True)),
+                    default=True,
+                    param_name='learning_enabled'
+                ),
+                'learning_rate': self.shared_utils.safe_float_convert(
+                    learning_config.get('learning_rate', defaults.get('learning_rate', 0.01)),
+                    default=0.01,
+                    min_val=0.0001,
+                    max_val=1.0,
+                    param_name='learning_rate'
+                ),
+                'min_confidence_adjustment': self.shared_utils.safe_float_convert(
+                    learning_config.get('min_confidence_adjustment', defaults.get('min_confidence_adjustment', 0.05)),
+                    default=0.05,
+                    min_val=0.01,
+                    max_val=1.0,
+                    param_name='min_confidence_adjustment'
+                ),
+                'max_confidence_adjustment': self.shared_utils.safe_float_convert(
+                    learning_config.get('max_confidence_adjustment', defaults.get('max_confidence_adjustment', 0.30)),
+                    default=0.30,
+                    min_val=0.01,
+                    max_val=1.0,
+                    param_name='max_confidence_adjustment'
+                ),
+                'max_adjustments_per_day': self.shared_utils.safe_int_convert(
+                    learning_config.get('max_adjustments_per_day', defaults.get('max_adjustments_per_day', 50)),
+                    default=50,
+                    min_val=1,
+                    max_val=1000,
+                    param_name='max_adjustments_per_day'
+                ),
+                'persistence_file': learning_config.get('persistence_file', 
+                                                       defaults.get('persistence_file', './learning_data/adjustments.json')),
+                'feedback_weight': self.shared_utils.safe_float_convert(
+                    learning_config.get('feedback_weight', defaults.get('feedback_weight', 0.1)),
+                    default=0.1,
+                    min_val=0.0,
+                    max_val=1.0,
+                    param_name='feedback_weight'
+                ),
+                'min_samples': self.shared_utils.safe_int_convert(
+                    learning_config.get('min_samples', defaults.get('min_samples', 5)),
+                    default=5,
+                    min_val=1,
+                    max_val=100,
+                    param_name='min_samples'
+                ),
+                'adjustment_limit': self.shared_utils.safe_float_convert(
+                    learning_config.get('adjustment_limit', defaults.get('adjustment_limit', 0.05)),
+                    default=0.05,
+                    min_val=0.01,
+                    max_val=0.5,
+                    param_name='adjustment_limit'
+                ),
+                'max_drift': self.shared_utils.safe_float_convert(
+                    learning_config.get('max_drift', defaults.get('max_drift', 0.1)),
+                    default=0.1,
+                    min_val=0.01,
+                    max_val=1.0,
+                    param_name='max_drift'
+                )
+            }
             
-            # Apply any learning-specific validation
-            validated_params = self._validate_learning_parameters(learning_params)
+            # Add sensitivity bounds
+            sensitivity_config = learning_config.get('sensitivity_bounds', {})
+            sensitivity_defaults = defaults.get('sensitivity_bounds', {})
+            core_params['sensitivity_bounds'] = {
+                'min_global_sensitivity': self.shared_utils.safe_float_convert(
+                    sensitivity_config.get('min_global_sensitivity', 
+                                          sensitivity_defaults.get('min_global_sensitivity', 0.5)),
+                    default=0.5,
+                    min_val=0.1,
+                    max_val=2.0,
+                    param_name='min_global_sensitivity'
+                ),
+                'max_global_sensitivity': self.shared_utils.safe_float_convert(
+                    sensitivity_config.get('max_global_sensitivity', 
+                                          sensitivity_defaults.get('max_global_sensitivity', 1.5)),
+                    default=1.5,
+                    min_val=0.1,
+                    max_val=5.0,
+                    param_name='max_global_sensitivity'
+                )
+            }
             
-            self.logger.info("✅ Learning parameters retrieved successfully")
-            return validated_params
+            # Add adjustment factors
+            adjustment_config = learning_config.get('adjustment_factors', {})
+            adjustment_defaults = defaults.get('adjustment_factors', {})
+            core_params['adjustment_factors'] = {
+                'false_positive_factor': self.shared_utils.safe_float_convert(
+                    adjustment_config.get('false_positive_factor', 
+                                         adjustment_defaults.get('false_positive_factor', -0.1)),
+                    default=-0.1,
+                    min_val=-1.0,
+                    max_val=1.0,
+                    param_name='false_positive_factor'
+                ),
+                'false_negative_factor': self.shared_utils.safe_float_convert(
+                    adjustment_config.get('false_negative_factor', 
+                                         adjustment_defaults.get('false_negative_factor', 0.1)),
+                    default=0.1,
+                    min_val=-1.0,
+                    max_val=1.0,
+                    param_name='false_negative_factor'
+                )
+            }
+            
+            # Add severity multipliers
+            severity_config = learning_config.get('severity_multipliers', {})
+            severity_defaults = defaults.get('severity_multipliers', {})
+            core_params['severity_multipliers'] = {
+                'high_severity': self.shared_utils.safe_float_convert(
+                    severity_config.get('high_severity', severity_defaults.get('high_severity', 3.0)),
+                    default=3.0,
+                    min_val=0.1,
+                    max_val=10.0,
+                    param_name='high_severity'
+                ),
+                'medium_severity': self.shared_utils.safe_float_convert(
+                    severity_config.get('medium_severity', severity_defaults.get('medium_severity', 2.0)),
+                    default=2.0,
+                    min_val=0.1,
+                    max_val=10.0,
+                    param_name='medium_severity'
+                ),
+                'low_severity': self.shared_utils.safe_float_convert(
+                    severity_config.get('low_severity', severity_defaults.get('low_severity', 1.0)),
+                    default=1.0,
+                    min_val=0.1,
+                    max_val=10.0,
+                    param_name='low_severity'
+                )
+            }
+            
+            return core_params
             
         except Exception as e:
-            self.logger.error(f"❌ Error getting learning parameters: {e}")
-            return self._get_default_learning_config()
-
-    def get_learning_thresholds(self) -> Dict[str, float]:
+            self.logger.error(f"❌ Error loading learning system parameters: {e}")
+            # Re-raise the exception to prevent adjustments when SharedUtils fails
+            raise RuntimeError(f"Failed to load learning parameters: {str(e)}")
+    
+    def get_learning_thresholds(self) -> Dict[str, Any]:
         """
-        Get learning-specific threshold configuration (FIXED)
+        Get learning system threshold configuration (Extracted from ThresholdMappingManager)
+        
+        This method was moved from ThresholdMappingManager to consolidate all learning
+        functionality into the specialized LearningSystemManager.
         
         Returns:
-            Dict containing learning threshold settings
+            Dictionary with learning threshold configuration
         """
         try:
-            # ✅ FIXED: Use correct UnifiedConfigManager method  
-            threshold_config = self.config_manager.get_config_section(
-                'threshold_mapping', 'learning_thresholds', {}
-            )
+            # Access threshold configuration through UnifiedConfigManager
+            threshold_config = self.config_manager.get_threshold_config()
+            learning_config = threshold_config.get('learning_thresholds', {})
             
-            if not threshold_config:
-                # Fallback to analysis parameters learning section
-                learning_config = self.config_manager.get_config_section(
-                    'analysis_parameters', 'learning_system', {}
+            return {
+                'learning_rate': self.shared_utils.safe_float_convert(
+                    learning_config.get('learning_rate', 0.1),
+                    default=0.1,
+                    min_val=0.01,
+                    max_val=1.0,
+                    param_name='threshold_learning_rate'
+                ),
+                'max_adjustments_per_day': self.shared_utils.safe_int_convert(
+                    learning_config.get('max_adjustments_per_day', 50),
+                    default=50,
+                    min_val=1,
+                    max_val=1000,
+                    param_name='threshold_max_adjustments_per_day'
+                ),
+                'min_confidence_for_learning': self.shared_utils.safe_float_convert(
+                    learning_config.get('min_confidence_for_learning', 0.3),
+                    default=0.3,
+                    min_val=0.1,
+                    max_val=1.0,
+                    param_name='threshold_min_confidence_for_learning'
                 )
-                threshold_config = learning_config.get('thresholds', {})
-            
-            if not threshold_config:
-                self.logger.warning("⚠️ No learning thresholds found, using defaults")
-                return {
-                    'adjustment_rate': 0.05,
-                    'max_adjustment': 0.30,
-                    'min_confidence': 0.10,
-                    'max_confidence': 0.95
-                }
-            
-            return threshold_config
+            }
             
         except Exception as e:
             self.logger.error(f"❌ Error getting learning thresholds: {e}")
             return {
-                'adjustment_rate': 0.05,
-                'max_adjustment': 0.30,
-                'min_confidence': 0.10,
-                'max_confidence': 0.95
+                'learning_rate': 0.1,
+                'max_adjustments_per_day': 50,
+                'min_confidence_for_learning': 0.3
             }
-
+    
     def validate_learning_parameters(self) -> Dict[str, Any]:
         """
         Validate learning system parameter ranges and types (Extracted from AnalysisParametersManager)
@@ -281,552 +413,9 @@ class LearningSystemManager:
                 'parameters_validated': 0,
                 'validation_timestamp': str(datetime.now())
             }
-
-    def _validate_learning_parameters(self, params: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Internal validation method that returns parameters with applied validation
-        
-        Args:
-            params: Raw learning parameters to validate
-            
-        Returns:
-            Validated parameters with corrections applied
-        """
-        try:
-            validated_params = params.copy()
-            
-            # Apply safe conversions and bounds
-            validated_params['learning_rate'] = self.shared_utils.safe_float_convert(
-                params.get('learning_rate', 0.01), 0.01, 0.001, 1.0, 'learning_rate'
-            )
-            
-            validated_params['min_confidence_adjustment'] = self.shared_utils.safe_float_convert(
-                params.get('min_confidence_adjustment', 0.05), 0.05, 0.01, 1.0, 'min_confidence_adjustment'
-            )
-            
-            validated_params['max_confidence_adjustment'] = self.shared_utils.safe_float_convert(
-                params.get('max_confidence_adjustment', 0.30), 0.30, 0.01, 1.0, 'max_confidence_adjustment'
-            )
-            
-            validated_params['max_adjustments_per_day'] = self.shared_utils.safe_int_convert(
-                params.get('max_adjustments_per_day', 50), 50, 1, 1000, 'max_adjustments_per_day'
-            )
-            
-            # Ensure logical ordering
-            if validated_params['min_confidence_adjustment'] >= validated_params['max_confidence_adjustment']:
-                validated_params['max_confidence_adjustment'] = validated_params['min_confidence_adjustment'] + 0.05
-            
-            return validated_params
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error in internal parameter validation: {e}")
-            return self._get_default_learning_config()
     
     # ========================================================================
-    # NEW MISSING METHODS - Required by CrisisAnalyzer Integration
-    # ========================================================================
-    
-    def adapt_thresholds_for_analysis(self, base_thresholds: Dict[str, float], 
-                                     context: Dict[str, Any] = None) -> Dict[str, float]:
-        """
-        Adapt thresholds based on learning system feedback and context
-        
-        This is the most critical missing method used throughout CrisisAnalyzer.
-        
-        Args:
-            base_thresholds: Base threshold values to adapt
-            context: Analysis context (user, message type, etc.)
-            
-        Returns:
-            Adapted thresholds with learning enhancements
-        """
-        try:
-            if not self.get_learning_parameters().get('enabled', False):
-                return base_thresholds
-            
-            adapted_thresholds = base_thresholds.copy()
-            learning_params = self.get_learning_parameters()
-            
-            # Apply learning-based adaptations
-            for threshold_name, base_value in base_thresholds.items():
-                # Get historical performance for this threshold
-                historical_performance = self._get_threshold_performance(threshold_name, context)
-                
-                # Calculate adaptation based on recent performance
-                if historical_performance:
-                    false_positive_rate = historical_performance.get('false_positive_rate', 0.0)
-                    false_negative_rate = historical_performance.get('false_negative_rate', 0.0)
-                    
-                    # Adapt based on error rates
-                    adaptation_factor = 0.0
-                    if false_positive_rate > 0.1:  # Too many false positives - increase threshold
-                        adaptation_factor = min(0.1, false_positive_rate * learning_params['learning_rate'])
-                    elif false_negative_rate > 0.1:  # Too many false negatives - decrease threshold
-                        adaptation_factor = -min(0.1, false_negative_rate * learning_params['learning_rate'])
-                    
-                    # Apply adaptation with bounds
-                    adapted_value = base_value + adaptation_factor
-                    adapted_thresholds[threshold_name] = self._apply_threshold_bounds(adapted_value, learning_params)
-            
-            self.logger.info(f"✅ Thresholds adapted for analysis with learning enhancements")
-            return adapted_thresholds
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error adapting thresholds for analysis: {e}")
-            return base_thresholds
-    
-    def enhance_analysis_results(self, analysis_results: Dict[str, Any], 
-                               context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """
-        Enhance analysis results with learning system insights
-        
-        Args:
-            analysis_results: Base analysis results from ensemble
-            context: Analysis context for enhancement
-            
-        Returns:
-            Enhanced results with learning metadata
-        """
-        try:
-            enhanced_results = analysis_results.copy()
-            
-            if not self.get_learning_parameters().get('enabled', False):
-                enhanced_results['learning_enhanced'] = False
-                return enhanced_results
-            
-            # Add learning confidence adjustments
-            if 'confidence' in analysis_results:
-                base_confidence = analysis_results['confidence']
-                confidence_boost = self._calculate_confidence_boost(base_confidence, context)
-                enhanced_results['confidence'] = min(1.0, base_confidence + confidence_boost)
-                enhanced_results['confidence_boost_applied'] = confidence_boost
-            
-            # Add learning metadata
-            enhanced_results['learning_enhanced'] = True
-            enhanced_results['learning_insights'] = self.get_context_insights(context)
-            enhanced_results['enhancement_timestamp'] = datetime.now().isoformat()
-            
-            self.logger.info("✅ Analysis results enhanced with learning system")
-            return enhanced_results
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error enhancing analysis results: {e}")
-            enhanced_results = analysis_results.copy()
-            enhanced_results['learning_enhanced'] = False
-            enhanced_results['enhancement_error'] = str(e)
-            return enhanced_results
-    
-    def adjust_thresholds_for_context(self, thresholds: Dict[str, float], 
-                                    mode: str, confidence: float) -> Dict[str, float]:
-        """
-        Adjust thresholds based on ensemble mode and confidence score
-        
-        Works with existing JSON configuration structure without requiring changes.
-        
-        Args:
-            thresholds: Base thresholds to adjust
-            mode: Ensemble mode from caller ('consensus', 'majority', 'weighted')
-            confidence: Current confidence score
-            
-        Returns:
-            Context-adjusted thresholds
-        """
-        try:
-            if not self.get_learning_parameters().get('enabled', False):
-                return thresholds
-            
-            # Validate mode (use simple validation without requiring config changes)
-            valid_modes = ['consensus', 'majority', 'weighted']
-            effective_mode = mode if mode in valid_modes else 'weighted'
-            
-            if effective_mode != mode:
-                self.logger.warning(f"⚠️ Invalid mode '{mode}', using fallback: {effective_mode}")
-            
-            # Create context from parameters for internal processing
-            context = {
-                'ensemble_mode': effective_mode,
-                'original_mode': mode,
-                'confidence_score': confidence,
-                'adjustment_type': 'ensemble_based',
-                'timestamp': datetime.now().isoformat()
-            }
-            
-            adjusted_thresholds = thresholds.copy()
-            learning_params = self.get_learning_parameters()
-            
-            # Mode-specific threshold adjustments (using hardcoded sensible defaults)
-            if effective_mode == 'consensus':
-                # Consensus mode - slightly lower thresholds for better agreement detection
-                adjustment_factor = 0.95
-                for key, value in adjusted_thresholds.items():
-                    adjusted_thresholds[key] = value * adjustment_factor
-                    
-            elif effective_mode == 'majority':
-                # Majority mode - confidence-based adjustment
-                if confidence > 0.8:
-                    adjustment_factor = 1.05  # High confidence - can afford higher thresholds
-                elif confidence < 0.5:
-                    adjustment_factor = 0.92  # Low confidence - lower thresholds
-                else:
-                    adjustment_factor = 0.98  # Medium confidence - minimal adjustment
-                
-                for key, value in adjusted_thresholds.items():
-                    adjusted_thresholds[key] = value * adjustment_factor
-                    
-            elif effective_mode == 'weighted':
-                # Weighted mode - most dynamic adjustment based on confidence
-                if confidence > 0.9:
-                    adjustment_factor = 1.08   # Very high confidence
-                elif confidence > 0.7:
-                    adjustment_factor = 1.02   # Good confidence
-                elif confidence < 0.4:
-                    adjustment_factor = 0.88   # Low confidence
-                else:
-                    adjustment_factor = 0.95   # Medium confidence
-                
-                for key, value in adjusted_thresholds.items():
-                    adjusted_thresholds[key] = value * adjustment_factor
-            
-            # Apply learning-based user/historical adjustments if available
-            user_id = context.get('user_id')
-            if user_id:
-                user_adjustments = self._get_user_threshold_adjustments(user_id)
-                for threshold_name, adjustment in user_adjustments.items():
-                    if threshold_name in adjusted_thresholds:
-                        adjusted_thresholds[threshold_name] += adjustment
-            
-            # Apply bounds to all adjusted thresholds
-            for key, value in adjusted_thresholds.items():
-                adjusted_thresholds[key] = self._apply_threshold_bounds(value, learning_params)
-            
-            self.logger.info(f"✅ Thresholds adjusted for mode '{effective_mode}' with confidence {confidence:.3f}")
-            return adjusted_thresholds
-            
-            adjusted_thresholds = thresholds.copy()
-            learning_params = self.get_learning_parameters()
-            
-            # Mode-specific threshold adjustments (using hardcoded sensible defaults)
-            if effective_mode == 'consensus':
-                # Consensus mode - slightly lower thresholds for better agreement detection
-                adjustment_factor = 0.95
-                for key, value in adjusted_thresholds.items():
-                    adjusted_thresholds[key] = value * adjustment_factor
-                    
-            elif effective_mode == 'majority':
-                # Majority mode - confidence-based adjustment
-                if confidence > 0.8:
-                    adjustment_factor = 1.05  # High confidence - can afford higher thresholds
-                elif confidence < 0.5:
-                    adjustment_factor = 0.92  # Low confidence - lower thresholds
-                else:
-                    adjustment_factor = 0.98  # Medium confidence - minimal adjustment
-                
-                for key, value in adjusted_thresholds.items():
-                    adjusted_thresholds[key] = value * adjustment_factor
-                    
-            elif effective_mode == 'weighted':
-                # Weighted mode - most dynamic adjustment based on confidence
-                if confidence > 0.9:
-                    adjustment_factor = 1.08   # Very high confidence
-                elif confidence > 0.7:
-                    adjustment_factor = 1.02   # Good confidence
-                elif confidence < 0.4:
-                    adjustment_factor = 0.88   # Low confidence
-                else:
-                    adjustment_factor = 0.95   # Medium confidence
-                
-                for key, value in adjusted_thresholds.items():
-                    adjusted_thresholds[key] = value * adjustment_factor
-            
-            # Apply learning-based user/historical adjustments if available
-            user_id = context.get('user_id')
-            if user_id:
-                user_adjustments = self._get_user_threshold_adjustments(user_id)
-                for threshold_name, adjustment in user_adjustments.items():
-                    if threshold_name in adjusted_thresholds:
-                        adjusted_thresholds[threshold_name] += adjustment
-            
-            # Apply bounds to all adjusted thresholds
-            for key, value in adjusted_thresholds.items():
-                adjusted_thresholds[key] = self._apply_threshold_bounds(value, learning_params)
-            
-            self.logger.info(f"✅ Thresholds adjusted for mode '{effective_mode}' with confidence {confidence:.3f}")
-            return adjusted_thresholds
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error adjusting thresholds for context: {e}")
-            return thresholds
-            
-    def get_context_insights(self, context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """
-        Get learning-based insights for the given context
-        
-        Args:
-            context: Analysis context
-            
-        Returns:
-            Learning insights and recommendations
-        """
-        try:
-            insights = {
-                'context_analyzed': bool(context),
-                'learning_active': self.get_learning_parameters().get('enabled', False),
-                'insights_generated': datetime.now().isoformat()
-            }
-            
-            if not context or not insights['learning_active']:
-                insights['recommendations'] = []
-                return insights
-            
-            recommendations = []
-            
-            # Analyze context patterns
-            user_id = context.get('user_id')
-            if user_id:
-                user_history = self._get_user_analysis_history(user_id)
-                if user_history:
-                    recent_false_positives = user_history.get('recent_false_positives', 0)
-                    recent_false_negatives = user_history.get('recent_false_negatives', 0)
-                    
-                    if recent_false_positives > 3:
-                        recommendations.append({
-                            'type': 'threshold_adjustment',
-                            'reason': 'High false positive rate for user',
-                            'suggestion': 'Consider increasing thresholds'
-                        })
-                    
-                    if recent_false_negatives > 2:
-                        recommendations.append({
-                            'type': 'threshold_adjustment', 
-                            'reason': 'Recent false negatives detected',
-                            'suggestion': 'Consider decreasing thresholds'
-                        })
-            
-            insights['recommendations'] = recommendations
-            insights['context_factors_analyzed'] = list(context.keys())
-            
-            return insights
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error getting context insights: {e}")
-            return {
-                'context_analyzed': False,
-                'learning_active': False,
-                'error': str(e),
-                'insights_generated': datetime.now().isoformat()
-            }
-    
-    def adapt_confidence_boosts(self, base_boosts: Dict[str, float], 
-                               context: Dict[str, Any] = None) -> Dict[str, float]:
-        """
-        Adapt confidence boosts based on learning system feedback
-        
-        Args:
-            base_boosts: Base confidence boost values
-            context: Analysis context
-            
-        Returns:
-            Adapted confidence boosts
-        """
-        try:
-            if not self.get_learning_parameters().get('enabled', False):
-                return base_boosts
-            
-            adapted_boosts = base_boosts.copy()
-            learning_params = self.get_learning_parameters()
-            
-            # Apply learning-based boost adaptations
-            for boost_name, base_value in base_boosts.items():
-                # Get effectiveness data for this boost type
-                boost_effectiveness = self._get_boost_effectiveness(boost_name, context)
-                
-                if boost_effectiveness:
-                    effectiveness_score = boost_effectiveness.get('effectiveness_score', 1.0)
-                    
-                    # Adapt boost based on effectiveness
-                    if effectiveness_score > 1.2:  # Very effective - increase boost
-                        adaptation = base_value * 0.1 * learning_params['learning_rate']
-                        adapted_boosts[boost_name] = min(0.5, base_value + adaptation)
-                    elif effectiveness_score < 0.8:  # Less effective - decrease boost
-                        adaptation = base_value * 0.1 * learning_params['learning_rate']
-                        adapted_boosts[boost_name] = max(0.0, base_value - adaptation)
-            
-            self.logger.info("✅ Confidence boosts adapted based on learning")
-            return adapted_boosts
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error adapting confidence boosts: {e}")
-            return base_boosts
-    
-    def adapt_ensemble_weights(self, base_weights: Dict[str, float], 
-                             context: Dict[str, Any] = None) -> Dict[str, float]:
-        """
-        Adapt ensemble model weights based on learning system performance data
-        
-        Args:
-            base_weights: Base ensemble weights
-            context: Analysis context
-            
-        Returns:
-            Learning-adapted ensemble weights
-        """
-        try:
-            if not self.get_learning_parameters().get('enabled', False):
-                return base_weights
-            
-            adapted_weights = base_weights.copy()
-            learning_params = self.get_learning_parameters()
-            
-            # Get model performance data
-            total_weight = 0.0
-            for model_name, base_weight in base_weights.items():
-                model_performance = self._get_model_performance(model_name, context)
-                
-                if model_performance:
-                    accuracy = model_performance.get('accuracy', 0.8)
-                    false_positive_rate = model_performance.get('false_positive_rate', 0.1)
-                    false_negative_rate = model_performance.get('false_negative_rate', 0.1)
-                    
-                    # Calculate performance score
-                    performance_score = accuracy - (false_positive_rate + false_negative_rate) * 0.5
-                    
-                    # Adapt weight based on performance
-                    weight_adjustment = (performance_score - 0.8) * learning_params['learning_rate']
-                    adapted_weights[model_name] = max(0.01, base_weight + weight_adjustment)
-                
-                total_weight += adapted_weights[model_name]
-            
-            # Normalize weights to sum to 1.0
-            if total_weight > 0:
-                for model_name in adapted_weights:
-                    adapted_weights[model_name] /= total_weight
-            
-            self.logger.info("✅ Ensemble weights adapted based on learning data")
-            return adapted_weights
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error adapting ensemble weights: {e}")
-            return base_weights
-    
-    # ========================================================================
-    # LEARNING DATA HELPERS - Support methods for new functionality
-    # ========================================================================
-    
-    def _get_threshold_performance(self, threshold_name: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Get historical performance data for a threshold"""
-        try:
-            # This would integrate with persistent learning data storage
-            # For now, return mock data based on recent adjustments
-            recent_adjustments = [adj for adj in self._adjustment_history 
-                                if 'threshold_name' in adj and adj['threshold_name'] == threshold_name]
-            
-            if not recent_adjustments:
-                return {}
-            
-            false_positive_count = len([adj for adj in recent_adjustments if adj['type'] == 'false_positive'])
-            false_negative_count = len([adj for adj in recent_adjustments if adj['type'] == 'false_negative'])
-            total_count = len(recent_adjustments)
-            
-            return {
-                'false_positive_rate': false_positive_count / max(1, total_count),
-                'false_negative_rate': false_negative_count / max(1, total_count),
-                'sample_size': total_count
-            }
-        except Exception as e:
-            self.logger.error(f"❌ Error getting threshold performance: {e}")
-            return {}
-    
-    def _calculate_confidence_boost(self, base_confidence: float, context: Dict[str, Any] = None) -> float:
-        """Calculate confidence boost based on learning data"""
-        try:
-            if not context:
-                return 0.0
-            
-            # Base boost calculation
-            boost = 0.0
-            
-            # User-specific confidence patterns
-            user_id = context.get('user_id')
-            if user_id:
-                user_confidence_history = self._get_user_confidence_history(user_id)
-                if user_confidence_history:
-                    avg_accuracy = user_confidence_history.get('average_accuracy', 0.8)
-                    if avg_accuracy > 0.9:
-                        boost += 0.05  # Reliable user patterns
-                    elif avg_accuracy < 0.7:
-                        boost -= 0.03  # Less reliable patterns
-            
-            # Context-based confidence boosts
-            message_urgency = context.get('urgency_level', 'medium')
-            if message_urgency == 'high':
-                boost += 0.02  # Slight boost for urgent messages
-            
-            return max(-0.1, min(0.1, boost))  # Cap boost at ±0.1
-            
-        except Exception as e:
-            self.logger.error(f"❌ Error calculating confidence boost: {e}")
-            return 0.0
-    
-    def _get_user_threshold_adjustments(self, user_id: str) -> Dict[str, float]:
-        """Get user-specific threshold adjustments based on history"""
-        try:
-            # This would integrate with user-specific learning data
-            # For now, return empty dict (no user-specific adjustments)
-            return {}
-        except Exception as e:
-            self.logger.error(f"❌ Error getting user threshold adjustments: {e}")
-            return {}
-    
-    def _get_user_analysis_history(self, user_id: str) -> Dict[str, Any]:
-        """Get user analysis history for insights"""
-        try:
-            # This would integrate with user analysis tracking
-            # For now, return basic mock data
-            return {
-                'recent_false_positives': 1,
-                'recent_false_negatives': 0,
-                'total_analyses': 10
-            }
-        except Exception as e:
-            self.logger.error(f"❌ Error getting user analysis history: {e}")
-            return {}
-    
-    def _get_boost_effectiveness(self, boost_name: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Get effectiveness data for confidence boosts"""
-        try:
-            # This would integrate with boost effectiveness tracking
-            # For now, return neutral effectiveness
-            return {'effectiveness_score': 1.0}
-        except Exception as e:
-            self.logger.error(f"❌ Error getting boost effectiveness: {e}")
-            return {}
-    
-    def _get_model_performance(self, model_name: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Get model performance data for ensemble weight adaptation"""
-        try:
-            # This would integrate with model performance tracking
-            # For now, return baseline performance data
-            return {
-                'accuracy': 0.8,
-                'false_positive_rate': 0.1,
-                'false_negative_rate': 0.1
-            }
-        except Exception as e:
-            self.logger.error(f"❌ Error getting model performance: {e}")
-            return {}
-    
-    def _get_user_confidence_history(self, user_id: str) -> Dict[str, Any]:
-        """Get user confidence pattern history"""
-        try:
-            # This would integrate with user confidence tracking
-            # For now, return baseline data
-            return {'average_accuracy': 0.8}
-        except Exception as e:
-            self.logger.error(f"❌ Error getting user confidence history: {e}")
-            return {}
-    
-    # ========================================================================
-    # THRESHOLD ADJUSTMENT METHODS - Existing functionality
+    # THRESHOLD ADJUSTMENT METHODS - New functionality for Step 3
     # ========================================================================
     
     def adjust_threshold_for_false_positive(self, current_threshold: float, 
@@ -1327,4 +916,4 @@ __all__ = [
     'create_learning_system_manager'
 ]
 
-logger.info("✅ LearningSystemManager v3.1-3e-3.2-3 loaded - Complete learning system with missing methods added for CrisisAnalyzer integration")
+logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 loaded - Complete learning system with methods from both AnalysisParametersManager and ThresholdMappingManager")
