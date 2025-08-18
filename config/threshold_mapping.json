@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-2",
+    "file_version": "v3.1-3e-4.3-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -16,7 +16,6 @@
   
   "threshold_mapping_by_mode": {
     "description": "Mode-specific threshold configurations with environment variable overrides",
-
     "consensus": {
       "description": "Conservative thresholds for consensus mode - requires model agreement",
       "crisis_level_mapping": {
@@ -27,6 +26,7 @@
         "unknown_to_low": "${NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW}"
       },
       "ensemble_thresholds": {
+        "critical": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_CRITICAL}",
         "high": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_HIGH}",
         "medium": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_MEDIUM}",
         "low": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_LOW}"
@@ -48,6 +48,7 @@
           "unknown_to_low": 0.50
         },
         "ensemble_thresholds": {
+          "critical": 0.70,
           "high": 0.45,
           "medium": 0.25,
           "low": 0.12
@@ -64,12 +65,12 @@
       "validation": {
         "crisis_level_mapping": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.00, 1.0],
           "ordering": "crisis_to_high > crisis_to_medium"
         },
         "ensemble_thresholds": {
           "type": "float", 
-          "range": [0.0, 1.0],
+          "range": [0.00, 1.0],
           "ordering": "high > medium > low"
         },
         "staff_review_thresholds": {
@@ -93,6 +94,7 @@
         "unknown_to_low": "${NLP_THRESHOLD_MAJORITY_UNKNOWN_TO_LOW}"
       },
       "ensemble_thresholds": {
+        "critical": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_CRITICAL}",
         "high": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_HIGH}",
         "medium": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_MEDIUM}",
         "low": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_LOW}"
@@ -114,6 +116,7 @@
           "unknown_to_low": 0.48
         },
         "ensemble_thresholds": {
+          "critical": 0.65,
           "high": 0.42,
           "medium": 0.23,
           "low": 0.11
@@ -130,12 +133,12 @@
       "validation": {
         "crisis_level_mapping": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.00, 1.0],
           "ordering": "crisis_to_high > crisis_to_medium"
         },
         "ensemble_thresholds": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.00, 1.0],
           "ordering": "high > medium > low"
         },
         "staff_review_thresholds": {
@@ -159,6 +162,7 @@
         "unknown_to_low": "${NLP_THRESHOLD_WEIGHTED_UNKNOWN_TO_LOW}"
       },
       "ensemble_thresholds": {
+        "critical": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_CRITICAL}",
         "high": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_HIGH}",
         "medium": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_MEDIUM}",
         "low": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_LOW}"
@@ -180,6 +184,7 @@
           "unknown_to_low": 0.52
         },
         "ensemble_thresholds": {
+          "critical": 0.70,
           "high": 0.48,
           "medium": 0.27,
           "low": 0.13
@@ -196,12 +201,12 @@
       "validation": {
         "crisis_level_mapping": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.00, 1.0],
           "ordering": "crisis_to_high > crisis_to_medium"
         },
         "ensemble_thresholds": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.00, 1.0],
           "ordering": "high > medium > low"
         },
         "staff_review_thresholds": {

@@ -1,7 +1,7 @@
 # ash-nlp/tests/phase/3/e/test_real_crisis_analyzer_integration.py
 """
 Real-World Integration Tests for Phase 3e Step 4: CrisisAnalyzer Consolidation
-FILE VERSION: v3.1-3e-4.3-3
+FILE VERSION: v3.1-3e-4.3-4
 LAST MODIFIED: 2025-08-18
 PHASE: 3e Step 4.3 - Real-World CrisisAnalyzer Integration Testing
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -62,6 +62,7 @@ class TestRealWorldCrisisAnalyzerIntegration:
         
         # Create enhanced CrisisAnalyzer with real dependencies
         cls.crisis_analyzer = create_crisis_analyzer(
+            unified_config=cls.config_manager,
             model_ensemble_manager=cls.model_ensemble_manager,
             crisis_pattern_manager=cls.crisis_pattern_manager,
             analysis_parameters_manager=cls.analysis_parameters_manager,

@@ -1,7 +1,7 @@
 # ash-nlp/managers/model_ensemble_manager.py
 """
 Model Ensemble Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-4.2-1
+FILE VERSION: v3.1-3e-4.2-2
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -468,6 +468,7 @@ class ModelEnsembleManager:
                 
                 # UPDATED: Create CrisisAnalyzer with ContextPatternManager
                 crisis_analyzer = CrisisAnalyzer(
+                    unified_config=self.config_manager,
                     model_ensemble_manager=self,  # ModelEnsembleManager acts as model_ensemble_manager
                     crisis_pattern_manager=crisis_pattern_manager,
                     analysis_parameters_manager=analysis_parameters_manager,
