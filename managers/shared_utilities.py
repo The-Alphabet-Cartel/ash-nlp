@@ -1,6 +1,6 @@
 """
 SharedUtilitiesManager for Ash-NLP Service
-FILE VERSION: v3.1-3e-4-1
+FILE VERSION: v3.1-3e-4-2
 LAST MODIFIED: 2025-08-17
 PHASE: 3e Step 2.2 - SharedUtilitiesManager Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import re
+from datetime import datetime
 from typing import Any, Dict, List, Union, Optional, Tuple
 from pathlib import Path
 
