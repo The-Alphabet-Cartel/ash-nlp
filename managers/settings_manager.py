@@ -1,7 +1,7 @@
 # ash-nlp/managers/settings_manager.py
 """
 Runtime Settings and Configuration Overrides for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3ed-4.3-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -416,11 +416,12 @@ class SettingsManager:
 # ============================================================================
 def create_settings_manager(unified_config_manager,
     analysis_parameters_manager=None, crisis_pattern_manager=None,
-    feature_config_manager=None, logging_config_manager=None,
-    model_ensemble_manager=None,
+    feature_config_manager=None, learning_system_manager=None,
+    logging_config_manager=None, model_ensemble_manager=None,
     performance_config_manager=None, pydantic_manager=None,
-    server_config_manager=None, storage_config_manager=None,
-    threshold_mapping_manager=None, zero_shot_manager=None) -> SettingsManager:
+    server_config_manager=None, shared_utilities_manager=None,
+    storage_config_manager=None, threshold_mapping_manager=None,
+    zero_shot_manager=None) -> SettingsManager:
     """
     Factory function to create SettingsManager instance - Phase 3d Step 9 Complete
     
@@ -429,11 +430,13 @@ def create_settings_manager(unified_config_manager,
         analysis_parameters_manager: AnalysisParametersManager instance
         crisis_pattern_manager: CrisisPatternManager instance
         feature_config_manager: FeatureConfigManager instance
+        learning_system_manager: LearningSystemManager instance
         logging_config_manager: LoggingConfigManager instance
         model_ensemble_manager: ModelEnsembleManager instance
         performance_config_manager: PerformanceConfigManager instance
         pydantic_manager: PydanticManager instance
         server_config_manager: ServerConfigManager instance
+        shared_utilities_manager: SharedUtilitiesManager instance
         storage_config_manager: StorageConfigManager instance
         threshold_mapping_manager: ThresholdMappingManager instance
         zero_shot_manager: ZeroShotManager instance
@@ -446,11 +449,13 @@ def create_settings_manager(unified_config_manager,
         analysis_parameters_manager=analysis_parameters_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         feature_config_manager=feature_config_manager,
+        learning_system_manager=learning_system_manager,
         logging_config_manager=logging_config_manager,
         model_ensemble_manager=model_ensemble_manager,
         performance_config_manager=performance_config_manager,
         pydantic_manager=pydantic_manager,
         server_config_manager=server_config_manager,
+        shared_utilities_manager=shared_utilities_manager,
         storage_config_manager=storage_config_manager,
         threshold_mapping_manager=threshold_mapping_manager,
         zero_shot_manager=zero_shot_manager,
