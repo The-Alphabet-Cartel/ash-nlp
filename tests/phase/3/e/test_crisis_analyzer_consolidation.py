@@ -25,7 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../../../../'))
 from analysis.crisis_analyzer import CrisisAnalyzer
 from analysis import create_crisis_analyzer
 from managers.shared_utilities import create_shared_utilities_manager
-from managers.learning_system import create_learning_system_manager
+from managers.learning_system_manager import create_learning_system_manager
 from managers.unified_config import create_unified_config_manager
 
 class TestCrisisAnalyzerConsolidation(unittest.TestCase):
