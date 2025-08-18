@@ -117,33 +117,48 @@ class CrisisAnalyzer:
         """
         try:
             if self.unified_config_manager:
-                # Try to get mode-specific thresholds from threshold_mapping config
-                config_section = f'threshold_mapping_by_mode.{mode}.ensemble_thresholds'
-                logger.debug(f'Here is the config_section for threshold_mapping_by_mode: {config_section}')
-                threshold_config = self.unified_config_manager.get_config_section(
-                    'threshold_mapping',
-                    config_section,
-                    None
-                )
+                if (mode == 'consensus'):
+                    threshold_config = self.unified_config_manager.get_config_section(
+                        'threshold_mapping',
+                        'threshold_mapping_by_mode.consensus.ensemble_thresholds',
+                        {}
+                    )
+                elif (mode == 'majority'):
+                    threshold_config = self.unified_config_manager.get_config_section(
+                        'threshold_mapping',
+                        'threshold_mapping_by_mode.majority.ensemble_thresholds',
+                        {}
+                    )
+                elif (mode == 'weighted'):
+                    threshold_config = self.unified_config_manager.get_config_section(
+                        'threshold_mapping',
+                        'threshold_mapping_by_mode.majority.ensemble_thresholds',
+                        {}
+                    )
+                else:
+                    logger.error('    Ensemble Mode is not defined...')
+                    return
+
+
                 if threshold_config:
                     return {
-                        'low': threshold_config.get('low', 0.12),
-                        'medium': threshold_config.get('medium', 0.25),
+                        'critical': threshold_config.get('critical', 0.7),
                         'high': threshold_config.get('high', 0.45),
-                        'critical': threshold_config.get('critical', 0.7)
+                        'medium': threshold_config.get('medium', 0.25),
+                        'low': threshold_config.get('low', 0.12)
                     }
-            
+
             # Final fallback: Mode-specific defaults based on Phase 3d configuration
             mode_defaults = {
                 'consensus': {'low': 0.12, 'medium': 0.30, 'high': 0.50, 'critical': 0.7},
                 'majority': {'low': 0.11, 'medium': 0.28, 'high': 0.45, 'critical': 0.65},
                 'weighted': {'low': 0.13, 'medium': 0.32, 'high': 0.55, 'critical': 0.75}
             }
-            
+
             thresholds = mode_defaults.get(mode, mode_defaults[f'{mode}'])
             logger.warning(f"⚠️ Using fallback thresholds for mode '{mode}': {thresholds}")
             return thresholds
-            
+
         except Exception as e:
             logger.error(f"❌ Failed to get crisis thresholds for mode '{mode}': {e}")
             return self._safe_analysis_execution(
