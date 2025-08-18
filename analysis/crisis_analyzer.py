@@ -1,7 +1,7 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-6
+FILE VERSION: v3.1-3e-4.2-7
 LAST MODIFIED: 2025-08-18
 PHASE: 3e, Step 4.2 - Enhanced CrisisAnalyzer with SharedUtilities and LearningSystem integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -38,7 +38,7 @@ class CrisisAnalyzer:
     - Learning system integration for adaptive analysis
     """
     
-    def __init__(self, unified_config_manager, model_ensemble_manager,
+    def __init__(self, unified_config, model_ensemble_manager,
                 crisis_pattern_manager=None, analysis_parameters_manager=None,
                 threshold_mapping_manager=None, feature_config_manager=None,
                 performance_config_manager=None, context_pattern_manager=None,
@@ -63,7 +63,7 @@ class CrisisAnalyzer:
             learning_system_manager: LearningSystemManager for adaptive learning (Step 3)
         """
         # Existing manager dependencies (maintained)
-        self.unified_config_manager = unified_config_manager
+        self.unified_config_manager = unified_config
         self.model_ensemble_manager = model_ensemble_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.analysis_parameters_manager = analysis_parameters_manager
