@@ -48,7 +48,7 @@ class SettingsManager:
     
     def __init__(self, unified_config_manager,
         analysis_parameters_manager=None, crisis_pattern_manager=None,
-        feature_config_manager=None, learning_systsem_manager=None,
+        feature_config_manager=None, learning_system_manager=None,
         logging_config_manager=None, model_ensemble_manager=None,
         performance_config_manager=None, pydantic_manager=None,
         server_config_manager=None, shared_utilities_manager=None,
