@@ -1,7 +1,7 @@
 # ash-nlp/managers/model_ensemble_manager.py
 """
 Model Ensemble Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-1
+FILE VERSION: v3.1-3e-4.2-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -232,7 +232,7 @@ class ModelEnsembleManager:
                 'detected_categories': self._extract_detected_categories(model_results),
                 'model_info': f"Three Zero-Shot Model Ensemble ({len(models)} models)",
                 'processing_time_ms': processing_time,
-                'method': 'three_model_ensemble_v3d',
+                'method': 'three_model_ensemble',
                 'architecture': 'clean_v3_1'
             }
             
@@ -470,7 +470,6 @@ class ModelEnsembleManager:
                 crisis_analyzer = CrisisAnalyzer(
                     model_ensemble_manager=self,  # ModelEnsembleManager acts as model_ensemble_manager
                     crisis_pattern_manager=crisis_pattern_manager,
-                    learning_manager=None,  # Optional
                     analysis_parameters_manager=analysis_parameters_manager,
                     threshold_mapping_manager=threshold_mapping_manager,
                     feature_config_manager=feature_config_manager,
