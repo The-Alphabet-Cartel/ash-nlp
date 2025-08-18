@@ -81,10 +81,14 @@ class LearningSystemManager:
     # ========================================================================
     
     def _load_learning_configuration(self) -> None:
-        """Load learning system configuration from UnifiedConfigManager"""
+        """Load learning system configuration from UnifiedConfigManager (FIXED)"""
         try:
-            # Access learning configuration through UnifiedConfigManager
-            self._learning_config = self.config_manager.get_analysis_config().get('learning_system', {})
+            # ✅ FIXED: Use correct UnifiedConfigManager method
+            # OLD (BROKEN): self.config_manager.get_analysis_config().get('learning_system', {})
+            # NEW (CORRECT): get_config_section() method
+            self._learning_config = self.config_manager.get_config_section(
+                'analysis_parameters', 'learning_system', {}
+            )
             
             if not self._learning_config:
                 self.logger.warning("⚠️ No learning_system configuration found, using defaults")
@@ -126,210 +130,74 @@ class LearningSystemManager:
     
     def get_learning_parameters(self) -> Dict[str, Any]:
         """
-        Get complete learning system parameters (Extracted from AnalysisParametersManager)
+        Get complete learning system parameters (FIXED - correct UnifiedConfigManager usage)
         
         Accesses learning configuration via UnifiedConfigManager with environment
         variable overrides following Rule #7 compliance (existing variables only).
         
         Returns:
-            Dictionary with complete learning system configuration
+            Dict containing complete learning system configuration
         """
         try:
-            learning_config = self._learning_config or {}
-            defaults = learning_config.get('defaults', {})
+            # ✅ FIXED: Use correct UnifiedConfigManager method
+            learning_params = self.config_manager.get_config_section(
+                'analysis_parameters', 'learning_system', {}
+            )
             
-            # Build core parameters using existing environment variables
-            core_params = {
-                'enabled': self.shared_utils.safe_bool_convert(
-                    learning_config.get('enabled', defaults.get('enabled', True)),
-                    default=True,
-                    param_name='learning_enabled'
-                ),
-                'learning_rate': self.shared_utils.safe_float_convert(
-                    learning_config.get('learning_rate', defaults.get('learning_rate', 0.01)),
-                    default=0.01,
-                    min_val=0.0001,
-                    max_val=1.0,
-                    param_name='learning_rate'
-                ),
-                'min_confidence_adjustment': self.shared_utils.safe_float_convert(
-                    learning_config.get('min_confidence_adjustment', defaults.get('min_confidence_adjustment', 0.05)),
-                    default=0.05,
-                    min_val=0.01,
-                    max_val=1.0,
-                    param_name='min_confidence_adjustment'
-                ),
-                'max_confidence_adjustment': self.shared_utils.safe_float_convert(
-                    learning_config.get('max_confidence_adjustment', defaults.get('max_confidence_adjustment', 0.30)),
-                    default=0.30,
-                    min_val=0.01,
-                    max_val=1.0,
-                    param_name='max_confidence_adjustment'
-                ),
-                'max_adjustments_per_day': self.shared_utils.safe_int_convert(
-                    learning_config.get('max_adjustments_per_day', defaults.get('max_adjustments_per_day', 50)),
-                    default=50,
-                    min_val=1,
-                    max_val=1000,
-                    param_name='max_adjustments_per_day'
-                ),
-                'persistence_file': learning_config.get('persistence_file', 
-                                                       defaults.get('persistence_file', './learning_data/adjustments.json')),
-                'feedback_weight': self.shared_utils.safe_float_convert(
-                    learning_config.get('feedback_weight', defaults.get('feedback_weight', 0.1)),
-                    default=0.1,
-                    min_val=0.0,
-                    max_val=1.0,
-                    param_name='feedback_weight'
-                ),
-                'min_samples': self.shared_utils.safe_int_convert(
-                    learning_config.get('min_samples', defaults.get('min_samples', 5)),
-                    default=5,
-                    min_val=1,
-                    max_val=100,
-                    param_name='min_samples'
-                ),
-                'adjustment_limit': self.shared_utils.safe_float_convert(
-                    learning_config.get('adjustment_limit', defaults.get('adjustment_limit', 0.05)),
-                    default=0.05,
-                    min_val=0.01,
-                    max_val=0.5,
-                    param_name='adjustment_limit'
-                ),
-                'max_drift': self.shared_utils.safe_float_convert(
-                    learning_config.get('max_drift', defaults.get('max_drift', 0.1)),
-                    default=0.1,
-                    min_val=0.01,
-                    max_val=1.0,
-                    param_name='max_drift'
-                )
-            }
+            if not learning_params:
+                self.logger.warning("⚠️ No learning parameters found, using defaults")
+                return self._get_default_learning_config()
             
-            # Add sensitivity bounds
-            sensitivity_config = learning_config.get('sensitivity_bounds', {})
-            sensitivity_defaults = defaults.get('sensitivity_bounds', {})
-            core_params['sensitivity_bounds'] = {
-                'min_global_sensitivity': self.shared_utils.safe_float_convert(
-                    sensitivity_config.get('min_global_sensitivity', 
-                                          sensitivity_defaults.get('min_global_sensitivity', 0.5)),
-                    default=0.5,
-                    min_val=0.1,
-                    max_val=2.0,
-                    param_name='min_global_sensitivity'
-                ),
-                'max_global_sensitivity': self.shared_utils.safe_float_convert(
-                    sensitivity_config.get('max_global_sensitivity', 
-                                          sensitivity_defaults.get('max_global_sensitivity', 1.5)),
-                    default=1.5,
-                    min_val=0.1,
-                    max_val=5.0,
-                    param_name='max_global_sensitivity'
-                )
-            }
+            # Apply any learning-specific validation
+            validated_params = self._validate_learning_parameters(learning_params)
             
-            # Add adjustment factors
-            adjustment_config = learning_config.get('adjustment_factors', {})
-            adjustment_defaults = defaults.get('adjustment_factors', {})
-            core_params['adjustment_factors'] = {
-                'false_positive_factor': self.shared_utils.safe_float_convert(
-                    adjustment_config.get('false_positive_factor', 
-                                         adjustment_defaults.get('false_positive_factor', -0.1)),
-                    default=-0.1,
-                    min_val=-1.0,
-                    max_val=1.0,
-                    param_name='false_positive_factor'
-                ),
-                'false_negative_factor': self.shared_utils.safe_float_convert(
-                    adjustment_config.get('false_negative_factor', 
-                                         adjustment_defaults.get('false_negative_factor', 0.1)),
-                    default=0.1,
-                    min_val=-1.0,
-                    max_val=1.0,
-                    param_name='false_negative_factor'
-                )
-            }
-            
-            # Add severity multipliers
-            severity_config = learning_config.get('severity_multipliers', {})
-            severity_defaults = defaults.get('severity_multipliers', {})
-            core_params['severity_multipliers'] = {
-                'high_severity': self.shared_utils.safe_float_convert(
-                    severity_config.get('high_severity', severity_defaults.get('high_severity', 3.0)),
-                    default=3.0,
-                    min_val=0.1,
-                    max_val=10.0,
-                    param_name='high_severity'
-                ),
-                'medium_severity': self.shared_utils.safe_float_convert(
-                    severity_config.get('medium_severity', severity_defaults.get('medium_severity', 2.0)),
-                    default=2.0,
-                    min_val=0.1,
-                    max_val=10.0,
-                    param_name='medium_severity'
-                ),
-                'low_severity': self.shared_utils.safe_float_convert(
-                    severity_config.get('low_severity', severity_defaults.get('low_severity', 1.0)),
-                    default=1.0,
-                    min_val=0.1,
-                    max_val=10.0,
-                    param_name='low_severity'
-                )
-            }
-            
-            return core_params
+            self.logger.info("✅ Learning parameters retrieved successfully")
+            return validated_params
             
         except Exception as e:
-            self.logger.error(f"❌ Error loading learning system parameters: {e}")
-            # Re-raise the exception to prevent adjustments when SharedUtils fails
-            raise RuntimeError(f"Failed to load learning parameters: {str(e)}")
-    
-    def get_learning_thresholds(self) -> Dict[str, Any]:
+            self.logger.error(f"❌ Error getting learning parameters: {e}")
+            return self._get_default_learning_config()
+
+    def get_learning_thresholds(self) -> Dict[str, float]:
         """
-        Get learning system threshold configuration (Extracted from ThresholdMappingManager)
-        
-        This method was moved from ThresholdMappingManager to consolidate all learning
-        functionality into the specialized LearningSystemManager.
+        Get learning-specific threshold configuration (FIXED)
         
         Returns:
-            Dictionary with learning threshold configuration
+            Dict containing learning threshold settings
         """
         try:
-            # Access threshold configuration through UnifiedConfigManager
-            threshold_config = self.config_manager.get_threshold_config()
-            learning_config = threshold_config.get('learning_thresholds', {})
+            # ✅ FIXED: Use correct UnifiedConfigManager method  
+            threshold_config = self.config_manager.get_config_section(
+                'threshold_mapping', 'learning_thresholds', {}
+            )
             
-            return {
-                'learning_rate': self.shared_utils.safe_float_convert(
-                    learning_config.get('learning_rate', 0.1),
-                    default=0.1,
-                    min_val=0.01,
-                    max_val=1.0,
-                    param_name='threshold_learning_rate'
-                ),
-                'max_adjustments_per_day': self.shared_utils.safe_int_convert(
-                    learning_config.get('max_adjustments_per_day', 50),
-                    default=50,
-                    min_val=1,
-                    max_val=1000,
-                    param_name='threshold_max_adjustments_per_day'
-                ),
-                'min_confidence_for_learning': self.shared_utils.safe_float_convert(
-                    learning_config.get('min_confidence_for_learning', 0.3),
-                    default=0.3,
-                    min_val=0.1,
-                    max_val=1.0,
-                    param_name='threshold_min_confidence_for_learning'
+            if not threshold_config:
+                # Fallback to analysis parameters learning section
+                learning_config = self.config_manager.get_config_section(
+                    'analysis_parameters', 'learning_system', {}
                 )
-            }
+                threshold_config = learning_config.get('thresholds', {})
+            
+            if not threshold_config:
+                self.logger.warning("⚠️ No learning thresholds found, using defaults")
+                return {
+                    'adjustment_rate': 0.05,
+                    'max_adjustment': 0.30,
+                    'min_confidence': 0.10,
+                    'max_confidence': 0.95
+                }
+            
+            return threshold_config
             
         except Exception as e:
             self.logger.error(f"❌ Error getting learning thresholds: {e}")
             return {
-                'learning_rate': 0.1,
-                'max_adjustments_per_day': 50,
-                'min_confidence_for_learning': 0.3
+                'adjustment_rate': 0.05,
+                'max_adjustment': 0.30,
+                'min_confidence': 0.10,
+                'max_confidence': 0.95
             }
-    
+
     def validate_learning_parameters(self) -> Dict[str, Any]:
         """
         Validate learning system parameter ranges and types (Extracted from AnalysisParametersManager)
