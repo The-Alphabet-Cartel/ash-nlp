@@ -138,6 +138,10 @@ def initialize_unified_managers():
         unified_config = create_unified_config_manager()
         logger.info("✅ UnifiedConfigManager created successfully")
 
+        logger.info("🔧 Initializing shared utilities manager...")
+        shared_utilities = create_shared_utilities_manager(unified_config)
+        logger.info("✅ Shared utilities manager initialized...")
+
         logger.info("🔧 Initializing analysis parameters manager...")
         analysis_parameters = create_analysis_parameters_manager(unified_config)
         logger.info("✅ Analysis parameters manager initialized...")
@@ -173,10 +177,6 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing server config manager...")
         server_config = create_server_config_manager(unified_config)
         logger.info("✅ Server config manager initialized...")
-
-        logger.info("🔧 Initializing shared utilities manager...")
-        shared_utilities = create_shared_utilities_manager(unified_config)
-        logger.info("✅ Shared utilities manager initialized...")
 
         logger.info("🔧 Initializing storage manager...")
         storage_config = create_storage_config_manager(unified_config)
