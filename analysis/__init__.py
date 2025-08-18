@@ -286,7 +286,6 @@ def create_crisis_analyzer(model_ensemble_manager, crisis_pattern_manager=None, 
 __all__ = [
     # Core analyzer classes
     "CrisisAnalyzer",
-    "PhraseExtractor", 
     
     # Metadata
     "ANALYSIS_CAPABILITIES",
