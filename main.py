@@ -1,7 +1,7 @@
 # ash-nlp/main.py
 """
 Ash-NLP Main Application Entry Point for Ash NLP Service
-FILE VERSION: v3.1-3e-4.2-1
+FILE VERSION: v3.1-3e-4.2-3
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -29,12 +29,14 @@ from managers.unified_config_manager import create_unified_config_manager
 from managers.analysis_parameters_manager import create_analysis_parameters_manager
 from managers.crisis_pattern_manager import create_crisis_pattern_manager
 from managers.feature_config_manager import create_feature_config_manager
+from managers.learning_system_manager import create_learning_system_manager
 from managers.logging_config_manager import create_logging_config_manager
 from managers.model_ensemble_manager import create_model_ensemble_manager
 from managers.performance_config_manager import create_performance_config_manager
 from managers.pydantic_manager import create_pydantic_manager
 from managers.server_config_manager import create_server_config_manager
 from managers.settings_manager import create_settings_manager
+from managers.shared_utilities import create_shared_utilities_manager
 from managers.storage_config_manager import create_storage_config_manager
 from managers.threshold_mapping_manager import create_threshold_mapping_manager
 from managers.zero_shot_manager import create_zero_shot_manager
@@ -148,6 +150,10 @@ def initialize_unified_managers():
         feature_config = create_feature_config_manager(unified_config)
         logger.info("✅ Feature config manager initialized...")
 
+        logger.info("🔧 Initializing learning system manager...")
+        learning_system = create_learning_system_manager(unified_config)
+        logger.info("✅ Learning system manager initialized...")
+
         logger.info("🔧 Initializing logging config manager...")
         logging_config = create_logging_config_manager(unified_config)
         logger.info("✅ Logging config manager initialized...")
@@ -167,6 +173,10 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing server config manager...")
         server_config = create_server_config_manager(unified_config)
         logger.info("✅ Server config manager initialized...")
+
+        logger.info("🔧 Initializing shared utilities manager...")
+        shared_utilities = create_shared_utilities_manager(unified_config)
+        logger.info("✅ Shared utilities manager initialized...")
 
         logger.info("🔧 Initializing storage manager...")
         storage_config = create_storage_config_manager(unified_config)
@@ -190,10 +200,12 @@ def initialize_unified_managers():
             analysis_parameters_manager=analysis_parameters,
             crisis_pattern_manager=crisis_pattern,
             feature_config_manager=feature_config,
+            learning_system_manager=learning_system,
             logging_config_manager=logging_config,
             model_ensemble_manager=model_ensemble_manager,
             performance_config_manager=performance_config,
             pydantic_manager=pydantic_manager,
+            shared_utilities_manager=shared_utilities,
             server_config_manager=server_config,
             storage_config_manager=storage_config,
             threshold_mapping_manager=threshold_mapping,
@@ -203,6 +215,7 @@ def initialize_unified_managers():
 
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
+            unified_config,
             model_ensemble_manager=model_ensemble_manager,
             crisis_pattern_manager=crisis_pattern,
             analysis_parameters_manager=analysis_parameters,
@@ -219,11 +232,13 @@ def initialize_unified_managers():
             'crisis_pattern': crisis_pattern,
             'context_pattern': context_pattern_manager,
             'feature_config': feature_config,
+            'learning_system': learning_system,
             'logging_config': logging_config,
             'model_ensemble_manager': model_ensemble_manager,
             'performance_config': performance_config,
             'pydantic_manager': pydantic_manager,
             'server_config': server_config,
+            'shared_utilities_manager': shared_utilities,
             'storage_config': storage_config,
             'threshold_mapping': threshold_mapping,
             'zero_shot_manager': zero_shot_manager,
