@@ -154,7 +154,7 @@ class CrisisPatternManager:
             logger.info(f"Pattern Performance [{status}]: {pattern_name} - {execution_time:.3f}s")
             if details:
                 logger.debug(f"Pattern Performance Details: {details}")
-            return None
+            return True  # Return True instead of None for backward compatibility
             
         elif method_name == 'update_pattern_from_feedback':
             logger.info(f"Pattern update feedback received - Use LearningSystemManager for actual learning")
