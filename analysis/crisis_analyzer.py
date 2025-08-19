@@ -1,7 +1,7 @@
 # ash-nlp/analysis/crisis_analyzer.py
 """
 Crisis Analyzer for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-7
+FILE VERSION: v3.1-3e-4.2-8
 LAST MODIFIED: 2025-08-18
 PHASE: 3e, Step 4.2 - Enhanced CrisisAnalyzer with SharedUtilities and LearningSystem integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -104,10 +104,10 @@ class CrisisAnalyzer:
     # PHASE 3E STEP 4.2: CONSOLIDATED ANALYSIS METHODS FROM ANALYSISPARAMETERSMANAGER
     # ========================================================================
     
-    def get_analysis_crisis_thresholds(self, mode: str = 'majority') -> Dict[str, float]:
+    def get_analysis_crisis_thresholds(self, mode: str = 'consensus') -> Dict[str, float]:
         """
         Get crisis thresholds for analysis (consolidated from AnalysisParametersManager)
-        Updated for Phase 3d Step 10.10: Now delegates to ThresholdMappingManager for mode-specific thresholds
+        FIXED: Now delegates to ThresholdMappingManager for proper environment variable resolution
         
         Args:
             mode: Ensemble mode ('consensus', 'majority', 'weighted')
@@ -116,46 +116,58 @@ class CrisisAnalyzer:
             Dictionary of crisis threshold settings for the specified mode
         """
         try:
+            # STEP 1: Try to delegate to ThresholdMappingManager (preferred approach)
+            if self.threshold_mapping_manager:
+                try:
+                    # Use ThresholdMappingManager which has proper environment variable resolution
+                    thresholds = self.threshold_mapping_manager.get_ensemble_thresholds_for_mode(mode)
+                    if thresholds and all(isinstance(v, (int, float)) for v in thresholds.values()):
+                        logger.debug(f"✅ Got thresholds from ThresholdMappingManager for mode '{mode}': {thresholds}")
+                        return thresholds
+                    else:
+                        logger.warning(f"⚠️ ThresholdMappingManager returned invalid thresholds: {thresholds}")
+                except Exception as e:
+                    logger.warning(f"⚠️ ThresholdMappingManager failed: {e}")
+
+            # STEP 2: Fallback to UnifiedConfigManager direct access
             if self.unified_config_manager:
-                if (mode == 'consensus'):
+                try:
                     threshold_config = self.unified_config_manager.get_config_section(
                         'threshold_mapping',
-                        'threshold_mapping_by_mode.consensus.ensemble_thresholds',
+                        f'threshold_mapping_by_mode.{mode}.ensemble_thresholds',
                         {}
                     )
-                elif (mode == 'majority'):
-                    threshold_config = self.unified_config_manager.get_config_section(
-                        'threshold_mapping',
-                        'threshold_mapping_by_mode.majority.ensemble_thresholds',
-                        {}
-                    )
-                elif (mode == 'weighted'):
-                    threshold_config = self.unified_config_manager.get_config_section(
-                        'threshold_mapping',
-                        'threshold_mapping_by_mode.majority.ensemble_thresholds',
-                        {}
-                    )
-                else:
-                    logger.error('    Ensemble Mode is not defined...')
-                    return
 
+                    if threshold_config:
+                        # Convert all values to float and provide safe defaults
+                        safe_thresholds = {}
+                        defaults = {
+                            'critical': 0.7,
+                            'high': 0.45,
+                            'medium': 0.25,
+                            'low': 0.12
+                        }
+                        
+                        for key, default_val in defaults.items():
+                            try:
+                                safe_thresholds[key] = float(threshold_config.get(key, default_val))
+                            except (ValueError, TypeError):
+                                logger.warning(f"⚠️ Invalid threshold value for {key}, using default {default_val}")
+                                safe_thresholds[key] = default_val
+                        
+                        logger.debug(f"✅ Got thresholds from UnifiedConfig for mode '{mode}': {safe_thresholds}")
+                        return safe_thresholds
+                except Exception as e:
+                    logger.warning(f"⚠️ UnifiedConfigManager access failed: {e}")
 
-                if threshold_config:
-                    return {
-                        'critical': threshold_config.get('critical', 0.7),
-                        'high': threshold_config.get('high', 0.45),
-                        'medium': threshold_config.get('medium', 0.25),
-                        'low': threshold_config.get('low', 0.12)
-                    }
-
-            # Final fallback: Mode-specific defaults based on Phase 3d configuration
+            # STEP 3: Final fallback with mode-specific defaults
             mode_defaults = {
-                'consensus': {'low': 0.12, 'medium': 0.30, 'high': 0.50, 'critical': 0.7},
-                'majority': {'low': 0.11, 'medium': 0.28, 'high': 0.45, 'critical': 0.65},
-                'weighted': {'low': 0.13, 'medium': 0.32, 'high': 0.55, 'critical': 0.75}
+                'consensus': {'low': 0.12, 'medium': 0.25, 'high': 0.45, 'critical': 0.7},
+                'majority': {'low': 0.11, 'medium': 0.23, 'high': 0.42, 'critical': 0.65},
+                'weighted': {'low': 0.13, 'medium': 0.27, 'high': 0.48, 'critical': 0.7}
             }
 
-            thresholds = mode_defaults.get(mode, mode_defaults[f'{mode}'])
+            thresholds = mode_defaults.get(mode, mode_defaults['consensus'])
             logger.warning(f"⚠️ Using fallback thresholds for mode '{mode}': {thresholds}")
             return thresholds
 
