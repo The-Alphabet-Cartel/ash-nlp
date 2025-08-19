@@ -453,7 +453,7 @@ class TestContextPatternManagerCleanup(unittest.TestCase):
 if __name__ == '__main__':
     # Set up logging for test execution
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     
