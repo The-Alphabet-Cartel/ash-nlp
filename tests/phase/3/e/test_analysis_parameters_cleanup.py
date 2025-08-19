@@ -110,7 +110,7 @@ class TestAnalysisParametersManagerRealIntegration:
         assert isinstance(result, dict)
         assert result['use_instead'] == 'CrisisAnalyzer.get_analysis_confidence_boosts()'
         assert result['phase'] == '3e.5.1'
-        assert 'confidence boost' in result['reason'].lower()
+        assert 'crisis analysis consolidation' in result['reason'].lower()
         
         logger.info("✅ Real get_confidence_boosts migration reference test passed")
     
@@ -121,7 +121,7 @@ class TestAnalysisParametersManagerRealIntegration:
         assert isinstance(result, dict)
         assert result['use_instead'] == 'CrisisAnalyzer.get_analysis_pattern_weights()'
         assert result['phase'] == '3e.5.1'
-        assert 'pattern' in result['reason'].lower()
+        assert 'crisis analysis consolidation' in result['reason'].lower()
         
         logger.info("✅ Real get_pattern_weights migration reference test passed")
     
@@ -132,7 +132,7 @@ class TestAnalysisParametersManagerRealIntegration:
         assert isinstance(result, dict)
         assert result['use_instead'] == 'CrisisAnalyzer.get_analysis_algorithm_parameters()'
         assert result['phase'] == '3e.5.1'
-        assert 'algorithm' in result['reason'].lower()
+        assert 'crisis analysis consolidation' in result['reason'].lower()
         
         logger.info("✅ Real get_algorithm_parameters migration reference test passed")
     
