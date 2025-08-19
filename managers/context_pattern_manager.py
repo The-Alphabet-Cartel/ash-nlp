@@ -1,17 +1,23 @@
-#!/usr/bin/env python3
 # ash-nlp/managers/context_pattern_manager.py
 """
 Context Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-4.3-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.8 - Context Pattern Management
+FILE VERSION: v3.1-3e-5.4-1
+LAST MODIFIED: 2025-08-19
+PHASE: 3e, Sub-step 5.4 - ContextPatternManager Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: NEW - Context pattern functionality consolidated from utils/context_helpers.py
+CONSOLIDATION STATUS: Methods migrated to SharedUtilities + CrisisAnalyzer with references
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 SAFETY NOTICE: This manager provides context analysis for crisis detection patterns.
 Context signals help determine the severity and urgency of mental health crisis situations.
+
+MIGRATION REFERENCES (Phase 3e):
+- validate_context_data() → SharedUtilitiesManager.validate_data_structure()
+- log_context_performance() → SharedUtilitiesManager.log_performance_metric()  
+- extract_context_signals() → CrisisAnalyzer.extract_context_signals()
+- analyze_sentiment_context() → CrisisAnalyzer.analyze_sentiment_context()
+- score_term_in_context() → CrisisAnalyzer.score_term_in_context()
 """
 
 import logging
@@ -29,22 +35,20 @@ class ContextPatternManager:
     Context Pattern Manager for semantic and contextual analysis of crisis messages
     
     Features:
-    - Context signal extraction and analysis
-    - Negation detection for sentiment interpretation
-    - Sentiment context analysis with polarity flipping
     - Enhanced context analysis with crisis pattern integration
-    - Term relevance scoring in context windows
+    - Negation detection for sentiment interpretation
+    - Context signal processing for crisis detection
     - v3.1 JSON configuration compatibility with existing environment variables
     - Production-ready error handling and resilience
     
-    This manager consolidates all context analysis functionality previously scattered
-    across utils/context_helpers.py, providing centralized, configurable context
-    pattern management for the crisis detection system.
+    This manager consolidates core context analysis functionality while delegating
+    utility methods to SharedUtilitiesManager and analysis methods to CrisisAnalyzer
+    for better architecture compliance and reduced duplication.
     
     Integration:
     - Works with CrisisPatternManager for enhanced pattern detection
-    - Integrates with AnalysisParametersManager for semantic parameters
-    - Used by CrisisAnalyzer for comprehensive message analysis
+    - Integrates with CrisisAnalyzer for comprehensive message analysis
+    - Uses SharedUtilitiesManager for common utility functions
     """
 
     def __init__(self, unified_config: UnifiedConfigManager):
@@ -69,7 +73,7 @@ class ContextPatternManager:
         # Load configuration during initialization
         self._load_configuration()
         
-        logger.info("ContextPatternManager v3.1-3d-10.8-1 initialized successfully")
+        logger.info("ContextPatternManager v3.1-3e-5.4-1 initialized successfully")
 
     def _load_configuration(self) -> None:
         """Load context patterns and analysis parameters from configuration"""
@@ -84,23 +88,15 @@ class ContextPatternManager:
             else:
                 logger.debug("✅ Context Patterns Loaded.")
             
-            # Load analysis parameters for semantic analysis - FIXED: Use correct method
+            # Load analysis parameters using get_config_section method
             try:
-                # Try different methods to load analysis parameters
                 logger.debug("📋 Loading Analysis Parameters...")
-                if hasattr(self.unified_config, 'load_config_file'):
-                    logger.debug("📋 Trying 'load_config_file'...")
-                    self.analysis_params = self.unified_config.load_config_file('analysis_parameters')
-                else:
-                    # Fallback to loading from config cache if available
-                    logger.debug("❌ Neither 'load_config', 'load_config_file', nor 'get_config' worked, trying cache (this should not work ... we've removed the cache)...")
-                    self.analysis_params = getattr(self.unified_config, 'config_cache', {}).get('analysis_parameters', {})
+                self.analysis_params = self.unified_config.get_config_section('analysis_parameters', '', {})
+                if not self.analysis_params:
+                    logger.warning("⚠️ Analysis parameters not found, using safe defaults")
+                    self.analysis_params = self._get_safe_analysis_defaults()
             except Exception as param_error:
-                logger.warning(f"❌ Could not load analysis parameters: {param_error}")
-                self.analysis_params = {}
-                
-            if not self.analysis_params:
-                logger.warning("⚠️ Analysis parameters not found, using safe defaults")
+                logger.warning(f"⚠️ Could not load analysis parameters: {param_error}")
                 self.analysis_params = self._get_safe_analysis_defaults()
                 
             logger.info("✅ Context pattern configuration loaded successfully")
@@ -134,43 +130,103 @@ class ContextPatternManager:
         }
 
     # ========================================================================
-    # CORE CONTEXT ANALYSIS METHODS - Migrated from utils/context_helpers.py
+    # MIGRATION REFERENCES - Phase 3e Consolidation
     # ========================================================================
 
-    def extract_context_signals(self, message: str) -> Dict[str, Any]:
+    def _handle_deprecated_method(self, method_name: str, new_location: str, 
+                                 additional_info: str = "") -> Dict[str, Any]:
         """
-        Extract basic context signals from message
+        Consolidated handler for deprecated methods moved during Phase 3e consolidation
         
         Args:
-            message: Message text to analyze
+            method_name: Name of the deprecated method
+            new_location: Where the method has been moved to
+            additional_info: Additional context for the migration
             
         Returns:
-            Dictionary containing context signals and metadata
-            
-        Note:
-            Migrated from utils/context_helpers.py - extract_context_signals()
-            This function provides basic context signals only.
+            Dictionary with migration information and benefits
         """
-        message_lower = message.lower().strip()
-        
-        # Basic context signals
-        context = {
-            'message_length': len(message),
-            'word_count': len(message.split()),
-            'has_question_mark': '?' in message,
-            'has_exclamation': '!' in message,
-            'has_capitalization': any(c.isupper() for c in message),
-            'negation_context': self.detect_negation_context(message),
-            'temporal_indicators': self._extract_basic_temporal_indicators(message_lower),
-            'message_lower': message_lower,
-            'social_isolation_indicators': self._count_social_isolation_indicators(message_lower),
-            'hopelessness_indicators': self._count_hopelessness_indicators(message_lower),
-            # Flags for pattern analysis integration
-            'requires_pattern_analysis': True,
-            'pattern_manager_needed': True
+        migration_info = {
+            'status': 'moved',
+            'original_method': method_name,
+            'new_location': new_location,
+            'migration_phase': 'Phase 3e - Manager Consolidation',
+            'benefits': [
+                'Eliminated code duplication across managers',
+                'Centralized utility functions for better maintainability',
+                'Improved architecture compliance with Clean v3.1',
+                'Enhanced crisis detection through consolidated analysis'
+            ],
+            'usage_instruction': f'Use {new_location} instead of ContextPatternManager.{method_name}()',
+            'additional_info': additional_info
         }
         
-        return context
+        logger.info(f"🔄 Method '{method_name}' has been moved to {new_location} (Phase 3e)")
+        return migration_info
+
+    def validate_context_data(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        DEPRECATED: Moved to SharedUtilitiesManager.validate_data_structure()
+        
+        This method has been moved to SharedUtilitiesManager for better code organization.
+        """
+        return self._handle_deprecated_method(
+            'validate_context_data',
+            'SharedUtilitiesManager.validate_data_structure',
+            'Context data validation is now handled by centralized validation utilities'
+        )
+
+    def log_context_performance(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        DEPRECATED: Moved to SharedUtilitiesManager.log_performance_metric()
+        
+        This method has been moved to SharedUtilitiesManager for better code organization.
+        """
+        return self._handle_deprecated_method(
+            'log_context_performance',
+            'SharedUtilitiesManager.log_performance_metric',
+            'Performance logging is now handled by centralized logging utilities'
+        )
+
+    def extract_context_signals(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        DEPRECATED: Moved to CrisisAnalyzer.extract_context_signals()
+        
+        This method has been moved to CrisisAnalyzer for enhanced crisis detection capabilities.
+        """
+        return self._handle_deprecated_method(
+            'extract_context_signals',
+            'CrisisAnalyzer.extract_context_signals',
+            'Context signal extraction is now part of the enhanced crisis analysis system'
+        )
+
+    def analyze_sentiment_context(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        DEPRECATED: Moved to CrisisAnalyzer.analyze_sentiment_context()
+        
+        This method has been moved to CrisisAnalyzer for enhanced crisis detection capabilities.
+        """
+        return self._handle_deprecated_method(
+            'analyze_sentiment_context',
+            'CrisisAnalyzer.analyze_sentiment_context',
+            'Sentiment context analysis is now integrated with crisis detection algorithms'
+        )
+
+    def score_term_in_context(self, *args, **kwargs) -> Dict[str, Any]:
+        """
+        DEPRECATED: Moved to CrisisAnalyzer.score_term_in_context()
+        
+        This method has been moved to CrisisAnalyzer for enhanced crisis detection capabilities.
+        """
+        return self._handle_deprecated_method(
+            'score_term_in_context',
+            'CrisisAnalyzer.score_term_in_context',
+            'Term scoring in context is now optimized for crisis detection scenarios'
+        )
+
+    # ========================================================================
+    # CORE CONTEXT ANALYSIS METHODS - Enhanced and Crisis-Specific
+    # ========================================================================
 
     def detect_negation_context(self, message: str) -> bool:
         """
@@ -181,9 +237,6 @@ class ContextPatternManager:
             
         Returns:
             True if negation patterns detected, False otherwise
-            
-        Note:
-            Migrated from utils/context_helpers.py - detect_negation_context()
         """
         message_lower = message.lower().strip()
         
@@ -192,48 +245,6 @@ class ContextPatternManager:
                 return True
         
         return False
-
-    def analyze_sentiment_context(self, message: str, base_sentiment: float = 0.0) -> Dict[str, Any]:
-        """
-        Analyze sentiment context for the message
-        
-        Args:
-            message: Message text to analyze
-            base_sentiment: Base sentiment score to work with
-            
-        Returns:
-            Dictionary with sentiment context analysis results
-            
-        Note:
-            Migrated from utils/context_helpers.py - analyze_sentiment_context()
-            Enhanced with configuration support
-        """
-        context = self.extract_context_signals(message)
-        
-        # Get semantic analysis parameters from existing .env.template variables
-        context_window = self._get_context_window()
-        negative_threshold = self._get_negative_threshold()
-        
-        sentiment_context = {
-            'base_sentiment': base_sentiment,
-            'negation_detected': context['negation_context'],
-            'context_window': context_window,
-            'negative_threshold': negative_threshold,
-            'message_indicators': {
-                'social_isolation': context['social_isolation_indicators'],
-                'hopelessness': context['hopelessness_indicators'],
-                'temporal_urgency': len(context['temporal_indicators'])
-            }
-        }
-        
-        # Analyze sentiment polarity
-        if context['negation_context'] and base_sentiment != 0.0:
-            sentiment_context['sentiment_flip_candidate'] = True
-            sentiment_context['original_sentiment'] = base_sentiment
-        else:
-            sentiment_context['sentiment_flip_candidate'] = False
-            
-        return sentiment_context
 
     def process_sentiment_with_flip(self, message: str, sentiment_score: float) -> Dict[str, Any]:
         """
@@ -246,23 +257,24 @@ class ContextPatternManager:
         Returns:
             Dictionary with processed sentiment results
             
-        Note:
-            Migrated from utils/context_helpers.py - process_sentiment_with_flip()
+        Note: Uses CrisisAnalyzer.analyze_sentiment_context() for enhanced analysis
         """
-        sentiment_context = self.analyze_sentiment_context(message, sentiment_score)
-        
+        # This method now delegates to CrisisAnalyzer for enhanced context analysis
         processed_sentiment = {
             'original_score': sentiment_score,
             'final_score': sentiment_score,
             'flip_applied': False,
-            'context_analysis': sentiment_context
+            'context_analysis': {
+                'negation_detected': self.detect_negation_context(message),
+                'note': 'Enhanced analysis available via CrisisAnalyzer.analyze_sentiment_context()'
+            }
         }
         
-        # Apply sentiment flip if negation detected and score is significant
-        if sentiment_context['sentiment_flip_candidate'] and abs(sentiment_score) > 0.1:
+        # Apply basic sentiment flip if negation detected and score is significant
+        if processed_sentiment['context_analysis']['negation_detected'] and abs(sentiment_score) > 0.1:
             processed_sentiment['final_score'] = -sentiment_score
             processed_sentiment['flip_applied'] = True
-            logger.debug(f"Sentiment flip applied: {sentiment_score} → {-sentiment_score}")
+            logger.debug(f"Basic sentiment flip applied: {sentiment_score} → {-sentiment_score}")
         
         return processed_sentiment
 
@@ -277,18 +289,24 @@ class ContextPatternManager:
         Returns:
             Enhanced context analysis results
             
-        Note:
-            Migrated from utils/context_helpers.py - perform_enhanced_context_analysis()
+        Note: For full context analysis, use CrisisAnalyzer.extract_context_signals()
         """
         
-        # Start with basic context signals
-        context = self.extract_context_signals(message)
+        # Basic context information
+        context = {
+            'message_length': len(message),
+            'word_count': len(message.split()),
+            'has_question_mark': '?' in message,
+            'has_exclamation': '!' in message,
+            'has_capitalization': any(c.isupper() for c in message),
+            'negation_context': self.detect_negation_context(message),
+            'temporal_indicators': self._extract_basic_temporal_indicators(message.lower()),
+            'enhanced_analysis_note': 'For complete context analysis, use CrisisAnalyzer.extract_context_signals()'
+        }
         
         if crisis_pattern_manager:
             try:
                 # Get enhanced pattern analysis from CrisisPatternManager
-                context_patterns = crisis_pattern_manager.get_crisis_context_patterns()
-                positive_patterns = crisis_pattern_manager.get_positive_context_patterns()
                 temporal_analysis = crisis_pattern_manager.analyze_temporal_indicators(message)
                 
                 # Merge advanced analysis into context
@@ -316,73 +334,6 @@ class ContextPatternManager:
         
         return context
 
-    def score_term_in_context(self, term: str, message: str, context_window: Optional[int] = None) -> Dict[str, Any]:
-        """
-        Score a term's relevance in message context
-        
-        Args:
-            term: Term to score
-            message: Full message text
-            context_window: Number of words around term to consider (uses config default if None)
-            
-        Returns:
-            Dictionary with term scoring results
-            
-        Note:
-            Migrated from utils/context_helpers.py - score_term_in_context()
-        """
-        
-        if context_window is None:
-            context_window = self._get_context_window()
-            
-        message_lower = message.lower()
-        term_lower = term.lower()
-        
-        if term_lower not in message_lower:
-            return {
-                'term': term,
-                'found': False,
-                'relevance_score': 0.0,
-                'context_words': []
-            }
-        
-        words = message_lower.split()
-        term_positions = []
-        
-        # Find all positions of the term
-        for i, word in enumerate(words):
-            if term_lower in word:
-                term_positions.append(i)
-        
-        context_words = []
-        for pos in term_positions:
-            start = max(0, pos - context_window)
-            end = min(len(words), pos + context_window + 1)
-            context_words.extend(words[start:end])
-        
-        # Remove duplicates while preserving order
-        context_words = list(dict.fromkeys(context_words))
-        
-        # Basic relevance scoring based on context
-        crisis_indicators = ['crisis', 'help', 'struggling', 'difficult', 'hard', 'scared', 'worried']
-        positive_indicators = ['good', 'great', 'happy', 'love', 'amazing', 'wonderful']
-        
-        crisis_score = sum(1 for word in context_words if word in crisis_indicators)
-        positive_score = sum(1 for word in context_words if word in positive_indicators)
-        
-        relevance_score = (crisis_score * 0.7 + len(context_words) * 0.1) / (positive_score * 0.5 + 1)
-        relevance_score = min(1.0, max(0.0, relevance_score))
-        
-        return {
-            'term': term,
-            'found': True,
-            'positions': term_positions,
-            'relevance_score': relevance_score,
-            'context_words': context_words,
-            'crisis_indicators': crisis_score,
-            'positive_indicators': positive_score
-        }
-
     # ========================================================================
     # CONFIGURATION HELPERS - Using existing .env.template variables
     # ========================================================================
@@ -390,7 +341,6 @@ class ContextPatternManager:
     def _get_context_window(self) -> int:
         """Get context window size from configuration"""
         try:
-            # Use existing .env.template variable: NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW
             return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_window', 3)
         except Exception as e:
             logger.warning(f"⚠️ Error getting context window: {e}, using default: 3")
@@ -399,8 +349,7 @@ class ContextPatternManager:
     def _get_context_boost_weight(self) -> float:
         """Get context boost weight from configuration"""
         try:
-            # Use existing .env.template variable: NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT
-            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_boost_weight', 3)
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_boost_weight', 1.5)
         except Exception as e:
             logger.warning(f"⚠️ Error getting context boost weight: {e}, using default: 1.5")
             return 1.5
@@ -408,8 +357,7 @@ class ContextPatternManager:
     def _get_negative_threshold(self) -> float:
         """Get negative sentiment threshold from configuration"""
         try:
-            # Use existing .env.template variable: NLP_ANALYSIS_SEMANTIC_NEGATIVE_THRESHOLD
-            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.negative_threshold', 3)
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.negative_threshold', 0.6)
         except Exception as e:
             logger.warning(f"⚠️ Error getting negative threshold: {e}, using default: 0.6")
             return 0.6
@@ -452,14 +400,22 @@ class ContextPatternManager:
     def get_configuration_status(self) -> Dict[str, Any]:
         """Get current configuration status"""
         return {
-            'manager_version': 'v3.1-3d-10.8-1',
+            'manager_version': 'v3.1-3e-5.4-1',
+            'phase': 'Phase 3e Sub-step 5.4 - Cleanup Complete',
             'initialization_time': self.initialization_time,
             'configuration_loaded': bool(self.context_config),
             'analysis_params_loaded': bool(self.analysis_params),
             'context_window': self._get_context_window(),
             'context_boost_weight': self._get_context_boost_weight(),
             'negative_threshold': self._get_negative_threshold(),
-            'patterns_available': len(self.basic_negation_patterns)
+            'patterns_available': len(self.basic_negation_patterns),
+            'migrated_methods': [
+                'validate_context_data → SharedUtilitiesManager.validate_data_structure',
+                'log_context_performance → SharedUtilitiesManager.log_performance_metric',
+                'extract_context_signals → CrisisAnalyzer.extract_context_signals',
+                'analyze_sentiment_context → CrisisAnalyzer.analyze_sentiment_context',
+                'score_term_in_context → CrisisAnalyzer.score_term_in_context'
+            ]
         }
 
     def reload_configuration(self) -> bool:
