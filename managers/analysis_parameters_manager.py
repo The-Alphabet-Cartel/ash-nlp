@@ -1,9 +1,9 @@
 # ash-nlp/managers/analysis_parameters_manager.py
 """
 Analysis Parameters Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-3.2-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3e, Step 3.2
+FILE VERSION: v3.1-3e-5.1-1
+LAST MODIFIED: 2025-08-18
+PHASE: 3e, Step 5.1 - Systematic Manager Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -19,13 +19,16 @@ logger = logging.getLogger(__name__)
 
 class AnalysisParametersManager:
     """
-    Analysis Parameters Manager with Phase 3d functionality and v3.1 JSON compatibility
+    Analysis Parameters Manager with Phase 3e functionality and v3.1 JSON compatibility
+    
+    PHASE 3E STEP 5.1 UPDATES:
+    - Crisis analysis methods migrated to CrisisAnalyzer for better consolidation
+    - Learning methods previously migrated to LearningSystemManager (Step 3)
+    - Core analysis parameter functionality preserved
+    - Migration references provided for moved methods
     
     Hybrid approach: Preserves all current enhanced functionality while ensuring
     compatibility with Clean v3.1 JSON configuration standards.
-    
-    REMOVED: Duplicate ensemble weight variables (now handled by ModelEnsembleManager)
-    ADDED: v3.1 JSON compatibility and contextual weighting support
     """
     
     def __init__(self, config_manager):
@@ -42,7 +45,7 @@ class AnalysisParametersManager:
         self.analysis_config = {}
         self._full_config = {}
         
-        logger.info("✅ AnalysisParametersManager v3.1d initialized - Phase 3d + v3.1 compatibility")
+        logger.info("✅ AnalysisParametersManager v3.1e-5.1 initialized - Phase 3e Step 5.1 cleanup")
         
         # Load configuration
         self._load_configuration()
@@ -51,7 +54,7 @@ class AnalysisParametersManager:
         """Load analysis parameters configuration with v3.1 compatibility"""
         try:
             # Load analysis parameters via UnifiedConfigManager
-            analysis_config_raw = self.config_manager.load_config_file('analysis_parameters')
+            analysis_config_raw = self.config_manager.get_config_section('analysis_parameters')
             
             if not analysis_config_raw:
                 logger.error("❌ Could not load analysis_parameters.json configuration")
@@ -70,7 +73,7 @@ class AnalysisParametersManager:
             
             logger.info("✅ Analysis parameters loaded from JSON configuration with environment overrides")
             logger.debug(f"📋 Configuration version: {config_version}")
-            logger.debug(f"🏗️ Compliance: {compliance}")
+            logger.debug(f"🗒️ Compliance: {compliance}")
             logger.debug(f"🔧 Architecture: {self.analysis_config.get('architecture', 'v3.1')}")
             
         except Exception as e:
@@ -78,51 +81,159 @@ class AnalysisParametersManager:
             raise ValueError(f"Analysis parameters configuration error: {e}")
     
     # ========================================================================
-    # CRISIS THRESHOLDS - Core Algorithm Configuration
+    # CRISIS ANALYSIS METHODS - PHASE 3E STEP 5.1: MIGRATED TO CRISIS ANALYZER
     # ========================================================================
     
-    def get_crisis_thresholds(self) -> Dict[str, float]:
+    def get_crisis_thresholds(self) -> Dict[str, Any]:
         """
-        Get crisis threshold settings for analysis algorithms
+        PHASE 3E STEP 5.1: Crisis threshold management now handled by CrisisAnalyzer
         
-        NOTE: Primary thresholds managed by ThresholdMappingManager in Phase 3c.
-        These are fallback/secondary thresholds for specific analysis components.
+        This method has been migrated to CrisisAnalyzer for specialized crisis analysis
+        functionality and better consolidation of crisis-related parameters.
         
         Returns:
-            Dictionary with high, medium, low thresholds
+            Dictionary indicating where to get crisis thresholds
         """
-        try:
-            thresholds_config = self._full_config.get('crisis_thresholds', {})
-            defaults = thresholds_config.get('defaults', {})
-            
-            # Extract thresholds with environment variable support and v3.1 compatibility
-            thresholds = {
-                'high': float(thresholds_config.get('high', defaults.get('high', 0.55))),
-                'medium': float(thresholds_config.get('medium', defaults.get('medium', 0.28))),
-                'low': float(thresholds_config.get('low', defaults.get('low', 0.16)))
-            }
-            
-            # Validate threshold ordering
-            if not (thresholds['high'] > thresholds['medium'] > thresholds['low']):
-                logger.warning(f"⚠️ Invalid threshold ordering: {thresholds}")
-                logger.warning("🔧 Using default thresholds")
-                return {'high': 0.55, 'medium': 0.28, 'low': 0.16}
-            
-            logger.debug(f"✅ Crisis thresholds: {thresholds}")
-            return thresholds
-            
-        except Exception as e:
-            logger.error(f"❌ Error loading crisis thresholds: {e}")
-            # Return safe defaults
-            return {'high': 0.55, 'medium': 0.28, 'low': 0.16}
+        logger.info("ℹ️ Phase 3e Step 5.1: Crisis thresholds now managed by CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.get_analysis_crisis_thresholds() for crisis threshold configuration")
+        
+        return {
+            'note': 'Crisis thresholds managed by CrisisAnalyzer',
+            'use_instead': 'CrisisAnalyzer.get_analysis_crisis_thresholds()',
+            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
+            'migration_date': '2025-08-18',
+            'phase': '3e.5.1',
+            'benefits': [
+                'Specialized crisis analysis functionality management',
+                'Enhanced crisis threshold processing',
+                'Consolidated crisis-related parameters',
+                'Better separation of concerns',
+                'Improved crisis detection accuracy'
+            ]
+        }
+
+    def get_analysis_timeouts(self) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 5.1: Analysis timeout management now handled by CrisisAnalyzer
+        
+        This method has been migrated to CrisisAnalyzer for specialized timeout
+        handling in crisis analysis scenarios.
+        
+        Returns:
+            Dictionary indicating where to get analysis timeouts
+        """
+        logger.info("ℹ️ Phase 3e Step 5.1: Analysis timeouts now managed by CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.get_analysis_timeouts() for timeout configuration")
+        
+        return {
+            'note': 'Analysis timeouts managed by CrisisAnalyzer',
+            'use_instead': 'CrisisAnalyzer.get_analysis_timeouts()',
+            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
+            'migration_date': '2025-08-18',
+            'phase': '3e.5.1',
+            'benefits': [
+                'Specialized timeout management for crisis scenarios',
+                'Enhanced analysis performance control',
+                'Crisis-specific timeout optimization',
+                'Better error handling for timeouts',
+                'Improved system reliability'
+            ]
+        }
+
+    def get_confidence_boosts(self) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 5.1: Confidence boost management now handled by CrisisAnalyzer
+        
+        This method has been migrated to CrisisAnalyzer for specialized confidence
+        boost handling in crisis analysis algorithms.
+        
+        Returns:
+            Dictionary indicating where to get confidence boosts
+        """
+        logger.info("ℹ️ Phase 3e Step 5.1: Confidence boosts now managed by CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.get_analysis_confidence_boosts() for confidence boost configuration")
+        
+        return {
+            'note': 'Confidence boosts managed by CrisisAnalyzer',
+            'use_instead': 'CrisisAnalyzer.get_analysis_confidence_boosts()',
+            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
+            'migration_date': '2025-08-18',
+            'phase': '3e.5.1',
+            'benefits': [
+                'Specialized confidence boost algorithms for crisis detection',
+                'Enhanced accuracy in crisis analysis',
+                'Crisis-specific confidence adjustments',
+                'Better false positive/negative handling',
+                'Improved crisis detection reliability'
+            ]
+        }
+
+    def get_pattern_weights(self) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 5.1: Pattern weight management now handled by CrisisAnalyzer
+        
+        This method has been migrated to CrisisAnalyzer for specialized pattern
+        weighting in crisis analysis scenarios.
+        
+        Returns:
+            Dictionary indicating where to get pattern weights
+        """
+        logger.info("ℹ️ Phase 3e Step 5.1: Pattern weights now managed by CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.get_analysis_pattern_weights() for pattern weight configuration")
+        
+        return {
+            'note': 'Pattern weights managed by CrisisAnalyzer',
+            'use_instead': 'CrisisAnalyzer.get_analysis_pattern_weights()',
+            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
+            'migration_date': '2025-08-18',
+            'phase': '3e.5.1',
+            'benefits': [
+                'Specialized pattern weighting for crisis scenarios',
+                'Enhanced pattern recognition in crisis detection',
+                'Crisis-specific pattern optimization',
+                'Better pattern matching accuracy',
+                'Improved crisis analysis precision'
+            ]
+        }
+
+    def get_algorithm_parameters(self) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 5.1: Algorithm parameter management now handled by CrisisAnalyzer
+        
+        This method has been migrated to CrisisAnalyzer for specialized algorithm
+        parameter management in crisis analysis.
+        
+        Returns:
+            Dictionary indicating where to get algorithm parameters
+        """
+        logger.info("ℹ️ Phase 3e Step 5.1: Algorithm parameters now managed by CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.get_analysis_algorithm_parameters() for algorithm parameter configuration")
+        
+        return {
+            'note': 'Algorithm parameters managed by CrisisAnalyzer',
+            'use_instead': 'CrisisAnalyzer.get_analysis_algorithm_parameters()',
+            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
+            'migration_date': '2025-08-18',
+            'phase': '3e.5.1',
+            'benefits': [
+                'Specialized algorithm parameters for crisis analysis',
+                'Enhanced algorithm performance for crisis detection',
+                'Crisis-specific algorithm optimization',
+                'Better algorithm tuning capabilities',
+                'Improved crisis analysis effectiveness'
+            ]
+        }
     
     # ========================================================================
-    # CONFIDENCE BOOST PARAMETERS - Core Algorithm Configuration
+    # PRESERVED CONFIDENCE BOOST PARAMETERS - Core Algorithm Configuration
     # ========================================================================
     
     def get_confidence_boost_parameters(self) -> Dict[str, float]:
         """
         Get confidence boost parameters for analysis algorithms
+        
+        NOTE: This method preserves backward compatibility while the specialized
+        crisis confidence boosts are handled by CrisisAnalyzer.
         
         Returns:
             Dictionary with confidence boost settings
@@ -486,7 +597,7 @@ class AnalysisParametersManager:
         }
     
     # ========================================================================
-    # LEARNING SYSTEM PARAMETERS - PHASE 3D STEP 4 FUNCTIONALITY
+    # LEARNING SYSTEM PARAMETERS - PHASE 3E STEP 3 FUNCTIONALITY
     # ========================================================================
 
     def get_learning_system_parameters(self) -> Dict[str, Any]:
@@ -546,45 +657,62 @@ class AnalysisParametersManager:
         }
     
     # ========================================================================
-    # AGGREGATE ACCESS METHODS - Enhanced for v3.1
+    # AGGREGATE ACCESS METHODS - Enhanced for v3.1 with Phase 3e Updates
     # ========================================================================
     
     def get_all_parameters(self) -> Dict[str, Any]:
         """
         Get all analysis parameters in organized structure
-        Enhanced for v3.1 compatibility with Phase 3e learning consolidation
+        Enhanced for v3.1 compatibility with Phase 3e Step 5.1 crisis analysis consolidation
         """
         metadata = self._full_config.get('_metadata', {})
         
         return {
-            'version': '3.1e-consolidated',
-            'architecture': 'clean-v3.1-learning-consolidated', 
+            'version': '3.1e-5.1-consolidated',
+            'architecture': 'clean-v3.1-crisis-analysis-consolidated', 
             'json_version': metadata.get('configuration_version', 'unknown'),
             'compliance': metadata.get('compliance', 'unknown'),
-            'phase_3e_changes': {
-                'learning_consolidation': 'Learning methods moved to LearningSystemManager',
-                'enhanced_specialization': 'Better separation of analysis vs learning concerns',
+            'phase_3e_step_5_1_changes': {
+                'crisis_analysis_consolidation': 'Crisis analysis methods moved to CrisisAnalyzer',
+                'learning_consolidation': 'Learning methods moved to LearningSystemManager (Step 3)',
+                'enhanced_specialization': 'Better separation of analysis vs crisis vs learning concerns',
                 'consolidated_utilities': 'Uses SharedUtilitiesManager for common operations',
                 'preserved_functionality': 'All analysis parameter functionality maintained'
             },
-            'crisis_thresholds': self.get_crisis_thresholds(),
-            'confidence_boost': self.get_confidence_boost_parameters(),
-            'phrase_extraction': self.get_phrase_extraction_parameters(),
-            'pattern_learning': self.get_pattern_learning_parameters(),
-            'semantic_analysis': self.get_semantic_analysis_parameters(),
-            'contextual_weighting': self.get_contextual_weighting_parameters(),
-            'advanced_parameters': self.get_advanced_parameters(),
-            'integration_settings': self.get_integration_settings(),
-            'performance_settings': self.get_performance_parameters(),
-            'debugging_settings': self.get_debugging_settings(),
-            'experimental_features': self.get_experimental_features(),
-            'learning_system_note': self.get_learning_system_parameters(),  # Now returns migration info
-            'ensemble_weights_info': self.get_ensemble_weights()
+            'migrated_to_crisis_analyzer': {
+                'get_crisis_thresholds': 'CrisisAnalyzer.get_analysis_crisis_thresholds()',
+                'get_analysis_timeouts': 'CrisisAnalyzer.get_analysis_timeouts()', 
+                'get_confidence_boosts': 'CrisisAnalyzer.get_analysis_confidence_boosts()',
+                'get_pattern_weights': 'CrisisAnalyzer.get_analysis_pattern_weights()',
+                'get_algorithm_parameters': 'CrisisAnalyzer.get_analysis_algorithm_parameters()'
+            },
+            'preserved_parameters': {
+                'confidence_boost': self.get_confidence_boost_parameters(),
+                'phrase_extraction': self.get_phrase_extraction_parameters(),
+                'pattern_learning': self.get_pattern_learning_parameters(),
+                'semantic_analysis': self.get_semantic_analysis_parameters(),
+                'contextual_weighting': self.get_contextual_weighting_parameters(),
+                'advanced_parameters': self.get_advanced_parameters(),
+                'integration_settings': self.get_integration_settings(),
+                'performance_settings': self.get_performance_parameters(),
+                'debugging_settings': self.get_debugging_settings(),
+                'experimental_features': self.get_experimental_features()
+            },
+            'migration_references': {
+                'learning_system_note': self.get_learning_system_parameters(),  # Migration info
+                'ensemble_weights_info': self.get_ensemble_weights(),  # Migration info
+                'crisis_thresholds_note': self.get_crisis_thresholds(),  # Migration info
+                'confidence_boosts_note': self.get_confidence_boosts(),  # Migration info
+                'pattern_weights_note': self.get_pattern_weights(),  # Migration info
+                'algorithm_parameters_note': self.get_algorithm_parameters(),  # Migration info
+                'analysis_timeouts_note': self.get_analysis_timeouts()  # Migration info
+            }
         }
 
     def validate_parameters(self) -> Dict[str, Any]:
         """
         Validate all analysis parameters with v3.1 compliance checks
+        Updated for Phase 3e Step 5.1 with crisis analysis migration awareness
         
         Returns:
             Dictionary with validation results
@@ -600,12 +728,10 @@ class AnalysisParametersManager:
             elif metadata.get('configuration_version', '').startswith('3d.'):
                 logger.info("✅ Configuration is v3.1 compliant")
             
-            # Validate crisis thresholds
-            thresholds = self.get_crisis_thresholds()
-            if not (thresholds['high'] > thresholds['medium'] > thresholds['low']):
-                errors.append("Crisis thresholds not in correct order (high > medium > low)")
+            # Note about migrated crisis analysis methods
+            warnings.append("Phase 3e Step 5.1: Crisis analysis methods migrated to CrisisAnalyzer")
             
-            # Validate confidence boost parameters
+            # Validate confidence boost parameters (preserved)
             boost_params = self.get_confidence_boost_parameters()
             for param, value in boost_params.items():
                 if not isinstance(value, (int, float)):
@@ -628,8 +754,9 @@ class AnalysisParametersManager:
                 'valid': len(errors) == 0,
                 'errors': errors,
                 'warnings': warnings,
-                'parameters_validated': 'all-hybrid-v3.1',
+                'parameters_validated': 'analysis-parameters-post-crisis-migration',
                 'json_compliance': 'v3.1' if metadata else 'partial',
+                'phase_3e_step_5_1_status': 'crisis-analysis-methods-migrated',
                 'validation_timestamp': str(datetime.now())
             }
             
@@ -645,7 +772,7 @@ class AnalysisParametersManager:
     def get_configuration_summary(self) -> Dict[str, Any]:
         """
         Get summary of current configuration for monitoring and debugging
-        Enhanced for v3.1 hybrid compatibility
+        Enhanced for v3.1 hybrid compatibility with Phase 3e Step 5.1 updates
         
         Returns:
             Dictionary with configuration summary
@@ -654,30 +781,31 @@ class AnalysisParametersManager:
             metadata = self._full_config.get('_metadata', {})
             
             return {
-                'manager_version': 'v3.1d-hybrid',
+                'manager_version': 'v3.1e-5.1-crisis-migrated',
                 'json_configuration_version': metadata.get('configuration_version', 'unknown'),
                 'json_compliance': metadata.get('compliance', 'unknown'),
                 'last_updated': metadata.get('updated_date', 'unknown'),
-                'total_parameter_categories': 11,  # All parameter categories including new ones
+                'total_parameter_categories': 9,  # Parameter categories after migration
+                'migrated_methods': 5,  # Crisis analysis methods migrated to CrisisAnalyzer
                 'integration_mode': self.get_integration_settings().get('integration_mode', 'unknown'),
                 'performance_timeout_ms': self.get_performance_parameters().get('timeout_ms', 'unknown'),
                 'debug_logging_enabled': self.get_debugging_settings().get('enable_detailed_logging', False),
-                'learning_system_enabled': self.get_learning_system_parameters().get('enabled', False),
-                'contextual_weighting_enabled': True,  # New v3.1 feature
+                'contextual_weighting_enabled': True,  # v3.1 feature
                 'manager_initialized': True,
                 'configuration_loaded': self._full_config is not None,
-                'hybrid_features': {
-                    'phase_3d_learning_system': True,
-                    'v3_1_contextual_weighting': True,
-                    'enhanced_validation': True,
-                    'metadata_tracking': bool(metadata)
+                'phase_3e_step_5_1_features': {
+                    'crisis_analysis_migrated': 'Methods moved to CrisisAnalyzer',
+                    'learning_system_migrated': 'Methods moved to LearningSystemManager',
+                    'preserved_core_parameters': 'Analysis parameters maintained',
+                    'enhanced_specialization': 'Better separation of concerns',
+                    'migration_references': 'All moved methods have migration guidance'
                 }
             }
             
         except Exception as e:
             logger.error(f"❌ Error getting configuration summary: {e}")
             return {
-                'manager_version': 'v3.1d-hybrid',
+                'manager_version': 'v3.1e-5.1-crisis-migrated',
                 'json_configuration_version': 'error',
                 'error': str(e),
                 'manager_initialized': False
@@ -695,10 +823,10 @@ def create_analysis_parameters_manager(config_manager) -> AnalysisParametersMana
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        AnalysisParametersManager instance with hybrid v3.1 compatibility
+        AnalysisParametersManager instance with v3.1 compatibility and Phase 3e Step 5.1 updates
     """
     return AnalysisParametersManager(config_manager)
 
 __all__ = ['AnalysisParametersManager', 'create_analysis_parameters_manager']
 
-logger.info("✅ Hybrid AnalysisParametersManager v3.1d loaded - Phase 3d functionality + v3.1 compliance")
+logger.info("✅ AnalysisParametersManager v3.1e-5.1 loaded - Phase 3e Step 5.1 crisis analysis consolidation complete")
