@@ -60,6 +60,58 @@ class TestThresholdMappingManagerCleanup:
         except Exception as e:
             pytest.fail(f"Manager setup failed: {e}")
 
+    def test_factory_function_creates_manager(self, setup_managers):
+        """Test that factory function creates ThresholdMappingManager instance"""
+        managers = setup_managers
+        threshold_manager = managers['threshold_manager']
+        
+        assert threshold_manager is not None
+        assert hasattr(threshold_manager, 'unified_config')
+        assert hasattr(threshold_manager, 'threshold_config')
+        logger.info("✅ Factory function creates ThresholdMappingManager successfully")
+
+    def test_migration_reference_apply_threshold_to_confidence(self, setup_managers):
+        """Test migration reference for apply_threshold_to_confidence method"""
+        managers = setup_managers
+        threshold_manager = managers['threshold_manager']
+        
+        # Call the migrated method
+        result = threshold_manager.apply_threshold_to_confidence(0.6, 'consensus')
+        
+        # Verify it returns migration information
+        assert isinstance(result, dict)
+        assert 'note' in result
+        assert 'use_instead' in result
+        assert result['use_instead'] == 'CrisisAnalyzer.apply_crisis_thresholds()'
+        assert result['phase'] == '3e.5.2'
+        assert 'confidence' in result['parameters']
+        assert 'mode' in result['parameters']
+        assert result['parameters']['confidence'] == 0.6
+        assert result['parameters']['mode'] == 'consensus'
+        
+        logger.info("✅ apply_threshold_to_confidence migration reference working correctly")
+
+    def test_migration_reference_calculate_crisis_level(self, setup_managers):
+        """Test migration reference for calculate_crisis_level method"""
+        managers = setup_managers
+        threshold_manager = managers['threshold_manager']
+        
+        # Call the migrated method
+        result = threshold_manager.calculate_crisis_level(0.5, 'majority')
+        
+        # Verify it returns migration information
+        assert isinstance(result, dict)
+        assert 'note' in result
+        assert 'use_instead' in result
+        assert result['use_instead'] == 'CrisisAnalyzer.calculate_crisis_level_from_confidence()'
+        assert result['phase'] == '3e.5.2'
+        assert 'confidence' in result['parameters']
+        assert 'mode' in result['parameters']
+        assert result['parameters']['confidence'] == 0.5
+        assert result['parameters']['mode'] == 'majority'
+        
+        logger.info("✅ calculate_crisis_level migration reference working correctly")
+
     def test_migration_reference_validate_analysis_thresholds(self, setup_managers):
         """Test migration reference for validate_analysis_thresholds method"""
         managers = setup_managers
@@ -398,55 +450,3 @@ class TestThresholdMappingManagerCleanup:
 if __name__ == '__main__':
     # Run the tests
     pytest.main([__file__, '-v', '--tb=short'])
-        """Test that factory function creates ThresholdMappingManager instance"""
-        managers = setup_managers
-        threshold_manager = managers['threshold_manager']
-        
-        assert threshold_manager is not None
-        assert hasattr(threshold_manager, 'unified_config')
-        assert hasattr(threshold_manager, 'threshold_config')
-        logger.info("✅ Factory function creates ThresholdMappingManager successfully")
-
-    def test_migration_reference_apply_threshold_to_confidence(self, setup_managers):
-        """Test migration reference for apply_threshold_to_confidence method"""
-        managers = setup_managers
-        threshold_manager = managers['threshold_manager']
-        
-        # Call the migrated method
-        result = threshold_manager.apply_threshold_to_confidence(0.6, 'consensus')
-        
-        # Verify it returns migration information
-        assert isinstance(result, dict)
-        assert 'note' in result
-        assert 'use_instead' in result
-        assert result['use_instead'] == 'CrisisAnalyzer.apply_crisis_thresholds()'
-        assert result['phase'] == '3e.5.2'
-        assert 'confidence' in result['parameters']
-        assert 'mode' in result['parameters']
-        assert result['parameters']['confidence'] == 0.6
-        assert result['parameters']['mode'] == 'consensus'
-        
-        logger.info("✅ apply_threshold_to_confidence migration reference working correctly")
-
-    def test_migration_reference_calculate_crisis_level(self, setup_managers):
-        """Test migration reference for calculate_crisis_level method"""
-        managers = setup_managers
-        threshold_manager = managers['threshold_manager']
-        
-        # Call the migrated method
-        result = threshold_manager.calculate_crisis_level(0.5, 'majority')
-        
-        # Verify it returns migration information
-        assert isinstance(result, dict)
-        assert 'note' in result
-        assert 'use_instead' in result
-        assert result['use_instead'] == 'CrisisAnalyzer.calculate_crisis_level_from_confidence()'
-        assert result['phase'] == '3e.5.2'
-        assert 'confidence' in result['parameters']
-        assert 'mode' in result['parameters']
-        assert result['parameters']['confidence'] == 0.5
-        assert result['parameters']['mode'] == 'majority'
-        
-        logger.info("✅ calculate_crisis_level migration reference working correctly")
-
-    def test
