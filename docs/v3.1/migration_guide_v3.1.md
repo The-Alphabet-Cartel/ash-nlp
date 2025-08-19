@@ -154,28 +154,6 @@ ash/ash-nlp/
 │   │   ├── phase/
 |   │   │   ├── 3/
 |   |   │   │   ├── d/
-|   |   │   │   |   ├── step_1.md
-|   |   │   │   |   ├── step_2.md
-|   |   │   │   |   ├── step_3.md
-|   |   │   │   |   ├── step_4.md
-|   |   │   │   |   ├── step_5.md
-|   |   │   │   |   ├── step_6.md
-|   |   │   │   |   ├── step_7.md
-|   |   │   │   |   ├── step_8.md
-|   |   │   │   |   ├── step_9.md
-|   |   │   │   |   ├── step_10.md
-|   |   │   │   |   ├── step_10.5.md
-|   |   │   │   |   ├── step_10.6.md
-|   |   │   │   |   ├── step_10.7.md
-|   |   │   │   |   ├── step_10.8.md
-|   |   │   │   |   ├── step_10.9.md
-|   |   │   │   |   ├── step_10.10_method_agreement.md
-|   |   │   │   |   ├── step_10.10_progress.md
-|   |   │   │   |   ├── step_10.10.md
-|   |   │   │   |   ├── step_10.11_method_agreement.md
-|   |   │   │   |   ├── step_10.11_progress.md
-|   |   │   │   |   ├── step_10.11.md
-|   |   │   │   |   ├── step_10.12.md
 |   |   │   │   │   └── tracker.md
 |   |   │   │   └── e/
 |   |   │   │       ├── 1.2_method_overlap_matrix.md
