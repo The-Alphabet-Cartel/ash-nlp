@@ -22,8 +22,6 @@ MIGRATION VALIDATIONS:
 
 import unittest
 import logging
-import tempfile
-import json
 import os
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -37,103 +35,22 @@ class TestContextPatternManagerCleanup(unittest.TestCase):
     """Test suite for ContextPatternManager after Phase 3e cleanup"""
 
     def setUp(self):
-        """Set up test environment with real configuration files"""
-        # Create temporary directory for test configurations
-        self.test_dir = tempfile.mkdtemp()
-        self.config_dir = Path(self.test_dir) / 'config'
-        self.config_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Create test configuration files
-        self._create_test_config_files()
-        
-        # Copy existing logging_settings.json if it exists
-        existing_logging_config = Path('config/logging_settings.json')
-        if existing_logging_config.exists():
-            import shutil
-            shutil.copy2(existing_logging_config, self.config_dir / 'logging_settings.json')
-        else:
-            # Create minimal logging config if real one doesn't exist
-            self._create_minimal_logging_config()
-        
-        # Create UnifiedConfigManager for dependency injection
-        self.unified_config = UnifiedConfigManager(config_dir=str(self.config_dir))
+        """Set up test environment using existing configuration system"""
+        # Use the existing UnifiedConfigManager with default config directory
+        self.unified_config = UnifiedConfigManager()
         
         # Set up logging using the REAL LoggingConfigManager with proper UnifiedConfigManager
         self.logging_manager = LoggingConfigManager(self.unified_config)
         self.logger = logging.getLogger(__name__)
         
-        # Create ContextPatternManager instance
+        # Create ContextPatternManager instance using existing config system
         self.manager = ContextPatternManager(self.unified_config)
         
         self.logger.info("🧪 ContextPatternManager cleanup test setup completed")
 
     def tearDown(self):
         """Clean up test environment"""
-        # Clean up temporary files
-        import shutil
-        if os.path.exists(self.test_dir):
-            shutil.rmtree(self.test_dir)
-        
         self.logger.info("🧹 Test cleanup completed")
-
-    def _create_test_config_files(self):
-        """Create realistic test configuration files"""
-        
-        # Create crisis_patterns.json
-        crisis_patterns_config = {
-            "context_patterns": {
-                "configuration": {
-                    "enabled": True,
-                    "global_multiplier": 1.2,
-                    "context_window": 8,
-                    "priority_level": "high",
-                    "bidirectional_analysis": True
-                },
-                "patterns": {
-                    "isolation": ["alone", "lonely", "isolated"],
-                    "hopelessness": ["hopeless", "pointless", "worthless"],
-                    "temporal": ["today", "right now", "immediately"]
-                }
-            }
-        }
-        
-        with open(self.config_dir / 'crisis_patterns.json', 'w') as f:
-            json.dump(crisis_patterns_config, f, indent=2)
-        
-        # Create analysis_parameters.json
-        analysis_params_config = {
-            "semantic_analysis": {
-                "context_window": 5,
-                "similarity_threshold": 0.8,
-                "context_boost_weight": 2.0,
-                "negative_threshold": 0.7
-            },
-            "temporal_analysis": {
-                "window_size": 10,
-                "urgency_multiplier": 1.5
-            }
-        }
-        
-        with open(self.config_dir / 'analysis_parameters.json', 'w') as f:
-            json.dump(analysis_params_config, f, indent=2)
-
-    def _create_minimal_logging_config(self):
-        """Create minimal logging configuration if real one doesn't exist"""
-        logging_config = {
-            "logging": {
-                "level": "INFO",
-                "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                "handlers": {
-                    "console": {
-                        "class": "logging.StreamHandler",
-                        "level": "INFO"
-                    }
-                }
-            }
-        }
-        
-        with open(self.config_dir / 'logging_settings.json', 'w') as f:
-            json.dump(logging_config, f, indent=2)
 
     # ========================================================================
     # CORE INITIALIZATION TESTS
