@@ -397,7 +397,7 @@ class TestThresholdMappingManagerCleanup:
 
 if __name__ == '__main__':
     # Run the tests
-    pytest.main([__file__, '-v', '--tb=short'])_factory_function_creates_manager(self, setup_managers):
+    pytest.main([__file__, '-v', '--tb=short'])
         """Test that factory function creates ThresholdMappingManager instance"""
         managers = setup_managers
         threshold_manager = managers['threshold_manager']
