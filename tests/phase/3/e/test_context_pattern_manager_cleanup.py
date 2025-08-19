@@ -27,9 +27,9 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 # Import the managers we need for testing
-from managers.unified_config_manager import UnifiedConfigManager
+from managers.unified_config_manager import UnifiedConfigManager, create_unified_config_manager
 from managers.context_pattern_manager import ContextPatternManager, create_context_pattern_manager
-from managers.logging_config_manager import LoggingConfigManager
+from managers.logging_config_manager import LoggingConfigManager, create_logging_config_manager
 
 class TestContextPatternManagerCleanup(unittest.TestCase):
     """Test suite for ContextPatternManager after Phase 3e cleanup"""
@@ -37,14 +37,14 @@ class TestContextPatternManagerCleanup(unittest.TestCase):
     def setUp(self):
         """Set up test environment using existing configuration system"""
         # Use the existing UnifiedConfigManager with default config directory
-        self.unified_config = UnifiedConfigManager()
+        self.unified_config = create_unified_config_manager()
         
         # Set up logging using the REAL LoggingConfigManager with proper UnifiedConfigManager
-        self.logging_manager = LoggingConfigManager(self.unified_config)
+        self.logging_manager = create_logging_config_manager(self.unified_config)
         self.logger = logging.getLogger(__name__)
         
         # Create ContextPatternManager instance using existing config system
-        self.manager = ContextPatternManager(self.unified_config)
+        self.manager = create_context_pattern_manager(self.unified_config)
         
         self.logger.info("🧪 ContextPatternManager cleanup test setup completed")
 
