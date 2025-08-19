@@ -1,7 +1,7 @@
 # ash-nlp/managers/learning_system_manager.py
 """
 Learning System Manager for Ash-NLP Service
-FILE VERSION: v3.1-3e-3.2-2
+FILE VERSION: v3.1-3e-3.2-3
 LAST MODIFIED: 2025-08-17
 PHASE: 3e Step 3.2 - LearningSystemManager Implementation (Corrected)
 CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
@@ -84,7 +84,7 @@ class LearningSystemManager:
         """Load learning system configuration from UnifiedConfigManager"""
         try:
             # Access learning configuration through UnifiedConfigManager
-            self._learning_config = self.config_manager.get_analysis_config().get('learning_system', {})
+            self._learning_config = self.config_manager.get_config_section('learning_system', 'learning_configuration', {})
             
             if not self._learning_config:
                 self.logger.warning("⚠️ No learning_system configuration found, using defaults")

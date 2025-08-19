@@ -1,9 +1,9 @@
 <!-- ash-nlp/docs/v3.1/migration_guide_v3.1.md -->
 <!--
 Migration Guide v3.1 for Ash-NLP Service
-FILE VERSION: v3.1-3d-COMPLETE-3e-READY
+FILE VERSION: v3.1-3e-4.2-1
 LAST MODIFIED: 2025-08-16
-PHASE: 3d COMPLETE - Advancing to Phase 3e
+PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Phase 3d complete with production-ready configuration and advanced features
 -->
@@ -118,8 +118,7 @@ ash/ash-nlp/
 ├── api/                                     # API endpoints
 │   ├── __init__.py
 │   ├── admin_endpoints.py
-│   ├── ensemble_endpoints.py
-│   └── learning_endpoints.py
+│   └── ensemble_endpoints.py
 ├── backups/                                 # Backup Location
 │   └── learning_data/
 ├── cache/                                   # Caching Location
@@ -182,6 +181,7 @@ ash/ash-nlp/
 |   |   │   │   |   ├── step_10.10.md
 |   |   │   │   │   └── tracker.md
 |   |   │   │   └── e/
+|   |   │   │       ├── learning_method_extraction_plan.md
 |   |   │   │       ├── learning_methods_inventory.md
 |   |   │   │       ├── method_overlap_matrix.md
 |   |   │   │       ├── shared_utilities_architecture_design.md
@@ -229,7 +229,7 @@ ash/ash-nlp/
 │   └── phase/
 |       ├── 3/
 |       │   └── e/
-|       |       ├── test_learning_system_manager_integration.py
+|       |       ├── test_learning_system_manager.py
 |       |       └── test_shared_utilities_manager.py
 |       └── 4/
 |           ├── a/

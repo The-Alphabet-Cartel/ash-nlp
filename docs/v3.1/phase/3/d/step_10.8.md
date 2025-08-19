@@ -1,7 +1,7 @@
 <!-- ash-nlp/docs/v3.1/phase/3/d/step_10.8.md -->
 <!--
 Documentation for Phase 3d, Step 10.8 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3d-10.8-3
+FILE VERSION: v3.1-3e-4.2-1
 LAST MODIFIED: 2025-08-14
 PHASE: 3d, Step 10.8
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -54,7 +54,7 @@ MIGRATION STATUS: COMPLETE, Advancing to Step 10.9
   "crisis_level": "high",           ✅ Correct assessment  
   "confidence_score": 0.461,       ✅ Proper scoring
   "detected_categories": ["enhanced_hopelessness_patterns"],
-  "method": "crisis_analyzer_complete_v3d_step_10_8_fixed"
+  "method": "crisis_analyzer_complete_step_10_8_fixed"
 }
 ```
 

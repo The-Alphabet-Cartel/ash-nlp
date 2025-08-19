@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-4
+FILE VERSION: v3.1-3e-4.3-1
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -104,8 +104,7 @@ class UnifiedConfigManager:
             # Core system configuration
             'feature_flags': 'feature_flags.json',
             'label_config': 'label_config.json',
-            'learning_parameters': 'learning_parameters.json',
-            'learning_settings': 'learning_settings.json',
+            'learning_system': 'learning_system.json',
             'logging_settings': 'logging_settings.json',
             'model_ensemble': 'model_ensemble.json',
             'performance_settings': 'performance_settings.json',
@@ -963,6 +962,262 @@ class UnifiedConfigManager:
         except Exception as e:
             logger.error(f"❌ Error loading {config_file}: {e}")
             return {}
+
+    # ========================================================================
+    # NEW: Enhanced Configuration Section Access - Clean API
+    # ========================================================================
+    
+    def get_config_section(self, config_file: str, section_path: str = None, default: Any = None) -> Any:
+        """
+        Get a specific section from a configuration file with support for nested paths
+        
+        This method provides a clean, unified API for accessing configuration sections
+        with support for nested JSON structures and intelligent caching.
+        
+        Args:
+            config_file: Name of the configuration file (e.g., 'analysis_parameters')
+            section_path: Dot-separated path to the section (e.g., 'learning_system.thresholds')
+                         If None, returns the entire config file
+            default: Default value to return if section not found
+            
+        Returns:
+            The requested configuration section or default value
+            
+        Examples:
+            # Get entire config file
+            config = manager.get_config_section('analysis_parameters')
+            
+            # Get top-level section
+            learning = manager.get_config_section('analysis_parameters', 'learning_system')
+            
+            # Get nested section
+            thresholds = manager.get_config_section('analysis_parameters', 'learning_system.thresholds')
+            
+            # Get with custom default
+            timeouts = manager.get_config_section('analysis_parameters', 'timeouts', {'ensemble': 30})
+        """
+        try:
+            # Load the configuration file
+            config_data = self.load_config_file(config_file)
+            
+            if not config_data:
+                logger.warning(f"⚠️ Configuration file '{config_file}' not found or empty")
+                return default if default is not None else {}
+            
+            # If no section path specified, return entire config
+            if section_path is None:
+                return config_data
+            
+            # Navigate through the nested path
+            result = config_data
+            path_parts = section_path.split('.')
+            
+            for part in path_parts:
+                if isinstance(result, dict) and part in result:
+                    result = result[part]
+                else:
+                    logger.debug(f"📂 Section path '{section_path}' not found in '{config_file}', using default")
+                    return default if default is not None else {}
+            
+            logger.debug(f"✅ Retrieved section '{section_path}' from '{config_file}'")
+            return result
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting config section '{section_path}' from '{config_file}': {e}")
+            return default if default is not None else {}
+    
+    def get_config_section_with_env_fallback(self, config_file: str, section_path: str, 
+                                           env_prefix: str = None, default: Any = None) -> Any:
+        """
+        Get configuration section with environment variable fallback support
+        
+        This method first tries to get the section from JSON config, then falls back
+        to environment variables with a specified prefix pattern.
+        
+        Args:
+            config_file: Name of the configuration file
+            section_path: Dot-separated path to the section
+            env_prefix: Environment variable prefix (e.g., 'NLP_LEARNING_')
+            default: Default value if neither config nor env vars found
+            
+        Returns:
+            Configuration section with environment variable overrides applied
+            
+        Example:
+            # Try JSON first, then env vars like NLP_LEARNING_RATE, NLP_LEARNING_ENABLED, etc.
+            learning = manager.get_config_section_with_env_fallback(
+                'analysis_parameters', 
+                'learning_system',
+                'NLP_LEARNING_'
+            )
+        """
+        try:
+            # First try to get from JSON config
+            result = self.get_config_section(config_file, section_path, {})
+            
+            # If we got something from JSON and no env prefix specified, return it
+            if result and env_prefix is None:
+                return result
+            
+            # Apply environment variable overrides if prefix specified
+            if env_prefix:
+                result = dict(result) if result else {}  # Ensure we have a mutable dict
+                
+                # Look for environment variables with the specified prefix
+                for env_var, env_value in os.environ.items():
+                    if env_var.startswith(env_prefix):
+                        # Convert env var name to config key
+                        # E.g., NLP_LEARNING_RATE -> rate
+                        config_key = env_var[len(env_prefix):].lower()
+                        
+                        # Convert environment value to appropriate type
+                        converted_value = self._convert_value_type(env_var, env_value)
+                        result[config_key] = converted_value
+                        
+                        logger.debug(f"🔧 Environment override: {env_var} -> {config_key} = {converted_value}")
+            
+            return result if result else (default if default is not None else {})
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting config section with env fallback: {e}")
+            return default if default is not None else {}
+    
+    def get_all_config_sections(self, config_file: str) -> Dict[str, Any]:
+        """
+        Get all top-level sections from a configuration file
+        
+        Returns a dictionary mapping section names to their contents.
+        Useful for debugging or comprehensive configuration access.
+        
+        Args:
+            config_file: Name of the configuration file
+            
+        Returns:
+            Dictionary of all top-level sections
+        """
+        try:
+            config_data = self.load_config_file(config_file)
+            
+            if not isinstance(config_data, dict):
+                logger.warning(f"⚠️ Config file '{config_file}' is not a dictionary")
+                return {}
+            
+            return {
+                section_name: section_data 
+                for section_name, section_data in config_data.items()
+                if not section_name.startswith('_')  # Skip metadata sections
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error getting all config sections from '{config_file}': {e}")
+            return {}
+    
+    def has_config_section(self, config_file: str, section_path: str) -> bool:
+        """
+        Check if a configuration section exists without loading it
+        
+        Args:
+            config_file: Name of the configuration file
+            section_path: Dot-separated path to check
+            
+        Returns:
+            True if the section exists, False otherwise
+        """
+        try:
+            result = self.get_config_section(config_file, section_path, None)
+            return result is not None
+        except Exception:
+            return False
+    
+    def list_config_files(self) -> List[str]:
+        """
+        Get a list of all available configuration files
+        
+        Returns:
+            List of configuration file names that can be loaded
+        """
+        return list(self.config_files.keys())
+    
+    def list_config_sections(self, config_file: str) -> List[str]:
+        """
+        Get a list of all top-level sections in a configuration file
+        
+        Args:
+            config_file: Name of the configuration file
+            
+        Returns:
+            List of section names in the configuration file
+        """
+        try:
+            config_data = self.load_config_file(config_file)
+            
+            if isinstance(config_data, dict):
+                return [
+                    section_name 
+                    for section_name in config_data.keys() 
+                    if not section_name.startswith('_')
+                ]
+            else:
+                return []
+                
+        except Exception as e:
+            logger.error(f"❌ Error listing sections in '{config_file}': {e}")
+            return []
+
+    # ========================================================================
+    # USAGE EXAMPLES AND DOCUMENTATION
+    # ========================================================================
+
+    """
+    USAGE EXAMPLES for the new get_config_section() method:
+
+    # Basic usage - get entire config file
+    analysis_config = config_manager.get_config_section('analysis_parameters')
+
+    # Get top-level section
+    learning_config = config_manager.get_config_section('analysis_parameters', 'learning_system')
+
+    # Get nested section with dot notation
+    thresholds = config_manager.get_config_section('analysis_parameters', 'learning_system.thresholds')
+
+    # Get with custom default
+    timeouts = config_manager.get_config_section('analysis_parameters', 'timeouts', {'ensemble': 30})
+
+    # Get mode-specific thresholds
+    default_thresholds = config_manager.get_config_section('threshold_mapping', 'modes.default')
+    emergency_thresholds = config_manager.get_config_section('threshold_mapping', 'modes.emergency')
+
+    # Check if section exists
+    if config_manager.has_config_section('analysis_parameters', 'learning_system'):
+        learning_config = config_manager.get_config_section('analysis_parameters', 'learning_system')
+
+    # Get with environment variable fallback
+    learning_config = config_manager.get_config_section_with_env_fallback(
+        'analysis_parameters', 
+        'learning_system',
+        'NLP_LEARNING_'
+    )
+
+    # List available configurations
+    available_configs = config_manager.list_config_files()
+    # Returns: ['analysis_parameters', 'threshold_mapping', 'feature_flags', ...]
+
+    # List sections in a config file
+    sections = config_manager.list_config_sections('analysis_parameters')
+    # Returns: ['crisis_thresholds', 'learning_system', 'timeouts', ...]
+
+    MIGRATION BENEFITS:
+
+    # OLD (verbose and error-prone):
+    analysis_config = config_manager.load_config_file('analysis_parameters')
+    learning_config = analysis_config.get('learning_system', {})
+    thresholds = learning_config.get('thresholds', {})
+
+    # NEW (clean and simple):
+    thresholds = config_manager.get_config_section('analysis_parameters', 'learning_system.thresholds', {})
+
+    # The new method also handles errors gracefully and provides consistent logging
+    """
     
     # ========================================================================
     # BACKWARD COMPATIBILITY METHODS (PRESERVED FROM PREVIOUS PHASES)
