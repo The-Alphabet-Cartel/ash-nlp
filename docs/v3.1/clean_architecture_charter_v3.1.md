@@ -116,6 +116,16 @@ NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.0  # Existing variable
 - **Reduces Complexity**: Fewer variables to manage, test, and document
 - **Sustainable Development**: Encourages thoughtful design over quick additions
 
+### **Rule #8: Always use real-world tests and logger for testing - MANDATORY**
+- **Never use mock methods for testing**
+- **Always use the actual methods we've designed**
+- **Always use our LoggingConfigManager and logger methods as designed for testing.**
+  - `managers/logging_config_manager.py`
+
+#### **Benefits of Rule #8**:
+- **Tests the actual implementation**: Not just the logic behind it
+- **Ensures readability for human counterparts**: Key for testing so that we may assist in the testing and troubleshooting sequences
+
 ---
 
 ## 🔧 **MANAGER IMPLEMENTATION STANDARDS**
