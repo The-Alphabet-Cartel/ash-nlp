@@ -1,11 +1,11 @@
 # ash-nlp/managers/threshold_mapping_manager.py
 """
 Mode-Aware Threshold Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-4.3-3
-LAST MODIFIED: 2025-08-13
-PHASE: 3e, Step 3.2
+FILE VERSION: v3.1-3e-5.2-1
+LAST MODIFIED: 2025-08-19
+PHASE: 3e, Sub-step 5.2 - ThresholdMappingManager Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Added missing determine_crisis_level method, fixed environment variable resolution
+MIGRATION STATUS: Methods moved to CrisisAnalyzer and LearningSystemManager with migration references
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -22,6 +22,7 @@ class ThresholdMappingManager:
     Phase 3c: Mode-aware thresholds with dynamic ensemble mode detection
     Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
     Phase 3d Step 10.7: Added missing determine_crisis_level method
+    Phase 3e Sub-step 5.2: CLEANUP - Methods moved to CrisisAnalyzer and LearningSystemManager
     """
     
     def __init__(self, unified_config_manager, model_ensemble_manager=None):
@@ -41,7 +42,7 @@ class ThresholdMappingManager:
         # Load threshold mapping configuration using unified manager
         self._load_threshold_mapping_config()
         
-        logger.info("ThresholdMappingManager v3.1d Step 10.7 initialized - Crisis level determination method added")
+        logger.info("ThresholdMappingManager v3.1-3e-5.2-1 initialized - Phase 3e cleanup with migration references")
     
     def _load_threshold_mapping_config(self):
         """
@@ -50,7 +51,7 @@ class ThresholdMappingManager:
         """
         try:
             # NEW APPROACH: Just load the raw config - get_config_section() handles environment variables
-            raw_config = self.unified_config.load_config_file('threshold_mapping')
+            raw_config = self.unified_config.get_config_section('threshold_mapping')
             
             if not raw_config:
                 logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
@@ -198,15 +199,194 @@ class ThresholdMappingManager:
             error_msg = f"Threshold validation error: {str(e)}"
             logger.error(f"❌ {error_msg}")
             self._validation_errors.append(error_msg)
-    
+
     # ========================================================================
-    # STEP 10.7 FIX: MISSING CRISIS LEVEL DETERMINATION METHOD
+    # PHASE 3E SUB-STEP 5.2: MIGRATION REFERENCES FOR MOVED METHODS
+    # ========================================================================
+    
+    def apply_threshold_to_confidence(self, confidence: float, mode: str = 'consensus') -> str:
+        """
+        PHASE 3E SUB-STEP 5.2: Method moved to CrisisAnalyzer
+        
+        This method has been consolidated into CrisisAnalyzer.apply_crisis_thresholds()
+        for better organization of analysis-specific functionality.
+        
+        Args:
+            confidence: Confidence score (0.0 to 1.0)
+            mode: Analysis mode
+            
+        Returns:
+            Dictionary indicating where to find the new method
+        """
+        logger.info("ℹ️ Phase 3e Sub-step 5.2: apply_threshold_to_confidence() moved to CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.apply_crisis_thresholds() for threshold application")
+        
+        return {
+            'note': 'Threshold application moved to CrisisAnalyzer for better analysis consolidation',
+            'use_instead': 'CrisisAnalyzer.apply_crisis_thresholds()',
+            'reason': 'Phase 3e Sub-step 5.2 analysis method consolidation - moved to specialized analysis manager',
+            'migration_date': '2025-08-19',
+            'phase': '3e.5.2',
+            'parameters': {
+                'confidence': confidence,
+                'mode': mode
+            },
+            'benefits': [
+                'Consolidated analysis functionality in CrisisAnalyzer',
+                'Better separation of threshold configuration vs threshold application',
+                'Enhanced learning system integration in analysis context',
+                'Improved maintainability and testing',
+                'Direct access to SharedUtilities for enhanced error handling'
+            ]
+        }
+    
+    def calculate_crisis_level(self, confidence: float, mode: str = 'default') -> str:
+        """
+        PHASE 3E SUB-STEP 5.2: Method moved to CrisisAnalyzer
+        
+        This method has been consolidated into CrisisAnalyzer.calculate_crisis_level_from_confidence()
+        for better organization of analysis-specific functionality.
+        
+        Args:
+            confidence: Confidence score (0.0 to 1.0)
+            mode: Analysis mode
+            
+        Returns:
+            Dictionary indicating where to find the new method
+        """
+        logger.info("ℹ️ Phase 3e Sub-step 5.2: calculate_crisis_level() moved to CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.calculate_crisis_level_from_confidence() for crisis level calculation")
+        
+        return {
+            'note': 'Crisis level calculation moved to CrisisAnalyzer for better analysis consolidation',
+            'use_instead': 'CrisisAnalyzer.calculate_crisis_level_from_confidence()',
+            'reason': 'Phase 3e Sub-step 5.2 analysis method consolidation - moved to specialized analysis manager',
+            'migration_date': '2025-08-19',
+            'phase': '3e.5.2',
+            'parameters': {
+                'confidence': confidence,
+                'mode': mode
+            },
+            'benefits': [
+                'Consolidated analysis functionality in CrisisAnalyzer',
+                'Learning system integration for adaptive crisis level calculation',
+                'Enhanced error handling via SharedUtilities',
+                'Better separation of threshold configuration vs crisis level determination',
+                'Improved testability with consolidated analysis methods'
+            ]
+        }
+    
+    def validate_analysis_thresholds(self, mode: str = 'consensus') -> Dict[str, bool]:
+        """
+        PHASE 3E SUB-STEP 5.2: Method moved to CrisisAnalyzer
+        
+        This method has been consolidated into CrisisAnalyzer.validate_crisis_analysis_thresholds()
+        for better organization of analysis-specific functionality.
+        
+        Args:
+            mode: Analysis mode to validate
+            
+        Returns:
+            Dictionary indicating where to find the new method
+        """
+        logger.info("ℹ️ Phase 3e Sub-step 5.2: validate_analysis_thresholds() moved to CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.validate_crisis_analysis_thresholds() for threshold validation")
+        
+        return {
+            'note': 'Analysis threshold validation moved to CrisisAnalyzer for better analysis consolidation',
+            'use_instead': 'CrisisAnalyzer.validate_crisis_analysis_thresholds()',
+            'reason': 'Phase 3e Sub-step 5.2 analysis method consolidation - moved to specialized analysis manager',
+            'migration_date': '2025-08-19',
+            'phase': '3e.5.2',
+            'parameters': {
+                'mode': mode
+            },
+            'benefits': [
+                'Consolidated analysis validation in CrisisAnalyzer',
+                'Better integration with other analysis methods',
+                'Enhanced error handling and reporting',
+                'Learning system aware validation',
+                'Improved consistency across analysis operations'
+            ]
+        }
+    
+    def get_threshold_for_mode(self, mode: str) -> Dict[str, float]:
+        """
+        PHASE 3E SUB-STEP 5.2: Method moved to CrisisAnalyzer
+        
+        This method has been consolidated into CrisisAnalyzer.get_crisis_threshold_for_mode()
+        for better organization of analysis-specific functionality.
+        
+        Args:
+            mode: Analysis mode
+            
+        Returns:
+            Dictionary indicating where to find the new method
+        """
+        logger.info("ℹ️ Phase 3e Sub-step 5.2: get_threshold_for_mode() moved to CrisisAnalyzer")
+        logger.info("💡 Use CrisisAnalyzer.get_crisis_threshold_for_mode() for mode-specific thresholds")
+        
+        return {
+            'note': 'Mode-specific threshold retrieval moved to CrisisAnalyzer for better analysis consolidation',
+            'use_instead': 'CrisisAnalyzer.get_crisis_threshold_for_mode()',
+            'reason': 'Phase 3e Sub-step 5.2 analysis method consolidation - moved to specialized analysis manager',
+            'migration_date': '2025-08-19',
+            'phase': '3e.5.2',
+            'parameters': {
+                'mode': mode
+            },
+            'benefits': [
+                'Consolidated threshold access in CrisisAnalyzer',
+                'Better integration with analysis algorithms',
+                'Learning system aware threshold retrieval',
+                'Enhanced mode support (sensitive, conservative, etc.)',
+                'Direct access to SharedUtilities for configuration access'
+            ]
+        }
+    
+    def adapt_thresholds_based_on_learning(self, feedback_data: Dict = None) -> Dict[str, Any]:
+        """
+        PHASE 3E SUB-STEP 5.2: Method moved to LearningSystemManager
+        
+        This method has been consolidated into LearningSystemManager.adapt_crisis_thresholds()
+        for better organization of learning-specific functionality.
+        
+        Args:
+            feedback_data: Learning feedback data
+            
+        Returns:
+            Dictionary indicating where to find the new method
+        """
+        logger.info("ℹ️ Phase 3e Sub-step 5.2: adapt_thresholds_based_on_learning() moved to LearningSystemManager")
+        logger.info("💡 Use LearningSystemManager.adapt_crisis_thresholds() for learning-based threshold adaptation")
+        
+        return {
+            'note': 'Learning-based threshold adaptation moved to LearningSystemManager for better learning consolidation',
+            'use_instead': 'LearningSystemManager.adapt_crisis_thresholds()',
+            'reason': 'Phase 3e Sub-step 5.2 learning method consolidation - moved to specialized learning manager',
+            'migration_date': '2025-08-19',
+            'phase': '3e.5.2',
+            'parameters': {
+                'feedback_data': feedback_data
+            },
+            'benefits': [
+                'Consolidated learning functionality in LearningSystemManager',
+                'Better separation of threshold configuration vs learning adaptation',
+                'Enhanced learning algorithms and feedback processing',
+                'Specialized learning system with false positive/negative handling',
+                'Improved learning data persistence and analysis'
+            ]
+        }
+
+    # ========================================================================
+    # CORE CRISIS LEVEL DETERMINATION METHOD (PRESERVED)
     # ========================================================================
     
     def determine_crisis_level(self, score: float, mode: Optional[str] = None) -> str:
         """
         Determine crisis level from numerical score using current mode thresholds
         
+        PRESERVED: This is core business logic for life-saving crisis detection
         STEP 10.7 FIX: More aggressive thresholds for better crisis detection
         
         Args:
@@ -939,26 +1119,35 @@ class ThresholdMappingManager:
             'validation_status': self.get_validation_status(),
             'available_modes': list(self.threshold_config.get('threshold_mapping_by_mode', {}).keys()) if self.threshold_config else [],
             'phase_3e_changes': {
-                'learning_consolidation': 'Learning threshold methods moved to LearningSystemManager',
-                'enhanced_specialization': 'Better separation of threshold mapping vs learning concerns',
-                'preserved_functionality': 'All core threshold mapping functionality maintained'
+                'sub_step_5_2_completed': 'Methods moved to CrisisAnalyzer and LearningSystemManager',
+                'crisis_analyzer_methods': [
+                    'apply_crisis_thresholds()',
+                    'calculate_crisis_level_from_confidence()',
+                    'validate_crisis_analysis_thresholds()',
+                    'get_crisis_threshold_for_mode()'
+                ],
+                'learning_system_methods': [
+                    'adapt_crisis_thresholds()'
+                ],
+                'preserved_functionality': 'All core threshold mapping and staff review functionality maintained',
+                'enhanced_specialization': 'Better separation of configuration vs analysis vs learning concerns'
             }
         }
 
 # ============================================================================
-# FACTORY FUNCTION - Updated for Phase 3d Step 10.7
+# FACTORY FUNCTION - Updated for Phase 3e Sub-step 5.2
 # ============================================================================
 
 def create_threshold_mapping_manager(unified_config_manager, model_ensemble_manager=None) -> ThresholdMappingManager:
     """
-    Factory function to create ThresholdMappingManager instance - Phase 3d Step 10.7
+    Factory function to create ThresholdMappingManager instance - Phase 3e Sub-step 5.2
     
     Args:
         unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
         model_ensemble_manager: ModelEnsembleManager instance for mode detection
         
     Returns:
-        ThresholdMappingManager instance with crisis level determination capability
+        ThresholdMappingManager instance with Phase 3e cleanup complete
     """
     return ThresholdMappingManager(unified_config_manager, model_ensemble_manager)
 
@@ -971,4 +1160,4 @@ __all__ = [
     'create_threshold_mapping_manager'
 ]
 
-logger.info("✅ ThresholdMappingManager v3.1d Step 10.7 loaded - Crisis level determination method added, environment variable integration complete")
+logger.info("✅ ThresholdMappingManager v3.1-3e-5.2-1 loaded - Phase 3e Sub-step 5.2 cleanup complete with migration references")
