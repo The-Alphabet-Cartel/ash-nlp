@@ -5,7 +5,7 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_model_ensemble_manager(config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
+**FILE VERSION**: v3.1-3e-4.3-2  
 **LAST MODIFIED**: 2025-08-17  
 
 ---
@@ -180,7 +180,7 @@ API Request → ModelEnsembleManager → CrisisAnalyzer → Complete Analysis Re
 **`analyze_message_ensemble()`** - **CRITICAL METHOD** that delegates to CrisisAnalyzer:
 ```python
 # ModelEnsembleManager coordinates, CrisisAnalyzer performs analysis
-crisis_analyzer = CrisisAnalyzer(model_ensemble_manager=self, ...)
+crisis_analyzer = CrisisAnalyzer(unified_config, model_ensemble_manager=self, ...)
 result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
 ```
 

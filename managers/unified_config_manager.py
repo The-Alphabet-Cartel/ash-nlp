@@ -1,7 +1,7 @@
 # ash-nlp/managers/unified_config_manager.py
 """
 Unified Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-4
+FILE VERSION: v3.1-3e-4.3-1
 LAST MODIFIED: 2025-08-14
 PHASE: 3d Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -104,8 +104,7 @@ class UnifiedConfigManager:
             # Core system configuration
             'feature_flags': 'feature_flags.json',
             'label_config': 'label_config.json',
-            'learning_parameters': 'learning_parameters.json',
-            'learning_settings': 'learning_settings.json',
+            'learning_system': 'learning_system.json',
             'logging_settings': 'logging_settings.json',
             'model_ensemble': 'model_ensemble.json',
             'performance_settings': 'performance_settings.json',

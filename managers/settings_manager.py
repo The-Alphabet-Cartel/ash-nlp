@@ -1,7 +1,7 @@
 # ash-nlp/managers/settings_manager.py
 """
 Runtime Settings and Configuration Overrides for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
+FILE VERSION: v3.1-3ed-4.3-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -34,11 +34,13 @@ class SettingsManager:
     - Analysis parameters: AnalysisParametersManager
     - Crisis patterns: CrisisPatternManager
     - Feature flags: FeatureConfigManager
+    - Learning system settings: LearningSystemManager
     - Logging settings: LoggingConfigManager
     - Model Ensemble settings: ModelEnsembleManager
     - Performance settings: PerformanceConfigManager
     - Pydantic settings: PydanticManager
     - Server settings: ServerConfigManager
+    - Shared utilities: SharedUtilitiesManager
     - Storage settings: StorageConfigManager
     - Threshold mappings: ThresholdMappingManager
     - Zero Shot settings: ZeroShotManager
@@ -46,11 +48,12 @@ class SettingsManager:
     
     def __init__(self, unified_config_manager,
         analysis_parameters_manager=None, crisis_pattern_manager=None,
-        feature_config_manager=None, logging_config_manager=None,
-        model_ensemble_manager=None,
+        feature_config_manager=None, learning_system_manager=None,
+        logging_config_manager=None, model_ensemble_manager=None,
         performance_config_manager=None, pydantic_manager=None,
-        server_config_manager=None, storage_config_manager=None,
-        threshold_mapping_manager=None, zero_shot_manager=None):
+        server_config_manager=None, shared_utilities_manager=None,
+        storage_config_manager=None, threshold_mapping_manager=None,
+        zero_shot_manager=None):
         """
         Initialize SettingsManager with UnifiedConfigManager and all Phase 3d managers
         
@@ -73,11 +76,13 @@ class SettingsManager:
         self.analysis_parameters_manager = analysis_parameters_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.feature_config_manager = feature_config_manager
+        self.learning_system_manager = learning_system_manager
         self.logging_config_manager = logging_config_manager
         self.model_ensemble_manager = model_ensemble_manager
         self.performance_config_manager = performance_config_manager
         self.pydantic_manager = pydantic_manager
         self.server_config_manager = server_config_manager
+        self.shared_utilities_manager = shared_utilities_manager
         self.storage_config_manager = storage_config_manager
         self.threshold_mapping_manager = threshold_mapping_manager
         self.zero_shot_manager = zero_shot_manager
@@ -156,11 +161,13 @@ class SettingsManager:
             'AnalysisParametersManager': self.analysis_parameters_manager,
             'CrisisPatternManager': self.crisis_pattern_manager,
             'FeatureConfigManager': self.feature_config_manager,
+            'LearningSystemManager': self.learning_system_manager,
             'LoggingConfigManager': self.logging_config_manager,
             'ModelEnsembleManager': self.model_ensemble_manager,
             'PerformanceConfigManager': self.performance_config_manager,
             'PydanticManager': self.pydantic_manager,
             'ServerConfigManager': self.server_config_manager,
+            'SharedUtilitiesManager': self.shared_utilities_manager,
             'StorageConfigManager': self.storage_config_manager,
             'ThresholdMappingManager': self.threshold_mapping_manager,
             'ZeroShotManager': self.zero_shot_manager,
@@ -416,11 +423,12 @@ class SettingsManager:
 # ============================================================================
 def create_settings_manager(unified_config_manager,
     analysis_parameters_manager=None, crisis_pattern_manager=None,
-    feature_config_manager=None, logging_config_manager=None,
-    model_ensemble_manager=None,
+    feature_config_manager=None, learning_system_manager=None,
+    logging_config_manager=None, model_ensemble_manager=None,
     performance_config_manager=None, pydantic_manager=None,
-    server_config_manager=None, storage_config_manager=None,
-    threshold_mapping_manager=None, zero_shot_manager=None) -> SettingsManager:
+    server_config_manager=None, shared_utilities_manager=None,
+    storage_config_manager=None, threshold_mapping_manager=None,
+    zero_shot_manager=None) -> SettingsManager:
     """
     Factory function to create SettingsManager instance - Phase 3d Step 9 Complete
     
@@ -429,11 +437,13 @@ def create_settings_manager(unified_config_manager,
         analysis_parameters_manager: AnalysisParametersManager instance
         crisis_pattern_manager: CrisisPatternManager instance
         feature_config_manager: FeatureConfigManager instance
+        learning_system_manager: LearningSystemManager instance
         logging_config_manager: LoggingConfigManager instance
         model_ensemble_manager: ModelEnsembleManager instance
         performance_config_manager: PerformanceConfigManager instance
         pydantic_manager: PydanticManager instance
         server_config_manager: ServerConfigManager instance
+        shared_utilities_manager: SharedUtilitiesManager instance
         storage_config_manager: StorageConfigManager instance
         threshold_mapping_manager: ThresholdMappingManager instance
         zero_shot_manager: ZeroShotManager instance
@@ -446,11 +456,13 @@ def create_settings_manager(unified_config_manager,
         analysis_parameters_manager=analysis_parameters_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         feature_config_manager=feature_config_manager,
+        learning_system_manager=learning_system_manager,
         logging_config_manager=logging_config_manager,
         model_ensemble_manager=model_ensemble_manager,
         performance_config_manager=performance_config_manager,
         pydantic_manager=pydantic_manager,
         server_config_manager=server_config_manager,
+        shared_utilities_manager=shared_utilities_manager,
         storage_config_manager=storage_config_manager,
         threshold_mapping_manager=threshold_mapping_manager,
         zero_shot_manager=zero_shot_manager,

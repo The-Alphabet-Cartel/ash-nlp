@@ -1,7 +1,7 @@
 # ash-nlp/api/ensemble_endpoints.py
 """
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service v3.1
-FILE VERSION: v3.1-3d-10.12-3
+FILE VERSION: v3.1-3e-4.2-1
 LAST MODIFIED: 2025-08-14
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
@@ -17,7 +17,7 @@ from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-def integrate_pattern_and_ensemble_analysis_v3c(ensemble_result: Dict[str, Any], 
+def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], 
                                                pattern_result: Dict[str, Any],
                                                threshold_mapping_manager=None) -> Dict[str, Any]:
     """
@@ -92,7 +92,7 @@ def integrate_pattern_and_ensemble_analysis_v3c(ensemble_result: Dict[str, Any],
         integration_reasoning = []
         
         # Map ensemble prediction using mode-aware thresholds
-        ensemble_crisis_level = _map_ensemble_prediction_to_crisis_level_v3c(
+        ensemble_crisis_level = _map_ensemble_prediction_to_crisis_level(
             ensemble_prediction, ensemble_confidence, crisis_mapping
         )
         integration_reasoning.append(f"Ensemble ({current_mode}): {ensemble_prediction} -> {ensemble_crisis_level}")
@@ -199,7 +199,7 @@ def integrate_pattern_and_ensemble_analysis_v3c(ensemble_result: Dict[str, Any],
             'crisis_level': final_crisis_level,
             'confidence_score': final_confidence,
             'detected_categories': detected_categories,
-            'method': f'ensemble_and_patterns_integrated_v3c_{current_mode}',
+            'method': f'ensemble_and_patterns_integrated_{current_mode}',
             'model_info': f'Three Zero-Shot Model Ensemble + Crisis Pattern Analysis ({current_mode} mode)',
             'reasoning': ' | '.join(integration_reasoning),
             'staff_review_required': staff_review_required,  # Phase 3c addition
@@ -230,7 +230,7 @@ def integrate_pattern_and_ensemble_analysis_v3c(ensemble_result: Dict[str, Any],
             'integration_error': str(e)
         }
 
-def _map_ensemble_prediction_to_crisis_level_v3c(prediction: str, confidence: float, 
+def _map_ensemble_prediction_to_crisis_level(prediction: str, confidence: float, 
                                                 crisis_mapping: Dict[str, float]) -> str:
     """
     PHASE 3C: Map ensemble prediction to crisis level using mode-aware thresholds
@@ -299,7 +299,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
     
     return reverse_hierarchy.get(max(level1_value, level2_value), 'none')
 
-def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_manager, 
+def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manager, 
                               crisis_pattern_manager=None, threshold_mapping_manager=None):
     """
     PHASE 3C: Add Three Zero-Shot Model Ensemble endpoints with ThresholdMappingManager integration
@@ -354,7 +354,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_ma
     # ENSEMBLE ANALYSIS ENDPOINT - STEP 10.8 FIXED
     # ========================================================================
     @app.post("/analyze", response_model=models['CrisisResponse'])
-    async def analyze_message_v3d_clean(request: models['MessageRequest']):
+    async def analyze_message_clean(request: models['MessageRequest']):
         """
         CLEAN v3.1 Architecture: Single Analysis via CrisisAnalyzer
         STEP 10.8 FIX: Updated response extraction for new CrisisAnalyzer structure
@@ -426,7 +426,7 @@ def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_ma
                 crisis_level=crisis_level,  # From analysis_results.crisis_level
                 confidence_score=confidence_score,  # From analysis_results.crisis_score
                 detected_categories=complete_analysis.get('detected_categories', []),
-                method=complete_analysis.get('method', 'crisis_analyzer_complete_v3d_step_10_8'),
+                method=complete_analysis.get('method', 'crisis_analyzer_complete_step_10_8'),
                 processing_time_ms=processing_time_ms,
                 model_info=complete_analysis.get('model_info', 'Clean v3.1 Architecture - CrisisAnalyzer Complete (Step 10.8)'),
                 reasoning=complete_analysis.get('reasoning', 'Single analysis via CrisisAnalyzer with ContextPatternManager'),
@@ -756,10 +756,3 @@ def add_ensemble_endpoints_v3c(app: FastAPI, model_ensemble_manager, pydantic_ma
             logger.debug(f"📊 Crisis mapping configuration: {crisis_mapping}")
         except Exception as e:
             logger.warning(f"⚠️ Could not log threshold configuration: {e}")
-
-# Legacy function name for backward compatibility during transition
-def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manager, 
-                          crisis_pattern_manager=None, threshold_mapping_manager=None):
-    """Legacy wrapper for add_ensemble_endpoints_v3c"""
-    return add_ensemble_endpoints_v3c(app, model_ensemble_manager, pydantic_manager, 
-                                     crisis_pattern_manager, threshold_mapping_manager)

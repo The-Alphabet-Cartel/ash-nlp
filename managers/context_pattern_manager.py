@@ -2,7 +2,7 @@
 # ash-nlp/managers/context_pattern_manager.py
 """
 Context Pattern Manager for Ash NLP Service
-FILE VERSION: v3.1-3d-10.12-1
+FILE VERSION: v3.1-3e-4.3-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.8 - Context Pattern Management
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -391,7 +391,7 @@ class ContextPatternManager:
         """Get context window size from configuration"""
         try:
             # Use existing .env.template variable: NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW
-            return self.unified_config.get_env_int('NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW', 3)
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_window', 3)
         except Exception as e:
             logger.warning(f"⚠️ Error getting context window: {e}, using default: 3")
             return 3
@@ -400,7 +400,7 @@ class ContextPatternManager:
         """Get context boost weight from configuration"""
         try:
             # Use existing .env.template variable: NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT
-            return self.unified_config.get_env_float('NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT', 1.5)
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_boost_weight', 3)
         except Exception as e:
             logger.warning(f"⚠️ Error getting context boost weight: {e}, using default: 1.5")
             return 1.5
@@ -409,7 +409,7 @@ class ContextPatternManager:
         """Get negative sentiment threshold from configuration"""
         try:
             # Use existing .env.template variable: NLP_ANALYSIS_SEMANTIC_NEGATIVE_THRESHOLD
-            return self.unified_config.get_env_float('NLP_ANALYSIS_SEMANTIC_NEGATIVE_THRESHOLD', 0.6)
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.negative_threshold', 3)
         except Exception as e:
             logger.warning(f"⚠️ Error getting negative threshold: {e}, using default: 0.6")
             return 0.6
