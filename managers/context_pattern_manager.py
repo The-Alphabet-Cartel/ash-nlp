@@ -91,7 +91,7 @@ class ContextPatternManager:
             # Load analysis parameters using get_config_section method
             try:
                 logger.debug("📋 Loading Analysis Parameters...")
-                self.analysis_params = self.unified_config.get_config_section('analysis_parameters', '', {})
+                self.analysis_params = self.unified_config.get_config_section('analysis_parameters')
                 if not self.analysis_params:
                     logger.warning("⚠️ Analysis parameters not found, using safe defaults")
                     self.analysis_params = self._get_safe_analysis_defaults()
