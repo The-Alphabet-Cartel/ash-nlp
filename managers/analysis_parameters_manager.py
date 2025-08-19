@@ -54,7 +54,7 @@ class AnalysisParametersManager:
         """Load analysis parameters configuration with v3.1 compatibility"""
         try:
             # Load analysis parameters via UnifiedConfigManager
-            analysis_config_raw = self.config_manager.get_config_section('analysis_parameters', {})
+            analysis_config_raw = self.config_manager.get_config_section('analysis_parameters')
             
             if not analysis_config_raw:
                 logger.error("❌ Could not load analysis_parameters.json configuration")
