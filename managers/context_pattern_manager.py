@@ -288,8 +288,6 @@ class ContextPatternManager:
             
         Returns:
             Enhanced context analysis results
-            
-        Note: For full context analysis, use CrisisAnalyzer.extract_context_signals()
         """
         
         # Basic context information
@@ -301,7 +299,6 @@ class ContextPatternManager:
             'has_capitalization': any(c.isupper() for c in message),
             'negation_context': self.detect_negation_context(message),
             'temporal_indicators': self._extract_basic_temporal_indicators(message.lower()),
-            'enhanced_analysis_note': 'For complete context analysis, use CrisisAnalyzer.extract_context_signals()'
         }
         
         if crisis_pattern_manager:
