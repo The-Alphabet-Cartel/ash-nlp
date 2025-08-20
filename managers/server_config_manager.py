@@ -1,7 +1,7 @@
 # ash-nlp/managers/server_config_manager.py
 """
 Centralized Server Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-2
+FILE VERSION: v3.1-3e-5.5-3
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - ServerConfigManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -55,7 +55,7 @@ class ServerConfigManager:
         """Load server configuration using Phase 3e get_config_section patterns"""
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
-            config = self.unified_config.get_config_section('server_settings', {})
+            config = self.unified_config.get_config_section('server_config')
             
             if config and 'server_configuration' in config:
                 logger.info("Server configuration loaded from JSON with environment overrides")
@@ -353,7 +353,7 @@ class ServerConfigManager:
         """Get available deployment profiles with Phase 3e configuration patterns"""
         try:
             # PHASE 3E: Use get_config_section pattern for deployment profiles
-            profiles = self.unified_config.get_config_section('server_settings.deployment_profiles', {})
+            profiles = self.unified_config.get_config_section('server_config', 'deployment_profiles', {})
             if not profiles:
                 # Fallback to direct server_config access
                 profiles = self.server_config.get('deployment_profiles', {})
@@ -382,21 +382,23 @@ class ServerConfigManager:
             
         Returns:
             Boolean indicating if profile was found and validated
+        
+        NOT CURRENTLY USED!
         """
-        try:
-            profile_settings = self.get_profile_settings(profile_name)
-            if not profile_settings:
-                logger.warning(f"Unknown deployment profile: {profile_name}")
-                return False
-            
-            logger.info(f"Deployment profile '{profile_name}' settings retrieved successfully")
-            logger.info("Note: Profile activation requires server restart")
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error activating profile {profile_name}: {e}")
-            return False
+#        try:
+#            profile_settings = self.get_profile_settings(profile_name)
+#            if not profile_settings:
+#                logger.warning(f"Unknown deployment profile: {profile_name}")
+#                return False
+#            
+#            logger.info(f"Deployment profile '{profile_name}' settings retrieved successfully")
+#            logger.info("Note: Profile activation requires server restart")
+#            
+#            return True
+#            
+#        except Exception as e:
+#            logger.error(f"Error activating profile {profile_name}: {e}")
+        return False
     
     # ========================================================================
     # MONITORING SUPPORT (Phase 3e Enhanced)
@@ -406,7 +408,7 @@ class ServerConfigManager:
         """Get monitoring and health check settings with Phase 3e configuration patterns"""
         try:
             # PHASE 3E: Enhanced monitoring settings access
-            monitoring = self.unified_config.get_config_section('server_settings.monitoring', {})
+            monitoring = self.unified_config.get_config_section('server_config', 'server_configuration.monitoring', {})
             if not monitoring:
                 # Fallback to direct server_config access
                 monitoring = self.server_config.get('monitoring', {})
