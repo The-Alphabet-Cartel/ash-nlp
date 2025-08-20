@@ -1,7 +1,7 @@
 # ash-nlp/managers/storage_config_manager.py
 """
 Storage Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-optimized-1
+FILE VERSION: v3.1-3e-5.5-2
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Step 5.5 - StorageConfigManager Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -49,7 +49,7 @@ class StorageConfigManager:
         
         try:
             # UPDATED: Use get_config_section instead of load_config_file
-            self.config = self.config_manager.get_config_section('storage_settings', default={})
+            self.config = self.config_manager.get_config_section('storage_settings')
             
             if self.config:
                 logger.info("Storage configuration loaded from JSON with environment overrides")
