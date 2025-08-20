@@ -1,7 +1,7 @@
 # ash-nlp/managers/model_ensemble_manager.py
 """
 Model Ensemble Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-2
+FILE VERSION: v3.1-3e-5.5-3
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Step 5.5 - ModelEnsembleManager Optimization and Migration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -263,20 +263,12 @@ class ModelEnsembleManager:
         """
         logger.warning("analyze_message_ensemble has been migrated to CrisisAnalyzer - use CrisisAnalyzer.analyze_message() instead")
         
-        # For backward compatibility, attempt to delegate to CrisisAnalyzer
-        try:
-            from analysis.crisis_analyzer import create_crisis_analyzer
-            crisis_analyzer = create_crisis_analyzer(self.config_manager)
-            return await crisis_analyzer.analyze_message(message, user_id, channel_id)
-            
-        except Exception as e:
-            logger.error(f"Failed to delegate to CrisisAnalyzer: {e}")
-            return {
-                'error': 'delegation_failed',
-                'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
-                'migration_target': 'CrisisAnalyzer.analyze_message()',
-                'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
-            }
+        return {
+            'error': 'method_migrated',
+            'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
+            'migration_target': 'CrisisAnalyzer.analyze_message()',
+            'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
+        }
     
     def classify_zero_shot(self, text: str, hypothesis: str, model_type: str = None) -> float:
         """
@@ -294,15 +286,12 @@ class ModelEnsembleManager:
         """
         logger.warning("classify_zero_shot has been migrated to CrisisAnalyzer - use CrisisAnalyzer.classify_zero_shot() instead")
         
-        # Provide simple fallback for backward compatibility
-        try:
-            from analysis.crisis_analyzer import create_crisis_analyzer
-            crisis_analyzer = create_crisis_analyzer(self.config_manager)
-            return crisis_analyzer.classify_zero_shot(text, hypothesis, model_type)
-            
-        except Exception as e:
-            logger.error(f"Failed to delegate zero-shot classification: {e}")
-            return 0.0
+        return {
+            'error': 'method_migrated',
+            'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
+            'migration_target': 'CrisisAnalyzer.analyze_message()',
+            'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
+        }
     
     # ========================================================================
     # MODEL CONFIGURATION ACCESS - CORE RESPONSIBILITY
