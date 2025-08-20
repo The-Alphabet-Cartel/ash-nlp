@@ -4,7 +4,7 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-5.5-complete-1  
+**FILE VERSION**: v3.1-3e-5.5-1-complete  
 **CREATED**: 2025-08-19  
 **COMPLETED**: 2025-08-20  
 **PHASE**: 3e, Sub-step 5.5 - COMPLETE  
