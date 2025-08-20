@@ -226,6 +226,9 @@ def initialize_unified_managers():
             feature_config_manager=feature_config,
             performance_config_manager=performance_config,
             context_pattern_manager=context_pattern_manager,
+            shared_utilities_manager=shared_utilities,
+            learning_system_manager=learning_system,
+            zero_shot_manager=zero_shot_manager,
         )
         logger.info("✅ Analysis components initialized")
         
