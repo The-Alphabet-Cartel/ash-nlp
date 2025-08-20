@@ -138,14 +138,30 @@ def initialize_unified_managers():
         unified_config = create_unified_config_manager()
         logger.info("✅ UnifiedConfigManager created successfully")
 
-        logger.info("🔧 Initializing shared utilities manager...")
-        shared_utilities = create_shared_utilities_manager(unified_config)
-        logger.info("✅ Shared utilities manager initialized...")
-
         logger.info("🔧 Initializing analysis parameters manager...")
         analysis_parameters = create_analysis_parameters_manager(unified_config)
         logger.info("✅ Analysis parameters manager initialized...")
 
+        logger.info("🔧 Initializing context pattern manager...")
+        context_pattern = create_context_pattern_manager(unified_config)
+        logger.info("✅ Context pattern manager initialized...")
+
+        logger.info("🔧 Initializing analysis components...")
+        crisis_analyzer = create_crisis_analyzer(
+            unified_config,
+            model_ensemble_manager=model_ensemble,
+            crisis_pattern_manager=crisis_pattern,
+            analysis_parameters_manager=analysis_parameters,
+            threshold_mapping_manager=threshold_mapping,
+            feature_config_manager=feature_config,
+            performance_config_manager=performance_config,
+            context_pattern_manager=context_pattern,
+            shared_utilities_manager=shared_utilities,
+            learning_system_manager=learning_system,
+            zero_shot_manager=zero_shot
+        )
+        logger.info("✅ Analysis components initialized")
+        
         logger.info("🔧 Initializing crisis pattern manager...")
         crisis_pattern = create_crisis_pattern_manager(unified_config)
         logger.info("✅ Crisis pattern manager initialized...")
@@ -153,6 +169,13 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing feature config manager...")
         feature_config = create_feature_config_manager(unified_config)
         logger.info("✅ Feature config manager initialized...")
+
+        logger.info("🔧 Initializing learning system manager...")
+        learning_system = create_learning_system_manager(
+            unified_config,
+            shared_utils=shared_utilities
+        )
+        logger.info("✅ Learning system manager initialized...")
 
         logger.info("🔧 Initializing logging config manager...")
         logging_config = create_logging_config_manager(unified_config)
@@ -174,29 +197,6 @@ def initialize_unified_managers():
         server_config = create_server_config_manager(unified_config)
         logger.info("✅ Server config manager initialized...")
 
-        logger.info("🔧 Initializing storage manager...")
-        storage_config = create_storage_config_manager(unified_config)
-        logger.info("✅ Storage manager initialized...")
-
-        logger.info("🔧 Initializing threshold mapping manager...")
-        threshold_mapping = create_threshold_mapping_manager(unified_config)
-        logger.info("✅ Threshold mapping manager initialized...")
-
-        logger.info("🔧 Initializing zero shot manager...")
-        zero_shot = create_zero_shot_manager(unified_config)
-        logger.info("✅ Zero shot manager initialized...")
-        
-        logger.info("🔧 Initializing context pattern manager...")
-        context_pattern = create_context_pattern_manager(unified_config)
-        logger.info("✅ Context pattern manager initialized...")
-
-        logger.info("🔧 Initializing learning system manager...")
-        learning_system = create_learning_system_manager(
-            unified_config,
-            shared_utils=shared_utilities
-        )
-        logger.info("✅ Learning system manager initialized...")
-
         logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
             unified_config,
@@ -216,16 +216,21 @@ def initialize_unified_managers():
         )
         logger.info("✅ Settings manager initialized...")
 
-        logger.info("🔧 Initializing analysis components...")
-        crisis_analyzer = create_crisis_analyzer(
-            unified_config=unified_config, model_ensemble_manager=model_ensemble,
-            crisis_pattern_manager=crisis_pattern, analysis_parameters_manager=analysis_parameters,
-            threshold_mapping_manager=threshold_mapping, feature_config_manager=feature_config,
-            performance_config_manager=performance_config, context_pattern_manager=context_pattern,
-            shared_utilities_manager=shared_utilities, learning_system_manager=learning_system,
-            zero_shot_manager=zero_shot
-        )
-        logger.info("✅ Analysis components initialized")
+        logger.info("🔧 Initializing shared utilities manager...")
+        shared_utilities = create_shared_utilities_manager(unified_config)
+        logger.info("✅ Shared utilities manager initialized...")
+
+        logger.info("🔧 Initializing storage manager...")
+        storage_config = create_storage_config_manager(unified_config)
+        logger.info("✅ Storage manager initialized...")
+
+        logger.info("🔧 Initializing threshold mapping manager...")
+        threshold_mapping = create_threshold_mapping_manager(unified_config)
+        logger.info("✅ Threshold mapping manager initialized...")
+
+        logger.info("🔧 Initializing zero shot manager...")
+        zero_shot = create_zero_shot_manager(unified_config)
+        logger.info("✅ Zero shot manager initialized...")
         
         managers = {
             'unified_config': unified_config,
