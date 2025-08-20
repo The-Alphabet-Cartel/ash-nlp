@@ -807,50 +807,160 @@ class CrisisAnalyzer:
             return 'none'
 
     # ========================================================================
-    # EXISTING METHODS (maintained from Phase 3d Step 10.8)
+    # Migrated Methods
     # ========================================================================
-    
+
     def extract_context_signals(self, message: str) -> Dict[str, Any]:
         """
-        Extract context signals from message using ContextPatternManager
+        Extract basic context signals from message
         
         Args:
             message: Message text to analyze
             
         Returns:
-            Dictionary containing context signals
+            Dictionary containing context signals and metadata
+            
+        Note:
+            Migrated from ContextPatternManager - extract_context_signals()
+            This function provides basic context signals only.
         """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.extract_context_signals(message)
-            else:
-                logger.warning("⚠️ ContextPatternManager not available, using basic fallback")
-                return self._basic_context_fallback(message)
-        except Exception as e:
-            logger.error(f"❌ Context signal extraction failed: {e}")
-            return self._basic_context_fallback(message)
+        message_lower = message.lower().strip()
+        
+        # Basic context signals
+        context = {
+            'message_length': len(message),
+            'word_count': len(message.split()),
+            'has_question_mark': '?' in message,
+            'has_exclamation': '!' in message,
+            'has_capitalization': any(c.isupper() for c in message),
+            'negation_context': self.detect_negation_context(message),
+            'temporal_indicators': self._extract_basic_temporal_indicators(message_lower),
+            'message_lower': message_lower,
+            'social_isolation_indicators': self._count_social_isolation_indicators(message_lower),
+            'hopelessness_indicators': self._count_hopelessness_indicators(message_lower),
+            # Flags for pattern analysis integration
+            'requires_pattern_analysis': True,
+            'pattern_manager_needed': True
+        }
+        
+        return context
+
+    def detect_negation_context(self, message: str) -> bool:
+        """
+        Detect if the message contains negation that might affect crisis interpretation
+        
+        Args:
+            message: Message text to analyze
+            
+        Returns:
+            True if negation patterns detected, False otherwise
+            
+        Note:
+            Migrated from ContextPatternManager - detect_negation_context()
+        """
+        message_lower = message.lower().strip()
+        
+        for pattern in self.basic_negation_patterns:
+            if re.search(pattern, message_lower):
+                return True
+        
+        return False
 
     def analyze_sentiment_context(self, message: str, base_sentiment: float = 0.0) -> Dict[str, Any]:
         """
-        Analyze sentiment context using ContextPatternManager
+        Analyze sentiment context for the message
         
         Args:
             message: Message text to analyze
-            base_sentiment: Base sentiment score
+            base_sentiment: Base sentiment score to work with
             
         Returns:
-            Dictionary with sentiment context analysis
+            Dictionary with sentiment context analysis results
+            
+        Note:
+            Migrated from utils/context_helpers.py - analyze_sentiment_context()
+            Enhanced with configuration support
         """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.analyze_sentiment_context(message, base_sentiment)
-            else:
-                logger.warning("⚠️ ContextPatternManager not available for sentiment context analysis")
-                return {'base_sentiment': base_sentiment, 'context_available': False}
-        except Exception as e:
-            logger.error(f"❌ Sentiment context analysis failed: {e}")
-            return {'base_sentiment': base_sentiment, 'error': str(e)}
+        context = self.extract_context_signals(message)
+        
+        # Get semantic analysis parameters from existing .env.template variables
+        context_window = self._get_context_window()
+        negative_threshold = self._get_negative_threshold()
+        
+        sentiment_context = {
+            'base_sentiment': base_sentiment,
+            'negation_detected': context['negation_context'],
+            'context_window': context_window,
+            'negative_threshold': negative_threshold,
+            'message_indicators': {
+                'social_isolation': context['social_isolation_indicators'],
+                'hopelessness': context['hopelessness_indicators'],
+                'temporal_urgency': len(context['temporal_indicators'])
+            }
+        }
+        
+        # Analyze sentiment polarity
+        if context['negation_context'] and base_sentiment != 0.0:
+            sentiment_context['sentiment_flip_candidate'] = True
+            sentiment_context['original_sentiment'] = base_sentiment
+        else:
+            sentiment_context['sentiment_flip_candidate'] = False
+            
+        return sentiment_context
 
+    # ========================================================================
+    # HELPER METHODS - Support functions for context analysis
+    # ========================================================================
+
+    def _extract_basic_temporal_indicators(self, message_lower: str) -> List[str]:
+        """Extract basic temporal indicators from message"""
+        basic_temporal_words = [
+            'today', 'yesterday', 'tomorrow', 'lately', 'recently', 'always', 
+            'never', 'sometimes', 'right now', 'immediately', 'urgent', 'tonight'
+        ]
+        
+        return [word for word in basic_temporal_words if word in message_lower]
+
+    def _count_social_isolation_indicators(self, message_lower: str) -> int:
+        """Count basic social isolation indicators"""
+        isolation_words = [
+            'alone', 'lonely', 'isolated', 'nobody', 'no one', 'abandoned', 
+            'by myself', 'on my own', 'no friends', 'no family'
+        ]
+        
+        return sum(1 for word in isolation_words if word in message_lower)
+
+    def _count_hopelessness_indicators(self, message_lower: str) -> int:
+        """Count basic hopelessness indicators"""
+        hopelessness_words = [
+            'hopeless', 'pointless', 'worthless', 'useless', 'meaningless',
+            'give up', 'no point', 'why bother', 'what\'s the point'
+        ]
+        
+        return sum(1 for word in hopelessness_words if word in message_lower)
+
+    def _get_context_window(self) -> int:
+        """Get context window size from configuration"""
+        try:
+            # Use existing .env.template variable: NLP_ANALYSIS_SEMANTIC_CONTEXT_WINDOW
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_window', 3)
+        except Exception as e:
+            logger.warning(f"⚠️ Error getting context window: {e}, using default: 3")
+            return 3
+
+    def _get_negative_threshold(self) -> float:
+        """Get negative sentiment threshold from configuration"""
+        try:
+            # Use existing .env.template variable: NLP_ANALYSIS_SEMANTIC_NEGATIVE_THRESHOLD
+            return self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.negative_threshold', 3)
+        except Exception as e:
+            logger.warning(f"⚠️ Error getting negative threshold: {e}, using default: 0.6")
+            return 0.6
+
+    # ========================================================================
+    # EXISTING METHODS (maintained from Phase 3d Step 10.8)
+    # ========================================================================
+    
     def perform_enhanced_context_analysis(self, message: str) -> Dict[str, Any]:
         """
         Perform enhanced context analysis with crisis pattern integration
