@@ -62,7 +62,12 @@ class CrisisAnalyzer:
     - Phase 3e Step 5.5-6: Helper file optimization and zero-shot implementation
     """
     
-    def __init__(self, unified_config, model_ensemble_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None, feature_config_manager=None, performance_config_manager=None, context_pattern_manager=None, shared_utilities_manager=None, learning_system_manager=None, zero_shot_manager=None):
+    def __init__(self, unified_config, model_ensemble_manager,
+        crisis_pattern_manager=None, analysis_parameters_manager=None,
+        threshold_mapping_manager=None, feature_config_manager=None,
+        performance_config_manager=None, context_pattern_manager=None,
+        shared_utilities_manager=None, learning_system_manager=None,
+        zero_shot_manager=None):
         """
         Initialize Optimized Crisis Analyzer with helper file architecture
         
