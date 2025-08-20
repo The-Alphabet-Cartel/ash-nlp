@@ -1,7 +1,7 @@
 # ash-nlp/managers/pydantic_manager.py
 """
 Clean Manager Architecture for Pydantic Models for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-6
+FILE VERSION: v3.1-3e-5.5-7
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - PydanticManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
