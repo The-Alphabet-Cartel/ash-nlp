@@ -176,13 +176,38 @@ class TestCrisisAnalyzerOptimization(unittest.TestCase):
         """Test that ZeroShotManager is properly integrated with zero-shot analysis"""
         # Test that ZeroShotManager can be injected
         try:
+            from managers.crisis_pattern_manager import create_crisis_pattern_manager
+            from managers.analysis_parameters_manager import create_analysis_parameters_manager
+            from managers.threshold_mapping_manager import create_threshold_mapping_manager
+            from managers.feature_config_manager import create_feature_config_manager
+            from managers.performance_config_manager import create_performance_config_manager
+            from managers.context_pattern_manager import create_context_pattern_manager
+            from managers.shared_utilities import create_shared_utilities_manager
+            from managers.learning_system_manager import create_learning_system_manager
             from managers.zero_shot_manager import create_zero_shot_manager
+
+            crisis_pattern_manager = create_crisis_pattern_manager(self.unified_config)
+            analysis_parameters_manager = create_analysis_parameters_manager(self.unified_config)
+            threshold_mapping_manager = create_threshold_mapping_manager(self.unified_config)
+            feature_config_manager = create_feature_config_manager(self.unified_config)
+            performance_config_manager = create_performance_config_manager(self.unified_config)
+            context_pattern_manager = create_context_pattern_manager(self.unified_config)
+            shared_utilities = create_shared_utilities_manager(self.unified_config)
+            learning_system_manager = create_learning_system_manager(self.unified_config)
             zero_shot_manager = create_zero_shot_manager(self.unified_config)
             
             # Create crisis analyzer with ZeroShotManager
             crisis_analyzer_with_zs = create_crisis_analyzer(
                 unified_config=self.unified_config,
                 model_ensemble_manager=self.model_ensemble_manager,
+                crisis_pattern_manager = crisis_pattern_manager,
+                analysis_parameters_manager = analysis_parameters_manager,
+                threshold_mapping_manager = threshold_mapping_manager,
+                feature_config_manager = feature_config_manager,
+                performance_config_manager = performance_config_manager,
+                context_pattern_manager = context_pattern_manager,
+                shared_utilities = shared_utilities_manager,
+                learning_system_manager = learning_system_manager,
                 zero_shot_manager=zero_shot_manager
             )
             
@@ -230,13 +255,38 @@ class TestCrisisAnalyzerOptimization(unittest.TestCase):
         
         # Test with ZeroShotManager integration
         try:
+            from managers.crisis_pattern_manager import create_crisis_pattern_manager
+            from managers.analysis_parameters_manager import create_analysis_parameters_manager
+            from managers.threshold_mapping_manager import create_threshold_mapping_manager
+            from managers.feature_config_manager import create_feature_config_manager
+            from managers.performance_config_manager import create_performance_config_manager
+            from managers.context_pattern_manager import create_context_pattern_manager
+            from managers.shared_utilities import create_shared_utilities_manager
+            from managers.learning_system_manager import create_learning_system_manager
             from managers.zero_shot_manager import create_zero_shot_manager
+
+            crisis_pattern_manager = create_crisis_pattern_manager(self.unified_config)
+            analysis_parameters_manager = create_analysis_parameters_manager(self.unified_config)
+            threshold_mapping_manager = create_threshold_mapping_manager(self.unified_config)
+            feature_config_manager = create_feature_config_manager(self.unified_config)
+            performance_config_manager = create_performance_config_manager(self.unified_config)
+            context_pattern_manager = create_context_pattern_manager(self.unified_config)
+            shared_utilities = create_shared_utilities_manager(self.unified_config)
+            learning_system_manager = create_learning_system_manager(self.unified_config)
             zero_shot_manager = create_zero_shot_manager(self.unified_config)
             
-            # Create analyzer with ZeroShotManager
+            # Create crisis analyzer with ZeroShotManager
             crisis_analyzer_with_zs = create_crisis_analyzer(
                 unified_config=self.unified_config,
                 model_ensemble_manager=self.model_ensemble_manager,
+                crisis_pattern_manager = crisis_pattern_manager,
+                analysis_parameters_manager = analysis_parameters_manager,
+                threshold_mapping_manager = threshold_mapping_manager,
+                feature_config_manager = feature_config_manager,
+                performance_config_manager = performance_config_manager,
+                context_pattern_manager = context_pattern_manager,
+                shared_utilities = shared_utilities_manager,
+                learning_system_manager = learning_system_manager,
                 zero_shot_manager=zero_shot_manager
             )
             
