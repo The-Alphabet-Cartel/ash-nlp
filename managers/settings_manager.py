@@ -137,9 +137,6 @@ class SettingsManager:
                 }
             }
             
-            # Load environment overrides using enhanced patterns
-            self._load_environment_overrides()
-            
         except Exception as e:
             logger.error(f"❌ Error loading runtime settings: {e}")
             # Provide safe defaults for resilient operation
@@ -156,30 +153,6 @@ class SettingsManager:
             }
         }
         logger.info("✅ Safe runtime defaults initialized")
-    
-    def _load_environment_overrides(self):
-        """Load setting overrides using enhanced UnifiedConfigManager patterns"""
-        try:
-            # PHASE 3E: Enhanced environment variable handling
-            override_config = self.unified_config.get_config_section('settings_config', 'runtime_overrides', {})
-            
-            # Legacy device and precision settings (maintained for backward compatibility)
-            legacy_device = self.unified_config.get_env('NLP_DEVICE')
-            if legacy_device:
-                self.setting_overrides['device'] = legacy_device
-                
-            legacy_precision = self.unified_config.get_env('NLP_PRECISION')
-            if legacy_precision:
-                self.setting_overrides['precision'] = legacy_precision
-            
-            # Load any configured runtime overrides
-            if override_config:
-                self.setting_overrides.update(override_config)
-            
-            logger.debug("✅ Environment overrides loaded using enhanced patterns")
-            
-        except Exception as e:
-            logger.error(f"❌ Error loading environment overrides: {e}")
     
     def _validate_manager_integration(self):
         """Validate manager integration for Phase 3e"""
