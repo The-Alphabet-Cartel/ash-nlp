@@ -38,58 +38,18 @@
   },
   
   "runtime_coordination": {
-    "enable_manager_validation": "${NLP_SETTINGS_ENABLE_MANAGER_VALIDATION}",
-    "enable_override_tracking": "${NLP_SETTINGS_ENABLE_OVERRIDE_TRACKING}",
-    "coordination_timeout_ms": "${NLP_SETTINGS_COORDINATION_TIMEOUT_MS}",
-    "graceful_degradation": "${NLP_SETTINGS_GRACEFUL_DEGRADATION}",
+    "deprecation_warnings": "${NLP_SETTINGS_DEPRECATION_WARNINGS}",
     "defaults": {
-      "enable_manager_validation": true,
-      "enable_override_tracking": true,
-      "coordination_timeout_ms": 5000,
-      "graceful_degradation": true
+      "deprecation_warnings": true
     },
     "validation": {
-      "enable_manager_validation":{
-        "type": "boolean"        
-      },
-      "enable_override_tracking": {
-        "type": "boolean"
-      },
-      "coordination_timeout_ms": {
-        "type": "integer"
-      },
-      "graceful_degradation": {
+      "deprecation_warnings": {
         "type": "boolean"
       }
     }
   },
 
-  "runtime_overrides": {
-    "allow_environment_overrides": "${NLP_SETTINGS_ALLOW_ENV_OVERRIDES}",
-    "override_precedence": "${NLP_SETTINGS_OVERRIDE_PRECEDENCE}",
-    "persist_overrides": "${NLP_SETTINGS_PERSIST_OVERRIDES}",
-    "override_validation": "${NLP_SETTINGS_OVERRIDE_VALIDATION}",
-    "defaults": {
-      "allow_environment_overrides": true,
-      "override_precedence": "environment_first",
-      "persist_overrides": false,
-      "override_validation": true
-    },
-    "validation": {
-      "allow_environment_overrides": {
-        "type": "boolean"
-      },
-      "override_precedence": {
-        "type": "string"
-      },
-      "persist_overrides": {
-        "type": "boolean"
-      },
-      "override_validation": {
-        "type": "boolean"
-      }
-    }
-  },
+  "runtime_overrides": {},
 
   "manager_integration": {
     "required_managers": [
@@ -108,76 +68,6 @@
       "threshold_mapping",
       "zero_shot",
       "pydantic"
-    ],
-    "validation_settings": {
-      "require_unified_config": "${NLP_SETTINGS_REQUIRE_UNIFIED_CONFIG}",
-      "warn_missing_recommended": "${NLP_SETTINGS_WARN_MISSING_RECOMMENDED}",
-      "fail_on_critical_missing": "${NLP_SETTINGS_FAIL_ON_CRITICAL_MISSING}",
-      "defaults": {
-        "require_unified_config": true,
-        "warn_missing_recommended": true,
-        "fail_on_critical_missing": false
-      },
-      "validation": {
-        "require_unified_config": {
-          "type": "boolean"
-        },
-        "warn_missing_recommended": {
-          "type": "boolean"
-        },
-        "fail_on_critical_missing": {
-          "type": "boolean"
-        }
-      }
-    }
-  },
-
-  "coordination_behavior": {
-    "enable_fallback_configurations": "${NLP_SETTINGS_ENABLE_FALLBACK_CONFIG}",
-    "fallback_timeout_ms": "${NLP_SETTINGS_FALLBACK_TIMEOUT_MS}",
-    "retry_failed_managers": "${NLP_SETTINGS_RETRY_FAILED_MANAGERS}",
-    "max_retry_attempts": "${NLP_SETTINGS_MAX_RETRY_ATTEMPTS}",
-    "defaults": {
-      "enable_fallback_configurations": true,
-      "fallback_timeout_ms": 2000,
-      "retry_failed_managers": true,
-      "max_retry_attempts": 3
-    },
-    "validation": {
-      "enable_fallback_configurations": {
-        "type": "boolean"
-      },
-      "fallback_timeout_ms": {
-        "type": "integer"
-      },
-      "retry_failed_managers": {
-        "type": "boolean"
-      },
-      "max_retry_attempts": {
-        "type": "integer"
-      }
-    }
-  },
-
-  "legacy_compatibility": {
-    "preserve_server_config_constants": "${NLP_SETTINGS_PRESERVE_SERVER_CONFIG}",
-    "enable_migration_notices": "${NLP_SETTINGS_ENABLE_MIGRATION_NOTICES}",
-    "deprecation_warnings": "${NLP_SETTINGS_DEPRECATION_WARNINGS}",
-    "defaults": {
-      "preserve_server_config_constants": true,
-      "enable_migration_notices": true,
-      "deprecation_warnings": true
-    },
-    "validation": {
-      "preserve_server_config_constants": {
-        "type": "boolean"
-      },
-      "enable_migration_notices": {
-        "type": "boolean"
-      },
-      "deprecation_warnings": {
-        "type": "boolean"
-      }
-    }
+    ]
   }
 }
