@@ -1,15 +1,16 @@
 # ash-nlp/analysis/helpers/ensemble_analysis_helper.py
 """
 Ensemble Analysis Helper for CrisisAnalyzer
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.5-6-2
 CREATED: 2025-08-20
-PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
+PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization with ZeroShotManager Integration
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 MIGRATION NOTICE: Methods moved from CrisisAnalyzer for optimization
 Original location: analysis/crisis_analyzer.py - ensemble analysis methods
+UPDATED: Added ZeroShotManager integration for configurable zero-shot labels
 """
 
 import logging
@@ -205,7 +206,7 @@ class EnsembleAnalysisHelper:
             return {'error': str(e), 'score': 0.0}
     
     # ========================================================================
-    # ACTUAL ZERO-SHOT MODEL IMPLEMENTATIONS
+    # ACTUAL ZERO-SHOT MODEL IMPLEMENTATIONS WITH ZEROSHOTMANAGER INTEGRATION
     # ========================================================================
     
     async def _analyze_depression_with_zero_shot(self, message: str) -> Dict:
@@ -277,10 +278,10 @@ class EnsembleAnalysisHelper:
             logger.error(f"Depression zero-shot analysis failed: {e}")
             # Fallback to pattern-based analysis
             return await self._fallback_depression_analysis(message)
-    
+
     async def _analyze_sentiment_with_zero_shot(self, message: str) -> Dict:
         """
-        Analyze sentiment using actual zero-shot model
+        Analyze sentiment using actual zero-shot model with ZeroShotManager integration
         Replaces: CrisisAnalyzer._analyze_sentiment() placeholder
         """
         try:
@@ -298,26 +299,59 @@ class EnsembleAnalysisHelper:
             if not model_name:
                 raise ValueError("Sentiment model name not specified")
             
-            # Analyze negative sentiment specifically for crisis detection
-            hypothesis = "This text expresses negative emotions, distress, or crisis"
-            score = await self._perform_zero_shot_classification(message, hypothesis, model_name)
+            # Use ZeroShotManager for label management if available
+            labels = None
+            hypothesis_template = "This text expresses {}."
+            
+            if hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager:
+                try:
+                    # Get sentiment labels from ZeroShotManager
+                    all_labels = self.crisis_analyzer.zero_shot_manager.get_all_labels()
+                    labels = all_labels.get('sentiment', [])
+                    
+                    # Get hypothesis template from ZeroShotManager
+                    zero_shot_settings = self.crisis_analyzer.zero_shot_manager.get_zero_shot_settings()
+                    hypothesis_template = zero_shot_settings.get('hypothesis_template', 'This text expresses {}.')
+                    
+                    logger.debug(f"Using ZeroShotManager: {len(labels) if labels else 0} sentiment labels")
+                    
+                except Exception as e:
+                    logger.warning(f"ZeroShotManager access failed: {e}, using fallback labels")
+            
+            # Fallback labels if ZeroShotManager not available
+            if not labels:
+                labels = [
+                    "extreme sadness, despair, anguish, or devastating emotional pain",
+                    "significant negativity, distress, anger, or emotional upset",
+                    "mild sadness, disappointment, or somewhat negative feelings",
+                    "neutral emotions, mixed feelings, or neither positive nor negative",
+                    "happiness, joy, contentment, or positive emotional expression"
+                ]
+                logger.debug("Using fallback sentiment labels")
+            
+            # Perform zero-shot classification with configured labels
+            score = await self._perform_zero_shot_classification_with_labels(
+                message, labels, hypothesis_template, model_name
+            )
             
             return {
                 'score': score,
                 'confidence': min(0.9, score + 0.1),
                 'model': model_name,
                 'method': 'zero_shot_classification',
-                'hypothesis': hypothesis
+                'labels_used': len(labels),
+                'hypothesis_template': hypothesis_template,
+                'zero_shot_manager': bool(hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager)
             }
             
         except Exception as e:
             logger.error(f"Sentiment zero-shot analysis failed: {e}")
             # Fallback to simple sentiment analysis
             return await self._fallback_sentiment_analysis(message)
-    
+
     async def _analyze_emotional_distress_with_zero_shot(self, message: str) -> Dict:
         """
-        Analyze emotional distress using actual zero-shot model
+        Analyze emotional distress using actual zero-shot model with ZeroShotManager integration
         Replaces: CrisisAnalyzer._analyze_emotional_distress() placeholder
         """
         try:
@@ -335,16 +369,49 @@ class EnsembleAnalysisHelper:
             if not model_name:
                 raise ValueError("Emotional distress model name not specified")
             
-            # Analyze emotional distress and crisis indicators
-            hypothesis = "This text indicates emotional distress, anxiety, panic, or mental health crisis"
-            score = await self._perform_zero_shot_classification(message, hypothesis, model_name)
+            # Use ZeroShotManager for label management if available
+            labels = None
+            hypothesis_template = "This text expresses {}."
+            
+            if hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager:
+                try:
+                    # Get emotional distress labels from ZeroShotManager
+                    all_labels = self.crisis_analyzer.zero_shot_manager.get_all_labels()
+                    labels = all_labels.get('emotional_distress', [])
+                    
+                    # Get hypothesis template from ZeroShotManager
+                    zero_shot_settings = self.crisis_analyzer.zero_shot_manager.get_zero_shot_settings()
+                    hypothesis_template = zero_shot_settings.get('hypothesis_template', 'This text expresses {}.')
+                    
+                    logger.debug(f"Using ZeroShotManager: {len(labels) if labels else 0} emotional distress labels")
+                    
+                except Exception as e:
+                    logger.warning(f"ZeroShotManager access failed: {e}, using fallback labels")
+            
+            # Fallback labels if ZeroShotManager not available
+            if not labels:
+                labels = [
+                    "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
+                    "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
+                    "person showing moderate distress with some difficulty managing emotions and daily responsibilities",
+                    "person handling normal life stress with adequate coping strategies and emotional regulation",
+                    "person demonstrating strong emotional resilience with healthy stress management and adaptation"
+                ]
+                logger.debug("Using fallback emotional distress labels")
+            
+            # Perform zero-shot classification with configured labels
+            score = await self._perform_zero_shot_classification_with_labels(
+                message, labels, hypothesis_template, model_name
+            )
             
             return {
                 'score': score,
                 'confidence': min(0.9, score + 0.1),
                 'model': model_name,
                 'method': 'zero_shot_classification',
-                'hypothesis': hypothesis
+                'labels_used': len(labels),
+                'hypothesis_template': hypothesis_template,
+                'zero_shot_manager': bool(hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager)
             }
             
         except Exception as e:
@@ -352,84 +419,120 @@ class EnsembleAnalysisHelper:
             # Fallback to pattern-based analysis
             return await self._fallback_distress_analysis(message)
     
-    async def _perform_zero_shot_classification(self, text: str, hypothesis: str, model_name: str) -> float:
+    async def _perform_zero_shot_classification_with_labels(self, text: str, labels: List[str], hypothesis_template: str, model_name: str) -> float:
         """
-        Perform actual zero-shot classification using Hugging Face transformers
+        Perform actual zero-shot classification using multiple labels and ZeroShotManager configuration
         
         Args:
             text: Text to classify
-            hypothesis: Classification hypothesis
+            labels: List of labels for classification
+            hypothesis_template: Template for generating hypotheses (e.g., "This text expresses {}.")
             model_name: Hugging Face model name
             
         Returns:
-            Classification score (0.0 to 1.0)
+            Classification score (0.0 to 1.0) - higher scores indicate higher crisis levels
         """
         try:
-            # TODO: Implement actual transformers pipeline
+            # TODO: Implement actual transformers pipeline with multiple labels
             # This requires installing transformers library and loading the models
-            # For now, return enhanced pattern-based fallback
+            # For now, return enhanced pattern-based fallback with label-aware scoring
             
-            logger.warning(f"Zero-shot classification not yet implemented for {model_name}")
-            logger.warning("Using enhanced pattern-based fallback")
+            logger.warning(f"Zero-shot classification with labels not yet implemented for {model_name}")
+            logger.warning("Using enhanced pattern-based fallback with label-aware scoring")
             
-            # Enhanced pattern-based scoring as temporary implementation
-            score = await self._enhanced_pattern_scoring(text, hypothesis)
+            # Enhanced pattern-based scoring that considers the provided labels
+            score = await self._enhanced_label_aware_scoring(text, labels, hypothesis_template)
             return score
             
         except Exception as e:
-            logger.error(f"Zero-shot classification failed: {e}")
+            logger.error(f"Zero-shot classification with labels failed: {e}")
             return 0.0
-    
-    async def _enhanced_pattern_scoring(self, text: str, hypothesis: str) -> float:
+
+    async def _enhanced_label_aware_scoring(self, text: str, labels: List[str], hypothesis_template: str) -> float:
         """
-        Enhanced pattern-based scoring as fallback for zero-shot classification
+        Enhanced pattern-based scoring that's aware of the configured labels
         
         Args:
             text: Text to analyze
-            hypothesis: Classification hypothesis
+            labels: List of crisis labels from ZeroShotManager
+            hypothesis_template: Hypothesis template from configuration
             
         Returns:
-            Pattern-based score (0.0 to 1.0)
+            Label-aware pattern score (0.0 to 1.0)
         """
         try:
-            score = 0.0
+            if not labels:
+                logger.warning("No labels provided for label-aware scoring")
+                return 0.0
+            
             text_lower = text.lower()
             
-            # Crisis keywords based on hypothesis
-            if "depression" in hypothesis.lower():
-                depression_keywords = [
-                    'depressed', 'hopeless', 'worthless', 'empty', 'sad', 'down',
-                    'lonely', 'isolated', 'meaningless', 'pointless', 'give up'
-                ]
-                matches = sum(1 for keyword in depression_keywords if keyword in text_lower)
-                score = min(0.8, matches * 0.15)
+            # Extract keywords from labels to build dynamic pattern matching
+            crisis_keywords = set()
+            for label in labels:
+                # Extract key terms from each label for pattern matching
+                label_lower = label.lower()
                 
-            elif "negative" in hypothesis.lower() or "distress" in hypothesis.lower():
-                negative_keywords = [
-                    'terrible', 'awful', 'horrible', 'hate', 'angry', 'furious',
-                    'stressed', 'overwhelmed', 'anxious', 'scared', 'worried'
-                ]
-                matches = sum(1 for keyword in negative_keywords if keyword in text_lower)
-                score = min(0.8, matches * 0.12)
+                # Common crisis terms to look for in labels
+                if any(term in label_lower for term in ['suicide', 'death', 'die', 'kill']):
+                    crisis_keywords.update(['suicide', 'suicidal', 'death', 'die', 'kill', 'end my life'])
                 
-            elif "crisis" in hypothesis.lower():
-                crisis_keywords = [
-                    'crisis', 'emergency', 'help', 'urgent', 'desperate', 'panic',
-                    'can\'t cope', 'breakdown', 'falling apart', 'end it all'
-                ]
-                matches = sum(1 for keyword in crisis_keywords if keyword in text_lower)
-                score = min(0.9, matches * 0.2)
+                if any(term in label_lower for term in ['hopeless', 'helpless', 'trapped']):
+                    crisis_keywords.update(['hopeless', 'hopelessness', 'helpless', 'trapped', 'no way out'])
+                
+                if any(term in label_lower for term in ['breakdown', 'crisis', 'overwhelm']):
+                    crisis_keywords.update(['breakdown', 'crisis', 'overwhelmed', 'can\'t cope', 'falling apart'])
+                
+                if any(term in label_lower for term in ['severe', 'extreme', 'acute']):
+                    crisis_keywords.update(['severe', 'extreme', 'terrible', 'unbearable', 'intense'])
+                
+                if any(term in label_lower for term in ['distress', 'anguish', 'pain']):
+                    crisis_keywords.update(['distress', 'anguish', 'pain', 'suffering', 'agony'])
+                
+                if any(term in label_lower for term in ['self-harm', 'cutting', 'hurt myself']):
+                    crisis_keywords.update(['self-harm', 'cutting', 'hurt myself', 'harm myself'])
+            
+            # Calculate score based on label-derived keywords
+            score = 0.0
+            matches = []
+            
+            for keyword in crisis_keywords:
+                if keyword in text_lower:
+                    matches.append(keyword)
+                    
+                    # Weight scores based on severity (inferred from labels)
+                    if keyword in ['suicide', 'suicidal', 'kill', 'death', 'end my life']:
+                        score += 0.8  # Highest severity
+                    elif keyword in ['hopeless', 'hopelessness', 'trapped', 'no way out']:
+                        score += 0.6  # High severity
+                    elif keyword in ['breakdown', 'crisis', 'overwhelmed', 'can\'t cope']:
+                        score += 0.4  # Medium-high severity
+                    elif keyword in ['severe', 'extreme', 'unbearable', 'intense']:
+                        score += 0.3  # Medium severity
+                    else:
+                        score += 0.1  # Lower severity
+            
+            # Apply label-count based weighting
+            if len(labels) > 3:  # More nuanced label sets can provide more precise scoring
+                label_sophistication_bonus = 0.1
+                score *= (1.0 + label_sophistication_bonus)
             
             # Boost for multiple indicators
-            if score > 0.3:
-                score *= 1.2
-                score = min(1.0, score)
+            if len(matches) > 2:
+                score *= 1.3
+            elif len(matches) > 1:
+                score *= 1.1
             
-            logger.debug(f"Enhanced pattern scoring: {score:.3f} for hypothesis: {hypothesis[:50]}...")
+            # Normalize to 0-1 range but allow for higher sensitivity with good labels
+            score = min(1.0, score)
+            
+            logger.debug(f"Label-aware scoring: {score:.3f} (matches: {matches})")
+            logger.debug(f"Labels used: {len(labels)}, Keywords extracted: {len(crisis_keywords)}")
+            
             return score
             
         except Exception as e:
-            logger.error(f"Enhanced pattern scoring failed: {e}")
+            logger.error(f"Enhanced label-aware scoring failed: {e}")
             return 0.0
     
     # ========================================================================
