@@ -149,7 +149,7 @@ class ThresholdMappingManager:
                     ensemble_thresholds = self.get_ensemble_thresholds_for_mode(mode)
                     if ensemble_thresholds:
                         # Validate threshold ordering
-                        critical = ensemble_thresholds.get('critical', 1.0)
+                        critical = ensemble_thresholds.get('critical', 0.7)
                         high = ensemble_thresholds.get('high', 0.5)
                         medium = ensemble_thresholds.get('medium', 0.3)
                         low = ensemble_thresholds.get('low', 0.1)
@@ -500,12 +500,12 @@ class ThresholdMappingManager:
     def get_current_ensemble_mode(self) -> str:
         """Get current ensemble mode UnifiedConfigManager"""
         logger.debug("📋 Getting ensemble mode from JSON...")
-        self.config = self.unified_config.get_config_section(
+        mode = self.unified_config.get_config_section(
             'model_ensemble',
             'ensemble_config.mode',
             'majority'
         )
-        if self.config:
+        if mode:
             logger.debug(f"🔧 Ensemble mode: {mode}")
             return mode
         else:
@@ -513,7 +513,7 @@ class ThresholdMappingManager:
             logger.error("⚠️ Ensemble mode not found, using ENV...")
             return mode
 
-    def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
+    def get_ensemble_thresholds_for_mode(self, mode) -> Dict[str, float]:
         """
         Get ensemble thresholds for specific mode using new UnifiedConfigManager method
         UPDATED: Now uses get_config_section() instead of manual resolution
