@@ -1,7 +1,7 @@
 # ash-nlp/managers/feature_config_manager.py
 """
 Feature Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-3
+FILE VERSION: v3.1-3e-5.5-4
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - FeatureConfigManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -67,7 +67,7 @@ class FeatureConfigManager:
         """Load feature flag configuration using Phase 3e get_config_section patterns"""
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
-            feature_config_raw = self.config_manager.get_config_section('feature_flags', {})
+            feature_config_raw = self.config_manager.get_config_section('feature_flags')
             
             if not feature_config_raw:
                 logger.error("Could not load feature flags configuration")
@@ -182,7 +182,7 @@ class FeatureConfigManager:
         """Validate feature dependencies and conflicts with enhanced error handling"""
         try:
             # PHASE 3E: Enhanced dependency validation using get_config_section patterns
-            dependencies_config = self.config_manager.get_config_section('feature_flags.feature_dependencies', {})
+            dependencies_config = self.config_manager.get_config_section('feature_flags', 'feature_dependencies', {})
             dependencies = dependencies_config.get('dependencies', {})
             conflicts = dependencies_config.get('conflicts', {})
             
@@ -486,7 +486,7 @@ class FeatureConfigManager:
         """Get feature categorization for management purposes with enhanced access patterns"""
         try:
             # PHASE 3E: Use get_config_section pattern for feature categories
-            categories = self.config_manager.get_config_section('feature_flags.feature_categories', {})
+            categories = self.config_manager.get_config_section('feature_flags', 'feature_categories', {})
             if not categories:
                 # Fallback to direct config cache access
                 categories = self.config_cache.get('feature_categories', {})
@@ -510,29 +510,31 @@ class FeatureConfigManager:
             
         Returns:
             Boolean indicating if profile was activated successfully
+        
+        NOT CURRENTLY USED!
         """
-        try:
-            # PHASE 3E: Enhanced profile access using get_config_section patterns
-            profiles = self.config_manager.get_config_section('feature_flags.feature_profiles', {})
-            if not profiles:
-                # Fallback to direct config cache access
-                profiles = self.config_cache.get('feature_profiles', {})
-                
-            if profile_name not in profiles:
-                logger.warning(f"Profile '{profile_name}' not found")
-                return False
-            
-            profile = profiles[profile_name]
-            logger.info(f"Activating feature profile: {profile_name}")
-            
-            # Profile activation would typically override current settings
-            # For now, just log the profile settings
-            logger.debug(f"Profile '{profile_name}' settings: {profile}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error activating profile '{profile_name}': {e}")
-            return False
+#        try:
+#            # PHASE 3E: Enhanced profile access using get_config_section patterns
+#            profiles = self.config_manager.get_config_section('feature_flags', 'feature_profiles', {})
+#            if not profiles:
+#                # Fallback to direct config cache access
+#                profiles = self.config_cache.get('feature_profiles', {})
+#                
+#            if profile_name not in profiles:
+#                logger.warning(f"Profile '{profile_name}' not found")
+#                return False
+#            
+#            profile = profiles[profile_name]
+#            logger.info(f"Activating feature profile: {profile_name}")
+#            
+#            # Profile activation would typically override current settings
+#            # For now, just log the profile settings
+#            logger.debug(f"Profile '{profile_name}' settings: {profile}")
+#            return True
+#            
+#        except Exception as e:
+#            logger.error(f"Error activating profile '{profile_name}': {e}")
+        return False
     
     def get_configuration_summary(self) -> Dict[str, Any]:
         """
