@@ -1,7 +1,7 @@
 # ash-nlp/managers/logging_config_manager.py
 """
 Centralized Logging Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-4
+FILE VERSION: v3.1-3e-5.5-5
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - LoggingConfigManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -54,7 +54,7 @@ class LoggingConfigManager:
         """Load logging configuration using Phase 3e get_config_section patterns"""
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
-            config = self.unified_config.get_config_section('logging_settings', {})
+            config = self.unified_config.get_config_section('logging_settings')
             
             if config and 'logging_configuration' in config:
                 logger.info("Logging configuration loaded from JSON with environment overrides")
@@ -119,7 +119,7 @@ class LoggingConfigManager:
         """Get global logging settings with Phase 3e enhanced error handling"""
         try:
             # PHASE 3E: Enhanced access using get_config_section patterns
-            global_settings = self.unified_config.get_config_section('logging_settings.global_settings', {})
+            global_settings = self.unified_config.get_config_section('logging_settings', 'global_settings', {})
             if not global_settings:
                 # Fallback to direct logging_config access
                 global_settings = self.logging_config.get('global_settings', {})
@@ -205,7 +205,7 @@ class LoggingConfigManager:
         """Get detailed logging settings with Phase 3e enhanced access patterns"""
         try:
             # PHASE 3E: Enhanced access using get_config_section patterns
-            detailed_settings = self.unified_config.get_config_section('logging_settings.detailed_logging', {})
+            detailed_settings = self.unified_config.get_config_section('logging_settings', 'detailed_logging', {})
             if not detailed_settings:
                 # Fallback to direct logging_config access
                 detailed_settings = self.logging_config.get('detailed_logging', {})
@@ -281,7 +281,7 @@ class LoggingConfigManager:
         """Get component-specific logging settings with Phase 3e enhanced access patterns"""
         try:
             # PHASE 3E: Enhanced access using get_config_section patterns
-            component_settings = self.unified_config.get_config_section('logging_settings.component_logging', {})
+            component_settings = self.unified_config.get_config_section('logging_settings', 'component_logging', {})
             if not component_settings:
                 # Fallback to direct logging_config access
                 component_settings = self.logging_config.get('component_logging', {})
@@ -390,7 +390,7 @@ class LoggingConfigManager:
         """Get development logging settings with Phase 3e enhanced access patterns"""
         try:
             # PHASE 3E: Enhanced access using get_config_section patterns
-            dev_settings = self.unified_config.get_config_section('logging_settings.development_logging', {})
+            dev_settings = self.unified_config.get_config_section('logging_settings', 'development_logging', {})
             if not dev_settings:
                 # Fallback to direct logging_config access
                 dev_settings = self.logging_config.get('development_logging', {})
