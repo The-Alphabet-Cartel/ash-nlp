@@ -17,9 +17,7 @@ from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], 
-                                               pattern_result: Dict[str, Any],
-                                               threshold_mapping_manager=None) -> Dict[str, Any]:
+def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pattern_result: Dict[str, Any], threshold_mapping_manager=None) -> Dict[str, Any]:
     """
     Phase 3e: Combine ensemble and pattern analysis results with enhanced error handling
     Mode-aware integration with dynamic threshold configuration
@@ -270,8 +268,7 @@ def _get_fallback_pattern_config() -> Dict[str, float]:
         'pattern_override_threshold': 0.8
     }
 
-def _map_ensemble_prediction_to_crisis_level(prediction: str, confidence: float, 
-                                                crisis_mapping: Dict[str, float]) -> str:
+def _map_ensemble_prediction_to_crisis_level(prediction: str, confidence: float, crisis_mapping: Dict[str, float]) -> str:
     """
     Phase 3e: Map ensemble prediction to crisis level with enhanced error handling
     """
@@ -342,8 +339,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
         logger.warning(f"Error comparing crisis levels: {e}")
         return 'low'  # Safe fallback
 
-def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manager, 
-                              crisis_pattern_manager=None, threshold_mapping_manager=None):
+def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, crisis_pattern_manager=None, threshold_mapping_manager=None):
     """
     Phase 3e: Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
     Clean v3.1 implementation with improved error handling and Phase 3e patterns
@@ -360,9 +356,9 @@ def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manage
     # ENHANCED VALIDATION - Phase 3e
     # ========================================================================
     
-    if not model_ensemble_manager:
-        logger.error("ModelEnsembleManager is required but not provided")
-        raise RuntimeError("ModelEnsembleManager required for ensemble endpoints")
+    if not crisis_analyzer:
+        logger.error("CrisisAnalyzer is required but not provided")
+        raise RuntimeError("CrisisAnalyzer required for ensemble endpoints")
     
     if not pydantic_manager:
         logger.error("PydanticManager v3.1 is required but not provided")
@@ -412,15 +408,15 @@ def add_ensemble_endpoints(app: FastAPI, model_ensemble_manager, pydantic_manage
             logger.debug(f"Clean v3.1 Architecture: Analyzing message from user {request.user_id}")
             
             # Enhanced validation
-            if not model_ensemble_manager:
+            if not crisis_analyzer:
                 raise HTTPException(
                     status_code=500,
-                    detail="Models manager not available"
+                    detail="Crisis Analyzer not available"
                 )
             
             # Single analysis call with enhanced error handling
             try:
-                complete_analysis = await model_ensemble_manager.analyze_message_ensemble(
+                complete_analysis = await crisis_analyzer.analyze_crisis(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
