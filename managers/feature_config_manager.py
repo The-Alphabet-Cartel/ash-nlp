@@ -74,11 +74,7 @@ class FeatureConfigManager:
                 raise ValueError("Feature flags configuration not available")
             
             # Extract feature flags configuration - Enhanced for Phase 3e
-            if 'features' in feature_config_raw:
-                self.config_cache = self.config_manager.get_config_section('feature_flags', 'features', {})
-            else:
-                # Handle direct configuration format
-                self.config_cache = feature_config_raw
+            self.config_cache = self.config_manager.get_config_section('feature_flags', 'features', {})
                 
             logger.debug("Feature flags configuration loaded successfully using Phase 3e patterns")
             logger.debug(f"Configuration sections loaded: {list(self.config_cache.keys())}")
