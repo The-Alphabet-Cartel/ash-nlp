@@ -1,7 +1,7 @@
 # ash-nlp/managers/crisis_pattern_manager.py
 """
 Crisis Pattern Manager for Ash NLP Service - OPTIMIZED
-FILE VERSION: v3.1-3e-5.3-optimized-1
+FILE VERSION: v3.1-3e-5.3-optimized-2
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Sub-step 5.3 - CrisisPatternManager cleanup + optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -27,8 +27,8 @@ import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
 from datetime import datetime
-from managers.unified_config_manager import UnifiedConfigManager
-from managers.crisis_pattern_helpers import CrisisPatternHelpers, create_crisis_pattern_helpers
+from managers.unified_config_manager import UnifiedConfigManager, create_unified_config_manager
+from managers.helpers.crisis_pattern_helper import CrisisPatternHelper, create_crisis_pattern_helper
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class CrisisPatternManager:
         self._compiled_regex_cache = {}
         
         # Initialize helper methods
-        self._helpers = create_crisis_pattern_helpers(config_manager)
+        self._helpers = create_crisis_pattern_helper(config_manager)
         
         logger.info("CrisisPatternManager v3.1-3e-5.3-optimized initializing...")
         self._load_all_patterns()
