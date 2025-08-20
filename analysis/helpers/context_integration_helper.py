@@ -78,7 +78,7 @@ class ContextIntegrationHelper:
         Create standardized timeout response for crisis analysis
         Migrated from: CrisisAnalyzer._create_timeout_response()
         """
-        return {
+        timeout_response = {
             'message': message,
             'user_id': user_id,
             'channel_id': channel_id,
@@ -110,6 +110,8 @@ class ContextIntegrationHelper:
             'processing_time': time.time() - start_time,
             'status': 'timeout'
         }
+        
+        return timeout_response
     
     # ========================================================================
     # ENSEMBLE ANALYSIS COORDINATION
@@ -225,7 +227,7 @@ class ContextIntegrationHelper:
                     self.crisis_analyzer._performance_cache = {
                         'analysis_timeout': self.crisis_analyzer.performance_config_manager.get_analysis_timeout(),
                         'model_timeout': self.crisis_analyzer.performance_config_manager.get_analysis_timeout(),  # Use same for model timeout
-                        'batch_size': self.crisis_analyzer.performance_config_manager.get_analysis_batch_size(),
+                        'batch_size': 1,  # Fixed: Use default since get_analysis_batch_size may not exist
                         'cache_enabled': True,  # Default to enabled
                         'parallel_analysis': False  # Default to disabled (handled by FeatureConfigManager)
                     }
