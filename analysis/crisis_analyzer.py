@@ -38,12 +38,7 @@ class CrisisAnalyzer:
     - Learning system integration for adaptive analysis
     """
     
-    def __init__(self, unified_config, model_ensemble_manager,
-                crisis_pattern_manager=None, analysis_parameters_manager=None,
-                threshold_mapping_manager=None, feature_config_manager=None,
-                performance_config_manager=None, context_pattern_manager=None,
-                 # NEW Phase 3e dependencies
-                 shared_utilities_manager=None, learning_system_manager=None):
+    def __init__(self, unified_config, model_ensemble_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None, feature_config_manager=None, performance_config_manager=None, context_pattern_manager=None, shared_utilities_manager=None, learning_system_manager=None):
         """
         Initialize Enhanced Crisis Analyzer with Phase 3e manager integration
         Updated for Step 4.2: SharedUtilities and LearningSystem integration
@@ -544,13 +539,10 @@ class CrisisAnalyzer:
             
             # Perform individual model analyses
             model_results = []
-            if self.model_ensemble_manager:
-                # Delegate to ModelEnsembleManager for individual model calls
-                # This maintains the coordination pattern while enhancing with consolidated logic
-                base_result = self.model_ensemble_manager.analyze_message_with_ensemble(
-                    message, user_id, channel_id
-                )
-                model_results = base_result.get('model_results', [])
+            base_result = self.analyze_crisis(
+                message, user_id, channel_id
+            )
+            model_results = base_result.get('model_results', [])
             
             # Combine results using consolidated logic
             combined_result = self.combine_ensemble_model_results(model_results)
@@ -716,8 +708,7 @@ class CrisisAnalyzer:
                 lambda: {'error': str(e), 'crisis_score': 0.0, 'learning_applied': False}
             )
 
-    def process_analysis_feedback(self, message: str, user_id: str, channel_id: str, 
-                                feedback_type: str, original_result: Dict) -> None:
+    def process_analysis_feedback(self, message: str, user_id: str, channel_id: str, feedback_type: str, original_result: Dict) -> None:
         """
         Process feedback for learning system improvement
         
@@ -1428,8 +1419,8 @@ class CrisisAnalyzer:
                 
                 # Get models based on feature flags
                 active_models = []
-                if self._feature_cache.get('sentiment_analysis', True):
-                    active_models.extend(['sentiment', 'depression'])
+                if self._feature_cache.get('ensemble_analysis', True):
+                    active_models.extend(['depression', 'sentiment', 'emotional_distress'])
                 
                 for model_name in active_models:
                     try:
@@ -1507,9 +1498,7 @@ class CrisisAnalyzer:
             logger.error(f"❌ Depression analysis failed: {e}")
             return {'error': str(e), 'score': 0.0}
 
-    def _combine_analysis_results(self, message: str, user_id: str, channel_id: str, 
-                                model_results: Dict, pattern_analysis: Dict, 
-                                context_analysis: Dict, start_time: float) -> Dict:
+    def _combine_analysis_results(self, message: str, user_id: str, channel_id: str, model_results: Dict, pattern_analysis: Dict, context_analysis: Dict, start_time: float) -> Dict:
         """
         Combine all analysis results with context integration
         Updated for Step 10.8: Context analysis integration + FIXED API response structure
@@ -1706,9 +1695,7 @@ class CrisisAnalyzer:
     # STEP 10.6: CONSOLIDATED SCORING FUNCTIONS (Instance methods from utils/scoring_helpers.py)
     # ========================================================================
     
-    def extract_depression_score(self, message: str, sentiment_model=None, 
-                                analysis_parameters_manager=None, context=None,
-                                crisis_pattern_manager=None) -> Tuple[float, List[str]]:
+    def extract_depression_score(self, message: str, sentiment_model=None, analysis_parameters_manager=None, context=None, crisis_pattern_manager=None) -> Tuple[float, List[str]]:
         """
         Extract depression indicators from message text (STEP 10.6: Consolidated from utils)
         
@@ -1819,9 +1806,7 @@ class CrisisAnalyzer:
             logger.error(f"Depression analysis failed: {e}")
             return 0.0, ['analysis_error']
 
-    def enhanced_depression_analysis(self, message: str, base_score: float = 0.0, sentiment_model=None, 
-                                   analysis_parameters_manager=None, context=None,
-                                   crisis_pattern_manager=None) -> Dict:
+    def enhanced_depression_analysis(self, message: str, base_score: float = 0.0, sentiment_model=None, analysis_parameters_manager=None, context=None, crisis_pattern_manager=None) -> Dict:
         """
         Enhanced depression analysis with detailed breakdown (STEP 10.6: Consolidated from utils)
         
@@ -1977,12 +1962,7 @@ class CrisisAnalyzer:
 # ENHANCED FACTORY FUNCTION - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None,
-                          analysis_parameters_manager=None, threshold_mapping_manager=None,
-                          feature_config_manager=None, performance_config_manager=None,
-                          context_pattern_manager=None,
-                          # NEW Phase 3e parameters
-                          shared_utilities_manager=None, learning_system_manager=None) -> CrisisAnalyzer:
+def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None, feature_config_manager=None, performance_config_manager=None, context_pattern_manager=None, shared_utilities_manager=None, learning_system_manager=None) -> CrisisAnalyzer:
     """
     Enhanced factory function for CrisisAnalyzer with Phase 3e integration
     Updated for Step 4.2: SharedUtilities and LearningSystem integration
