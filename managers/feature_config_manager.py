@@ -67,15 +67,12 @@ class FeatureConfigManager:
         """Load feature flag configuration using Phase 3e get_config_section patterns"""
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
-            feature_config_raw = self.config_manager.get_config_section('feature_flags')
+            self.config_cache = self.config_manager.get_config_section('feature_flags')
             
-            if not feature_config_raw:
+            if not self.config_cache:
                 logger.error("Could not load feature flags configuration")
                 raise ValueError("Feature flags configuration not available")
             
-            # Extract feature flags configuration - Enhanced for Phase 3e
-            self.config_cache = self.config_manager.get_config_section('feature_flags', 'features', {})
-                
             logger.debug("Feature flags configuration loaded successfully using Phase 3e patterns")
             logger.debug(f"Configuration sections loaded: {list(self.config_cache.keys())}")
             
