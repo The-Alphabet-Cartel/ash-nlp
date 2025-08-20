@@ -170,8 +170,8 @@
       "defaults": {
         "enable_health_checks": false,
         "health_check_interval": 30,
-        "log_health_status": false,
-      }
+        "log_health_status": false
+      },
       "validation": {
         "enable_health_checks": {
           "type": "boolean"
@@ -181,7 +181,7 @@
         },
         "log_health_status": {
           "type": "boolean"
-        },
+        }
       }
     }
   },
