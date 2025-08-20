@@ -1,7 +1,7 @@
 # ash-nlp/managers/zero_shot_manager.py
 """
 Zero-Shot Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-5
+FILE VERSION: v3.1-3e-5.5-6
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - ZeroShotManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -66,7 +66,7 @@ class ZeroShotManager:
         """Load label configuration using Phase 3e get_config_section patterns"""
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
-            label_config = self.unified_config.get_config_section('label_config', {})
+            label_config = self.unified_config.get_config_section('label_config')
             
             if not label_config:
                 logger.error("Could not load label configuration, falling back to minimal defaults")
@@ -370,31 +370,33 @@ class ZeroShotManager:
             
         Returns:
             Boolean indicating if profile was activated successfully
+        
+        NOT CURRENTLY USED!
         """
-        try:
-            # PHASE 3E: Enhanced profile access using get_config_section patterns
-            profiles = self.unified_config.get_config_section('label_config.label_profiles', {})
-            if not profiles:
-                # Fallback to direct access
-                label_config = self.unified_config.get_config_section('label_config', {})
-                profiles = label_config.get('label_profiles', {})
-            
-            if profile_name not in profiles:
-                logger.warning(f"Profile '{profile_name}' not found")
-                return False
-            
-            profile = profiles[profile_name]
-            logger.info(f"Activating label profile: {profile_name}")
-            
-            # Switch to profile's label set if specified
-            if 'label_set' in profile:
-                return self.switch_label_set(profile['label_set'])
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error activating profile '{profile_name}': {e}")
-            return False
+#        try:
+#            # PHASE 3E: Enhanced profile access using get_config_section patterns
+#            profiles = self.unified_config.get_config_section('label_config', 'label_profiles', {})
+#            if not profiles:
+#                # Fallback to direct access
+#                label_config = self.unified_config.get_config_section('label_config')
+#                profiles = label_config.get('label_profiles', {})
+#            
+#            if profile_name not in profiles:
+#                logger.warning(f"Profile '{profile_name}' not found")
+#                return False
+#            
+#            profile = profiles[profile_name]
+#            logger.info(f"Activating label profile: {profile_name}")
+#            
+#            # Switch to profile's label set if specified
+#            if 'label_set' in profile:
+#                return self.switch_label_set(profile['label_set'])
+#            
+#            return True
+#            
+#        except Exception as e:
+#            logger.error(f"Error activating profile '{profile_name}': {e}")
+        return False
     
     def get_zero_shot_settings(self) -> Dict[str, Any]:
         """
@@ -403,7 +405,7 @@ class ZeroShotManager:
         """
         try:
             # PHASE 3E: Enhanced settings access using get_config_section patterns
-            settings = self.unified_config.get_config_section('label_config.zero_shot_settings', {})
+            settings = self.unified_config.get_config_section('label_config', 'zero_shot_settings', {})
             if not settings:
                 # Fallback to direct zero_shot_settings access
                 settings = self.zero_shot_settings
