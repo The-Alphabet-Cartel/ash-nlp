@@ -72,6 +72,13 @@ class CrisisAnalyzer:
         self.performance_config_manager = performance_config_manager
         self.context_pattern_manager = context_pattern_manager
         
+        # Basic negation patterns
+        self.basic_negation_patterns = [
+            r'\b(not?|no|never|neither|nor|can\'t|cannot|won\'t|wouldn\'t|shouldn\'t|couldn\'t|don\'t|doesn\'t|didn\'t|isn\'t|aren\'t|wasn\'t|weren\'t)\b',
+            r'\b(barely|hardly|scarcely|seldom|rarely)\b',
+            r'\b(without|lacking|missing|absent)\b'
+        ]
+        
         # NEW Phase 3e manager dependencies
         self.shared_utilities_manager = shared_utilities_manager
         self.learning_system_manager = learning_system_manager
