@@ -75,7 +75,7 @@ class FeatureConfigManager:
             
             # Extract feature flags configuration - Enhanced for Phase 3e
             if 'features' in feature_config_raw:
-                self.config_cache = self.config_manager.get_config_section('feature_flags', 'features', {}')
+                self.config_cache = self.config_manager.get_config_section('feature_flags', 'features', {})
             else:
                 # Handle direct configuration format
                 self.config_cache = feature_config_raw
