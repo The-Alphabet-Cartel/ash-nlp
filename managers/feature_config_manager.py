@@ -76,9 +76,34 @@ class FeatureConfigManager:
             logger.debug("Feature flags configuration loaded successfully using Phase 3e patterns")
             logger.debug(f"Configuration sections loaded: {list(self.config_cache.keys())}")
             
+            # Validate configuration structure
+            if not self._validate_configuration_structure():
+                logger.warning("Configuration doesn't match expected format, using resilient fallbacks")
+                
         except Exception as e:
             logger.error(f"Failed to load feature flags configuration: {e}")
             raise
+    
+    def _validate_configuration_structure(self) -> bool:
+        """Validate that configuration matches expected structure for Phase 3e"""
+        required_sections = [
+            'core_system_features',
+            'analysis_component_features', 
+            'learning_features',
+            'experimental_features',
+            'development_debug_features'
+        ]
+        
+        missing_sections = []
+        for section in required_sections:
+            if section not in self.config_cache:
+                missing_sections.append(section)
+                
+        if missing_sections:
+            logger.warning(f"Missing configuration sections: {missing_sections}")
+            return False
+                
+        return True
     
     def _initialize_safe_defaults(self):
         """Initialize safe default configuration per Clean Architecture Charter Rule #5"""
@@ -97,18 +122,18 @@ class FeatureConfigManager:
             },
             'analysis_component_features': {
                 'pattern_analysis': True,
-                'semantic_analysis': True,
+                'semantic_analysis': False,
                 'context_analysis': True,
-                'phrase_extraction': True,
-                'analysis_caching': True,
-                'parallel_processing': True,
+                'phrase_extraction': False,
+                'analysis_caching': False,
+                'parallel_processing': False,
                 'defaults': {
                     'pattern_analysis': True,
-                    'semantic_analysis': True,
+                    'semantic_analysis': False,
                     'context_analysis': True,
-                    'phrase_extraction': True,
-                    'analysis_caching': True,
-                    'parallel_processing': True
+                    'phrase_extraction': False,
+                    'analysis_caching': False,
+                    'parallel_processing': False
                 }
             },
             'learning_features': {
@@ -121,24 +146,24 @@ class FeatureConfigManager:
             },
             'experimental_features': {
                 'advanced_context': False,
-                'community_vocab': True,
-                'temporal_patterns': True,
+                'community_vocab': False,
+                'temporal_patterns': False,
                 'multi_language': False,
                 'defaults': {
                     'advanced_context': False,
-                    'community_vocab': True,
-                    'temporal_patterns': True,
+                    'community_vocab': False,
+                    'temporal_patterns': False,
                     'multi_language': False
                 }
             },
             'development_debug_features': {
                 'detailed_logging': True,
-                'performance_metrics': True,
+                'performance_metrics': False,
                 'reload_on_changes': False,
                 'flip_sentiment_logic': False,
                 'defaults': {
                     'detailed_logging': True,
-                    'performance_metrics': True,
+                    'performance_metrics': False,
                     'reload_on_changes': False,
                     'flip_sentiment_logic': False
                 }
@@ -151,8 +176,8 @@ class FeatureConfigManager:
         try:
             # PHASE 3E: Enhanced dependency validation using get_config_section patterns
             dependencies_config = self.config_manager.get_config_section('feature_flags', 'feature_dependencies', {})
-            dependencies = dependencies_config.get('dependencies', {})
-            conflicts = dependencies_config.get('conflicts', {})
+            dependencies = self.config_manager.get_config_section('feature_flags', 'feature_dependencies.dependencies', {})
+            conflicts = self.config_manager.get_config_section('feature_flags', 'feature_dependencies.conflicts', {})
             
             # Validate dependencies
             for feature, deps in dependencies.items():
@@ -262,11 +287,11 @@ class FeatureConfigManager:
             logger.error(f"Error getting analysis component features: {e}")
             return {
                 'pattern_analysis': True,
-                'semantic_analysis': True,
+                'semantic_analysis': False,
                 'context_analysis': True,
-                'phrase_extraction': True,
-                'analysis_caching': True,
-                'parallel_processing': True
+                'phrase_extraction': False,
+                'analysis_caching': False,
+                'parallel_processing': False
             }
     
     # ========================================================================
@@ -328,8 +353,8 @@ class FeatureConfigManager:
             logger.error(f"Error getting experimental features: {e}")
             return {
                 'advanced_context': False,
-                'community_vocab': True,
-                'temporal_patterns': True,
+                'community_vocab': False,
+                'temporal_patterns': False,
                 'multi_language': False
             }
     
@@ -366,7 +391,7 @@ class FeatureConfigManager:
             logger.error(f"Error getting development debug features: {e}")
             return {
                 'detailed_logging': True,
-                'performance_metrics': True,
+                'performance_metrics': False,
                 'reload_on_changes': False,
                 'flip_sentiment_logic': False
             }
@@ -554,20 +579,15 @@ class FeatureConfigManager:
             Boolean feature flag value
         """
         try:
-            category_config = self.config_cache.get(category, {})
+            category_config = self.config_manager.get_config_section('feature_flags', f'features.{category}', {})
             
             # First try to get the value directly (after environment substitution)
-            value = category_config.get(feature)
-            
-            # If value is None or still has placeholder, fall back to defaults
-            if value is None or (isinstance(value, str) and value.startswith('${') and value.endswith('}')):
-                defaults = category_config.get('defaults', {})
-                value = defaults.get(feature, default)
+            value = self.config_manager.get_config_section('feature_flags', f'features.{category}.{feature}', {})
             
             # Enhanced type conversion for Phase 3e
             if isinstance(value, str):
                 # Handle string boolean values
-                return value.lower() in ('true', '1', 'yes', 'on', 'enabled')
+                return value.lower() in ('true', 'yes', 'on', 'enabled')
             elif isinstance(value, (int, float)):
                 return bool(value)
             else:
