@@ -1,7 +1,7 @@
 # ash-nlp/managers/performance_config_manager.py
 """
 Performance Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-optimized-1
+FILE VERSION: v3.1-3e-5.5-3
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Step 5.5 - PerformanceConfigManager Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -65,7 +65,7 @@ class PerformanceConfigManager:
         """Load performance settings configuration using enhanced patterns"""
         try:
             # UPDATED: Use get_config_section instead of load_config_file
-            self.config_cache = self.config_manager.get_config_section('performance_settings', default={})
+            self.config_cache = self.config_manager.get_config_section('performance_settings')
             
             if not self.config_cache:
                 logger.warning("No performance_settings.json found, using safe defaults")
@@ -159,8 +159,8 @@ class PerformanceConfigManager:
                 self.validation_errors.append("Analysis timeout too low (minimum 5.0s)")
             
             # Validate server performance settings
-            server_settings = self.get_server_performance_settings()
-            if server_settings.get('max_concurrent_requests', 0) < 1:
+            server_config = self.get_server_performance_settings()
+            if server_config.get('max_concurrent_requests', 0) < 1:
                 self.validation_errors.append("Max concurrent requests must be at least 1")
             
             # Validate model performance settings
@@ -403,15 +403,17 @@ class PerformanceConfigManager:
             
         Returns:
             Boolean indicating if profile was found and applied
+        
+        NOT CURRENTLY USED!
         """
-        profile_settings = self.get_profile_settings(profile_name)
-        if not profile_settings:
-            return False
-        
-        logger.info(f"Performance profile '{profile_name}' settings retrieved")
-        logger.info("Note: Most performance settings require server restart to take effect")
-        
-        return True
+#        profile_settings = self.get_profile_settings(profile_name)
+#        if not profile_settings:
+#            return False
+#        
+#        logger.info(f"Performance profile '{profile_name}' settings retrieved")
+#        logger.info("Note: Most performance settings require server restart to take effect")
+#        
+        return False
     
     # ========================================================================
     # COMPREHENSIVE SETTINGS ACCESS
