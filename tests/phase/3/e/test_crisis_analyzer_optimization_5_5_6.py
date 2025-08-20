@@ -206,7 +206,7 @@ class TestCrisisAnalyzerOptimization(unittest.TestCase):
                 feature_config_manager = feature_config_manager,
                 performance_config_manager = performance_config_manager,
                 context_pattern_manager = context_pattern_manager,
-                shared_utilities = shared_utilities_manager,
+                shared_utilities_manager = shared_utilities,
                 learning_system_manager = learning_system_manager,
                 zero_shot_manager=zero_shot_manager
             )
