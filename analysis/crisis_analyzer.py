@@ -1456,30 +1456,16 @@ class CrisisAnalyzer:
     async def _analyze_with_model(self, message: str, model_name: str) -> Dict:
         """Analyze message with specific model"""
         try:
-            if model_name == 'sentiment':
-                return await self._analyze_sentiment(message)
-            elif model_name == 'depression':
+            if model_name == 'depression':
                 return await self._analyze_depression(message)
+            elif model_name == 'sentiment':
+                return await self._analyze_sentiment(message)
+            elif model_name == 'emotional_distress':
+                return await self._analyze_emotional_distress(message)
             else:
                 return {'error': f'Unknown model: {model_name}', 'score': 0.0}
         except Exception as e:
             logger.error(f"❌ Model {model_name} analysis failed: {e}")
-            return {'error': str(e), 'score': 0.0}
-
-    async def _analyze_sentiment(self, message: str) -> Dict:
-        """Analyze sentiment using sentiment model"""
-        try:
-            # Placeholder for actual sentiment analysis
-            # This would use self.model_ensemble_manager to get the sentiment model
-            logger.debug("🎭 Analyzing sentiment...")
-            return {
-                'score': 0.3,  # Placeholder
-                'confidence': 0.7,
-                'model': 'sentiment_analyzer',
-                'method': 'ensemble_sentiment'
-            }
-        except Exception as e:
-            logger.error(f"❌ Sentiment analysis failed: {e}")
             return {'error': str(e), 'score': 0.0}
 
     async def _analyze_depression(self, message: str) -> Dict:
@@ -1489,13 +1475,45 @@ class CrisisAnalyzer:
             # This would use self.model_ensemble_manager to get the depression model
             logger.debug("😞 Analyzing depression indicators...")
             return {
-                'score': 0.4,  # Placeholder
+                'score': 0.75,  # Placeholder
                 'confidence': 0.6,
                 'model': 'depression_analyzer',
                 'method': 'ensemble_depression'
             }
         except Exception as e:
             logger.error(f"❌ Depression analysis failed: {e}")
+            return {'error': str(e), 'score': 0.0}
+
+    async def _analyze_sentiment(self, message: str) -> Dict:
+        """Analyze sentiment using sentiment model"""
+        try:
+            # Placeholder for actual sentiment analysis
+            # This would use self.model_ensemble_manager to get the sentiment model
+            logger.debug("🎭 Analyzing sentiment...")
+            return {
+                'score': 0.10,  # Placeholder
+                'confidence': 0.7,
+                'model': 'sentiment_analyzer',
+                'method': 'ensemble_sentiment'
+            }
+        except Exception as e:
+            logger.error(f"❌ Sentiment analysis failed: {e}")
+            return {'error': str(e), 'score': 0.0}
+
+    async def _analyze_emotional_distress(self, message: str) -> Dict:
+        """Analyze sentiment using sentiment model"""
+        try:
+            # Placeholder for actual emotional_distress analysis
+            # This would use self.model_ensemble_manager to get the emotional_distress model
+            logger.debug("🎭 Analyzing sentiment...")
+            return {
+                'score': 0.15,  # Placeholder
+                'confidence': 0.7,
+                'model': 'emotional_distress_analyzer',
+                'method': 'ensemble_emotional_distress'
+            }
+        except Exception as e:
+            logger.error(f"❌ Emotional Distress analysis failed: {e}")
             return {'error': str(e), 'score': 0.0}
 
     def _combine_analysis_results(self, message: str, user_id: str, channel_id: str, model_results: Dict, pattern_analysis: Dict, context_analysis: Dict, start_time: float) -> Dict:
