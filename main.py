@@ -218,16 +218,11 @@ def initialize_unified_managers():
 
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
-            unified_config,
-            model_ensemble_manager=model_ensemble,
-            crisis_pattern_manager=crisis_pattern,
-            analysis_parameters_manager=analysis_parameters,
-            threshold_mapping_manager=threshold_mapping,
-            feature_config_manager=feature_config,
-            performance_config_manager=performance_config,
-            context_pattern_manager=context_pattern,
-            shared_utilities_manager=shared_utilities,
-            learning_system_manager=learning_system,
+            unified_config=unified_config, model_ensemble_manager=model_ensemble,
+            crisis_pattern_manager=crisis_pattern, analysis_parameters_manager=analysis_parameters,
+            threshold_mapping_manager=threshold_mapping, feature_config_manager=feature_config,
+            performance_config_manager=performance_config, context_pattern_manager=context_pattern,
+            shared_utilities_manager=shared_utilities, learning_system_manager=learning_system,
             zero_shot_manager=zero_shot
         )
         logger.info("✅ Analysis components initialized")
