@@ -1,0 +1,183 @@
+{
+  "_metadata": {
+    "configuration_version": "3.1e-5.6",
+    "file_purpose": "SettingsManager coordination and runtime configuration",
+    "created_date": "2025-08-20",
+    "updated_date": "2025-08-20",
+    "phase": "3e Step 5.6",
+    "compliance": "clean_v3.1_architecture",
+    "description": "Runtime settings coordination and manager integration configuration for SettingsManager"
+  },
+
+  "system_status": {
+    "phase_status": {
+      "crisis_patterns": "externalized_to_json",
+      "analysis_parameters": "externalized_to_json",
+      "threshold_mappings": "externalized_to_json",
+      "server_configuration": "externalized_to_json",
+      "logging_configuration": "externalized_to_json",
+      "feature_flags": "externalized_to_json",
+      "performance_settings": "externalized_to_json",
+      "direct_os_getenv_calls": "eliminated",
+      "get_config_section_patterns": "implemented",
+      "phase_2a": "complete",
+      "phase_2b": "complete",
+      "phase_2c": "complete",
+      "phase_3a": "complete",
+      "phase_3b": "complete",
+      "phase_3c": "complete",
+      "phase_3d": "complete",
+    },
+    "architecture_status": {
+      "clean_v3_1_compliance": "complete",
+      "unified_config_integration": "complete",
+      "get_config_section_migration": "complete",
+      "enhanced_error_handling": "complete",
+      "migration_references": "complete"
+    }
+  },
+  
+  "runtime_coordination": {
+    "enable_manager_validation": "${NLP_SETTINGS_ENABLE_MANAGER_VALIDATION:true}",
+    "enable_override_tracking": "${NLP_SETTINGS_ENABLE_OVERRIDE_TRACKING:true}",
+    "coordination_timeout_ms": "${NLP_SETTINGS_COORDINATION_TIMEOUT_MS:5000}",
+    "graceful_degradation": "${NLP_SETTINGS_GRACEFUL_DEGRADATION:true}",
+    "defaults": {
+      "enable_manager_validation": true,
+      "enable_override_tracking": true,
+      "coordination_timeout_ms": 5000,
+      "graceful_degradation": true
+    },
+    "validation": {
+      "enable_manager_validation":{
+        "type": "boolean"        
+      },
+      "enable_override_tracking": {
+        "type": "boolean"
+      },
+      "coordination_timeout_ms": {
+        "type": "integer"
+      },
+      "graceful_degradation": {
+        "type": "boolean"
+      }
+    }
+  },
+
+  "runtime_overrides": {
+    "allow_environment_overrides": "${NLP_SETTINGS_ALLOW_ENV_OVERRIDES:true}",
+    "override_precedence": "${NLP_SETTINGS_OVERRIDE_PRECEDENCE:environment_first}",
+    "persist_overrides": "${NLP_SETTINGS_PERSIST_OVERRIDES:false}",
+    "override_validation": "${NLP_SETTINGS_OVERRIDE_VALIDATION:true}",
+    "defaults": {
+      "allow_environment_overrides": true,
+      "override_precedence": "environment_first",
+      "persist_overrides": false,
+      "override_validation": true
+    },
+    "validation": {
+      "allow_environment_overrides": {
+        "type": "boolean"
+      },
+      "override_precedence": {
+        "type": "string"
+      },
+      "persist_overrides": {
+        "type": "boolean"
+      },
+      "override_validation": {
+        "type": "boolean"
+      }
+    }
+  },
+
+  "manager_integration": {
+    "required_managers": [
+      "unified_config"
+    ],
+    "recommended_managers": [
+      "analysis_parameters",
+      "crisis_pattern",
+      "feature_config",
+      "server_config",
+      "storage_config"
+    ],
+    "optional_managers": [
+      "logging_config",
+      "performance_config",
+      "threshold_mapping",
+      "zero_shot",
+      "pydantic"
+    ],
+    "validation_settings": {
+      "require_unified_config": "${NLP_SETTINGS_REQUIRE_UNIFIED_CONFIG:true}",
+      "warn_missing_recommended": "${NLP_SETTINGS_WARN_MISSING_RECOMMENDED:true}",
+      "fail_on_critical_missing": "${NLP_SETTINGS_FAIL_ON_CRITICAL_MISSING:false}",
+      "defaults": {
+        "require_unified_config": true,
+        "warn_missing_recommended": true,
+        "fail_on_critical_missing": false
+      },
+      "validation": {
+        "require_unified_config": {
+          "type": "boolean"
+        },
+        "warn_missing_recommended": {
+          "type": "boolean"
+        },
+        "fail_on_critical_missing": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+
+  "coordination_behavior": {
+    "enable_fallback_configurations": "${NLP_SETTINGS_ENABLE_FALLBACK_CONFIG:true}",
+    "fallback_timeout_ms": "${NLP_SETTINGS_FALLBACK_TIMEOUT_MS:2000}",
+    "retry_failed_managers": "${NLP_SETTINGS_RETRY_FAILED_MANAGERS:true}",
+    "max_retry_attempts": "${NLP_SETTINGS_MAX_RETRY_ATTEMPTS:3}",
+    "defaults": {
+      "enable_fallback_configurations": true,
+      "fallback_timeout_ms": 2000,
+      "retry_failed_managers": true,
+      "max_retry_attempts": 3
+    },
+    "validation": {
+      "enable_fallback_configurations": {
+        "type": "boolean"
+      },
+      "fallback_timeout_ms": {
+        "type": "integer"
+      },
+      "retry_failed_managers": {
+        "type": "boolean"
+      },
+      "max_retry_attempts": {
+        "type": "integer"
+      }
+    }
+  },
+
+  "legacy_compatibility": {
+    "preserve_server_config_constants": "${NLP_SETTINGS_PRESERVE_SERVER_CONFIG:true}",
+    "enable_migration_notices": "${NLP_SETTINGS_ENABLE_MIGRATION_NOTICES:true}",
+    "deprecation_warnings": "${NLP_SETTINGS_DEPRECATION_WARNINGS:true}",
+    "defaults": {
+      "preserve_server_config_constants": true,
+      "enable_migration_notices": true,
+      "deprecation_warnings": true
+    },
+    "validation": {
+      "preserve_server_config_constants": {
+        "type": "boolean"
+      },
+      "enable_migration_notices": {
+        "type": "boolean"
+      },
+      "deprecation_warnings": {
+        "type": "boolean"
+      }
+    }
+  }
+}
