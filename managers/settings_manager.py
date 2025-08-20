@@ -1,7 +1,7 @@
 # ash-nlp/managers/settings_manager.py
 """
 Runtime Settings and Configuration Overrides for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-1
+FILE VERSION: v3.1-3e-5.5-2
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - SettingsManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -115,38 +115,25 @@ class SettingsManager:
         """Load runtime settings using enhanced Phase 3e configuration patterns"""
         try:
             # PHASE 3E: Enhanced configuration loading using get_config_section patterns
-            phase_status = self.unified_config.get_config_section('system_status.phases', {
-                'phase_3e_step_5': 'in_progress',
-                'unified_config_manager': 'operational',
-                'manager_cleanup': 'active'
-            })
+            phase_status = self.unified_config.get_config_section(
+                'settings_config',
+                'system_status.phase_status', {
+                    'phase_3e_step_5': 'in_progress',
+                    'unified_config_manager': 'operational',
+                    'manager_cleanup': 'active'
+                }
+            )
             
             self.runtime_settings = {
                 'server': SERVER_CONFIG,
                 'phase_status': {
                     **phase_status,
-                    'phase_2a': 'complete',
-                    'phase_2b': 'complete', 
-                    'phase_2c': 'complete',
-                    'phase_3a': 'complete',
-                    'phase_3b': 'complete',
-                    'phase_3c': 'complete',
-                    'phase_3d_step_5': 'complete',
-                    'phase_3d_step_6': 'complete', 
-                    'phase_3d_step_7': 'complete',
-                    'phase_3d_step_8': 'complete',
-                    'phase_3d_step_9': 'complete',
+                    'phase_3e_step_1': 'complete', 
+                    'phase_3e_step_2': 'complete',
+                    'phase_3e_step_3': 'complete',
+                    'phase_3e_step_4': 'complete',
                     'phase_3e_step_5': 'active',
                     'phase_3e_substep_5_5': 'active',
-                    'crisis_patterns': 'externalized_to_json',
-                    'analysis_parameters': 'externalized_to_json',
-                    'threshold_mappings': 'externalized_to_json',
-                    'server_configuration': 'externalized_to_json',
-                    'logging_configuration': 'externalized_to_json',
-                    'feature_flags': 'externalized_to_json',
-                    'performance_settings': 'externalized_to_json',
-                    'direct_os_getenv_calls': 'eliminated',
-                    'get_config_section_patterns': 'implemented'
                 }
             }
             
@@ -174,7 +161,7 @@ class SettingsManager:
         """Load setting overrides using enhanced UnifiedConfigManager patterns"""
         try:
             # PHASE 3E: Enhanced environment variable handling
-            override_config = self.unified_config.get_config_section('runtime_overrides', {})
+            override_config = self.unified_config.get_config_section('settings_config', 'runtime_overrides', {})
             
             # Legacy device and precision settings (maintained for backward compatibility)
             legacy_device = self.unified_config.get_env('NLP_DEVICE')
@@ -286,7 +273,7 @@ class SettingsManager:
         # Fallback to UnifiedConfigManager with enhanced patterns
         try:
             # PHASE 3E: Use get_config_section pattern
-            storage_config = self.unified_config.get_config_section('storage_settings', {})
+            storage_config = self.unified_config.get_config_section('storage_settings')
             if storage_config:
                 return storage_config
                 
@@ -328,7 +315,7 @@ class SettingsManager:
         
         # Enhanced fallback using get_config_section pattern
         try:
-            directories = self.unified_config.get_config_section('storage_settings.directories', {})
+            directories = self.unified_config.get_config_section('storage_settings', 'storage_configuration.directories', {})
             if directories:
                 return directories
         except Exception as e:
@@ -357,7 +344,7 @@ class SettingsManager:
         
         # Enhanced fallback using get_config_section pattern
         try:
-            cache_config = self.unified_config.get_config_section('storage_settings.cache_settings', {})
+            cache_config = self.unified_config.get_config_section('storage_settings', 'storage_configuration.cache_settings', {})
             if cache_config:
                 return cache_config
         except Exception as e:
@@ -385,7 +372,7 @@ class SettingsManager:
                 logger.warning(f"⚠️ StorageConfigManager error, using fallback: {e}")
         
         try:
-            cache_enabled = self.unified_config.get_config_section('storage_settings.cache_settings.enable_model_cache', None)
+            cache_enabled = self.unified_config.get_config_section('storage_settings', 'storage_configuration.cache_settings.enable_model_cache', None)
             if cache_enabled is not None:
                 return bool(cache_enabled)
         except Exception as e:
@@ -406,7 +393,7 @@ class SettingsManager:
         
         # Enhanced fallback using get_config_section pattern
         try:
-            backup_config = self.unified_config.get_config_section('storage_settings.backup_settings', {})
+            backup_config = self.unified_config.get_config_section('storage_settings', 'storage_configuration.backup_settings', {})
             if backup_config:
                 return backup_config
         except Exception as e:
