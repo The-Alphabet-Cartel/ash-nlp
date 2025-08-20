@@ -193,7 +193,7 @@ class TestCrisisAnalyzerOptimization(unittest.TestCase):
             performance_config_manager = create_performance_config_manager(self.unified_config)
             context_pattern_manager = create_context_pattern_manager(self.unified_config)
             shared_utilities = create_shared_utilities_manager(self.unified_config)
-            learning_system_manager = create_learning_system_manager(self.unified_config)
+            learning_system_manager = create_learning_system_manager(self.unified_config, shared_utilities)
             zero_shot_manager = create_zero_shot_manager(self.unified_config)
             
             # Create crisis analyzer with ZeroShotManager
