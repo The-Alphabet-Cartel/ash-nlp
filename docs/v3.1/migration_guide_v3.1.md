@@ -14,7 +14,7 @@
 **Status**: **✅ PHASE 3D COMPLETE - EXTRAORDINARY SUCCESS ACHIEVED**  
 **Next Phase**: **🚀 PHASE 3E - IN PROGRESS**
 
-**Document Version**: v3.1-3e-5.2-READY
+**Document Version**: v3.1-3e-5.5-1
 
 ---
 
@@ -349,6 +349,7 @@ The `get_config_section()` method is now the **ONLY** approved way to access con
 ### **📋 Basic Usage Patterns**
 
 #### **1. Get Entire Configuration File**
+**CRITICAL**: When accessing entire configuration files, do not provide a default argument.
 ```python
 # Get the entire analysis_parameters.json file
 analysis_config = config_manager.get_config_section('analysis_parameters')
@@ -548,6 +549,16 @@ def get_validated_config_section(self, section_path: str, validator_func = None)
     return config
 ```
 
+#### **Pattern 4: Raw Configuration File Access**
+**CRITICAL**: When accessing entire configuration files, do not provide a default argument.
+```python
+# Correct: No default argument for full file access
+raw_config = self.unified_config.get_config_section('config_file_name')
+
+# Wrong: Will cause errors
+raw_config = self.unified_config.get_config_section('config_file_name', {})
+```
+
 ---
 
 ## 🚨 **CRITICAL: Phase 3e Migration Requirements**
@@ -589,7 +600,7 @@ Available configuration files via `get_config_section()`:
 - `'learning_system'` - Learning system settings
 - `'model_ensemble'` - Model ensemble and loading settings
 - `'performance_settings'` - Performance settings and optimization
-- `'server_settings'` - Server configuration and networking
+- `'server_config'` - Server configuration and networking
 - `'storage_settings'` - Data storage and caching configuration
 - `'temporal_indicators_patterns'` - Time-based crisis indicators
 - `'threshold_mapping'` - Crisis threshold mapping configuration
