@@ -242,7 +242,7 @@ class ModelEnsembleManager:
         return {
             'error': 'method_migrated',
             'message': 'analyze_with_ensemble has been moved to CrisisAnalyzer',
-            'migration_target': 'CrisisAnalyzer.analyze_with_ensemble()',
+            'migration_target': 'CrisisAnalyzer.analyze_crisis()',
             'recommendation': 'Update code to use CrisisAnalyzer for ensemble analysis'
         }
     
@@ -266,7 +266,7 @@ class ModelEnsembleManager:
         return {
             'error': 'method_migrated',
             'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
-            'migration_target': 'CrisisAnalyzer.analyze_message()',
+            'migration_target': 'CrisisAnalyzer.analyze_crisis()',
             'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
         }
     
@@ -289,7 +289,7 @@ class ModelEnsembleManager:
         return {
             'error': 'method_migrated',
             'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
-            'migration_target': 'CrisisAnalyzer.analyze_message()',
+            'migration_target': 'CrisisAnalyzer.classify_zero_shot()',
             'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
         }
     
