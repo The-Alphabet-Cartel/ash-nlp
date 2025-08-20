@@ -416,7 +416,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
             
             # Single analysis call with enhanced error handling
             try:
-                complete_analysis = await crisis_analyzer.perform_ensemble_crisis_analysis(
+                complete_analysis = crisis_analyzer.perform_ensemble_crisis_analysis(
                     message=request.message,
                     user_id=request.user_id,
                     channel_id=request.channel_id
