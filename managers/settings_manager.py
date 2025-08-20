@@ -56,7 +56,7 @@ class SettingsManager:
     - Migration references for all deprecated methods
     """
     
-    def __init__(self, unified_config_manager,
+    def __init__(self, unified_config,
         analysis_parameters_manager=None, crisis_pattern_manager=None,
         feature_config_manager=None, learning_system_manager=None,
         logging_config_manager=None, model_ensemble_manager=None,
@@ -84,7 +84,7 @@ class SettingsManager:
             zero_shot_manager: ZeroShotManager instance
         """
         # Core configuration manager (required)
-        self.unified_config = unified_config_manager
+        self.unified_config = unified_config
         
         # All specialized managers (optional dependencies)
         self.analysis_parameters_manager = analysis_parameters_manager
@@ -694,7 +694,7 @@ class SettingsManager:
 # ============================================================================
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
 # ============================================================================
-def create_settings_manager(unified_config_manager,
+def create_settings_manager(unified_config,
     analysis_parameters_manager=None, crisis_pattern_manager=None,
     feature_config_manager=None, learning_system_manager=None,
     logging_config_manager=None, model_ensemble_manager=None,
@@ -725,7 +725,7 @@ def create_settings_manager(unified_config_manager,
         SettingsManager instance with Phase 3e enhancements
     """
     return SettingsManager(
-        unified_config_manager=unified_config_manager,
+        unified_config,
         analysis_parameters_manager=analysis_parameters_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         feature_config_manager=feature_config_manager,
