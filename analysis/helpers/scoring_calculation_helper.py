@@ -13,6 +13,7 @@ Original location: analysis/crisis_analyzer.py - scoring and calculation methods
 """
 
 import logging
+import time
 from typing import Dict, List, Tuple, Any, Optional
 
 logger = logging.getLogger(__name__)
