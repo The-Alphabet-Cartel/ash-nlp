@@ -20,7 +20,7 @@
     }
   },
 
-  "feature_flags": {
+  "features": {
     "core_system_features": {
       "description": "Core system feature toggles for production crisis detection",
       "ensemble_analysis": "${NLP_FEATURE_CORE_ENSEMBLE_ANALYSIS}",
