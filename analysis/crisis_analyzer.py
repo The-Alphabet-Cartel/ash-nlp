@@ -915,6 +915,56 @@ class CrisisAnalyzer:
             
         return sentiment_context
 
+    def perform_enhanced_context_analysis(self, message: str, crisis_pattern_manager=None) -> Dict[str, Any]:
+        """
+        Perform enhanced context analysis with optional crisis pattern integration
+        
+        Args:
+            message: Message text to analyze  
+            crisis_pattern_manager: Optional CrisisPatternManager for enhanced analysis
+            
+        Returns:
+            Enhanced context analysis results
+            
+        Note:
+            Migrated from utils/context_helpers.py - perform_enhanced_context_analysis()
+        """
+        
+        # Start with basic context signals
+        context = self.extract_context_signals(message)
+        
+        if crisis_pattern_manager:
+            try:
+                # Get enhanced pattern analysis from CrisisPatternManager
+                context_patterns = crisis_pattern_manager.get_crisis_context_patterns()
+                positive_patterns = crisis_pattern_manager.get_positive_context_patterns()
+                temporal_analysis = crisis_pattern_manager.analyze_temporal_indicators(message)
+                
+                # Merge advanced analysis into context
+                context.update({
+                    'crisis_context_available': True,
+                    'temporal_analysis': temporal_analysis,
+                    'pattern_manager_status': 'available'
+                })
+                
+                logger.debug("Enhanced context analysis completed with CrisisPatternManager")
+                
+            except Exception as e:
+                logger.error(f"Error in enhanced context analysis: {e}")
+                context.update({
+                    'crisis_context_available': False,
+                    'pattern_manager_status': 'error',
+                    'pattern_manager_error': str(e)
+                })
+        else:
+            context.update({
+                'crisis_context_available': False,
+                'pattern_manager_status': 'not_available'
+            })
+            logger.debug("Basic context analysis only - CrisisPatternManager not available")
+        
+        return context
+
     # ========================================================================
     # HELPER METHODS - Support functions for context analysis
     # ========================================================================
@@ -968,28 +1018,6 @@ class CrisisAnalyzer:
     # EXISTING METHODS (maintained from Phase 3d Step 10.8)
     # ========================================================================
     
-    def perform_enhanced_context_analysis(self, message: str) -> Dict[str, Any]:
-        """
-        Perform enhanced context analysis with crisis pattern integration
-        
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            Enhanced context analysis results
-        """
-        try:
-            if self.context_pattern_manager:
-                return self.context_pattern_manager.perform_enhanced_context_analysis(
-                    message, self.crisis_pattern_manager
-                )
-            else:
-                logger.warning("⚠️ ContextPatternManager not available for enhanced analysis")
-                return {'enhanced_analysis': False, 'context_available': False}
-        except Exception as e:
-            logger.error(f"❌ Enhanced context analysis failed: {e}")
-            return {'enhanced_analysis': False, 'error': str(e)}
-
     def score_term_in_context(self, term: str, message: str, context_window: Optional[int] = None) -> Dict[str, Any]:
         """
         Score term relevance in message context using ContextPatternManager
