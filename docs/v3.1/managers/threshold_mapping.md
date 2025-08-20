@@ -36,7 +36,7 @@ The **ThresholdMappingManager** is responsible for managing crisis level thresho
 3. **`get_learning_thresholds()`** - Learning system threshold configuration
 
 ### **Threshold Management Methods:**
-1. **`get_ensemble_thresholds_for_mode(mode=None)`** - Complete threshold configuration for mode
+1. **`get_ensemble_thresholds_for_mode(mode)`** - Complete threshold configuration for mode
 2. **`_validate_threshold_config()`** - Validates threshold configuration consistency
 3. **`get_validation_status()`** - Returns threshold validation status
 4. **`get_threshold_summary()`** - Comprehensive threshold configuration summary
