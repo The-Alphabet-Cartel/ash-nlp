@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "configuration_version": "3.1e-5.6",
+    "configuration_version": "3.1-3e-5.6-1",
     "file_purpose": "SettingsManager coordination and runtime configuration",
     "created_date": "2025-08-20",
     "updated_date": "2025-08-20",
@@ -38,10 +38,10 @@
   },
   
   "runtime_coordination": {
-    "enable_manager_validation": "${NLP_SETTINGS_ENABLE_MANAGER_VALIDATION:true}",
-    "enable_override_tracking": "${NLP_SETTINGS_ENABLE_OVERRIDE_TRACKING:true}",
-    "coordination_timeout_ms": "${NLP_SETTINGS_COORDINATION_TIMEOUT_MS:5000}",
-    "graceful_degradation": "${NLP_SETTINGS_GRACEFUL_DEGRADATION:true}",
+    "enable_manager_validation": "${NLP_SETTINGS_ENABLE_MANAGER_VALIDATION}",
+    "enable_override_tracking": "${NLP_SETTINGS_ENABLE_OVERRIDE_TRACKING}",
+    "coordination_timeout_ms": "${NLP_SETTINGS_COORDINATION_TIMEOUT_MS}",
+    "graceful_degradation": "${NLP_SETTINGS_GRACEFUL_DEGRADATION}",
     "defaults": {
       "enable_manager_validation": true,
       "enable_override_tracking": true,
@@ -65,10 +65,10 @@
   },
 
   "runtime_overrides": {
-    "allow_environment_overrides": "${NLP_SETTINGS_ALLOW_ENV_OVERRIDES:true}",
-    "override_precedence": "${NLP_SETTINGS_OVERRIDE_PRECEDENCE:environment_first}",
-    "persist_overrides": "${NLP_SETTINGS_PERSIST_OVERRIDES:false}",
-    "override_validation": "${NLP_SETTINGS_OVERRIDE_VALIDATION:true}",
+    "allow_environment_overrides": "${NLP_SETTINGS_ALLOW_ENV_OVERRIDES}",
+    "override_precedence": "${NLP_SETTINGS_OVERRIDE_PRECEDENCE}",
+    "persist_overrides": "${NLP_SETTINGS_PERSIST_OVERRIDES}",
+    "override_validation": "${NLP_SETTINGS_OVERRIDE_VALIDATION}",
     "defaults": {
       "allow_environment_overrides": true,
       "override_precedence": "environment_first",
@@ -110,9 +110,9 @@
       "pydantic"
     ],
     "validation_settings": {
-      "require_unified_config": "${NLP_SETTINGS_REQUIRE_UNIFIED_CONFIG:true}",
-      "warn_missing_recommended": "${NLP_SETTINGS_WARN_MISSING_RECOMMENDED:true}",
-      "fail_on_critical_missing": "${NLP_SETTINGS_FAIL_ON_CRITICAL_MISSING:false}",
+      "require_unified_config": "${NLP_SETTINGS_REQUIRE_UNIFIED_CONFIG}",
+      "warn_missing_recommended": "${NLP_SETTINGS_WARN_MISSING_RECOMMENDED}",
+      "fail_on_critical_missing": "${NLP_SETTINGS_FAIL_ON_CRITICAL_MISSING}",
       "defaults": {
         "require_unified_config": true,
         "warn_missing_recommended": true,
@@ -133,10 +133,10 @@
   },
 
   "coordination_behavior": {
-    "enable_fallback_configurations": "${NLP_SETTINGS_ENABLE_FALLBACK_CONFIG:true}",
-    "fallback_timeout_ms": "${NLP_SETTINGS_FALLBACK_TIMEOUT_MS:2000}",
-    "retry_failed_managers": "${NLP_SETTINGS_RETRY_FAILED_MANAGERS:true}",
-    "max_retry_attempts": "${NLP_SETTINGS_MAX_RETRY_ATTEMPTS:3}",
+    "enable_fallback_configurations": "${NLP_SETTINGS_ENABLE_FALLBACK_CONFIG}",
+    "fallback_timeout_ms": "${NLP_SETTINGS_FALLBACK_TIMEOUT_MS}",
+    "retry_failed_managers": "${NLP_SETTINGS_RETRY_FAILED_MANAGERS}",
+    "max_retry_attempts": "${NLP_SETTINGS_MAX_RETRY_ATTEMPTS}",
     "defaults": {
       "enable_fallback_configurations": true,
       "fallback_timeout_ms": 2000,
@@ -160,9 +160,9 @@
   },
 
   "legacy_compatibility": {
-    "preserve_server_config_constants": "${NLP_SETTINGS_PRESERVE_SERVER_CONFIG:true}",
-    "enable_migration_notices": "${NLP_SETTINGS_ENABLE_MIGRATION_NOTICES:true}",
-    "deprecation_warnings": "${NLP_SETTINGS_DEPRECATION_WARNINGS:true}",
+    "preserve_server_config_constants": "${NLP_SETTINGS_PRESERVE_SERVER_CONFIG}",
+    "enable_migration_notices": "${NLP_SETTINGS_ENABLE_MIGRATION_NOTICES}",
+    "deprecation_warnings": "${NLP_SETTINGS_DEPRECATION_WARNINGS}",
     "defaults": {
       "preserve_server_config_constants": true,
       "enable_migration_notices": true,
