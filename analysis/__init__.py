@@ -434,9 +434,8 @@ def get_consolidation_summary():
 def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None, 
                           analysis_parameters_manager=None, threshold_mapping_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
-                          context_pattern_manager=None,
-                          # NEW Phase 3e Step 4.2 parameters
-                          shared_utilities_manager=None, learning_system_manager=None):
+                          context_pattern_manager=None, shared_utilities_manager=None,
+                          learning_system_manager=None, zero_shot_manager=None):
     """
     Create and return an enhanced CrisisAnalyzer instance with Phase 3e Step 4.2 integration
     
@@ -477,10 +476,9 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
         feature_config_manager=feature_config_manager,
         performance_config_manager=performance_config_manager,
         context_pattern_manager=context_pattern_manager,
-        
-        # NEW Phase 3e Step 4.2 dependencies
         shared_utilities_manager=shared_utilities_manager,
-        learning_system_manager=learning_system_manager
+        learning_system_manager=learning_system_manager,
+        zero_shot_manager=zero_shot_manager
     )
 
 def create_enhanced_crisis_analyzer(unified_config, model_ensemble_manager, shared_utilities_manager, 
