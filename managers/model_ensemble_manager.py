@@ -1,7 +1,7 @@
 # ash-nlp/managers/model_ensemble_manager.py
 """
 Model Ensemble Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-optimized-1
+FILE VERSION: v3.1-3e-5.5-2
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Step 5.5 - ModelEnsembleManager Optimization and Migration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -79,7 +79,7 @@ class ModelEnsembleManager:
         """Load model configuration using enhanced UnifiedConfigManager patterns"""
         try:
             # UPDATED: Use get_config_section instead of get_model_configuration
-            model_config = self.config_manager.get_config_section('model_ensemble', default={})
+            model_config = self.config_manager.get_config_section('model_ensemble')
             
             if not model_config:
                 logger.warning("No model_ensemble.json found, using environment fallback")
