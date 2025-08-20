@@ -76,34 +76,9 @@ class FeatureConfigManager:
             logger.debug("Feature flags configuration loaded successfully using Phase 3e patterns")
             logger.debug(f"Configuration sections loaded: {list(self.config_cache.keys())}")
             
-            # Validate configuration structure
-            if not self._validate_configuration_structure():
-                logger.warning("Configuration doesn't match expected format, using resilient fallbacks")
-                
         except Exception as e:
             logger.error(f"Failed to load feature flags configuration: {e}")
             raise
-    
-    def _validate_configuration_structure(self) -> bool:
-        """Validate that configuration matches expected structure for Phase 3e"""
-        required_sections = [
-            'core_system_features',
-            'analysis_component_features', 
-            'learning_features',
-            'experimental_features',
-            'development_debug_features'
-        ]
-        
-        missing_sections = []
-        for section in required_sections:
-            if section not in self.config_cache:
-                missing_sections.append(section)
-                
-        if missing_sections:
-            logger.warning(f"Missing configuration sections: {missing_sections}")
-            return False
-                
-        return True
     
     def _initialize_safe_defaults(self):
         """Initialize safe default configuration per Clean Architecture Charter Rule #5"""
