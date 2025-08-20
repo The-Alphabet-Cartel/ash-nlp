@@ -14,6 +14,7 @@ Original location: analysis/crisis_analyzer.py - pattern analysis and detection 
 
 import logging
 import re
+import time
 from typing import Dict, List, Any, Optional
 
 logger = logging.getLogger(__name__)
