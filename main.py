@@ -323,8 +323,8 @@ def create_fastapi_app():
         # Ensemble endpoints
         add_ensemble_endpoints(
             app, 
-            managers['model_ensemble_manager'], 
-            managers['pydantic_manager'], 
+            managers['crisis_analyzer'],
+            managers['pydantic_manager'],
             crisis_pattern_manager=managers['crisis_pattern'],
             threshold_mapping_manager=managers['threshold_mapping']
         )
