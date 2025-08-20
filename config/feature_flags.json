@@ -177,10 +177,6 @@
       "threshold_learning": {
         "requires": ["ensemble_analysis", "staff_review_logic"],
         "description": "Threshold learning requires ensemble analysis and staff review logic"
-      },
-      "experimental_features": {
-        "requires": ["detailed_logging"],
-        "description": "Experimental features require detailed logging for monitoring"
       }
     },
     "conflicts": {
