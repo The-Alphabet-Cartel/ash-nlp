@@ -499,15 +499,18 @@ class ThresholdMappingManager:
      
     def get_current_ensemble_mode(self) -> str:
         """Get current ensemble mode UnifiedConfigManager"""
-        logger.debug("📋 Getting ensemble mode...")
-        self.config = self.unified_config.get_model_configuration()
+        logger.debug("📋 Getting ensemble mode from JSON...")
+        self.config = self.unified_config.get_config_section(
+            'model_ensemble',
+            'ensemble_config.mode',
+            'majority'
+        )
         if self.config:
-            mode = self.config.get('ensemble_config', {}).get('mode', 'majority')
             logger.debug(f"🔧 Ensemble mode: {mode}")
             return mode
         else:
             mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
-            logger.error("⚠️ Ensemble mode not found...")
+            logger.error("⚠️ Ensemble mode not found, using ENV...")
             return mode
 
     def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
