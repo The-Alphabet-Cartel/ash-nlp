@@ -65,17 +65,11 @@ class ZeroShotManager:
     def _load_label_configuration(self):
         """Load label configuration using Phase 3e get_config_section patterns"""
         try:
-            # PHASE 3E: Use get_config_section instead of load_config_file
+            # Extract configuration structure with enhanced error handling
             self.label_configuration = self.unified_config.get_config_section('label_config', 'label_configuration', {})
             self.label_mapping_config = self.unified_config.get_config_section('label_config', 'label_mapping', {})
             self.zero_shot_settings = self.unified_config.get_config_section('label_config', 'zero_shot_settings', {})
             
-            if not self.label_configuration:
-                logger.error("Could not load label configuration, falling back to minimal defaults")
-                self._load_fallback_configuration()
-                return
-            
-            # Extract configuration structure with enhanced error handling
             
             if not self.label_configuration:
                 logger.error("No label_configuration found in label configuration")
@@ -102,9 +96,29 @@ class ZeroShotManager:
         
         self.label_configuration = {
             "description": "Fallback baseline labels for Phase 3e",
-            "depression": "fallback_depression_labels",
-            "sentiment": "fallback_sentiment_labels", 
-            "emotional_distress": "fallback_distress_labels",
+            "depression": [
+                "person experiencing severe clinical depression with major functional impairment",
+                "person showing moderate depression with professional intervention needed",
+                "person with mild depressive episode with manageable symptoms and temporary low mood",
+                "person with stable mental health with normal emotional fluctuations and no depression signs",
+                "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
+            ],
+            "sentiment": [
+                "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
+                "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment",
+                "person displaying mixed or neutral emotional state without strong positive or negative feelings",
+                "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
+                "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
+                "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
+            ], 
+            "emotional_distress": [
+                "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
+                "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
+                "person showing moderate distress with some difficulty managing emotions and daily responsibilities",
+                "person handling normal life stress with adequate coping strategies and emotional regulation",
+                "person demonstrating strong emotional resilience with healthy stress management and adaptation",
+                "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
+            ],
             "defaults": {
                 "depression": [
                     "person experiencing severe clinical depression with major functional impairment",
@@ -187,16 +201,7 @@ class ZeroShotManager:
     def get_available_label_sets(self) -> List[str]:
         """Get list of available label set names with enhanced Phase 3e validation"""
         try:
-            available_sets = []
-            for key, value in self.label_configuration.items():
-                # Skip label_mapping and other non-label categories
-                if key not in ['label_mapping', 'description', 'defaults', 'validation'] and isinstance(value, dict):
-                    # Check if it contains label definitions (string values that aren't 'description')
-                    has_labels = any(isinstance(v, str) and k != 'description' 
-                                   for k, v in value.items() 
-                                   if k not in ['defaults', 'validation'])
-                    if has_labels:
-                        available_sets.append(key)
+            available_sets = self.unified_config.get_config_section('label_config', 'label_configuration', {}):
             
             return available_sets
             
@@ -227,7 +232,7 @@ class ZeroShotManager:
                     defaults = self.label_mapping_config.get('defaults', {})
                     if not fallback_set:
                         fallback_set = defaults.get('default_label_set', 'enhanced_crisis')
-                    
+
                     if fallback_set in available_sets:
                         logger.info(f"Using configured fallback label set: {fallback_set}")
                         label_set_name = fallback_set
