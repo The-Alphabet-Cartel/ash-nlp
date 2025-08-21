@@ -1,7 +1,7 @@
 # ash-nlp/analysis/helpers/ensemble_analysis_helper.py
 """
 Ensemble Analysis Helper for CrisisAnalyzer
-FILE VERSION: v3.1-3e-5.5-6-3-FIXED
+FILE VERSION: v3.1-3e-5.5-6-4
 CREATED: 2025-08-20
 UPDATED: 2025-08-20 - RESTORED ACTUAL ZERO-SHOT AI FUNCTIONALITY
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization with ACTUAL ZeroShotManager Integration
@@ -57,21 +57,38 @@ class EnsembleAnalysisHelper:
         logger.info(f"🔧 EnsembleAnalysisHelper initialized with device: {self.device}")
         
     def _get_device_config(self) -> str:
-        """Get device configuration for model inference"""
+        """
+        FIXED: Get device configuration from ModelEnsembleManager first, then fallback
+        
+        Returns:
+            Device configuration string (cpu/cuda/auto)
+        """
         try:
-            # Check environment variable first
+            # First check ModelEnsembleManager hardware settings
+            if self.crisis_analyzer.model_ensemble_manager:
+                hardware_settings = self.crisis_analyzer.model_ensemble_manager.get_hardware_settings()
+                device = hardware_settings.get('device')
+                if device and device != 'auto':
+                    logger.debug(f"Using ModelEnsembleManager device setting: {device}")
+                    return device
+            
+            # Check environment variable via UnifiedConfigManager
             if self.crisis_analyzer.unified_config_manager:
                 device = self.crisis_analyzer.unified_config_manager.get_env_str('NLP_ZERO_SHOT_DEVICE', 'auto')
                 if device != 'auto':
+                    logger.debug(f"Using environment device setting: {device}")
                     return device
             
             # Auto-detect best available device
             if TRANSFORMERS_AVAILABLE and torch.cuda.is_available():
+                logger.debug("Auto-detected device: cuda")
                 return 'cuda'
             else:
+                logger.debug("Auto-detected device: cpu")
                 return 'cpu'
+                
         except Exception as e:
-            logger.warning(f"⚠️ Device config detection failed: {e}, using CPU")
+            logger.warning(f"Device config detection failed: {e}, using CPU")
             return 'cpu'
         
     # ========================================================================
@@ -593,7 +610,7 @@ class EnsembleAnalysisHelper:
 
     async def _get_zero_shot_pipeline(self, model_name: str):
         """
-        Load or get cached zero-shot classification pipeline
+        Load or get cached zero-shot classification pipeline with proper ModelEnsembleManager integration
         
         Args:
             model_name: Hugging Face model name
@@ -613,10 +630,10 @@ class EnsembleAnalysisHelper:
             try:
                 logger.info(f"🔄 Loading zero-shot model: {model_name}")
                 
-                # Get cache directory from configuration
-                cache_dir = self._get_model_cache_dir()
+                # FIXED: Get cache directory from ModelEnsembleManager configuration
+                cache_dir = self._get_model_cache_dir_from_config(model_name)
                 
-                # Create zero-shot classification pipeline
+                # Create zero-shot classification pipeline with proper configuration
                 classifier = pipeline(
                     "zero-shot-classification",
                     model=model_name,
@@ -629,28 +646,71 @@ class EnsembleAnalysisHelper:
                 self._model_cache[model_name] = classifier
                 
                 logger.info(f"✅ Zero-shot model loaded successfully: {model_name}")
+                logger.info(f"📁 Using cache directory: {cache_dir}")
                 return classifier
                 
             except Exception as e:
                 logger.error(f"❌ Failed to load zero-shot model {model_name}: {e}")
                 return None
 
-    def _get_model_cache_dir(self) -> str:
-        """Get model cache directory from configuration"""
+    def _get_model_cache_dir_from_config(self, model_name: str) -> str:
+        """
+        FIXED: Get model cache directory from ModelEnsembleManager configuration
+        
+        Args:
+            model_name: Hugging Face model name to find cache directory for
+            
+        Returns:
+            Cache directory path from configuration or fallback
+        """
         try:
+            # Get model configuration from ModelEnsembleManager
+            if self.crisis_analyzer.model_ensemble_manager:
+                model_definitions = self.crisis_analyzer.model_ensemble_manager.get_model_definitions()
+                
+                # Find the model type that matches this model name
+                for model_type, model_config in model_definitions.items():
+                    config_model_name = model_config.get('name', '')
+                    if config_model_name == model_name:
+                        # Check if this model has a specific cache directory
+                        cache_dir = model_config.get('cache_dir')
+                        if cache_dir:
+                            # Ensure directory exists
+                            os.makedirs(cache_dir, exist_ok=True)
+                            logger.debug(f"📁 Using configured cache directory for {model_name}: {cache_dir}")
+                            return cache_dir
+                        
+                        # No specific cache_dir, check model-level cache settings
+                        break
+                
+                # Check for global cache directory in hardware settings
+                hardware_settings = self.crisis_analyzer.model_ensemble_manager.get_hardware_settings()
+                if 'cache_dir' in hardware_settings:
+                    cache_dir = hardware_settings['cache_dir']
+                    os.makedirs(cache_dir, exist_ok=True)
+                    logger.debug(f"📁 Using global cache directory from hardware settings: {cache_dir}")
+                    return cache_dir
+            
+            # Fallback to UnifiedConfigManager cache directory
             if self.crisis_analyzer.unified_config_manager:
                 cache_dir = self.crisis_analyzer.unified_config_manager.get_env_str(
                     'NLP_ZERO_SHOT_CACHE_DIR', './cache/models/'
                 )
-                # Ensure directory exists
                 os.makedirs(cache_dir, exist_ok=True)
+                logger.debug(f"📁 Using UnifiedConfigManager cache directory: {cache_dir}")
                 return cache_dir
+                
         except Exception as e:
-            logger.warning(f"⚠️ Cache dir config failed: {e}")
+            logger.warning(f"⚠️ Cache dir config from ModelEnsembleManager failed: {e}")
         
-        # Fallback cache directory
+        # Final fallback cache directory
         fallback_dir = './cache/models/'
-        os.makedirs(fallback_dir, exist_ok=True)
+        try:
+            os.makedirs(fallback_dir, exist_ok=True)
+            logger.debug(f"📁 Using fallback cache directory: {fallback_dir}")
+        except Exception as e:
+            logger.error(f"❌ Could not create fallback cache directory {fallback_dir}: {e}")
+        
         return fallback_dir
 
     def _process_zero_shot_result(self, result: Dict, labels: List[str]) -> float:
