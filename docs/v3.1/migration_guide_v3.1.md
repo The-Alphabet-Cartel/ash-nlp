@@ -677,12 +677,22 @@ def deprecated_method(self, *args, **kwargs):
 ### **File Version Headers**
 ```python
 """
-Manager Name for Ash NLP Service
-FILE VERSION: v3.1-3e-5.x-1
-LAST MODIFIED: 2025-08-19
-PHASE: 3e, Sub-step 5.x
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
+{managerName} for Ash NLP Service
+---
+FILE VERSION: {projectVersion}-{phase}-{step}-{fileVersion}
+LAST MODIFIED: {dateModified}
+PHASE: {phase}, {step}
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Methods moved to ConsolidatedManager with migration references
+MIGRATION STATUS: {...}
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -695,7 +705,89 @@ __all__ = [
     'create_your_manager'
 ]
 
-logger.info("✅ YourManager v3.1-3e-5.x-1 loaded - Phase 3e cleanup complete with migration references")
+logger.info("✅ YourManager - v3.1-3e-5.x-1 - Loaded")
+```
+
+---
+
+## 🏷️ **METHOD NAMING CONVENTIONS - Crisis Detection Architecture**
+
+### **CORE PRINCIPLE**: Method names must clearly indicate the AI-first, pattern-enhancement architecture
+
+### **PRIMARY CLASSIFICATION METHODS** (Zero-Shot AI First)
+**Pattern**: `analyze_*`, `classify_*`, `detect_*`
+- ✅ `analyze_message_with_ai()` - Main analysis entry point using AI models
+- ✅ `classify_crisis_with_ensemble()` - AI ensemble classification 
+- ✅ `detect_crisis_semantically()` - Zero-shot semantic detection
+- ❌ `analyze_message()` - Too generic, doesn't indicate AI-first
+- ❌ `pattern_analyze()` - Suggests patterns are primary
+
+### **ENHANCEMENT METHODS** (Pattern Boosting/Adjustment)
+**Pattern**: `enhance_*`, `boost_*`, `adjust_*`, `refine_*`
+- ✅ `enhance_ai_scores_with_patterns()` - Pattern enhancement of AI results
+- ✅ `boost_confidence_with_context()` - Context-based score boosting
+- ✅ `adjust_scores_for_community_vocab()` - Community-specific adjustments
+- ✅ `refine_ai_classification()` - General AI result refinement
+- ❌ `pattern_analysis()` - Suggests patterns are standalone, not enhancement
+- ❌ `context_scoring()` - Doesn't indicate it's enhancing AI results
+
+### **FALLBACK METHODS** (When AI Fails)
+**Pattern**: `fallback_*`, `emergency_*`, `backup_*`
+- ✅ `fallback_to_pattern_only()` - Clear fallback when AI unavailable
+- ✅ `emergency_pattern_classification()` - Emergency classification mode
+- ✅ `backup_keyword_analysis()` - Backup analysis when models fail
+- ❌ `pattern_classification()` - Doesn't indicate it's a fallback
+- ❌ `alternative_analysis()` - Too vague about when to use
+
+### **MODEL MANAGEMENT METHODS**
+**Pattern**: `load_*`, `initialize_*`, `manage_*`, `cache_*`
+- ✅ `load_zero_shot_pipeline()` - Load AI model pipeline
+- ✅ `initialize_ensemble_models()` - Initialize AI model ensemble
+- ✅ `cache_model_results()` - Cache AI model outputs
+- ✅ `manage_model_lifecycle()` - Manage AI model loading/unloading
+
+### **VALIDATION AND TESTING METHODS**
+**Pattern**: `validate_*`, `test_*`, `verify_*`
+- ✅ `validate_ai_classification()` - Verify AI models are working
+- ✅ `test_zero_shot_availability()` - Test if AI models are available
+- ✅ `verify_ensemble_functionality()` - Verify AI ensemble is operational
+
+### **NAMING HIERARCHY RULES**
+
+1. **Primary Flow**: Always start with AI-focused verbs
+   - `analyze_` → `enhance_` → `finalize_`
+   - `classify_` → `boost_` → `output_`
+
+2. **Secondary Qualifiers**: Add specific technology/approach
+   - `_with_ai`, `_with_ensemble`, `_with_zero_shot` (for primary)
+   - `_with_patterns`, `_with_context`, `_with_vocab` (for enhancement)
+   - `_pattern_only`, `_emergency`, `_fallback` (for backups)
+
+3. **Tertiary Descriptors**: Add specific domain/function
+   - `_crisis_`, `_mental_health_`, `_community_`
+   - `_detection`, `_classification`, `_analysis`
+
+### **EXAMPLES OF COMPLETE METHOD NAMES**
+```python
+# PRIMARY AI CLASSIFICATION
+def analyze_crisis_with_zero_shot_ensemble(message, labels):
+def classify_mental_health_with_ai_models(text, confidence_threshold):
+def detect_crisis_patterns_semantically(message, model_weights):
+
+# ENHANCEMENT OF AI RESULTS  
+def enhance_ai_scores_with_crisis_patterns(ai_results, pattern_matches):
+def boost_ensemble_confidence_with_context(scores, message_context):
+def adjust_ai_classification_for_community(results, vocab_patterns):
+
+# FALLBACK WHEN AI FAILS
+def fallback_to_crisis_pattern_only(message, emergency_patterns):
+def emergency_keyword_classification(text, critical_word_list):
+def backup_pattern_analysis_no_ai(message, fallback_config):
+
+# MODEL MANAGEMENT
+def load_zero_shot_crisis_pipeline(model_name, device):
+def initialize_mental_health_ensemble(model_configs):
+def cache_ai_classification_results(message_hash, results):
 ```
 
 ---
