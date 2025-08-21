@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-2",
+    "file_version": "v3.1-3d-5.5-6-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.11-3",
@@ -167,11 +167,13 @@
     "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
     "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
     "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
+    "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
     "defaults": {
       "mode": "majority",
       "require_all_models": true,
       "fallback_mode": "consensus",
-      "confidence_threshold": 0.7
+      "confidence_threshold": 0.7,
+      "cache_dir": "./models/cache"
     },
     "validation": {
       "mode": {
@@ -192,6 +194,10 @@
         "type": "float",
         "range": [0.0, 1.0],
         "description": "Minimum confidence for ensemble decisions"
+      },
+      "cache_dir": {
+        "type": "string",
+        "description": "Model cache directory path"
       }
     }
   },
@@ -202,12 +208,14 @@
     "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
     "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
     "torch_dtype": "${NLP_HARDWARE_TORCH_DTYPE}",
+    "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
     "defaults": {
       "device": "auto",
       "device_map": "auto",
       "load_in_8bit": false,
       "load_in_4bit": false,
-      "torch_dtype": "float16"
+      "torch_dtype": "float16",
+      "cache_dir": "./models/cache"
     },
     "validation": {
       "device": {
@@ -231,6 +239,10 @@
         "type": "string",
         "allowed_values": ["float16", "float32", "bfloat16"],
         "description": "Torch data type for model weights"
+      },
+      "cache_dir": {
+        "type": "string",
+        "description": "Model cache directory path"
       }
     }
   }
