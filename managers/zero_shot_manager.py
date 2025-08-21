@@ -110,7 +110,7 @@ class ZeroShotManager:
                 "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
                 "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
                 "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
-            ], 
+            ],
             "emotional_distress": [
                 "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
                 "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
@@ -201,8 +201,8 @@ class ZeroShotManager:
     def get_available_label_sets(self) -> List[str]:
         """Get list of available label set names with enhanced Phase 3e validation"""
         try:
-            available_sets = self.unified_config.get_config_section('label_config', 'label_configuration', {})
-            for key, value in available_sets:
+            available_sets = []
+            for key, value in self.unified_config.get_config_section('label_config', 'label_configuration', {}):
                 # Skip label_mapping and other non-label categories
                 if key not in ['_metadata', 'label_mapping', 'description', 'defaults', 'validation'] and isinstance(value, dict):
                     # Check if it contains label definitions (string values that aren't 'description')
