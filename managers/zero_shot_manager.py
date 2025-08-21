@@ -96,9 +96,29 @@ class ZeroShotManager:
         
         self.label_configuration = {
             "description": "Fallback baseline labels for Phase 3e",
-            "depression": "fallback_depression_labels",
-            "sentiment": "fallback_sentiment_labels", 
-            "emotional_distress": "fallback_distress_labels",
+            "depression": [
+                "person experiencing severe clinical depression with major functional impairment",
+                "person showing moderate depression with professional intervention needed",
+                "person with mild depressive episode with manageable symptoms and temporary low mood",
+                "person with stable mental health with normal emotional fluctuations and no depression signs",
+                "person demonstrating positive mental wellness, emotional resilience, and psychological stability"
+            ],
+            "sentiment": [
+                "person expressing profound despair, hopelessness, overwhelming sadness, or emotional devastation",
+                "person showing significant negative emotions such as anger, frustration, fear, or deep disappointment",
+                "person displaying mixed or neutral emotional state without strong positive or negative feelings",
+                "person expressing mild positive emotions like satisfaction, calm contentment, or gentle happiness",
+                "person showing strong positive emotions including joy, excitement, love, gratitude, or enthusiasm",
+                "person radiating intense positive energy, euphoria, overwhelming happiness, or peak emotional highs"
+            ], 
+            "emotional_distress": [
+                "person in acute psychological distress unable to cope and requiring immediate crisis intervention",
+                "person experiencing severe emotional overwhelm with significantly impaired functioning and coping",
+                "person showing moderate distress with some difficulty managing emotions and daily responsibilities",
+                "person handling normal life stress with adequate coping strategies and emotional regulation",
+                "person demonstrating strong emotional resilience with healthy stress management and adaptation",
+                "person exhibiting optimal emotional wellbeing with excellent coping skills and life satisfaction"
+            ],
             "defaults": {
                 "depression": [
                     "person experiencing severe clinical depression with major functional impairment",
