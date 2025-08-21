@@ -24,6 +24,7 @@ import sys
 import logging
 import colorlog
 import time
+import asyncio
 from pathlib import Path
 from fastapi import FastAPI
 import uvicorn
