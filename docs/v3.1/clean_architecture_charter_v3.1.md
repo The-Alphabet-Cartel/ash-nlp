@@ -1,20 +1,22 @@
-<!-- ash-nlp/docs/v3.1/clean_architecture_charter_v3.1.md -->
-<!--
-Clean Architecture Charter for Ash-NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d, Step 10.11
-CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Charter updated with environment variables requirements
--->
 # Clean v3.1 Architecture Charter - Ash-NLP (Production Ready)
-
 ## Sacred Principles - NEVER TO BE VIOLATED
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
+**Project**: Ash-NLP v3.1
+**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
+**FILE VERSION**: v3.1-3e-5.5-6-2
+**LAST UPDATED**: 2025-08-21
+**CLEAN ARCHITECTURE**: v3.1 Compliant  
 
 ---
+
+# 🎯 CORE SYSTEM VISION (Never to be violated):
+
+## **Ash-NLP is a CRISIS DETECTION Natural Language Processor that**:
+1. **FIRST**: Uses Zero-Shot AI models for primary semantic classification
+2. **SECOND**: Enhances AI results with contextual pattern analysis
+3. **FALLBACK**: Uses pattern-only classification if AI models fail
+4. **PURPOSE**: Detect crisis messages in Discord community communications
 
 ## 🏛️ **IMMUTABLE ARCHITECTURE RULES**
 
@@ -64,7 +66,17 @@ MIGRATION STATUS: Charter updated with environment variables requirements
 #### **Required Version Header Format:**
 ```python
 """
-[fileDescription] for Ash-NLP Service
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
+{fileDescription} for Ash-NLP Service
+---
 FILE VERSION: v3.1-3d-10.6-1
 LAST MODIFIED: 2025-08-13
 PHASE: 3d Step 10.6 - Scoring Functions Consolidated
@@ -133,12 +145,22 @@ NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.0  # Existing variable
 ### **Required Manager Structure:**
 ```python
 """
-[managerDescription] for Ash-NLP Service
-FILE VERSION: v3.1-3d-[step]-[increment]
-LAST MODIFIED: [date]
-PHASE: [current phase and step]
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
+{managerDescription} for Ash-NLP Service
+---
+FILE VERSION: v3.1-{phase}-{step}-{increment}
+LAST MODIFIED: {date}
+PHASE: {phase}, {step}
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: [current status]
+MIGRATION STATUS: {current status}
 """
 
 class [Manager]Manager:
@@ -244,6 +266,103 @@ except Exception as e:
   }
 }
 ```
+
+---
+## 🏷️ **METHOD NAMING CONVENTIONS - Crisis Detection Architecture**
+
+### **CORE PRINCIPLE**: Method names must clearly indicate the AI-first, pattern-enhancement architecture
+
+---
+
+### **PRIMARY CLASSIFICATION METHODS** (Zero-Shot AI First)
+**Pattern**: `analyze_*`, `classify_*`, `detect_*`
+- ✅ `analyze_message_with_ai()` - Main analysis entry point using AI models
+- ✅ `classify_crisis_with_ensemble()` - AI ensemble classification 
+- ✅ `detect_crisis_semantically()` - Zero-shot semantic detection
+- ❌ `analyze_message()` - Too generic, doesn't indicate AI-first
+- ❌ `pattern_analyze()` - Suggests patterns are primary
+
+### **ENHANCEMENT METHODS** (Pattern Boosting/Adjustment)
+**Pattern**: `enhance_*`, `boost_*`, `adjust_*`, `refine_*`
+- ✅ `enhance_ai_scores_with_patterns()` - Pattern enhancement of AI results
+- ✅ `boost_confidence_with_context()` - Context-based score boosting
+- ✅ `adjust_scores_for_community_vocab()` - Community-specific adjustments
+- ✅ `refine_ai_classification()` - General AI result refinement
+- ❌ `pattern_analysis()` - Suggests patterns are standalone, not enhancement
+- ❌ `context_scoring()` - Doesn't indicate it's enhancing AI results
+
+### **FALLBACK METHODS** (When AI Fails)
+**Pattern**: `fallback_*`, `emergency_*`, `backup_*`
+- ✅ `fallback_to_pattern_only()` - Clear fallback when AI unavailable
+- ✅ `emergency_pattern_classification()` - Emergency classification mode
+- ✅ `backup_keyword_analysis()` - Backup analysis when models fail
+- ❌ `pattern_classification()` - Doesn't indicate it's a fallback
+- ❌ `alternative_analysis()` - Too vague about when to use
+
+### **MODEL MANAGEMENT METHODS**
+**Pattern**: `load_*`, `initialize_*`, `manage_*`, `cache_*`
+- ✅ `load_zero_shot_pipeline()` - Load AI model pipeline
+- ✅ `initialize_ensemble_models()` - Initialize AI model ensemble
+- ✅ `cache_model_results()` - Cache AI model outputs
+- ✅ `manage_model_lifecycle()` - Manage AI model loading/unloading
+
+### **VALIDATION AND TESTING METHODS**
+**Pattern**: `validate_*`, `test_*`, `verify_*`
+- ✅ `validate_ai_classification()` - Verify AI models are working
+- ✅ `test_zero_shot_availability()` - Test if AI models are available
+- ✅ `verify_ensemble_functionality()` - Verify AI ensemble is operational
+
+---
+
+### **NAMING HIERARCHY RULES**
+
+1. **Primary Flow**: Always start with AI-focused verbs
+   - `analyze_` → `enhance_` → `finalize_`
+   - `classify_` → `boost_` → `output_`
+
+2. **Secondary Qualifiers**: Add specific technology/approach
+   - `_with_ai`, `_with_ensemble`, `_with_zero_shot` (for primary)
+   - `_with_patterns`, `_with_context`, `_with_vocab` (for enhancement)
+   - `_pattern_only`, `_emergency`, `_fallback` (for backups)
+
+3. **Tertiary Descriptors**: Add specific domain/function
+   - `_crisis_`, `_mental_health_`, `_community_`
+   - `_detection`, `_classification`, `_analysis`
+
+### **EXAMPLES OF COMPLETE METHOD NAMES**
+```python
+# PRIMARY AI CLASSIFICATION
+def analyze_crisis_with_zero_shot_ensemble(message, labels):
+def classify_mental_health_with_ai_models(text, confidence_threshold):
+def detect_crisis_patterns_semantically(message, model_weights):
+
+# ENHANCEMENT OF AI RESULTS  
+def enhance_ai_scores_with_crisis_patterns(ai_results, pattern_matches):
+def boost_ensemble_confidence_with_context(scores, message_context):
+def adjust_ai_classification_for_community(results, vocab_patterns):
+
+# FALLBACK WHEN AI FAILS
+def fallback_to_crisis_pattern_only(message, emergency_patterns):
+def emergency_keyword_classification(text, critical_word_list):
+def backup_pattern_analysis_no_ai(message, fallback_config):
+
+# MODEL MANAGEMENT
+def load_zero_shot_crisis_pipeline(model_name, device):
+def initialize_mental_health_ensemble(model_configs):
+def cache_ai_classification_results(message_hash, results):
+```
+
+### **VIOLATION DETECTION**
+
+#### **Red Flag Method Names** (*require immediate review*):
+- Any method starting with pattern_* that isn't clearly fallback
+- Methods with analyze_* that don't specify AI involvement
+- Methods suggesting patterns are primary: `pattern_classify()`, `keyword_detect()`
+- Generic names that hide the AI-first architecture: `process_message()`, `score_text()`
+
+#### ENFORCEMENT STRATEGY
+- **Documentation Updates**: When adding new methods, update this convention guide
+- **Refactoring Protocol**: When renaming methods, update all callers and tests simultaneously
 
 ---
 
