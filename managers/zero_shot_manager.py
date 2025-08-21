@@ -202,7 +202,7 @@ class ZeroShotManager:
         """Get list of available label set names with enhanced Phase 3e validation"""
         try:
             available_sets = self.unified_config.get_config_section('label_config', 'label_configuration', {})
-            for key, value in 
+            for key, value in available_sets:
                 # Skip label_mapping and other non-label categories
                 if key not in ['_metadata', 'label_mapping', 'description', 'defaults', 'validation'] and isinstance(value, dict):
                     # Check if it contains label definitions (string values that aren't 'description')
