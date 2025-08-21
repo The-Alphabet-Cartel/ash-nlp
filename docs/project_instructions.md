@@ -1,11 +1,14 @@
-<!-- ash-nlp/docs/project_instructions.md -->
-<!--
-Project Instructions for Ash-NLP Service
-FILE VERSION: v3.1-3d-10-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d
-CLEAN ARCHITECTURE: v3.1 Compliant
--->
+# Ash-NLP Project Instructions
+
+**Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
+**Project**: Ash-NLP v3.1
+**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
+**FILE VERSION**: v3.1-3e-5.5-6-1
+**LAST UPDATED**: 2025-08-21
+**CLEAN ARCHITECTURE**: v3.1 Compliant  
+
+---
+
 # The Alphabet Cartel
 We are an LGBTQIA+ Discord community centered around gaming, political discourse and activism, community, and societal advocacy.
 
@@ -15,6 +18,16 @@ http://discord.gg/alphabetcartel
 https://github.com/the-alphabet-cartel
 
 # Ash-NLP
+
+## 🎯 CORE SYSTEM VISION (Never to be violated):
+
+### **Ash-NLP is a CRISIS DETECTION Natural Language Processor that**:
+1. **FIRST**: Uses Zero-Shot AI models for primary semantic classification
+2. **SECOND**: Enhances AI results with contextual pattern analysis
+3. **FALLBACK**: Uses pattern-only classification if AI models fail
+4. **PURPOSE**: Detect crisis messages in Discord community communications
+
+
 ## Crisis Detection and Community Support Natural Language Processor
 - `Ash-NLP`
   - https://github.com/the-alphabet-cartel/ash-nlp
