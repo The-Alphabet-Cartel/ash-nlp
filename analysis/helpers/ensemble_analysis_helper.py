@@ -9,20 +9,23 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 3. FALLBACK: Uses pattern-only classification if AI models fail
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
-Ensemble Analysis Helper for CrisisAnalyzer
+Ensemble Analysis Helper for CrisisAnalyzer - PHASE 1 RENAME COMPLETE
 ---
-FILE VERSION: v3.1-3e-5.5-6-5
+FILE VERSION: v3.1-3e-5.5-6-7-PHASE2
 CREATED: 2025-08-21
 UPDATED: 2025-08-21
-PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization with ACTUAL ZeroShotManager Integration
+PHASE: 3e Sub-step 5.5-6 - PHASE 2: Flow Reordering to AI-First Architecture
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-CRITICAL FIX: Replaced TODO placeholder with actual transformers pipeline implementation
-RESTORED: True AI zero-shot classification instead of pattern-based fallback
-MIGRATION NOTICE: Methods moved from CrisisAnalyzer for optimization
-Original location: analysis/crisis_analyzer.py - ensemble analysis methods
+PHASE 1 COMPLETE: Method names updated to follow AI-first architectural conventions
+PHASE 2 COMPLETE: Analysis flow reordered to run AI-first with pattern enhancement
+- Primary AI analysis runs first using zero-shot semantic classification
+- Pattern analysis now enhances AI results instead of running independently  
+- Pattern boost factors calculated based on AI confidence levels
+- Clear logging indicates AI-first, pattern-enhancement flow
+- Emergency fallbacks only trigger when AI completely fails
 """
 
 import logging
@@ -107,11 +110,14 @@ class EnsembleAnalysisHelper:
     
     async def perform_ensemble_analysis(self, message: str, user_id: str, channel_id: str, start_time: float) -> Dict:
         """
-        Perform the actual ensemble analysis with integrated context analysis
+        PHASE 2: AI-FIRST ensemble analysis with pattern enhancement
+        ARCHITECTURE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+        
         Migrated from: CrisisAnalyzer._perform_ensemble_analysis()
+        PHASE 2 CHANGE: Reordered to run AI analysis first, then enhance with patterns
         """
         
-        # Step 10.8: Enhanced context analysis using ContextPatternManager
+        # Step 1: Enhanced context analysis using ContextPatternManager (unchanged)
         context_analysis = None
         if self.crisis_analyzer._feature_cache.get('context_analysis', True) and self.crisis_analyzer.context_pattern_manager:
             try:
@@ -154,49 +160,76 @@ class EnsembleAnalysisHelper:
             }
             logger.debug("Context analysis disabled or ContextPatternManager not available")
 
-        # Continue with pattern analysis
-        pattern_analysis = await self._perform_pattern_analysis(message)
+        # Step 2: PRIMARY AI ensemble analysis with ACTUAL zero-shot models
+        logger.info("PHASE 2: Starting PRIMARY AI semantic classification...")
+        model_results = await self.analyze_crisis_with_ensemble_ai(message, context_analysis)
 
-        # Model ensemble analysis with ACTUAL zero-shot models
-        model_results = await self._perform_model_ensemble_analysis(message, context_analysis)
+        # Step 3: SECONDARY pattern enhancement of AI results
+        logger.info("PHASE 2: Enhancing AI results with pattern analysis...")
+        pattern_analysis = await self.enhance_ai_with_pattern_analysis(message, model_results)
 
-        # Combine results with enhanced context integration
+        # Step 4: Combine AI results with pattern enhancements
+        logger.info("PHASE 2: Combining AI results with pattern enhancements...")
         return self.crisis_analyzer._combine_analysis_results(
             message, user_id, channel_id, model_results, pattern_analysis, context_analysis, start_time
         )
     
-    async def _perform_pattern_analysis(self, message: str) -> Dict:
+    async def enhance_ai_with_pattern_analysis(self, message: str, ai_results: Dict) -> Dict:
         """
-        Perform pattern analysis via CrisisPatternManager
-        Migrated from: CrisisAnalyzer._perform_ensemble_analysis() (pattern analysis section)
+        PHASE 2: SECONDARY pattern enhancement of AI results (was _perform_pattern_analysis)
+        ENHANCEMENT: Analyzes patterns to boost/refine AI classification scores
+        
+        Args:
+            message: Original message text
+            ai_results: Results from AI ensemble analysis to be enhanced
+            
+        Returns:
+            Enhanced pattern analysis that can boost AI confidence scores
         """
         pattern_analysis = None
         if self.crisis_analyzer._feature_cache.get('pattern_analysis', True) and self.crisis_analyzer.crisis_pattern_manager:
             try:
-                logger.debug("Starting pattern analysis via CrisisPatternManager...")
+                logger.debug("PHASE 2: Analyzing patterns to enhance AI results...")
                 
-                # Community patterns analysis via CrisisPatternManager
+                # Extract AI confidence for pattern enhancement decisions
+                ai_confidence = 0.0
+                ai_score = 0.0
+                if ai_results:
+                    # Calculate average AI confidence and score
+                    valid_results = [r for r in ai_results.values() if isinstance(r, dict) and 'score' in r]
+                    if valid_results:
+                        ai_score = sum(r.get('score', 0.0) for r in valid_results) / len(valid_results)
+                        ai_confidence = sum(r.get('confidence', 0.0) for r in valid_results) / len(valid_results)
+                
+                logger.debug(f"PHASE 2: AI baseline - score: {ai_score:.3f}, confidence: {ai_confidence:.3f}")
+                
+                # Community patterns analysis for AI enhancement
                 community_patterns = []
                 if self.crisis_analyzer._feature_cache.get('community_patterns', True):
                     community_patterns = self.crisis_analyzer.crisis_pattern_manager.extract_community_patterns(message)
-                    logger.debug(f"Found {len(community_patterns)} community patterns")
+                    logger.debug(f"Found {len(community_patterns)} community patterns for AI enhancement")
                 
-                # Extract crisis context phrases
+                # Extract crisis context phrases for AI enhancement
                 context_phrases = []
                 if self.crisis_analyzer._feature_cache.get('context_analysis', True):
                     context_phrases = self.crisis_analyzer.crisis_pattern_manager.extract_crisis_context_phrases(message)
-                    logger.debug(f"Found {len(context_phrases)} context phrases")
+                    logger.debug(f"Found {len(context_phrases)} context phrases for AI enhancement")
                 
-                # Analyze temporal indicators
+                # Analyze temporal indicators for AI enhancement
                 temporal_analysis = {}
                 if self.crisis_analyzer._feature_cache.get('temporal_boost', True):
                     temporal_analysis = self.crisis_analyzer.crisis_pattern_manager.analyze_temporal_indicators(message)
-                    logger.debug(f"Temporal analysis: {temporal_analysis.get('urgency_score', 0)}")
+                    logger.debug(f"Temporal analysis for AI enhancement: {temporal_analysis.get('urgency_score', 0)}")
                 
-                # Enhanced crisis pattern check
+                # Enhanced crisis pattern check for AI enhancement
                 enhanced_patterns = {}
                 enhanced_patterns = self.crisis_analyzer.crisis_pattern_manager.check_enhanced_crisis_patterns(message)
-                logger.debug(f"Enhanced patterns: {len(enhanced_patterns.get('matches', []))} matches")
+                logger.debug(f"Enhanced patterns for AI enhancement: {len(enhanced_patterns.get('matches', []))} matches")
+                
+                # Calculate pattern enhancement factors
+                pattern_boost_factor = self._calculate_pattern_boost_factor(
+                    community_patterns, context_phrases, temporal_analysis, enhanced_patterns, ai_confidence
+                )
                 
                 pattern_analysis = {
                     'community_patterns': community_patterns,
@@ -204,24 +237,100 @@ class EnsembleAnalysisHelper:
                     'temporal_analysis': temporal_analysis,
                     'enhanced_patterns': enhanced_patterns,
                     'total_patterns': len(community_patterns) + len(context_phrases) + len(enhanced_patterns.get('matches', [])),
-                    'source': 'crisis_pattern_manager_direct'
+                    'source': 'crisis_pattern_manager_enhancement',
+                    'ai_enhancement_role': True,
+                    'ai_baseline_score': ai_score,
+                    'ai_baseline_confidence': ai_confidence,
+                    'pattern_boost_factor': pattern_boost_factor,
+                    'enhancement_mode': 'ai_first_pattern_enhancement'
                 }
                 
+                logger.info(f"PHASE 2: Pattern enhancement analysis complete - boost factor: {pattern_boost_factor:.3f}")
+                
             except Exception as e:
-                logger.error(f"Pattern analysis failed: {e}")
-                pattern_analysis = {'error': str(e), 'total_patterns': 0}
+                logger.error(f"Pattern enhancement analysis failed: {e}")
+                pattern_analysis = {
+                    'error': str(e), 
+                    'total_patterns': 0,
+                    'ai_enhancement_role': True,
+                    'enhancement_mode': 'error_fallback'
+                }
+        else:
+            logger.debug("Pattern enhancement disabled or CrisisPatternManager not available")
+            pattern_analysis = {
+                'ai_enhancement_role': True,
+                'enhancement_mode': 'disabled',
+                'total_patterns': 0
+            }
         
         return pattern_analysis or {}
     
-    async def _perform_model_ensemble_analysis(self, message: str, context_analysis: Dict) -> Dict:
+    def _calculate_pattern_boost_factor(self, community_patterns: List, context_phrases: List, 
+                                       temporal_analysis: Dict, enhanced_patterns: Dict, ai_confidence: float) -> float:
         """
-        Perform model ensemble analysis with ACTUAL zero-shot models
-        Migrated from: CrisisAnalyzer._perform_ensemble_analysis() (model analysis section)
+        Calculate how much patterns should boost AI confidence scores
+        
+        Args:
+            community_patterns: Community-specific patterns found
+            context_phrases: Crisis context phrases found  
+            temporal_analysis: Temporal urgency indicators
+            enhanced_patterns: Enhanced crisis patterns
+            ai_confidence: Baseline AI confidence to determine boost amount
+            
+        Returns:
+            Pattern boost factor (0.0 to 1.5) to multiply AI scores
+        """
+        try:
+            base_boost = 1.0  # No boost by default
+            
+            # Community pattern boost (max +0.2)
+            if community_patterns:
+                community_boost = min(0.2, len(community_patterns) * 0.05)
+                base_boost += community_boost
+                logger.debug(f"Community pattern boost: +{community_boost:.3f}")
+            
+            # Context phrase boost (max +0.15)  
+            if context_phrases:
+                context_boost = min(0.15, len(context_phrases) * 0.03)
+                base_boost += context_boost
+                logger.debug(f"Context phrase boost: +{context_boost:.3f}")
+            
+            # Temporal urgency boost (max +0.1)
+            temporal_score = temporal_analysis.get('urgency_score', 0.0)
+            if temporal_score > 0:
+                temporal_boost = min(0.1, temporal_score * 0.1)
+                base_boost += temporal_boost
+                logger.debug(f"Temporal urgency boost: +{temporal_boost:.3f}")
+            
+            # Enhanced pattern boost (max +0.15)
+            enhanced_matches = enhanced_patterns.get('matches', [])
+            if enhanced_matches:
+                enhanced_boost = min(0.15, len(enhanced_matches) * 0.05)
+                base_boost += enhanced_boost
+                logger.debug(f"Enhanced pattern boost: +{enhanced_boost:.3f}")
+            
+            # Limit total boost based on AI confidence
+            # High AI confidence = less pattern boost needed
+            # Low AI confidence = more pattern boost helpful
+            confidence_modifier = 1.0 + (1.0 - ai_confidence) * 0.3
+            final_boost = min(1.5, base_boost * confidence_modifier)
+            
+            logger.debug(f"Pattern boost calculation: base={base_boost:.3f}, confidence_mod={confidence_modifier:.3f}, final={final_boost:.3f}")
+            return final_boost
+            
+        except Exception as e:
+            logger.error(f"Pattern boost calculation failed: {e}")
+            return 1.0  # No boost on error
+    
+    async def analyze_crisis_with_ensemble_ai(self, message: str, context_analysis: Dict) -> Dict:
+        """
+        RENAMED: Primary AI ensemble analysis method (was _perform_model_ensemble_analysis)
+        AI-FIRST: This method performs the primary semantic classification using zero-shot models
         """
         model_results = {}
         if self.crisis_analyzer.model_ensemble_manager:
             try:
-                logger.debug("Starting model ensemble analysis with ACTUAL zero-shot models...")
+                logger.debug("Starting AI ensemble analysis with ACTUAL zero-shot models...")
                 
                 # Get models based on feature flags
                 active_models = []
@@ -232,7 +341,7 @@ class EnsembleAnalysisHelper:
                     try:
                         model_timeout = self.crisis_analyzer._performance_cache.get('model_timeout', 10.0)
                         model_result = await asyncio.wait_for(
-                            self._analyze_with_model(message, model_name),
+                            self.classify_crisis_with_ai_model(message, model_name),
                             timeout=model_timeout
                         )
                         model_results[model_name] = model_result
@@ -256,18 +365,18 @@ class EnsembleAnalysisHelper:
         
         return model_results
     
-    async def _analyze_with_model(self, message: str, model_name: str) -> Dict:
+    async def classify_crisis_with_ai_model(self, message: str, model_name: str) -> Dict:
         """
-        Analyze message with specific model using ACTUAL zero-shot models
-        Migrated from: CrisisAnalyzer._analyze_with_model()
+        RENAMED: Classify crisis using specific AI model (was _analyze_with_model)
+        AI-FIRST: Primary method for individual model classification
         """
         try:
             if model_name == 'depression':
-                return await self._analyze_depression_with_zero_shot(message)
+                return await self.detect_depression_semantically(message)
             elif model_name == 'sentiment':
-                return await self._analyze_sentiment_with_zero_shot(message)
+                return await self.detect_sentiment_semantically(message)
             elif model_name == 'emotional_distress':
-                return await self._analyze_emotional_distress_with_zero_shot(message)
+                return await self.detect_distress_semantically(message)
             else:
                 return {'error': f'Unknown model: {model_name}', 'score': 0.0}
         except Exception as e:
@@ -275,16 +384,16 @@ class EnsembleAnalysisHelper:
             return {'error': str(e), 'score': 0.0}
     
     # ========================================================================
-    # ACTUAL ZERO-SHOT MODEL IMPLEMENTATIONS - FIXED WITH REAL AI
+    # PRIMARY AI SEMANTIC DETECTION METHODS - AI-FIRST NAMING
     # ========================================================================
     
-    async def _analyze_depression_with_zero_shot(self, message: str) -> Dict:
+    async def detect_depression_semantically(self, message: str) -> Dict:
         """
-        FIXED: Analyze depression using ACTUAL zero-shot model with ZeroShotManager integration
-        Replaces: TODO placeholder with real transformers pipeline implementation
+        RENAMED: AI-FIRST semantic depression detection (was _analyze_depression_with_zero_shot)
+        PRIMARY: Uses zero-shot AI models for semantic classification
         """
         try:
-            logger.debug("🤖 Analyzing depression indicators with ACTUAL zero-shot model...")
+            logger.debug("🤖 Detecting depression indicators with ACTUAL zero-shot AI model...")
             
             # Get depression model configuration
             if not self.crisis_analyzer.model_ensemble_manager:
@@ -346,8 +455,8 @@ class EnsembleAnalysisHelper:
                 ]
                 logger.debug("Using fallback depression labels")
             
-            # FIXED: Perform ACTUAL zero-shot classification with configured labels
-            score = await self._perform_actual_zero_shot_classification(
+            # AI-FIRST: Perform ACTUAL zero-shot classification with configured labels
+            score = await self.analyze_crisis_with_zero_shot_classification(
                 message, labels, hypothesis_template, model_name
             )
             
@@ -355,19 +464,11 @@ class EnsembleAnalysisHelper:
                 'score': score,
                 'confidence': min(0.9, score + 0.1),  # Slightly higher confidence than score
                 'model': model_name,
-                'method': 'actual_zero_shot_classification',  # FIXED: Not pattern fallback!
+                'method': 'ai_semantic_classification',  # AI-FIRST: Clear AI method indication
                 'labels_used': len(labels),
-            # Also add comprehensive label tracking to other models
                 'hypothesis_template': hypothesis_template,
                 'zero_shot_manager': bool(hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager),
                 'transformers_used': TRANSFORMERS_AVAILABLE,
-                'current_label_set': current_label_set,
-                'zero_shot_manager_methods_used': [
-                    'get_current_label_set',
-                    'get_available_label_sets', 
-                    'get_all_labels',
-                    'get_zero_shot_settings'
-                ] if hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager else [],
                 'current_label_set': current_label_set,
                 'zero_shot_manager_methods_used': [
                     'get_current_label_set',
@@ -378,17 +479,17 @@ class EnsembleAnalysisHelper:
             }
             
         except Exception as e:
-            logger.error(f"❌ Depression zero-shot analysis failed: {e}")
-            # Fallback to pattern-based analysis only if transformers completely fail
-            return await self._fallback_depression_analysis(message)
+            logger.error(f"❌ Depression semantic detection failed: {e}")
+            # Emergency fallback only when transformers completely fail
+            return await self.emergency_depression_classification(message)
 
-    async def _analyze_sentiment_with_zero_shot(self, message: str) -> Dict:
+    async def detect_sentiment_semantically(self, message: str) -> Dict:
         """
-        FIXED: Analyze sentiment using ACTUAL zero-shot model with ZeroShotManager integration
-        Replaces: TODO placeholder with real transformers pipeline implementation
+        RENAMED: AI-FIRST semantic sentiment detection (was _analyze_sentiment_with_zero_shot)
+        PRIMARY: Uses zero-shot AI models for semantic classification
         """
         try:
-            logger.debug("🤖 Analyzing sentiment with ACTUAL zero-shot model...")
+            logger.debug("🤖 Detecting sentiment with ACTUAL zero-shot AI model...")
             
             # Get sentiment model configuration
             if not self.crisis_analyzer.model_ensemble_manager:
@@ -450,8 +551,8 @@ class EnsembleAnalysisHelper:
                 ]
                 logger.debug("Using fallback sentiment labels")
             
-            # FIXED: Perform ACTUAL zero-shot classification with configured labels
-            score = await self._perform_actual_zero_shot_classification(
+            # AI-FIRST: Perform ACTUAL zero-shot classification with configured labels
+            score = await self.analyze_crisis_with_zero_shot_classification(
                 message, labels, hypothesis_template, model_name
             )
             
@@ -459,7 +560,7 @@ class EnsembleAnalysisHelper:
                 'score': score,
                 'confidence': min(0.9, score + 0.1),
                 'model': model_name,
-                'method': 'actual_zero_shot_classification',  # FIXED: Not pattern fallback!
+                'method': 'ai_semantic_classification',  # AI-FIRST: Clear AI method indication
                 'labels_used': len(labels),
                 'hypothesis_template': hypothesis_template,
                 'zero_shot_manager': bool(hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager),
@@ -467,17 +568,17 @@ class EnsembleAnalysisHelper:
             }
             
         except Exception as e:
-            logger.error(f"❌ Sentiment zero-shot analysis failed: {e}")
-            # Fallback to simple sentiment analysis
-            return await self._fallback_sentiment_analysis(message)
+            logger.error(f"❌ Sentiment semantic detection failed: {e}")
+            # Emergency fallback to simple sentiment analysis
+            return await self.emergency_sentiment_classification(message)
 
-    async def _analyze_emotional_distress_with_zero_shot(self, message: str) -> Dict:
+    async def detect_distress_semantically(self, message: str) -> Dict:
         """
-        FIXED: Analyze emotional distress using ACTUAL zero-shot model with ZeroShotManager integration
-        Replaces: TODO placeholder with real transformers pipeline implementation
+        RENAMED: AI-FIRST semantic distress detection (was _analyze_emotional_distress_with_zero_shot)
+        PRIMARY: Uses zero-shot AI models for semantic classification
         """
         try:
-            logger.debug("🤖 Analyzing emotional distress with ACTUAL zero-shot model...")
+            logger.debug("🤖 Detecting emotional distress with ACTUAL zero-shot AI model...")
             
             # Get emotional distress model configuration
             if not self.crisis_analyzer.model_ensemble_manager:
@@ -539,8 +640,8 @@ class EnsembleAnalysisHelper:
                 ]
                 logger.debug("Using fallback emotional distress labels")
             
-            # FIXED: Perform ACTUAL zero-shot classification with configured labels
-            score = await self._perform_actual_zero_shot_classification(
+            # AI-FIRST: Perform ACTUAL zero-shot classification with configured labels
+            score = await self.analyze_crisis_with_zero_shot_classification(
                 message, labels, hypothesis_template, model_name
             )
             
@@ -548,7 +649,7 @@ class EnsembleAnalysisHelper:
                 'score': score,
                 'confidence': min(0.9, score + 0.1),
                 'model': model_name,
-                'method': 'actual_zero_shot_classification',  # FIXED: Not pattern fallback!
+                'method': 'ai_semantic_classification',  # AI-FIRST: Clear AI method indication
                 'labels_used': len(labels),
                 'hypothesis_template': hypothesis_template,
                 'zero_shot_manager': bool(hasattr(self.crisis_analyzer, 'zero_shot_manager') and self.crisis_analyzer.zero_shot_manager),
@@ -556,22 +657,23 @@ class EnsembleAnalysisHelper:
             }
             
         except Exception as e:
-            logger.error(f"❌ Emotional distress zero-shot analysis failed: {e}")
-            # Fallback to pattern-based analysis
-            return await self._fallback_distress_analysis(message)
+            logger.error(f"❌ Distress semantic detection failed: {e}")
+            # Emergency fallback to pattern-based analysis
+            return await self.emergency_distress_classification(message)
     
     # ========================================================================
-    # ACTUAL ZERO-SHOT IMPLEMENTATION - THE REAL AI FUNCTIONALITY
+    # CORE AI CLASSIFICATION IMPLEMENTATION - THE REAL AI FUNCTIONALITY
     # ========================================================================
     
-    async def _perform_actual_zero_shot_classification(self, text: str, labels: List[str], hypothesis_template: str, model_name: str) -> float:
+    async def analyze_crisis_with_zero_shot_classification(self, text: str, labels: List[str], hypothesis_template: str, model_name: str) -> float:
         """
-        FIXED: Perform ACTUAL zero-shot classification using transformers pipeline
+        RENAMED: Core AI classification method (was _perform_actual_zero_shot_classification)
+        AI-FIRST: This is the primary semantic classification using transformers
         
-        This replaces the TODO placeholder with real AI functionality using:
-        - Actual transformers models from Hugging Face
-        - Real zero-shot classification pipelines
+        This performs the ACTUAL AI functionality using:
+        - Real transformers models from Hugging Face
         - Semantic understanding instead of keyword matching
+        - Zero-shot classification pipelines
         
         Args:
             text: Text to classify
@@ -584,18 +686,18 @@ class EnsembleAnalysisHelper:
         """
         try:
             if not TRANSFORMERS_AVAILABLE:
-                logger.warning(f"⚠️ Transformers library not available - falling back to enhanced pattern matching")
-                return await self._enhanced_label_aware_scoring(text, labels, hypothesis_template)
+                logger.warning(f"⚠️ Transformers library not available - using pattern enhancement fallback")
+                return await self.enhance_ai_with_pattern_fallback(text, labels, hypothesis_template)
             
             # Load or get cached zero-shot pipeline
             classifier = await self._get_zero_shot_pipeline(model_name)
             
             if classifier is None:
-                logger.warning(f"⚠️ Could not load zero-shot model {model_name} - falling back to pattern matching")
-                return await self._enhanced_label_aware_scoring(text, labels, hypothesis_template)
+                logger.warning(f"⚠️ Could not load zero-shot model {model_name} - using pattern enhancement fallback")
+                return await self.enhance_ai_with_pattern_fallback(text, labels, hypothesis_template)
             
             # Perform actual zero-shot classification
-            logger.debug(f"🤖 Running ACTUAL zero-shot classification with {model_name}")
+            logger.debug(f"🤖 Running PRIMARY AI zero-shot classification with {model_name}")
             logger.debug(f"📝 Text: {text[:100]}...")
             logger.debug(f"🏷️ Labels: {len(labels)} labels")
             
@@ -608,15 +710,15 @@ class EnsembleAnalysisHelper:
             # Process results to extract crisis score
             crisis_score = self._process_zero_shot_result(result, labels)
             
-            logger.info(f"✅ ACTUAL zero-shot classification complete: {crisis_score:.3f}")
-            logger.debug(f"🔍 Raw result: {result}")
+            logger.info(f"✅ PRIMARY AI zero-shot classification complete: {crisis_score:.3f}")
+            logger.debug(f"📊 Raw result: {result}")
             
             return crisis_score
             
         except Exception as e:
-            logger.error(f"❌ ACTUAL zero-shot classification failed: {e}")
-            logger.warning(f"⚠️ Falling back to enhanced pattern matching")
-            return await self._enhanced_label_aware_scoring(text, labels, hypothesis_template)
+            logger.error(f"❌ PRIMARY AI zero-shot classification failed: {e}")
+            logger.warning(f"⚠️ Using pattern enhancement fallback")
+            return await self.enhance_ai_with_pattern_fallback(text, labels, hypothesis_template)
 
     async def _get_zero_shot_pipeline(self, model_name: str):
         """
@@ -638,7 +740,7 @@ class EnsembleAnalysisHelper:
                 return self._model_cache[model_name]
             
             try:
-                logger.info(f"🔄 Loading zero-shot model: {model_name}")
+                logger.info(f"📥 Loading zero-shot model: {model_name}")
                 
                 # FIXED: Get cache directory from ModelEnsembleManager configuration
                 cache_dir = self._get_model_cache_dir_from_config(model_name)
@@ -656,7 +758,7 @@ class EnsembleAnalysisHelper:
                 self._model_cache[model_name] = classifier
                 
                 logger.info(f"✅ Zero-shot model loaded successfully: {model_name}")
-                logger.info(f"📁 Using cache directory: {cache_dir}")
+                logger.info(f"📂 Using cache directory: {cache_dir}")
                 return classifier
                 
             except Exception as e:
@@ -687,7 +789,7 @@ class EnsembleAnalysisHelper:
                         if cache_dir:
                             # Ensure directory exists
                             os.makedirs(cache_dir, exist_ok=True)
-                            logger.debug(f"📁 Using configured cache directory for {model_name}: {cache_dir}")
+                            logger.debug(f"📂 Using configured cache directory for {model_name}: {cache_dir}")
                             return cache_dir
                         
                         # No specific cache_dir, check model-level cache settings
@@ -698,7 +800,7 @@ class EnsembleAnalysisHelper:
                 if 'cache_dir' in hardware_settings:
                     cache_dir = hardware_settings['cache_dir']
                     os.makedirs(cache_dir, exist_ok=True)
-                    logger.debug(f"📁 Using global cache directory from hardware settings: {cache_dir}")
+                    logger.debug(f"📂 Using global cache directory from hardware settings: {cache_dir}")
                     return cache_dir
             
             # Fallback to UnifiedConfigManager cache directory
@@ -709,7 +811,7 @@ class EnsembleAnalysisHelper:
                     './models/cache/'
                 )
                 os.makedirs(cache_dir, exist_ok=True)
-                logger.debug(f"📁 Using UnifiedConfigManager cache directory: {cache_dir}")
+                logger.debug(f"📂 Using UnifiedConfigManager cache directory: {cache_dir}")
                 return cache_dir
                 
         except Exception as e:
@@ -719,7 +821,7 @@ class EnsembleAnalysisHelper:
         fallback_dir = './cache/models/'
         try:
             os.makedirs(fallback_dir, exist_ok=True)
-            logger.debug(f"📁 Using fallback cache directory: {fallback_dir}")
+            logger.debug(f"📂 Using fallback cache directory: {fallback_dir}")
         except Exception as e:
             logger.error(f"❌ Could not create fallback cache directory {fallback_dir}: {e}")
         
@@ -761,7 +863,7 @@ class EnsembleAnalysisHelper:
                     weighted_contribution = score * severity_weight
                     crisis_score += weighted_contribution
                     
-                    logger.debug(f"🔍 Label '{label[:50]}...': score={score:.3f}, weight={severity_weight:.3f}, contribution={weighted_contribution:.3f}")
+                    logger.debug(f"📊 Label '{label[:50]}...': score={score:.3f}, weight={severity_weight:.3f}, contribution={weighted_contribution:.3f}")
                     
                 except ValueError:
                     logger.warning(f"⚠️ Label '{label}' not found in original labels")
@@ -778,13 +880,13 @@ class EnsembleAnalysisHelper:
             return 0.0
 
     # ========================================================================
-    # ENHANCED PATTERN FALLBACK (Only used when transformers unavailable)
+    # PATTERN ENHANCEMENT FALLBACK (Only used when transformers unavailable)
     # ========================================================================
 
-    async def _enhanced_label_aware_scoring(self, text: str, labels: List[str], hypothesis_template: str) -> float:
+    async def enhance_ai_with_pattern_fallback(self, text: str, labels: List[str], hypothesis_template: str) -> float:
         """
-        Enhanced pattern-based scoring that's aware of the configured labels
-        Only used as fallback when transformers are not available
+        RENAMED: Pattern enhancement for AI (was _enhanced_label_aware_scoring)
+        ENHANCEMENT: Only used when transformers are not available, not as primary method
         
         Args:
             text: Text to analyze
@@ -796,7 +898,7 @@ class EnsembleAnalysisHelper:
         """
         try:
             if not labels:
-                logger.warning("⚠️ No labels provided for label-aware scoring")
+                logger.warning("⚠️ No labels provided for pattern enhancement")
                 return 0.0
             
             text_lower = text.lower()
@@ -860,21 +962,24 @@ class EnsembleAnalysisHelper:
             # Normalize to 0-1 range but allow for higher sensitivity with good labels
             score = min(1.0, score)
             
-            logger.debug(f"📊 Label-aware pattern scoring: {score:.3f} (matches: {matches})")
+            logger.debug(f"📊 Pattern enhancement scoring: {score:.3f} (matches: {matches})")
             logger.debug(f"🏷️ Labels used: {len(labels)}, Keywords extracted: {len(crisis_keywords)}")
             
             return score
             
         except Exception as e:
-            logger.error(f"❌ Enhanced label-aware scoring failed: {e}")
+            logger.error(f"❌ Pattern enhancement failed: {e}")
             return 0.0
     
     # ========================================================================
-    # FALLBACK ANALYSIS METHODS (Only used when models fail completely)
+    # EMERGENCY CLASSIFICATION METHODS (Only used when AI fails completely)
     # ========================================================================
     
-    async def _fallback_depression_analysis(self, message: str) -> Dict:
-        """Fallback depression analysis using patterns"""
+    async def emergency_depression_classification(self, message: str) -> Dict:
+        """
+        RENAMED: Emergency depression classification (was _fallback_depression_analysis)
+        EMERGENCY: Only used when AI models fail completely
+        """
         try:
             if self.crisis_analyzer.crisis_pattern_manager:
                 # Use pattern manager for depression analysis
@@ -886,16 +991,19 @@ class EnsembleAnalysisHelper:
             return {
                 'score': score,
                 'confidence': 0.5,
-                'model': 'pattern_fallback',
-                'method': 'pattern_based_fallback',
+                'model': 'emergency_pattern_fallback',
+                'method': 'emergency_pattern_classification',
                 'transformers_used': False
             }
         except Exception as e:
-            logger.error(f"❌ Fallback depression analysis failed: {e}")
+            logger.error(f"❌ Emergency depression classification failed: {e}")
             return {'score': 0.0, 'confidence': 0.0, 'error': str(e), 'transformers_used': False}
     
-    async def _fallback_sentiment_analysis(self, message: str) -> Dict:
-        """Fallback sentiment analysis using simple rules"""
+    async def emergency_sentiment_classification(self, message: str) -> Dict:
+        """
+        RENAMED: Emergency sentiment classification (was _fallback_sentiment_analysis)
+        EMERGENCY: Only used when AI models fail completely
+        """
         try:
             negative_words = ['bad', 'terrible', 'awful', 'hate', 'angry', 'sad']
             positive_words = ['good', 'great', 'happy', 'love', 'excellent', 'wonderful']
@@ -912,16 +1020,19 @@ class EnsembleAnalysisHelper:
             return {
                 'score': score,
                 'confidence': 0.4,
-                'model': 'simple_sentiment_fallback',
-                'method': 'keyword_based_fallback',
+                'model': 'emergency_sentiment_fallback',
+                'method': 'emergency_keyword_classification',
                 'transformers_used': False
             }
         except Exception as e:
-            logger.error(f"❌ Fallback sentiment analysis failed: {e}")
+            logger.error(f"❌ Emergency sentiment classification failed: {e}")
             return {'score': 0.0, 'confidence': 0.0, 'error': str(e), 'transformers_used': False}
     
-    async def _fallback_distress_analysis(self, message: str) -> Dict:
-        """Fallback emotional distress analysis using patterns"""
+    async def emergency_distress_classification(self, message: str) -> Dict:
+        """
+        RENAMED: Emergency distress classification (was _fallback_distress_analysis)
+        EMERGENCY: Only used when AI models fail completely
+        """
         try:
             distress_words = ['stressed', 'anxious', 'panic', 'overwhelmed', 'breakdown', 'crisis']
             text_lower = message.lower()
@@ -931,10 +1042,10 @@ class EnsembleAnalysisHelper:
             return {
                 'score': score,
                 'confidence': 0.5,
-                'model': 'distress_pattern_fallback',
-                'method': 'pattern_based_fallback',
+                'model': 'emergency_distress_fallback',
+                'method': 'emergency_pattern_classification',
                 'transformers_used': False
             }
         except Exception as e:
-            logger.error(f"❌ Fallback distress analysis failed: {e}")
+            logger.error(f"❌ Emergency distress classification failed: {e}")
             return {'score': 0.0, 'confidence': 0.0, 'error': str(e), 'transformers_used': False}
