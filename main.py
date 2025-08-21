@@ -1,8 +1,18 @@
 # ash-nlp/main.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 Ash-NLP Main Application Entry Point for Ash NLP Service
-FILE VERSION: v3.1-3e-4.2-3
-LAST MODIFIED: 2025-08-13
+---
+FILE VERSION: v3.1-3e-5.5-6-1
+LAST MODIFIED: 2025-08-21
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
