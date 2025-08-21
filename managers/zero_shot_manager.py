@@ -168,24 +168,14 @@ class ZeroShotManager:
         }
     
     def get_available_label_sets(self) -> List[str]:
-        """Get list of available label set names with enhanced Phase 3e validation"""
+        """Get list of available label set names"""
         try:
-            available_sets = self.unified_config.get_config_section('label_config', 'label_configuration', {})
-#            for key, value in self.unified_config.get_config_section('label_config', 'label_configuration', {}):
-#                # Skip label_mapping and other non-label categories
-#                if key not in ['_metadata', 'label_mapping', 'description', 'defaults', 'validation'] and isinstance(value, dict):
-#                    # Check if it contains label definitions (string values that aren't 'description')
-#                    has_labels = any(isinstance(v, str) and k != 'description' 
-#                                   for k, v in value.items() 
-#                                   if k not in ['defaults', 'validation'])
-#                    if has_labels:
-#                        available_sets.append(key)
-#            
-            return available_sets
+            label_config = self.unified_config.get_config_section('label_config', 'label_configuration', {})
+            return list(label_config.keys())
             
         except Exception as e:
             logger.error(f"Error getting available label sets: {e}")
-            return ['enhanced_crisis']  # Safe fallback
+            return ['enhanced_crisis']
     
     def switch_label_set(self, label_set_name: str) -> bool:
         """
