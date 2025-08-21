@@ -1,7 +1,7 @@
 # ash-nlp/managers/zero_shot_manager.py
 """
 Zero-Shot Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-6
+FILE VERSION: v3.1-3e-5.5-6-3
 LAST MODIFIED: 2025-08-20
 PHASE: 3e, Sub-step 5.5, Task 5 - ZeroShotManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -168,14 +168,33 @@ class ZeroShotManager:
         }
     
     def get_available_label_sets(self) -> List[str]:
-        """Get list of available label set names"""
+        """
+        FIXED: Get list of available label set names with enhanced error handling
+        """
         try:
             label_config = self.unified_config.get_config_section('label_config', 'label_configuration', {})
-            return list(label_config.keys())
+            
+            if not label_config:
+                logger.warning("No label configuration found")
+                return ['enhanced_crisis']  # Fallback
+            
+            # Filter out non-label-set keys
+            label_sets = [
+                key for key in label_config.keys() 
+                if key not in ['description', 'defaults', 'validation', 'label_mapping', 'zero_shot_settings']
+                and isinstance(label_config[key], dict)
+            ]
+            
+            if not label_sets:
+                logger.warning("No valid label sets found in configuration")
+                return ['enhanced_crisis']  # Fallback
+            
+            logger.debug(f"Found {len(label_sets)} available label sets: {label_sets}")
+            return label_sets
             
         except Exception as e:
             logger.error(f"Error getting available label sets: {e}")
-            return ['enhanced_crisis']
+            return ['enhanced_crisis']  # Safe fallback
     
     def switch_label_set(self, label_set_name: str) -> bool:
         """
@@ -255,10 +274,62 @@ class ZeroShotManager:
         """Get current label set name (legacy alias) with enhanced validation"""
         return self.get_current_label_set_name()
     
-    def get_all_labels(self) -> Dict[str, str]:
-        """Get all labels for current set with enhanced error handling"""
+    def get_all_labels(self) -> Dict[str, List[str]]:
+        """
+        FIXED: Get all labels organized by category for current label set
+        
+        Returns:
+            Dictionary with label categories and their lists of labels
+        """
         try:
-            return self.current_labels.copy()
+            # Get current label configuration
+            current_config = self.unified_config.get_config_section('label_config', 'label_configuration', {})
+            
+            if not current_config:
+                logger.warning("No label configuration found, using fallback")
+                return {
+                    'depression': [
+                        "person experiencing severe clinical depression with major functional impairment",
+                        "person showing moderate depression with professional intervention needed", 
+                        "person with stable mental health with normal emotional fluctuations"
+                    ],
+                    'sentiment': [
+                        "person expressing profound despair, hopelessness, overwhelming sadness",
+                        "person displaying mixed or neutral emotional state",
+                        "person showing strong positive emotions including joy, excitement, love"
+                    ],
+                    'emotional_distress': [
+                        "person in acute psychological distress unable to cope",
+                        "person showing moderate distress with some difficulty managing emotions",
+                        "person demonstrating strong emotional resilience"
+                    ]
+                }
+            
+            # Extract labels from current label set
+            current_set_config = current_config.get(self.current_label_set, {})
+            
+            # Organize labels by category
+            organized_labels = {}
+            
+            for key, value in current_set_config.items():
+                if key not in ['description', 'defaults', 'validation']:
+                    if isinstance(value, list):
+                        organized_labels[key] = value
+                    elif isinstance(value, str):
+                        # Single label - wrap in list
+                        organized_labels[key] = [value]
+            
+            # If no organized labels found, try to use the current_labels directly
+            if not organized_labels and hasattr(self, 'current_labels') and self.current_labels:
+                for key, value in self.current_labels.items():
+                    if isinstance(value, list):
+                        organized_labels[key] = value
+                    elif isinstance(value, str):
+                        organized_labels[key] = [value]
+            
+            logger.debug(f"Retrieved {len(organized_labels)} label categories")
+            return organized_labels
+            
         except Exception as e:
             logger.error(f"Error getting all labels: {e}")
             return {}
