@@ -1,8 +1,18 @@
 # ash-nlp/managers/logging_config_manager.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 Centralized Logging Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.5-5
-LAST MODIFIED: 2025-08-20
+---
+FILE VERSION: v3.1-3e-5.5-6-1
+LAST MODIFIED: 2025-08-21
 PHASE: 3e, Sub-step 5.5, Task 5 - LoggingConfigManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Phase 3e cleanup complete - get_config_section patterns applied
