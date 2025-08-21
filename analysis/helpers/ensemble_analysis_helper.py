@@ -1,9 +1,19 @@
 # ash-nlp/analysis/helpers/ensemble_analysis_helper.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 Ensemble Analysis Helper for CrisisAnalyzer
-FILE VERSION: v3.1-3e-5.5-6-4
-CREATED: 2025-08-20
-UPDATED: 2025-08-20 - RESTORED ACTUAL ZERO-SHOT AI FUNCTIONALITY
+---
+FILE VERSION: v3.1-3e-5.5-6-5
+CREATED: 2025-08-21
+UPDATED: 2025-08-21
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization with ACTUAL ZeroShotManager Integration
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
