@@ -242,6 +242,21 @@ def initialize_unified_managers():
         )
         logger.info("✅ Analysis components initialized")
         
+    # ========================================================================
+    # PRELOAD THOSE BIG-ASS MODELS!
+    # ========================================================================
+        if model_ensemble:
+            try:
+                logger.info("📊 Preloading AI models...")
+                asyncio.run(model_ensemble.preload_models())
+                
+                # Log preload status
+                status = model_ensemble.get_preload_status()
+                logger.info(f"🎉 Model preload status: {status}")
+                
+            except Exception as e:
+                logger.error(f"❌ Model preloading failed during startup: {e}")
+
         managers = {
             'unified_config': unified_config,
             'analysis_parameters': analysis_parameters,
