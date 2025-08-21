@@ -470,14 +470,47 @@ class ModelEnsembleManager:
     def _get_model_cache_dir(self) -> str:
         """Get model cache directory from configuration"""
         try:
-            hardware_settings = self.get_hardware_settings()
-            cache_dir = hardware_settings.get('cache_dir', './models/cache/')
-            os.makedirs(cache_dir, exist_ok=True)
-            return cache_dir
-        except Exception as e:
-            logger.warning(f"⚠️ Cache dir config failed: {e}")
-            fallback_dir = './cache/models/'
+            # First check individual model cache directories
+            models = self.get_model_definitions()
+            if models:
+                # Use cache_dir from any model (they should all be the same)
+                for model_type, model_config in models.items():
+                    cache_dir = model_config.get('cache_dir')
+                    if cache_dir and cache_dir.strip():
+                        os.makedirs(cache_dir, exist_ok=True)
+                        logger.debug(f"Using model cache directory: {cache_dir}")
+                        return cache_dir
+            
+            # Check ensemble_config cache_dir
+            try:
+                cache_dir = self.config_manager.get_config_section('model_ensemble', 'ensemble_config.cache_dir')
+                if cache_dir and cache_dir.strip():
+                    os.makedirs(cache_dir, exist_ok=True)
+                    logger.debug(f"Using ensemble config cache directory: {cache_dir}")
+                    return cache_dir
+            except Exception as e:
+                logger.debug(f"Ensemble config cache dir access failed: {e}")
+            
+            # Check hardware_settings cache_dir
+            cache_dir = self.config_manager.get_config_section('model_ensemble', 'hardware_settings.cache_dir')
+            if cache_dir and cache_dir.strip():
+                os.makedirs(cache_dir, exist_ok=True)
+                logger.debug(f"Using hardware settings cache directory: {cache_dir}")
+                return cache_dir
+            
+            # Final fallback
+            fallback_dir = './models/cache/'
             os.makedirs(fallback_dir, exist_ok=True)
+            logger.warning(f"Using fallback cache directory: {fallback_dir}")
+            return fallback_dir
+            
+        except Exception as e:
+            logger.warning(f"Cache dir config failed: {e}")
+            fallback_dir = './models/cache/'
+            try:
+                os.makedirs(fallback_dir, exist_ok=True)
+            except Exception as e2:
+                logger.error(f"Could not create fallback cache directory {fallback_dir}: {e2}")
             return fallback_dir
     
     def _process_classification_result(self, result: Dict, labels: List[str]) -> float:
