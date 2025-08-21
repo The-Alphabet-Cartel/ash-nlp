@@ -693,8 +693,10 @@ class EnsembleAnalysisHelper:
             
             # Fallback to UnifiedConfigManager cache directory
             if self.crisis_analyzer.unified_config_manager:
-                cache_dir = self.crisis_analyzer.unified_config_manager.get_env_str(
-                    'NLP_ZERO_SHOT_CACHE_DIR', './cache/models/'
+                cache_dir = self.crisis_analyzer.unified_config_manager.get_config_section(
+                    'model_ensemble',
+                    'ensemble_config.cache_dir',
+                    './models/cache/'
                 )
                 os.makedirs(cache_dir, exist_ok=True)
                 logger.debug(f"📁 Using UnifiedConfigManager cache directory: {cache_dir}")
