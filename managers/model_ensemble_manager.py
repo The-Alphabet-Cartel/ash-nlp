@@ -88,6 +88,65 @@ class ModelEnsembleManager:
         self.device = self._get_device_config()
         logger.info(f"🔧 ModelEnsembleManager device configuration: {self.device}")
     
+    # ========================================================================
+    # PRELOAD THOSE BIG-ASS MODELS!
+    # ========================================================================
+    
+    async def preload_models(self):
+        """
+        Preload all configured models during container startup
+        This prevents timeout issues during actual crisis analysis
+        """
+        try:
+            logger.info("Starting model preloading during container startup...")
+            
+            models = self.get_model_definitions()
+            if not models:
+                logger.warning("No models configured for preloading")
+                return
+            
+            for model_type, model_config in models.items():
+                model_name = model_config.get('name')
+                enabled = model_config.get('enabled', True)
+                
+                if not model_name or not enabled:
+                    logger.info(f"Skipping model {model_type}: {'no name' if not model_name else 'disabled'}")
+                    continue
+                
+                try:
+                    logger.info(f"Preloading model: {model_type} ({model_name})")
+                    pipeline_obj = await self._get_or_load_pipeline(model_name)
+                    
+                    if pipeline_obj:
+                        logger.info(f"Successfully preloaded: {model_type}")
+                    else:
+                        logger.warning(f"Failed to preload: {model_type}")
+                        
+                except Exception as e:
+                    logger.error(f"Error preloading {model_type}: {e}")
+                    
+            logger.info(f"Model preloading complete. Cached models: {len(self._model_cache)}")
+            
+        except Exception as e:
+            logger.error(f"Model preloading failed: {e}")
+
+    def get_preload_status(self) -> Dict[str, Any]:
+        """Get status of model preloading for health checks"""
+        try:
+            models = self.get_model_definitions()
+            total_models = len(models)
+            loaded_models = len(self._model_cache)
+            
+            return {
+                'total_models_configured': total_models,
+                'models_loaded': loaded_models,
+                'preload_complete': loaded_models == total_models,
+                'cached_model_names': list(self._model_cache.keys()),
+                'transformers_available': TRANSFORMERS_AVAILABLE
+            }
+        except Exception as e:
+            return {'error': str(e), 'preload_complete': False}
+            
     def _load_and_validate_configuration(self):
         """Load and validate model ensemble configuration using enhanced patterns"""
         try:
