@@ -201,7 +201,7 @@ class ZeroShotManager:
     def get_available_label_sets(self) -> List[str]:
         """Get list of available label set names with enhanced Phase 3e validation"""
         try:
-            available_sets = self.unified_config.get_config_section('label_config', 'label_configuration', {}):
+            available_sets = self.unified_config.get_config_section('label_config', 'label_configuration', {})
             
             return available_sets
             
