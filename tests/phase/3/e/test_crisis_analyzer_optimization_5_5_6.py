@@ -345,7 +345,7 @@ class TestCrisisAnalyzerOptimization(unittest.TestCase):
         self.assertTrue(hasattr(ensemble_helper, '_fallback_distress_analysis'))
         
         # Test enhanced pattern scoring exists
-        self.assertTrue(hasattr(ensemble_helper, '_enhanced_pattern_scoring'))
+        self.assertTrue(hasattr(ensemble_helper, '_enhanced_label_aware_scoring'))
         
         self.logger.info("✅ EnsembleAnalysisHelper functionality validated")
 
