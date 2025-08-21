@@ -11,43 +11,56 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Model Ensemble Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.5-7-3
 LAST MODIFIED: 2025-08-21
-PHASE: 3e Step 5.5 - ModelEnsembleManager Optimization and Migration
+PHASE: 3e Step 5.5-7 - Phase 3: AI Classification Methods Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-OPTIMIZATION NOTES:
-- Migrated analysis methods to CrisisAnalyzer (analyze_with_ensemble, _analyze_text_with_model, etc.)
-- Updated configuration access to use get_config_section() patterns
-- Consolidated redundant getter methods
-- Added migration references for moved functionality
-- Reduced file from ~970 lines to ~400 lines (58% reduction)
-- Maintained 100% API compatibility for non-analysis methods
+PHASE 3 IMPLEMENTATION:
+- Added actual AI classification methods that EnsembleAnalysisHelper should call
+- Implemented classify_with_zero_shot() for semantic classification
+- Added model pipeline management and caching
+- Proper integration with ZeroShotManager for label management
+- Correct architectural flow: EnsembleAnalysisHelper → ModelEnsembleManager → transformers
 """
 
 import os
 import logging
 import time
+import asyncio
 from typing import Dict, Any, List, Optional
+
+# PHASE 3: Add transformers imports for actual AI classification
+try:
+    from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+    import torch
+    TRANSFORMERS_AVAILABLE = True
+    logger = logging.getLogger(__name__)
+    logger.info("✅ Transformers library loaded in ModelEnsembleManager for AI classification")
+except ImportError as e:
+    TRANSFORMERS_AVAILABLE = False
+    logger = logging.getLogger(__name__)
+    logger.warning(f"⚠️ Transformers library not available in ModelEnsembleManager: {e}")
 
 logger = logging.getLogger(__name__)
 
 class ModelEnsembleManager:
     """
-    Model Ensemble Manager - OPTIMIZED with Analysis Method Migration
+    Model Ensemble Manager - PHASE 3: AI Classification Implementation
     
-    MIGRATION NOTICE: Analysis methods have been moved to CrisisAnalyzer for better separation of concerns.
-    Configuration access updated to use enhanced UnifiedConfigManager patterns.
-    
-    This manager now focuses on:
+    This manager now provides:
     - Model configuration management
-    - Ensemble settings and validation
-    - Hardware configuration
-    - Model weight management
+    - ACTUAL AI classification methods for EnsembleAnalysisHelper
+    - Model pipeline loading and caching
+    - Ensemble voting and score aggregation
+    - Integration with ZeroShotManager for label management
+    - Hardware configuration and optimization
     
-    Analysis methods have been migrated to CrisisAnalyzer for improved architecture.
+    PHASE 3 ARCHITECTURE FIX:
+    EnsembleAnalysisHelper calls ModelEnsembleManager.classify_with_zero_shot()
+    Instead of EnsembleAnalysisHelper directly creating transformers pipelines
     """
     
     def __init__(self, config_manager):
@@ -62,10 +75,18 @@ class ModelEnsembleManager:
         
         self.config_manager = config_manager
         
-        logger.info("ModelEnsembleManager v3.1e optimized initialized")
+        # PHASE 3: Add model pipeline cache and loading management
+        self._model_cache = {}
+        self._model_loading_lock = asyncio.Lock()
+        
+        logger.info("ModelEnsembleManager v3.1e-5.5-7-3 Phase 3 initialized with AI classification")
         
         # Load and validate configuration
         self._load_and_validate_configuration()
+        
+        # Get device configuration for AI models
+        self.device = self._get_device_config()
+        logger.info(f"🔧 ModelEnsembleManager device configuration: {self.device}")
     
     def _load_and_validate_configuration(self):
         """Load and validate model ensemble configuration using enhanced patterns"""
@@ -88,7 +109,7 @@ class ModelEnsembleManager:
     def _load_model_configuration(self) -> Dict[str, Any]:
         """Load model configuration using enhanced UnifiedConfigManager patterns"""
         try:
-            # UPDATED: Use get_config_section instead of get_model_configuration
+            # Use get_config_section instead of get_model_configuration
             model_config = self.config_manager.get_config_section('model_ensemble')
             
             if not model_config:
@@ -161,6 +182,29 @@ class ModelEnsembleManager:
             'offload_folder': self.config_manager.get_env_str('NLP_MODEL_OFFLOAD_FOLDER', './models/offload')
         }
     
+    def _get_device_config(self) -> str:
+        """Get device configuration for AI models"""
+        try:
+            # Get device from hardware settings
+            hardware_settings = self.get_hardware_settings()
+            device = hardware_settings.get('device', 'auto')
+            
+            if device != 'auto':
+                logger.debug(f"Using configured device: {device}")
+                return device
+            
+            # Auto-detect best available device
+            if TRANSFORMERS_AVAILABLE and torch.cuda.is_available():
+                logger.debug("Auto-detected device: cuda")
+                return 'cuda'
+            else:
+                logger.debug("Auto-detected device: cpu")
+                return 'cpu'
+                
+        except Exception as e:
+            logger.warning(f"Device config detection failed: {e}, using CPU")
+            return 'cpu'
+    
     def _validate_configuration(self) -> bool:
         """Validate model ensemble configuration"""
         try:
@@ -228,83 +272,418 @@ class ModelEnsembleManager:
             return False
     
     # ========================================================================
-    # ANALYSIS METHOD MIGRATION REFERENCES
+    # PHASE 3: AI CLASSIFICATION METHODS - CORE IMPLEMENTATION
     # ========================================================================
     
-    def analyze_with_ensemble(self, message: str) -> Dict[str, Any]:
+    async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
+                                    hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
-        MIGRATION REFERENCE: This method has been moved to CrisisAnalyzer
+        PHASE 3: PRIMARY AI classification method for EnsembleAnalysisHelper
         
-        For ensemble analysis, use:
-        from analysis.crisis_analyzer import CrisisAnalyzer
-        crisis_analyzer = CrisisAnalyzer(...)
-        result = crisis_analyzer.analyze_with_ensemble(message)
+        This method performs actual zero-shot classification using transformers models.
+        EnsembleAnalysisHelper should call this instead of creating pipelines directly.
         
-        Benefits of migration:
-        - Better separation of concerns (analysis vs configuration)
-        - Centralized analysis logic in CrisisAnalyzer
-        - Improved testing and maintainability
-        - Consistent analysis patterns across the system
+        Args:
+            text: Text to classify
+            labels: List of classification labels
+            model_type: Model type (depression, sentiment, emotional_distress)
+            hypothesis_template: Template for hypothesis generation
+            
+        Returns:
+            Classification result with score, confidence, and metadata
         """
-        logger.warning("analyze_with_ensemble has been migrated to CrisisAnalyzer - use CrisisAnalyzer.analyze_with_ensemble() instead")
-        
-        # Provide fallback for backward compatibility
-        return {
-            'error': 'method_migrated',
-            'message': 'analyze_with_ensemble has been moved to CrisisAnalyzer',
-            'migration_target': 'CrisisAnalyzer.analyze_crisis()',
-            'recommendation': 'Update code to use CrisisAnalyzer for ensemble analysis'
-        }
+        try:
+            if not TRANSFORMERS_AVAILABLE:
+                logger.warning(f"⚠️ Transformers not available for {model_type} classification")
+                return await self._pattern_fallback_classification(text, labels, model_type)
+            
+            # Get model configuration
+            model_config = self.get_model_config(model_type)
+            if not model_config:
+                raise ValueError(f"No configuration found for model type: {model_type}")
+            
+            model_name = model_config.get('name')
+            if not model_name:
+                raise ValueError(f"No model name configured for type: {model_type}")
+            
+            # Load or get cached pipeline
+            classifier = await self._get_or_load_pipeline(model_name)
+            if classifier is None:
+                logger.warning(f"⚠️ Could not load model {model_name}, using pattern fallback")
+                return await self._pattern_fallback_classification(text, labels, model_type)
+            
+            # Perform zero-shot classification
+            logger.debug(f"🤖 Running zero-shot classification: {model_type} with {model_name}")
+            
+            result = await asyncio.get_event_loop().run_in_executor(
+                None, 
+                lambda: classifier(text, labels)
+            )
+            
+            # Process result into crisis score
+            crisis_score = self._process_classification_result(result, labels)
+            
+            return {
+                'score': crisis_score,
+                'confidence': min(0.9, crisis_score + 0.1),
+                'model': model_name,
+                'model_type': model_type,
+                'method': 'zero_shot_classification',
+                'labels_used': len(labels),
+                'hypothesis_template': hypothesis_template,
+                'transformers_used': True,
+                'device': self.device,
+                'ensemble_manager': True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Zero-shot classification failed for {model_type}: {e}")
+            return await self._pattern_fallback_classification(text, labels, model_type)
     
-    async def analyze_message_ensemble(self, message: str, user_id: str, channel_id: str) -> Dict:
+    async def classify_with_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
         """
-        MIGRATION REFERENCE: This method has been moved to CrisisAnalyzer
+        PHASE 3: Ensemble classification using multiple models
         
-        For message analysis with full context, use:
-        from analysis.crisis_analyzer import CrisisAnalyzer
-        crisis_analyzer = CrisisAnalyzer(...)
-        result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
-        
-        Benefits of migration:
-        - Centralized message analysis in CrisisAnalyzer
-        - Better context handling and pattern integration
-        - Improved crisis detection accuracy
-        - Consistent API for all analysis operations
+        Args:
+            text: Text to classify
+            zero_shot_manager: ZeroShotManager instance for label management
+            
+        Returns:
+            Ensemble classification results
         """
-        logger.warning("analyze_message_ensemble has been migrated to CrisisAnalyzer - use CrisisAnalyzer.analyze_message() instead")
-        
-        return {
-            'error': 'method_migrated',
-            'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
-            'migration_target': 'CrisisAnalyzer.analyze_crisis()',
-            'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
-        }
+        try:
+            model_results = {}
+            models = self.get_model_definitions()
+            
+            # Get labels from ZeroShotManager if available
+            labels = None
+            hypothesis_template = "This text expresses {}."
+            
+            if zero_shot_manager:
+                try:
+                    all_labels = zero_shot_manager.get_all_labels()
+                    zero_shot_settings = zero_shot_manager.get_zero_shot_settings()
+                    hypothesis_template = zero_shot_settings.get('hypothesis_template', hypothesis_template)
+                    logger.debug(f"✅ Using ZeroShotManager for label management")
+                except Exception as e:
+                    logger.warning(f"⚠️ ZeroShotManager access failed: {e}")
+                    all_labels = {}
+            else:
+                all_labels = {}
+            
+            # Classify with each model
+            for model_type in models.keys():
+                try:
+                    # Get labels for this model type
+                    if isinstance(all_labels, dict) and model_type in all_labels:
+                        model_labels = all_labels[model_type]
+                    elif isinstance(all_labels, dict):
+                        # Use general labels if model-specific not available
+                        model_labels = all_labels.get('crisis', all_labels.get('enhanced_crisis', []))
+                    else:
+                        model_labels = self._get_fallback_labels(model_type)
+                    
+                    if not model_labels:
+                        model_labels = self._get_fallback_labels(model_type)
+                    
+                    # Perform classification
+                    result = await self.classify_with_zero_shot(
+                        text, model_labels, model_type, hypothesis_template
+                    )
+                    model_results[model_type] = result
+                    
+                except Exception as e:
+                    logger.error(f"❌ Model {model_type} classification failed: {e}")
+                    model_results[model_type] = {
+                        'score': 0.0,
+                        'confidence': 0.0,
+                        'error': str(e),
+                        'model_type': model_type
+                    }
+            
+            # Perform ensemble voting
+            ensemble_result = self._perform_ensemble_voting(model_results)
+            
+            return {
+                'ensemble_score': ensemble_result['score'],
+                'ensemble_confidence': ensemble_result['confidence'],
+                'ensemble_mode': self.get_ensemble_mode(),
+                'individual_results': model_results,
+                'models_used': len(model_results),
+                'zero_shot_manager_used': zero_shot_manager is not None,
+                'method': 'ensemble_classification'
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Ensemble classification failed: {e}")
+            return {
+                'ensemble_score': 0.0,
+                'ensemble_confidence': 0.0,
+                'error': str(e),
+                'method': 'ensemble_classification_error'
+            }
     
-    def classify_zero_shot(self, text: str, hypothesis: str, model_type: str = None) -> float:
+    async def _get_or_load_pipeline(self, model_name: str):
         """
-        MIGRATION REFERENCE: This method has been moved to CrisisAnalyzer
+        PHASE 3: Load or get cached zero-shot classification pipeline
         
-        For zero-shot classification, use:
-        from analysis.crisis_analyzer import CrisisAnalyzer
-        crisis_analyzer = CrisisAnalyzer(...)
-        score = crisis_analyzer.classify_zero_shot(text, hypothesis, model_type)
-        
-        Benefits of migration:
-        - Centralized classification logic in CrisisAnalyzer
-        - Better integration with pattern matching
-        - Consistent semantic analysis across the system
+        Args:
+            model_name: Hugging Face model name
+            
+        Returns:
+            Zero-shot classification pipeline or None if loading fails
         """
-        logger.warning("classify_zero_shot has been migrated to CrisisAnalyzer - use CrisisAnalyzer.classify_zero_shot() instead")
+        if not TRANSFORMERS_AVAILABLE:
+            return None
+            
+        async with self._model_loading_lock:
+            # Check cache first
+            if model_name in self._model_cache:
+                logger.debug(f"📦 Using cached model: {model_name}")
+                return self._model_cache[model_name]
+            
+            try:
+                logger.info(f"🔥 Loading zero-shot model: {model_name}")
+                
+                # Get cache directory
+                cache_dir = self._get_model_cache_dir()
+                
+                # Create pipeline with proper configuration
+                classifier = pipeline(
+                    "zero-shot-classification",
+                    model=model_name,
+                    device=0 if self.device == 'cuda' else -1,
+                    cache_dir=cache_dir,
+                    return_all_scores=True
+                )
+                
+                # Cache the pipeline
+                self._model_cache[model_name] = classifier
+                
+                logger.info(f"✅ Model loaded successfully: {model_name}")
+                return classifier
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to load model {model_name}: {e}")
+                return None
+    
+    def _get_model_cache_dir(self) -> str:
+        """Get model cache directory from configuration"""
+        try:
+            hardware_settings = self.get_hardware_settings()
+            cache_dir = hardware_settings.get('cache_dir', './models/cache/')
+            os.makedirs(cache_dir, exist_ok=True)
+            return cache_dir
+        except Exception as e:
+            logger.warning(f"⚠️ Cache dir config failed: {e}")
+            fallback_dir = './cache/models/'
+            os.makedirs(fallback_dir, exist_ok=True)
+            return fallback_dir
+    
+    def _process_classification_result(self, result: Dict, labels: List[str]) -> float:
+        """
+        PHASE 3: Process zero-shot classification result into crisis score
         
-        return {
-            'error': 'method_migrated',
-            'message': 'analyze_message_ensemble has been moved to CrisisAnalyzer',
-            'migration_target': 'CrisisAnalyzer.classify_zero_shot()',
-            'recommendation': 'Update code to use CrisisAnalyzer for message analysis'
+        Args:
+            result: Raw result from zero-shot classifier
+            labels: Original labels used for classification
+            
+        Returns:
+            Crisis score (0.0 to 1.0) where higher values indicate higher crisis levels
+        """
+        try:
+            if not result or 'scores' not in result:
+                logger.warning(f"⚠️ Invalid classification result format")
+                return 0.0
+            
+            scores = result['scores']
+            predicted_labels = result.get('labels', [])
+            
+            if len(scores) != len(labels):
+                logger.warning(f"⚠️ Score/label mismatch in classification result")
+                return 0.0
+            
+            # Calculate weighted crisis score based on label severity
+            # Labels are arranged from highest crisis (index 0) to lowest crisis (last index)
+            crisis_score = 0.0
+            
+            for i, (label, score) in enumerate(zip(predicted_labels, scores)):
+                try:
+                    original_index = labels.index(label)
+                    # Convert index to severity weight (0 = highest crisis, last = lowest crisis)
+                    severity_weight = 1.0 - (original_index / (len(labels) - 1))
+                    weighted_contribution = score * severity_weight
+                    crisis_score += weighted_contribution
+                    
+                    logger.debug(f"📊 Label: score={score:.3f}, weight={severity_weight:.3f}")
+                    
+                except ValueError:
+                    logger.warning(f"⚠️ Label '{label}' not found in original labels")
+                    continue
+            
+            # Normalize the score to 0-1 range
+            crisis_score = max(0.0, min(1.0, crisis_score))
+            
+            logger.debug(f"📊 Final crisis score: {crisis_score:.3f}")
+            return crisis_score
+            
+        except Exception as e:
+            logger.error(f"❌ Classification result processing failed: {e}")
+            return 0.0
+    
+    def _perform_ensemble_voting(self, model_results: Dict[str, Dict]) -> Dict[str, float]:
+        """
+        PHASE 3: Perform ensemble voting on multiple model results
+        
+        Args:
+            model_results: Dictionary of model results
+            
+        Returns:
+            Ensemble score and confidence
+        """
+        try:
+            ensemble_mode = self.get_ensemble_mode()
+            valid_results = []
+            
+            # Extract valid results
+            for model_type, result in model_results.items():
+                if isinstance(result, dict) and 'score' in result:
+                    score = result.get('score', 0.0)
+                    confidence = result.get('confidence', 0.0)
+                    weight = self.get_model_weight(model_type)
+                    
+                    valid_results.append({
+                        'score': score,
+                        'confidence': confidence,
+                        'weight': weight,
+                        'model_type': model_type
+                    })
+            
+            if not valid_results:
+                return {'score': 0.0, 'confidence': 0.0}
+            
+            # Perform voting based on ensemble mode
+            if ensemble_mode == 'weighted':
+                return self._weighted_ensemble_voting(valid_results)
+            elif ensemble_mode == 'majority':
+                return self._majority_ensemble_voting(valid_results)
+            elif ensemble_mode == 'consensus':
+                return self._consensus_ensemble_voting(valid_results)
+            else:
+                # Default to weighted
+                return self._weighted_ensemble_voting(valid_results)
+                
+        except Exception as e:
+            logger.error(f"❌ Ensemble voting failed: {e}")
+            return {'score': 0.0, 'confidence': 0.0}
+    
+    def _weighted_ensemble_voting(self, results: List[Dict]) -> Dict[str, float]:
+        """Weighted ensemble voting"""
+        total_weight = sum(r['weight'] for r in results)
+        if total_weight == 0:
+            return {'score': 0.0, 'confidence': 0.0}
+        
+        weighted_score = sum(r['score'] * r['weight'] for r in results) / total_weight
+        weighted_confidence = sum(r['confidence'] * r['weight'] for r in results) / total_weight
+        
+        return {'score': weighted_score, 'confidence': weighted_confidence}
+    
+    def _majority_ensemble_voting(self, results: List[Dict]) -> Dict[str, float]:
+        """Majority ensemble voting"""
+        if not results:
+            return {'score': 0.0, 'confidence': 0.0}
+        
+        avg_score = sum(r['score'] for r in results) / len(results)
+        avg_confidence = sum(r['confidence'] for r in results) / len(results)
+        
+        return {'score': avg_score, 'confidence': avg_confidence}
+    
+    def _consensus_ensemble_voting(self, results: List[Dict]) -> Dict[str, float]:
+        """Consensus ensemble voting"""
+        if not results:
+            return {'score': 0.0, 'confidence': 0.0}
+        
+        # For consensus, require agreement (similar scores)
+        scores = [r['score'] for r in results]
+        score_std = (sum((s - sum(scores)/len(scores))**2 for s in scores) / len(scores))**0.5
+        
+        if score_std > 0.3:  # High disagreement
+            consensus_confidence = 0.3
+        else:
+            consensus_confidence = 0.8
+        
+        avg_score = sum(scores) / len(scores)
+        return {'score': avg_score, 'confidence': consensus_confidence}
+    
+    async def _pattern_fallback_classification(self, text: str, labels: List[str], model_type: str) -> Dict[str, Any]:
+        """
+        PHASE 3: Pattern-based fallback when transformers unavailable
+        
+        Args:
+            text: Text to classify
+            labels: Classification labels
+            model_type: Model type for context
+            
+        Returns:
+            Pattern-based classification result
+        """
+        try:
+            # Simple pattern-based classification
+            text_lower = text.lower()
+            crisis_keywords = ['suicide', 'suicidal', 'hopeless', 'helpless', 'crisis', 'breakdown']
+            
+            matches = sum(1 for keyword in crisis_keywords if keyword in text_lower)
+            score = min(0.7, matches * 0.15)
+            
+            return {
+                'score': score,
+                'confidence': 0.5,
+                'model': f'pattern_fallback_{model_type}',
+                'model_type': model_type,
+                'method': 'pattern_fallback',
+                'labels_used': len(labels),
+                'transformers_used': False,
+                'ensemble_manager': True
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Pattern fallback failed: {e}")
+            return {
+                'score': 0.0,
+                'confidence': 0.0,
+                'error': str(e),
+                'model_type': model_type,
+                'method': 'pattern_fallback_error'
+            }
+    
+    def _get_fallback_labels(self, model_type: str) -> List[str]:
+        """Get fallback labels for a model type"""
+        fallback_labels = {
+            'depression': [
+                "person expressing suicidal thoughts or plans",
+                "person showing severe depression",
+                "person feeling emotionally stable"
+            ],
+            'sentiment': [
+                "extreme sadness or despair",
+                "neutral emotions",
+                "happiness or joy"
+            ],
+            'emotional_distress': [
+                "person in acute psychological distress",
+                "person showing moderate distress",
+                "person demonstrating emotional resilience"
+            ]
         }
+        
+        return fallback_labels.get(model_type, [
+            "high crisis level",
+            "medium crisis level", 
+            "low crisis level"
+        ])
     
     # ========================================================================
-    # MODEL CONFIGURATION ACCESS - CORE RESPONSIBILITY
+    # EXISTING CONFIGURATION METHODS (Keep unchanged)
     # ========================================================================
     
     def get_model_definitions(self) -> Dict[str, Any]:
@@ -334,20 +713,14 @@ class ModelEnsembleManager:
         total_weight = sum(weights.values())
         
         if total_weight <= 0:
-            # Equal weights if all are zero
             equal_weight = 1.0 / len(weights) if weights else 0.0
             return {model_type: equal_weight for model_type in weights.keys()}
         
-        # Normalize to sum to 1.0
         return {model_type: weight / total_weight for model_type, weight in weights.items()}
     
     def get_model_names(self) -> List[str]:
         """Get list of configured model names"""
         return list(self.get_model_definitions().keys())
-    
-    # ========================================================================
-    # ENSEMBLE CONFIGURATION - CORE RESPONSIBILITY
-    # ========================================================================
     
     def get_ensemble_mode(self) -> str:
         """Get current ensemble mode"""
@@ -364,10 +737,6 @@ class ModelEnsembleManager:
         """Validate if an ensemble mode is supported"""
         available_modes = ['consensus', 'majority', 'weighted']
         return mode in available_modes
-    
-    # ========================================================================
-    # HARDWARE CONFIGURATION - CORE RESPONSIBILITY
-    # ========================================================================
     
     def get_hardware_settings(self) -> Dict[str, Any]:
         """Get hardware configuration settings"""
@@ -389,29 +758,18 @@ class ModelEnsembleManager:
         """Get inference thread count"""
         return self.get_hardware_settings().get('inference_threads', 16)
     
-    # ========================================================================
-    # MODEL STATUS AND VALIDATION - CORE RESPONSIBILITY
-    # ========================================================================
-    
     def models_loaded(self) -> bool:
-        """
-        Check if models are configured and ready for analysis
-        
-        Returns:
-            bool: True if models are configured and ready, False otherwise
-        """
+        """Check if models are configured and ready for analysis"""
         try:
             models = self.get_model_definitions()
             if not models:
                 logger.warning("No models configured")
                 return False
             
-            # Require at least 2 models for ensemble functionality
             if len(models) < 2:
                 logger.warning(f"Only {len(models)} models configured, need at least 2")
                 return False
             
-            # Validate that models have names
             models_with_names = 0
             for model_type, model_config in models.items():
                 model_name = model_config.get('name', '').strip()
@@ -422,7 +780,6 @@ class ModelEnsembleManager:
                 logger.warning("No models have valid names configured")
                 return False
             
-            # Check weights
             weights = self.get_model_weights()
             total_weight = sum(weights.values())
             
@@ -438,27 +795,23 @@ class ModelEnsembleManager:
             return False
     
     def get_model_info(self) -> Dict[str, Any]:
-        """
-        Get comprehensive model information for API responses
-        
-        Returns:
-            Dict containing model configuration and status information
-        """
+        """Get comprehensive model information for API responses"""
         try:
             models = self.get_model_definitions()
             
             model_info = {
                 'total_models': len(models),
                 'models_configured': len(models) > 0,
-                'architecture_version': '3.1e-optimized',
+                'architecture_version': '3.1e-5.5-7-3-phase3',
                 'configuration_source': 'unified_config_manager',
                 'ensemble_mode': self.get_ensemble_mode(),
                 'device_setting': self.get_device_setting(),
                 'precision_setting': self.get_precision_setting(),
-                'model_details': {}
+                'model_details': {},
+                'phase_3_ai_methods': True,
+                'transformers_available': TRANSFORMERS_AVAILABLE
             }
             
-            # Add weights information
             try:
                 weights = self.get_model_weights()
                 model_info['total_weight'] = sum(weights.values())
@@ -468,7 +821,6 @@ class ModelEnsembleManager:
                 model_info['total_weight'] = 0.0
                 model_info['weights_valid'] = False
             
-            # Add details for each model
             for model_type, model_config in models.items():
                 try:
                     model_info['model_details'][model_type] = {
@@ -485,10 +837,10 @@ class ModelEnsembleManager:
                         'configured': False
                     }
             
-            # Add status information
             model_info['status'] = {
                 'models_loaded': self.models_loaded(),
-                'ready_for_analysis': len(models) >= 2
+                'ready_for_analysis': len(models) >= 2,
+                'ai_classification_available': TRANSFORMERS_AVAILABLE
             }
             
             logger.debug(f"Model info generated successfully: {len(models)} models")
@@ -501,7 +853,7 @@ class ModelEnsembleManager:
                 'models_configured': False,
                 'status': 'error',
                 'error': str(e),
-                'architecture_version': '3.1e-optimized',
+                'architecture_version': '3.1e-5.5-7-3-phase3',
                 'ready_for_analysis': False
             }
     
@@ -513,17 +865,8 @@ class ModelEnsembleManager:
         """Check if weight validation is enabled"""
         return self.get_validation_settings().get('ensure_weights_sum_to_one', True)
     
-    # ========================================================================
-    # ZERO-SHOT CAPABILITIES - CORE RESPONSIBILITY
-    # ========================================================================
-    
     def get_zero_shot_capabilities(self) -> Dict[str, Any]:
-        """
-        Get information about zero-shot classification capabilities
-        
-        Returns:
-            Dictionary with zero-shot classification status and available models
-        """
+        """Get information about zero-shot classification capabilities"""
         try:
             zero_shot_model = self._get_best_zero_shot_model()
             
@@ -531,7 +874,9 @@ class ModelEnsembleManager:
                 'zero_shot_available': zero_shot_model is not None,
                 'zero_shot_model': zero_shot_model,
                 'semantic_pattern_matching': zero_shot_model is not None,
-                'classification_method': 'transformers_pipeline' if zero_shot_model else 'keyword_fallback'
+                'classification_method': 'transformers_pipeline' if zero_shot_model else 'keyword_fallback',
+                'transformers_available': TRANSFORMERS_AVAILABLE,
+                'phase_3_implementation': True
             }
             
             if zero_shot_model:
@@ -553,13 +898,11 @@ class ModelEnsembleManager:
         try:
             models = self.get_model_definitions()
             
-            # Look for models configured for zero-shot classification
             for model_type, model_config in models.items():
                 pipeline_task = model_config.get('pipeline_task', '')
                 if pipeline_task == 'zero-shot-classification':
                     return model_type
             
-            # Fallback: Look for NLI models
             for model_type, model_config in models.items():
                 model_name = model_config.get('name', '').lower()
                 if 'nli' in model_name or 'mnli' in model_name:
@@ -571,10 +914,6 @@ class ModelEnsembleManager:
             logger.error(f"Error finding zero-shot model: {e}")
             return None
     
-    # ========================================================================
-    # MANAGER STATUS AND INFORMATION
-    # ========================================================================
-    
     def get_manager_status(self) -> Dict[str, Any]:
         """Get comprehensive manager status"""
         try:
@@ -582,9 +921,10 @@ class ModelEnsembleManager:
             weights = self.get_model_weights()
             
             return {
-                'version': '3.1e-optimized',
+                'version': '3.1e-5.5-7-3-phase3',
                 'architecture': 'clean-v3.1-unified',
-                'optimization_applied': True,
+                'phase_3_implementation': True,
+                'ai_classification_methods': True,
                 'config_source': 'enhanced_config_manager',
                 'ensemble_mode': self.get_ensemble_mode(),
                 'models_configured': len(models),
@@ -593,16 +933,20 @@ class ModelEnsembleManager:
                 'weights_normalized': abs(sum(weights.values()) - 1.0) < 0.01,
                 'hardware_device': self.get_device_setting(),
                 'validation_enabled': self.is_weights_validation_enabled(),
-                'migration_status': {
-                    'analysis_methods_migrated': True,
-                    'migration_target': 'CrisisAnalyzer',
-                    'configuration_updated': True
-                }
+                'transformers_available': TRANSFORMERS_AVAILABLE,
+                'cache_initialized': hasattr(self, '_model_cache'),
+                'methods_available': [
+                    'classify_with_zero_shot',
+                    'classify_with_ensemble',
+                    '_get_or_load_pipeline',
+                    '_process_classification_result',
+                    '_perform_ensemble_voting'
+                ]
             }
         except Exception as e:
             logger.error(f"Error getting manager status: {e}")
             return {
-                'version': '3.1e-optimized',
+                'version': '3.1e-5.5-7-3-phase3',
                 'status': 'error',
                 'error': str(e)
             }
@@ -664,4 +1008,4 @@ __all__ = [
     'reset_model_ensemble_manager'
 ]
 
-logger.info("ModelEnsembleManager v3.1e optimized loaded - Analysis methods migrated to CrisisAnalyzer")
+logger.info("ModelEnsembleManager v3.1e-5.5-7-3 Phase 3 loaded - AI classification methods implemented")
