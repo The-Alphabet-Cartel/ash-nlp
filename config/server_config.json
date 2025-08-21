@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-1",
+    "file_version": "v3.1-3d-5.5-1",
     "last_modified": "2025-08-14",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -156,6 +156,31 @@
             "type": "array",
             "description": "List of allowed request headers"
           }
+        }
+      }
+    },
+
+    "monitoring": {
+      "health_check_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "status_endpoint": "/status",
+      "enable_health_checks": "${NLP_SERVER_ENABLE_HEALTH_CHECKS}",
+      "health_check_interval": "${NLP_SERVER_HEALTH_CHECK_INTERVAL}",
+      "log_health_status": "${NLP_SERVER_LOG_HEALTH}",
+      "defaults": {
+        "enable_health_checks": false,
+        "health_check_interval": 30,
+        "log_health_status": false
+      },
+      "validation": {
+        "enable_health_checks": {
+          "type": "boolean"
+        },
+        "health_check_interval": {
+          "type": "integer"
+        },
+        "log_health_status": {
+          "type": "boolean"
         }
       }
     }

@@ -1,7 +1,7 @@
 # ash-nlp/tests/phase/3/e/test_crisis_pattern_manager_cleanup.py
 """
 Integration Test for CrisisPatternManager Cleanup - Phase 3e Sub-step 5.3 OPTIMIZED
-FILE VERSION: v3.1-3e-5.3-optimized-test-1
+FILE VERSION: v3.1-3e-5.3-optimized-test-2
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Sub-step 5.3 - CrisisPatternManager cleanup + optimization validation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -37,7 +37,7 @@ sys.path.insert(0, str(project_root))
 
 from managers.crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
 from managers.unified_config_manager import UnifiedConfigManager, create_unified_config_manager
-from managers.crisis_pattern_helpers import CrisisPatternHelpers, create_crisis_pattern_helpers
+from managers.crisis_pattern_helpers import CrisisPatternHelper, create_crisis_pattern_helper
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +60,8 @@ class TestCrisisPatternManagerOptimized:
     
     @pytest.fixture
     def crisis_pattern_helpers(self, real_config_manager):
-        """Create CrisisPatternHelpers instance for direct testing"""
-        return create_crisis_pattern_helpers(real_config_manager)
+        """Create CrisisPatternHelper instance for direct testing"""
+        return create_crisis_pattern_helper(real_config_manager)
     
     # ========================================================================
     # OPTIMIZATION VALIDATION TESTS
@@ -72,7 +72,7 @@ class TestCrisisPatternManagerOptimized:
         # Verify manager has helpers
         assert hasattr(crisis_pattern_manager, '_helpers')
         assert crisis_pattern_manager._helpers is not None
-        assert isinstance(crisis_pattern_manager._helpers, CrisisPatternHelpers)
+        assert isinstance(crisis_pattern_manager._helpers, CrisisPatternHelper)
         
         # Test direct helper functionality
         test_data = {'test': 'value', 'number': '42'}

@@ -5,7 +5,7 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_server_config_manager(unified_config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
+**FILE VERSION**: v3.1-3e-5.5-1  
 **LAST MODIFIED**: 2025-08-17  
 
 ---
@@ -106,7 +106,7 @@ The **ServerConfigManager** manages all server infrastructure configuration for 
 - **logging** - Error handling and server status tracking
 
 ### **Configuration Files:**
-- **`config/server_settings.json`** - Primary server configuration
+- **`config/server_config.json`** - Primary server configuration
 - **Environment variables** - Via UnifiedConfigManager (e.g., `NLP_SERVER_*`, `GLOBAL_*`)
 
 ### **Integration Points:**

@@ -1,8 +1,18 @@
 # ash-nlp/managers/threshold_mapping_manager.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 Mode-Aware Threshold Configuration Manager for Ash NLP Service
-FILE VERSION: v3.1-3e-5.2-1
-LAST MODIFIED: 2025-08-19
+---
+FILE VERSION: v3.1-3e-5.5-6-1
+LAST MODIFIED: 2025-08-21
 PHASE: 3e, Sub-step 5.2 - ThresholdMappingManager Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Methods moved to CrisisAnalyzer and LearningSystemManager with migration references
@@ -50,14 +60,12 @@ class ThresholdMappingManager:
         SIMPLIFIED: No more manual environment variable resolution needed
         """
         try:
-            # NEW APPROACH: Just load the raw config - get_config_section() handles environment variables
             raw_config = self.unified_config.get_config_section('threshold_mapping')
             
             if not raw_config:
                 logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
                 self.threshold_config = self._get_fallback_threshold_config()
             else:
-                # SIMPLIFIED: Store raw config - individual methods will use get_config_section()
                 self.threshold_config = raw_config
                 logger.info("✅ Threshold mapping configuration loaded (environment resolution via get_config_section)")
             
@@ -151,7 +159,7 @@ class ThresholdMappingManager:
                     ensemble_thresholds = self.get_ensemble_thresholds_for_mode(mode)
                     if ensemble_thresholds:
                         # Validate threshold ordering
-                        critical = ensemble_thresholds.get('critical', 1.0)
+                        critical = ensemble_thresholds.get('critical', 0.7)
                         high = ensemble_thresholds.get('high', 0.5)
                         medium = ensemble_thresholds.get('medium', 0.3)
                         low = ensemble_thresholds.get('low', 0.1)
@@ -501,18 +509,21 @@ class ThresholdMappingManager:
      
     def get_current_ensemble_mode(self) -> str:
         """Get current ensemble mode UnifiedConfigManager"""
-        logger.debug("📋 Getting ensemble mode...")
-        self.config = self.unified_config.get_model_configuration()
-        if self.config:
-            mode = self.config.get('ensemble_config', {}).get('mode', 'majority')
+        logger.debug("📋 Getting ensemble mode from JSON...")
+        mode = self.unified_config.get_config_section(
+            'model_ensemble',
+            'ensemble_config.mode',
+            'majority'
+        )
+        if mode:
             logger.debug(f"🔧 Ensemble mode: {mode}")
             return mode
         else:
             mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
-            logger.error("⚠️ Ensemble mode not found...")
+            logger.error("⚠️ Ensemble mode not found, using ENV...")
             return mode
 
-    def get_ensemble_thresholds_for_mode(self, mode: Optional[str] = None) -> Dict[str, float]:
+    def get_ensemble_thresholds_for_mode(self, mode) -> Dict[str, float]:
         """
         Get ensemble thresholds for specific mode using new UnifiedConfigManager method
         UPDATED: Now uses get_config_section() instead of manual resolution
@@ -521,7 +532,6 @@ class ThresholdMappingManager:
             mode = self.get_current_ensemble_mode()
         
         try:
-            # NEW: Use get_config_section() instead of manual resolution
             ensemble_thresholds = self.unified_config.get_config_section(
                 'threshold_mapping', 
                 f'threshold_mapping_by_mode.{mode}.ensemble_thresholds',
@@ -576,7 +586,6 @@ class ThresholdMappingManager:
             mode = self.get_current_ensemble_mode()
         
         try:
-            # NEW: Use get_config_section() instead of manual resolution
             crisis_mapping = self.unified_config.get_config_section(
                 'threshold_mapping',
                 f'threshold_mapping_by_mode.{mode}.crisis_level_mapping',
@@ -634,7 +643,6 @@ class ThresholdMappingManager:
             mode = self.get_current_ensemble_mode()
         
         try:
-            # NEW: Use get_config_section() instead of manual resolution
             staff_thresholds = self.unified_config.get_config_section(
                 'threshold_mapping',
                 f'threshold_mapping_by_mode.{mode}.staff_review_thresholds',
@@ -748,7 +756,6 @@ class ThresholdMappingManager:
         UPDATED: Now uses get_config_section() instead of manual resolution
         """
         try:
-            # NEW: Use get_config_section() instead of manual resolution
             global_staff = self.unified_config.get_config_section(
                 'threshold_mapping',
                 'global_staff_review',
@@ -938,7 +945,6 @@ class ThresholdMappingManager:
         UPDATED: Now uses get_config_section() instead of manual resolution
         """
         try:
-            # NEW: Use get_config_section() instead of manual resolution
             integration_config = self.unified_config.get_config_section(
                 'threshold_mapping',
                 'shared_configuration.pattern_integration',

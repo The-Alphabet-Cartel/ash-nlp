@@ -1,0 +1,73 @@
+{
+  "_metadata": {
+    "configuration_version": "3.1-3e-5.6-1",
+    "file_purpose": "SettingsManager coordination and runtime configuration",
+    "created_date": "2025-08-20",
+    "updated_date": "2025-08-20",
+    "phase": "3e Step 5.6",
+    "compliance": "clean_v3.1_architecture",
+    "description": "Runtime settings coordination and manager integration configuration for SettingsManager"
+  },
+
+  "system_status": {
+    "phase_status": {
+      "crisis_patterns": "externalized_to_json",
+      "analysis_parameters": "externalized_to_json",
+      "threshold_mappings": "externalized_to_json",
+      "server_configuration": "externalized_to_json",
+      "logging_configuration": "externalized_to_json",
+      "feature_flags": "externalized_to_json",
+      "performance_settings": "externalized_to_json",
+      "direct_os_getenv_calls": "eliminated",
+      "get_config_section_patterns": "implemented",
+      "phase_2a": "complete",
+      "phase_2b": "complete",
+      "phase_2c": "complete",
+      "phase_3a": "complete",
+      "phase_3b": "complete",
+      "phase_3c": "complete",
+      "phase_3d": "complete"
+    },
+    "architecture_status": {
+      "clean_v3_1_compliance": "complete",
+      "unified_config_integration": "complete",
+      "get_config_section_migration": "complete",
+      "enhanced_error_handling": "complete",
+      "migration_references": "complete"
+    }
+  },
+  
+  "runtime_coordination": {
+    "deprecation_warnings": "${NLP_SETTINGS_DEPRECATION_WARNINGS}",
+    "defaults": {
+      "deprecation_warnings": true
+    },
+    "validation": {
+      "deprecation_warnings": {
+        "type": "boolean"
+      }
+    }
+  },
+
+  "runtime_overrides": {},
+
+  "manager_integration": {
+    "required_managers": [
+      "unified_config"
+    ],
+    "recommended_managers": [
+      "analysis_parameters",
+      "crisis_pattern",
+      "feature_config",
+      "server_config",
+      "storage_config"
+    ],
+    "optional_managers": [
+      "logging_config",
+      "performance_config",
+      "threshold_mapping",
+      "zero_shot",
+      "pydantic"
+    ]
+  }
+}

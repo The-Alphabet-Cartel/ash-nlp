@@ -1,8 +1,18 @@
 # ash-nlp/managers/learning_system_manager.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 Learning System Manager for Ash-NLP Service
-FILE VERSION: v3.1-3e-3.2-3
-LAST MODIFIED: 2025-08-17
+---
+FILE VERSION: v3.1-3e-5.5-6-2
+LAST MODIFIED: 2025-08-21
 PHASE: 3e Step 3.2 - LearningSystemManager Implementation (Corrected)
 CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
 MIGRATION STATUS: Learning methods extracted from both AnalysisParametersManager and ThresholdMappingManager
@@ -615,6 +625,158 @@ class LearningSystemManager:
                 "learning_feedback_processing", "process_learning_feedback"
             )
     
+    def apply_learning_adjustments(self, base_result: Dict[str, Any], user_id: str, channel_id: str) -> Dict[str, Any]:
+        """
+        Apply learning adjustments to analysis results
+        
+        Args:
+            base_result: Base analysis result to adjust
+            user_id: User identifier for context
+            channel_id: Channel identifier for context
+            
+        Returns:
+            Dictionary with learning adjustments applied
+        """
+        try:
+            if not self.get_learning_parameters().get('enabled', False):
+                return {
+                    'adjusted_score': base_result.get('crisis_score', 0.0),
+                    'adjustments': {},
+                    'metadata': {'learning_disabled': True}
+                }
+            
+            original_score = base_result.get('crisis_score', 0.0)
+            crisis_level = base_result.get('crisis_level', 'none')
+            
+            # Apply basic learning adjustments
+            adjustment_factor = 1.0
+            adjustments = {}
+            
+            # Get learning parameters
+            params = self.get_learning_parameters()
+            learning_rate = params.get('learning_rate', 0.01)
+            
+            # Apply historical adjustments if available
+            if hasattr(self, '_adjustment_history') and self._adjustment_history:
+                recent_adjustments = self._adjustment_history[-10:]  # Last 10 adjustments
+                avg_adjustment = sum(adj.get('adjustment_amount', 0) for adj in recent_adjustments) / len(recent_adjustments)
+                adjustment_factor += avg_adjustment * learning_rate
+                adjustments['historical_adjustment'] = avg_adjustment
+            
+            # Apply severity-based adjustments
+            severity_multipliers = params.get('severity_multipliers', {})
+            if crisis_level in ['critical', 'high']:
+                multiplier = severity_multipliers.get('high_severity', 1.0)
+                adjustment_factor *= multiplier
+                adjustments['severity_adjustment'] = multiplier
+            
+            # Calculate final adjusted score
+            adjusted_score = max(0.0, min(1.0, original_score * adjustment_factor))
+            
+            return {
+                'adjusted_score': adjusted_score,
+                'adjustments': adjustments,
+                'metadata': {
+                    'original_score': original_score,
+                    'adjustment_factor': adjustment_factor,
+                    'learning_enabled': True,
+                    'user_id': user_id,
+                    'channel_id': channel_id
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"Learning adjustment failed: {e}")
+            return {
+                'adjusted_score': base_result.get('crisis_score', 0.0),
+                'adjustments': {},
+                'metadata': {'learning_error': str(e)}
+            }
+
+    def apply_threshold_adjustments(self, confidence: float, mode: str = 'consensus') -> float:
+        """
+        Apply threshold adjustments based on learning history
+        
+        Args:
+            confidence: Original confidence score
+            mode: Threshold mode (consensus, majority, weighted)
+            
+        Returns:
+            Adjusted confidence score
+        """
+        try:
+            if not self.get_learning_parameters().get('enabled', False):
+                return confidence
+            
+            # Apply learning-based threshold adjustments
+            params = self.get_learning_parameters()
+            learning_rate = params.get('learning_rate', 0.01)
+            
+            # Calculate adjustment based on recent feedback
+            adjustment = 0.0
+            if hasattr(self, '_adjustment_history') and self._adjustment_history:
+                recent_false_positives = [adj for adj in self._adjustment_history[-20:] 
+                                        if adj.get('type') == 'false_positive']
+                recent_false_negatives = [adj for adj in self._adjustment_history[-20:] 
+                                        if adj.get('type') == 'false_negative']
+                
+                # Adjust based on recent pattern
+                if len(recent_false_positives) > len(recent_false_negatives):
+                    adjustment = -learning_rate * 0.1  # Reduce sensitivity
+                elif len(recent_false_negatives) > len(recent_false_positives):
+                    adjustment = learning_rate * 0.1   # Increase sensitivity
+            
+            adjusted_confidence = max(0.0, min(1.0, confidence + adjustment))
+            
+            if adjustment != 0:
+                logger.debug(f"Applied learning threshold adjustment: {confidence:.3f} → {adjusted_confidence:.3f}")
+            
+            return adjusted_confidence
+            
+        except Exception as e:
+            logger.error(f"Threshold adjustment failed: {e}")
+            return confidence
+
+    def process_feedback(self, message: str, user_id: str, channel_id: str, feedback_type: str, original_result: Dict) -> None:
+        """
+        Process feedback for learning system improvement
+        
+        Args:
+            message: Original message that was analyzed
+            user_id: User identifier
+            channel_id: Channel identifier  
+            feedback_type: Type of feedback ('false_positive', 'false_negative', 'correct')
+            original_result: Original analysis result
+        """
+        try:
+            if not self.get_learning_parameters().get('enabled', False):
+                logger.info("Learning system disabled - feedback not processed")
+                return
+            
+            # Record feedback
+            feedback_record = {
+                'timestamp': datetime.now().isoformat(),
+                'feedback_type': feedback_type,
+                'user_id': user_id,
+                'channel_id': channel_id,
+                'original_score': original_result.get('crisis_score', 0.0),
+                'original_level': original_result.get('crisis_level', 'none'),
+                'message_length': len(message)
+            }
+            
+            # Apply threshold adjustment if needed
+            if feedback_type == 'false_positive':
+                original_score = original_result.get('crisis_score', 0.0)
+                self.adjust_threshold_for_false_positive(original_score, original_result.get('crisis_level', 'medium'))
+            elif feedback_type == 'false_negative':
+                original_score = original_result.get('crisis_score', 0.0)
+                self.adjust_threshold_for_false_negative(original_score, original_result.get('crisis_level', 'medium'))
+            
+            logger.info(f"Processed learning feedback: {feedback_type} for user {user_id}")
+            
+        except Exception as e:
+            logger.error(f"Feedback processing failed: {e}")
+
     # ========================================================================
     # LEARNING SYSTEM UTILITIES AND HELPERS
     # ========================================================================

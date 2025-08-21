@@ -1,7 +1,7 @@
 # ash-nlp/managers/crisis_pattern_helpers.py
 """
 Crisis Pattern Helpers for Ash NLP Service
-FILE VERSION: v3.1-3e-5.3-helpers-1
+FILE VERSION: v3.1-3e-5.3-helpers-2
 LAST MODIFIED: 2025-08-19
 PHASE: 3e Sub-step 5.3 - CrisisPatternManager optimization (helper extraction)
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -26,7 +26,7 @@ from managers.unified_config_manager import UnifiedConfigManager
 
 logger = logging.getLogger(__name__)
 
-class CrisisPatternHelpers:
+class CrisisPatternHelper:
     """
     Helper class for CrisisPatternManager containing extracted methods for:
     - Semantic pattern analysis and classification
@@ -43,7 +43,7 @@ class CrisisPatternHelpers:
             config_manager: UnifiedConfigManager instance for configuration access
         """
         self.config_manager = config_manager
-        logger.debug("CrisisPatternHelpers initialized")
+        logger.debug("CrisisPatternHelper initialized")
 
     # ========================================================================
     # SAFE TYPE CONVERSION UTILITIES
@@ -543,18 +543,18 @@ class CrisisPatternHelpers:
 # FACTORY FUNCTION
 # ============================================================================
 
-def create_crisis_pattern_helpers(config_manager: UnifiedConfigManager) -> CrisisPatternHelpers:
+def create_crisis_pattern_helper(config_manager: UnifiedConfigManager) -> CrisisPatternHelper:
     """
-    Factory function to create CrisisPatternHelpers instance
+    Factory function to create CrisisPatternHelper instance
     
     Args:
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        CrisisPatternHelpers instance
+        CrisisPatternHelper instance
     """
-    return CrisisPatternHelpers(config_manager)
+    return CrisisPatternHelper(config_manager)
 
-__all__ = ['CrisisPatternHelpers', 'create_crisis_pattern_helpers']
+__all__ = ['CrisisPatternHelper', 'create_crisis_pattern_helper']
 
-logger.debug("✅ CrisisPatternHelpers v3.1-3e-5.3 loaded - Helper methods for CrisisPatternManager")
+logger.debug("✅ CrisisPatternHelper v3.1-3e-5.3 loaded - Helper methods for CrisisPatternManager")
