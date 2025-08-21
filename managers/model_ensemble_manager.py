@@ -335,7 +335,7 @@ class ModelEnsembleManager:
     # ========================================================================
     
     async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
-                                    hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
+                                hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
         PHASE 3: PRIMARY AI classification method for EnsembleAnalysisHelper
         
@@ -371,6 +371,17 @@ class ModelEnsembleManager:
                 logger.warning(f"⚠️ Could not load model {model_name}, using pattern fallback")
                 return await self._pattern_fallback_classification(text, labels, model_type)
             
+            # Generate actual hypotheses from labels
+            actual_hypotheses = []
+            for label in labels:
+                if "{}" in hypothesis_template:
+                    hypothesis = hypothesis_template.replace("{}", label)
+                elif "{label}" in hypothesis_template:
+                    hypothesis = hypothesis_template.replace("{label}", label)
+                else:
+                    hypothesis = f"{hypothesis_template} {label}"
+                actual_hypotheses.append(hypothesis)
+
             # Perform zero-shot classification
             logger.debug(f"🤖 Running zero-shot classification: {model_type} with {model_name}")
             
@@ -389,12 +400,14 @@ class ModelEnsembleManager:
                 'model_type': model_type,
                 'method': 'zero_shot_classification',
                 'labels_used': len(labels),
-                'hypothesis_template': hypothesis_template,
+                'labels': labels,  # Add the actual labels
+                'hypothesis_template': hypothesis_template,  # Keep the template
+                'actual_hypotheses': actual_hypotheses,  # Add resolved hypotheses
                 'transformers_used': True,
                 'device': self.device,
                 'ensemble_manager': True
             }
-            
+
         except Exception as e:
             logger.error(f"❌ Zero-shot classification failed for {model_type}: {e}")
             return await self._pattern_fallback_classification(text, labels, model_type)
