@@ -661,7 +661,7 @@ class CrisisAnalyzer:
             
             # Use async run to get basic ensemble result
             try:
-                base_result = asyncio.run(self.analyze_crisis(message, user_id, channel_id))
+                base_result = await self.ensemble_helper.perform_ensemble_analysis(message, user_id, channel_id, start_time)
                 
                 # Apply learning adjustments if available
                 if self.learning_system_manager:
