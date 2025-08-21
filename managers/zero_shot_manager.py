@@ -66,17 +66,16 @@ class ZeroShotManager:
         """Load label configuration using Phase 3e get_config_section patterns"""
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
-            label_config = self.unified_config.get_config_section('label_config')
+            self.label_configuration = self.unified_config.get_config_section('label_config', 'label_configuration', {})
+            self.label_mapping_config = self.unified_config.get_config_section('label_config', 'label_mapping', {})
+            self.zero_shot_settings = self.unified_config.get_config_section('label_config', 'zero_shot_settings', {})
             
-            if not label_config:
+            if not self.label_configuration:
                 logger.error("Could not load label configuration, falling back to minimal defaults")
                 self._load_fallback_configuration()
                 return
             
             # Extract configuration structure with enhanced error handling
-            self.label_configuration = label_config.get('label_configuration', {})
-            self.label_mapping_config = label_config.get('label_mapping', {})
-            self.zero_shot_settings = label_config.get('zero_shot_settings', {})
             
             if not self.label_configuration:
                 logger.error("No label_configuration found in label configuration")
