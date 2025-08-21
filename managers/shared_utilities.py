@@ -1,6 +1,6 @@
 """
 SharedUtilitiesManager for Ash-NLP Service
-FILE VERSION: v3.1-3e-2.2-1
+FILE VERSION: v3.1-3e-5.5-6-1
 LAST MODIFIED: 2025-08-17
 PHASE: 3e Step 2.2 - SharedUtilitiesManager Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -434,6 +434,63 @@ class SharedUtilitiesManager:
             self.logger.error(f"❌ {error_msg}")
             return [error_msg]
     
+    def execute_safely(self, operation_name: str, operation_func, *args, **kwargs):
+        """
+        Execute operation safely with error handling and fallback support
+        
+        Args:
+            operation_name: Name of operation being performed
+            operation_func: Function to execute safely
+            *args: Arguments to pass to operation_func
+            **kwargs: Keyword arguments to pass to operation_func
+            
+        Returns:
+            Result of operation_func or safe fallback value
+        """
+        try:
+            result = operation_func(*args, **kwargs)
+            
+            # Update operation status
+            self._last_operation_status[operation_name] = {
+                'success': True,
+                'result': str(result)[:100] if result is not None else 'None',
+                'timestamp': self.config_manager.get_env_str('CURRENT_TIME', 'unknown')
+            }
+            
+            return result
+            
+        except Exception as e:
+            return self.handle_error_with_fallback(
+                e, 
+                self._get_safe_fallback_for_operation(operation_name),
+                operation_name,
+                operation_name
+            )
+
+    def _get_safe_fallback_for_operation(self, operation_name: str):
+        """Get appropriate fallback value based on operation type"""
+        if 'threshold' in operation_name.lower():
+            return {'low': 0.2, 'medium': 0.4, 'high': 0.6, 'critical': 0.8}
+        elif 'score' in operation_name.lower() or 'confidence' in operation_name.lower():
+            return 0.0
+        elif 'level' in operation_name.lower():
+            return 'medium'
+        elif 'parameters' in operation_name.lower():
+            return {'ensemble_weights': [0.4, 0.3, 0.3], 'score_normalization': 'sigmoid'}
+        elif 'analysis' in operation_name.lower():
+            return {
+                'crisis_score': 0.5,
+                'crisis_level': 'medium',
+                'method': 'safe_fallback',
+                'needs_response': True,
+                'confidence_score': 0.5,
+                'detected_categories': ['fallback'],
+                'requires_staff_review': True,
+                'processing_time': 0.0
+            }
+        else:
+            return {}
+
     # ========================================================================
     # TYPE CONVERSION UTILITIES
     # ========================================================================
