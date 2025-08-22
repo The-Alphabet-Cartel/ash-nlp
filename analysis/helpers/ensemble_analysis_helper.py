@@ -44,9 +44,11 @@ class EnsembleAnalysisHelper:
             crisis_analyzer: Parent CrisisAnalyzer instance
         """
         from .pattern_analysis_helper import PatternAnalysisHelper
+        from .scoring_calculation_helper import ScoringCalculationHelper
         
         self.crisis_analyzer = crisis_analyzer
         self.pattern_helper = PatternAnalysisHelper(crisis_analyzer)
+        self.scoring_helper = ScoringCalculationHelper(crisis_analyzer)
         
         logger.info("EnsembleAnalysisHelper v3.1e-5.5-7-3 Phase 3 initialized with manager integration")
         
@@ -115,7 +117,7 @@ class EnsembleAnalysisHelper:
 
         # Step 4: Combine AI results with pattern enhancements
         logger.info("PHASE 3: Combining AI results with pattern enhancements...")
-        return self.crisis_analyzer._combine_analysis_results(
+        return self.scoring_helper.combine_analysis_results(
             message, user_id, channel_id, model_results, pattern_analysis, context_analysis, start_time
         )
     
