@@ -87,6 +87,7 @@ class CrisisPatternHelper:
             logger.warning(f"Could not convert '{key}' to bool, using default {default}")
             return default
 
+    """
     # ========================================================================
     # SEMANTIC PATTERN ANALYSIS METHODS
     # ========================================================================
@@ -321,7 +322,8 @@ class CrisisPatternHelper:
         except Exception as e:
             logger.error(f"❌ Error in enhanced fallback matching: {e}")
             return []
-
+    """
+    
     # ========================================================================
     # PATTERN EXTRACTION METHODS
     # ========================================================================
