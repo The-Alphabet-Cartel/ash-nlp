@@ -1,23 +1,14 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
     "description": "Consolidated LGBTQIA+ community vocabulary patterns for enhanced crisis detection - CLEANED in Step 10.10",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards + Rule #7 Compliant",
-    "consolidation_source": "Merged community_vocabulary_patterns.json + crisis_lgbtqia_patterns.json + crisis_community_vocabulary.json",
+    "consolidation_source": "Merged patterns_community.json + crisis_lgbtqia_patterns.json + patterns_community.json",
     "total_patterns": 150,
-    "manager_integration": "crisis_pattern_manager.py",
-    "step_10_10_changes": {
-      "variables_removed": 19,
-      "variables_mapped": 4,
-      "variables_preserved": 8,
-      "cleanup_impact": "74% reduction in environment variables",
-      "mapped_to_existing": "Leverages existing crisis pattern infrastructure"
-    },
+    "manager_integration": "pattern_detection.py",
     "environment_overrides": {
       "enabled": "${NLP_FEATURE_COMMUNITY_VOCAB}",
       "context_boost": "${NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER}"
@@ -107,7 +98,7 @@
     ]
   },
 
-  "crisis_patterns": {
+  "patterns_crisis": {
     "family_acceptance_crisis": {
       "description": "Patterns indicating family acceptance issues",
       "patterns": [
@@ -187,8 +178,8 @@
   "usage_instructions": {
     "integration": {
       "description": "How to integrate this configuration with the crisis detection system",
-      "primary_manager": "crisis_pattern_manager.py",
-      "loader_method": "load_community_vocabulary_patterns()",
+      "primary_manager": "pattern_detection.py",
+      "loader_method": "load_patterns_community()",
       "access_pattern": "UnifiedConfigManager.get_community_patterns()",
       "fallback_behavior": "Use safe defaults with comprehensive logging if configuration fails"
     },

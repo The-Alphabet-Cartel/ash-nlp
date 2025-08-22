@@ -3,8 +3,8 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
 **Project**: Ash-NLP v3.1 Manager Consolidation
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-3e-5.7-1
-**LAST MODIFIED**: 2025-08-21
+**FILE VERSION**: v3.1-3e-6-1
+**LAST MODIFIED**: 2025-08-22
 **PHASE**: 3e, Step 1 - Manager Documentation Audit
 **CLEAN ARCHITECTURE**: v3.1 Compliant
 **PARENT TRACKER**: `docs/v3.1/phase/3/e/tracker.md`
@@ -37,7 +37,7 @@
 |---------|-------------------|--------|--------------|----------------|------------------|------------------|
 | analysis_config | `docs/v3.1/managers/analysis_config.md` | ✅ Complete | 12 | 4 | 2 | 6 |
 | context_pattern | `docs/v3.1/managers/context_pattern.md` | ✅ Complete | 8 | 6 | 4 | 5 |
-| crisis_pattern | `docs/v3.1/managers/crisis_pattern.md` | ✅ Complete | 10 | 6 | 4 | 7 |
+| pattern_detection | `docs/v3.1/managers/pattern_detection.md` | ✅ Complete | 10 | 6 | 4 | 7 |
 | feature_config | `docs/v3.1/managers/feature_config.md` | ✅ Complete | 15+ | 6 | 3 | ALL |
 | logging_config | `docs/v3.1/managers/logging_config.md` | ✅ Complete | 20+ | 6 | 3 | ALL |
 | model_ensemble | `docs/v3.1/managers/model_ensemble.md` | ✅ Complete | 12 | 5 | 3 | 3 |
@@ -96,7 +96,7 @@
 - ✅ **PerformanceConfigManager**: 2 performance learning methods
 
 #### **Pattern Learning (4 Managers):**
-- ✅ **CrisisPatternManager**: 4 pattern learning methods (effectiveness tracking)
+- ✅ **PatternDetectionManager**: 4 pattern learning methods (effectiveness tracking)
 - ✅ **ContextPatternManager**: 3 context learning methods (weight optimization)
 - ✅ **ZeroShotManager**: 3 semantic learning methods (hypothesis optimization)
 

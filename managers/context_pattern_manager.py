@@ -15,8 +15,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Context Pattern Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e, Sub-step 5.4 - ContextPatternManager Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
 CONSOLIDATION STATUS: Methods migrated to SharedUtilities + CrisisAnalyzer with references
@@ -60,7 +60,7 @@ class ContextPatternManager:
     for better architecture compliance and reduced duplication.
     
     Integration:
-    - Works with CrisisPatternManager for enhanced pattern detection
+    - Works with PatternDetectionManager for enhanced pattern detection
     - Integrates with CrisisAnalyzer for comprehensive message analysis
     - Uses SharedUtilitiesManager for common utility functions
     """
@@ -95,7 +95,7 @@ class ContextPatternManager:
         try:
             # Load context patterns configuration
             logger.debug("📋 Loading Context Patterns...")
-            self.context_config = self.unified_config.get_crisis_patterns('context_patterns')
+            self.context_config = self.unified_config.get_patterns_crisis('patterns_context')
             if not self.context_config:
                 logger.warning("⚠️ Context patterns configuration not found, using safe defaults")
                 self.context_config = self._get_safe_context_defaults()
@@ -292,13 +292,13 @@ class ContextPatternManager:
         
         return processed_sentiment
 
-    def perform_enhanced_context_analysis(self, message: str, crisis_pattern_manager=None) -> Dict[str, Any]:
+    def perform_enhanced_context_analysis(self, message: str, pattern_detection_manager=None) -> Dict[str, Any]:
         """
         Perform enhanced context analysis with optional crisis pattern integration
         
         Args:
             message: Message text to analyze  
-            crisis_pattern_manager: Optional CrisisPatternManager for enhanced analysis
+            pattern_detection_manager: Optional PatternDetectionManager for enhanced analysis
             
         Returns:
             Enhanced context analysis results
@@ -315,10 +315,10 @@ class ContextPatternManager:
             'temporal_indicators': self._extract_basic_temporal_indicators(message.lower()),
         }
         
-        if crisis_pattern_manager:
+        if pattern_detection_manager:
             try:
-                # Get enhanced pattern analysis from CrisisPatternManager
-                temporal_analysis = crisis_pattern_manager.analyze_temporal_indicators(message)
+                # Get enhanced pattern analysis from PatternDetectionManager
+                temporal_analysis = pattern_detection_manager.analyze_temporal_indicators(message)
                 
                 # Merge advanced analysis into context
                 context.update({
@@ -327,7 +327,7 @@ class ContextPatternManager:
                     'pattern_manager_status': 'available'
                 })
                 
-                logger.debug("Enhanced context analysis completed with CrisisPatternManager")
+                logger.debug("Enhanced context analysis completed with PatternDetectionManager")
                 
             except Exception as e:
                 logger.error(f"Error in enhanced context analysis: {e}")
@@ -341,7 +341,7 @@ class ContextPatternManager:
                 'crisis_context_available': False,
                 'pattern_manager_status': 'not_available'
             })
-            logger.debug("Basic context analysis only - CrisisPatternManager not available")
+            logger.debug("Basic context analysis only - PatternDetectionManager not available")
         
         return context
 

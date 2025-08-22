@@ -1,18 +1,18 @@
 # Crisis Pattern Manager Documentation
 
-**File**: `managers/crisis_pattern_manager.py`  
-**Phase**: 3e Step 1.1 Documentation Audit  
-**Status**: 🔄 **IN PROGRESS**  
-**Factory Function**: `create_crisis_pattern_manager(config_manager)`  
-**Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**File**: `managers/pattern_detection.py`
+**Phase**: 3e Step 1.1 Documentation Audit
+**Status**: 🔄 **IN PROGRESS**
+**Factory Function**: `create_pattern_detection_manager(config_manager)`
+**Dependencies**: UnifiedConfigManager
+**FILE VERSION**: v3.1-3e-6-1
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
 ## 🎯 **Manager Purpose**
 
-The **CrisisPatternManager** is responsible for crisis pattern detection and analysis. It loads crisis patterns from JSON configuration, performs pattern matching (both keyword-based and semantic), and provides comprehensive pattern analysis for crisis detection. This manager is critical for identifying specific crisis indicators in user messages.
+The **PatternDetectionManager** is responsible for crisis pattern detection and analysis. It loads crisis patterns from JSON configuration, performs pattern matching (both keyword-based and semantic), and provides comprehensive pattern analysis for crisis detection. This manager is critical for identifying specific crisis indicators in user messages.
 
 **Primary Responsibilities:**
 - Load and manage crisis patterns from JSON configuration
@@ -33,14 +33,14 @@ The **CrisisPatternManager** is responsible for crisis pattern detection and ana
 4. **`extract_crisis_context_phrases(message)`** - Context phrase extraction
 
 ### **Configuration Access Methods:**
-1. **`get_crisis_patterns()`** - Core crisis pattern configuration
+1. **`get_patterns_crisis()`** - Core crisis pattern configuration
 2. **`get_community_vocabulary()`** - Community-specific vocabulary patterns
-3. **`get_crisis_context_patterns()`** - Context phrase configuration
+3. **`get_patterns_context()`** - Context phrase configuration
 4. **`get_temporal_indicators()`** - Temporal crisis indicators
 
 ### **Advanced Analysis Methods:**
 1. **`analyze_temporal_indicators(message)`** - Time-sensitive crisis indicators
-2. **`check_enhanced_crisis_patterns(message)`** - Enhanced pattern matching
+2. **`check_patterns_crisis(message)`** - Enhanced pattern matching
 3. **`apply_context_weights(message, base_score)`** - Context-based scoring adjustments
 
 ---
@@ -115,9 +115,9 @@ The **CrisisPatternManager** is responsible for crisis pattern detection and ana
 - **logging** - Error handling and pattern analysis tracking
 
 ### **Configuration Files:**
-- **`config/crisis_patterns.json`** - Primary crisis pattern definitions
+- **`config/patterns_crisis.json`** - Primary crisis pattern definitions
 - **`config/community_vocabulary.json`** - Community-specific patterns
-- **`config/crisis_context_patterns.json`** - Context phrase patterns
+- **`config/patterns_context.json`** - Context phrase patterns
 - **`config/temporal_indicators.json`** - Temporal crisis indicators
 
 ### **Integration Points:**
@@ -156,7 +156,7 @@ The **CrisisPatternManager** is responsible for crisis pattern detection and ana
 
 ### **Critical Data Flow:**
 ```
-Message → CrisisPatternManager → Pattern Analysis → CrisisAnalyzer → Crisis Decision
+Message → PatternDetectionManager → Pattern Analysis → CrisisAnalyzer → Crisis Decision
 ```
 
 ---
@@ -177,7 +177,7 @@ Message → CrisisPatternManager → Pattern Analysis → CrisisAnalyzer → Cri
 3. **False positive suppression** - Pattern sensitivity learning
 4. **Community vocabulary adaptation** - Dynamic pattern learning
 
-### **Analysis-Specific Methods (Stays in CrisisPatternManager):**
+### **Analysis-Specific Methods (Stays in PatternDetectionManager):**
 1. **`analyze_message()`** - **CRITICAL** - Main analysis method
 2. **`find_triggered_patterns()`** - **CRITICAL** - Pattern detection
 3. **Community pattern extraction** - Crisis-specific pattern matching
@@ -206,10 +206,10 @@ Message → CrisisPatternManager → Pattern Analysis → CrisisAnalyzer → Cri
 ## 📊 **Configuration Complexity**
 
 ### **Large Configuration Files:**
-- **`crisis_patterns.json`** - Hundreds of crisis indicators
+- **`patterns_crisis.json`** - Hundreds of crisis indicators
 - **`community_vocabulary.json`** - Community-specific language patterns
 - **`temporal_indicators.json`** - Time-sensitive crisis markers
-- **`crisis_context_patterns.json`** - Context amplification phrases
+- **`patterns_context.json`** - Context amplification phrases
 
 ### **Pattern Types Managed:**
 - **Keyword-based patterns** - Exact match and substring detection
@@ -237,7 +237,7 @@ Message → CrisisPatternManager → Pattern Analysis → CrisisAnalyzer → Cri
 - Community vocabulary learning
 - Pattern performance analytics
 
-### **Keep in CrisisPatternManager:**
+### **Keep in PatternDetectionManager:**
 - **`analyze_message()`** - **CRITICAL SAFETY METHOD**
 - **`find_triggered_patterns()`** - **CRITICAL SAFETY METHOD**
 - All pattern extraction methods (community, context, temporal)
@@ -249,7 +249,7 @@ Message → CrisisPatternManager → Pattern Analysis → CrisisAnalyzer → Cri
 
 ## ✅ **Phase 3e Step 1.1 Status**
 
-**Manager**: crisis_pattern_manager.py  
+**Manager**: pattern_detection_manager.py  
 **Documentation**: ✅ **COMPLETE**  
 **Core Methods**: 10 identified  
 **Shared Methods**: 6 identified for SharedUtilitiesManager  

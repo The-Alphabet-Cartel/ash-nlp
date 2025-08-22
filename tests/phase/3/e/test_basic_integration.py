@@ -26,7 +26,7 @@ from managers import (
     create_pydantic_manager,
     create_feature_config_manager, 
     create_logging_config_manager,
-    create_crisis_pattern_manager,
+    create_pattern_detection_manager,
     create_analysis_config_manager,
     create_crisis_threshold_manager,
     create_model_ensemble_manager,
@@ -60,7 +60,7 @@ class TestBasicFunctionalIntegration:
             'pydantic': create_pydantic_manager(config_manager),
             'feature_config': create_feature_config_manager(config_manager),
             'logging_config': create_logging_config_manager(config_manager),
-            'crisis_pattern': create_crisis_pattern_manager(config_manager),
+            'pattern_detection': create_pattern_detection_manager(config_manager),
             'analysis_config': create_analysis_config_manager(config_manager),
             'crisis_threshold': create_crisis_threshold_manager(config_manager),
             'model_ensemble': create_model_ensemble_manager(config_manager),
@@ -166,15 +166,15 @@ class TestBasicFunctionalIntegration:
         
         pipeline_results = {}
         
-        # Test CrisisPatternManager
+        # Test PatternDetectionManager
         try:
-            crisis_result = all_managers['crisis_pattern'].analyze_message(test_message, test_user, test_channel)
-            pipeline_results['crisis_pattern'] = {
+            crisis_result = all_managers['pattern_detection'].analyze_message(test_message, test_user, test_channel)
+            pipeline_results['pattern_detection'] = {
                 'functional': crisis_result.get('analysis_available', False),
                 'has_response_structure': 'summary' in crisis_result
             }
         except Exception as e:
-            pipeline_results['crisis_pattern'] = {'functional': False, 'error': str(e)}
+            pipeline_results['pattern_detection'] = {'functional': False, 'error': str(e)}
         
         # Test AnalysisConfigManager (UPDATED: Renamed from AnalysisParametersManager)
         try:
@@ -240,7 +240,7 @@ class TestBasicFunctionalIntegration:
         # Test 3: ThresholdMapping -> CrisisPattern communication (via shared config)
         try:
             threshold_config = all_managers['crisis_threshold'].get_configuration_summary()
-            crisis_summary = all_managers['crisis_pattern'].get_analysis_summary()
+            crisis_summary = all_managers['pattern_detection'].get_analysis_summary()
             communication_tests['threshold_to_crisis'] = (
                 threshold_config.get('manager_initialized', False) and
                 crisis_summary.get('analysis_available', False)
@@ -271,7 +271,7 @@ class TestBasicFunctionalIntegration:
         # Test 2: Crisis analysis speed (should complete)
         start_time = time.time()
         try:
-            all_managers['crisis_pattern'].analyze_message("test message", "test_user", "test_channel")
+            all_managers['pattern_detection'].analyze_message("test message", "test_user", "test_channel")
             analysis_time = time.time() - start_time
             performance_tests['crisis_analysis'] = analysis_time < 5.0  # Very generous - just checking it completes
         except:
@@ -317,7 +317,7 @@ class TestBasicFunctionalIntegration:
         
         # Test crisis detection operational
         try:
-            crisis_result = all_managers['crisis_pattern'].analyze_message("test", "user", "channel")
+            crisis_result = all_managers['pattern_detection'].analyze_message("test", "user", "channel")
             summary_metrics['crisis_detection_operational'] = crisis_result.get('analysis_available', False)
         except:
             summary_metrics['crisis_detection_operational'] = False
@@ -332,7 +332,7 @@ class TestBasicFunctionalIntegration:
         # Test error handling robust
         try:
             # This should fail gracefully, not crash
-            all_managers['crisis_pattern'].analyze_message("", "", "")
+            all_managers['pattern_detection'].analyze_message("", "", "")
             summary_metrics['error_handling_robust'] = True
         except Exception as e:
             # If it throws an exception, that's okay as long as it's controlled

@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e, Step 5.6 - Integration Testing Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Phase 3e patterns applied - enhanced error handling and validation
@@ -349,7 +349,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
         logger.warning(f"Error comparing crisis levels: {e}")
         return 'low'  # Safe fallback
 
-def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, crisis_pattern_manager=None, crisis_threshold_manager=None):
+def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, pattern_detection_manager=None, crisis_threshold_manager=None):
     """
     Phase 3e: Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
     Clean v3.1 implementation with improved error handling and Phase 3e patterns
@@ -358,7 +358,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
         app: FastAPI application instance
         model_ensemble_manager: Model Ensemble Manager instance (required)
         pydantic_manager: PydanticManager v3.1 instance (required)
-        crisis_pattern_manager: CrisisPatternManager instance (optional)
+        pattern_detection_manager: PatternDetectionManager instance (optional)
         crisis_threshold_manager: CrisisThresholdManager instance (optional but recommended)
     """
     
@@ -568,13 +568,13 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
                 model_info = {'error': str(e)}
             
             # Check pattern manager with enhanced validation
-            pattern_manager_status = crisis_pattern_manager is not None
+            pattern_manager_status = pattern_detection_manager is not None
             pattern_info = {}
-            if crisis_pattern_manager:
+            if pattern_detection_manager:
                 try:
                     pattern_info = {
-                        'patterns_loaded': len(crisis_pattern_manager.get_available_patterns()),
-                        'categories': crisis_pattern_manager.get_pattern_categories()
+                        'patterns_loaded': len(pattern_detection_manager.get_available_patterns()),
+                        'categories': pattern_detection_manager.get_pattern_categories()
                     }
                 except Exception as e:
                     pattern_info = {'error': str(e)}
@@ -679,12 +679,12 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
                     config["threshold_configuration"] = {"error": str(e)}
             
             # Add pattern configuration with enhanced validation
-            if crisis_pattern_manager:
+            if pattern_detection_manager:
                 try:
-                    patterns = crisis_pattern_manager.get_available_patterns()
+                    patterns = pattern_detection_manager.get_available_patterns()
                     config["pattern_configuration"] = {
                         "patterns_loaded": len(patterns),
-                        "categories": crisis_pattern_manager.get_pattern_categories()
+                        "categories": pattern_detection_manager.get_pattern_categories()
                     }
                 except Exception as e:
                     config["pattern_configuration"] = {"error": str(e)}

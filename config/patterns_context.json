@@ -1,16 +1,15 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
     "description": "Consolidated context patterns for crisis detection - MASSIVELY SIMPLIFIED in Step 10.10",
     "created_date": "2025-08-12",
     "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards + Rule #7 Excellence",
-    "consolidation_source": "Merged crisis_context_patterns.json + positive_context_patterns.json + context_weights_patterns.json",
     "total_patterns": 75,
-    "manager_integration": "crisis_pattern_manager.py",
+    "manager_integration": "pattern_detection.py",
     "step_10_10_changes": {
       "variables_removed": 39,
       "variables_mapped": 6,
@@ -110,7 +109,7 @@
     }
   },
 
-  "positive_context_patterns": {
+  "positive_patterns": {
     "description": "Patterns that reduce crisis likelihood when positive contexts are enabled",
     "enabled": "${NLP_FEATURE_CONTEXT_ANALYSIS}",
     "support_seeking": {
@@ -153,9 +152,9 @@
   "usage_instructions": {
     "integration": {
       "description": "Simplified integration using existing crisis pattern infrastructure",
-      "primary_manager": "crisis_pattern_manager.py",
-      "loader_methods": ["get_crisis_context_patterns()", "get_positive_context_patterns()"],
-      "access_pattern": "UnifiedConfigManager.get_crisis_patterns('context_patterns')",
+      "primary_manager": "pattern_detection.py",
+      "loader_methods": ["get_patterns_context()", "get_positive_patterns()"],
+      "access_pattern": "UnifiedConfigManager.get_patterns_crisis('patterns_context')",
       "infrastructure_reuse": "Leverages all existing NLP_CONFIG_* variables - zero new variables needed"
     },
     "environment_override_examples": {

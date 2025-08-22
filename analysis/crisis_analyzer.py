@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Analyzer for Ash-NLP Service v3.1
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization and Zero-Shot Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
 OPTIMIZATION STATUS: Reduced from ~1,940 lines to ~1,000 lines (48% reduction)
@@ -73,7 +73,7 @@ class CrisisAnalyzer:
     """
     
     def __init__(self, unified_config, model_ensemble_manager,
-        crisis_pattern_manager=None, analysis_config_manager=None,
+        pattern_detection_manager=None, analysis_config_manager=None,
         crisis_threshold_manager=None, feature_config_manager=None,
         performance_config_manager=None, context_pattern_manager=None,
         shared_utilities_manager=None, learning_system_manager=None,
@@ -84,7 +84,7 @@ class CrisisAnalyzer:
         Args:
             # Existing dependencies (maintained)
             model_ensemble_manager: Model ensemble manager for ensemble analysis
-            crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
+            pattern_detection_manager: PatternDetectionManager for pattern-based analysis
             analysis_config_manager: AnalysisConfigManager for configurable parameters
             crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
             feature_config_manager: FeatureConfigManager for feature flags
@@ -101,7 +101,7 @@ class CrisisAnalyzer:
         # Manager dependencies
         self.unified_config_manager = unified_config
         self.model_ensemble_manager = model_ensemble_manager
-        self.crisis_pattern_manager = crisis_pattern_manager
+        self.pattern_detection_manager = pattern_detection_manager
         self.analysis_config_manager = analysis_config_manager
         self.crisis_threshold_manager = crisis_threshold_manager
         self.feature_config_manager = feature_config_manager
@@ -434,9 +434,9 @@ class CrisisAnalyzer:
             if self.shared_utilities_manager:
                 return self.shared_utilities_manager.get_config_section_safely(
                     'analysis_config', 'pattern_weights', {
-                        'crisis_patterns': 0.6,
+                        'patterns_crisis': 0.6,
                         'community_patterns': 0.3,
-                        'context_patterns': 0.4,
+                        'patterns_context': 0.4,
                         'temporal_patterns': 0.2
                     }
                 )
@@ -445,15 +445,15 @@ class CrisisAnalyzer:
             else:
                 logger.warning("⚠️ No config manager available - using default pattern weights")
                 return {
-                    'crisis_patterns': 0.6,
+                    'patterns_crisis': 0.6,
                     'community_patterns': 0.3,
-                    'context_patterns': 0.4,
+                    'patterns_context': 0.4,
                     'temporal_patterns': 0.2
                 }
         except Exception as e:
             return self._safe_analysis_execution(
                 "get_analysis_pattern_weights",
-                lambda: {'crisis_patterns': 0.6, 'community_patterns': 0.3}
+                lambda: {'patterns_crisis': 0.6, 'community_patterns': 0.3}
             )
 
     def get_analysis_algorithm_parameters(self) -> Dict[str, Any]:
@@ -777,7 +777,7 @@ class CrisisAnalyzer:
 # ============================================================================
 
 def create_crisis_analyzer(unified_config, model_ensemble_manager,
-    crisis_pattern_manager=None, analysis_config_manager=None,
+    pattern_detection_manager=None, analysis_config_manager=None,
     crisis_threshold_manager=None, feature_config_manager=None,
     performance_config_manager=None, context_pattern_manager=None,
     shared_utilities_manager=None, learning_system_manager=None,
@@ -788,7 +788,7 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager,
     Args:
         # Existing parameters (maintained)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
-        crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
+        pattern_detection_manager: PatternDetectionManager for pattern-based analysis
         analysis_config_manager: AnalysisConfigManager for configurable parameters
         crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
         feature_config_manager: FeatureConfigManager for feature flags
@@ -808,7 +808,7 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager,
     return CrisisAnalyzer(
         unified_config,
         model_ensemble_manager=model_ensemble_manager,
-        crisis_pattern_manager=crisis_pattern_manager,
+        pattern_detection_manager=pattern_detection_manager,
         analysis_config_manager=analysis_config_manager,
         crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,

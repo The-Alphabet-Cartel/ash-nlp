@@ -4,8 +4,8 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-5.7-1
-**LAST UPDATED**: 2025-08-21
+**FILE VERSION**: v3.1-3e-6-1
+**LAST UPDATED**: 2025-08-22
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
 ---
@@ -24,7 +24,7 @@
 - **ALL managers MUST use factory functions** - `create_[manager_name]()`
 - **NEVER call constructors directly**
 - **Factory functions enable**: dependency injection, testing, consistency
-- **Examples**: `create_model_ensemble_manager()`, `create_crisis_pattern_manager()`, `create_settings_manager()`
+- **Examples**: `create_model_ensemble_manager()`, `create_pattern_detection_manager()`, `create_settings_manager()`
 
 ### **Rule #2: Dependency Injection - REQUIRED**
 - **All managers accept dependencies through constructor parameters**
@@ -209,7 +209,7 @@ except Exception as e:
 - Examples:
   - analysis_config.json
   - learning_settings.json
-  - crisis_patterns.json
+  - patterns_crisis.json
 
 **JSON Structure**
 ```json
@@ -334,15 +334,15 @@ except Exception as e:
 # PRIMARY AI CLASSIFICATION
 def analyze_crisis_with_zero_shot_ensemble(message, labels):
 def classify_mental_health_with_ai_models(text, confidence_threshold):
-def detect_crisis_patterns_semantically(message, model_weights):
+def detect_patterns_crisis_semantically(message, model_weights):
 
 # ENHANCEMENT OF AI RESULTS  
-def enhance_ai_scores_with_crisis_patterns(ai_results, pattern_matches):
+def enhance_ai_scores_with_patterns_crisis(ai_results, pattern_matches):
 def boost_ensemble_confidence_with_context(scores, message_context):
 def adjust_ai_classification_for_community(results, vocab_patterns):
 
 # FALLBACK WHEN AI FAILS
-def fallback_to_crisis_pattern_only(message, emergency_patterns):
+def fallback_to_pattern_detection_only(message, emergency_patterns):
 def emergency_keyword_classification(text, critical_word_list):
 def backup_pattern_analysis_no_ai(message, fallback_config):
 
@@ -395,8 +395,8 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 
 ### **Phase 3a: Crisis Pattern Manager**
 - **Principle**: All crisis patterns externalized to JSON
-- **Integration**: CrisisPatternManager used throughout system
-- **Factory**: `create_crisis_pattern_manager(config_manager)`
+- **Integration**: PatternDetectionManager used throughout system
+- **Factory**: `create_pattern_detection_manager(config_manager)`
 - **Resilience**: Falls back to basic patterns if JSON unavailable
 
 ### **Phase 3b: Analysis Parameters Manager** 

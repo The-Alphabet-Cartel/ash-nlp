@@ -1,8 +1,8 @@
 # ash-nlp/managers/__init__.py
 """
 Managers Module for Ash NLP Service
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -48,14 +48,14 @@ except ImportError as e:
 
 # Crisis Pattern Manager (Phase 3A)
 try:
-    from .crisis_pattern_manager import CrisisPatternManager, create_crisis_pattern_manager
-    CRISIS_PATTERN_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ CrisisPatternManager v3.1 imported")
+    from .pattern_detection_manager import PatternDetectionManager, create_pattern_detection_manager
+    PATTERN_DETECTION_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ PatternDetectionManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"  ❌ CrisisPatternManager v3.1 import failed: {e}")
-    CrisisPatternManager = None
-    create_crisis_pattern_manager = None
-    CRISIS_PATTERN_MANAGER_AVAILABLE = False
+    logger.error(f"  ❌ PatternDetectionManager v3.1 import failed: {e}")
+    PatternDetectionManager = None
+    create_pattern_detection_manager = None
+    PATTERN_DETECTION_MANAGER_AVAILABLE = False
 
 # Feature Configuration Manager
 try:
@@ -194,7 +194,7 @@ def get_manager_status() -> dict:
     return {
         'analysis_config_manager': ANALYSIS_CONFIG_MANAGER_AVAILABLE,
         'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,
-        'crisis_pattern_manager': CRISIS_PATTERN_MANAGER_AVAILABLE,
+        'pattern_detection_manager': PATTERN_DETECTION_MANAGER_AVAILABLE,
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
         'model_ensemble_manager': MODEL_ENSEMBLE_MANAGER_AVAILABLE,
@@ -217,8 +217,8 @@ __all__ = [
     'create_analysis_config_manager',
     'ContextPatternManager',
     'create_context_pattern_manager',
-    'CrisisPatternManager',
-    'create_crisis_pattern_manager',
+    'PatternDetectionManager',
+    'create_pattern_detection_manager',
     'FeatureConfigManager',
     'create_feature_config_manager',
     'LoggingConfigManager',

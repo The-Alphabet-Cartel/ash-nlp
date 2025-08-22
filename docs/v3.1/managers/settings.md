@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_settings_manager(unified_config_manager, ...)`  
 **Dependencies**: UnifiedConfigManager + ALL other managers  
-**FILE VERSION**: v3.1-3e-5.7-1
-**LAST MODIFIED**: 2025-08-21
+**FILE VERSION**: v3.1-3e-6-1
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
@@ -38,15 +38,15 @@ The **SettingsManager** serves as a **coordination hub** for runtime settings an
 3. **`_load_environment_overrides()`** - Load setting overrides via UnifiedConfigManager
 
 ### **Migration Notice Methods (Backward Compatibility):**
-1. **`get_crisis_patterns_migration_notice()`** - Phase 3a migration notice
+1. **`get_patterns_crisis_migration_notice()`** - Phase 3a migration notice
 2. **`get_analysis_config_migration_notice()`** - Phase 3b migration notice
 3. **`get_crisis_threshold_migration_notice()`** - Phase 3c migration notice
-4. **Deprecated method handlers** - `get_crisis_patterns()`, `get_enhanced_crisis_patterns()`, etc.
+4. **Deprecated method handlers** - `get_patterns_crisis()`, `get_patterns_crisis()`, etc.
 
 ### **Manager Integration (Dependency Injection):**
 The SettingsManager accepts and coordinates with ALL other managers:
 - **analysis_config_manager** - Analysis parameter coordination
-- **crisis_pattern_manager** - Crisis pattern coordination
+- **pattern_detection_manager** - Crisis pattern coordination
 - **feature_config_manager** - Feature flag coordination
 - **logging_config_manager** - Logging configuration coordination
 - **model_ensemble_manager** - Model ensemble coordination
@@ -224,7 +224,7 @@ Provides structured migration notices for deprecated functionality:
 ```
 SettingsManager (Coordination Layer)
 ├── UnifiedConfigManager (Foundation)
-├── Analysis Managers (analysis_config, crisis_pattern, context_pattern)
+├── Analysis Managers (analysis_config, pattern_detection, context_pattern)
 ├── Infrastructure Managers (server_config, logging_config, storage_config)
 ├── Feature Managers (feature_config, performance_config)
 ├── Model Managers (model_ensemble, zero_shot, pydantic)

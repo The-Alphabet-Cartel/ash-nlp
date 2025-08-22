@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Unified Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 5.5 - UnifiedConfigManager Optimization with Helper Files
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -80,12 +80,12 @@ class UnifiedConfigManager:
             'crisis_threshold': 'crisis_threshold.json',
             
             # Pattern files
-            'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
-            'context_patterns': 'context_patterns.json',
-            'temporal_indicators_patterns': 'temporal_indicators_patterns.json',
-            'enhanced_crisis_patterns': 'enhanced_crisis_patterns.json',
-            'crisis_idiom_patterns': 'crisis_idiom_patterns.json',
-            'crisis_burden_patterns': 'crisis_burden_patterns.json',
+            'patterns_community': 'patterns_community.json',
+            'patterns_context': 'patterns_context.json',
+            'patterns_temporal': 'patterns_temporal.json',
+            'patterns_crisis': 'patterns_crisis.json',
+            'patterns_idiom': 'patterns_idiom.json',
+            'patterns_burden': 'patterns_burden.json',
             
             # Core system configuration
             'feature_flags': 'feature_flags.json',
@@ -542,17 +542,17 @@ class UnifiedConfigManager:
     # BACKWARD COMPATIBILITY METHODS
     # ========================================================================
     
-    def get_crisis_patterns(self, pattern_type: str) -> Dict[str, Any]:
+    def get_patterns_crisis(self, pattern_type: str) -> Dict[str, Any]:
         """Get crisis pattern configuration by type - UPDATED for consolidation support"""
         logger.debug(f"Getting crisis patterns: {pattern_type}")
         
         # Handle requests for eliminated files
         eliminated_files = {
-            'crisis_context_patterns': 'context_patterns',
-            'positive_context_patterns': 'context_patterns', 
-            'context_weights_patterns': 'context_patterns',
-            'crisis_lgbtqia_patterns': 'community_vocabulary_patterns',
-            'crisis_community_vocabulary': 'community_vocabulary_patterns'
+            'patterns_context': 'patterns_context',
+            'positive_patterns': 'patterns_context', 
+            'context_weights_patterns': 'patterns_context',
+            'crisis_lgbtqia_patterns': 'patterns_community',
+            'patterns_community': 'patterns_community'
         }
         
         if pattern_type in eliminated_files:
@@ -560,15 +560,15 @@ class UnifiedConfigManager:
             logger.info(f"{pattern_type}.json was consolidated into {target_file}.json")
             
             # Load the consolidated file instead
-            consolidated_config = self.get_crisis_patterns(target_file)
+            consolidated_config = self.get_patterns_crisis(target_file)
             if not consolidated_config:
                 logger.warning(f"Consolidated file {target_file}.json not found")
                 return {}
             
             # Extract the relevant section based on pattern type
-            if pattern_type == 'crisis_context_patterns':
+            if pattern_type == 'patterns_context':
                 return consolidated_config.get('crisis_amplification_patterns', {})
-            elif pattern_type == 'positive_context_patterns':
+            elif pattern_type == 'positive_patterns':
                 return consolidated_config.get('positive_reduction_patterns', {})
             elif pattern_type == 'context_weights_patterns':
                 # Reconstruct the weights structure from consolidated file
@@ -580,7 +580,7 @@ class UnifiedConfigManager:
                 if 'positive_reducer_words' in positive_red:
                     weights['positive_context_words'] = positive_red['positive_reducer_words']
                 return weights
-            elif pattern_type in ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary']:
+            elif pattern_type in ['crisis_lgbtqia_patterns', 'patterns_community']:
                 return consolidated_config
         
         try:
@@ -621,15 +621,6 @@ class UnifiedConfigManager:
                 'value_helper': 'managers/helpers/unified_config_value_helper.py',
                 'main_file_reduction': '40% (1089 -> ~650 lines)',
                 'extracted_functionality': ['Schema management', 'Value conversion', 'Documentation']
-            },
-            'consolidation_status': {
-                'context_patterns_consolidated': 'context_patterns' in self.config_files,
-                'community_patterns_consolidated': 'community_vocabulary_patterns' in self.config_files,
-                'eliminated_files': [
-                    'crisis_context_patterns', 'positive_context_patterns', 'context_weights_patterns',
-                    'crisis_lgbtqia_patterns', 'crisis_community_vocabulary'
-                ],
-                'consolidated_files': ['context_patterns', 'community_vocabulary_patterns']
             },
             'schema_system': {
                 'total_schemas': len(self.variable_schemas),

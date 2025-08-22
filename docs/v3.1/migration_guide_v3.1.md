@@ -6,8 +6,8 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-5.7-1  
-**LAST MODIFIED**: 2025-08-21
+**FILE VERSION**: v3.1-3e-6-1  
+**LAST MODIFIED**: 2025-08-22
 **PHASE**: 3e
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
@@ -120,20 +120,20 @@ ash/ash-nlp/
 ├── config/                                  # JSON configuration files
 │   ├── __init__.py
 │   ├── analysis_config.json
-│   ├── community_vocabulary_patterns.json
-│   ├── context_patterns.json
-│   ├── crisis_burden_patterns.json
-│   ├── crisis_idiom_patterns.json
-│   ├── enhanced_crisis_patterns.json
 │   ├── feature_flags.json
 │   ├── label_config.json
 │   ├── learning_system.json
 │   ├── logging_settings.json
 │   ├── model_ensemble.json
+│   ├── patterns_burden.json
+│   ├── patterns_community.json
+│   ├── patterns_context.json
+│   ├── patterns_crisis.json
+│   ├── patterns_idiom.json
+│   ├── patterns_temporal.json
 │   ├── performance_settings.json
 │   ├── server_setting.json
 │   ├── storage_settings.json
-│   ├── temporal_indicators_patterns.json
 │   └── crisis_threshold.json
 ├── data/                                    # DATA Storage
 ├── docs/                                    # Documentation
@@ -141,7 +141,7 @@ ash/ash-nlp/
 │   │   ├── managers/
 |   |   │   ├── analysis_config.md
 |   |   │   ├── context_pattern.md
-|   |   │   ├── crisis_pattern.md
+|   |   │   ├── pattern_detection.md
 |   |   │   ├── feature_config.md
 |   |   │   ├── logging_config.md
 |   |   │   ├── model_ensemble.md
@@ -190,18 +190,18 @@ ash/ash-nlp/
 │   ├── __init__.py
 │   ├── analysis_config.py
 │   ├── context_pattern_manager.py
-│   ├── crisis_pattern_manager.py
+│   ├── crisis_threshold.py
 │   ├── feature_config_manager.py
 │   ├── learning_system_manager.py
 │   ├── logging_config_manager.py
 │   ├── model_ensemble_manager.py
+│   ├── pattern_detection.py
 │   ├── performance_config_manager.py
 │   ├── pydantic_manager.py
 │   ├── server_config_manager.py
 │   ├── settings_manager.py
 │   ├── shared_utilities.py
 │   ├── storage_config_manager.py
-│   ├── crisis_threshold.py
 │   ├── unified_config_manager.py
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
@@ -462,7 +462,7 @@ else:
 
 # Load with conditional fallbacks
 pattern_config = config_manager.get_config_section(
-    'crisis_patterns', 
+    'patterns_crisis', 
     'community_patterns', 
     self._get_default_community_patterns()
 )
@@ -592,11 +592,11 @@ Available configuration files via `get_config_section()`:
 
 - `'analysis_config'` - Analysis configuration and algorithm settings
 - `'crisis_threshold'` - Crisis level thresholds and staff review settings
-- `'community_vocabulary_patterns'` - Community vocabulary
-- `'context_patterns'` - Context patterns
-- `'crisis_burden_patterns'` - Crisis detection burden patterns
-- `'crisis_idiom_patterns'` - Crisis detection idiom patterns
-- `'enhanced_crisis_patterns'` - Crisis detection patterns
+- `'patterns_community'` - Community vocabulary
+- `'patterns_context'` - Context patterns
+- `'patterns_burden'` - Crisis detection burden patterns
+- `'patterns_idiom'` - Crisis detection idiom patterns
+- `'patterns_crisis'` - Crisis detection patterns
 - `'feature_flags'` - Feature toggle configuration
 - `'label_config'` - Zero-shot label settings
 - `'learning_system'` - Learning system settings
@@ -604,7 +604,7 @@ Available configuration files via `get_config_section()`:
 - `'performance_settings'` - Performance settings and optimization
 - `'server_config'` - Server configuration and networking
 - `'storage_settings'` - Data storage and caching configuration
-- `'temporal_indicators_patterns'` - Time-based crisis indicators
+- `'patterns_temporal'` - Time-based crisis indicators
 - `'crisis_threshold'` - Crisis threshold mapping configuration
 
 ---
@@ -774,15 +774,15 @@ logger.info("✅ YourManager - v3.1-3e-5.x-1 - Loaded")
 # PRIMARY AI CLASSIFICATION
 def analyze_crisis_with_zero_shot_ensemble(message, labels):
 def classify_mental_health_with_ai_models(text, confidence_threshold):
-def detect_crisis_patterns_semantically(message, model_weights):
+def detect_patterns_crisis_semantically(message, model_weights):
 
 # ENHANCEMENT OF AI RESULTS  
-def enhance_ai_scores_with_crisis_patterns(ai_results, pattern_matches):
+def enhance_ai_scores_with_patterns_crisis(ai_results, pattern_matches):
 def boost_ensemble_confidence_with_context(scores, message_context):
 def adjust_ai_classification_for_community(results, vocab_patterns):
 
 # FALLBACK WHEN AI FAILS
-def fallback_to_crisis_pattern_only(message, emergency_patterns):
+def fallback_to_pattern_detection_only(message, emergency_patterns):
 def emergency_keyword_classification(text, critical_word_list):
 def backup_pattern_analysis_no_ai(message, fallback_config):
 

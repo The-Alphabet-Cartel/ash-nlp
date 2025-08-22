@@ -1,8 +1,8 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Phase 3e Step 4.2 - Analysis method consolidation with SharedUtilities and LearningSystem
@@ -116,7 +116,7 @@ ANALYSIS_CAPABILITIES = {
         "manager_integration": [
             "CrisisThresholdManager",
             "AnalysisConfigManager", 
-            "CrisisPatternManager",
+            "PatternDetectionManager",
             "ModelEnsembleManager"
         ]
     },
@@ -153,7 +153,7 @@ ANALYSIS_WORKFLOWS = {
             "get_consolidated_analysis_config",     # Phase 3e Step 4.2 NEW
             "extract_context_signals",
             "run_enhanced_ensemble_analysis",           # Phase 3e Step 4.2 NEW
-            "apply_crisis_pattern_analysis",
+            "apply_pattern_detection_analysis",
             "use_consolidated_scoring_functions",
             "apply_consolidated_thresholds",            # Phase 3e Step 4.2 NEW
             "integrate_learning_adjustments",           # Phase 3e Step 4.2 NEW
@@ -255,7 +255,7 @@ def get_implemented_features():
         "core_analysis": {
             "status": "implemented",
             "description": "Enhanced three-model ensemble crisis detection with consolidated methods",
-            "managers": ["ModelEnsembleManager", "CrisisPatternManager", "AnalysisConfigManager", "CrisisThresholdManager"]
+            "managers": ["ModelEnsembleManager", "PatternDetectionManager", "AnalysisConfigManager", "CrisisThresholdManager"]
         },
         
         "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
@@ -305,7 +305,7 @@ def get_implemented_features():
         "pattern_integration": {
             "status": "implemented", 
             "description": "JSON-based crisis pattern recognition",
-            "managers": ["CrisisPatternManager"]
+            "managers": ["PatternDetectionManager"]
         },
 
         "configurable_parameters": {
@@ -431,7 +431,7 @@ def get_consolidation_summary():
 # ENHANCED FACTORY FUNCTIONS - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None, 
+def create_crisis_analyzer(unified_config, model_ensemble_manager, pattern_detection_manager=None, 
                           analysis_config_manager=None, crisis_threshold_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None, shared_utilities_manager=None,
@@ -448,7 +448,7 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
     Args:
         # Existing parameters (maintained for backward compatibility)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
-        crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
+        pattern_detection_manager: PatternDetectionManager for pattern-based analysis (Phase 3a)
         analysis_config_manager: AnalysisConfigManager for configurable parameters (Phase 3b)
         crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds (Phase 3c)
         feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
@@ -470,7 +470,7 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
         unified_config,
         # Existing dependencies (maintained)
         model_ensemble_manager=model_ensemble_manager,
-        crisis_pattern_manager=crisis_pattern_manager,
+        pattern_detection_manager=pattern_detection_manager,
         analysis_config_manager=analysis_config_manager,
         crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,
@@ -557,7 +557,7 @@ def validate_crisis_analyzer_dependencies(unified_config=None, model_ensemble_ma
         validation_result["phase"] = "3c+"
     elif kwargs.get("analysis_config_manager"):
         validation_result["phase"] = "3b+"
-    elif kwargs.get("crisis_pattern_manager"):
+    elif kwargs.get("pattern_detection_manager"):
         validation_result["phase"] = "3a+"
     else:
         validation_result["phase"] = "basic"

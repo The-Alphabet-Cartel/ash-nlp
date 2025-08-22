@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_unified_config_manager(config_dir)`  
 **Dependencies**: **NONE** - Foundation layer  
-**FILE VERSION**: v3.1-3e-5.7-1
-**LAST MODIFIED**: 2025-08-21
+**FILE VERSION**: v3.1-3e-6-1
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
@@ -48,12 +48,12 @@ The **UnifiedConfigManager** is the **FOUNDATION MANAGER** that provides all con
 The UnifiedConfigManager manages **ALL** JSON configuration files:
 - **analysis_config.json** - Analysis algorithm configuration
 - **crisis_threshold.json** - Crisis level threshold configuration
-- **community_vocabulary_patterns.json** - Community-specific crisis patterns
-- **context_patterns.json** - Context analysis patterns
-- **temporal_indicators_patterns.json** - Time-sensitive crisis indicators
-- **enhanced_crisis_patterns.json** - Enhanced pattern matching
-- **crisis_idiom_patterns.json** - Idiom-based crisis detection
-- **crisis_burden_patterns.json** - Burden expression patterns
+- **patterns_community.json** - Community-specific crisis patterns
+- **patterns_context.json** - Context analysis patterns
+- **patterns_temporal.json** - Time-sensitive crisis indicators
+- **patterns_crisis.json** - Enhanced pattern matching
+- **patterns_idiom.json** - Idiom-based crisis detection
+- **patterns_burden.json** - Burden expression patterns
 - **feature_flags.json** - System feature toggles
 - **label_config.json** - Label configuration
 - **learning_parameters.json** - Learning system parameters
@@ -144,7 +144,7 @@ The UnifiedConfigManager is a **foundation service layer** that provides configu
 
 ### **Downstream Consumers:**
 - **analysis_config_manager** - Analysis configuration
-- **crisis_pattern_manager** - Crisis pattern configuration
+- **pattern_detection_manager** - Crisis pattern configuration
 - **context_pattern_manager** - Context analysis configuration
 - **feature_config_manager** - Feature flag configuration
 - **logging_config_manager** - Logging configuration
@@ -205,7 +205,7 @@ Application Layer (APIs, Analysis)
        ↓
 Business Logic Layer (CrisisAnalyzer, Pattern Detection)
        ↓
-Manager Layer (analysis_config, crisis_pattern, etc.)
+Manager Layer (analysis_config, pattern_detection, etc.)
        ↓
 Foundation Layer (UnifiedConfigManager) ← THIS MANAGER
        ↓

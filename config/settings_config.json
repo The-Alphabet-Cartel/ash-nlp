@@ -1,8 +1,8 @@
 {
   "_metadata": {
-    "configuration_version": "3.1-3e-5.7-1",
+    "configuration_version": "3.1-3e-6-1",
     "file_purpose": "SettingsManager coordination and runtime configuration",
-    "updated_date": "2025-08-21",
+    "updated_date": "2025-08-22",
     "phase": "3e",
     "compliance": "clean_v3.1_architecture",
     "description": "Runtime settings coordination and manager integration configuration for SettingsManager"
@@ -10,7 +10,7 @@
 
   "system_status": {
     "phase_status": {
-      "crisis_patterns": "externalized_to_json",
+      "patterns_crisis": "externalized_to_json",
       "analysis_config": "externalized_to_json",
       "crisis_thresholds": "externalized_to_json",
       "server_configuration": "externalized_to_json",
@@ -56,7 +56,7 @@
     ],
     "recommended_managers": [
       "analysis_config",
-      "crisis_pattern",
+      "pattern_detection",
       "feature_config",
       "server_config",
       "storage_config"

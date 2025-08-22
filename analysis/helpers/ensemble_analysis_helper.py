@@ -11,9 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Analysis Helper for CrisisAnalyzer - PHASE 3 IMPLEMENTATION COMPLETE
 ---
-FILE VERSION: v3.1-3e-5.5-7-3
-CREATED: 2025-08-21
-UPDATED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+UPDATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-7 - PHASE 3: Manager Integration Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -131,7 +130,7 @@ class EnsembleAnalysisHelper:
             Enhanced pattern analysis that can boost AI confidence scores
         """
         pattern_analysis = None
-        if self.crisis_analyzer._feature_cache.get('pattern_analysis', True) and self.crisis_analyzer.crisis_pattern_manager:
+        if self.crisis_analyzer._feature_cache.get('pattern_analysis', True) and self.crisis_analyzer.pattern_detection_manager:
             try:
                 logger.debug("PHASE 3: Analyzing patterns to enhance AI results...")
                 
@@ -150,24 +149,24 @@ class EnsembleAnalysisHelper:
                 # Community patterns analysis for AI enhancement
                 community_patterns = []
                 if self.crisis_analyzer._feature_cache.get('community_patterns', True):
-                    community_patterns = self.crisis_analyzer.crisis_pattern_manager.extract_community_patterns(message)
+                    community_patterns = self.crisis_analyzer.pattern_detection_manager.extract_community_patterns(message)
                     logger.debug(f"Found {len(community_patterns)} community patterns for AI enhancement")
                 
                 # Extract crisis context phrases for AI enhancement
                 context_phrases = []
                 if self.crisis_analyzer._feature_cache.get('context_analysis', True):
-                    context_phrases = self.crisis_analyzer.crisis_pattern_manager.extract_crisis_context_phrases(message)
+                    context_phrases = self.crisis_analyzer.pattern_detection_manager.extract_crisis_context_phrases(message)
                     logger.debug(f"Found {len(context_phrases)} context phrases for AI enhancement")
                 
                 # Analyze temporal indicators for AI enhancement
                 temporal_analysis = {}
                 if self.crisis_analyzer._feature_cache.get('temporal_boost', True):
-                    temporal_analysis = self.crisis_analyzer.crisis_pattern_manager.analyze_temporal_indicators(message)
+                    temporal_analysis = self.crisis_analyzer.pattern_detection_manager.analyze_temporal_indicators(message)
                     logger.debug(f"Temporal analysis for AI enhancement: {temporal_analysis.get('urgency_score', 0)}")
                 
                 # Enhanced crisis pattern check for AI enhancement
                 enhanced_patterns = {}
-                enhanced_patterns = self.crisis_analyzer.crisis_pattern_manager.check_enhanced_crisis_patterns(message)
+                enhanced_patterns = self.crisis_analyzer.pattern_detection_manager.check_patterns_crisis(message)
                 logger.debug(f"Enhanced patterns for AI enhancement: {len(enhanced_patterns.get('matches', []))} matches")
                 
                 # Calculate pattern enhancement factors
@@ -181,7 +180,7 @@ class EnsembleAnalysisHelper:
                     'temporal_analysis': temporal_analysis,
                     'enhanced_patterns': enhanced_patterns,
                     'total_patterns': len(community_patterns) + len(context_phrases) + len(enhanced_patterns.get('matches', [])),
-                    'source': 'crisis_pattern_manager_enhancement',
+                    'source': 'pattern_detection_manager_enhancement',
                     'ai_enhancement_role': True,
                     'ai_baseline_score': ai_score,
                     'ai_baseline_confidence': ai_confidence,
@@ -200,7 +199,7 @@ class EnsembleAnalysisHelper:
                     'enhancement_mode': 'error_fallback'
                 }
         else:
-            logger.debug("Pattern enhancement disabled or CrisisPatternManager not available")
+            logger.debug("Pattern enhancement disabled or PatternDetectionManager not available")
             pattern_analysis = {
                 'ai_enhancement_role': True,
                 'enhancement_mode': 'disabled',
@@ -489,8 +488,8 @@ class EnsembleAnalysisHelper:
         EMERGENCY: Emergency depression classification when ModelEnsembleManager fails
         """
         try:
-            if self.crisis_analyzer.crisis_pattern_manager:
-                patterns = self.crisis_analyzer.crisis_pattern_manager.check_enhanced_crisis_patterns(message)
+            if self.crisis_analyzer.pattern_detection_manager:
+                patterns = self.crisis_analyzer.pattern_detection_manager.check_patterns_crisis(message)
                 score = min(0.7, len(patterns.get('matches', [])) * 0.15)
             else:
                 score = 0.3  # Conservative fallback

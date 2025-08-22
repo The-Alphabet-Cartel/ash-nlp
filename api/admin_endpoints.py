@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Admin endpoints for label management and system administration for Ash NLP Service v3.1
 ---
-FILE VERSION: v3.1-3d-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3d-6-1
+LAST MODIFIED: 2025-08-22
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -59,7 +59,7 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis_pattern_manager=None,
+def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, pattern_detection_manager=None,
                          analysis_config_manager=None, crisis_threshold_manager=None):
     """
     Setup admin endpoints with complete Phase 3c manager architecture
@@ -68,7 +68,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
         app: FastAPI application instance
         model_ensemble_manager: Model Ensemble Manager instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
-        crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
+        pattern_detection_manager: PatternDetectionManager instance (Phase 3a)
         analysis_config_manager: AnalysisConfigManager instance (Phase 3b) - NEW
         crisis_threshold_manager: CrisisThresholdManager instance (Phase 3c) - NEW
     """
@@ -112,25 +112,25 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
                 "managers": {
                     "zero_shot_manager": zero_shot_manager is not None,
                     "model_ensemble_manager": model_ensemble_manager is not None,
-                    "crisis_pattern_manager": crisis_pattern_manager is not None,
+                    "pattern_detection_manager": pattern_detection_manager is not None,
                     "analysis_config_manager": analysis_config_manager is not None,
                     "crisis_threshold_manager": crisis_threshold_manager is not None
                 }
             }
             
             # Phase 3a - Crisis Pattern Manager Status
-            if crisis_pattern_manager:
+            if pattern_detection_manager:
                 try:
-                    pattern_status = crisis_pattern_manager.get_status()
-                    status["crisis_patterns"] = {
+                    pattern_status = pattern_detection_manager.get_status()
+                    status["patterns_crisis"] = {
                         "loaded_patterns": pattern_status.get('loaded_pattern_sets', 0),
                         "available": True,
                         "phase_3a_integrated": True
                     }
                 except Exception as e:
-                    status["crisis_patterns"] = {"available": False, "error": str(e)}
+                    status["patterns_crisis"] = {"available": False, "error": str(e)}
             else:
-                status["crisis_patterns"] = {"available": False, "note": "Crisis pattern manager not provided"}
+                status["patterns_crisis"] = {"available": False, "note": "Crisis pattern manager not provided"}
             
             # Phase 3b - Analysis Parameters Manager Status - NEW
             if analysis_config_manager:
@@ -184,17 +184,17 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
             }
             
             # Phase 3a - Crisis Patterns
-            if crisis_pattern_manager:
+            if pattern_detection_manager:
                 try:
-                    pattern_status = crisis_pattern_manager.get_status()
-                    summary["components"]["crisis_patterns"] = {
+                    pattern_status = pattern_detection_manager.get_status()
+                    summary["components"]["patterns_crisis"] = {
                         "source": "JSON configuration",
                         "status": "externalized",
-                        "manager": "CrisisPatternManager",
+                        "manager": "PatternDetectionManager",
                         "loaded_patterns": pattern_status.get('loaded_pattern_sets', 0)
                     }
                 except Exception as e:
-                    summary["components"]["crisis_patterns"] = {"error": str(e)}
+                    summary["components"]["patterns_crisis"] = {"error": str(e)}
             
             # Phase 3b - Analysis Parameters
             if analysis_config_manager:
@@ -744,7 +744,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
 # ========================================================================
 # Enhanced Admin Endpoints Function Signature
 # ========================================================================
-def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, 
+def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, pattern_detection_manager, 
                        model_ensemble_manager, analysis_config_manager=None, crisis_threshold_manager=None):
     """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
     logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
@@ -755,7 +755,7 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
             app=app,
             model_ensemble_manager=model_ensemble_manager,
             zero_shot_manager=zero_shot_manager,
-            crisis_pattern_manager=crisis_pattern_manager,
+            pattern_detection_manager=pattern_detection_manager,
             analysis_config_manager=analysis_config_manager,
             crisis_threshold_manager=crisis_threshold_manager
         )
