@@ -1,18 +1,10 @@
-<!-- ash-nlp/docs/v3.1/phase/3/e/step_1.md -->
-<!--
-Documentation for Phase 3e, Step 1 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-1-FINAL
-LAST MODIFIED: 2025-08-17
-PHASE: 3e, Step 1
-CLEAN ARCHITECTURE: v3.1 Compliant
--->
 # Phase 3e Step 1: Comprehensive Manager Documentation Audit
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
 **Project**: Ash-NLP v3.1 Manager Consolidation
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-3e-1-FINAL
-**LAST MODIFIED**: 2025-08-17
+**FILE VERSION**: v3.1-3e-5.7-1
+**LAST MODIFIED**: 2025-08-21
 **PHASE**: 3e, Step 1 - Manager Documentation Audit
 **CLEAN ARCHITECTURE**: v3.1 Compliant
 **PARENT TRACKER**: `docs/v3.1/phase/3/e/tracker.md`
@@ -43,7 +35,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 
 | Manager | Documentation File | Status | Core Methods | Shared Methods | Learning Methods | Analysis Methods |
 |---------|-------------------|--------|--------------|----------------|------------------|------------------|
-| analysis_parameters | `docs/v3.1/managers/analysis_parameters.md` | ✅ Complete | 12 | 4 | 2 | 6 |
+| analysis_config | `docs/v3.1/managers/analysis_config.md` | ✅ Complete | 12 | 4 | 2 | 6 |
 | context_pattern | `docs/v3.1/managers/context_pattern.md` | ✅ Complete | 8 | 6 | 4 | 5 |
 | crisis_pattern | `docs/v3.1/managers/crisis_pattern.md` | ✅ Complete | 10 | 6 | 4 | 7 |
 | feature_config | `docs/v3.1/managers/feature_config.md` | ✅ Complete | 15+ | 6 | 3 | ALL |
@@ -54,7 +46,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 | server_config | `docs/v3.1/managers/server_config.md` | ✅ Complete | 15+ | 6 | 3 | ALL |
 | settings | `docs/v3.1/managers/settings.md` | ✅ Complete | 12+ | 5 | 3 | ALL |
 | storage_config | `docs/v3.1/managers/storage_config.md` | ✅ Complete | 20+ | 6 | 3 | ALL |
-| threshold_mapping | `docs/v3.1/managers/threshold_mapping.md` | ✅ Complete | 8 | 4 | 2 | 4 |
+| crisis_threshold | `docs/v3.1/managers/crisis_threshold.md` | ✅ Complete | 8 | 4 | 2 | 4 |
 | unified_config | `docs/v3.1/managers/unified_config.md` | ✅ Complete | 25+ | **NONE** | **NONE** | ALL |
 | zero_shot | `docs/v3.1/managers/zero_shot.md` | ✅ Complete | 8+ | 5 | 6 | 4 |
 
@@ -99,8 +91,8 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 ### **Learning Methods Catalog:**
 
 #### **Parameter Learning (5 Managers):**
-- ✅ **AnalysisParametersManager**: 5 learning methods (learning rates, decay, adjustments)
-- ✅ **ThresholdMappingManager**: 3 threshold learning methods (adaptive thresholds)
+- ✅ **AnalysisConfigManager**: 5 learning methods (learning rates, decay, adjustments)
+- ✅ **CrisisThresholdManager**: 3 threshold learning methods (adaptive thresholds)
 - ✅ **PerformanceConfigManager**: 2 performance learning methods
 
 #### **Pattern Learning (4 Managers):**

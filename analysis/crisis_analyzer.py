@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Analyzer for Ash-NLP Service v3.1
 ---
-FILE VERSION: v3.1-3e-5.5-6-4
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization and Zero-Shot Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -62,8 +62,8 @@ class CrisisAnalyzer:
     
     Previous Phases:
     - Phase 3a: Clean v3.1 architecture with JSON-based patterns
-    - Phase 3b: Analysis parameters from AnalysisParametersManager  
-    - Phase 3c: Mode-aware thresholds from ThresholdMappingManager
+    - Phase 3b: Analysis parameters from AnalysisConfigManager  
+    - Phase 3c: Mode-aware thresholds from CrisisThresholdManager
     - Phase 3d Step 7: Feature flags and performance settings from dedicated managers
     - Phase 3d Step 10.6: Consolidated scoring functions (no more utils/scoring_helpers.py)
     - Phase 3d Step 10.7: Consolidated community patterns (no more utils/community_patterns.py)
@@ -73,8 +73,8 @@ class CrisisAnalyzer:
     """
     
     def __init__(self, unified_config, model_ensemble_manager,
-        crisis_pattern_manager=None, analysis_parameters_manager=None,
-        threshold_mapping_manager=None, feature_config_manager=None,
+        crisis_pattern_manager=None, analysis_config_manager=None,
+        crisis_threshold_manager=None, feature_config_manager=None,
         performance_config_manager=None, context_pattern_manager=None,
         shared_utilities_manager=None, learning_system_manager=None,
         zero_shot_manager=None):
@@ -85,8 +85,8 @@ class CrisisAnalyzer:
             # Existing dependencies (maintained)
             model_ensemble_manager: Model ensemble manager for ensemble analysis
             crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
-            analysis_parameters_manager: AnalysisParametersManager for configurable parameters
-            threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds
+            analysis_config_manager: AnalysisConfigManager for configurable parameters
+            crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
             feature_config_manager: FeatureConfigManager for feature flags
             performance_config_manager: PerformanceConfigManager for performance settings
             context_pattern_manager: ContextPatternManager for context analysis
@@ -102,8 +102,8 @@ class CrisisAnalyzer:
         self.unified_config_manager = unified_config
         self.model_ensemble_manager = model_ensemble_manager
         self.crisis_pattern_manager = crisis_pattern_manager
-        self.analysis_parameters_manager = analysis_parameters_manager
-        self.threshold_mapping_manager = threshold_mapping_manager
+        self.analysis_config_manager = analysis_config_manager
+        self.crisis_threshold_manager = crisis_threshold_manager
         self.feature_config_manager = feature_config_manager
         self.performance_config_manager = performance_config_manager
         self.context_pattern_manager = context_pattern_manager
@@ -310,28 +310,28 @@ class CrisisAnalyzer:
     
     def get_analysis_crisis_thresholds(self, mode: str = 'consensus') -> Dict[str, float]:
         """
-        Get crisis thresholds for analysis (consolidated from AnalysisParametersManager)
+        Get crisis thresholds for analysis (consolidated from AnalysisConfigManager)
         MAINTAINED: Core configuration method kept in main class
         """
         try:
-            # Try to delegate to ThresholdMappingManager (preferred approach)
-            if self.threshold_mapping_manager:
+            # Try to delegate to CrisisThresholdManager (preferred approach)
+            if self.crisis_threshold_manager:
                 try:
-                    thresholds = self.threshold_mapping_manager.get_ensemble_thresholds_for_mode(mode)
+                    thresholds = self.crisis_threshold_manager.get_ensemble_thresholds_for_mode(mode)
                     if thresholds and all(isinstance(v, (int, float)) for v in thresholds.values()):
-                        logger.debug(f"✅ Got thresholds from ThresholdMappingManager for mode '{mode}': {thresholds}")
+                        logger.debug(f"✅ Got thresholds from CrisisThresholdManager for mode '{mode}': {thresholds}")
                         return thresholds
                     else:
-                        logger.warning(f"⚠️ ThresholdMappingManager returned invalid thresholds: {thresholds}")
+                        logger.warning(f"⚠️ CrisisThresholdManager returned invalid thresholds: {thresholds}")
                 except Exception as e:
-                    logger.warning(f"⚠️ ThresholdMappingManager failed: {e}")
+                    logger.warning(f"⚠️ CrisisThresholdManager failed: {e}")
 
             # Fallback to UnifiedConfigManager direct access
             if self.unified_config_manager:
                 try:
                     threshold_config = self.unified_config_manager.get_config_section(
-                        'threshold_mapping',
-                        f'threshold_mapping_by_mode.{mode}.ensemble_thresholds',
+                        'crisis_threshold',
+                        f'crisis_threshold_by_mode.{mode}.ensemble_thresholds',
                         {}
                     )
 
@@ -371,20 +371,20 @@ class CrisisAnalyzer:
 
     def get_analysis_timeouts(self) -> Dict[str, int]:
         """
-        Get analysis timeout settings (consolidated from AnalysisParametersManager)
+        Get analysis timeout settings (consolidated from AnalysisConfigManager)
         MAINTAINED: Core configuration method kept in main class
         """
         try:
             if self.shared_utilities_manager:
                 return self.shared_utilities_manager.get_config_section_safely(
-                    'analysis_parameters', 'timeouts', {
+                    'analysis_config', 'timeouts', {
                         'model_analysis': 10,
                         'pattern_analysis': 5,
                         'total_analysis': 30
                     }
                 )
-            elif self.analysis_parameters_manager:
-                return self.analysis_parameters_manager.get_analysis_timeouts()
+            elif self.analysis_config_manager:
+                return self.analysis_config_manager.get_analysis_timeouts()
             else:
                 logger.warning("⚠️ No config manager available - using default timeouts")
                 return {'model_analysis': 10, 'pattern_analysis': 5, 'total_analysis': 30}
@@ -396,21 +396,21 @@ class CrisisAnalyzer:
 
     def get_analysis_confidence_boosts(self) -> Dict[str, float]:
         """
-        Get confidence boost settings (consolidated from AnalysisParametersManager)
+        Get confidence boost settings (consolidated from AnalysisConfigManager)
         MAINTAINED: Core configuration method kept in main class
         """
         try:
             if self.shared_utilities_manager:
                 return self.shared_utilities_manager.get_config_section_safely(
-                    'analysis_parameters', 'confidence_boosts', {
+                    'analysis_config', 'confidence_boosts', {
                         'pattern_match': 0.1,
                         'context_boost': 0.15,
                         'temporal_boost': 0.05,
                         'community_pattern': 0.08
                     }
                 )
-            elif self.analysis_parameters_manager:
-                return self.analysis_parameters_manager.get_confidence_boosts()
+            elif self.analysis_config_manager:
+                return self.analysis_config_manager.get_confidence_boosts()
             else:
                 logger.warning("⚠️ No config manager available - using default confidence boosts")
                 return {
@@ -427,21 +427,21 @@ class CrisisAnalyzer:
 
     def get_analysis_pattern_weights(self) -> Dict[str, float]:
         """
-        Get pattern analysis weights (consolidated from AnalysisParametersManager)
+        Get pattern analysis weights (consolidated from AnalysisConfigManager)
         MAINTAINED: Core configuration method kept in main class
         """
         try:
             if self.shared_utilities_manager:
                 return self.shared_utilities_manager.get_config_section_safely(
-                    'analysis_parameters', 'pattern_weights', {
+                    'analysis_config', 'pattern_weights', {
                         'crisis_patterns': 0.6,
                         'community_patterns': 0.3,
                         'context_patterns': 0.4,
                         'temporal_patterns': 0.2
                     }
                 )
-            elif self.analysis_parameters_manager:
-                return self.analysis_parameters_manager.get_pattern_weights()
+            elif self.analysis_config_manager:
+                return self.analysis_config_manager.get_pattern_weights()
             else:
                 logger.warning("⚠️ No config manager available - using default pattern weights")
                 return {
@@ -458,13 +458,13 @@ class CrisisAnalyzer:
 
     def get_analysis_algorithm_parameters(self) -> Dict[str, Any]:
         """
-        Get algorithm parameters (consolidated from AnalysisParametersManager)
+        Get algorithm parameters (consolidated from AnalysisConfigManager)
         MAINTAINED: Core configuration method kept in main class
         """
         try:
             if self.shared_utilities_manager:
                 return self.shared_utilities_manager.get_config_section_safely(
-                    'analysis_parameters', 'algorithm_parameters', {
+                    'analysis_config', 'algorithm_parameters', {
                         'ensemble_weights': [0.4, 0.3, 0.3],
                         'score_normalization': 'sigmoid',
                         'threshold_adaptation': True,
@@ -472,8 +472,8 @@ class CrisisAnalyzer:
                         'confidence_threshold': 0.5
                     }
                 )
-            elif self.analysis_parameters_manager:
-                return self.analysis_parameters_manager.get_algorithm_parameters()
+            elif self.analysis_config_manager:
+                return self.analysis_config_manager.get_algorithm_parameters()
             else:
                 logger.warning("⚠️ No config manager available - using default algorithm parameters")
                 return {
@@ -495,23 +495,23 @@ class CrisisAnalyzer:
     
     def apply_crisis_thresholds(self, confidence: float, mode: str = 'consensus') -> str:
         """
-        Apply thresholds to determine crisis level (consolidated from ThresholdMappingManager)
+        Apply thresholds to determine crisis level (consolidated from CrisisThresholdManager)
         MAINTAINED: Core threshold method kept in main class
         """
         try:
-            # First, try to use ThresholdMappingManager directly
-            if self.threshold_mapping_manager:
+            # First, try to use CrisisThresholdManager directly
+            if self.crisis_threshold_manager:
                 try:
-                    if hasattr(self.threshold_mapping_manager, 'determine_crisis_level'):
-                        return self.threshold_mapping_manager.determine_crisis_level(confidence, mode)
-                    elif hasattr(self.threshold_mapping_manager, 'apply_thresholds'):
-                        return self.threshold_mapping_manager.apply_thresholds(confidence, mode)
-                    elif hasattr(self.threshold_mapping_manager, 'get_crisis_level'):
-                        return self.threshold_mapping_manager.get_crisis_level(confidence, mode)
+                    if hasattr(self.crisis_threshold_manager, 'determine_crisis_level'):
+                        return self.crisis_threshold_manager.determine_crisis_level(confidence, mode)
+                    elif hasattr(self.crisis_threshold_manager, 'apply_thresholds'):
+                        return self.crisis_threshold_manager.apply_thresholds(confidence, mode)
+                    elif hasattr(self.crisis_threshold_manager, 'get_crisis_level'):
+                        return self.crisis_threshold_manager.get_crisis_level(confidence, mode)
                     else:
-                        logger.debug("ThresholdMappingManager has no known threshold application method - using consolidated logic")
+                        logger.debug("CrisisThresholdManager has no known threshold application method - using consolidated logic")
                 except Exception as e:
-                    logger.warning(f"⚠️ ThresholdMappingManager threshold application failed: {e}")
+                    logger.warning(f"⚠️ CrisisThresholdManager threshold application failed: {e}")
             
             # Fallback: Get mode-specific thresholds and apply them
             thresholds = self.get_crisis_threshold_for_mode(mode)
@@ -548,14 +548,14 @@ class CrisisAnalyzer:
 
     def calculate_crisis_level_from_confidence(self, confidence: float, mode: str = 'default') -> str:
         """
-        Calculate crisis level from confidence score (consolidated from ThresholdMappingManager)
+        Calculate crisis level from confidence score (consolidated from CrisisThresholdManager)
         MAINTAINED: Delegates to apply_crisis_thresholds
         """
         return self.apply_crisis_thresholds(confidence, mode)
 
     def get_crisis_threshold_for_mode(self, mode: str) -> Dict[str, float]:
         """
-        Get mode-specific crisis thresholds (consolidated from ThresholdMappingManager)
+        Get mode-specific crisis thresholds (consolidated from CrisisThresholdManager)
         MAINTAINED: Core threshold method kept in main class
         """
         try:
@@ -776,7 +776,12 @@ class CrisisAnalyzer:
 # ENHANCED FACTORY FUNCTION - Phase 3e Sub-step 5.5-6
 # ============================================================================
 
-def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None, analysis_parameters_manager=None, threshold_mapping_manager=None, feature_config_manager=None, performance_config_manager=None, context_pattern_manager=None, shared_utilities_manager=None, learning_system_manager=None, zero_shot_manager=None) -> CrisisAnalyzer:
+def create_crisis_analyzer(unified_config, model_ensemble_manager,
+    crisis_pattern_manager=None, analysis_config_manager=None,
+    crisis_threshold_manager=None, feature_config_manager=None,
+    performance_config_manager=None, context_pattern_manager=None,
+    shared_utilities_manager=None, learning_system_manager=None,
+    zero_shot_manager=None) -> CrisisAnalyzer:
     """
     Enhanced factory function for Optimized CrisisAnalyzer with helper file architecture and ZeroShotManager integration
     
@@ -784,8 +789,8 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
         # Existing parameters (maintained)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
         crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
-        analysis_parameters_manager: AnalysisParametersManager for configurable parameters
-        threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds
+        analysis_config_manager: AnalysisConfigManager for configurable parameters
+        crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
         feature_config_manager: FeatureConfigManager for feature flags
         performance_config_manager: PerformanceConfigManager for performance settings
         context_pattern_manager: ContextPatternManager for context analysis
@@ -804,8 +809,8 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
         unified_config,
         model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
-        analysis_parameters_manager=analysis_parameters_manager,
-        threshold_mapping_manager=threshold_mapping_manager,
+        analysis_config_manager=analysis_config_manager,
+        crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,
         performance_config_manager=performance_config_manager,
         context_pattern_manager=context_pattern_manager,

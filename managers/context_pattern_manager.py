@@ -15,7 +15,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Context Pattern Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
 PHASE: 3e, Sub-step 5.4 - ContextPatternManager Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -105,7 +105,7 @@ class ContextPatternManager:
             # Load analysis parameters using get_config_section
             try:
                 logger.debug("📋 Loading Analysis Parameters...")
-                self.analysis_params = self.unified_config.get_config_section('analysis_parameters')
+                self.analysis_params = self.unified_config.get_config_section('analysis_config')
                 if not self.analysis_params:
                     logger.warning("⚠️ Analysis parameters not found, using safe defaults")
                     self.analysis_params = self._get_safe_analysis_defaults()
@@ -352,7 +352,7 @@ class ContextPatternManager:
     def _get_context_window(self) -> int:
         """Get context window size from configuration"""
         try:
-            value = self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_window', 3)
+            value = self.unified_config.get_config_section('analysis_config', 'semantic_analysis.context_window', 3)
             return int(value) if value is not None else 3
         except Exception as e:
             logger.warning(f"⚠️ Error getting context window: {e}, using default: 3")
@@ -361,7 +361,7 @@ class ContextPatternManager:
     def _get_context_boost_weight(self) -> float:
         """Get context boost weight from configuration"""
         try:
-            value = self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.context_boost_weight', 1.5)
+            value = self.unified_config.get_config_section('analysis_config', 'semantic_analysis.context_boost_weight', 1.5)
             return float(value) if value is not None else 1.5
         except Exception as e:
             logger.warning(f"⚠️ Error getting context boost weight: {e}, using default: 1.5")
@@ -370,7 +370,7 @@ class ContextPatternManager:
     def _get_negative_threshold(self) -> float:
         """Get negative sentiment threshold from configuration"""
         try:
-            value = self.unified_config.get_config_section('analysis_parameters', 'semantic_analysis.negative_threshold', 0.6)
+            value = self.unified_config.get_config_section('analysis_config', 'semantic_analysis.negative_threshold', 0.6)
             return float(value) if value is not None else 0.6
         except Exception as e:
             logger.warning(f"⚠️ Error getting negative threshold: {e}, using default: 0.6")

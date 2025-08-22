@@ -1,4 +1,4 @@
-# ash-nlp/managers/analysis_parameters_manager.py
+# ash-nlp/managers/analysis_config.py
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
 CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
@@ -9,12 +9,13 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 3. FALLBACK: Uses pattern-only classification if AI models fail
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
-Analysis Parameters Manager for Ash NLP Service
+Analysis Config Manager for Ash NLP Service (RENAMED from AnalysisParametersManager)
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
-PHASE: 3e, Step 5.1 - Systematic Manager Cleanup
+PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
+RENAMED FROM: managers/analysis_parameters_manager.py
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -27,9 +28,11 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-class AnalysisParametersManager:
+class AnalysisConfigManager:
     """
-    Analysis Parameters Manager with Phase 3e functionality and v3.1 JSON compatibility
+    Analysis Config Manager with Phase 3e functionality and v3.1 JSON compatibility
+    
+    RENAMED FROM: AnalysisParametersManager (Phase 3e Step 5.7)
     
     PHASE 3E STEP 5.1 UPDATES:
     - Crisis analysis methods migrated to CrisisAnalyzer for better consolidation
@@ -43,19 +46,19 @@ class AnalysisParametersManager:
     
     def __init__(self, config_manager):
         """
-        Initialize Analysis Parameters Manager
+        Initialize Analysis Config Manager
         
         Args:
             config_manager: UnifiedConfigManager instance for configuration access
         """
         if config_manager is None:
-            raise ValueError("UnifiedConfigManager is required for AnalysisParametersManager")
+            raise ValueError("UnifiedConfigManager is required for AnalysisConfigManager")
         
         self.config_manager = config_manager
         self.analysis_config = {}
         self._full_config = {}
         
-        logger.info("✅ AnalysisParametersManager v3.1e-5.1 initialized - Phase 3e Step 5.1 cleanup")
+        logger.info("✅ AnalysisConfigManager v3.1e-5.7 initialized - Phase 3e Step 5.7 manager renaming")
         
         # Load configuration
         self._load_configuration()
@@ -64,10 +67,10 @@ class AnalysisParametersManager:
         """Load analysis parameters configuration with v3.1 compatibility"""
         try:
             # Load analysis parameters via UnifiedConfigManager
-            analysis_config_raw = self.config_manager.get_config_section('analysis_parameters')
+            analysis_config_raw = self.config_manager.get_config_section('analysis_config')
             
             if not analysis_config_raw:
-                logger.error("❌ Could not load analysis_parameters.json configuration")
+                logger.error("❌ Could not load analysis_config.json configuration")
                 raise ValueError("Analysis parameters configuration not available")
             
             # Extract analysis system configuration (backward compatibility)
@@ -350,7 +353,7 @@ class AnalysisParametersManager:
     # SEMANTIC ANALYSIS PARAMETERS - v3.1 Compatible
     # ========================================================================
     
-    def get_semantic_analysis_parameters(self) -> Dict[str, Any]:
+    def get_semantic_analysis_config(self) -> Dict[str, Any]:
         """
         Get semantic analysis parameters from v3.1 JSON configuration
         
@@ -678,10 +681,11 @@ class AnalysisParametersManager:
         metadata = self._full_config.get('_metadata', {})
         
         return {
-            'version': '3.1e-5.1-consolidated',
+            'version': '3.1e-5.7-renamed',
             'architecture': 'clean-v3.1-crisis-analysis-consolidated', 
             'json_version': metadata.get('configuration_version', 'unknown'),
             'compliance': metadata.get('compliance', 'unknown'),
+            'manager_renamed': 'AnalysisParametersManager -> AnalysisConfigManager (Step 5.7)',
             'phase_3e_step_5_1_changes': {
                 'crisis_analysis_consolidation': 'Crisis analysis methods moved to CrisisAnalyzer',
                 'learning_consolidation': 'Learning methods moved to LearningSystemManager (Step 3)',
@@ -700,7 +704,7 @@ class AnalysisParametersManager:
                 'confidence_boost': self.get_confidence_boost_parameters(),
                 'phrase_extraction': self.get_phrase_extraction_parameters(),
                 'pattern_learning': self.get_pattern_learning_parameters(),
-                'semantic_analysis': self.get_semantic_analysis_parameters(),
+                'semantic_analysis': self.get_semantic_analysis_config(),
                 'contextual_weighting': self.get_contextual_weighting_parameters(),
                 'advanced_parameters': self.get_advanced_parameters(),
                 'integration_settings': self.get_integration_settings(),
@@ -764,9 +768,9 @@ class AnalysisParametersManager:
                 'valid': len(errors) == 0,
                 'errors': errors,
                 'warnings': warnings,
-                'parameters_validated': 'analysis-parameters-post-crisis-migration',
+                'parameters_validated': 'analysis-config-post-crisis-migration',
                 'json_compliance': 'v3.1' if metadata else 'partial',
-                'phase_3e_step_5_1_status': 'crisis-analysis-methods-migrated',
+                'phase_3e_step_5_7_status': 'manager-renamed-analysis-parameters-to-analysis-config',
                 'validation_timestamp': str(datetime.now())
             }
             
@@ -782,7 +786,7 @@ class AnalysisParametersManager:
     def get_configuration_summary(self) -> Dict[str, Any]:
         """
         Get summary of current configuration for monitoring and debugging
-        Enhanced for v3.1 hybrid compatibility with Phase 3e Step 5.1 updates
+        Enhanced for v3.1 hybrid compatibility with Phase 3e Step 5.7 manager renaming
         
         Returns:
             Dictionary with configuration summary
@@ -791,7 +795,8 @@ class AnalysisParametersManager:
             metadata = self._full_config.get('_metadata', {})
             
             return {
-                'manager_version': 'v3.1e-5.1-crisis-migrated',
+                'manager_version': 'v3.1e-5.7-renamed',
+                'manager_name': 'AnalysisConfigManager (renamed from AnalysisParametersManager)',
                 'json_configuration_version': metadata.get('configuration_version', 'unknown'),
                 'json_compliance': metadata.get('compliance', 'unknown'),
                 'last_updated': metadata.get('updated_date', 'unknown'),
@@ -803,7 +808,9 @@ class AnalysisParametersManager:
                 'contextual_weighting_enabled': True,  # v3.1 feature
                 'manager_initialized': True,
                 'configuration_loaded': self._full_config is not None,
-                'phase_3e_step_5_1_features': {
+                'phase_3e_step_5_7_features': {
+                    'manager_renamed': 'AnalysisParametersManager -> AnalysisConfigManager',
+                    'filename_updated': 'analysis_parameters_manager.py -> analysis_config.py',
                     'crisis_analysis_migrated': 'Methods moved to CrisisAnalyzer',
                     'learning_system_migrated': 'Methods moved to LearningSystemManager',
                     'preserved_core_parameters': 'Analysis parameters maintained',
@@ -815,28 +822,31 @@ class AnalysisParametersManager:
         except Exception as e:
             logger.error(f"❌ Error getting configuration summary: {e}")
             return {
-                'manager_version': 'v3.1e-5.1-crisis-migrated',
+                'manager_version': 'v3.1e-5.7-renamed',
+                'manager_name': 'AnalysisConfigManager (renamed from AnalysisParametersManager)',
                 'json_configuration_version': 'error',
                 'error': str(e),
                 'manager_initialized': False
             }
 
 # ============================================================================
-# Factory Function - Clean v3.1 Architecture Compliance
+# Factory Function - Clean v3.1 Architecture Compliance (RENAMED)
 # ============================================================================
 
-def create_analysis_parameters_manager(config_manager) -> AnalysisParametersManager:
+def create_analysis_config_manager(config_manager) -> AnalysisConfigManager:
     """
-    Factory function to create AnalysisParametersManager instance
+    Factory function to create AnalysisConfigManager instance
+    
+    RENAMED FROM: create_analysis_parameters_manager (Phase 3e Step 5.7)
     
     Args:
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        AnalysisParametersManager instance with v3.1 compatibility and Phase 3e Step 5.1 updates
+        AnalysisConfigManager instance with v3.1 compatibility and Phase 3e Step 5.7 renaming
     """
-    return AnalysisParametersManager(config_manager)
+    return AnalysisConfigManager(config_manager)
 
-__all__ = ['AnalysisParametersManager', 'create_analysis_parameters_manager']
+__all__ = ['AnalysisConfigManager', 'create_analysis_config_manager']
 
-logger.info("✅ AnalysisParametersManager v3.1e-5.1 loaded - Phase 3e Step 5.1 crisis analysis consolidation complete")
+logger.info("✅ AnalysisConfigManager v3.1e-5.7 loaded - Phase 3e Step 5.7 manager renaming complete")

@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Scoring Calculation Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-5.5-6-2
+FILE VERSION: v3.1-3e-5.7-1
 CREATED: 2025-08-21
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -44,14 +44,16 @@ class ScoringCalculationHelper:
     # CONSOLIDATED SCORING FUNCTIONS (Migrated from CrisisAnalyzer)
     # ========================================================================
     
-    def extract_depression_score(self, message: str, sentiment_model=None, analysis_parameters_manager=None, context=None, crisis_pattern_manager=None) -> Tuple[float, List[str]]:
+    def extract_depression_score(self, message: str, sentiment_model=None,
+        analysis_config_manager=None, context=None,
+        crisis_pattern_manager=None) -> Tuple[float, List[str]]:
         """
         Extract depression indicators from message text
         Migrated from: CrisisAnalyzer.extract_depression_score()
         """
         
         # Use injected managers if not provided
-        param_manager = analysis_parameters_manager or self.crisis_analyzer.analysis_parameters_manager
+        param_manager = analysis_config_manager or self.crisis_analyzer.analysis_config_manager
         pattern_manager = crisis_pattern_manager or self.crisis_analyzer.crisis_pattern_manager
         
         logger.debug(f"Depression analysis for: '{message[:50]}...'")
@@ -115,7 +117,7 @@ class ScoringCalculationHelper:
                     depression_score += 0.15
                     detected_categories.append('hopelessness')
             
-            # Configurable parameters from AnalysisParametersManager or consolidated methods
+            # Configurable parameters from AnalysisConfigManager or consolidated methods
             if param_manager:
                 try:
                     boost_factor = param_manager.get_depression_boost_factor()
@@ -146,7 +148,9 @@ class ScoringCalculationHelper:
             logger.error(f"Depression analysis failed: {e}")
             return 0.0, ['analysis_error']
 
-    def enhanced_depression_analysis(self, message: str, base_score: float = 0.0, sentiment_model=None, analysis_parameters_manager=None, context=None, crisis_pattern_manager=None) -> Dict:
+    def enhanced_depression_analysis(self, message: str, base_score: float = 0.0,
+        sentiment_model=None, analysis_config_manager=None, context=None,
+        crisis_pattern_manager=None) -> Dict:
         """
         Enhanced depression analysis with detailed breakdown
         Migrated from: CrisisAnalyzer.enhanced_depression_analysis()

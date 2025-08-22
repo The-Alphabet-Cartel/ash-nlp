@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_context_pattern_manager(unified_config)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-5.7-1  
+**LAST MODIFIED**: 2025-08-21
 
 ---
 
@@ -111,7 +111,7 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 
 ### **Configuration Files:**
 - **`config/context_patterns.json`** - Context pattern configuration
-- **`config/analysis_parameters.json`** - Semantic analysis parameters
+- **`config/analysis_config.json`** - Semantic analysis parameters
 - **Environment variables** - Via UnifiedConfigManager (e.g., `NLP_FEATURE_*`)
 
 ### **Integration Points:**

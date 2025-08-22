@@ -4,17 +4,19 @@
 ## Clean Architecture with Production Excellence + Advanced Features Integration
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
+**Project**: Ash-NLP v3.1 Manager Consolidation  
+**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
+**FILE VERSION**: v3.1-3e-5.7-1  
+**LAST MODIFIED**: 2025-08-21
+**PHASE**: 3e
+**CLEAN ARCHITECTURE**: v3.1 Compliant  
 
 ---
 
 ## 🎉 **PHASE 3D COMPLETION ANNOUNCEMENT** 🎉
 
-**Date**: 2025-08-16  
 **Status**: **✅ PHASE 3D COMPLETE - EXTRAORDINARY SUCCESS ACHIEVED**  
 **Next Phase**: **🚀 PHASE 3E - IN PROGRESS**
-
-**Document Version**: v3.1-3e-5.5-1
 
 ---
 
@@ -117,7 +119,7 @@ ash/ash-nlp/
 │   └── analysis/                            # Analysis Cache
 ├── config/                                  # JSON configuration files
 │   ├── __init__.py
-│   ├── analysis_parameters.json
+│   ├── analysis_config.json
 │   ├── community_vocabulary_patterns.json
 │   ├── context_patterns.json
 │   ├── crisis_burden_patterns.json
@@ -132,12 +134,12 @@ ash/ash-nlp/
 │   ├── server_setting.json
 │   ├── storage_settings.json
 │   ├── temporal_indicators_patterns.json
-│   └── threshold_mapping.json
+│   └── crisis_threshold.json
 ├── data/                                    # DATA Storage
 ├── docs/                                    # Documentation
 │   ├── v3.1/
 │   │   ├── managers/
-|   |   │   ├── analysis_parameters.md
+|   |   │   ├── analysis_config.md
 |   |   │   ├── context_pattern.md
 |   |   │   ├── crisis_pattern.md
 |   |   │   ├── feature_config.md
@@ -148,7 +150,7 @@ ash/ash-nlp/
 |   |   │   ├── server_config.md
 |   |   │   ├── settings.md
 |   |   │   ├── storage_config.md
-|   |   │   ├── threshold_mapping.md
+|   |   │   ├── crisis_threshold.md
 |   |   │   ├── unified_config.md
 |   |   │   └── zero_shot.md
 │   │   ├── phase/
@@ -186,7 +188,7 @@ ash/ash-nlp/
 ├── logs/                                    # Logs Storage
 ├── managers/                                # All manager classes
 │   ├── __init__.py
-│   ├── analysis_parameters_manager.py
+│   ├── analysis_config.py
 │   ├── context_pattern_manager.py
 │   ├── crisis_pattern_manager.py
 │   ├── feature_config_manager.py
@@ -199,7 +201,7 @@ ash/ash-nlp/
 │   ├── settings_manager.py
 │   ├── shared_utilities.py
 │   ├── storage_config_manager.py
-│   ├── threshold_mapping_manager.py
+│   ├── crisis_threshold.py
 │   ├── unified_config_manager.py
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
@@ -209,11 +211,11 @@ ash/ash-nlp/
 │   └── phase/
 |       ├── 3/
 |       │   └── e/
-|       |       ├── test_analysis_parameters_cleanup.py
+|       |       ├── test_analysis_config_cleanup.py
 |       |       ├── test_crisis_analyzer_integration.py
 |       |       ├── test_learning_system_manager.py
 |       |       ├── test_shared_utilities_manager.py
-|       |       └── test_threshold_mapping_cleanup.py
+|       |       └── test_crisis_threshold_cleanup.py
 |       └── 4/
 |           ├── a/
 |           └── b/
@@ -351,11 +353,11 @@ The `get_config_section()` method is now the **ONLY** approved way to access con
 #### **1. Get Entire Configuration File**
 **CRITICAL**: When accessing entire configuration files, do not provide a default argument.
 ```python
-# Get the entire analysis_parameters.json file
-analysis_config = config_manager.get_config_section('analysis_parameters')
+# Get the entire analysis_config.json file
+analysis_config = config_manager.get_config_section('analysis_config')
 
-# Get the entire threshold_mapping.json file  
-threshold_config = config_manager.get_config_section('threshold_mapping')
+# Get the entire crisis_threshold.json file  
+threshold_config = config_manager.get_config_section('crisis_threshold')
 
 # Get the entire feature_flags.json file
 feature_config = config_manager.get_config_section('feature_flags')
@@ -363,11 +365,11 @@ feature_config = config_manager.get_config_section('feature_flags')
 
 #### **2. Get Top-Level Section**
 ```python
-# Get a top-level section from analysis_parameters.json
-learning_config = config_manager.get_config_section('analysis_parameters', 'learning_system')
+# Get a top-level section from analysis_config.json
+learning_config = config_manager.get_config_section('analysis_config', 'learning_system')
 
-# Get crisis_thresholds section from analysis_parameters.json
-crisis_thresholds = config_manager.get_config_section('analysis_parameters', 'crisis_thresholds')
+# Get crisis_thresholds section from analysis_config.json
+crisis_thresholds = config_manager.get_config_section('analysis_config', 'crisis_thresholds')
 
 # Get ensemble_config from model_configuration.json
 ensemble_config = config_manager.get_config_section('model_configuration', 'ensemble_config')
@@ -376,26 +378,26 @@ ensemble_config = config_manager.get_config_section('model_configuration', 'ense
 #### **3. Get Nested Section with Dot Notation**
 ```python
 # Get nested thresholds from learning_system
-thresholds = config_manager.get_config_section('analysis_parameters', 'learning_system.thresholds')
+thresholds = config_manager.get_config_section('analysis_config', 'learning_system.thresholds')
 
 # Get specific mode thresholds
-consensus_thresholds = config_manager.get_config_section('threshold_mapping', 'threshold_mapping_by_mode.consensus')
+consensus_thresholds = config_manager.get_config_section('crisis_threshold', 'crisis_threshold_by_mode.consensus')
 
 # Get deep nested configuration
-pattern_weights = config_manager.get_config_section('analysis_parameters', 'algorithm_parameters.pattern_weights')
+pattern_weights = config_manager.get_config_section('analysis_config', 'algorithm_parameters.pattern_weights')
 ```
 
 #### **4. Get with Custom Defaults**
 ```python
 # Provide fallback configuration if section doesn't exist
-timeouts = config_manager.get_config_section('analysis_parameters', 'timeouts', {
+timeouts = config_manager.get_config_section('analysis_config', 'timeouts', {
     'model_analysis': 10,
     'pattern_analysis': 5,
     'total_analysis': 30
 })
 
 # Default thresholds for new modes
-custom_thresholds = config_manager.get_config_section('threshold_mapping', 'custom_mode', {
+custom_thresholds = config_manager.get_config_section('crisis_threshold', 'custom_mode', {
     'critical': 0.7,
     'high': 0.45,
     'medium': 0.25,
@@ -407,11 +409,11 @@ custom_thresholds = config_manager.get_config_section('threshold_mapping', 'cust
 
 #### **5. Mode-Specific Configuration Access**
 ```python
-# Pattern from ThresholdMappingManager (Sub-step 5.2 success)
+# Pattern from CrisisThresholdManager (Sub-step 5.2 success)
 def get_ensemble_thresholds_for_mode(self, mode: str = 'consensus') -> Dict[str, float]:
     return self.unified_config.get_config_section(
-        'threshold_mapping', 
-        f'threshold_mapping_by_mode.{mode}.ensemble_thresholds',
+        'crisis_threshold', 
+        f'crisis_threshold_by_mode.{mode}.ensemble_thresholds',
         {
             'critical': 0.7,
             'high': 0.45,
@@ -423,8 +425,8 @@ def get_ensemble_thresholds_for_mode(self, mode: str = 'consensus') -> Dict[str,
 # Pattern for staff review thresholds
 def get_staff_review_thresholds_for_mode(self, mode: str = 'consensus') -> Dict[str, Any]:
     return self.unified_config.get_config_section(
-        'threshold_mapping',
-        f'threshold_mapping_by_mode.{mode}.staff_review_thresholds',
+        'crisis_threshold',
+        f'crisis_threshold_by_mode.{mode}.staff_review_thresholds',
         {
             'high_always': True,
             'medium_confidence_threshold': 0.5,
@@ -452,8 +454,8 @@ def _get_analysis_setting(self, section: str, key: str, default: Any = None):
 #### **7. Conditional Configuration Loading**
 ```python
 # Pattern for checking configuration existence before loading
-if self.has_config_section('analysis_parameters', 'learning_system'):
-    learning_config = config_manager.get_config_section('analysis_parameters', 'learning_system')
+if self.has_config_section('analysis_config', 'learning_system'):
+    learning_config = config_manager.get_config_section('analysis_config', 'learning_system')
 else:
     # Use fallback configuration
     learning_config = self._get_fallback_learning_config()
@@ -471,13 +473,13 @@ pattern_config = config_manager.get_config_section(
 #### **❌ OLD (Deprecated - Don't Use)**
 ```python
 # OLD: Manual config loading and traversal (error-prone)
-raw_config = config_manager.load_config_file('analysis_parameters')
+raw_config = config_manager.load_config_file('analysis_config')
 learning_config = raw_config.get('learning_system', {})
 thresholds = learning_config.get('thresholds', {})
 adjustment_rate = thresholds.get('adjustment_rate', 0.1)
 
 # OLD: Multiple method calls and manual error handling
-analysis_config = config_manager.load_config_file('analysis_parameters')
+analysis_config = config_manager.load_config_file('analysis_config')
 if analysis_config:
     crisis_thresholds = analysis_config.get('crisis_thresholds', {})
     if crisis_thresholds:
@@ -488,14 +490,14 @@ if analysis_config:
 ```python
 # NEW: Single clean method call with automatic error handling
 adjustment_rate = config_manager.get_config_section(
-    'analysis_parameters', 
+    'analysis_config', 
     'learning_system.thresholds.adjustment_rate', 
     0.1
 )
 
 # NEW: Direct access with built-in fallback
 high_threshold = config_manager.get_config_section(
-    'analysis_parameters',
+    'analysis_config',
     'crisis_thresholds.high',
     0.5
 )
@@ -530,8 +532,8 @@ def _load_manager_config(self):
 def get_dynamic_config(self, mode: str, config_type: str) -> Dict[str, Any]:
     """Pattern for accessing dynamic configuration based on runtime parameters"""
     return self.unified_config.get_config_section(
-        'threshold_mapping',
-        f'threshold_mapping_by_mode.{mode}.{config_type}',
+        'crisis_threshold',
+        f'crisis_threshold_by_mode.{mode}.{config_type}',
         self._get_default_config_for_type(config_type)
     )
 ```
@@ -569,7 +571,7 @@ raw_config = self.unified_config.get_config_section('config_file_name', {})
 2. **ALWAYS provide meaningful defaults** - Don't rely on empty dictionaries
 3. **Use dot notation for nested access** - `'section.subsection.value'` pattern
 4. **Include proper error handling** - Use try/catch for complex operations
-5. **Follow the established patterns** - Use the patterns from ThresholdMappingManager and AnalysisParametersManager
+5. **Follow the established patterns** - Use the patterns from CrisisThresholdManager and AnalysisConfigManager
 
 ### **✅ Manager Update Checklist (Phase 3e Compliance)**
 
@@ -588,8 +590,8 @@ When updating any manager for Phase 3e compliance:
 
 Available configuration files via `get_config_section()`:
 
-- `'analysis_parameters'` - Analysis configuration and algorithm settings
-- `'threshold_mapping'` - Crisis level thresholds and staff review settings
+- `'analysis_config'` - Analysis configuration and algorithm settings
+- `'crisis_threshold'` - Crisis level thresholds and staff review settings
 - `'community_vocabulary_patterns'` - Community vocabulary
 - `'context_patterns'` - Context patterns
 - `'crisis_burden_patterns'` - Crisis detection burden patterns
@@ -603,7 +605,7 @@ Available configuration files via `get_config_section()`:
 - `'server_config'` - Server configuration and networking
 - `'storage_settings'` - Data storage and caching configuration
 - `'temporal_indicators_patterns'` - Time-based crisis indicators
-- `'threshold_mapping'` - Crisis threshold mapping configuration
+- `'crisis_threshold'` - Crisis threshold mapping configuration
 
 ---
 

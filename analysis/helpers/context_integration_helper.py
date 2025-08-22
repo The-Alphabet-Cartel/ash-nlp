@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Context Integration Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-5.5-6-2
+FILE VERSION: v3.1-3e-6-1
 CREATED: 2025-08-21
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -273,18 +273,18 @@ class ContextIntegrationHelper:
         Migrated from: CrisisAnalyzer._determine_staff_review_requirement()
         """
         try:
-            # Use ThresholdMappingManager if available for staff review determination
-            if self.crisis_analyzer.threshold_mapping_manager:
+            # Use CrisisThresholdManager if available for staff review determination
+            if self.crisis_analyzer.crisis_threshold_manager:
                 try:
                     # Try different possible method names for staff review
-                    if hasattr(self.crisis_analyzer.threshold_mapping_manager, 'requires_staff_review'):
-                        return self.crisis_analyzer.threshold_mapping_manager.requires_staff_review(final_score, crisis_level)
-                    elif hasattr(self.crisis_analyzer.threshold_mapping_manager, 'determine_staff_review'):
-                        return self.crisis_analyzer.threshold_mapping_manager.determine_staff_review(final_score, crisis_level)
-                    elif hasattr(self.crisis_analyzer.threshold_mapping_manager, 'get_staff_review_requirement'):
-                        return self.crisis_analyzer.threshold_mapping_manager.get_staff_review_requirement(final_score, crisis_level)
+                    if hasattr(self.crisis_analyzer.crisis_threshold_manager, 'requires_staff_review'):
+                        return self.crisis_analyzer.crisis_threshold_manager.requires_staff_review(final_score, crisis_level)
+                    elif hasattr(self.crisis_analyzer.crisis_threshold_manager, 'determine_staff_review'):
+                        return self.crisis_analyzer.crisis_threshold_manager.determine_staff_review(final_score, crisis_level)
+                    elif hasattr(self.crisis_analyzer.crisis_threshold_manager, 'get_staff_review_requirement'):
+                        return self.crisis_analyzer.crisis_threshold_manager.get_staff_review_requirement(final_score, crisis_level)
                     else:
-                        logger.debug("ThresholdMappingManager has no known staff review method - using fallback")
+                        logger.debug("CrisisThresholdManager has no known staff review method - using fallback")
                 except Exception as e:
                     logger.warning(f"Staff review determination via manager failed: {e}")
             

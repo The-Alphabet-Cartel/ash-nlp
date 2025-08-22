@@ -1,9 +1,9 @@
 # Threshold Mapping Manager Documentation
 
-**File**: `managers/threshold_mapping_manager.py`  
+**File**: `managers/crisis_threshold_manager.py`  
 **Phase**: 3e Step 1.1 Documentation Audit  
 **Status**: 🔄 **IN PROGRESS**  
-**Factory Function**: `create_threshold_mapping_manager(unified_config_manager, model_ensemble_manager)`  
+**Factory Function**: `create_crisis_threshold_manager(unified_config_manager, model_ensemble_manager)`  
 **Dependencies**: UnifiedConfigManager, ModelEnsembleManager  
 **FILE VERSION**: v3.1-3e-1.1-1  
 **LAST MODIFIED**: 2025-08-17  
@@ -12,7 +12,7 @@
 
 ## 🎯 **Manager Purpose**
 
-The **ThresholdMappingManager** is responsible for managing crisis level thresholds and mappings based on different ensemble modes. It determines crisis levels from confidence scores, manages staff review requirements, and provides mode-aware threshold mappings for the crisis detection system.
+The **CrisisThresholdManager** is responsible for managing crisis level thresholds and mappings based on different ensemble modes. It determines crisis levels from confidence scores, manages staff review requirements, and provides mode-aware threshold mappings for the crisis detection system.
 
 **Primary Responsibilities:**
 - Map confidence scores to crisis levels (none, low, medium, high) based on ensemble mode
@@ -114,7 +114,7 @@ The **ThresholdMappingManager** is responsible for managing crisis level thresho
 - **logging** - Error handling and debugging
 
 ### **Configuration Files:**
-- **`config/threshold_mapping.json`** - Primary threshold configuration
+- **`config/crisis_threshold.json`** - Primary threshold configuration
 - **Environment variables** - Via UnifiedConfigManager (e.g., `NLP_THRESHOLD_*`)
 
 ### **Integration Points:**
@@ -154,7 +154,7 @@ The **ThresholdMappingManager** is responsible for managing crisis level thresho
 
 ### **Critical Data Flow:**
 ```
-ModelEnsembleManager (mode) → ThresholdMappingManager → Crisis Level → CrisisAnalyzer
+ModelEnsembleManager (mode) → CrisisThresholdManager → Crisis Level → CrisisAnalyzer
 ```
 
 ---
@@ -172,7 +172,7 @@ ModelEnsembleManager (mode) → ThresholdMappingManager → Crisis Level → Cri
 2. **Threshold adjustment logic** - Adaptive threshold management
 3. **Learning bounds validation** - Learning-specific threshold limits
 
-### **Analysis-Specific Methods (Stays in ThresholdMappingManager):**
+### **Analysis-Specific Methods (Stays in CrisisThresholdManager):**
 1. **`determine_crisis_level()`** - **CRITICAL** - Core crisis analysis
 2. **`requires_staff_review()`** - **CRITICAL** - Human intervention logic
 3. **Mode-specific threshold methods** - Crisis analysis configuration
@@ -206,7 +206,7 @@ ModelEnsembleManager (mode) → ThresholdMappingManager → Crisis Level → Cri
 - Learning-based threshold adjustment logic
 - Threshold adaptation bounds and validation
 
-### **Keep in ThresholdMappingManager:**
+### **Keep in CrisisThresholdManager:**
 - **`determine_crisis_level()`** - **CRITICAL BUSINESS LOGIC**
 - **`requires_staff_review()`** - **CRITICAL SAFETY LOGIC**  
 - Mode-specific threshold configuration
@@ -217,7 +217,7 @@ ModelEnsembleManager (mode) → ThresholdMappingManager → Crisis Level → Cri
 
 ## ✅ **Phase 3e Step 1.1 Status**
 
-**Manager**: threshold_mapping_manager.py  
+**Manager**: crisis_threshold_manager.py  
 **Documentation**: ✅ **COMPLETE**  
 **Core Methods**: 8 identified  
 **Shared Methods**: 4 identified for SharedUtilitiesManager  

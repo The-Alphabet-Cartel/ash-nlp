@@ -1,4 +1,4 @@
-# ash-nlp/managers/threshold_mapping_manager.py
+# ash-nlp/managers/crisis_threshold.py
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
 CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
@@ -9,12 +9,13 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 3. FALLBACK: Uses pattern-only classification if AI models fail
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
-Mode-Aware Threshold Configuration Manager for Ash NLP Service
+Mode-Aware Crisis Threshold Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.7-2
 LAST MODIFIED: 2025-08-21
-PHASE: 3e, Sub-step 5.2 - ThresholdMappingManager Cleanup
+PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
+RENAMED FROM: managers/threshold_mapping_manager.py
 MIGRATION STATUS: Methods moved to CrisisAnalyzer and LearningSystemManager with migration references
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -26,18 +27,22 @@ from typing import Dict, Any, Optional, Union
 
 logger = logging.getLogger(__name__)
 
-class ThresholdMappingManager:
+class CrisisThresholdManager:
     """
     Manages threshold mappings for crisis level determination and staff review logic
+    
+    RENAMED FROM: ThresholdMappingManager (Phase 3e Step 5.7)
+    
     Phase 3c: Mode-aware thresholds with dynamic ensemble mode detection
     Phase 3d Step 9: Updated to use UnifiedConfigManager - NO MORE os.getenv() calls
     Phase 3d Step 10.7: Added missing determine_crisis_level method
     Phase 3e Sub-step 5.2: CLEANUP - Methods moved to CrisisAnalyzer and LearningSystemManager
+    Phase 3e Step 5.7: RENAMED for clarity and v3.1 compliance
     """
     
     def __init__(self, unified_config_manager, model_ensemble_manager=None):
         """
-        Initialize ThresholdMappingManager with mode-aware threshold support
+        Initialize CrisisThresholdManager with mode-aware threshold support
         
         Args:
             unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
@@ -50,17 +55,17 @@ class ThresholdMappingManager:
         self._validation_errors = []
         
         # Load threshold mapping configuration using unified manager
-        self._load_threshold_mapping_config()
+        self._load_crisis_threshold_config()
         
-        logger.info("ThresholdMappingManager v3.1-3e-5.2-1 initialized - Phase 3e cleanup with migration references")
+        logger.info("CrisisThresholdManager v3.1-3e-5.7-2 initialized - Phase 3e Step 5.7 manager renaming complete")
     
-    def _load_threshold_mapping_config(self):
+    def _load_crisis_threshold_config(self):
         """
         Load threshold mapping configuration using UnifiedConfigManager get_config_section()
         SIMPLIFIED: No more manual environment variable resolution needed
         """
         try:
-            raw_config = self.unified_config.get_config_section('threshold_mapping')
+            raw_config = self.unified_config.get_config_section('crisis_threshold')
             
             if not raw_config:
                 logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
@@ -84,7 +89,7 @@ class ThresholdMappingManager:
         """Get fallback threshold configuration using UnifiedConfigManager"""
         # STEP 9 CHANGE: Use unified_config instead of os.getenv() for all fallbacks
         return {
-            'threshold_mapping_by_mode': {
+            'crisis_threshold_by_mode': {
                 'consensus': {
                     'crisis_level_mapping': {
                         'crisis_to_high': self.unified_config.get_env_float('NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH', 0.50),
@@ -533,8 +538,8 @@ class ThresholdMappingManager:
         
         try:
             ensemble_thresholds = self.unified_config.get_config_section(
-                'threshold_mapping', 
-                f'threshold_mapping_by_mode.{mode}.ensemble_thresholds',
+                'crisis_threshold', 
+                f'crisis_threshold_by_mode.{mode}.ensemble_thresholds',
                 {
                     'critical': 0.7,
                     'high': 0.45,
@@ -587,8 +592,8 @@ class ThresholdMappingManager:
         
         try:
             crisis_mapping = self.unified_config.get_config_section(
-                'threshold_mapping',
-                f'threshold_mapping_by_mode.{mode}.crisis_level_mapping',
+                'crisis_threshold',
+                f'crisis_threshold_by_mode.{mode}.crisis_level_mapping',
                 {
                     'crisis_to_high': 0.5,
                     'crisis_to_medium': 0.3,
@@ -644,8 +649,8 @@ class ThresholdMappingManager:
         
         try:
             staff_thresholds = self.unified_config.get_config_section(
-                'threshold_mapping',
-                f'threshold_mapping_by_mode.{mode}.staff_review_thresholds',
+                'crisis_threshold',
+                f'crisis_threshold_by_mode.{mode}.staff_review_thresholds',
                 {
                     'high_always': True,
                     'medium_confidence_threshold': 0.5,
@@ -757,7 +762,7 @@ class ThresholdMappingManager:
         """
         try:
             global_staff = self.unified_config.get_config_section(
-                'threshold_mapping',
+                'crisis_threshold',
                 'global_staff_review',
                 {
                     'high_always': True,
@@ -946,7 +951,7 @@ class ThresholdMappingManager:
         """
         try:
             integration_config = self.unified_config.get_config_section(
-                'threshold_mapping',
+                'crisis_threshold',
                 'shared_configuration.pattern_integration',
                 {
                     'pattern_weight_multiplier': 1.2,
@@ -1109,7 +1114,7 @@ class ThresholdMappingManager:
             'is_valid': len(self._validation_errors) == 0,
             'errors': self._validation_errors,
             'total_errors': len(self._validation_errors),
-            'modes_configured': list(self.threshold_config.get('threshold_mapping_by_mode', {}).keys()) if self.threshold_config else [],
+            'modes_configured': list(self.threshold_config.get('crisis_threshold_by_mode', {}).keys()) if self.threshold_config else [],
             'current_mode': self.get_current_ensemble_mode()
         }
     
@@ -1118,14 +1123,17 @@ class ThresholdMappingManager:
         current_mode = self.get_current_ensemble_mode()
         
         return {
+            'manager_version': 'v3.1-3e-5.7-2',
+            'manager_name': 'CrisisThresholdManager',
             'current_mode': current_mode,
             'crisis_level_mapping': self.get_crisis_level_mapping_for_mode(),
             'staff_review_thresholds': self.get_staff_review_thresholds_for_mode(),
             'learning_thresholds_note': self.get_learning_thresholds(),  # Now returns migration info
             'validation_status': self.get_validation_status(),
-            'available_modes': list(self.threshold_config.get('threshold_mapping_by_mode', {}).keys()) if self.threshold_config else [],
+            'available_modes': list(self.threshold_config.get('crisis_threshold_by_mode', {}).keys()) if self.threshold_config else [],
             'phase_3e_changes': {
                 'sub_step_5_2_completed': 'Methods moved to CrisisAnalyzer and LearningSystemManager',
+                'step_5_7_completed': 'Manager renamed from ThresholdMappingManager to CrisisThresholdManager',
                 'crisis_analyzer_methods': [
                     'apply_crisis_thresholds()',
                     'calculate_crisis_level_from_confidence()',
@@ -1141,29 +1149,31 @@ class ThresholdMappingManager:
         }
 
 # ============================================================================
-# FACTORY FUNCTION - Updated for Phase 3e Sub-step 5.2
+# FACTORY FUNCTION - Updated for Phase 3e Step 5.7 (RENAMED)
 # ============================================================================
 
-def create_threshold_mapping_manager(unified_config_manager, model_ensemble_manager=None) -> ThresholdMappingManager:
+def create_crisis_threshold_manager(unified_config_manager, model_ensemble_manager=None) -> CrisisThresholdManager:
     """
-    Factory function to create ThresholdMappingManager instance - Phase 3e Sub-step 5.2
+    Factory function to create CrisisThresholdManager instance - Phase 3e Step 5.7
+    
+    RENAMED FROM: create_threshold_mapping_manager (Phase 3e Step 5.7)
     
     Args:
         unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
         model_ensemble_manager: ModelEnsembleManager instance for mode detection
         
     Returns:
-        ThresholdMappingManager instance with Phase 3e cleanup complete
+        CrisisThresholdManager instance with Phase 3e Step 5.7 renaming complete
     """
-    return ThresholdMappingManager(unified_config_manager, model_ensemble_manager)
+    return CrisisThresholdManager(unified_config_manager, model_ensemble_manager)
 
 # ============================================================================
-# CLEAN ARCHITECTURE EXPORTS
+# CLEAN ARCHITECTURE EXPORTS (UPDATED)
 # ============================================================================
 
 __all__ = [
-    'ThresholdMappingManager',
-    'create_threshold_mapping_manager'
+    'CrisisThresholdManager',
+    'create_crisis_threshold_manager'
 ]
 
-logger.info("✅ ThresholdMappingManager v3.1-3e-5.2-1 loaded - Phase 3e Sub-step 5.2 cleanup complete with migration references")
+logger.info("✅ CrisisThresholdManager v3.1-3e-5.7-2 loaded - Phase 3e Step 5.7 manager renaming complete")

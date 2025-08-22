@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Pattern Analysis Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-5.5-6-2
+FILE VERSION: v3.1-3e-5.7-1
 CREATED: 2025-08-21
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -203,7 +203,7 @@ class PatternAnalysisHelper:
         Migrated from: CrisisAnalyzer._get_context_window()
         """
         try:
-            value = self.crisis_analyzer.unified_config_manager.get_config_section('analysis_parameters', 'semantic_analysis.context_window', 3)
+            value = self.crisis_analyzer.unified_config_manager.get_config_section('analysis_config', 'semantic_analysis.context_window', 3)
             return int(value) if value is not None else 3
         except Exception as e:
             logger.warning(f"Error getting context window: {e}, using default: 3")
@@ -215,7 +215,7 @@ class PatternAnalysisHelper:
         Migrated from: CrisisAnalyzer._get_negative_threshold()
         """
         try:
-            value = self.crisis_analyzer.unified_config_manager.get_config_section('analysis_parameters', 'semantic_analysis.negative_threshold', 0.6)
+            value = self.crisis_analyzer.unified_config_manager.get_config_section('analysis_config', 'semantic_analysis.negative_threshold', 0.6)
             return float(value) if value is not None else 0.6
         except Exception as e:
             logger.warning(f"Error getting negative threshold: {e}, using default: 0.6")

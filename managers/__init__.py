@@ -1,15 +1,17 @@
 # ash-nlp/managers/__init__.py
 """
 Managers Module for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d, Step 10.11-3
+FILE VERSION: v3.1-3e-5.7-1
+LAST MODIFIED: 2025-08-21
+PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 This module provides centralized manager imports and factory functions
 following Clean v3.1 architecture principles with proper dependency injection.
+
+PHASE 3E STEP 5.7 UPDATE: AnalysisParametersManager renamed to AnalysisConfigManager
 """
 
 import logging
@@ -20,18 +22,18 @@ logger = logging.getLogger(__name__)
 # MANAGER IMPORTS WITH RESILIENT ERROR HANDLING
 # ============================================================================
 
-logger.info("🏭 Loading managers v3.1 with Clean Architecture patterns...")
+logger.info("🭔 Loading managers v3.1 with Clean Architecture patterns...")
 
-# Analysis Parameter Manager (Phase 3B)
+# Analysis Config Manager (Phase 3e Step 5.7 - RENAMED from AnalysisParametersManager)
 try:
-    from .analysis_parameters_manager import AnalysisParametersManager, create_analysis_parameters_manager
-    ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ AnalysisParametersManager v3.1 imported")
+    from .analysis_config import AnalysisConfigManager, create_analysis_config_manager
+    ANALYSIS_CONFIG_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ AnalysisConfigManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"  ❌ AnalysisParametersManager v3.1 import failed: {e}")
-    AnalysisParametersManager = None
-    create_analysis_parameters_manager = None
-    ANALYSIS_PARAMETERS_MANAGER_AVAILABLE = False
+    logger.error(f"  ❌ AnalysisConfigManager v3.1 import failed: {e}")
+    AnalysisConfigManager = None
+    create_analysis_config_manager = None
+    ANALYSIS_CONFIG_MANAGER_AVAILABLE = False
 
 # Context Pattern Manager (Phase 3D Step 10.8) - NEW
 try:
@@ -145,13 +147,13 @@ except ImportError as e:
 
 # Threshold Mapping Manager (Phase 3C)
 try:
-    from .threshold_mapping_manager import ThresholdMappingManager, create_threshold_mapping_manager
+    from .crisis_threshold_manager import CrisisThresholdManager, create_crisis_threshold_manager
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ ThresholdMappingManager v3.1 imported")
+    logger.debug("  ✅ CrisisThresholdManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"  ❌ ThresholdMappingManager v3.1 import failed: {e}")
-    ThresholdMappingManager = None
-    create_threshold_mapping_manager = None
+    logger.error(f"  ❌ CrisisThresholdManager v3.1 import failed: {e}")
+    CrisisThresholdManager = None
+    create_crisis_threshold_manager = None
     THRESHOLD_MAPPING_MANAGER_AVAILABLE = False
 
 # Unified Configuration Manager (Core)
@@ -177,19 +179,21 @@ except ImportError as e:
     ZERO_SHOT_MANAGER_AVAILABLE = False
 
 # ============================================================================
-# MANAGER AVAILABILITY SUMMARY
+# MANAGER AVAILABILITY SUMMARY (UPDATED FOR STEP 5.7)
 # ============================================================================
 
 def get_manager_status() -> dict:
     """
     Get status of all available managers
     
+    UPDATED: Phase 3e Step 5.7 - analysis_parameters_manager renamed to analysis_config_manager
+    
     Returns:
         Dictionary showing availability of all manager types
     """
     return {
-        'analysis_parameters_manager': ANALYSIS_PARAMETERS_MANAGER_AVAILABLE,
-        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,  # NEW
+        'analysis_config_manager': ANALYSIS_CONFIG_MANAGER_AVAILABLE,
+        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,
         'crisis_pattern_manager': CRISIS_PATTERN_MANAGER_AVAILABLE,
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
@@ -199,20 +203,20 @@ def get_manager_status() -> dict:
         'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
         'settings_manager': SETTINGS_MANAGER_AVAILABLE,
         'storage_config_manager': STORAGE_CONFIG_MANAGER_AVAILABLE,
-        'threshold_mapping_manager': THRESHOLD_MAPPING_MANAGER_AVAILABLE,
+        'crisis_threshold_manager': THRESHOLD_MAPPING_MANAGER_AVAILABLE,
         'unified_config_managers': UNIFIED_CONFIG_MANAGER_AVAILABLE,
         'zero_shot_manager': ZERO_SHOT_MANAGER_AVAILABLE,
     }
 
 # ============================================================================
-# STEP 10.8: UNIFIED CONFIGURATION EXPORTS WITH CONTEXT PATTERN MANAGER
+# STEP 5.7: UPDATED EXPORTS WITH RENAMED ANALYSIS CONFIG MANAGER
 # ============================================================================
 
 __all__ = [
-    'AnalysisParametersManager',
-    'create_analysis_parameters_manager',
-    'ContextPatternManager',  # NEW
-    'create_context_pattern_manager',  # NEW
+    'AnalysisConfigManager',
+    'create_analysis_config_manager',
+    'ContextPatternManager',
+    'create_context_pattern_manager',
     'CrisisPatternManager',
     'create_crisis_pattern_manager',
     'FeatureConfigManager',
@@ -231,8 +235,8 @@ __all__ = [
     'create_settings_manager',
     'StorageConfigManager',
     'create_storage_config_manager',
-    'ThresholdMappingManager',
-    'create_threshold_mapping_manager',
+    'CrisisThresholdManager',
+    'create_crisis_threshold_manager',
     'UnifiedConfigManager',
     'create_unified_config_manager',
     'ZeroShotManager',
@@ -242,8 +246,8 @@ __all__ = [
 ]
 
 # ============================================================================
-# STEP 10.8 COMPLETION LOG
+# STEP 5.7 COMPLETION LOG
 # ============================================================================
 
-logger.info("✅ Managers __init__.py Step 10.8 complete - ContextPatternManager added")
+logger.info("✅ Managers __init__.py Step 5.7 complete - AnalysisParametersManager renamed to AnalysisConfigManager")
 logger.info(f"📊 Manager status: {sum(get_manager_status().values())}/{len(get_manager_status())} managers available")

@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Runtime Settings and Configuration Overrides for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
 PHASE: 3e, Sub-step 5.5, Task 5 - SettingsManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -45,7 +45,7 @@ class SettingsManager:
     
     This manager serves as the central coordination point for all configuration across the system.
     All configuration now accessed through specialized managers with fallback support:
-    - Analysis parameters: AnalysisParametersManager
+    - Analysis config: AnalysisConfigManager
     - Crisis patterns: CrisisPatternManager
     - Feature flags: FeatureConfigManager
     - Learning system settings: LearningSystemManager
@@ -56,7 +56,7 @@ class SettingsManager:
     - Server settings: ServerConfigManager
     - Shared utilities: SharedUtilitiesManager
     - Storage settings: StorageConfigManager
-    - Threshold mappings: ThresholdMappingManager
+    - Threshold mappings: CrisisThresholdManager
     - Zero Shot settings: ZeroShotManager
     
     Phase 3e Improvements:
@@ -67,19 +67,19 @@ class SettingsManager:
     """
     
     def __init__(self, unified_config,
-        analysis_parameters_manager=None, crisis_pattern_manager=None,
+        analysis_config_manager=None, crisis_pattern_manager=None,
         feature_config_manager=None, learning_system_manager=None,
         logging_config_manager=None, model_ensemble_manager=None,
         performance_config_manager=None, pydantic_manager=None,
         server_config_manager=None, shared_utilities_manager=None,
-        storage_config_manager=None, threshold_mapping_manager=None,
+        storage_config_manager=None, crisis_threshold_manager=None,
         zero_shot_manager=None):
         """
         Initialize SettingsManager with dependency injection for all managers
         
         Args:
             unified_config_manager: UnifiedConfigManager instance for dependency injection
-            analysis_parameters_manager: AnalysisParametersManager instance
+            analysis_config_manager: AnalysisConfigManager instance
             crisis_pattern_manager: CrisisPatternManager instance
             feature_config_manager: FeatureConfigManager instance
             learning_system_manager: LearningSystemManager instance
@@ -90,14 +90,14 @@ class SettingsManager:
             server_config_manager: ServerConfigManager instance
             shared_utilities_manager: SharedUtilitiesManager instance
             storage_config_manager: StorageConfigManager instance
-            threshold_mapping_manager: ThresholdMappingManager instance
+            crisis_threshold_manager: CrisisThresholdManager instance
             zero_shot_manager: ZeroShotManager instance
         """
         # Core configuration manager (required)
         self.unified_config = unified_config
         
         # All specialized managers (optional dependencies)
-        self.analysis_parameters_manager = analysis_parameters_manager
+        self.analysis_config_manager = analysis_config_manager
         self.crisis_pattern_manager = crisis_pattern_manager
         self.feature_config_manager = feature_config_manager
         self.learning_system_manager = learning_system_manager
@@ -108,7 +108,7 @@ class SettingsManager:
         self.server_config_manager = server_config_manager
         self.shared_utilities_manager = shared_utilities_manager
         self.storage_config_manager = storage_config_manager
-        self.threshold_mapping_manager = threshold_mapping_manager
+        self.crisis_threshold_manager = crisis_threshold_manager
         self.zero_shot_manager = zero_shot_manager
 
         # Runtime state
@@ -168,7 +168,7 @@ class SettingsManager:
         """Validate manager integration for Phase 3e"""
         managers = {
             'UnifiedConfigManager': self.unified_config,
-            'AnalysisParametersManager': self.analysis_parameters_manager,
+            'AnalysisConfigManager': self.analysis_config_manager,
             'CrisisPatternManager': self.crisis_pattern_manager,
             'FeatureConfigManager': self.feature_config_manager,
             'LearningSystemManager': self.learning_system_manager,
@@ -179,7 +179,7 @@ class SettingsManager:
             'ServerConfigManager': self.server_config_manager,
             'SharedUtilitiesManager': self.shared_utilities_manager,
             'StorageConfigManager': self.storage_config_manager,
-            'ThresholdMappingManager': self.threshold_mapping_manager,
+            'CrisisThresholdManager': self.crisis_threshold_manager,
             'ZeroShotManager': self.zero_shot_manager,
         }
         
@@ -417,9 +417,9 @@ class SettingsManager:
         """PHASE 3E: Enhanced migration notice for deprecated analysis parameter methods"""
         return {
             'status': 'migrated',
-            'message': 'Analysis parameters have been migrated to AnalysisParametersManager in Phase 3b',
-            'access_method': 'Use AnalysisParametersManager methods directly',
-            'documentation': 'See Phase 3b migration guide for details',
+            'message': 'Analysis parameters have been migrated to AnalysisConfigManager in Phase 3e',
+            'access_method': 'Use AnalysisConfigManager methods directly',
+            'documentation': 'See Phase 3e migration guide for details',
             'migration_date': '2025-08-19',
             'phase': '3e.5.5',
             'benefits': [
@@ -430,12 +430,12 @@ class SettingsManager:
             ]
         }
     
-    def get_threshold_mapping_migration_notice(self):
+    def get_crisis_threshold_migration_notice(self):
         """PHASE 3E: Enhanced migration notice for deprecated threshold mapping methods"""
         return {
             'status': 'migrated',
-            'message': 'Threshold mappings have been migrated to ThresholdMappingManager in Phase 3c',
-            'access_method': 'Use ThresholdMappingManager methods directly',
+            'message': 'Threshold mappings have been migrated to CrisisThresholdManager in Phase 3c',
+            'access_method': 'Use CrisisThresholdManager methods directly',
             'documentation': 'See Phase 3c migration guide for details',
             'migration_date': '2025-08-19',
             'phase': '3e.5.5',
@@ -498,12 +498,12 @@ class SettingsManager:
             'manager_version': 'v3.1e-5.5-1',
             'phase': '3e Sub-step 5.5 Task 5',
             'total_managers_available': len([m for m in [
-                self.analysis_parameters_manager, self.crisis_pattern_manager,
+                self.analysis_config_manager, self.crisis_pattern_manager,
                 self.feature_config_manager, self.learning_system_manager,
                 self.logging_config_manager, self.model_ensemble_manager,
                 self.performance_config_manager, self.pydantic_manager,
                 self.server_config_manager, self.shared_utilities_manager,
-                self.storage_config_manager, self.threshold_mapping_manager,
+                self.storage_config_manager, self.crisis_threshold_manager,
                 self.zero_shot_manager
             ] if m is not None]),
             'runtime_overrides_count': len(self.setting_overrides),
@@ -678,19 +678,19 @@ class SettingsManager:
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
 # ============================================================================
 def create_settings_manager(unified_config,
-    analysis_parameters_manager=None, crisis_pattern_manager=None,
+    analysis_config_manager=None, crisis_pattern_manager=None,
     feature_config_manager=None, learning_system_manager=None,
     logging_config_manager=None, model_ensemble_manager=None,
     performance_config_manager=None, pydantic_manager=None,
     server_config_manager=None, shared_utilities_manager=None,
-    storage_config_manager=None, threshold_mapping_manager=None,
+    storage_config_manager=None, crisis_threshold_manager=None,
     zero_shot_manager=None) -> SettingsManager:
     """
     Factory function for SettingsManager (Clean v3.1 Pattern) - Phase 3e Enhanced
     
     Args:
         unified_config_manager: UnifiedConfigManager instance
-        analysis_parameters_manager: AnalysisParametersManager instance
+        analysis_config_manager: AnalysisConfigManager instance
         crisis_pattern_manager: CrisisPatternManager instance
         feature_config_manager: FeatureConfigManager instance
         learning_system_manager: LearningSystemManager instance
@@ -701,7 +701,7 @@ def create_settings_manager(unified_config,
         server_config_manager: ServerConfigManager instance
         shared_utilities_manager: SharedUtilitiesManager instance
         storage_config_manager: StorageConfigManager instance
-        threshold_mapping_manager: ThresholdMappingManager instance
+        crisis_threshold_manager: CrisisThresholdManager instance
         zero_shot_manager: ZeroShotManager instance
 
     Returns:
@@ -709,7 +709,7 @@ def create_settings_manager(unified_config,
     """
     return SettingsManager(
         unified_config,
-        analysis_parameters_manager=analysis_parameters_manager,
+        analysis_config_manager=analysis_config_manager,
         crisis_pattern_manager=crisis_pattern_manager,
         feature_config_manager=feature_config_manager,
         learning_system_manager=learning_system_manager,
@@ -720,7 +720,7 @@ def create_settings_manager(unified_config,
         server_config_manager=server_config_manager,
         shared_utilities_manager=shared_utilities_manager,
         storage_config_manager=storage_config_manager,
-        threshold_mapping_manager=threshold_mapping_manager,
+        crisis_threshold_manager=crisis_threshold_manager,
         zero_shot_manager=zero_shot_manager,
     )
 

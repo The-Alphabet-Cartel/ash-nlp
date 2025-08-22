@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Admin endpoints for label management and system administration for Ash NLP Service v3.1
 ---
-FILE VERSION: v3.1-3d-5.5-6-1
+FILE VERSION: v3.1-3d-5.7-1
 LAST MODIFIED: 2025-08-21
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
@@ -60,7 +60,7 @@ class LabelValidationResponse(BaseModel):
     stats: Dict[str, Any]
 
 def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis_pattern_manager=None,
-                         analysis_parameters_manager=None, threshold_mapping_manager=None):
+                         analysis_config_manager=None, crisis_threshold_manager=None):
     """
     Setup admin endpoints with complete Phase 3c manager architecture
     
@@ -69,8 +69,8 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
         model_ensemble_manager: Model Ensemble Manager instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
         crisis_pattern_manager: CrisisPatternManager instance (Phase 3a)
-        analysis_parameters_manager: AnalysisParametersManager instance (Phase 3b) - NEW
-        threshold_mapping_manager: ThresholdMappingManager instance (Phase 3c) - NEW
+        analysis_config_manager: AnalysisConfigManager instance (Phase 3b) - NEW
+        crisis_threshold_manager: CrisisThresholdManager instance (Phase 3c) - NEW
     """
     
     # ========================================================================
@@ -113,8 +113,8 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
                     "zero_shot_manager": zero_shot_manager is not None,
                     "model_ensemble_manager": model_ensemble_manager is not None,
                     "crisis_pattern_manager": crisis_pattern_manager is not None,
-                    "analysis_parameters_manager": analysis_parameters_manager is not None,
-                    "threshold_mapping_manager": threshold_mapping_manager is not None
+                    "analysis_config_manager": analysis_config_manager is not None,
+                    "crisis_threshold_manager": crisis_threshold_manager is not None
                 }
             }
             
@@ -133,34 +133,34 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
                 status["crisis_patterns"] = {"available": False, "note": "Crisis pattern manager not provided"}
             
             # Phase 3b - Analysis Parameters Manager Status - NEW
-            if analysis_parameters_manager:
+            if analysis_config_manager:
                 try:
-                    all_params = analysis_parameters_manager.get_all_parameters()
-                    status["analysis_parameters"] = {
+                    all_params = analysis_config_manager.get_all_parameters()
+                    status["analysis_config"] = {
                         "categories": len(all_params),
                         "available": True,
                         "phase_3b_integrated": True,
                         "externalized": True
                     }
                 except Exception as e:
-                    status["analysis_parameters"] = {"available": False, "error": str(e)}
+                    status["analysis_config"] = {"available": False, "error": str(e)}
             else:
-                status["analysis_parameters"] = {"available": False, "note": "Analysis parameters manager not provided"}
+                status["analysis_config"] = {"available": False, "note": "Analysis parameters manager not provided"}
             
             # Phase 3c - Threshold Mapping Manager Status - NEW
-            if threshold_mapping_manager:
+            if crisis_threshold_manager:
                 try:
-                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    status["threshold_mapping"] = {
+                    current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+                    status["crisis_threshold"] = {
                         "current_mode": current_mode,
                         "available": True,
                         "phase_3c_integrated": True,
                         "mode_aware": True
                     }
                 except Exception as e:
-                    status["threshold_mapping"] = {"available": False, "error": str(e)}
+                    status["crisis_threshold"] = {"available": False, "error": str(e)}
             else:
-                status["threshold_mapping"] = {"available": False, "note": "Threshold mapping manager not provided"}
+                status["crisis_threshold"] = {"available": False, "note": "Threshold mapping manager not provided"}
             
             return status
             
@@ -197,32 +197,32 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
                     summary["components"]["crisis_patterns"] = {"error": str(e)}
             
             # Phase 3b - Analysis Parameters
-            if analysis_parameters_manager:
+            if analysis_config_manager:
                 try:
-                    all_params = analysis_parameters_manager.get_all_parameters()
-                    summary["components"]["analysis_parameters"] = {
+                    all_params = analysis_config_manager.get_all_parameters()
+                    summary["components"]["analysis_config"] = {
                         "source": "JSON configuration + environment overrides",
                         "status": "externalized",
                         "categories": list(all_params.keys()),
-                        "manager": "AnalysisParametersManager"
+                        "manager": "AnalysisConfigManager"
                     }
                 except Exception as e:
-                    summary["components"]["analysis_parameters"] = {"error": str(e)}
+                    summary["components"]["analysis_config"] = {"error": str(e)}
             
             # Phase 3c - Threshold Mapping
-            if threshold_mapping_manager:
+            if crisis_threshold_manager:
                 try:
-                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
-                    summary["components"]["threshold_mapping"] = {
+                    current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+                    crisis_thresholds = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
+                    summary["components"]["crisis_threshold"] = {
                         "source": "JSON configuration + environment overrides",
                         "status": "externalized",
                         "current_mode": current_mode,
                         "crisis_levels": list(crisis_thresholds.keys()),
-                        "manager": "ThresholdMappingManager"
+                        "manager": "CrisisThresholdManager"
                     }
                 except Exception as e:
-                    summary["components"]["threshold_mapping"] = {"error": str(e)}
+                    summary["components"]["crisis_threshold"] = {"error": str(e)}
             
             return summary
             
@@ -238,16 +238,16 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
     async def threshold_status():
         """Get detailed threshold configuration status - Phase 3c"""
         try:
-            if not threshold_mapping_manager:
+            if not crisis_threshold_manager:
                 return {
                     "status": "not_available",
-                    "message": "ThresholdMappingManager not provided",
+                    "message": "CrisisThresholdManager not provided",
                     "phase_3c_integrated": False
                 }
             
-            current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-            crisis_thresholds = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
-            staff_review_config = threshold_mapping_manager.get_staff_review_config()
+            current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+            crisis_thresholds = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
+            staff_review_config = crisis_threshold_manager.get_staff_review_config()
             
             return {
                 "status": "available",
@@ -268,17 +268,17 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
     # ========================================================================
     
     @app.get("/admin/analysis/parameters")
-    async def analysis_parameters():
+    async def analysis_config():
         """Get analysis parameters configuration - Phase 3b"""
         try:
-            if not analysis_parameters_manager:
+            if not analysis_config_manager:
                 return {
                     "status": "not_available",
-                    "message": "AnalysisParametersManager not provided",
+                    "message": "AnalysisConfigManager not provided",
                     "phase_3b_integrated": False
                 }
             
-            all_params = analysis_parameters_manager.get_all_parameters()
+            all_params = analysis_config_manager.get_all_parameters()
             
             return {
                 "status": "available",
@@ -745,7 +745,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, crisis
 # Enhanced Admin Endpoints Function Signature
 # ========================================================================
 def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, crisis_pattern_manager, 
-                       model_ensemble_manager, analysis_parameters_manager=None, threshold_mapping_manager=None):
+                       model_ensemble_manager, analysis_config_manager=None, crisis_threshold_manager=None):
     """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
     logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
     
@@ -756,8 +756,8 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
             model_ensemble_manager=model_ensemble_manager,
             zero_shot_manager=zero_shot_manager,
             crisis_pattern_manager=crisis_pattern_manager,
-            analysis_parameters_manager=analysis_parameters_manager,
-            threshold_mapping_manager=threshold_mapping_manager
+            analysis_config_manager=analysis_config_manager,
+            crisis_threshold_manager=crisis_threshold_manager
         )
         
         # Include the admin router

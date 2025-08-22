@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_settings_manager(unified_config_manager, ...)`  
 **Dependencies**: UnifiedConfigManager + ALL other managers  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-5.7-1
+**LAST MODIFIED**: 2025-08-21
 
 ---
 
@@ -39,13 +39,13 @@ The **SettingsManager** serves as a **coordination hub** for runtime settings an
 
 ### **Migration Notice Methods (Backward Compatibility):**
 1. **`get_crisis_patterns_migration_notice()`** - Phase 3a migration notice
-2. **`get_analysis_parameters_migration_notice()`** - Phase 3b migration notice
-3. **`get_threshold_mapping_migration_notice()`** - Phase 3c migration notice
+2. **`get_analysis_config_migration_notice()`** - Phase 3b migration notice
+3. **`get_crisis_threshold_migration_notice()`** - Phase 3c migration notice
 4. **Deprecated method handlers** - `get_crisis_patterns()`, `get_enhanced_crisis_patterns()`, etc.
 
 ### **Manager Integration (Dependency Injection):**
 The SettingsManager accepts and coordinates with ALL other managers:
-- **analysis_parameters_manager** - Analysis parameter coordination
+- **analysis_config_manager** - Analysis parameter coordination
 - **crisis_pattern_manager** - Crisis pattern coordination
 - **feature_config_manager** - Feature flag coordination
 - **logging_config_manager** - Logging configuration coordination
@@ -54,7 +54,7 @@ The SettingsManager accepts and coordinates with ALL other managers:
 - **pydantic_manager** - Data model coordination
 - **server_config_manager** - Server configuration coordination
 - **storage_config_manager** - Storage settings coordination
-- **threshold_mapping_manager** - Threshold mapping coordination
+- **crisis_threshold_manager** - Threshold mapping coordination
 - **zero_shot_manager** - Zero-shot model coordination
 
 ---
@@ -224,11 +224,11 @@ Provides structured migration notices for deprecated functionality:
 ```
 SettingsManager (Coordination Layer)
 ├── UnifiedConfigManager (Foundation)
-├── Analysis Managers (analysis_parameters, crisis_pattern, context_pattern)
+├── Analysis Managers (analysis_config, crisis_pattern, context_pattern)
 ├── Infrastructure Managers (server_config, logging_config, storage_config)
 ├── Feature Managers (feature_config, performance_config)
 ├── Model Managers (model_ensemble, zero_shot, pydantic)
-└── Threshold Manager (threshold_mapping)
+└── Crisis Threshold Manager (crisis_threshold)
 ```
 
 ---

@@ -1,12 +1,10 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3e-4.3-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3e-5.7-1",
+    "last_modified": "2025-08-21",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
     "description": "Phase 3d Step 10.10: Threshold mapping configuration with cleaned environment variables following Clean Architecture Charter Rule #7",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-14", 
     "ensemble_modes_supported": ["consensus", "majority", "weighted"],
     "migration_phase": "3d",
     "step": "10.10",
@@ -14,7 +12,7 @@
     "step_10_10_summary": "MIXED MAPPING + PRESERVATION - 14 variables mapped to existing, 21 preserved for .env.template addition"
   },
   
-  "threshold_mapping_by_mode": {
+  "crisis_threshold_by_mode": {
     "description": "Mode-specific threshold configurations with environment variable overrides",
     "consensus": {
       "description": "Conservative thresholds for consensus mode - requires model agreement",

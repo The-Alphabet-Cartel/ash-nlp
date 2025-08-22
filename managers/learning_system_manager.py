@@ -11,11 +11,11 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Learning System Manager for Ash-NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-2
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
 PHASE: 3e Step 3.2 - LearningSystemManager Implementation (Corrected)
 CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
-MIGRATION STATUS: Learning methods extracted from both AnalysisParametersManager and ThresholdMappingManager
+MIGRATION STATUS: Learning methods extracted from both AnalysisConfigManager and CrisisThresholdManager
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -41,12 +41,12 @@ class LearningSystemManager:
     Manages adaptive threshold adjustments and learning system configuration
     for enhanced crisis detection accuracy through feedback-based learning.
     
-    Phase 3e Step 3: Extracted from AnalysisParametersManager and ThresholdMappingManager
+    Phase 3e Step 3: Extracted from AnalysisConfigManager and CrisisThresholdManager
     with enhanced threshold adjustment capabilities for comprehensive learning integration.
     
     Core Responsibilities:
-    - Learning system parameter access and validation (from AnalysisParametersManager)
-    - Learning threshold configuration (from ThresholdMappingManager)
+    - Learning system parameter access and validation (from AnalysisConfigManager)
+    - Learning threshold configuration (from CrisisThresholdManager)
     - False positive/negative threshold adjustments  
     - Learning feedback processing and persistence
     - Threshold drift management and bounds checking
@@ -87,7 +87,7 @@ class LearningSystemManager:
         self.logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 initialized with Clean v3.1 compliance")
     
     # ========================================================================
-    # CORE LEARNING CONFIGURATION - Extracted from AnalysisParametersManager
+    # CORE LEARNING CONFIGURATION - Extracted from AnalysisConfigManager
     # ========================================================================
     
     def _load_learning_configuration(self) -> None:
@@ -136,7 +136,7 @@ class LearningSystemManager:
     
     def get_learning_parameters(self) -> Dict[str, Any]:
         """
-        Get complete learning system parameters (Extracted from AnalysisParametersManager)
+        Get complete learning system parameters (Extracted from AnalysisConfigManager)
         
         Accesses learning configuration via UnifiedConfigManager with environment
         variable overrides following Rule #7 compliance (existing variables only).
@@ -295,9 +295,9 @@ class LearningSystemManager:
     
     def get_learning_thresholds(self) -> Dict[str, Any]:
         """
-        Get learning system threshold configuration (Extracted from ThresholdMappingManager)
+        Get learning system threshold configuration (Extracted from CrisisThresholdManager)
         
-        This method was moved from ThresholdMappingManager to consolidate all learning
+        This method was moved from CrisisThresholdManager to consolidate all learning
         functionality into the specialized LearningSystemManager.
         
         Returns:
@@ -342,7 +342,7 @@ class LearningSystemManager:
     
     def validate_learning_parameters(self) -> Dict[str, Any]:
         """
-        Validate learning system parameter ranges and types (Extracted from AnalysisParametersManager)
+        Validate learning system parameter ranges and types (Extracted from AnalysisConfigManager)
         
         Returns:
             Dictionary with validation results and any errors/warnings
@@ -1078,4 +1078,4 @@ __all__ = [
     'create_learning_system_manager'
 ]
 
-logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 loaded - Complete learning system with methods from both AnalysisParametersManager and ThresholdMappingManager")
+logger.info("✅ LearningSystemManager v3.1-3e-3.2-2 loaded - Complete learning system with methods from both AnalysisConfigManager and CrisisThresholdManager")

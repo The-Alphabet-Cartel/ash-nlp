@@ -1,18 +1,18 @@
 # Analysis Parameters Manager Documentation
 
-**File**: `managers/analysis_parameters_manager.py`  
+**File**: `managers/analysis_config_manager.py`  
 **Phase**: 3e Step 1.1 Documentation Audit  
 **Status**: 🔄 **IN PROGRESS**  
-**Factory Function**: `create_analysis_parameters_manager(config_manager)`  
+**Factory Function**: `create_analysis_config_manager(config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-5.7-1
+**LAST MODIFIED**: 2025-08-21
 
 ---
 
 ## 🎯 **Manager Purpose**
 
-The **AnalysisParametersManager** is responsible for loading, validating, and providing access to all analysis parameters used throughout the crisis detection system. It acts as the single source of truth for configuration parameters that control the behavior of various analysis components.
+The **AnalysisConfigManager** is responsible for loading, validating, and providing access to all analysis parameters used throughout the crisis detection system. It acts as the single source of truth for configuration parameters that control the behavior of various analysis components.
 
 **Primary Responsibilities:**
 - Load analysis parameters from JSON configuration files
@@ -103,11 +103,11 @@ The **AnalysisParametersManager** is responsible for loading, validating, and pr
 - **logging** - Error handling and debugging
 
 ### **Configuration Files:**
-- **`config/analysis_parameters.json`** - Primary configuration
+- **`config/analysis_config.json`** - Primary configuration
 - **Environment variables** - Via UnifiedConfigManager overrides
 
 ### **Integration Points:**
-- **Called by**: CrisisAnalyzer, ModelEnsembleManager, ThresholdMappingManager
+- **Called by**: CrisisAnalyzer, ModelEnsembleManager, CrisisThresholdManager
 - **Provides to**: All managers requiring analysis parameters
 
 ---
@@ -136,12 +136,12 @@ The **AnalysisParametersManager** is responsible for loading, validating, and pr
 ### **Downstream Consumers:**
 - **CrisisAnalyzer** - Analysis parameters for crisis detection
 - **ModelEnsembleManager** - Ensemble configuration
-- **ThresholdMappingManager** - Threshold parameters
+- **CrisisThresholdManager** - Threshold parameters
 - **LearningSystemManager** (Future) - Learning parameters
 
 ### **Configuration Flow:**
 ```
-JSON Config → UnifiedConfigManager → AnalysisParametersManager → Consumer Managers
+JSON Config → UnifiedConfigManager → AnalysisConfigManager → Consumer Managers
 ```
 
 ---
@@ -158,7 +158,7 @@ JSON Config → UnifiedConfigManager → AnalysisParametersManager → Consumer 
 1. **`get_learning_parameters()`** - Core learning configuration
 2. **Learning parameter validation** - Learning-specific bounds and rules
 
-### **Analysis-Specific Methods (Stays in AnalysisParametersManager):**
+### **Analysis-Specific Methods (Stays in AnalysisConfigManager):**
 1. **`get_ensemble_parameters()`** - Ensemble analysis configuration
 2. **`get_confidence_scoring_parameters()`** - Crisis confidence calculation
 3. **`get_pattern_matching_parameters()`** - Pattern analysis settings
@@ -178,7 +178,7 @@ JSON Config → UnifiedConfigManager → AnalysisParametersManager → Consumer 
 - Learning-specific parameter validation
 - Learning rate and adjustment calculation methods
 
-### **Keep in AnalysisParametersManager:**
+### **Keep in AnalysisConfigManager:**
 - Crisis analysis specific parameters
 - Ensemble configuration methods  
 - Confidence scoring parameters
@@ -188,11 +188,11 @@ JSON Config → UnifiedConfigManager → AnalysisParametersManager → Consumer 
 
 ## ✅ **Phase 3e Step 1.1 Status**
 
-**Manager**: analysis_parameters_manager.py  
+**Manager**: analysis_config_manager.py  
 **Documentation**: ✅ **COMPLETE**  
 **Core Methods**: 12 identified  
 **Shared Methods**: 4 identified for SharedUtilitiesManager  
 **Learning Methods**: 2 identified for LearningSystemManager  
 **Analysis Methods**: 6 remain in current manager  
 
-**Next Manager**: threshold_mapping_manager.py
+**Next Manager**: crisis_threshold_manager.py

@@ -4,7 +4,7 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-5.5-6-2
+**FILE VERSION**: v3.1-3e-5.7-1
 **LAST UPDATED**: 2025-08-21
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
@@ -207,7 +207,7 @@ except Exception as e:
 **Filename**:
 - `*descriptiveName*_*configurationType*.json`
 - Examples:
-  - analysis_parameters.json
+  - analysis_config.json
   - learning_settings.json
   - crisis_patterns.json
 
@@ -401,14 +401,14 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 
 ### **Phase 3b: Analysis Parameters Manager** 
 - **Principle**: All algorithm parameters externalized to JSON
-- **Integration**: AnalysisParametersManager integrated with SettingsManager
-- **Factory**: `create_analysis_parameters_manager(config_manager)`
+- **Integration**: AnalysisConfigManager integrated with SettingsManager
+- **Factory**: `create_analysis_config_manager(config_manager)`
 - **Resilience**: Uses safe algorithm defaults if parameters unavailable
 
 ### **Phase 3c: Threshold Mapping Manager**
 - **Principle**: All thresholds and mappings externalized to JSON with mode-awareness
-- **Integration**: ThresholdMappingManager integrated throughout analysis pipeline
-- **Factory**: `create_threshold_mapping_manager(config_manager, model_ensemble_manager)`
+- **Integration**: CrisisThresholdManager integrated throughout analysis pipeline
+- **Factory**: `create_crisis_threshold_manager(config_manager, model_ensemble_manager)`
 - **Resilience**: Provides conservative thresholds if configuration fails
 
 ### **Phase 3d: Environmental Variable Cleanup**
