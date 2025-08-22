@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Unified Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
 PHASE: 3e Step 5.5 - UnifiedConfigManager Optimization with Helper Files
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -76,8 +76,8 @@ class UnifiedConfigManager:
         # Configuration file mappings - UPDATED for v3.1 consolidation
         self.config_files = {
             # Core algorithm configuration
-            'analysis_parameters': 'analysis_parameters.json',
-            'threshold_mapping': 'threshold_mapping.json',
+            'analysis_config': 'analysis_config.json',
+            'crisis_threshold': 'crisis_threshold.json',
             
             # Pattern files
             'community_vocabulary_patterns': 'community_vocabulary_patterns.json',
@@ -316,7 +316,7 @@ class UnifiedConfigManager:
         Get a specific section from a configuration file with support for nested paths
         
         Args:
-            config_file: Name of the configuration file (e.g., 'analysis_parameters')
+            config_file: Name of the configuration file (e.g., 'analysis_config')
             section_path: Dot-separated path to the section (e.g., 'learning_system.thresholds')
             default: Default value to return if section not found
             
