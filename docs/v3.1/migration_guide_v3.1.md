@@ -6,7 +6,7 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-6-1  
+**FILE VERSION**: v3.1-3e-6-2
 **LAST MODIFIED**: 2025-08-22
 **PHASE**: 3e
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
@@ -124,7 +124,7 @@ ash/ash-nlp/
 │   ├── label_config.json
 │   ├── learning_system.json
 │   ├── logging_settings.json
-│   ├── model_ensemble.json
+│   ├── model_coordination.json
 │   ├── patterns_burden.json
 │   ├── patterns_community.json
 │   ├── patterns_context.json
@@ -140,11 +140,11 @@ ash/ash-nlp/
 │   ├── v3.1/
 │   │   ├── managers/
 |   |   │   ├── analysis_config.md
-|   |   │   ├── context_pattern.md
+|   |   │   ├── context_analysis.md
 |   |   │   ├── pattern_detection.md
 |   |   │   ├── feature_config.md
 |   |   │   ├── logging_config.md
-|   |   │   ├── model_ensemble.md
+|   |   │   ├── model_coordination.md
 |   |   │   ├── performance_config.md
 |   |   │   ├── pydantic.md
 |   |   │   ├── server_config.md
@@ -189,12 +189,12 @@ ash/ash-nlp/
 ├── managers/                                # All manager classes
 │   ├── __init__.py
 │   ├── analysis_config.py
-│   ├── context_pattern_manager.py
+│   ├── context_analysis.py
 │   ├── crisis_threshold.py
 │   ├── feature_config_manager.py
 │   ├── learning_system_manager.py
 │   ├── logging_config_manager.py
-│   ├── model_ensemble_manager.py
+│   ├── model_coordination_manager.py
 │   ├── pattern_detection.py
 │   ├── performance_config_manager.py
 │   ├── pydantic_manager.py
@@ -202,7 +202,7 @@ ash/ash-nlp/
 │   ├── settings_manager.py
 │   ├── shared_utilities.py
 │   ├── storage_config_manager.py
-│   ├── unified_config_manager.py
+│   ├── unified_config.py
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
 │   ├── cache/                               # Models Cache
@@ -600,7 +600,7 @@ Available configuration files via `get_config_section()`:
 - `'feature_flags'` - Feature toggle configuration
 - `'label_config'` - Zero-shot label settings
 - `'learning_system'` - Learning system settings
-- `'model_ensemble'` - Model ensemble and loading settings
+- `'model_coordination'` - Model ensemble and loading settings
 - `'performance_settings'` - Performance settings and optimization
 - `'server_config'` - Server configuration and networking
 - `'storage_settings'` - Data storage and caching configuration

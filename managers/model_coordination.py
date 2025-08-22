@@ -1,4 +1,4 @@
-# ash-nlp/managers/model_ensemble_manager.py
+# ash-nlp/managers/model_coordination.py
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
 CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Model Ensemble Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-7-3
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 5.5-7 - Phase 3: AI Classification Methods Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -23,7 +23,7 @@ PHASE 3 IMPLEMENTATION:
 - Implemented classify_with_zero_shot() for semantic classification
 - Added model pipeline management and caching
 - Proper integration with ZeroShotManager for label management
-- Correct architectural flow: EnsembleAnalysisHelper → ModelEnsembleManager → transformers
+- Correct architectural flow: EnsembleAnalysisHelper → ModelCoordinationManager → transformers
 """
 
 import os
@@ -38,15 +38,15 @@ try:
     import torch
     TRANSFORMERS_AVAILABLE = True
     logger = logging.getLogger(__name__)
-    logger.info("✅ Transformers library loaded in ModelEnsembleManager for AI classification")
+    logger.info("✅ Transformers library loaded in ModelCoordinationManager for AI classification")
 except ImportError as e:
     TRANSFORMERS_AVAILABLE = False
     logger = logging.getLogger(__name__)
-    logger.warning(f"⚠️ Transformers library not available in ModelEnsembleManager: {e}")
+    logger.warning(f"⚠️ Transformers library not available in ModelCoordinationManager: {e}")
 
 logger = logging.getLogger(__name__)
 
-class ModelEnsembleManager:
+class ModelCoordinationManager:
     """
     Model Ensemble Manager - PHASE 3: AI Classification Implementation
     
@@ -59,7 +59,7 @@ class ModelEnsembleManager:
     - Hardware configuration and optimization
     
     PHASE 3 ARCHITECTURE FIX:
-    EnsembleAnalysisHelper calls ModelEnsembleManager.classify_with_zero_shot()
+    EnsembleAnalysisHelper calls ModelCoordinationManager.classify_with_zero_shot()
     Instead of EnsembleAnalysisHelper directly creating transformers pipelines
     """
     
@@ -71,7 +71,7 @@ class ModelEnsembleManager:
             config_manager: UnifiedConfigManager instance
         """
         if config_manager is None:
-            raise ValueError("UnifiedConfigManager is required for ModelEnsembleManager")
+            raise ValueError("UnifiedConfigManager is required for ModelCoordinationManager")
         
         self.config_manager = config_manager
         
@@ -79,14 +79,14 @@ class ModelEnsembleManager:
         self._model_cache = {}
         self._model_loading_lock = asyncio.Lock()
         
-        logger.info("ModelEnsembleManager v3.1e-5.5-7-3 Phase 3 initialized with AI classification")
+        logger.info("ModelCoordinationManager v3.1e-5.5-7-3 Phase 3 initialized with AI classification")
         
         # Load and validate configuration
         self._load_and_validate_configuration()
         
         # Get device configuration for AI models
         self.device = self._get_device_config()
-        logger.info(f"🔧 ModelEnsembleManager device configuration: {self.device}")
+        logger.info(f"🔧 ModelCoordinationManager device configuration: {self.device}")
     
     # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
@@ -169,10 +169,10 @@ class ModelEnsembleManager:
         """Load model configuration using enhanced UnifiedConfigManager patterns"""
         try:
             # Use get_config_section instead of get_model_configuration
-            model_config = self.config_manager.get_config_section('model_ensemble')
+            model_config = self.config_manager.get_config_section('model_coordination')
             
             if not model_config:
-                logger.warning("No model_ensemble.json found, using environment fallback")
+                logger.warning("No model_coordination.json found, using environment fallback")
                 return self._get_fallback_model_config()
             
             # Extract model definitions from configuration
@@ -555,7 +555,7 @@ class ModelEnsembleManager:
             
             # Check ensemble_config cache_dir
             try:
-                cache_dir = self.config_manager.get_config_section('model_ensemble', 'ensemble_config.cache_dir')
+                cache_dir = self.config_manager.get_config_section('model_coordination', 'ensemble_config.cache_dir')
                 if cache_dir and cache_dir.strip():
                     os.makedirs(cache_dir, exist_ok=True)
                     logger.debug(f"Using ensemble config cache directory: {cache_dir}")
@@ -564,7 +564,7 @@ class ModelEnsembleManager:
                 logger.debug(f"Ensemble config cache dir access failed: {e}")
             
             # Check hardware_settings cache_dir
-            cache_dir = self.config_manager.get_config_section('model_ensemble', 'hardware_settings.cache_dir')
+            cache_dir = self.config_manager.get_config_section('model_coordination', 'hardware_settings.cache_dir')
             if cache_dir and cache_dir.strip():
                 os.makedirs(cache_dir, exist_ok=True)
                 logger.debug(f"Using hardware settings cache directory: {cache_dir}")
@@ -1061,25 +1061,25 @@ class ModelEnsembleManager:
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
 # ============================================================================
 
-def create_model_ensemble_manager(config_manager) -> ModelEnsembleManager:
+def create_model_coordination_manager(config_manager) -> ModelCoordinationManager:
     """
-    Factory function to create ModelEnsembleManager instance
+    Factory function to create ModelCoordinationManager instance
     
     Args:
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        ModelEnsembleManager instance
+        ModelCoordinationManager instance
     """
-    return ModelEnsembleManager(config_manager)
+    return ModelCoordinationManager(config_manager)
 
 # ============================================================================
 # BACKWARD COMPATIBILITY - Global Instance Management
 # ============================================================================
 
-_model_ensemble_manager = None
+_model_coordination_manager = None
 
-def get_model_ensemble_manager(config_manager=None) -> ModelEnsembleManager:
+def get_model_coordination_manager(config_manager=None) -> ModelCoordinationManager:
     """
     Get the global model ensemble manager instance - LEGACY COMPATIBILITY
     
@@ -1087,30 +1087,30 @@ def get_model_ensemble_manager(config_manager=None) -> ModelEnsembleManager:
         config_manager: UnifiedConfigManager instance (optional for compatibility)
         
     Returns:
-        ModelEnsembleManager instance
+        ModelCoordinationManager instance
     """
-    global _model_ensemble_manager
+    global _model_coordination_manager
     
-    if _model_ensemble_manager is None:
+    if _model_coordination_manager is None:
         if config_manager is None:
-            logger.info("Creating UnifiedConfigManager for ModelEnsembleManager compatibility")
-            from managers.unified_config_manager import create_unified_config_manager
+            logger.info("Creating UnifiedConfigManager for ModelCoordinationManager compatibility")
+            from managers.unified_config import create_unified_config_manager
             config_manager = create_unified_config_manager()
         
-        _model_ensemble_manager = ModelEnsembleManager(config_manager)
+        _model_coordination_manager = ModelCoordinationManager(config_manager)
     
-    return _model_ensemble_manager
+    return _model_coordination_manager
 
-def reset_model_ensemble_manager():
+def reset_model_coordination_manager():
     """Reset the global manager instance - for testing"""
-    global _model_ensemble_manager
-    _model_ensemble_manager = None
+    global _model_coordination_manager
+    _model_coordination_manager = None
 
 __all__ = [
-    'ModelEnsembleManager', 
-    'create_model_ensemble_manager',
-    'get_model_ensemble_manager', 
-    'reset_model_ensemble_manager'
+    'ModelCoordinationManager', 
+    'create_model_coordination_manager',
+    'get_model_coordination_manager', 
+    'reset_model_coordination_manager'
 ]
 
-logger.info("ModelEnsembleManager v3.1e-5.5-7-3 Phase 3 loaded - AI classification methods implemented")
+logger.info("ModelCoordinationManager v3.1e-5.5-7-3 Phase 3 loaded - AI classification methods implemented")

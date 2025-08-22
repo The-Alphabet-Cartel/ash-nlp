@@ -28,6 +28,7 @@
 ### **Testing Strategy:**
 - **Comprehensive coverage** of all system components
 - **Real-world scenarios** for crisis detection workflows
+  - **Do Not Tune Thresholds** for any mode, tuning will happen later
 - **Performance benchmarking** against baseline metrics
 - **Error handling validation** under various failure conditions
 - **Integration validation** across all manager boundaries
@@ -104,7 +105,7 @@
 **Performance Metrics:**
 
 1. **Response Time Benchmarks:**
-   - **Crisis Analysis**: < 100ms per message (target: < 80ms)
+   - **Crisis Analysis**: < 500ms per message (target: < 100ms)
    - **Configuration Loading**: < 10ms per config access
    - **Manager Initialization**: < 500ms for all managers
    - **Learning Feedback**: < 50ms per feedback event
@@ -123,18 +124,18 @@
    ```python
    # Before Phase 3e (baseline)
    baseline_metrics = {
-       'crisis_analysis_ms': 120,
-       'config_access_ms': 15,
-       'memory_mb': 180,
-       'throughput_msg_sec': 85
+       'crisis_analysis_ms': 1500,
+       'config_access_ms': 50,
+       'memory_mb': 250,
+       'throughput_msg_sec': 50
    }
    
    # After Phase 3e (target)
    target_metrics = {
-       'crisis_analysis_ms': 80,    # 33% improvement
-       'config_access_ms': 5,       # 66% improvement  
-       'memory_mb': 150,            # 17% improvement
-       'throughput_msg_sec': 120    # 41% improvement
+       'crisis_analysis_ms': 100,
+       'config_access_ms': 5,
+       'memory_mb': 150,
+       'throughput_msg_sec': 120
    }
    ```
 
@@ -171,14 +172,14 @@
    - Docker container testing
    - Production-like configuration
    - Real environment variable resolution
-   - Actual model loading (if available)
+   - Actual model loading
    - Production logging configuration
 
 2. **Data Testing:**
    - Real message samples (anonymized)
    - Edge case message variations
    - High-volume message processing
-   - Multilingual content testing (if applicable)
+   - Multilingual content testing
 
 3. **Configuration Testing:**
    - Production configuration files
@@ -189,31 +190,23 @@
 4. **Error Scenario Testing:**
    - Network failures
    - Configuration file corruption
-   - Memory pressure conditions
-   - High CPU load conditions
 
 **Production Test Scenarios:**
 ```python
 # Production-like test scenarios
 test_scenarios = [
-    {
-        'name': 'high_volume_processing',
-        'messages_per_second': 50,
-        'duration_minutes': 30,
-        'expected_success_rate': 99.9
-    },
-    {
-        'name': 'crisis_detection_accuracy',
-        'message_samples': 1000,
-        'crisis_messages': 100,
-        'expected_detection_rate': 95.0
-    },
-    {
-        'name': 'memory_stability',
-        'duration_hours': 4,
-        'message_rate': 10,
-        'max_memory_growth_mb': 50
-    }
+  {
+    'name': 'high_volume_processing',
+    'messages_per_second': 50,
+    'duration_minutes': 30,
+    'expected_success_rate': 99.9
+  },
+  {
+    'name': 'crisis_detection_accuracy',
+    'message_samples': 1000,
+    'crisis_messages': 100,
+    'expected_detection_rate': 95.0
+  }
 ]
 ```
 
@@ -240,48 +233,51 @@ test_scenarios = [
 **Documentation Categories:**
 
 1. **System Architecture Documentation:**
-   - Updated system overview with new manager names
-   - Architecture diagrams with consolidation changes
-   - Integration flow documentation
-   - API documentation updates
+  - Replace system overview with new file
+  - Architecture diagrams with consolidation changes
+  - Integration flow documentation
+  - API documentation updates
 
-2. **Manager Documentation:**
-   - Finalize all renamed manager documentation
-   - Update method references and examples
-   - Document migration paths and backward compatibility
-   - Update configuration examples
+2. **Team Guide for Crisis Response Team**
+  - General overview of the system taken as a whole
+  - How to use the /analyze endpoint correctly
+  - What JSON output is expected from a message classification
+  - Where to go for deeper information on the system
 
-3. **Integration Guides:**
-   - Developer integration guide
-   - API integration examples
-   - Configuration setup guide
-   - Troubleshooting documentation
+3. **Manager Documentation:**
+  - Finalize all renamed manager documentation
+  - Update method references and examples
+  - Update configuration examples
 
-4. **Performance Documentation:**
-   - Performance benchmarks and targets
-   - Optimization recommendations
-   - Monitoring and alerting setup
-   - Scaling considerations
+4. **Integration Guides:**
+  - Developer integration guide
+  - API integration examples
+  - Configuration setup guide
+
+5. **Performance Documentation:**
+  - Performance benchmarks and targets
+  - Optimization recommendations
+  - Monitoring and alerting setup
 
 **Documentation Updates:**
 
 1. **Core Documentation Files:**
-   ```
-   docs/v3.1/
-   ├── README.md (updated system overview)
-   ├── architecture/
-   │   ├── system_overview.md (updated)
-   │   ├── manager_integration.md (new)
-   │   └── phase_3e_summary.md (new)
-   ├── integration/
-   │   ├── developer_guide.md (updated)
-   │   ├── api_reference.md (updated)
-   │   └── configuration_guide.md (updated)
-   └── performance/
-       ├── benchmarks.md (new)
-       ├── optimization.md (new)
-       └── monitoring.md (new)
-   ```
+```
+README.md (new - system overview)
+└── docs/
+    ├── team_guide.md (new - crisis response team usage guide)
+    ├── architecture/
+    │   ├── system_overview.md (new)
+    │   └── manager_integration.md (new)
+    ├── integration/
+    │   ├── developer_guide.md (new)
+    │   ├── api_reference.md (new)
+    │   └── configuration_guide.md (new)
+    └── performance/
+        ├── benchmarks.md (new)
+        ├── optimization.md (new)
+        └── monitoring.md (new)
+```
 
 2. **Phase 3e Summary Documentation:**
    - Complete phase overview
@@ -442,7 +438,7 @@ test_environments = [
 
 ---
 
-**Status**: ⏳ **PENDING** - Awaiting Step 6 completion  
+**Status**: ⏳ **In Progress** - Step 6 completed
 **Next Action**: Begin Sub-step 7.1 - End-to-End Integration Testing  
 **Architecture**: Clean v3.1 with comprehensive validation  
 **Community Impact**: Thoroughly tested, production-ready crisis detection serving The Alphabet Cartel LGBTQIA+ community! 🏳️‍🌈

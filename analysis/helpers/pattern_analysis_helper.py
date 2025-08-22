@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Pattern Analysis Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-3
 CREATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -227,14 +227,14 @@ class PatternAnalysisHelper:
     
     def score_term_in_context(self, term: str, message: str, context_window: Optional[int] = None) -> Dict[str, Any]:
         """
-        Score term relevance in message context using ContextPatternManager
+        Score term relevance in message context using ContextAnalysisManager
         Migrated from: CrisisAnalyzer.score_term_in_context()
         """
         try:
-            if self.crisis_analyzer.context_pattern_manager:
-                return self.crisis_analyzer.context_pattern_manager.score_term_in_context(term, message, context_window)
+            if self.crisis_analyzer.context_analysis_manager:
+                return self.crisis_analyzer.context_analysis_manager.score_term_in_context(term, message, context_window)
             else:
-                logger.warning("ContextPatternManager not available for term scoring")
+                logger.warning("ContextAnalysisManager not available for term scoring")
                 return {'term': term, 'found': False, 'context_available': False}
         except Exception as e:
             logger.error(f"Term context scoring failed: {e}")
@@ -242,7 +242,7 @@ class PatternAnalysisHelper:
     
     def get_basic_context_fallback(self, message: str) -> Dict[str, Any]:
         """
-        Basic context fallback when ContextPatternManager is not available
+        Basic context fallback when ContextAnalysisManager is not available
         Migrated from: CrisisAnalyzer._basic_context_fallback()
         """
         return {

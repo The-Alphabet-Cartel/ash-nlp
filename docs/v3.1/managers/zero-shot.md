@@ -5,14 +5,14 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_zero_shot_manager(config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-6-1  
+**FILE VERSION**: v3.1-3e-6-2
 **LAST MODIFIED**: 2025-08-22  
 
 ---
 
 ## 🎯 **Manager Purpose**
 
-The **ZeroShotManager** (inferred from ModelEnsembleManager zero-shot methods) manages zero-shot classification capabilities for semantic pattern detection in the crisis detection system. It provides advanced natural language inference services that enable semantic pattern matching beyond simple keyword detection, supporting the system's move toward more sophisticated crisis pattern recognition.
+The **ZeroShotManager** (inferred from ModelCoordinationManager zero-shot methods) manages zero-shot classification capabilities for semantic pattern detection in the crisis detection system. It provides advanced natural language inference services that enable semantic pattern matching beyond simple keyword detection, supporting the system's move toward more sophisticated crisis pattern recognition.
 
 **Primary Responsibilities:**
 - Manage zero-shot classification models for semantic pattern detection
@@ -111,7 +111,7 @@ The **ZeroShotManager** (inferred from ModelEnsembleManager zero-shot methods) m
 - **logging** - Error handling and classification status tracking
 
 ### **Configuration Files:**
-- **`config/model_ensemble.json`** - Zero-shot model configuration
+- **`config/model_coordination.json`** - Zero-shot model configuration
 - **Zero-shot specific configuration** - Model parameters and pipeline settings
 - **Environment variables** - Via UnifiedConfigManager for zero-shot settings
 

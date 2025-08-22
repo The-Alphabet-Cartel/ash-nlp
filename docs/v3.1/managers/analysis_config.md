@@ -107,7 +107,7 @@ The **AnalysisConfigManager** is responsible for loading, validating, and provid
 - **Environment variables** - Via UnifiedConfigManager overrides
 
 ### **Integration Points:**
-- **Called by**: CrisisAnalyzer, ModelEnsembleManager, CrisisThresholdManager
+- **Called by**: CrisisAnalyzer, ModelCoordinationManager, CrisisThresholdManager
 - **Provides to**: All managers requiring analysis parameters
 
 ---
@@ -135,7 +135,7 @@ The **AnalysisConfigManager** is responsible for loading, validating, and provid
 
 ### **Downstream Consumers:**
 - **CrisisAnalyzer** - Analysis parameters for crisis detection
-- **ModelEnsembleManager** - Ensemble configuration
+- **ModelCoordinationManager** - Ensemble configuration
 - **CrisisThresholdManager** - Threshold parameters
 - **LearningSystemManager** (Future) - Learning parameters
 

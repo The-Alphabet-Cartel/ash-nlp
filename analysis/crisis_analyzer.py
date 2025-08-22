@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Analyzer for Ash-NLP Service v3.1
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-4
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization and Zero-Shot Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -44,36 +44,36 @@ class CrisisAnalyzer:
     - ContextIntegrationHelper: Response building and cache management
     """
     
-    def __init__(self, unified_config, model_ensemble_manager,
+    def __init__(self, unified_config, model_coordination_manager,
         pattern_detection_manager=None, analysis_config_manager=None,
         crisis_threshold_manager=None, feature_config_manager=None,
-        performance_config_manager=None, context_pattern_manager=None,
+        performance_config_manager=None, context_analysis_manager=None,
         shared_utilities_manager=None, learning_system_manager=None,
         zero_shot_manager=None):
         """
         Initialize Optimized Crisis Analyzer with helper file architecture
         
         Args:
-            model_ensemble_manager: Model ensemble manager for ensemble analysis
+            model_coordination_manager: Model ensemble manager for ensemble analysis
             pattern_detection_manager: PatternDetectionManager for pattern-based analysis
             analysis_config_manager: AnalysisConfigManager for configurable parameters
             crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
             feature_config_manager: FeatureConfigManager for feature flags
             performance_config_manager: PerformanceConfigManager for performance settings
-            context_pattern_manager: ContextPatternManager for context analysis
+            context_analysis_manager: ContextAnalysisManager for context analysis
             shared_utilities_manager: SharedUtilitiesManager for common utilities
             learning_system_manager: LearningSystemManager for adaptive learning
             zero_shot_manager: ZeroShotManager for zero-shot label configuration and management
         """
         # Manager dependencies
         self.unified_config_manager = unified_config
-        self.model_ensemble_manager = model_ensemble_manager
+        self.model_coordination_manager = model_coordination_manager
         self.pattern_detection_manager = pattern_detection_manager
         self.analysis_config_manager = analysis_config_manager
         self.crisis_threshold_manager = crisis_threshold_manager
         self.feature_config_manager = feature_config_manager
         self.performance_config_manager = performance_config_manager
-        self.context_pattern_manager = context_pattern_manager
+        self.context_analysis_manager = context_analysis_manager
         self.shared_utilities_manager = shared_utilities_manager
         self.learning_system_manager = learning_system_manager
         
@@ -647,10 +647,10 @@ class CrisisAnalyzer:
 # ENHANCED FACTORY FUNCTION - Phase 3e Sub-step 5.5-6
 # ============================================================================
 
-def create_crisis_analyzer(unified_config, model_ensemble_manager,
+def create_crisis_analyzer(unified_config, model_coordination_manager,
     pattern_detection_manager=None, analysis_config_manager=None,
     crisis_threshold_manager=None, feature_config_manager=None,
-    performance_config_manager=None, context_pattern_manager=None,
+    performance_config_manager=None, context_analysis_manager=None,
     shared_utilities_manager=None, learning_system_manager=None,
     zero_shot_manager=None) -> CrisisAnalyzer:
     """
@@ -658,13 +658,13 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager,
     
     Args:
         # Existing parameters (maintained)
-        model_ensemble_manager: Model ensemble manager for ensemble analysis
+        model_coordination_manager: Model ensemble manager for ensemble analysis
         pattern_detection_manager: PatternDetectionManager for pattern-based analysis
         analysis_config_manager: AnalysisConfigManager for configurable parameters
         crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
         feature_config_manager: FeatureConfigManager for feature flags
         performance_config_manager: PerformanceConfigManager for performance settings
-        context_pattern_manager: ContextPatternManager for context analysis
+        context_analysis_manager: ContextAnalysisManager for context analysis
         
         # Phase 3e parameters
         shared_utilities_manager: SharedUtilitiesManager for common utilities
@@ -678,13 +678,13 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager,
     """
     return CrisisAnalyzer(
         unified_config,
-        model_ensemble_manager=model_ensemble_manager,
+        model_coordination_manager=model_coordination_manager,
         pattern_detection_manager=pattern_detection_manager,
         analysis_config_manager=analysis_config_manager,
         crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,
         performance_config_manager=performance_config_manager,
-        context_pattern_manager=context_pattern_manager,
+        context_analysis_manager=context_analysis_manager,
         shared_utilities_manager=shared_utilities_manager,
         learning_system_manager=learning_system_manager,
         zero_shot_manager=zero_shot_manager

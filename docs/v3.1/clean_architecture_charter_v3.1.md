@@ -4,7 +4,7 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-6-2
+**FILE VERSION**: v3.1-3e-6-3
 **LAST UPDATED**: 2025-08-22
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
@@ -24,7 +24,7 @@
 - **ALL managers MUST use factory functions** - `create_[manager_name]()`
 - **NEVER call constructors directly**
 - **Factory functions enable**: dependency injection, testing, consistency
-- **Examples**: `create_model_ensemble_manager()`, `create_pattern_detection_manager()`, `create_settings_manager()`
+- **Examples**: `create_model_coordination_manager()`, `create_pattern_detection_manager()`, `create_settings_manager()`
 
 ### **Rule #2: Dependency Injection - REQUIRED**
 - **All managers accept dependencies through constructor parameters**
@@ -404,7 +404,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 ### **Phase 3c: Threshold Mapping Manager**
 - **Principle**: All thresholds and mappings externalized to JSON with mode-awareness
 - **Integration**: CrisisThresholdManager integrated throughout analysis pipeline
-- **Factory**: `create_crisis_threshold_manager(config_manager, model_ensemble_manager)`
+- **Factory**: `create_crisis_threshold_manager(config_manager, model_coordination_manager)`
 - **Resilience**: Provides conservative thresholds if configuration fails
 
 ### **Phase 3d: Environmental Variable Cleanup**

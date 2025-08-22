@@ -1,7 +1,7 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-4
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -28,7 +28,7 @@ ANALYSIS_CAPABILITIES = {
             "consolidated_analysis_methods",  # Phase 3e Step 4.2 NEW
             "learning_system_integration",   # Phase 3e Step 4.2 NEW  
             "shared_utilities_integration",  # Phase 3e Step 4.2 NEW
-            "three_model_ensemble_analysis",
+            "three_model_coordination_analysis",
             "context_signal_extraction", 
             "consolidated_scoring_functions",  # Phase 3d Step 10.6
             "safety_first_scoring",
@@ -46,7 +46,7 @@ ANALYSIS_CAPABILITIES = {
     "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
         "description": "Analysis methods consolidated from AnalysisParameters, ThresholdMapping, and ModelEnsemble managers",
         "location": "CrisisAnalyzer instance methods",
-        "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelEnsembleManager"],
+        "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelCoordinationManager"],
         "methods": {
             "from_analysis_config": [
                 "get_analysis_crisis_thresholds",
@@ -61,7 +61,7 @@ ANALYSIS_CAPABILITIES = {
                 "validate_crisis_analysis_thresholds", 
                 "get_crisis_threshold_for_mode"
             ],
-            "from_model_ensemble": [
+            "from_model_coordination": [
                 "perform_ensemble_crisis_analysis",
                 "combine_ensemble_model_results",
                 "apply_analysis_ensemble_weights"
@@ -116,7 +116,7 @@ ANALYSIS_CAPABILITIES = {
             "CrisisThresholdManager",
             "AnalysisConfigManager", 
             "PatternDetectionManager",
-            "ModelEnsembleManager"
+            "ModelCoordinationManager"
         ]
     },
 
@@ -254,13 +254,13 @@ def get_implemented_features():
         "core_analysis": {
             "status": "implemented",
             "description": "Enhanced three-model ensemble crisis detection with consolidated methods",
-            "managers": ["ModelEnsembleManager", "PatternDetectionManager", "AnalysisConfigManager", "CrisisThresholdManager"]
+            "managers": ["ModelCoordinationManager", "PatternDetectionManager", "AnalysisConfigManager", "CrisisThresholdManager"]
         },
         
         "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
             "status": "implemented",
             "description": "Analysis methods consolidated from multiple managers into CrisisAnalyzer",
-            "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelEnsembleManager"],
+            "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelCoordinationManager"],
             "methods_count": 12,
             "configuration_access": "UnifiedConfigManager via SharedUtilities",
             "benefits": [
@@ -367,10 +367,10 @@ def get_implemented_features():
 # ENHANCED FACTORY FUNCTIONS - Phase 3e Step 4.2
 # ============================================================================
 
-def create_crisis_analyzer(unified_config, model_ensemble_manager, pattern_detection_manager=None, 
+def create_crisis_analyzer(unified_config, model_coordination_manager, pattern_detection_manager=None, 
                           analysis_config_manager=None, crisis_threshold_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
-                          context_pattern_manager=None, shared_utilities_manager=None,
+                          context_analysis_manager=None, shared_utilities_manager=None,
                           learning_system_manager=None, zero_shot_manager=None):
     """
     Create and return an enhanced CrisisAnalyzer instance with Phase 3e Step 4.2 integration
@@ -383,13 +383,13 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, pattern_detec
     
     Args:
         # Existing parameters (maintained for backward compatibility)
-        model_ensemble_manager: Model ensemble manager for ensemble analysis
+        model_coordination_manager: Model ensemble manager for ensemble analysis
         pattern_detection_manager: PatternDetectionManager for pattern-based analysis (Phase 3a)
         analysis_config_manager: AnalysisConfigManager for configurable parameters (Phase 3b)
         crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds (Phase 3c)
         feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
         performance_config_manager: PerformanceConfigManager for performance settings (Phase 3d Step 7)
-        context_pattern_manager: ContextPatternManager for context analysis (Phase 3d Step 10.8)
+        context_analysis_manager: ContextAnalysisManager for context analysis (Phase 3d Step 10.8)
         
         # NEW Phase 3e Step 4.2 parameters
         shared_utilities_manager: SharedUtilitiesManager for common utilities and error handling
@@ -405,19 +405,19 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, pattern_detec
     return CrisisAnalyzer(
         unified_config,
         # Existing dependencies (maintained)
-        model_ensemble_manager=model_ensemble_manager,
+        model_coordination_manager=model_coordination_manager,
         pattern_detection_manager=pattern_detection_manager,
         analysis_config_manager=analysis_config_manager,
         crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,
         performance_config_manager=performance_config_manager,
-        context_pattern_manager=context_pattern_manager,
+        context_analysis_manager=context_analysis_manager,
         shared_utilities_manager=shared_utilities_manager,
         learning_system_manager=learning_system_manager,
         zero_shot_manager=zero_shot_manager
     )
 
-def create_enhanced_crisis_analyzer(unified_config, model_ensemble_manager, shared_utilities_manager, 
+def create_enhanced_crisis_analyzer(unified_config, model_coordination_manager, shared_utilities_manager, 
                                         learning_system_manager, **kwargs):
     """
     Convenience factory function for Phase 3e enhanced CrisisAnalyzer
@@ -426,7 +426,7 @@ def create_enhanced_crisis_analyzer(unified_config, model_ensemble_manager, shar
     backward compatibility with optional legacy dependencies.
     
     Args:
-        model_ensemble_manager: Required - Model ensemble manager
+        model_coordination_manager: Required - Model ensemble manager
         shared_utilities_manager: Required - SharedUtilitiesManager for Phase 3e
         learning_system_manager: Required - LearningSystemManager for Phase 3e
         **kwargs: Optional legacy managers for backward compatibility
@@ -436,19 +436,19 @@ def create_enhanced_crisis_analyzer(unified_config, model_ensemble_manager, shar
     """
     return create_crisis_analyzer(
         unified_config,
-        model_ensemble_manager=model_ensemble_manager,
+        model_coordination_manager=model_coordination_manager,
         shared_utilities_manager=shared_utilities_manager,
         learning_system_manager=learning_system_manager,
         **kwargs
     )
 
-def validate_crisis_analyzer_dependencies(unified_config=None, model_ensemble_manager=None, shared_utilities_manager=None,
+def validate_crisis_analyzer_dependencies(unified_config=None, model_coordination_manager=None, shared_utilities_manager=None,
                                          learning_system_manager=None, **kwargs):
     """
     Validate dependencies for CrisisAnalyzer creation
     
     Args:
-        model_ensemble_manager: Model ensemble manager (required)
+        model_coordination_manager: Model ensemble manager (required)
         shared_utilities_manager: SharedUtilitiesManager (recommended for Phase 3e)
         learning_system_manager: LearningSystemManager (recommended for Phase 3e)
         **kwargs: Other optional managers
@@ -469,9 +469,9 @@ def validate_crisis_analyzer_dependencies(unified_config=None, model_ensemble_ma
         validation_result["valid"] = False
         validation_result["errors"].append("unified_config_manager is required")
 
-    if not model_ensemble_manager:
+    if not model_coordination_manager:
         validation_result["valid"] = False
-        validation_result["errors"].append("model_ensemble_manager is required")
+        validation_result["errors"].append("model_coordination_manager is required")
     
     # Phase 3e recommendations
     if not shared_utilities_manager:
@@ -485,7 +485,7 @@ def validate_crisis_analyzer_dependencies(unified_config=None, model_ensemble_ma
     # Determine configuration phase
     if shared_utilities_manager and learning_system_manager:
         validation_result["phase"] = "3e_enhanced"
-    elif kwargs.get("context_pattern_manager"):
+    elif kwargs.get("context_analysis_manager"):
         validation_result["phase"] = "3d_step_10.8"
     elif kwargs.get("feature_config_manager") or kwargs.get("performance_config_manager"):
         validation_result["phase"] = "3d_step_7+"

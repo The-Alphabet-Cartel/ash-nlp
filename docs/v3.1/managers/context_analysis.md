@@ -1,18 +1,18 @@
 # Context Pattern Manager Documentation
 
-**File**: `managers/context_pattern_manager.py`  
+**File**: `managers/context_analysis.py`  
 **Phase**: 3e Step 1.1 Documentation Audit  
-**Status**: 🔄 **IN PROGRESS**  
-**Factory Function**: `create_context_pattern_manager(unified_config)`  
+**Status**: COMPLETE
+**Factory Function**: `create_context_analysis_manager(unified_config)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-6-1  
+**FILE VERSION**: v3.1-3e-6-2
 **LAST MODIFIED**: 2025-08-22
 
 ---
 
 ## 🎯 **Manager Purpose**
 
-The **ContextPatternManager** provides advanced context analysis for crisis detection. It extracts context signals from messages, performs semantic analysis to understand message context, and provides context scoring for terms and phrases. This manager was migrated from `utils/context_helpers.py` in Step 10.8 as part of the utility consolidation.
+The **ContextAnalysisManager** provides advanced context analysis for crisis detection. It extracts context signals from messages, performs semantic analysis to understand message context, and provides context scoring for terms and phrases. This manager was migrated from `utils/context_helpers.py` in Step 10.8 as part of the utility consolidation.
 
 **Primary Responsibilities:**
 - Extract basic and advanced context signals from messages
@@ -150,7 +150,7 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 
 ### **Critical Data Flow:**
 ```
-Message → ContextPatternManager → Context Analysis → CrisisAnalyzer → Enhanced Detection
+Message → ContextAnalysisManager → Context Analysis → CrisisAnalyzer → Enhanced Detection
 ```
 
 ---
@@ -171,7 +171,7 @@ Message → ContextPatternManager → Context Analysis → CrisisAnalyzer → En
 3. **Context effectiveness tracking** - Performance analytics for context analysis
 4. **Context window optimization** - Dynamic window sizing based on effectiveness
 
-### **Analysis-Specific Methods (Stays in ContextPatternManager):**
+### **Analysis-Specific Methods (Stays in ContextAnalysisManager):**
 1. **`analyze_message_context()`** - **CRITICAL** - Enhanced context analysis for crisis
 2. **`extract_context_signals()`** - Context signal extraction
 3. **`score_term_in_context()`** - Context-aware term scoring
@@ -225,7 +225,7 @@ As part of Step 10.8, this manager was integrated directly into CrisisAnalyzer t
 - Context effectiveness tracking
 - Context window optimization algorithms
 
-### **Keep in ContextPatternManager:**
+### **Keep in ContextAnalysisManager:**
 - **`analyze_message_context()`** - **CRITICAL** - Enhanced crisis context analysis
 - **`extract_context_signals()`** - Crisis-specific context signal extraction
 - **`score_term_in_context()`** - Context-aware scoring for crisis detection
@@ -237,7 +237,7 @@ As part of Step 10.8, this manager was integrated directly into CrisisAnalyzer t
 
 ## ✅ **Phase 3e Step 1.1 Status**
 
-**Manager**: context_pattern_manager.py  
+**Manager**: context_analysis.py  
 **Documentation**: ✅ **COMPLETE**  
 **Core Methods**: 8 identified  
 **Shared Methods**: 6 identified for SharedUtilitiesManager  

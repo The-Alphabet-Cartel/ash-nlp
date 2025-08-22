@@ -5,7 +5,7 @@
 **Status**: 🔄 **IN PROGRESS**
 **Factory Function**: `create_pattern_detection_manager(config_manager)`
 **Dependencies**: UnifiedConfigManager
-**FILE VERSION**: v3.1-3e-6-1
+**FILE VERSION**: v3.1-3e-6-3
 **LAST MODIFIED**: 2025-08-22
 
 ---
@@ -28,7 +28,7 @@ The **PatternDetectionManager** is responsible for crisis pattern detection and 
 
 ### **Primary Analysis Methods:**
 1. **`analyze_message(message, user_id, channel_id)`** - **COMPREHENSIVE** - Main pattern analysis entry point
-2. **`find_triggered_patterns(message, model_ensemble_manager)`** - Pattern detection with semantic fallback
+2. **`find_triggered_patterns(message, model_coordination_manager)`** - Pattern detection with semantic fallback
 3. **`extract_community_patterns(message)`** - Community-specific pattern detection
 4. **`extract_crisis_context_phrases(message)`** - Context phrase extraction
 
@@ -111,7 +111,7 @@ The **PatternDetectionManager** is responsible for crisis pattern detection and 
 
 ### **Required Dependencies:**
 - **UnifiedConfigManager** - Pattern configuration loading and environment overrides
-- **ModelEnsembleManager** (optional) - Semantic pattern detection via zero-shot classification
+- **ModelCoordinationManager** (optional) - Semantic pattern detection via zero-shot classification
 - **logging** - Error handling and pattern analysis tracking
 
 ### **Configuration Files:**
@@ -122,7 +122,7 @@ The **PatternDetectionManager** is responsible for crisis pattern detection and 
 
 ### **Integration Points:**
 - **Called by**: CrisisAnalyzer (primary), API endpoints
-- **Uses**: ModelEnsembleManager for semantic classification
+- **Uses**: ModelCoordinationManager for semantic classification
 - **Provides to**: Crisis pattern detection results, pattern analysis data
 
 ---
@@ -147,7 +147,7 @@ The **PatternDetectionManager** is responsible for crisis pattern detection and 
 
 ### **Upstream Dependencies:**
 - **UnifiedConfigManager** - Pattern configuration access
-- **ModelEnsembleManager** - Zero-shot classification for semantic patterns
+- **ModelCoordinationManager** - Zero-shot classification for semantic patterns
 
 ### **Downstream Consumers:**
 - **CrisisAnalyzer** - **PRIMARY CONSUMER** - Pattern analysis results
@@ -258,4 +258,4 @@ Message → PatternDetectionManager → Pattern Analysis → CrisisAnalyzer → 
 
 **Key Finding**: Contains critical life-saving pattern detection that must remain centralized for safety
 
-**Next Manager**: context_pattern_manager.py
+**Next Manager**: context_analysis.py

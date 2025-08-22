@@ -159,7 +159,7 @@ The **FeatureConfigManager** manages all feature flags and toggles throughout th
 ### **Downstream Consumers:**
 - **ALL MANAGERS** - Feature enablement checks throughout system
 - **CrisisAnalyzer** - Analysis feature controls
-- **ModelEnsembleManager** - Ensemble and processing feature controls
+- **ModelCoordinationManager** - Ensemble and processing feature controls
 - **Learning systems** - Learning feature enablement
 - **API endpoints** - Feature-based response modification
 

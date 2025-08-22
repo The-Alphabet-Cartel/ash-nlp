@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Analysis Helper for CrisisAnalyzer - PHASE 3 IMPLEMENTATION COMPLETE
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-3
 UPDATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-7 - PHASE 3: Manager Integration Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -19,10 +19,10 @@ Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 PHASE 3 COMPLETE: Proper manager integration implemented
-- EnsembleAnalysisHelper now calls ModelEnsembleManager.classify_with_zero_shot()
+- EnsembleAnalysisHelper now calls ModelCoordinationManager.classify_with_zero_shot()
 - Removed direct transformers pipeline creation (architectural fix)
 - Proper integration with ZeroShotManager for label management
-- Correct flow: EnsembleAnalysisHelper → ModelEnsembleManager → transformers
+- Correct flow: EnsembleAnalysisHelper → ModelCoordinationManager → transformers
 - All AI classification now goes through proper manager architecture
 """
 
@@ -61,14 +61,14 @@ class EnsembleAnalysisHelper:
         PHASE 3: AI-FIRST ensemble analysis with pattern enhancement
         ARCHITECTURE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
         
-        PHASE 3 CHANGE: Uses ModelEnsembleManager for all AI classification
+        PHASE 3 CHANGE: Uses ModelCoordinationManager for all AI classification
         """
         
-        # Step 1: Enhanced context analysis using ContextPatternManager (unchanged)
+        # Step 1: Enhanced context analysis using ContextAnalysisManager (unchanged)
         context_analysis = None
-        if self.crisis_analyzer._feature_cache.get('context_analysis', True) and self.crisis_analyzer.context_pattern_manager:
+        if self.crisis_analyzer._feature_cache.get('context_analysis', True) and self.crisis_analyzer.context_analysis_manager:
             try:
-                logger.debug("Starting enhanced context analysis via ContextPatternManager...")
+                logger.debug("Starting enhanced context analysis via ContextAnalysisManager...")
                 
                 # Get basic context signals
                 context_signals = self.pattern_helper.extract_context_signals(message)
@@ -105,10 +105,10 @@ class EnsembleAnalysisHelper:
                 'context_manager_status': 'not_available',
                 'feature_enabled': self.crisis_analyzer._feature_cache.get('context_analysis', False)
             }
-            logger.debug("Context analysis disabled or ContextPatternManager not available")
+            logger.debug("Context analysis disabled or ContextAnalysisManager not available")
 
-        # Step 2: PRIMARY AI ensemble analysis using ModelEnsembleManager
-        logger.info("PHASE 3: Starting PRIMARY AI semantic classification via ModelEnsembleManager...")
+        # Step 2: PRIMARY AI ensemble analysis using ModelCoordinationManager
+        logger.info("PHASE 3: Starting PRIMARY AI semantic classification via ModelCoordinationManager...")
         model_results = await self.analyze_crisis_with_manager_ensemble(message, context_analysis)
 
         # Step 3: SECONDARY pattern enhancement of AI results
@@ -271,18 +271,18 @@ class EnsembleAnalysisHelper:
     
     async def analyze_crisis_with_manager_ensemble(self, message: str, context_analysis: Dict) -> Dict:
         """
-        PHASE 3: PRIMARY AI ensemble analysis using ModelEnsembleManager
+        PHASE 3: PRIMARY AI ensemble analysis using ModelCoordinationManager
         RENAMED: (was analyze_crisis_with_ensemble_ai)
-        ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
+        ARCHITECTURE FIX: Uses ModelCoordinationManager instead of direct transformers
         """
         model_results = {}
-        if self.crisis_analyzer.model_ensemble_manager:
+        if self.crisis_analyzer.model_coordination_manager:
             try:
-                logger.debug("PHASE 3: Starting AI ensemble analysis via ModelEnsembleManager...")
+                logger.debug("PHASE 3: Starting AI ensemble analysis via ModelCoordinationManager...")
                 
-                # PHASE 3 CRITICAL FIX: Use ModelEnsembleManager.classify_with_ensemble()
+                # PHASE 3 CRITICAL FIX: Use ModelCoordinationManager.classify_with_ensemble()
                 # Instead of calling individual models directly
-                ensemble_result = await self.crisis_analyzer.model_ensemble_manager.classify_with_ensemble(
+                ensemble_result = await self.crisis_analyzer.model_coordination_manager.classify_with_ensemble(
                     message, 
                     self.crisis_analyzer.zero_shot_manager
                 )
@@ -297,10 +297,10 @@ class EnsembleAnalysisHelper:
                         'ensemble_mode': ensemble_result.get('ensemble_mode', 'unknown'),
                         'models_used': ensemble_result.get('models_used', 0),
                         'zero_shot_manager_used': ensemble_result.get('zero_shot_manager_used', False),
-                        'method': 'model_ensemble_manager_classification'
+                        'method': 'model_coordination_manager_classification'
                     }
                     
-                    logger.info(f"PHASE 3: ModelEnsembleManager classification complete - ensemble score: {ensemble_result.get('ensemble_score', 0.0):.3f}")
+                    logger.info(f"PHASE 3: ModelCoordinationManager classification complete - ensemble score: {ensemble_result.get('ensemble_score', 0.0):.3f}")
                     
                     # Update sentiment context with actual sentiment score if available
                     if 'sentiment' in model_results and context_analysis and 'sentiment_context' in context_analysis:
@@ -308,27 +308,27 @@ class EnsembleAnalysisHelper:
                         updated_sentiment_context = self.pattern_helper.analyze_sentiment_context(message, sentiment_score)
                         context_analysis['sentiment_context'] = updated_sentiment_context
                 else:
-                    logger.warning("ModelEnsembleManager returned unexpected result format")
+                    logger.warning("ModelCoordinationManager returned unexpected result format")
                     model_results = {'error': 'unexpected_ensemble_result_format'}
                         
             except Exception as e:
-                logger.error(f"ModelEnsembleManager ensemble classification failed: {e}")
+                logger.error(f"ModelCoordinationManager ensemble classification failed: {e}")
                 model_results = {'error': str(e)}
         else:
-            logger.error("ModelEnsembleManager not available")
-            model_results = {'error': 'model_ensemble_manager_not_available'}
+            logger.error("ModelCoordinationManager not available")
+            model_results = {'error': 'model_coordination_manager_not_available'}
         
         return model_results
     
     async def classify_crisis_with_manager_model(self, message: str, model_name: str) -> Dict:
         """
-        PHASE 3: Classify crisis using specific AI model via ModelEnsembleManager
+        PHASE 3: Classify crisis using specific AI model via ModelCoordinationManager
         RENAMED: (was classify_crisis_with_ai_model)
-        ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct classification
+        ARCHITECTURE FIX: Uses ModelCoordinationManager instead of direct classification
         """
         try:
-            if not self.crisis_analyzer.model_ensemble_manager:
-                raise ValueError("ModelEnsembleManager not available")
+            if not self.crisis_analyzer.model_coordination_manager:
+                raise ValueError("ModelCoordinationManager not available")
             
             # Get labels from ZeroShotManager if available
             labels = []
@@ -359,17 +359,17 @@ class EnsembleAnalysisHelper:
                 labels = self._get_fallback_labels(model_name)
                 logger.debug(f"PHASE 3: Using fallback labels for {model_name}")
             
-            # PHASE 3 CRITICAL FIX: Use ModelEnsembleManager.classify_with_zero_shot()
+            # PHASE 3 CRITICAL FIX: Use ModelCoordinationManager.classify_with_zero_shot()
             # Instead of direct transformers pipeline creation
-            result = await self.crisis_analyzer.model_ensemble_manager.classify_with_zero_shot(
+            result = await self.crisis_analyzer.model_coordination_manager.classify_with_zero_shot(
                 message, labels, model_name, hypothesis_template
             )
             
-            logger.debug(f"PHASE 3: ModelEnsembleManager classification for {model_name}: {result.get('score', 0.0):.3f}")
+            logger.debug(f"PHASE 3: ModelCoordinationManager classification for {model_name}: {result.get('score', 0.0):.3f}")
             return result
             
         except Exception as e:
-            logger.error(f"ModelEnsembleManager model {model_name} analysis failed: {e}")
+            logger.error(f"ModelCoordinationManager model {model_name} analysis failed: {e}")
             return {'error': str(e), 'score': 0.0}
     
     def _get_fallback_labels(self, model_name: str) -> List[str]:
@@ -410,13 +410,13 @@ class EnsembleAnalysisHelper:
     
     async def detect_depression_semantically(self, message: str) -> Dict:
         """
-        PHASE 3: AI-FIRST semantic depression detection via ModelEnsembleManager
-        ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
+        PHASE 3: AI-FIRST semantic depression detection via ModelCoordinationManager
+        ARCHITECTURE FIX: Uses ModelCoordinationManager instead of direct transformers
         """
         try:
-            logger.debug("PHASE 3: Detecting depression via ModelEnsembleManager...")
+            logger.debug("PHASE 3: Detecting depression via ModelCoordinationManager...")
             
-            # PHASE 3 CRITICAL FIX: Use ModelEnsembleManager instead of direct classification
+            # PHASE 3 CRITICAL FIX: Use ModelCoordinationManager instead of direct classification
             result = await self.classify_crisis_with_manager_model(message, 'depression')
             
             # Add method identification for Phase 3 tracking
@@ -434,13 +434,13 @@ class EnsembleAnalysisHelper:
 
     async def detect_sentiment_semantically(self, message: str) -> Dict:
         """
-        PHASE 3: AI-FIRST semantic sentiment detection via ModelEnsembleManager
-        ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
+        PHASE 3: AI-FIRST semantic sentiment detection via ModelCoordinationManager
+        ARCHITECTURE FIX: Uses ModelCoordinationManager instead of direct transformers
         """
         try:
-            logger.debug("PHASE 3: Detecting sentiment via ModelEnsembleManager...")
+            logger.debug("PHASE 3: Detecting sentiment via ModelCoordinationManager...")
             
-            # PHASE 3 CRITICAL FIX: Use ModelEnsembleManager instead of direct classification
+            # PHASE 3 CRITICAL FIX: Use ModelCoordinationManager instead of direct classification
             result = await self.classify_crisis_with_manager_model(message, 'sentiment')
             
             # Add method identification for Phase 3 tracking
@@ -458,13 +458,13 @@ class EnsembleAnalysisHelper:
 
     async def detect_distress_semantically(self, message: str) -> Dict:
         """
-        PHASE 3: AI-FIRST semantic distress detection via ModelEnsembleManager
-        ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
+        PHASE 3: AI-FIRST semantic distress detection via ModelCoordinationManager
+        ARCHITECTURE FIX: Uses ModelCoordinationManager instead of direct transformers
         """
         try:
-            logger.debug("PHASE 3: Detecting emotional distress via ModelEnsembleManager...")
+            logger.debug("PHASE 3: Detecting emotional distress via ModelCoordinationManager...")
             
-            # PHASE 3 CRITICAL FIX: Use ModelEnsembleManager instead of direct classification
+            # PHASE 3 CRITICAL FIX: Use ModelCoordinationManager instead of direct classification
             result = await self.classify_crisis_with_manager_model(message, 'emotional_distress')
             
             # Add method identification for Phase 3 tracking
@@ -486,7 +486,7 @@ class EnsembleAnalysisHelper:
     
     async def emergency_depression_classification(self, message: str) -> Dict:
         """
-        EMERGENCY: Emergency depression classification when ModelEnsembleManager fails
+        EMERGENCY: Emergency depression classification when ModelCoordinationManager fails
         """
         try:
             if self.crisis_analyzer.pattern_detection_manager:
@@ -509,7 +509,7 @@ class EnsembleAnalysisHelper:
     
     async def emergency_sentiment_classification(self, message: str) -> Dict:
         """
-        EMERGENCY: Emergency sentiment classification when ModelEnsembleManager fails
+        EMERGENCY: Emergency sentiment classification when ModelCoordinationManager fails
         """
         try:
             negative_words = ['bad', 'terrible', 'awful', 'hate', 'angry', 'sad']
@@ -538,7 +538,7 @@ class EnsembleAnalysisHelper:
     
     async def emergency_distress_classification(self, message: str) -> Dict:
         """
-        EMERGENCY: Emergency distress classification when ModelEnsembleManager fails
+        EMERGENCY: Emergency distress classification when ModelCoordinationManager fails
         """
         try:
             distress_words = ['stressed', 'anxious', 'panic', 'overwhelmed', 'breakdown', 'crisis']

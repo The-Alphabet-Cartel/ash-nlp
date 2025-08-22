@@ -3,10 +3,10 @@
 **File**: `managers/crisis_threshold_manager.py`  
 **Phase**: 3e Step 1.1 Documentation Audit  
 **Status**: 🔄 **IN PROGRESS**  
-**Factory Function**: `create_crisis_threshold_manager(unified_config_manager, model_ensemble_manager)`  
-**Dependencies**: UnifiedConfigManager, ModelEnsembleManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**Factory Function**: `create_crisis_threshold_manager(unified_config_manager, model_coordination_manager)`  
+**Dependencies**: UnifiedConfigManager, ModelCoordinationManager  
+**FILE VERSION**: v3.1-6-1  
+**LAST MODIFIED**: 2025-08-22  
 
 ---
 
@@ -110,7 +110,7 @@ The **CrisisThresholdManager** is responsible for managing crisis level threshol
 
 ### **Required Dependencies:**
 - **UnifiedConfigManager** - Configuration loading and environment overrides
-- **ModelEnsembleManager** - Current ensemble mode detection
+- **ModelCoordinationManager** - Current ensemble mode detection
 - **logging** - Error handling and debugging
 
 ### **Configuration Files:**
@@ -118,9 +118,9 @@ The **CrisisThresholdManager** is responsible for managing crisis level threshol
 - **Environment variables** - Via UnifiedConfigManager (e.g., `NLP_THRESHOLD_*`)
 
 ### **Integration Points:**
-- **Called by**: CrisisAnalyzer, ModelEnsembleManager
+- **Called by**: CrisisAnalyzer, ModelCoordinationManager
 - **Provides to**: Crisis level determination, staff review logic
-- **Depends on**: Current ensemble mode from ModelEnsembleManager
+- **Depends on**: Current ensemble mode from ModelCoordinationManager
 
 ---
 
@@ -145,7 +145,7 @@ The **CrisisThresholdManager** is responsible for managing crisis level threshol
 
 ### **Upstream Dependencies:**
 - **UnifiedConfigManager** - Configuration and environment variable access
-- **ModelEnsembleManager** - Current ensemble mode detection
+- **ModelCoordinationManager** - Current ensemble mode detection
 
 ### **Downstream Consumers:**
 - **CrisisAnalyzer** - Crisis level determination and staff review logic
@@ -154,7 +154,7 @@ The **CrisisThresholdManager** is responsible for managing crisis level threshol
 
 ### **Critical Data Flow:**
 ```
-ModelEnsembleManager (mode) → CrisisThresholdManager → Crisis Level → CrisisAnalyzer
+ModelCoordinationManager (mode) → CrisisThresholdManager → Crisis Level → CrisisAnalyzer
 ```
 
 ---
@@ -226,4 +226,4 @@ ModelEnsembleManager (mode) → CrisisThresholdManager → Crisis Level → Cris
 
 **Key Finding**: Contains life-saving crisis determination logic that must remain centralized
 
-**Next Manager**: model_ensemble_manager.py
+**Next Manager**: model_coordination_manager.py

@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-3
 LAST MODIFIED: 2025-08-22
 PHASE: 3e, Step 5.6 - Integration Testing Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -355,7 +355,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     
     Args:
         app: FastAPI application instance
-        model_ensemble_manager: Model Ensemble Manager instance (required)
+        model_coordination_manager: Model Ensemble Manager instance (required)
         pydantic_manager: PydanticManager v3.1 instance (required)
         pattern_detection_manager: PatternDetectionManager instance (optional)
         crisis_threshold_manager: CrisisThresholdManager instance (optional but recommended)
@@ -560,8 +560,8 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             models_loaded = False
             model_info = {}
             try:
-                models_loaded = model_ensemble_manager.models_loaded()
-                model_info = model_ensemble_manager.get_model_info() if models_loaded else {}
+                models_loaded = model_coordination_manager.models_loaded()
+                model_info = model_coordination_manager.get_model_info() if models_loaded else {}
             except Exception as e:
                 logger.warning(f"Error checking model status: {e}")
                 model_info = {'error': str(e)}
@@ -656,10 +656,10 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             }
             
             # Add model info with enhanced validation
-            if model_ensemble_manager:
+            if model_coordination_manager:
                 try:
-                    config["models_loaded"] = model_ensemble_manager.models_loaded()
-                    model_info = model_ensemble_manager.get_model_info()
+                    config["models_loaded"] = model_coordination_manager.models_loaded()
+                    model_info = model_coordination_manager.get_model_info()
                     config["model_details"] = model_info
                 except Exception as e:
                     config["model_details"] = {"error": str(e)}

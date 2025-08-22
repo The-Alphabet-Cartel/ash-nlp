@@ -29,9 +29,9 @@ from managers import (
     create_pattern_detection_manager,
     create_analysis_config_manager,
     create_crisis_threshold_manager,
-    create_model_ensemble_manager,
+    create_model_coordination_manager,
     create_performance_config_manager,
-    create_context_pattern_manager,
+    create_context_analysis_manager,
     create_zero_shot_manager,
     create_storage_config_manager,
     create_server_config_manager,
@@ -63,9 +63,9 @@ class TestBasicFunctionalIntegration:
             'pattern_detection': create_pattern_detection_manager(config_manager),
             'analysis_config': create_analysis_config_manager(config_manager),
             'crisis_threshold': create_crisis_threshold_manager(config_manager),
-            'model_ensemble': create_model_ensemble_manager(config_manager),
+            'model_coordination': create_model_coordination_manager(config_manager),
             'performance_config': create_performance_config_manager(config_manager),
-            'context_pattern': create_context_pattern_manager(config_manager),
+            'context_analysis': create_context_analysis_manager(config_manager),
             'zero_shot': create_zero_shot_manager(config_manager),
             'storage_config': create_storage_config_manager(config_manager),
             'server_config': create_server_config_manager(config_manager),
@@ -196,15 +196,15 @@ class TestBasicFunctionalIntegration:
         except Exception as e:
             pipeline_results['crisis_threshold'] = {'functional': False, 'error': str(e)}
         
-        # Test ModelEnsembleManager
+        # Test ModelCoordinationManager
         try:
-            ensemble_summary = all_managers['model_ensemble'].get_model_summary()
-            pipeline_results['model_ensemble'] = {
+            ensemble_summary = all_managers['model_coordination'].get_model_summary()
+            pipeline_results['model_coordination'] = {
                 'functional': ensemble_summary.get('available_models', 0) >= 0,
                 'has_summary_structure': 'model_count' in ensemble_summary or 'available_models' in ensemble_summary
             }
         except Exception as e:
-            pipeline_results['model_ensemble'] = {'functional': False, 'error': str(e)}
+            pipeline_results['model_coordination'] = {'functional': False, 'error': str(e)}
         
         functional_pipeline_components = sum(1 for result in pipeline_results.values() if result.get('functional', False))
         
@@ -232,7 +232,7 @@ class TestBasicFunctionalIntegration:
         # Test 2: FeatureConfig -> ModelEnsemble communication
         try:
             feature_status = all_managers['feature_config'].is_feature_enabled('ensemble_analysis')
-            model_availability = all_managers['model_ensemble'].is_ensemble_analysis_enabled()
+            model_availability = all_managers['model_coordination'].is_ensemble_analysis_enabled()
             communication_tests['feature_to_model'] = isinstance(feature_status, bool) and isinstance(model_availability, bool)
         except:
             communication_tests['feature_to_model'] = False

@@ -27,7 +27,7 @@ from typing import Dict, Any, List, Optional, Union
 from pathlib import Path
 
 # Import dependencies following Clean v3.1 architecture
-from managers.unified_config_manager import UnifiedConfigManager
+from managers.unified_config import UnifiedConfigManager
 from managers.shared_utilities import SharedUtilitiesManager
 
 logger = logging.getLogger(__name__)

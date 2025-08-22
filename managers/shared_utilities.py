@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Union, Optional, Tuple
 from pathlib import Path
 
 # Import for type hints
-from managers.unified_config_manager import UnifiedConfigManager
+from managers.unified_config import UnifiedConfigManager
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -839,7 +839,7 @@ def create_shared_utilities_manager(unified_config: UnifiedConfigManager = None)
     try:
         # Use provided config or create new one
         if unified_config is None:
-            from managers.unified_config_manager import create_unified_config_manager
+            from managers.unified_config import create_unified_config_manager
             unified_config = create_unified_config_manager()
             
         # Validate config manager
