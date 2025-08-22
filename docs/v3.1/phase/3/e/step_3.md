@@ -1,18 +1,10 @@
-<!-- ash-nlp/docs/v3.1/phase/3/e/step_3.md -->
-<!--
-Documentation for Phase 3e, Step 3 for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-3-FINAL
-LAST MODIFIED: 2025-08-17
-PHASE: 3e, Step 3
-CLEAN ARCHITECTURE: v3.1 Compliant
--->
 # Phase 3e Step 3: LearningSystemManager Creation - 100% COMPLETE ✅
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-3-FINAL  
-**COMPLETION DATE**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-5.7-1
+**COMPLETION DATE**: 2025-08-21
 **PHASE**: 3e Step 3 - LearningSystemManager Creation  
 **CLEAN ARCHITECTURE**: v3.1 Compliant with UnifiedConfigManager  
 **STATUS**: ✅ **100% COMPLETE - ALL TESTS PASSING (38/38)**
@@ -62,12 +54,12 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 
 ### **Sub-step 3.3: Origin Manager Updates** ✅ **COMPLETE (BOTH MANAGERS)**
 
-#### **AnalysisParametersManager Updates:**
+#### **AnalysisConfigManager Updates:**
 - ✅ `get_learning_system_parameters()` → Migration reference to LearningSystemManager
 - ✅ `validate_learning_system_parameters()` → Migration reference to LearningSystemManager
 - ✅ Updated `get_all_parameters()` method with Phase 3e information
 
-#### **ThresholdMappingManager Updates:**
+#### **CrisisThresholdManager Updates:**
 - ✅ `get_learning_thresholds()` → Migration reference to LearningSystemManager
 - ✅ Updated `get_threshold_summary()` method with Phase 3e information
 - ✅ Preserved ALL critical business logic (`determine_crisis_level()`, `requires_staff_review()`)
@@ -76,14 +68,14 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 
 ## 🧠 **EXTRACTED LEARNING METHODS (VERIFIED WORKING)**
 
-### **From AnalysisParametersManager (5 methods) ✅:**
+### **From AnalysisConfigManager (5 methods) ✅:**
 1. ✅ `get_learning_system_parameters()` → `LearningSystemManager.get_learning_parameters()`
 2. ✅ `validate_learning_system_parameters()` → `LearningSystemManager.validate_learning_parameters()`
 3. ✅ Learning rate validation → Integrated into LearningSystemManager validation
 4. ✅ Confidence adjustment tracking → Part of threshold adjustment methods
 5. ✅ Sensitivity bounds management → Part of learning parameter configuration
 
-### **From ThresholdMappingManager (3 methods) ✅:**
+### **From CrisisThresholdManager (3 methods) ✅:**
 1. ✅ `get_learning_thresholds()` → `LearningSystemManager.get_learning_thresholds()`
 2. ✅ Adaptive threshold adjustment → `LearningSystemManager.adjust_threshold_for_false_positive/negative()`
 3. ✅ Learning bounds validation → `LearningSystemManager.validate_threshold_adjustments()`
@@ -123,10 +115,10 @@ except Exception as e:
 ## 🛡️ **CRITICAL BUSINESS LOGIC PROTECTED (TESTED)**
 
 ### **Methods NEVER Extracted (Life-Saving) ✅:**
-- ❌ **`determine_crisis_level()`** - Remains in ThresholdMappingManager
-- ❌ **`requires_staff_review()`** - Remains in ThresholdMappingManager
-- ❌ **Core threshold mapping logic** - Remains in ThresholdMappingManager
-- ❌ **Core analysis parameter logic** - Remains in AnalysisParametersManager
+- ❌ **`determine_crisis_level()`** - Remains in CrisisThresholdManager
+- ❌ **`requires_staff_review()`** - Remains in CrisisThresholdManager
+- ❌ **Core threshold mapping logic** - Remains in CrisisThresholdManager
+- ❌ **Core analysis parameter logic** - Remains in AnalysisConfigManager
 
 ### **Methods Safely Extracted (Learning-Only) ✅:**
 - ✅ **Learning system configuration** - Moved to LearningSystemManager
@@ -201,7 +193,7 @@ except Exception as e:
 ### **Context for Next Session:**
 - Phase 3e Step 3 is **100% complete** with all tests passing (38/38)
 - LearningSystemManager **production-ready** with UnifiedConfigManager compliance
-- **Both AnalysisParametersManager AND ThresholdMappingManager** updated with migration references
+- **Both AnalysisConfigManager AND CrisisThresholdManager** updated with migration references
 - Step 4 will consolidate analysis methods and enhance CrisisAnalyzer
 - All Clean v3.1 architecture patterns verified and validated with 100% test success
 
@@ -211,7 +203,7 @@ except Exception as e:
 
 **✅ LEARNING SYSTEM MANAGER - PRODUCTION READY WITH 100% TEST SUCCESS!**
 
-**Achievement**: Learning methods extracted from BOTH AnalysisParametersManager AND ThresholdMappingManager  
+**Achievement**: Learning methods extracted from BOTH AnalysisConfigManager AND CrisisThresholdManager  
 **Quality**: **100% test success rate (38/38 tests passing)**  
 **Compliance**: UnifiedConfigManager usage properly verified and maintained  
 **Architecture**: Complete integration with proper Clean v3.1 patterns  
