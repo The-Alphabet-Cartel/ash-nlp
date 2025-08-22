@@ -37,7 +37,7 @@ from managers.unified_config_manager import create_unified_config_manager
 # ============================================================================
 # MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
 # ============================================================================
-from managers.analysis_config_manager import create_analysis_config_manager
+from managers.analysis_config import create_analysis_config_manager
 from managers.crisis_pattern_manager import create_crisis_pattern_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.learning_system_manager import create_learning_system_manager
