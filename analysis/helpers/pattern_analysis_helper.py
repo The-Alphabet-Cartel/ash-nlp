@@ -328,7 +328,7 @@ class PatternAnalysisHelper:
                     'enhanced_consolidation': True
                 }
             },
-            'requires_staff_review': self.context_helper._determine_staff_review_requirement(confidence, crisis_level),
+            'requires_staff_review': self.context_helper.determine_staff_review_requirement(confidence, crisis_level),
             'processing_time': time.time() - start_time
         }
     
