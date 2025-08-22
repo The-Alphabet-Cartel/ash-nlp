@@ -48,7 +48,7 @@ except ImportError as e:
 
 # Crisis Pattern Manager (Phase 3A)
 try:
-    from .pattern_detection_manager import PatternDetectionManager, create_pattern_detection_manager
+    from .pattern_detection import PatternDetectionManager, create_pattern_detection_manager
     PATTERN_DETECTION_MANAGER_AVAILABLE = True
     logger.debug("  ✅ PatternDetectionManager v3.1 imported")
 except ImportError as e:
@@ -147,14 +147,14 @@ except ImportError as e:
 
 # Threshold Mapping Manager (Phase 3C)
 try:
-    from .crisis_threshold_manager import CrisisThresholdManager, create_crisis_threshold_manager
-    THRESHOLD_MAPPING_MANAGER_AVAILABLE = True
+    from .crisis_threshold import CrisisThresholdManager, create_crisis_threshold_manager
+    CRISIS_THRESHOLD_MANAGER_AVAILABLE = True
     logger.debug("  ✅ CrisisThresholdManager v3.1 imported")
 except ImportError as e:
     logger.error(f"  ❌ CrisisThresholdManager v3.1 import failed: {e}")
     CrisisThresholdManager = None
     create_crisis_threshold_manager = None
-    THRESHOLD_MAPPING_MANAGER_AVAILABLE = False
+    CRISIS_THRESHOLD_MANAGER_AVAILABLE = False
 
 # Unified Configuration Manager (Core)
 try:
