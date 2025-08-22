@@ -37,7 +37,7 @@ except ImportError as e:
 
 # Context Pattern Manager (Phase 3D Step 10.8) - NEW
 try:
-    from .context_analysis_manager import ContextAnalysisManager, create_context_analysis_manager
+    from .context_analysis import ContextAnalysisManager, create_context_analysis_manager
     CONTEXT_ANALYSIS_MANAGER_AVAILABLE = True
     logger.debug("  ✅ ContextAnalysisManager v3.1 imported")
 except ImportError as e:
