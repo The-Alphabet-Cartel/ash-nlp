@@ -27,7 +27,7 @@ from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pattern_result: Dict[str, Any], threshold_mapping_manager=None) -> Dict[str, Any]:
+def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pattern_result: Dict[str, Any], crisis_threshold_manager=None) -> Dict[str, Any]:
     """
     Phase 3e: Combine ensemble and pattern analysis results with enhanced error handling
     Mode-aware integration with dynamic threshold configuration
@@ -35,7 +35,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
     Args:
         ensemble_result: Results from the three-model ensemble
         pattern_result: Results from crisis pattern analysis  
-        threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds
+        crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
         
     Returns:
         Combined analysis with final crisis determination
@@ -51,11 +51,11 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
         pattern_error = pattern_result.get('error')
         
         # Get current mode and configuration with enhanced error handling
-        if threshold_mapping_manager:
+        if crisis_threshold_manager:
             try:
-                current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
-                pattern_integration_config = threshold_mapping_manager.get_pattern_integration_config()
+                current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+                crisis_mapping = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
+                pattern_integration_config = crisis_threshold_manager.get_pattern_integration_config()
                 
                 logger.debug(f"Integration using {current_mode} mode thresholds")
             except Exception as e:
@@ -67,7 +67,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
             current_mode = 'fallback'
             crisis_mapping = _get_fallback_crisis_mapping()
             pattern_integration_config = _get_fallback_pattern_config()
-            logger.warning("Using fallback thresholds - ThresholdMappingManager not available")
+            logger.warning("Using fallback thresholds - CrisisThresholdManager not available")
         
         # Determine pattern severity with enhanced validation
         pattern_severity = 'none'
@@ -160,9 +160,9 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
             integration_reasoning.append("No patterns triggered, using ensemble result")
         
         # Safety checks and bias application with enhanced error handling
-        if threshold_mapping_manager:
+        if crisis_threshold_manager:
             try:
-                safety_config = threshold_mapping_manager.get_safety_controls_config()
+                safety_config = crisis_threshold_manager.get_safety_controls_config()
                 safety_bias = safety_config.get('consensus_safety_bias', 0.03)
                 
                 # Apply safety bias toward higher crisis levels
@@ -205,12 +205,12 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
         
         # Phase 3e: Determine staff review requirement with enhanced error handling
         staff_review_required = False
-        if threshold_mapping_manager:
+        if crisis_threshold_manager:
             try:
                 has_model_disagreement = ensemble_result.get('gap_detection', {}).get('gap_detected', False)
                 has_gap_detection = ensemble_result.get('gap_detection', {}).get('requires_review', False)
                 
-                staff_review_required = threshold_mapping_manager.is_staff_review_required(
+                staff_review_required = crisis_threshold_manager.is_staff_review_required(
                     final_crisis_level, final_confidence, has_model_disagreement, has_gap_detection
                 )
             except Exception as e:
@@ -241,7 +241,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
                 'pattern_confidence': pattern_confidence,
                 'final_determination': final_crisis_level,
                 'pattern_available': not bool(pattern_error),
-                'safety_bias_applied': threshold_mapping_manager is not None,
+                'safety_bias_applied': crisis_threshold_manager is not None,
                 'phase_3e_enhanced': True
             }
         }
@@ -349,7 +349,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
         logger.warning(f"Error comparing crisis levels: {e}")
         return 'low'  # Safe fallback
 
-def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, crisis_pattern_manager=None, threshold_mapping_manager=None):
+def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, crisis_pattern_manager=None, crisis_threshold_manager=None):
     """
     Phase 3e: Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
     Clean v3.1 implementation with improved error handling and Phase 3e patterns
@@ -359,7 +359,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
         model_ensemble_manager: Model Ensemble Manager instance (required)
         pydantic_manager: PydanticManager v3.1 instance (required)
         crisis_pattern_manager: CrisisPatternManager instance (optional)
-        threshold_mapping_manager: ThresholdMappingManager instance (optional but recommended)
+        crisis_threshold_manager: CrisisThresholdManager instance (optional but recommended)
     """
     
     # ========================================================================
@@ -387,18 +387,18 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
         raise RuntimeError(f"Pydantic model loading failed: {e}")
     
     # Phase 3e: Enhanced threshold manager validation
-    if threshold_mapping_manager:
+    if crisis_threshold_manager:
         try:
-            current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-            logger.info(f"ThresholdMappingManager integrated - Current mode: {current_mode}")
+            current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+            logger.info(f"CrisisThresholdManager integrated - Current mode: {current_mode}")
             
             # Validate threshold configuration
-            crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+            crisis_mapping = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
             logger.debug(f"Current crisis mapping thresholds: {crisis_mapping}")
         except Exception as e:
-            logger.warning(f"ThresholdMappingManager validation failed: {e}")
+            logger.warning(f"CrisisThresholdManager validation failed: {e}")
     else:
-        logger.warning("ThresholdMappingManager not provided - using fallback thresholds")
+        logger.warning("CrisisThresholdManager not provided - using fallback thresholds")
     
     logger.info("Adding Clean v3.1 Three Zero-Shot Model Ensemble endpoints (Phase 3e)")
     
@@ -580,15 +580,15 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
                     pattern_info = {'error': str(e)}
             
             # Phase 3e: Enhanced threshold manager validation
-            threshold_manager_status = threshold_mapping_manager is not None
+            threshold_manager_status = crisis_threshold_manager is not None
             threshold_info = {}
-            if threshold_mapping_manager:
+            if crisis_threshold_manager:
                 try:
                     threshold_info = {
-                        'current_mode': threshold_mapping_manager.get_current_ensemble_mode(),
-                        'validation_status': threshold_mapping_manager.get_validation_summary(),
-                        'crisis_mapping_loaded': bool(threshold_mapping_manager.get_crisis_level_mapping_for_mode()),
-                        'staff_review_config': threshold_mapping_manager.get_staff_review_config()
+                        'current_mode': crisis_threshold_manager.get_current_ensemble_mode(),
+                        'validation_status': crisis_threshold_manager.get_validation_summary(),
+                        'crisis_mapping_loaded': bool(crisis_threshold_manager.get_crisis_level_mapping_for_mode()),
+                        'staff_review_config': crisis_threshold_manager.get_staff_review_config()
                     }
                 except Exception as e:
                     threshold_info = {'error': str(e)}
@@ -613,7 +613,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
                         "status": "healthy" if pattern_manager_status else "not_available",
                         "details": pattern_info
                     },
-                    "threshold_mapping": {
+                    "crisis_threshold": {
                         "status": "healthy" if threshold_manager_status else "not_available", 
                         "details": threshold_info
                     }
@@ -666,10 +666,10 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
                     config["model_details"] = {"error": str(e)}
             
             # Add threshold configuration with enhanced validation
-            if threshold_mapping_manager:
+            if crisis_threshold_manager:
                 try:
-                    current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-                    crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+                    current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+                    crisis_mapping = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
                     config["threshold_configuration"] = {
                         "current_mode": current_mode,
                         "crisis_levels": list(crisis_mapping.keys()),
@@ -699,10 +699,10 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
     logger.info("Phase 3e Enhancement: Enhanced error handling and validation applied throughout")
     
     # Phase 3e: Enhanced configuration summary logging
-    if threshold_mapping_manager:
+    if crisis_threshold_manager:
         try:
-            current_mode = threshold_mapping_manager.get_current_ensemble_mode()
-            crisis_mapping = threshold_mapping_manager.get_crisis_level_mapping_for_mode()
+            current_mode = crisis_threshold_manager.get_current_ensemble_mode()
+            crisis_mapping = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
             logger.info(f"Ensemble endpoints configured with {current_mode} mode thresholds")
             logger.debug(f"Crisis mapping configuration: {crisis_mapping}")
         except Exception as e:
