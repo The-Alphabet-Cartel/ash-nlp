@@ -460,7 +460,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, cris
                 confidence_score = complete_analysis.get('confidence_score', 0.0)
             
             # Validate extracted values
-            if not isinstance(crisis_level, str) or crisis_level not in ['none', 'low', 'medium', 'high']:
+            if not isinstance(crisis_level, str) or crisis_level not in ['none', 'low', 'medium', 'high', 'critical']:
                 logger.warning(f"Invalid crisis_level '{crisis_level}', using 'none'")
                 crisis_level = 'none'
                 
