@@ -1,8 +1,8 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-4.2-5
-LAST MODIFIED: 2025-08-18
+FILE VERSION: v3.1-3e-5.7-1
+LAST MODIFIED: 2025-08-21
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
 MIGRATION STATUS: Phase 3e Step 4.2 - Analysis method consolidation with SharedUtilities and LearningSystem
@@ -34,8 +34,8 @@ ANALYSIS_CAPABILITIES = {
             "consolidated_scoring_functions",  # Phase 3d Step 10.6
             "safety_first_scoring",
             "community_pattern_integration",
-            "configurable_analysis_parameters",
-            "mode_aware_threshold_mapping",
+            "configurable_analysis_config",
+            "mode_aware_crisis_threshold",
             "dynamic_feature_flags",
             "adaptive_performance_settings"
         ],
@@ -47,16 +47,16 @@ ANALYSIS_CAPABILITIES = {
     "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
         "description": "Analysis methods consolidated from AnalysisParameters, ThresholdMapping, and ModelEnsemble managers",
         "location": "CrisisAnalyzer instance methods",
-        "source_managers": ["AnalysisParametersManager", "ThresholdMappingManager", "ModelEnsembleManager"],
+        "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelEnsembleManager"],
         "methods": {
-            "from_analysis_parameters": [
+            "from_analysis_config": [
                 "get_analysis_crisis_thresholds",
                 "get_analysis_timeouts", 
                 "get_analysis_confidence_boosts",
                 "get_analysis_pattern_weights",
                 "get_analysis_algorithm_parameters"
             ],
-            "from_threshold_mapping": [
+            "from_crisis_threshold": [
                 "apply_crisis_thresholds",
                 "calculate_crisis_level_from_confidence",
                 "validate_crisis_analysis_thresholds", 
@@ -114,8 +114,8 @@ ANALYSIS_CAPABILITIES = {
             "enhanced_depression_analysis"
         ],
         "manager_integration": [
-            "ThresholdMappingManager",
-            "AnalysisParametersManager", 
+            "CrisisThresholdManager",
+            "AnalysisConfigManager", 
             "CrisisPatternManager",
             "ModelEnsembleManager"
         ]
@@ -150,7 +150,7 @@ ANALYSIS_WORKFLOWS = {
             "validate_input_with_shared_utilities",     # Phase 3e Step 4.2 NEW
             "check_feature_flags",
             "apply_performance_settings", 
-            "get_consolidated_analysis_parameters",     # Phase 3e Step 4.2 NEW
+            "get_consolidated_analysis_config",     # Phase 3e Step 4.2 NEW
             "extract_context_signals",
             "run_enhanced_ensemble_analysis",           # Phase 3e Step 4.2 NEW
             "apply_crisis_pattern_analysis",
@@ -255,13 +255,13 @@ def get_implemented_features():
         "core_analysis": {
             "status": "implemented",
             "description": "Enhanced three-model ensemble crisis detection with consolidated methods",
-            "managers": ["ModelEnsembleManager", "CrisisPatternManager", "AnalysisParametersManager", "ThresholdMappingManager"]
+            "managers": ["ModelEnsembleManager", "CrisisPatternManager", "AnalysisConfigManager", "CrisisThresholdManager"]
         },
         
         "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
             "status": "implemented",
             "description": "Analysis methods consolidated from multiple managers into CrisisAnalyzer",
-            "source_managers": ["AnalysisParametersManager", "ThresholdMappingManager", "ModelEnsembleManager"],
+            "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelEnsembleManager"],
             "methods_count": 12,
             "configuration_access": "UnifiedConfigManager via SharedUtilities",
             "benefits": [
@@ -311,14 +311,14 @@ def get_implemented_features():
         "configurable_parameters": {
             "status": "enhanced",
             "description": "Externalized analysis parameters with consolidated access",
-            "managers": ["AnalysisParametersManager", "SharedUtilitiesManager"],
+            "managers": ["AnalysisConfigManager", "SharedUtilitiesManager"],
             "enhancement": "consolidated_methods_in_crisis_analyzer"
         },
 
         "threshold_management": {
             "status": "enhanced",
             "description": "Mode-aware threshold mappings with learning integration",
-            "managers": ["ThresholdMappingManager", "LearningSystemManager"],
+            "managers": ["CrisisThresholdManager", "LearningSystemManager"],
             "enhancement": "learning_adjusted_thresholds"
         },
 
@@ -377,8 +377,8 @@ def get_migration_status():
             "analysis_methods_consolidation" # Phase 3e Step 4.2 NEW
         ],
         "consolidated_methods": {
-            "analysis_parameters_methods": 5,
-            "threshold_mapping_methods": 4,
+            "analysis_config_methods": 5,
+            "crisis_threshold_methods": 4,
             "model_ensemble_methods": 3,
             "total_methods": 12
         },
@@ -396,14 +396,14 @@ def get_consolidation_summary():
         "phase": "3e_step_4.2",
         "objective": "consolidate_analysis_methods_into_crisis_analyzer",
         "methods_consolidated": {
-            "from_analysis_parameters_manager": [
+            "from_analysis_config_manager": [
                 "get_analysis_crisis_thresholds",
                 "get_analysis_timeouts",
                 "get_analysis_confidence_boosts", 
                 "get_analysis_pattern_weights",
                 "get_analysis_algorithm_parameters"
             ],
-            "from_threshold_mapping_manager": [
+            "from_crisis_threshold_manager": [
                 "apply_crisis_thresholds",
                 "calculate_crisis_level_from_confidence",
                 "validate_crisis_analysis_thresholds",
@@ -432,7 +432,7 @@ def get_consolidation_summary():
 # ============================================================================
 
 def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_pattern_manager=None, 
-                          analysis_parameters_manager=None, threshold_mapping_manager=None,
+                          analysis_config_manager=None, crisis_threshold_manager=None,
                           feature_config_manager=None, performance_config_manager=None,
                           context_pattern_manager=None, shared_utilities_manager=None,
                           learning_system_manager=None, zero_shot_manager=None):
@@ -449,8 +449,8 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
         # Existing parameters (maintained for backward compatibility)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
         crisis_pattern_manager: CrisisPatternManager for pattern-based analysis (Phase 3a)
-        analysis_parameters_manager: AnalysisParametersManager for configurable parameters (Phase 3b)
-        threshold_mapping_manager: ThresholdMappingManager for mode-aware thresholds (Phase 3c)
+        analysis_config_manager: AnalysisConfigManager for configurable parameters (Phase 3b)
+        crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds (Phase 3c)
         feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
         performance_config_manager: PerformanceConfigManager for performance settings (Phase 3d Step 7)
         context_pattern_manager: ContextPatternManager for context analysis (Phase 3d Step 10.8)
@@ -471,8 +471,8 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager, crisis_patter
         # Existing dependencies (maintained)
         model_ensemble_manager=model_ensemble_manager,
         crisis_pattern_manager=crisis_pattern_manager,
-        analysis_parameters_manager=analysis_parameters_manager,
-        threshold_mapping_manager=threshold_mapping_manager,
+        analysis_config_manager=analysis_config_manager,
+        crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,
         performance_config_manager=performance_config_manager,
         context_pattern_manager=context_pattern_manager,
@@ -553,9 +553,9 @@ def validate_crisis_analyzer_dependencies(unified_config=None, model_ensemble_ma
         validation_result["phase"] = "3d_step_10.8"
     elif kwargs.get("feature_config_manager") or kwargs.get("performance_config_manager"):
         validation_result["phase"] = "3d_step_7+"
-    elif kwargs.get("threshold_mapping_manager"):
+    elif kwargs.get("crisis_threshold_manager"):
         validation_result["phase"] = "3c+"
-    elif kwargs.get("analysis_parameters_manager"):
+    elif kwargs.get("analysis_config_manager"):
         validation_result["phase"] = "3b+"
     elif kwargs.get("crisis_pattern_manager"):
         validation_result["phase"] = "3a+"
