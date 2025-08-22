@@ -1,4 +1,4 @@
-# ash-nlp/managers/context_pattern_manager.py
+# ash-nlp/managers/context_analysis.py
 """
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
@@ -30,7 +30,7 @@ from managers.unified_config_manager import UnifiedConfigManager
 
 logger = logging.getLogger(__name__)
 
-class ContextPatternManager:
+class ContextAnalysisManager:
     """
     Context Pattern Manager for semantic and contextual analysis of crisis messages
     
@@ -73,7 +73,7 @@ class ContextPatternManager:
         # Load configuration during initialization
         self._load_configuration()
         
-        logger.info("ContextPatternManager v3.1-3e-5.4-1 initialized successfully")
+        logger.info("ContextAnalysisManager v3.1-3e-5.4-1 initialized successfully")
 
     def _load_configuration(self) -> None:
         """Load context patterns and analysis parameters from configuration"""
@@ -268,35 +268,35 @@ class ContextPatternManager:
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
 # ============================================================================
 
-def create_context_pattern_manager(unified_config: UnifiedConfigManager) -> ContextPatternManager:
+def create_context_analysis_manager(unified_config: UnifiedConfigManager) -> ContextAnalysisManager:
     """
-    Factory function to create ContextPatternManager instance with dependency injection
+    Factory function to create ContextAnalysisManager instance with dependency injection
     
     Args:
         unified_config: UnifiedConfigManager instance for configuration loading
         
     Returns:
-        ContextPatternManager instance ready for use
+        ContextAnalysisManager instance ready for use
         
     Raises:
         RuntimeError: If initialization fails
     """
     try:
-        manager = ContextPatternManager(unified_config)
+        manager = ContextAnalysisManager(unified_config)
         
         if not manager.is_initialized():
-            raise RuntimeError("ContextPatternManager failed to initialize properly")
+            raise RuntimeError("ContextAnalysisManager failed to initialize properly")
             
-        logger.info("✅ ContextPatternManager created successfully via factory function")
+        logger.info("✅ ContextAnalysisManager created successfully via factory function")
         return manager
         
     except Exception as e:
-        logger.error(f"❌ Failed to create ContextPatternManager: {e}")
-        raise RuntimeError(f"ContextPatternManager factory function failed: {e}")
+        logger.error(f"❌ Failed to create ContextAnalysisManager: {e}")
+        raise RuntimeError(f"ContextAnalysisManager factory function failed: {e}")
 
 
 # Export for clean architecture
 __all__ = [
-    'ContextPatternManager',
-    'create_context_pattern_manager'
+    'ContextAnalysisManager',
+    'create_context_analysis_manager'
 ]

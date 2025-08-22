@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Unified Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 5.5 - UnifiedConfigManager Optimization with Helper Files
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -92,7 +92,7 @@ class UnifiedConfigManager:
             'label_config': 'label_config.json',
             'learning_system': 'learning_system.json',
             'logging_settings': 'logging_settings.json',
-            'model_ensemble': 'model_ensemble.json',
+            'model_coordination': 'model_coordination.json',
             'performance_settings': 'performance_settings.json',
             'server_config': 'server_config.json',
             'settings_config': 'settings_config.json',

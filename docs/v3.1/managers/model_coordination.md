@@ -1,18 +1,18 @@
 # Model Ensemble Manager Documentation
 
-**File**: `managers/model_ensemble_manager.py`  
+**File**: `managers/model_coordination_manager.py`  
 **Phase**: 3e Step 1.1 Documentation Audit  
 **Status**: 🔄 **IN PROGRESS**  
-**Factory Function**: `create_model_ensemble_manager(config_manager)`  
+**Factory Function**: `create_model_coordination_manager(config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-6-1
+**FILE VERSION**: v3.1-3e-6-2
 **LAST MODIFIED**: 2025-08-22
 
 ---
 
 ## 🎯 **Manager Purpose**
 
-The **ModelEnsembleManager** manages the three zero-shot model ensemble for crisis detection. It coordinates multiple NLP models, handles model loading/unloading, provides ensemble analysis capabilities, and serves as the interface between the API and the underlying machine learning models.
+The **ModelCoordinationManager** manages the three zero-shot model ensemble for crisis detection. It coordinates multiple NLP models, handles model loading/unloading, provides ensemble analysis capabilities, and serves as the interface between the API and the underlying machine learning models.
 
 **Primary Responsibilities:**
 - Manage three zero-shot models for crisis detection (emotional distress, depression, anxiety)
@@ -109,7 +109,7 @@ The **ModelEnsembleManager** manages the three zero-shot model ensemble for cris
 - **logging** - Error handling and model status tracking
 
 ### **Configuration Files:**
-- **`config/model_ensemble.json`** - Model definitions and weights
+- **`config/model_coordination.json`** - Model definitions and weights
 - **Environment variables** - Via UnifiedConfigManager (e.g., `NLP_MODEL_*`)
 
 ### **Integration Points:**
@@ -124,7 +124,7 @@ The **ModelEnsembleManager** manages the three zero-shot model ensemble for cris
 **Accessed via UnifiedConfigManager only - no direct environment access**
 
 ### **Model Configuration Variables:**
-- **`NLP_MODEL_ENSEMBLE_MODE`** - Ensemble mode (consensus/majority/weighted)
+- **`NLP_model_coordination_MODE`** - Ensemble mode (consensus/majority/weighted)
 - **`NLP_MODEL_DEVICE`** - Hardware device (cpu/cuda/auto)
 - **`NLP_MODEL_PRECISION`** - Model precision (float16/float32)
 - **`NLP_MODEL_*_WEIGHT`** - Individual model weights
@@ -148,7 +148,7 @@ The **ModelEnsembleManager** manages the three zero-shot model ensemble for cris
 
 ### **Critical Data Flow:**
 ```
-API Request → ModelEnsembleManager → CrisisAnalyzer → Complete Analysis Result
+API Request → ModelCoordinationManager → CrisisAnalyzer → Complete Analysis Result
 ```
 
 ---
@@ -179,14 +179,14 @@ API Request → ModelEnsembleManager → CrisisAnalyzer → Complete Analysis Re
 ### **Primary Analysis Delegation:**
 **`analyze_message_ensemble()`** - **CRITICAL METHOD** that delegates to CrisisAnalyzer:
 ```python
-# ModelEnsembleManager coordinates, CrisisAnalyzer performs analysis
-crisis_analyzer = CrisisAnalyzer(unified_config, model_ensemble_manager=self, ...)
+# ModelCoordinationManager coordinates, CrisisAnalyzer performs analysis
+crisis_analyzer = CrisisAnalyzer(unified_config, model_coordination_manager=self, ...)
 result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
 ```
 
 ### **Why This Architecture Matters:**
 - **Single Source of Truth**: CrisisAnalyzer contains all analysis logic
-- **Clean Separation**: ModelEnsembleManager handles models, not analysis
+- **Clean Separation**: ModelCoordinationManager handles models, not analysis
 - **Flexibility**: CrisisAnalyzer can use any model manager implementation
 - **Testability**: Analysis logic centralized and independently testable
 
@@ -205,7 +205,7 @@ result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
 - Performance feedback processing (currently deferred)
 - Ensemble optimization logic (currently deferred)
 
-### **Keep in ModelEnsembleManager:**
+### **Keep in ModelCoordinationManager:**
 - **`analyze_message_ensemble()`** - **CRITICAL DELEGATION**
 - **`classify_zero_shot()`** - **UNIQUE CAPABILITY**
 - Model lifecycle management (load, status, info)
@@ -229,7 +229,7 @@ Contains placeholder methods for learning-based ensemble optimization that will 
 
 ## ✅ **Phase 3e Step 1.1 Status**
 
-**Manager**: model_ensemble_manager.py  
+**Manager**: model_coordination_manager.py  
 **Documentation**: ✅ **COMPLETE**  
 **Core Methods**: 12 identified  
 **Shared Methods**: 5 identified for SharedUtilitiesManager  

@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Pattern Manager for Ash NLP Service - OPTIMIZED
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-3
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Sub-step 5.3 - PatternDetectionManager cleanup + optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -827,11 +827,11 @@ class PatternDetectionManager:
     # SEMANTIC PATTERN ANALYSIS - Using Helpers
     # ========================================================================
 
-    def find_triggered_patterns(self, message: str, model_ensemble_manager=None) -> List[Dict[str, Any]]:
+    def find_triggered_patterns(self, message: str, model_coordination_manager=None) -> List[Dict[str, Any]]:
         """Find triggered crisis patterns using semantic NLP classification"""
         try:
-            if model_ensemble_manager:
-                semantic_patterns = self._helpers.find_patterns_semantic(message, model_ensemble_manager)
+            if model_coordination_manager:
+                semantic_patterns = self._helpers.find_patterns_semantic(message, model_coordination_manager)
                 if semantic_patterns:
                     logger.info(f"✅ Semantic classification found {len(semantic_patterns)} patterns")
                     return semantic_patterns

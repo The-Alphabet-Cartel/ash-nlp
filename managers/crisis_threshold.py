@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Mode-Aware Crisis Threshold Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-3
 LAST MODIFIED: 2025-08-22
 PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -39,17 +39,17 @@ class CrisisThresholdManager:
     Phase 3e Step 5.7: RENAMED for clarity and v3.1 compliance
     """
     
-    def __init__(self, unified_config_manager, model_ensemble_manager=None):
+    def __init__(self, unified_config_manager, model_coordination_manager=None):
         """
         Initialize CrisisThresholdManager with mode-aware threshold support
         
         Args:
             unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
-            model_ensemble_manager: ModelEnsembleManager for mode detection
+            model_coordination_manager: ModelCoordinationManager for mode detection
         """
         # STEP 9 CHANGE: Use UnifiedConfigManager instead of ConfigManager
         self.unified_config = unified_config_manager
-        self.model_ensemble_manager = model_ensemble_manager
+        self.model_coordination_manager = model_coordination_manager
         self.config = None
         self._validation_errors = []
         
@@ -337,7 +337,7 @@ class CrisisThresholdManager:
         """Get current ensemble mode UnifiedConfigManager"""
         logger.debug("📋 Getting ensemble mode from JSON...")
         mode = self.unified_config.get_config_section(
-            'model_ensemble',
+            'model_coordination',
             'ensemble_config.mode',
             'majority'
         )
@@ -944,7 +944,7 @@ class CrisisThresholdManager:
 # FACTORY FUNCTION - Updated for Phase 3e Step 5.7 (RENAMED)
 # ============================================================================
 
-def create_crisis_threshold_manager(unified_config_manager, model_ensemble_manager=None) -> CrisisThresholdManager:
+def create_crisis_threshold_manager(unified_config_manager, model_coordination_manager=None) -> CrisisThresholdManager:
     """
     Factory function to create CrisisThresholdManager instance - Phase 3e Step 5.7
     
@@ -952,12 +952,12 @@ def create_crisis_threshold_manager(unified_config_manager, model_ensemble_manag
     
     Args:
         unified_config_manager: UnifiedConfigManager instance (STEP 9 CHANGE)
-        model_ensemble_manager: ModelEnsembleManager instance for mode detection
+        model_coordination_manager: ModelCoordinationManager instance for mode detection
         
     Returns:
         CrisisThresholdManager instance with Phase 3e Step 5.7 renaming complete
     """
-    return CrisisThresholdManager(unified_config_manager, model_ensemble_manager)
+    return CrisisThresholdManager(unified_config_manager, model_coordination_manager)
 
 # ============================================================================
 # CLEAN ARCHITECTURE EXPORTS (UPDATED)

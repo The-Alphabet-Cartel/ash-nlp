@@ -5,7 +5,7 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_unified_config_manager(config_dir)`  
 **Dependencies**: **NONE** - Foundation layer  
-**FILE VERSION**: v3.1-3e-6-1
+**FILE VERSION**: v3.1-3e-6-3
 **LAST MODIFIED**: 2025-08-22
 
 ---
@@ -59,7 +59,7 @@ The UnifiedConfigManager manages **ALL** JSON configuration files:
 - **learning_parameters.json** - Learning system parameters
 - **learning_settings.json** - Learning system settings
 - **logging_settings.json** - Logging configuration
-- **model_ensemble.json** - Model ensemble configuration
+- **model_coordination.json** - Model ensemble configuration
 - **performance_settings.json** - Performance settings
 - **server_config.json** - Server configuration
 - **storage_settings.json** - Storage configuration
@@ -145,10 +145,10 @@ The UnifiedConfigManager is a **foundation service layer** that provides configu
 ### **Downstream Consumers:**
 - **analysis_config_manager** - Analysis configuration
 - **pattern_detection_manager** - Crisis pattern configuration
-- **context_pattern_manager** - Context analysis configuration
+- **context_analysis_manager** - Context analysis configuration
 - **feature_config_manager** - Feature flag configuration
 - **logging_config_manager** - Logging configuration
-- **model_ensemble_manager** - Model configuration
+- **model_coordination_manager** - Model configuration
 - **performance_config_manager** - Performance configuration
 - **pydantic_manager** - Model validation configuration
 - **server_config_manager** - Server configuration

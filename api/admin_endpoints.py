@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Admin endpoints for label management and system administration for Ash NLP Service v3.1
 ---
-FILE VERSION: v3.1-3d-6-1
+FILE VERSION: v3.1-3d-6-2
 LAST MODIFIED: 2025-08-22
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
@@ -59,14 +59,14 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, pattern_detection_manager=None,
+def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pattern_detection_manager=None,
                          analysis_config_manager=None, crisis_threshold_manager=None):
     """
     Setup admin endpoints with complete Phase 3c manager architecture
     
     Args:
         app: FastAPI application instance
-        model_ensemble_manager: Model Ensemble Manager instance (required)
+        model_coordination_manager: Model Ensemble Manager instance (required)
         zero_shot_manager: ZeroShotManager instance (required)
         pattern_detection_manager: PatternDetectionManager instance (Phase 3a)
         analysis_config_manager: AnalysisConfigManager instance (Phase 3b) - NEW
@@ -77,7 +77,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, patter
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
-    if not model_ensemble_manager:
+    if not model_coordination_manager:
         logger.error("❌ Model Ensemble Manager is required for admin endpoints")
         raise RuntimeError("Model Ensemble Manager required for admin endpoints")
     
@@ -111,7 +111,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, patter
                 ],
                 "managers": {
                     "zero_shot_manager": zero_shot_manager is not None,
-                    "model_ensemble_manager": model_ensemble_manager is not None,
+                    "model_coordination_manager": model_coordination_manager is not None,
                     "pattern_detection_manager": pattern_detection_manager is not None,
                     "analysis_config_manager": analysis_config_manager is not None,
                     "crisis_threshold_manager": crisis_threshold_manager is not None
@@ -301,9 +301,9 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, patter
         """Get current label configuration status - Clean v3.1 Implementation"""
         try:
             model_status = {}
-            if model_ensemble_manager.models_loaded():
+            if model_coordination_manager.models_loaded():
                 try:
-                    model_status = model_ensemble_manager.get_model_info()
+                    model_status = model_coordination_manager.get_model_info()
                 except Exception as e:
                     logger.warning(f"⚠️ Could not get model status: {e}")
                     model_status = {"error": str(e)}
@@ -323,11 +323,11 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, patter
                 "current_label_set": zero_shot_status.get('current_label_set', 'unknown'),
                 "available_sets": zero_shot_status.get('available_sets', []),
                 "label_stats": zero_shot_status.get('label_stats', {}),
-                "models_loaded": model_ensemble_manager.models_loaded(),
+                "models_loaded": model_coordination_manager.models_loaded(),
                 "model_status": model_status,
                 "admin_endpoints_available": True,
                 "manager_integration": {
-                    "model_ensemble_manager": True,
+                    "model_coordination_manager": True,
                     "zero_shot_manager": True,
                     "direct_access_only": True,
                     "backward_compatibility": "removed"
@@ -745,7 +745,7 @@ def setup_admin_endpoints(app, model_ensemble_manager, zero_shot_manager, patter
 # Enhanced Admin Endpoints Function Signature
 # ========================================================================
 def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, pattern_detection_manager, 
-                       model_ensemble_manager, analysis_config_manager=None, crisis_threshold_manager=None):
+                       model_coordination_manager, analysis_config_manager=None, crisis_threshold_manager=None):
     """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
     logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
     
@@ -753,7 +753,7 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
     try:
         setup_admin_endpoints(
             app=app,
-            model_ensemble_manager=model_ensemble_manager,
+            model_coordination_manager=model_coordination_manager,
             zero_shot_manager=zero_shot_manager,
             pattern_detection_manager=pattern_detection_manager,
             analysis_config_manager=analysis_config_manager,

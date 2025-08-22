@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ash-NLP Main Application Entry Point for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 LAST MODIFIED: 2025-08-22
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -42,7 +42,7 @@ from managers.pattern_detection import create_pattern_detection_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.learning_system_manager import create_learning_system_manager
 from managers.logging_config_manager import create_logging_config_manager
-from managers.model_ensemble_manager import create_model_ensemble_manager
+from managers.model_coordination import create_model_coordination_manager
 from managers.performance_config_manager import create_performance_config_manager
 from managers.pydantic_manager import create_pydantic_manager
 from managers.server_config_manager import create_server_config_manager
@@ -51,7 +51,7 @@ from managers.shared_utilities import create_shared_utilities_manager
 from managers.storage_config_manager import create_storage_config_manager
 from managers.crisis_threshold import create_crisis_threshold_manager
 from managers.zero_shot_manager import create_zero_shot_manager
-from managers.context_pattern_manager import create_context_pattern_manager
+from managers.context_analysis import create_context_analysis_manager
 
 # Analysis Components
 from analysis import create_crisis_analyzer
@@ -154,7 +154,7 @@ def initialize_unified_managers():
         logger.info("✅ Analysis parameters manager initialized...")
 
         logger.info("🔧 Initializing context pattern manager...")
-        context_pattern = create_context_pattern_manager(unified_config)
+        context_analysis = create_context_analysis_manager(unified_config)
         logger.info("✅ Context pattern manager initialized...")
 
         logger.info("🔧 Initializing crisis pattern manager...")
@@ -170,7 +170,7 @@ def initialize_unified_managers():
         logger.info("✅ Logging config manager initialized...")
 
         logger.info("🔧 Initializing models ensemble manager...")
-        model_ensemble = create_model_ensemble_manager(unified_config)
+        model_coordination = create_model_coordination_manager(unified_config)
         logger.info("✅ Models ensemble manager initialized...")
 
         logger.info("🔧 Initializing performance config manager...")
@@ -216,7 +216,7 @@ def initialize_unified_managers():
             feature_config_manager=feature_config,
             learning_system_manager=learning_system,
             logging_config_manager=logging_config,
-            model_ensemble_manager=model_ensemble,
+            model_coordination_manager=model_coordination,
             performance_config_manager=performance_config,
             pydantic_manager=pydantic,
             server_config_manager=server_config,
@@ -230,13 +230,13 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing analysis components...")
         crisis_analyzer = create_crisis_analyzer(
             unified_config,
-            model_ensemble_manager=model_ensemble,
+            model_coordination_manager=model_coordination,
             pattern_detection_manager=pattern_detection,
             analysis_config_manager=analysis_config,
             crisis_threshold_manager=crisis_threshold,
             feature_config_manager=feature_config,
             performance_config_manager=performance_config,
-            context_pattern_manager=context_pattern,
+            context_analysis_manager=context_analysis,
             shared_utilities_manager=shared_utilities,
             learning_system_manager=learning_system,
             zero_shot_manager=zero_shot
@@ -246,13 +246,13 @@ def initialize_unified_managers():
     # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
     # ========================================================================
-        if model_ensemble:
+        if model_coordination:
             try:
                 logger.info("📊 Preloading AI models...")
-                asyncio.run(model_ensemble.preload_models())
+                asyncio.run(model_coordination.preload_models())
                 
                 # Log preload status
-                status = model_ensemble.get_preload_status()
+                status = model_coordination.get_preload_status()
                 logger.info(f"🎉 Model preload status: {status}")
                 
             except Exception as e:
@@ -261,13 +261,13 @@ def initialize_unified_managers():
         managers = {
             'unified_config': unified_config,
             'analysis_config': analysis_config,
-            'context_pattern': context_pattern,
+            'context_analysis': context_analysis,
             'crisis_analyzer': crisis_analyzer,
             'pattern_detection': pattern_detection,
             'feature_config': feature_config,
             'learning_system': learning_system,
             'logging_config': logging_config,
-            'model_ensemble': model_ensemble,
+            'model_coordination': model_coordination,
             'performance_config': performance_config,
             'pydantic': pydantic,
             'server_config': server_config,
@@ -366,13 +366,13 @@ def create_fastapi_app():
                 managers['settings'], 
                 zero_shot_manager=managers['zero_shot'],
                 pattern_detection_manager=managers['pattern_detection'],
-                model_ensemble_manager=managers['model_ensemble'],
+                model_coordination_manager=managers['model_coordination'],
                 analysis_config_manager=managers['analysis_config'],
                 crisis_threshold_manager=managers['crisis_threshold']
             )
-            if managers['model_ensemble'] and managers['zero_shot']:
+            if managers['model_coordination'] and managers['zero_shot']:
                 logger.info("✅ Full admin endpoints registered with Model Ensemble Manager and ZeroShotManager")
-            elif managers['model_ensemble']:
+            elif managers['model_coordination']:
                 logger.info("✅ Limited admin endpoints registered with Model Ensemble Manager only")
             else:
                 logger.info("✅ Basic admin endpoints registered")

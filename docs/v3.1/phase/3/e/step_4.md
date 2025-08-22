@@ -45,7 +45,7 @@
 |----------------|---------|-------------------------------|
 | **AnalysisConfigManager** | 5 methods | `get_analysis_*` methods |
 | **CrisisThresholdManager** | 4 methods | `apply_crisis_*` and `calculate_*` methods |
-| **ModelEnsembleManager** | 3 methods | `perform_ensemble_*` methods |
+| **ModelCoordinationManager** | 3 methods | `perform_ensemble_*` methods |
 
 ---
 
@@ -71,7 +71,7 @@
 |----------------|---------------------|-------------------------------|
 | **AnalysisConfigManager** | 5 methods | `get_analysis_crisis_thresholds()`, `get_analysis_timeouts()`, `get_analysis_confidence_boosts()`, `get_analysis_pattern_weights()`, `get_analysis_algorithm_parameters()` |
 | **CrisisThresholdManager** | 4 methods | `apply_crisis_thresholds()`, `calculate_crisis_level_from_confidence()`, `validate_crisis_analysis_thresholds()`, `get_crisis_threshold_for_mode()` |
-| **ModelEnsembleManager** | 3 methods | `perform_ensemble_crisis_analysis()`, `combine_ensemble_model_results()`, `apply_analysis_ensemble_weights()` |
+| **ModelCoordinationManager** | 3 methods | `perform_ensemble_crisis_analysis()`, `combine_ensemble_model_results()`, `apply_analysis_ensemble_weights()` |
 
 ### **New Integration Methods:**
 - ✅ `analyze_message_with_learning()` - Learning-enhanced analysis

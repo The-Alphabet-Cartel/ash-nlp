@@ -5,7 +5,7 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_settings_manager(unified_config_manager, ...)`  
 **Dependencies**: UnifiedConfigManager + ALL other managers  
-**FILE VERSION**: v3.1-3e-6-2
+**FILE VERSION**: v3.1-3e-6-4
 **LAST MODIFIED**: 2025-08-22
 
 ---
@@ -47,7 +47,7 @@ The SettingsManager accepts and coordinates with ALL other managers:
 - **pattern_detection_manager** - Crisis pattern coordination
 - **feature_config_manager** - Feature flag coordination
 - **logging_config_manager** - Logging configuration coordination
-- **model_ensemble_manager** - Model ensemble coordination
+- **model_coordination_manager** - Model ensemble coordination
 - **performance_config_manager** - Performance settings coordination
 - **pydantic_manager** - Data model coordination
 - **server_config_manager** - Server configuration coordination
@@ -213,10 +213,10 @@ The SettingsManager tracks the completion status of all architecture phases:
 ```
 SettingsManager (Coordination Layer)
 ├── UnifiedConfigManager (Foundation)
-├── Analysis Managers (analysis_config, pattern_detection, context_pattern)
+├── Analysis Managers (analysis_config, pattern_detection, context_analysis)
 ├── Infrastructure Managers (server_config, logging_config, storage_config)
 ├── Feature Managers (feature_config, performance_config)
-├── Model Managers (model_ensemble, zero_shot, pydantic)
+├── Model Managers (model_coordination, zero_shot, pydantic)
 └── Crisis Threshold Manager (crisis_threshold)
 ```
 

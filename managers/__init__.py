@@ -1,7 +1,7 @@
 # ash-nlp/managers/__init__.py
 """
 Managers Module for Ash NLP Service
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 LAST MODIFIED: 2025-08-22
 PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -37,14 +37,14 @@ except ImportError as e:
 
 # Context Pattern Manager (Phase 3D Step 10.8) - NEW
 try:
-    from .context_pattern_manager import ContextPatternManager, create_context_pattern_manager
-    CONTEXT_PATTERN_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ ContextPatternManager v3.1 imported")
+    from .context_analysis_manager import ContextAnalysisManager, create_context_analysis_manager
+    CONTEXT_ANALYSIS_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ContextAnalysisManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"  ❌ ContextPatternManager v3.1 import failed: {e}")
-    ContextPatternManager = None
-    create_context_pattern_manager = None
-    CONTEXT_PATTERN_MANAGER_AVAILABLE = False
+    logger.error(f"  ❌ ContextAnalysisManager v3.1 import failed: {e}")
+    ContextAnalysisManager = None
+    create_context_analysis_manager = None
+    CONTEXT_ANALYSIS_MANAGER_AVAILABLE = False
 
 # Crisis Pattern Manager (Phase 3A)
 try:
@@ -81,14 +81,14 @@ except ImportError as e:
 
 # Model Ensemble Manager
 try:
-    from .model_ensemble_manager import ModelEnsembleManager, create_model_ensemble_manager
-    MODEL_ENSEMBLE_MANAGER_AVAILABLE = True
-    logger.debug("  ✅ ModelEnsembleManager v3.1 imported")
+    from .model_coordination import ModelCoordinationManager, create_model_coordination_manager
+    MODEL_COORDINATION_MANAGER_AVAILABLE = True
+    logger.debug("  ✅ ModelCoordinationManager v3.1 imported")
 except ImportError as e:
-    logger.error(f"  ❌ ModelEnsembleManager v3.1 import failed: {e}")
-    ModelEnsembleManager = None
-    create_model_ensemble_manager = None
-    MODEL_ENSEMBLE_MANAGER_AVAILABLE = False
+    logger.error(f"  ❌ ModelCoordinationManager v3.1 import failed: {e}")
+    ModelCoordinationManager = None
+    create_model_coordination_manager = None
+    MODEL_COORDINATION_MANAGER_AVAILABLE = False
 
 # Performance Configuration Manager
 try:
@@ -193,11 +193,11 @@ def get_manager_status() -> dict:
     """
     return {
         'analysis_config_manager': ANALYSIS_CONFIG_MANAGER_AVAILABLE,
-        'context_pattern_manager': CONTEXT_PATTERN_MANAGER_AVAILABLE,
+        'context_analysis_manager': CONTEXT_ANALYSIS_MANAGER_AVAILABLE,
         'pattern_detection_manager': PATTERN_DETECTION_MANAGER_AVAILABLE,
         'feature_config_manager': FEATURE_CONFIG_MANAGER_AVAILABLE,
         'logging_config_manager': LOGGING_CONFIG_MANAGER_AVAILABLE,
-        'model_ensemble_manager': MODEL_ENSEMBLE_MANAGER_AVAILABLE,
+        'model_coordination_manager': MODEL_COORDINATION_MANAGER_AVAILABLE,
         'performance_config_manager': PERFORMANCE_CONFIG_MANAGER_AVAILABLE,
         'pydantic_manager': PYDANTIC_MANAGER_AVAILABLE,
         'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
@@ -215,16 +215,16 @@ def get_manager_status() -> dict:
 __all__ = [
     'AnalysisConfigManager',
     'create_analysis_config_manager',
-    'ContextPatternManager',
-    'create_context_pattern_manager',
+    'ContextAnalysisManager',
+    'create_context_analysis_manager',
     'PatternDetectionManager',
     'create_pattern_detection_manager',
     'FeatureConfigManager',
     'create_feature_config_manager',
     'LoggingConfigManager',
     'create_logging_config_manager',
-    'ModelEnsembleManager',
-    'create_model_ensemble_manager',
+    'ModelCoordinationManager',
+    'create_model_coordination_manager',
     'PerformanceConfigManager',
     'create_performance_config_manager',
     'PydanticManager', 

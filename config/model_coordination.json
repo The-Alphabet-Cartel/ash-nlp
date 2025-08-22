@@ -1,15 +1,12 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-5.5-6-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.11-3",
     "description": "AI model ensemble configuration for NLP crisis detection system",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards",
-    "managers": ["ModelEnsembleManager"],
-    "cleanup_note": "Step 10.10 - Mapped model weights to existing .env.template variables, preserved others for .env.template addition"
+    "managers": ["ModelCoordinationManager"]
   },
 
   "ensemble_models": {
@@ -164,9 +161,9 @@
 
   "ensemble_config": {
     "mode": "${NLP_ENSEMBLE_MODE}",
-    "require_all_models": "${NLP_MODEL_ENSEMBLE_REQUIRE_ALL_MODELS}",
-    "fallback_mode": "${NLP_MODEL_ENSEMBLE_FALLBACK_MODE}",
-    "confidence_threshold": "${NLP_MODEL_ENSEMBLE_CONFIDENCE_THRESHOLD}",
+    "require_all_models": "${NLP_MODEL_COORDINATION_REQUIRE_ALL_MODELS}",
+    "fallback_mode": "${NLP_MODEL_COORDINATION_FALLBACK_MODE}",
+    "confidence_threshold": "${NLP_MODEL_COORDINATION_CONFIDENCE_THRESHOLD}",
     "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
     "defaults": {
       "mode": "majority",
