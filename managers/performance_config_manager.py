@@ -54,11 +54,7 @@ class PerformanceConfigManager:
         Args:
             config_manager: UnifiedConfigManager instance for accessing configuration
         """
-        from .shared_utilities import SharedUtilitiesManager
-        
         self.config_manager = config_manager
-        self.shared_utils = SharedUtilitiesManager(config_manager)
-
         self.config_cache = {}
         self.validation_errors = []
         
@@ -197,47 +193,47 @@ class PerformanceConfigManager:
     def get_analysis_performance_settings(self) -> Dict[str, Any]:
         """Get all analysis performance settings"""
         return {
-            'timeout_seconds': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'timeout_seconds', 30.0, float),
-            'retry_attempts': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'retry_attempts', 3, int),
-            'enable_timeout': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'enable_timeout', True, bool),
-            'batch_size': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'batch_size', 10, int)
+            'timeout_seconds': self.config_manager.get_config_section('analysis_performance', 'timeout_seconds', 30.0),
+            'retry_attempts': self.config_manager.get_config_section('analysis_performance', 'retry_attempts', 3),
+            'enable_timeout': self.config_manager.get_config_section('analysis_performance', 'enable_timeout', True),
+            'batch_size': self.config_manager.get_config_section('analysis_performance', 'batch_size', 10)
         }
     
     def get_server_performance_settings(self) -> Dict[str, Any]:
         """Get all server performance settings"""
         return {
-            'max_workers': self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_workers', 4, int),
-            'worker_timeout': self.shared_utils.get_setting_with_type_conversion('server_performance', 'worker_timeout', 60, int),
-            'request_timeout': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'timeout_seconds', 30.0, float),
-            'max_concurrent_requests': self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_concurrent_requests', 20, int),
-            'workers': self.shared_utils.get_setting_with_type_conversion('server_performance', 'workers', 1, int)
+            'max_workers': self.config_manager.get_config_section('server_performance', 'max_workers', 4),
+            'worker_timeout': self.config_manager.get_config_section('server_performance', 'worker_timeout', 60),
+            'request_timeout': self.config_manager.get_config_section('analysis_performance', 'timeout_seconds', 30.0),
+            'max_concurrent_requests': self.config_manager.get_config_section('server_performance', 'max_concurrent_requests', 20),
+            'workers': self.config_manager.get_config_section('server_performance', 'workers', 1)
         }
     
     def get_model_performance_settings(self) -> Dict[str, Any]:
         """Get all model performance settings"""
         return {
-            'device': self.shared_utils.get_setting_with_type_conversion('model_performance', 'device', 'auto', str),
-            'device_map': self.shared_utils.get_setting_with_type_conversion('model_performance', 'device_map', 'auto', str),
-            'load_in_8bit': self.shared_utils.get_setting_with_type_conversion('model_performance', 'load_in_8bit', False, bool),
-            'load_in_4bit': self.shared_utils.get_setting_with_type_conversion('model_performance', 'load_in_4bit', False, bool),
-            'max_memory': self.shared_utils.get_setting_with_type_conversion('model_performance', 'max_memory', None, str),
-            'offload_folder': self.shared_utils.get_setting_with_type_conversion('model_performance', 'offload_folder', None, str)
+            'device': self.config_manager.get_config_section('model_performance', 'device', 'auto'),
+            'device_map': self.config_manager.get_config_section('model_performance', 'device_map', 'auto'),
+            'load_in_8bit': self.config_manager.get_config_section('model_performance', 'load_in_8bit', False),
+            'load_in_4bit': self.config_manager.get_config_section('model_performance', 'load_in_4bit', False),
+            'max_memory': self.config_manager.get_config_section('model_performance', 'max_memory', None),
+            'offload_folder': self.config_manager.get_config_section('model_performance', 'offload_folder', None)
         }
     
     def get_rate_limiting_performance_settings(self) -> Dict[str, Any]:
         """Get all rate limiting performance settings"""
         return {
-            'rate_limit_per_minute': self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_per_minute', 120, int),
-            'rate_limit_per_hour': self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_per_hour', 2000, int),
-            'rate_limit_burst': self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_burst', 150, int)
+            'rate_limit_per_minute': self.config_manager.get_config_section('rate_limiting_performance', 'rate_limit_per_minute', 120),
+            'rate_limit_per_hour': self.config_manager.get_config_section('rate_limiting_performance', 'rate_limit_per_hour', 2000),
+            'rate_limit_burst': self.config_manager.get_config_section('rate_limiting_performance', 'rate_limit_burst', 150)
         }
     
     def get_cache_performance_settings(self) -> Dict[str, Any]:
         """Get all cache performance settings"""
         return {
-            'model_cache_size_limit': self.shared_utils.get_setting_with_type_conversion('cache_performance', 'model_cache_size_limit', '10GB', str),
-            'analysis_cache_size_limit': self.shared_utils.get_setting_with_type_conversion('cache_performance', 'analysis_cache_size_limit', '2GB', str),
-            'cache_expiry_hours': self.shared_utils.get_setting_with_type_conversion('cache_performance', 'cache_expiry_hours', 24, int)
+            'model_cache_size_limit': self.config_manager.get_config_section('cache_performance', 'model_cache_size_limit', '10GB'),
+            'analysis_cache_size_limit': self.config_manager.get_config_section('cache_performance', 'analysis_cache_size_limit', '2GB'),
+            'cache_expiry_hours': self.config_manager.get_config_section('cache_performance', 'cache_expiry_hours', 24)
         }
     
     # ========================================================================
@@ -246,31 +242,31 @@ class PerformanceConfigManager:
     
     def get_analysis_timeout(self) -> float:
         """Get analysis timeout in seconds"""
-        return self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'timeout_seconds', 30.0, float)
+        return self.config_manager.get_config_section('analysis_performance', 'timeout_seconds', 30.0)
     
     def get_analysis_retry_attempts(self) -> int:
         """Get analysis retry attempts"""
-        return self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'retry_attempts', 3, int)
+        return self.config_manager.get_config_section('analysis_performance', 'retry_attempts', 3)
     
     def get_max_workers(self) -> int:
         """Get maximum worker threads"""
-        return self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_workers', 4, int)
+        return self.config_manager.get_config_section('server_performance', 'max_workers', 4)
     
     def get_max_concurrent_requests(self) -> int:
         """Get maximum concurrent server requests"""
-        return self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_concurrent_requests', 20, int)
+        return self.config_manager.get_config_section('server_performance', 'max_concurrent_requests', 20)
     
     def get_device(self) -> str:
         """Get device setting for model inference"""
-        return self.shared_utils.get_setting_with_type_conversion('model_performance', 'device', 'auto', str)
+        return self.config_manager.get_config_section('model_performance', 'device', 'auto')
     
     def get_rate_limit_requests_per_minute(self) -> int:
         """Get rate limit requests per minute"""
-        return self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_per_minute', 120, int)
+        return self.config_manager.get_config_section('rate_limiting_performance', 'rate_limit_per_minute', 120)
     
     def get_model_cache_size_limit(self) -> str:
         """Get model cache size limit"""
-        return self.shared_utils.get_setting_with_type_conversion('cache_performance', 'model_cache_size_limit', '10GB', str)
+        return self.config_manager.get_config_section('cache_performance', 'model_cache_size_limit', '10GB')
     
     # Legacy compatibility methods
     def get_request_timeout(self) -> float:
@@ -279,11 +275,11 @@ class PerformanceConfigManager:
     
     def is_analysis_timeout_enabled(self) -> bool:
         """Check if analysis timeout is enabled"""
-        return self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'enable_timeout', True, bool)
+        return self.config_manager.get_config_section('analysis_performance', 'enable_timeout', True)
     
     def is_load_in_8bit_enabled(self) -> bool:
         """Check if 8-bit quantization is enabled"""
-        return self.shared_utils.get_setting_with_type_conversion('model_performance', 'load_in_8bit', False, bool)
+        return self.config_manager.get_config_section('model_performance', 'load_in_8bit', False)
     
     # ========================================================================
     # PERFORMANCE PROFILES MANAGEMENT
