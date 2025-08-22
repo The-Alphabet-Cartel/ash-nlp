@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-1",
+    "file_version": "v3.1-3d-5.5-1",
     "last_modified": "2025-08-13",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
@@ -20,7 +20,7 @@
     }
   },
 
-  "feature_flags": {
+  "features": {
     "core_system_features": {
       "description": "Core system feature toggles for production crisis detection",
       "ensemble_analysis": "${NLP_FEATURE_CORE_ENSEMBLE_ANALYSIS}",
@@ -177,10 +177,6 @@
       "threshold_learning": {
         "requires": ["ensemble_analysis", "staff_review_logic"],
         "description": "Threshold learning requires ensemble analysis and staff review logic"
-      },
-      "experimental_features": {
-        "requires": ["detailed_logging"],
-        "description": "Experimental features require detailed logging for monitoring"
       }
     },
     "conflicts": {

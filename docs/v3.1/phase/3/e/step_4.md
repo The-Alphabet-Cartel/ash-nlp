@@ -3,8 +3,8 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-4-3  
-**LAST MODIFIED**: 2025-08-18  
+**FILE VERSION**: v3.1-3e-5.7-1  
+**LAST MODIFIED**: 2025-08-21
 **PHASE**: 3e Step 4 - Crisis Analysis Method Consolidation  
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 **PARENT TRACKER**: `docs/v3.1/phase/3/e/tracker.md`  
@@ -43,9 +43,9 @@
 
 | Source Manager | Methods | Target CrisisAnalyzer Methods |
 |----------------|---------|-------------------------------|
-| **AnalysisParametersManager** | 5 methods | `get_analysis_*` methods |
-| **ThresholdMappingManager** | 4 methods | `apply_crisis_*` and `calculate_*` methods |
-| **ModelEnsembleManager** | 3 methods | `perform_ensemble_*` methods |
+| **AnalysisConfigManager** | 5 methods | `get_analysis_*` methods |
+| **CrisisThresholdManager** | 4 methods | `apply_crisis_*` and `calculate_*` methods |
+| **ModelCoordinationManager** | 3 methods | `perform_ensemble_*` methods |
 
 ---
 
@@ -69,9 +69,9 @@
 
 | Source Manager | Methods Consolidated | Target CrisisAnalyzer Methods |
 |----------------|---------------------|-------------------------------|
-| **AnalysisParametersManager** | 5 methods | `get_analysis_crisis_thresholds()`, `get_analysis_timeouts()`, `get_analysis_confidence_boosts()`, `get_analysis_pattern_weights()`, `get_analysis_algorithm_parameters()` |
-| **ThresholdMappingManager** | 4 methods | `apply_crisis_thresholds()`, `calculate_crisis_level_from_confidence()`, `validate_crisis_analysis_thresholds()`, `get_crisis_threshold_for_mode()` |
-| **ModelEnsembleManager** | 3 methods | `perform_ensemble_crisis_analysis()`, `combine_ensemble_model_results()`, `apply_analysis_ensemble_weights()` |
+| **AnalysisConfigManager** | 5 methods | `get_analysis_crisis_thresholds()`, `get_analysis_timeouts()`, `get_analysis_confidence_boosts()`, `get_analysis_pattern_weights()`, `get_analysis_algorithm_parameters()` |
+| **CrisisThresholdManager** | 4 methods | `apply_crisis_thresholds()`, `calculate_crisis_level_from_confidence()`, `validate_crisis_analysis_thresholds()`, `get_crisis_threshold_for_mode()` |
+| **ModelCoordinationManager** | 3 methods | `perform_ensemble_crisis_analysis()`, `combine_ensemble_model_results()`, `apply_analysis_ensemble_weights()` |
 
 ### **New Integration Methods:**
 - ✅ `analyze_message_with_learning()` - Learning-enhanced analysis

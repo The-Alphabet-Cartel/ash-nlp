@@ -1,10 +1,20 @@
+# ash-nlp/managers/shared_utilities.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 SharedUtilitiesManager for Ash-NLP Service
-FILE VERSION: v3.1-3e-2.2-1
-LAST MODIFIED: 2025-08-17
+---
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 2.2 - SharedUtilitiesManager Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: SharedUtilitiesManager implementation complete
 """
 
 import json
@@ -15,7 +25,7 @@ from typing import Any, Dict, List, Union, Optional, Tuple
 from pathlib import Path
 
 # Import for type hints
-from managers.unified_config_manager import UnifiedConfigManager
+from managers.unified_config import UnifiedConfigManager
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -434,6 +444,63 @@ class SharedUtilitiesManager:
             self.logger.error(f"❌ {error_msg}")
             return [error_msg]
     
+    def execute_safely(self, operation_name: str, operation_func, *args, **kwargs):
+        """
+        Execute operation safely with error handling and fallback support
+        
+        Args:
+            operation_name: Name of operation being performed
+            operation_func: Function to execute safely
+            *args: Arguments to pass to operation_func
+            **kwargs: Keyword arguments to pass to operation_func
+            
+        Returns:
+            Result of operation_func or safe fallback value
+        """
+        try:
+            result = operation_func(*args, **kwargs)
+            
+            # Update operation status
+            self._last_operation_status[operation_name] = {
+                'success': True,
+                'result': str(result)[:100] if result is not None else 'None',
+                'timestamp': self.config_manager.get_env_str('CURRENT_TIME', 'unknown')
+            }
+            
+            return result
+            
+        except Exception as e:
+            return self.handle_error_with_fallback(
+                e, 
+                self._get_safe_fallback_for_operation(operation_name),
+                operation_name,
+                operation_name
+            )
+
+    def _get_safe_fallback_for_operation(self, operation_name: str):
+        """Get appropriate fallback value based on operation type"""
+        if 'threshold' in operation_name.lower():
+            return {'low': 0.2, 'medium': 0.4, 'high': 0.6, 'critical': 0.8}
+        elif 'score' in operation_name.lower() or 'confidence' in operation_name.lower():
+            return 0.0
+        elif 'level' in operation_name.lower():
+            return 'medium'
+        elif 'parameters' in operation_name.lower():
+            return {'ensemble_weights': [0.4, 0.3, 0.3], 'score_normalization': 'sigmoid'}
+        elif 'analysis' in operation_name.lower():
+            return {
+                'crisis_score': 0.5,
+                'crisis_level': 'medium',
+                'method': 'safe_fallback',
+                'needs_response': True,
+                'confidence_score': 0.5,
+                'detected_categories': ['fallback'],
+                'requires_staff_review': True,
+                'processing_time': 0.0
+            }
+        else:
+            return {}
+
     # ========================================================================
     # TYPE CONVERSION UTILITIES
     # ========================================================================
@@ -772,7 +839,7 @@ def create_shared_utilities_manager(unified_config: UnifiedConfigManager = None)
     try:
         # Use provided config or create new one
         if unified_config is None:
-            from managers.unified_config_manager import create_unified_config_manager
+            from managers.unified_config import create_unified_config_manager
             unified_config = create_unified_config_manager()
             
         # Validate config manager

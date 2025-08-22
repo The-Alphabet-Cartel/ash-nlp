@@ -1,12 +1,12 @@
 # Unified Config Manager Documentation
 
-**File**: `managers/unified_config_manager.py`  
+**File**: `managers/unified_config.py`  
 **Phase**: 3e Step 1.1 Documentation Audit  
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_unified_config_manager(config_dir)`  
 **Dependencies**: **NONE** - Foundation layer  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-6-3
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
@@ -46,22 +46,22 @@ The **UnifiedConfigManager** is the **FOUNDATION MANAGER** that provides all con
 
 ### **📁 Configuration File Management:**
 The UnifiedConfigManager manages **ALL** JSON configuration files:
-- **analysis_parameters.json** - Analysis algorithm configuration
-- **threshold_mapping.json** - Crisis level threshold configuration
-- **community_vocabulary_patterns.json** - Community-specific crisis patterns
-- **context_patterns.json** - Context analysis patterns
-- **temporal_indicators_patterns.json** - Time-sensitive crisis indicators
-- **enhanced_crisis_patterns.json** - Enhanced pattern matching
-- **crisis_idiom_patterns.json** - Idiom-based crisis detection
-- **crisis_burden_patterns.json** - Burden expression patterns
+- **analysis_config.json** - Analysis algorithm configuration
+- **crisis_threshold.json** - Crisis level threshold configuration
+- **patterns_community.json** - Community-specific crisis patterns
+- **patterns_context.json** - Context analysis patterns
+- **patterns_temporal.json** - Time-sensitive crisis indicators
+- **patterns_crisis.json** - Enhanced pattern matching
+- **patterns_idiom.json** - Idiom-based crisis detection
+- **patterns_burden.json** - Burden expression patterns
 - **feature_flags.json** - System feature toggles
 - **label_config.json** - Label configuration
 - **learning_parameters.json** - Learning system parameters
 - **learning_settings.json** - Learning system settings
 - **logging_settings.json** - Logging configuration
-- **model_ensemble.json** - Model ensemble configuration
+- **model_coordination.json** - Model ensemble configuration
 - **performance_settings.json** - Performance settings
-- **server_settings.json** - Server configuration
+- **server_config.json** - Server configuration
 - **storage_settings.json** - Storage configuration
 
 ---
@@ -143,18 +143,18 @@ The UnifiedConfigManager is a **foundation service layer** that provides configu
 - **NO OTHER MANAGERS** - Foundation layer has no manager dependencies
 
 ### **Downstream Consumers:**
-- **analysis_parameters_manager** - Analysis configuration
-- **crisis_pattern_manager** - Crisis pattern configuration
-- **context_pattern_manager** - Context analysis configuration
+- **analysis_config_manager** - Analysis configuration
+- **pattern_detection_manager** - Crisis pattern configuration
+- **context_analysis_manager** - Context analysis configuration
 - **feature_config_manager** - Feature flag configuration
 - **logging_config_manager** - Logging configuration
-- **model_ensemble_manager** - Model configuration
+- **model_coordination_manager** - Model configuration
 - **performance_config_manager** - Performance configuration
 - **pydantic_manager** - Model validation configuration
 - **server_config_manager** - Server configuration
 - **settings_manager** - Runtime settings coordination
 - **storage_config_manager** - Storage configuration
-- **threshold_mapping_manager** - Threshold configuration
+- **crisis_threshold_manager** - Threshold configuration
 - **zero_shot_manager** - Zero-shot model configuration
 
 ### **Universal Foundation Pattern:**
@@ -205,7 +205,7 @@ Application Layer (APIs, Analysis)
        ↓
 Business Logic Layer (CrisisAnalyzer, Pattern Detection)
        ↓
-Manager Layer (analysis_parameters, crisis_pattern, etc.)
+Manager Layer (analysis_config, pattern_detection, etc.)
        ↓
 Foundation Layer (UnifiedConfigManager) ← THIS MANAGER
        ↓
@@ -238,7 +238,7 @@ Infrastructure Layer (File System, Environment)
 
 ## ✅ **Phase 3e Step 1.1 Status**
 
-**Manager**: unified_config_manager.py  
+**Manager**: unified_config.py  
 **Documentation**: ✅ **COMPLETE**  
 **Core Methods**: 25+ critical foundation methods  
 **Shared Methods**: **❌ NONE** - Foundation layer, never extract  

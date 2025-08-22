@@ -1,0 +1,284 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3e-6-1",
+    "last_modified": "2025-08-22",
+    "clean_architecture": "v3.1 Compliant",
+    "description": "Phase 3d Step 10.10: Threshold mapping configuration with cleaned environment variables following Clean Architecture Charter Rule #7",
+    "ensemble_modes_supported": ["consensus", "majority", "weighted"],
+    "compliance": "Clean Architecture v3.1 Standards + Rule #7 Environment Variable Compliance"
+  },
+  
+  "crisis_threshold_by_mode": {
+    "description": "Mode-specific threshold configurations with environment variable overrides",
+    "consensus": {
+      "description": "Conservative thresholds for consensus mode - requires model agreement",
+      "crisis_level_mapping": {
+        "crisis_to_high": "${NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH}",
+        "crisis_to_medium": "${NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM}",
+        "mild_crisis_to_low": "${NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW}",
+        "negative_to_low": "${NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW}",
+        "unknown_to_low": "${NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW}"
+      },
+      "ensemble_thresholds": {
+        "critical": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_CRITICAL}",
+        "high": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_HIGH}",
+        "medium": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_MEDIUM}",
+        "low": "${NLP_THRESHOLD_CONSENSUS_ENSEMBLE_LOW}"
+      },
+      "staff_review_thresholds": {
+        "high_always": "${NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS}",
+        "medium_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE}",
+        "low_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE}",
+        "on_model_disagreement": "${NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT}",
+        "gap_detection_review": "${NLP_STAFF_REVIEW_CONSENSUS_GAP_DETECTION}",
+        "pattern_mismatch_review": "${NLP_STAFF_REVIEW_CONSENSUS_PATTERN_MISMATCH}"
+      },
+      "defaults": {
+        "crisis_level_mapping": {
+          "crisis_to_high": 0.50,
+          "crisis_to_medium": 0.30,
+          "mild_crisis_to_low": 0.40,
+          "negative_to_low": 0.70,
+          "unknown_to_low": 0.50
+        },
+        "ensemble_thresholds": {
+          "critical": 0.70,
+          "high": 0.45,
+          "medium": 0.25,
+          "low": 0.12
+        },
+        "staff_review_thresholds": {
+          "high_always": true,
+          "medium_confidence_threshold": 0.45,
+          "low_confidence_threshold": 0.75,
+          "on_model_disagreement": true,
+          "gap_detection_review": true,
+          "pattern_mismatch_review": true
+        }
+      },
+      "validation": {
+        "crisis_level_mapping": {
+          "type": "float",
+          "range": [0.00, 1.0],
+          "ordering": "crisis_to_high > crisis_to_medium"
+        },
+        "ensemble_thresholds": {
+          "type": "float", 
+          "range": [0.00, 1.0],
+          "ordering": "high > medium > low"
+        },
+        "staff_review_thresholds": {
+          "high_always": {"type": "boolean"},
+          "medium_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
+          "low_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
+          "on_model_disagreement": {"type": "boolean"},
+          "gap_detection_review": {"type": "boolean"},
+          "pattern_mismatch_review": {"type": "boolean"}
+        }
+      }
+    },
+    
+    "majority": {
+      "description": "Balanced thresholds for majority vote - democratic decision making",
+      "crisis_level_mapping": {
+        "crisis_to_high": "${NLP_THRESHOLD_MAJORITY_CRISIS_TO_HIGH}",
+        "crisis_to_medium": "${NLP_THRESHOLD_MAJORITY_CRISIS_TO_MEDIUM}",
+        "mild_crisis_to_low": "${NLP_THRESHOLD_MAJORITY_MILD_CRISIS_TO_LOW}",
+        "negative_to_low": "${NLP_THRESHOLD_MAJORITY_NEGATIVE_TO_LOW}",
+        "unknown_to_low": "${NLP_THRESHOLD_MAJORITY_UNKNOWN_TO_LOW}"
+      },
+      "ensemble_thresholds": {
+        "critical": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_CRITICAL}",
+        "high": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_HIGH}",
+        "medium": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_MEDIUM}",
+        "low": "${NLP_THRESHOLD_MAJORITY_ENSEMBLE_LOW}"
+      },
+      "staff_review_thresholds": {
+        "high_always": "${NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS}",
+        "medium_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE}",
+        "low_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE}",
+        "on_model_disagreement": "${NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT}",
+        "gap_detection_review": "${NLP_STAFF_REVIEW_MAJORITY_GAP_DETECTION}",
+        "pattern_mismatch_review": "${NLP_STAFF_REVIEW_MAJORITY_PATTERN_MISMATCH}"
+      },
+      "defaults": {
+        "crisis_level_mapping": {
+          "crisis_to_high": 0.48,
+          "crisis_to_medium": 0.28,
+          "mild_crisis_to_low": 0.38,
+          "negative_to_low": 0.68,
+          "unknown_to_low": 0.48
+        },
+        "ensemble_thresholds": {
+          "critical": 0.65,
+          "high": 0.42,
+          "medium": 0.23,
+          "low": 0.11
+        },
+        "staff_review_thresholds": {
+          "high_always": true,
+          "medium_confidence_threshold": 0.47,
+          "low_confidence_threshold": 0.77,
+          "on_model_disagreement": true,
+          "gap_detection_review": true,
+          "pattern_mismatch_review": true
+        }
+      },
+      "validation": {
+        "crisis_level_mapping": {
+          "type": "float",
+          "range": [0.00, 1.0],
+          "ordering": "crisis_to_high > crisis_to_medium"
+        },
+        "ensemble_thresholds": {
+          "type": "float",
+          "range": [0.00, 1.0],
+          "ordering": "high > medium > low"
+        },
+        "staff_review_thresholds": {
+          "high_always": {"type": "boolean"},
+          "medium_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
+          "low_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
+          "on_model_disagreement": {"type": "boolean"},
+          "gap_detection_review": {"type": "boolean"},
+          "pattern_mismatch_review": {"type": "boolean"}
+        }
+      }
+    },
+    
+    "weighted": {
+      "description": "Aggressive thresholds for weighted mode - depression model dominance",
+      "crisis_level_mapping": {
+        "crisis_to_high": "${NLP_THRESHOLD_WEIGHTED_CRISIS_TO_HIGH}",
+        "crisis_to_medium": "${NLP_THRESHOLD_WEIGHTED_CRISIS_TO_MEDIUM}",
+        "mild_crisis_to_low": "${NLP_THRESHOLD_WEIGHTED_MILD_CRISIS_TO_LOW}",
+        "negative_to_low": "${NLP_THRESHOLD_WEIGHTED_NEGATIVE_TO_LOW}",
+        "unknown_to_low": "${NLP_THRESHOLD_WEIGHTED_UNKNOWN_TO_LOW}"
+      },
+      "ensemble_thresholds": {
+        "critical": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_CRITICAL}",
+        "high": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_HIGH}",
+        "medium": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_MEDIUM}",
+        "low": "${NLP_THRESHOLD_WEIGHTED_ENSEMBLE_LOW}"
+      },
+      "staff_review_thresholds": {
+        "high_always": "${NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS}",
+        "medium_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE}",
+        "low_confidence_threshold": "${NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE}",
+        "on_model_disagreement": "${NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT}",
+        "gap_detection_review": "${NLP_STAFF_REVIEW_WEIGHTED_GAP_DETECTION}",
+        "pattern_mismatch_review": "${NLP_STAFF_REVIEW_WEIGHTED_PATTERN_MISMATCH}"
+      },
+      "defaults": {
+        "crisis_level_mapping": {
+          "crisis_to_high": 0.55,
+          "crisis_to_medium": 0.32,
+          "mild_crisis_to_low": 0.42,
+          "negative_to_low": 0.72,
+          "unknown_to_low": 0.52
+        },
+        "ensemble_thresholds": {
+          "critical": 0.70,
+          "high": 0.48,
+          "medium": 0.27,
+          "low": 0.13
+        },
+        "staff_review_thresholds": {
+          "high_always": true,
+          "medium_confidence_threshold": 0.50,
+          "low_confidence_threshold": 0.80,
+          "on_model_disagreement": true,
+          "gap_detection_review": true,
+          "pattern_mismatch_review": true
+        }
+      },
+      "validation": {
+        "crisis_level_mapping": {
+          "type": "float",
+          "range": [0.00, 1.0],
+          "ordering": "crisis_to_high > crisis_to_medium"
+        },
+        "ensemble_thresholds": {
+          "type": "float",
+          "range": [0.00, 1.0],
+          "ordering": "high > medium > low"
+        },
+        "staff_review_thresholds": {
+          "high_always": {"type": "boolean"},
+          "medium_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
+          "low_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
+          "on_model_disagreement": {"type": "boolean"},
+          "gap_detection_review": {"type": "boolean"},
+          "pattern_mismatch_review": {"type": "boolean"}
+        }
+      }
+    }
+  },
+
+  "shared_configuration": {
+    "description": "Global configuration settings shared across all modes",
+    
+    "pattern_integration": {
+      "description": "Controls how crisis patterns adjust ensemble results",
+      "pattern_weight_multiplier": "${NLP_THRESHOLD_PATTERN_WEIGHT_MULTIPLIER}",
+      "confidence_boost_limit": "${NLP_THRESHOLD_PATTERN_BOOST_LIMIT}",
+      "escalation_required_minimum": "${NLP_THRESHOLD_PATTERN_ESCALATION_MINIMUM}",
+      "pattern_override_threshold": "${NLP_THRESHOLD_PATTERN_OVERRIDE_THRESHOLD}",
+      "community_pattern_boost": "${NLP_THRESHOLD_COMMUNITY_PATTERN_BOOST}",
+      "defaults": {
+        "pattern_weight_multiplier": 1.2,
+        "confidence_boost_limit": 0.15,
+        "escalation_required_minimum": "low",
+        "pattern_override_threshold": 0.8,
+        "community_pattern_boost": 1.1
+      },
+      "validation": {
+        "pattern_weight_multiplier": {"type": "float", "range": [0.5, 2.0]},
+        "confidence_boost_limit": {"type": "float", "range": [0.0, 0.5]},
+        "escalation_required_minimum": {"type": "string", "allowed": ["none", "low", "medium", "high"]},
+        "pattern_override_threshold": {"type": "float", "range": [0.0, 1.0]},
+        "community_pattern_boost": {"type": "float", "range": [0.5, 2.0]}
+      }
+    },
+    
+    "gap_detection": {
+      "description": "Model disagreement and gap detection configuration",
+      "sensitivity_threshold": "${NLP_GAP_DETECTION_SENSITIVITY_THRESHOLD}",
+      "auto_escalation": "${NLP_GAP_DETECTION_AUTO_ESCALATION}",
+      "max_confidence_spread": "${NLP_GAP_DETECTION_MAX_CONFIDENCE_SPREAD}",
+      "min_agreement_score": "${NLP_GAP_DETECTION_MIN_AGREEMENT_SCORE}",
+      "defaults": {
+        "sensitivity_threshold": 0.25,
+        "auto_escalation": true,
+        "max_confidence_spread": 0.4,
+        "min_agreement_score": 0.6
+      },
+      "validation": {
+        "sensitivity_threshold": {"type": "float", "range": [0.0, 1.0]},
+        "auto_escalation": {"type": "boolean"},
+        "max_confidence_spread": {"type": "float", "range": [0.0, 1.0]},
+        "min_agreement_score": {"type": "float", "range": [0.0, 1.0]}
+      }
+    },
+
+    "validation_configuration": {
+      "description": "Threshold validation and error handling",
+      "strict_mode": "${NLP_THRESHOLD_VALIDATION_STRICT}",
+      "fail_on_invalid": "${NLP_THRESHOLD_VALIDATION_FAIL_ON_INVALID}",
+      "log_warnings": "${NLP_THRESHOLD_VALIDATION_LOG_WARNINGS}",
+      "cross_mode_check": "${NLP_THRESHOLD_VALIDATION_CROSS_MODE_CHECK}",
+      "defaults": {
+        "strict_mode": true,
+        "fail_on_invalid": true,
+        "log_warnings": true,
+        "cross_mode_check": true
+      },
+      "validation": {
+        "strict_mode": {"type": "boolean"},
+        "fail_on_invalid": {"type": "boolean"},
+        "log_warnings": {"type": "boolean"},
+        "cross_mode_check": {"type": "boolean"}
+      }
+    }
+  }
+}

@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_settings_manager(unified_config_manager, ...)`  
 **Dependencies**: UnifiedConfigManager + ALL other managers  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-6-4
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
@@ -17,7 +17,6 @@ The **SettingsManager** serves as a **coordination hub** for runtime settings an
 **Primary Responsibilities:**
 - Coordinate runtime settings across ALL system managers
 - Provide runtime configuration override capabilities
-- Maintain backward compatibility with deprecated methods via migration notices
 - Offer centralized access to system-wide configuration state
 - Track phase migration status and architecture compliance
 - Load and manage environment variable overrides via UnifiedConfigManager
@@ -38,23 +37,22 @@ The **SettingsManager** serves as a **coordination hub** for runtime settings an
 3. **`_load_environment_overrides()`** - Load setting overrides via UnifiedConfigManager
 
 ### **Migration Notice Methods (Backward Compatibility):**
-1. **`get_crisis_patterns_migration_notice()`** - Phase 3a migration notice
-2. **`get_analysis_parameters_migration_notice()`** - Phase 3b migration notice
-3. **`get_threshold_mapping_migration_notice()`** - Phase 3c migration notice
-4. **Deprecated method handlers** - `get_crisis_patterns()`, `get_enhanced_crisis_patterns()`, etc.
+1. **`get_patterns_crisis_migration_notice()`** - Phase 3a migration notice
+2. **`get_analysis_config_migration_notice()`** - Phase 3b migration notice
+3. **`get_crisis_threshold_migration_notice()`** - Phase 3c migration notice
 
 ### **Manager Integration (Dependency Injection):**
 The SettingsManager accepts and coordinates with ALL other managers:
-- **analysis_parameters_manager** - Analysis parameter coordination
-- **crisis_pattern_manager** - Crisis pattern coordination
+- **analysis_config_manager** - Analysis parameter coordination
+- **pattern_detection_manager** - Crisis pattern coordination
 - **feature_config_manager** - Feature flag coordination
 - **logging_config_manager** - Logging configuration coordination
-- **model_ensemble_manager** - Model ensemble coordination
+- **model_coordination_manager** - Model ensemble coordination
 - **performance_config_manager** - Performance settings coordination
 - **pydantic_manager** - Data model coordination
 - **server_config_manager** - Server configuration coordination
 - **storage_config_manager** - Storage settings coordination
-- **threshold_mapping_manager** - Threshold mapping coordination
+- **crisis_threshold_manager** - Threshold mapping coordination
 - **zero_shot_manager** - Zero-shot model coordination
 
 ---
@@ -73,7 +71,6 @@ The SettingsManager accepts and coordinates with ALL other managers:
 
 ### **Migration and Compatibility Utilities:**
 - **Migration notice generation** - Standard migration notice patterns
-- **Backward compatibility handling** - Deprecated method handling patterns
 - **Phase status tracking** - Architecture migration status management
 
 ---
@@ -117,7 +114,7 @@ The SettingsManager accepts and coordinates with ALL other managers:
 - **Environment variables** - Via UnifiedConfigManager for override management
 
 ### **Integration Points:**
-- **Called by**: System initialization, runtime configuration changes, deprecated method calls
+- **Called by**: System initialization, runtime configuration changes
 - **Coordinates with**: ALL 11 other managers in the system
 - **Provides to**: Centralized configuration state, runtime setting management
 
@@ -146,7 +143,6 @@ The SettingsManager accepts and coordinates with ALL other managers:
 ### **Downstream Consumers:**
 - **System initialization** - Runtime configuration during startup
 - **API endpoints** - Runtime configuration access for dynamic behavior
-- **Deprecated method callers** - Backward compatibility support
 - **Configuration management tools** - Runtime setting modification
 
 ### **System-Wide Coordination:**
@@ -184,7 +180,6 @@ System Components → SettingsManager → Coordinated Configuration → Consiste
 SettingsManager is unique because it:
 - **Coordinates ALL other managers** rather than providing specific functionality
 - **Manages runtime state** rather than static configuration
-- **Provides backward compatibility** for deprecated methods
 - **Tracks architecture migration status** across system evolution
 
 ### **System Integration Critical:**
@@ -204,12 +199,6 @@ The SettingsManager tracks the completion status of all architecture phases:
 - **Phase 3c**: Threshold mapping externalization
 - **Phase 3d**: Complete configuration migration
 
-### **Migration Notice System:**
-Provides structured migration notices for deprecated functionality:
-- **Clear migration paths** - Direct users to new manager-specific methods
-- **Architecture documentation** - Links to phase-specific migration guides
-- **Deprecation timeline** - Information about when deprecated methods will be removed
-
 ---
 
 ## 📊 **Manager Ecosystem Integration**
@@ -224,11 +213,11 @@ Provides structured migration notices for deprecated functionality:
 ```
 SettingsManager (Coordination Layer)
 ├── UnifiedConfigManager (Foundation)
-├── Analysis Managers (analysis_parameters, crisis_pattern, context_pattern)
+├── Analysis Managers (analysis_config, pattern_detection, context_analysis)
 ├── Infrastructure Managers (server_config, logging_config, storage_config)
 ├── Feature Managers (feature_config, performance_config)
-├── Model Managers (model_ensemble, zero_shot, pydantic)
-└── Threshold Manager (threshold_mapping)
+├── Model Managers (model_coordination, zero_shot, pydantic)
+└── Crisis Threshold Manager (crisis_threshold)
 ```
 
 ---

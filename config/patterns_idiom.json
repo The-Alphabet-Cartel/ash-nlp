@@ -1,0 +1,105 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.10.10",
+    "description": "Crisis idiom patterns for detecting metaphorical and idiomatic expressions of distress",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "idiom_count": 35,
+    "manager_integration": "pattern_detection.py"
+  },
+
+  "patterns": {
+    "description": "Crisis idiom patterns organized by metaphorical type",
+
+    "drowning_metaphors": {
+      "description": "Metaphors expressing feeling overwhelmed or drowning",
+      "idioms": [
+        "drowning in", "in over my head", "sinking fast", "going under", 
+        "can't keep my head above water", "feel like I'm drowning", "underwater", 
+        "gasping for air", "treading water", "swept away"
+      ]
+    },
+
+    "breaking_metaphors": {
+      "description": "Metaphors expressing psychological breaking or shattering",
+      "idioms": [
+        "falling apart", "breaking down", "cracking up", "coming undone", 
+        "shattered", "broken inside", "pieces of myself", "falling to pieces", 
+        "crumbling", "at my breaking point"
+      ]
+    },
+
+    "darkness_metaphors": {
+      "description": "Metaphors expressing darkness, emptiness, or void",
+      "idioms": [
+        "in a dark place", "black hole", "void inside", "empty shell", 
+        "darkness consuming me", "lost in darkness", "can't see the light", 
+        "tunnel with no end", "abyss", "bottomless pit"
+      ]
+    },
+
+    "trapped_metaphors": {
+      "description": "Metaphors expressing feeling trapped or imprisoned",
+      "idioms": [
+        "trapped in a cage", "prison of my mind", "can't escape", "stuck in a box",
+        "walls closing in", "no way out", "locked inside", "confined",
+        "restrained", "held captive"
+      ]
+    },
+
+    "weight_metaphors": {
+      "description": "Metaphors expressing heavy emotional burden",
+      "idioms": [
+        "weight of the world", "crushing burden", "heavy heart", "carrying too much",
+        "burden on my shoulders", "weighing me down", "heavy load", "can't bear it",
+        "weight pressing down", "suffocating under pressure"
+      ]
+    },
+
+    "emptiness_metaphors": {
+      "description": "Metaphors expressing emotional emptiness or void",
+      "idioms": [
+        "empty inside", "hollow feeling", "void in my chest", "nothing left",
+        "emotionally drained", "vacant", "stripped bare", "running on empty",
+        "soul sucked out", "feeling vacant"
+      ]
+    },
+
+    "storm_metaphors": {
+      "description": "Metaphors expressing internal turmoil and chaos",
+      "idioms": [
+        "storm inside me", "emotional hurricane", "tornado of feelings", "chaos in my head",
+        "tempest in my mind", "raging storm", "whirlwind of emotions", "thunder in my chest",
+        "lightning in my thoughts", "eye of the storm"
+      ]
+    }
+  },
+
+  "usage_instructions": {
+    "integration": {
+      "description": "How to integrate crisis idioms with the crisis detection system",
+      "primary_manager": "pattern_detection.py",
+      "loader_method": "get_idiom_patterns()",
+      "access_pattern": "UnifiedConfigManager.get_patterns_crisis('patterns_idiom')",
+      "fallback_behavior": "Use safe defaults with comprehensive logging if configuration fails"
+    },
+    "resilient_operation": {
+      "description": "System behavior when configuration issues occur",
+      "invalid_weight": "Use safe default (0.8) with warning log",
+      "missing_idioms": "Load basic idiom set with info log",
+      "pattern_validation_error": "Skip invalid patterns, continue with valid ones, error log",
+      "file_not_found": "Use minimal built-in crisis idioms with warning log"
+    },
+    "implementation_notes": [
+      "Idioms require careful context validation to avoid false positives",
+      "Metaphorical expressions often indicate deeper emotional distress",
+      "Multiple metaphors in one message significantly increase crisis likelihood",
+      "Literal usage filtering helps distinguish actual metaphorical intent",
+      "Breaking and darkness metaphors typically indicate highest crisis levels",
+      "STEP 10.10: Removed all unused environment variable configuration overhead",
+      "Core detection functionality preserved - idiom lists and pattern structure intact"
+    ]
+  }
+}
