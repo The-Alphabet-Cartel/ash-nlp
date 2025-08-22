@@ -1,10 +1,9 @@
 {
   "_metadata": {
-    "configuration_version": "3.1-3e-5.6-1",
+    "configuration_version": "3.1-3e-5.7-1",
     "file_purpose": "SettingsManager coordination and runtime configuration",
-    "created_date": "2025-08-20",
-    "updated_date": "2025-08-20",
-    "phase": "3e Step 5.6",
+    "updated_date": "2025-08-21",
+    "phase": "3e",
     "compliance": "clean_v3.1_architecture",
     "description": "Runtime settings coordination and manager integration configuration for SettingsManager"
   },
@@ -12,8 +11,8 @@
   "system_status": {
     "phase_status": {
       "crisis_patterns": "externalized_to_json",
-      "analysis_parameters": "externalized_to_json",
-      "threshold_mappings": "externalized_to_json",
+      "analysis_config": "externalized_to_json",
+      "crisis_thresholds": "externalized_to_json",
       "server_configuration": "externalized_to_json",
       "logging_configuration": "externalized_to_json",
       "feature_flags": "externalized_to_json",
@@ -56,7 +55,7 @@
       "unified_config"
     ],
     "recommended_managers": [
-      "analysis_parameters",
+      "analysis_config",
       "crisis_pattern",
       "feature_config",
       "server_config",
@@ -65,7 +64,7 @@
     "optional_managers": [
       "logging_config",
       "performance_config",
-      "threshold_mapping",
+      "crisis_threshold",
       "zero_shot",
       "pydantic"
     ]
