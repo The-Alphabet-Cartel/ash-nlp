@@ -1094,7 +1094,7 @@ def get_model_coordination_manager(config_manager=None) -> ModelCoordinationMana
     if _model_coordination_manager is None:
         if config_manager is None:
             logger.info("Creating UnifiedConfigManager for ModelCoordinationManager compatibility")
-            from managers.unified_config_manager import create_unified_config_manager
+            from managers.unified_config import create_unified_config_manager
             config_manager = create_unified_config_manager()
         
         _model_coordination_manager = ModelCoordinationManager(config_manager)

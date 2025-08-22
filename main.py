@@ -32,25 +32,25 @@ import uvicorn
 # ============================================================================
 # STEP 9: UNIFIED CONFIGURATION MANAGER IMPORT
 # ============================================================================
-from managers.unified_config_manager import create_unified_config_manager
+from managers.unified_config import create_unified_config_manager
 
 # ============================================================================
 # MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
 # ============================================================================
 from managers.analysis_config import create_analysis_config_manager
 from managers.pattern_detection import create_pattern_detection_manager
-from managers.feature_config_manager import create_feature_config_manager
-from managers.learning_system_manager import create_learning_system_manager
-from managers.logging_config_manager import create_logging_config_manager
+from managers.feature_config import create_feature_config_manager
+from managers.learning_system import create_learning_system_manager
+from managers.logging_config import create_logging_config_manager
 from managers.model_coordination import create_model_coordination_manager
-from managers.performance_config_manager import create_performance_config_manager
-from managers.pydantic_manager import create_pydantic_manager
-from managers.server_config_manager import create_server_config_manager
-from managers.settings_manager import create_settings_manager
+from managers.performance_config import create_performance_config_manager
+from managers.pydantic import create_pydantic_manager
+from managers.server_config import create_server_config_manager
+from managers.settings import create_settings_manager
 from managers.shared_utilities import create_shared_utilities_manager
-from managers.storage_config_manager import create_storage_config_manager
+from managers.storage_config import create_storage_config_manager
 from managers.crisis_threshold import create_crisis_threshold_manager
-from managers.zero_shot_manager import create_zero_shot_manager
+from managers.zero_shot import create_zero_shot_manager
 from managers.context_analysis import create_context_analysis_manager
 
 # Analysis Components

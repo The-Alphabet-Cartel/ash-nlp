@@ -1,4 +1,4 @@
-# ash-nlp/managers/unified_config_manager.py
+# ash-nlp/managers/unified_config.py
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
 CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification

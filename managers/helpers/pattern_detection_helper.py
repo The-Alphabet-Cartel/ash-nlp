@@ -32,7 +32,7 @@ import logging
 import re
 import time
 from typing import Dict, List, Any, Optional, Tuple
-from managers.unified_config_manager import UnifiedConfigManager
+from managers.unified_config import UnifiedConfigManager
 
 logger = logging.getLogger(__name__)
 

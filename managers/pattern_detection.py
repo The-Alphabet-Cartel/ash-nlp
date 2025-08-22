@@ -27,7 +27,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
 from datetime import datetime
-from managers.unified_config_manager import UnifiedConfigManager, create_unified_config_manager
+from managers.unified_config import UnifiedConfigManager, create_unified_config_manager
 from managers.helpers.pattern_detection_helper import CrisisPatternHelper, create_pattern_detection_helper
 
 logger = logging.getLogger(__name__)

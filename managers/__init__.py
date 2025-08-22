@@ -59,7 +59,7 @@ except ImportError as e:
 
 # Feature Configuration Manager
 try:
-    from .feature_config_manager import FeatureConfigManager, create_feature_config_manager
+    from .feature_config import FeatureConfigManager, create_feature_config_manager
     FEATURE_CONFIG_MANAGER_AVAILABLE = True
     logger.debug("  ✅ FeatureConfigManager v3.1 imported")
 except ImportError as e:
@@ -70,7 +70,7 @@ except ImportError as e:
 
 # Logging Configuration Manager
 try:
-    from .logging_config_manager import LoggingConfigManager, create_logging_config_manager
+    from .logging_config import LoggingConfigManager, create_logging_config_manager
     LOGGING_CONFIG_MANAGER_AVAILABLE = True
     logger.debug("  ✅ LoggingConfigManager v3.1 imported")
 except ImportError as e:
@@ -92,7 +92,7 @@ except ImportError as e:
 
 # Performance Configuration Manager
 try:
-    from .performance_config_manager import PerformanceConfigManager, create_performance_config_manager
+    from .performance_config import PerformanceConfigManager, create_performance_config_manager
     PERFORMANCE_CONFIG_MANAGER_AVAILABLE = True
     logger.debug("  ✅ PerformanceConfigManager v3.1 imported")
 except ImportError as e:
@@ -103,7 +103,7 @@ except ImportError as e:
 
 # Pydantic Model Managers (Phase 2B)
 try:
-    from .pydantic_manager import PydanticManager, create_pydantic_manager
+    from .pydantic import PydanticManager, create_pydantic_manager
     PYDANTIC_MANAGER_AVAILABLE = True
     logger.debug("  ✅ PydanticManager v3.1 imported")
 except ImportError as e:
@@ -114,7 +114,7 @@ except ImportError as e:
 
 # Server Configuration Manager
 try:
-    from .server_config_manager import ServerConfigManager, create_server_config_manager
+    from .server_config import ServerConfigManager, create_server_config_manager
     SERVER_CONFIG_MANAGER_AVAILABLE = True
     logger.debug("  ✅ ServerConfigManager v3.1 imported")
 except ImportError as e:
@@ -125,7 +125,7 @@ except ImportError as e:
 
 # Settings Manager
 try:
-    from .settings_manager import SettingsManager, create_settings_manager
+    from .settings import SettingsManager, create_settings_manager
     SETTINGS_MANAGER_AVAILABLE = True
     logger.debug("  ✅ SettingsManager v3.1 imported")
 except ImportError as e:
@@ -136,7 +136,7 @@ except ImportError as e:
 
 # Storage Configuration Manager
 try:
-    from .storage_config_manager import StorageConfigManager, create_storage_config_manager
+    from .storage_config import StorageConfigManager, create_storage_config_manager
     STORAGE_CONFIG_MANAGER_AVAILABLE = True
     logger.debug("  ✅ StorageConfigManager v3.1 imported")
 except ImportError as e:
@@ -158,7 +158,7 @@ except ImportError as e:
 
 # Unified Configuration Manager (Core)
 try:
-    from .unified_config_manager import UnifiedConfigManager, create_unified_config_manager
+    from .unified_config import UnifiedConfigManager, create_unified_config_manager
     UNIFIED_CONFIG_MANAGER_AVAILABLE = True
     logger.debug("  ✅ Unified configuration managers imported")
 except ImportError as e:
@@ -169,7 +169,7 @@ except ImportError as e:
 
 # Zero Shot Manager
 try:
-    from .zero_shot_manager import ZeroShotManager, create_zero_shot_manager
+    from .zero_shot import ZeroShotManager, create_zero_shot_manager
     ZERO_SHOT_MANAGER_AVAILABLE = True
     logger.debug("  ✅ ZeroShotManager imported")
 except ImportError as e:

@@ -202,7 +202,7 @@ ash/ash-nlp/
 │   ├── settings_manager.py
 │   ├── shared_utilities.py
 │   ├── storage_config_manager.py
-│   ├── unified_config_manager.py
+│   ├── unified_config.py
 │   └── zero_shot_manager.py
 ├── models/                                  # Models Storage
 │   ├── cache/                               # Models Cache

@@ -26,7 +26,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
 from datetime import datetime
-from managers.unified_config_manager import UnifiedConfigManager
+from managers.unified_config import UnifiedConfigManager
 
 logger = logging.getLogger(__name__)
 
