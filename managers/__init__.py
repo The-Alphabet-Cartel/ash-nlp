@@ -203,7 +203,7 @@ def get_manager_status() -> dict:
         'server_config_manager': SERVER_CONFIG_MANAGER_AVAILABLE,
         'settings_manager': SETTINGS_MANAGER_AVAILABLE,
         'storage_config_manager': STORAGE_CONFIG_MANAGER_AVAILABLE,
-        'crisis_threshold_manager': THRESHOLD_MAPPING_MANAGER_AVAILABLE,
+        'crisis_threshold_manager': CRISIS_THRESHOLD_MANAGER_AVAILABLE,
         'unified_config_managers': UNIFIED_CONFIG_MANAGER_AVAILABLE,
         'zero_shot_manager': ZERO_SHOT_MANAGER_AVAILABLE,
     }
