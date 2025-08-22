@@ -93,7 +93,9 @@ class CrisisPatternHelper:
     # ========================================================================
 
     def find_patterns_semantic(self, message: str, model_ensemble_manager) -> List[Dict[str, Any]]:
-        """Use zero-shot classification models for semantic pattern detection"""
+        """
+        # Use zero-shot classification models for semantic pattern detection
+        """
         try:
             triggered_patterns = []
             
@@ -190,7 +192,9 @@ class CrisisPatternHelper:
             return []
 
     def classify_with_model(self, message: str, hypothesis: str, model_type: str, model_ensemble_manager) -> float:
-        """Perform zero-shot classification using the loaded model"""
+        """
+        # Perform zero-shot classification using the loaded model
+        """
         try:
             return self.demo_classification(message, hypothesis)
             
@@ -199,7 +203,9 @@ class CrisisPatternHelper:
             return 0.0
 
     def demo_classification(self, message: str, hypothesis: str) -> float:
-        """Demo classification logic - REPLACE with actual model calls"""
+        """
+        # Demo classification logic - REPLACE with actual model calls
+        """
         message_lower = message.lower()
         
         if "suicide" in hypothesis.lower() or "not wanting to live" in hypothesis.lower():
@@ -246,7 +252,9 @@ class CrisisPatternHelper:
         return 0.0
 
     def find_patterns_enhanced_fallback(self, message: str) -> List[Dict[str, Any]]:
-        """Enhanced fallback pattern matching"""
+        """
+        # Enhanced fallback pattern matching
+        """
         try:
             triggered_patterns = []
             message_lower = message.lower()
