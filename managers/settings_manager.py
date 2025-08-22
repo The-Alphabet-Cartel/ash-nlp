@@ -11,11 +11,10 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Runtime Settings and Configuration Overrides for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-2
+LAST MODIFIED: 2025-08-22
 PHASE: 3e, Sub-step 5.5, Task 5 - SettingsManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Phase 3e cleanup complete - enhanced configuration patterns applied
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -46,7 +45,7 @@ class SettingsManager:
     This manager serves as the central coordination point for all configuration across the system.
     All configuration now accessed through specialized managers with fallback support:
     - Analysis config: AnalysisConfigManager
-    - Crisis patterns: CrisisPatternManager
+    - Crisis patterns: PatternDetectionManager
     - Feature flags: FeatureConfigManager
     - Learning system settings: LearningSystemManager
     - Logging settings: LoggingConfigManager
@@ -63,11 +62,10 @@ class SettingsManager:
     - Enhanced configuration access patterns
     - Improved error handling and resilience
     - Better integration with specialized managers
-    - Migration references for all deprecated methods
     """
     
     def __init__(self, unified_config,
-        analysis_config_manager=None, crisis_pattern_manager=None,
+        analysis_config_manager=None, pattern_detection_manager=None,
         feature_config_manager=None, learning_system_manager=None,
         logging_config_manager=None, model_ensemble_manager=None,
         performance_config_manager=None, pydantic_manager=None,
@@ -80,7 +78,7 @@ class SettingsManager:
         Args:
             unified_config_manager: UnifiedConfigManager instance for dependency injection
             analysis_config_manager: AnalysisConfigManager instance
-            crisis_pattern_manager: CrisisPatternManager instance
+            pattern_detection_manager: PatternDetectionManager instance
             feature_config_manager: FeatureConfigManager instance
             learning_system_manager: LearningSystemManager instance
             logging_config_manager: LoggingConfigManager instance
@@ -98,7 +96,7 @@ class SettingsManager:
         
         # All specialized managers (optional dependencies)
         self.analysis_config_manager = analysis_config_manager
-        self.crisis_pattern_manager = crisis_pattern_manager
+        self.pattern_detection_manager = pattern_detection_manager
         self.feature_config_manager = feature_config_manager
         self.learning_system_manager = learning_system_manager
         self.logging_config_manager = logging_config_manager
@@ -169,7 +167,7 @@ class SettingsManager:
         managers = {
             'UnifiedConfigManager': self.unified_config,
             'AnalysisConfigManager': self.analysis_config_manager,
-            'CrisisPatternManager': self.crisis_pattern_manager,
+            'PatternDetectionManager': self.pattern_detection_manager,
             'FeatureConfigManager': self.feature_config_manager,
             'LearningSystemManager': self.learning_system_manager,
             'LoggingConfigManager': self.logging_config_manager,
@@ -393,61 +391,6 @@ class SettingsManager:
         }
 
     # ========================================================================
-    # MANAGER-DELEGATED METHODS (Phase 3e Enhanced)
-    # ========================================================================
-
-    def get_crisis_patterns_migration_notice(self):
-        """PHASE 3E: Enhanced migration notice for deprecated crisis pattern methods"""
-        return {
-            'status': 'migrated',
-            'message': 'Crisis patterns have been migrated to CrisisPatternManager in Phase 3a',
-            'access_method': 'Use CrisisPatternManager methods directly',
-            'documentation': 'See Phase 3a migration guide for details',
-            'migration_date': '2025-08-19',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Specialized crisis pattern management',
-                'Enhanced pattern matching capabilities',
-                'Better separation of concerns',
-                'Improved error handling and validation'
-            ]
-        }
-    
-    def get_analysis_parameters_migration_notice(self):
-        """PHASE 3E: Enhanced migration notice for deprecated analysis parameter methods"""
-        return {
-            'status': 'migrated',
-            'message': 'Analysis parameters have been migrated to AnalysisConfigManager in Phase 3e',
-            'access_method': 'Use AnalysisConfigManager methods directly',
-            'documentation': 'See Phase 3e migration guide for details',
-            'migration_date': '2025-08-19',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Centralized analysis parameter management',
-                'Enhanced validation and error handling',
-                'Better integration with crisis analysis',
-                'Improved maintainability'
-            ]
-        }
-    
-    def get_crisis_threshold_migration_notice(self):
-        """PHASE 3E: Enhanced migration notice for deprecated threshold mapping methods"""
-        return {
-            'status': 'migrated',
-            'message': 'Threshold mappings have been migrated to CrisisThresholdManager in Phase 3c',
-            'access_method': 'Use CrisisThresholdManager methods directly',
-            'documentation': 'See Phase 3c migration guide for details',
-            'migration_date': '2025-08-19',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Specialized threshold management',
-                'Enhanced crisis level mapping',
-                'Better ensemble mode support',
-                'Improved accuracy and reliability'
-            ]
-        }
-    
-    # ========================================================================
     # RUNTIME SETTINGS ACCESS (Phase 3e Enhanced)
     # ========================================================================
     
@@ -498,7 +441,7 @@ class SettingsManager:
             'manager_version': 'v3.1e-5.5-1',
             'phase': '3e Sub-step 5.5 Task 5',
             'total_managers_available': len([m for m in [
-                self.analysis_config_manager, self.crisis_pattern_manager,
+                self.analysis_config_manager, self.pattern_detection_manager,
                 self.feature_config_manager, self.learning_system_manager,
                 self.logging_config_manager, self.model_ensemble_manager,
                 self.performance_config_manager, self.pydantic_manager,
@@ -513,172 +456,11 @@ class SettingsManager:
             'cleanup_status': 'phase_3e_complete'
         }
     
-    # ========================================================================
-    # DEPRECATED METHODS WITH ENHANCED MIGRATION NOTICES (Phase 3e)
-    # ========================================================================
-    
-    def get_crisis_patterns(self):
-        """
-        PHASE 3E: Crisis patterns moved to CrisisPatternManager
-        
-        This method has been moved to CrisisPatternManager for better organization.
-        
-        Returns:
-            Dictionary indicating where to find the new method
-        """
-        logger.info("ℹ️ Phase 3e: get_crisis_patterns() moved to CrisisPatternManager")
-        logger.info("💡 Use CrisisPatternManager.get_crisis_patterns() for this functionality")
-        
-        return {
-            'note': 'Method moved to CrisisPatternManager for better consolidation',
-            'use_instead': 'CrisisPatternManager.get_crisis_patterns()',
-            'reason': 'Phase 3e consolidation - moved to specialized manager',
-            'migration_date': '2025-08-20',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Consolidated functionality in specialized manager',
-                'Better separation of concerns',
-                'Enhanced error handling and integration',
-                'Improved maintainability and testing'
-            ]
-        }
-    
-    def get_enhanced_crisis_patterns(self):
-        """
-        PHASE 3E: Enhanced crisis patterns moved to CrisisPatternManager
-        
-        This method has been moved to CrisisPatternManager for better organization.
-        
-        Returns:
-            Dictionary indicating where to find the new method
-        """
-        logger.info("ℹ️ Phase 3e: get_enhanced_crisis_patterns() moved to CrisisPatternManager")
-        logger.info("💡 Use CrisisPatternManager.get_enhanced_crisis_patterns() for this functionality")
-        
-        return {
-            'note': 'Method moved to CrisisPatternManager for better consolidation',
-            'use_instead': 'CrisisPatternManager.get_enhanced_crisis_patterns()',
-            'reason': 'Phase 3e consolidation - moved to specialized manager',
-            'migration_date': '2025-08-20',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Enhanced pattern matching in specialized manager',
-                'Better crisis detection accuracy',
-                'Improved error handling and validation',
-                'Centralized pattern management'
-            ]
-        }
-    
-    def get_community_vocabulary_patterns(self):
-        """
-        PHASE 3E: Community vocabulary patterns moved to CrisisPatternManager
-        
-        This method has been moved to CrisisPatternManager for better organization.
-        
-        Returns:
-            Dictionary indicating where to find the new method
-        """
-        logger.info("ℹ️ Phase 3e: get_community_vocabulary_patterns() moved to CrisisPatternManager")
-        logger.info("💡 Use CrisisPatternManager.get_community_vocabulary_patterns() for this functionality")
-        
-        return {
-            'note': 'Method moved to CrisisPatternManager for better consolidation',
-            'use_instead': 'CrisisPatternManager.get_community_vocabulary_patterns()',
-            'reason': 'Phase 3e consolidation - moved to specialized manager',
-            'migration_date': '2025-08-20',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Centralized community vocabulary management',
-                'Better LGBTQIA+ community support',
-                'Enhanced pattern recognition',
-                'Improved cultural sensitivity'
-            ]
-        }
-    
-    def get_lgbtqia_crisis_patterns(self):
-        """
-        PHASE 3E: LGBTQIA+ crisis patterns moved to CrisisPatternManager
-        
-        This method has been moved to CrisisPatternManager for better organization.
-        
-        Returns:
-            Dictionary indicating where to find the new method
-        """
-        logger.info("ℹ️ Phase 3e: get_lgbtqia_crisis_patterns() moved to CrisisPatternManager")
-        logger.info("💡 Use CrisisPatternManager.get_lgbtqia_patterns() for this functionality")
-        
-        return {
-            'note': 'Method moved to CrisisPatternManager for better consolidation',
-            'use_instead': 'CrisisPatternManager.get_lgbtqia_patterns()',
-            'reason': 'Phase 3e consolidation - moved to specialized manager',
-            'migration_date': '2025-08-20',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Specialized LGBTQIA+ pattern management',
-                'Enhanced community-specific crisis detection',
-                'Better cultural awareness and sensitivity',
-                'Improved support for The Alphabet Cartel community'
-            ]
-        }
-    
-    def get_crisis_contexts(self):
-        """
-        PHASE 3E: Crisis contexts moved to CrisisPatternManager
-        
-        This method has been moved to CrisisPatternManager for better organization.
-        
-        Returns:
-            Dictionary indicating where to find the new method
-        """
-        logger.info("ℹ️ Phase 3e: get_crisis_contexts() moved to CrisisPatternManager")
-        logger.info("💡 Use CrisisPatternManager.get_crisis_context_patterns() for this functionality")
-        
-        return {
-            'note': 'Method moved to CrisisPatternManager for better consolidation',
-            'use_instead': 'CrisisPatternManager.get_crisis_context_patterns()',
-            'reason': 'Phase 3e consolidation - moved to specialized manager',
-            'migration_date': '2025-08-20',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Centralized context pattern management',
-                'Enhanced contextual crisis detection',
-                'Better pattern organization',
-                'Improved accuracy in crisis identification'
-            ]
-        }
-    
-    def get_positive_context_patterns(self):
-        """
-        PHASE 3E: Positive context patterns moved to CrisisPatternManager
-        
-        This method has been moved to CrisisPatternManager for better organization.
-        
-        Returns:
-            Dictionary indicating where to find the new method
-        """
-        logger.info("ℹ️ Phase 3e: get_positive_context_patterns() moved to CrisisPatternManager")
-        logger.info("💡 Use CrisisPatternManager.get_positive_context_patterns() for this functionality")
-        
-        return {
-            'note': 'Method moved to CrisisPatternManager for better consolidation',
-            'use_instead': 'CrisisPatternManager.get_positive_context_patterns()',
-            'reason': 'Phase 3e consolidation - moved to specialized manager',
-            'migration_date': '2025-08-20',
-            'phase': '3e.5.5',
-            'benefits': [
-                'Enhanced positive context recognition',
-                'Better false positive reduction',
-                'Improved crisis detection accuracy',
-                'Centralized positive pattern management'
-            ]
-        }
-
-
 # ============================================================================
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
 # ============================================================================
 def create_settings_manager(unified_config,
-    analysis_config_manager=None, crisis_pattern_manager=None,
+    analysis_config_manager=None, pattern_detection_manager=None,
     feature_config_manager=None, learning_system_manager=None,
     logging_config_manager=None, model_ensemble_manager=None,
     performance_config_manager=None, pydantic_manager=None,
@@ -691,7 +473,7 @@ def create_settings_manager(unified_config,
     Args:
         unified_config_manager: UnifiedConfigManager instance
         analysis_config_manager: AnalysisConfigManager instance
-        crisis_pattern_manager: CrisisPatternManager instance
+        pattern_detection_manager: PatternDetectionManager instance
         feature_config_manager: FeatureConfigManager instance
         learning_system_manager: LearningSystemManager instance
         logging_config_manager: LoggingConfigManager instance
@@ -710,7 +492,7 @@ def create_settings_manager(unified_config,
     return SettingsManager(
         unified_config,
         analysis_config_manager=analysis_config_manager,
-        crisis_pattern_manager=crisis_pattern_manager,
+        pattern_detection_manager=pattern_detection_manager,
         feature_config_manager=feature_config_manager,
         learning_system_manager=learning_system_manager,
         logging_config_manager=logging_config_manager,

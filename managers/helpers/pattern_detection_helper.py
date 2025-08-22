@@ -1,14 +1,24 @@
-# ash-nlp/managers/crisis_pattern_helpers.py
+# ash-nlp/managers/pattern_detection_helpers.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+******************  CORE SYSTEM VISION (Never to be violated):  ****************
+Ash-NLP is a CRISIS DETECTION BACKEND that:
+1. FIRST: Uses Zero-Shot AI models for primary semantic classification
+2. SECOND: Enhances AI results with contextual pattern analysis  
+3. FALLBACK: Uses pattern-only classification if AI models fail
+4. PURPOSE: Detect crisis messages in Discord community communications
+********************************************************************************
 Crisis Pattern Helpers for Ash NLP Service
-FILE VERSION: v3.1-3e-5.3-helpers-2
-LAST MODIFIED: 2025-08-19
-PHASE: 3e Sub-step 5.3 - CrisisPatternManager optimization (helper extraction)
+---
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
+PHASE: 3e Sub-step 5.3 - PatternDetectionManager optimization (helper extraction)
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-PURPOSE: Helper methods extracted from CrisisPatternManager to reduce line count and improve organization.
+PURPOSE: Helper methods extracted from PatternDetectionManager to reduce line count and improve organization.
 Contains semantic analysis, pattern extraction, and utility methods.
 
 EXTRACTED METHODS:
@@ -28,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 class CrisisPatternHelper:
     """
-    Helper class for CrisisPatternManager containing extracted methods for:
+    Helper class for PatternDetectionManager containing extracted methods for:
     - Semantic pattern analysis and classification
     - Community and context pattern extraction
     - Temporal indicator analysis
@@ -97,7 +107,7 @@ class CrisisPatternHelper:
         message_lower = message.lower()
         
         try:
-            community_vocab = patterns_cache.get('community_vocabulary_patterns', {})
+            community_vocab = patterns_cache.get('patterns_community', {})
             if not community_vocab:
                 return found_patterns
             
@@ -125,9 +135,9 @@ class CrisisPatternHelper:
                             })
             
             # Check for crisis patterns section (regex patterns)
-            crisis_patterns = community_vocab.get('crisis_patterns', {})
-            if isinstance(crisis_patterns, dict):
-                for pattern_category, pattern_data in crisis_patterns.items():
+            patterns_crisis = community_vocab.get('patterns_crisis', {})
+            if isinstance(patterns_crisis, dict):
+                for pattern_category, pattern_data in patterns_crisis.items():
                     if isinstance(pattern_data, dict) and 'patterns' in pattern_data:
                         defaults = pattern_data.get('defaults', {})
                         for pattern_item in pattern_data['patterns']:
@@ -198,25 +208,25 @@ class CrisisPatternHelper:
         
         try:
             # Get crisis context patterns from consolidated context patterns
-            consolidated = patterns_cache.get('context_patterns', {})
-            context_patterns = {}
+            consolidated = patterns_cache.get('patterns_context', {})
+            patterns_context = {}
             
             if consolidated and 'crisis_amplification_patterns' in consolidated:
-                context_patterns = {
+                patterns_context = {
                     'patterns': consolidated['crisis_amplification_patterns'],
                     'configuration': consolidated.get('configuration', {}),
                     'processing_rules': consolidated.get('processing_rules', {}),
                     '_metadata': consolidated.get('_metadata', {}),
-                    'source': 'consolidated_context_patterns'
+                    'source': 'consolidated_patterns_context'
                 }
             else:
                 # Fallback to legacy file
-                context_patterns = patterns_cache.get('crisis_context_patterns', {})
+                patterns_context = patterns_cache.get('patterns_context', {})
             
-            if not context_patterns or 'patterns' not in context_patterns:
+            if not patterns_context or 'patterns' not in patterns_context:
                 return found_phrases
             
-            patterns = context_patterns['patterns']
+            patterns = patterns_context['patterns']
             
             for context_type, context_data in patterns.items():
                 if not isinstance(context_data, dict):
@@ -256,7 +266,7 @@ class CrisisPatternHelper:
     def analyze_temporal_indicators(self, message: str, patterns_cache: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze temporal indicators in message for crisis urgency assessment - Updated for Phase 3e"""
         try:
-            temporal_patterns = patterns_cache.get('temporal_indicators_patterns', {})
+            temporal_patterns = patterns_cache.get('patterns_temporal', {})
             if not temporal_patterns or 'patterns' not in temporal_patterns:
                 return {'found_indicators': [], 'urgency_score': 0.0}
             
@@ -308,7 +318,7 @@ class CrisisPatternHelper:
 # FACTORY FUNCTION
 # ============================================================================
 
-def create_crisis_pattern_helper(config_manager: UnifiedConfigManager) -> CrisisPatternHelper:
+def create_pattern_detection_helper(config_manager: UnifiedConfigManager) -> CrisisPatternHelper:
     """
     Factory function to create CrisisPatternHelper instance
     
@@ -320,6 +330,6 @@ def create_crisis_pattern_helper(config_manager: UnifiedConfigManager) -> Crisis
     """
     return CrisisPatternHelper(config_manager)
 
-__all__ = ['CrisisPatternHelper', 'create_crisis_pattern_helper']
+__all__ = ['CrisisPatternHelper', 'create_pattern_detection_helper']
 
-logger.debug("✅ CrisisPatternHelper v3.1-3e-5.3 loaded - Helper methods for CrisisPatternManager")
+logger.debug("✅ CrisisPatternHelper v3.1-3e-5.3 loaded - Helper methods for PatternDetectionManager")

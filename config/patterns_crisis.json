@@ -1,18 +1,14 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.7-4",
-    "last_modified": "2025-08-13",
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.7",
     "description": "Enhanced crisis patterns mapped to existing environment variables - no new variables needed",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-13",
     "compliance": "Clean Architecture v3.1 Standards",
     "repository": "https://github.com/the-alphabet-cartel/ash-nlp",
     "community": "The Alphabet Cartel - https://discord.gg/alphabetcartel",
-    "safety_notice": "These patterns detect life-threatening situations and require immediate professional response",
-    "last_reviewed": "2025-08-13",
-    "migration_status": "Step 10.7 - Mapped to existing environment variables, no new variables added"
+    "safety_notice": "These patterns detect life-threatening situations and require immediate professional response"
   },
 
   "patterns": {
@@ -390,15 +386,15 @@
   },
 
   "usage_instructions": {
-    "integration": "Load via UnifiedConfigManager.get_crisis_patterns('enhanced_crisis_patterns')",
-    "access_method": "CrisisPatternManager.get_enhanced_patterns()",
+    "integration": "Load via UnifiedConfigManager.get_patterns_crisis('patterns_crisis')",
+    "access_method": "PatternDetectionManager.get_enhanced_patterns()",
     "environment_override_example": "Use existing variables like NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT=2.0",
-    "manager_method": "CrisisPatternManager.analyze_enhanced_patterns(message)",
+    "manager_method": "PatternDetectionManager.analyze_enhanced_patterns(message)",
     "defaults": {
-      "integration": "Load via UnifiedConfigManager.get_crisis_patterns('enhanced_crisis_patterns')",
-      "access_method": "CrisisPatternManager.get_enhanced_patterns()",
+      "integration": "Load via UnifiedConfigManager.get_patterns_crisis('patterns_crisis')",
+      "access_method": "PatternDetectionManager.get_enhanced_patterns()",
       "environment_override_example": "Use existing NLP_ANALYSIS_* variables",
-      "manager_method": "CrisisPatternManager.analyze_enhanced_patterns(message)"
+      "manager_method": "PatternDetectionManager.analyze_enhanced_patterns(message)"
     },
     "implementation_notes": [
       "Critical patterns should trigger immediate staff notification",

@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_context_pattern_manager(unified_config)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-5.7-1  
-**LAST MODIFIED**: 2025-08-21
+**FILE VERSION**: v3.1-3e-6-1  
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
@@ -19,7 +19,7 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 - Perform semantic context analysis using configurable parameters
 - Score term relevance within message context windows
 - Apply context-based scoring adjustments for crisis detection
-- Integrate with CrisisPatternManager for enhanced pattern detection
+- Integrate with PatternDetectionManager for enhanced pattern detection
 
 ---
 
@@ -27,7 +27,7 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 
 ### **Context Extraction Methods:**
 1. **`extract_context_signals(message)`** - Extract basic context signals from message
-2. **`analyze_message_context(message, crisis_pattern_manager=None)`** - **ENHANCED** - Advanced context analysis
+2. **`analyze_message_context(message, pattern_detection_manager=None)`** - **ENHANCED** - Advanced context analysis
 3. **`score_term_in_context(term, message, context_window=None)`** - Score term relevance in context
 
 ### **Context Analysis Methods:**
@@ -91,7 +91,7 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 3. **Context-based crisis amplification** - Apply context to enhance crisis scores
 
 ### **Crisis Context Integration:**
-1. **Integration with CrisisPatternManager** - Enhanced pattern detection via context
+1. **Integration with PatternDetectionManager** - Enhanced pattern detection via context
 2. **Context signal extraction for crisis** - Extract signals relevant to crisis detection
 3. **Temporal context analysis** - Time-based context considerations
 
@@ -106,17 +106,17 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 
 ### **Required Dependencies:**
 - **UnifiedConfigManager** - Configuration loading and environment variable access
-- **CrisisPatternManager** (optional) - Enhanced pattern detection integration
+- **PatternDetectionManager** (optional) - Enhanced pattern detection integration
 - **logging** - Error handling and analysis tracking
 
 ### **Configuration Files:**
-- **`config/context_patterns.json`** - Context pattern configuration
+- **`config/patterns_context.json`** - Context pattern configuration
 - **`config/analysis_config.json`** - Semantic analysis parameters
 - **Environment variables** - Via UnifiedConfigManager (e.g., `NLP_FEATURE_*`)
 
 ### **Integration Points:**
 - **Called by**: CrisisAnalyzer (Step 10.8 integration)
-- **Works with**: CrisisPatternManager for enhanced pattern detection
+- **Works with**: PatternDetectionManager for enhanced pattern detection
 - **Provides to**: Context analysis results, semantic context data
 
 ---
@@ -145,7 +145,7 @@ The **ContextPatternManager** provides advanced context analysis for crisis dete
 
 ### **Downstream Integration:**
 - **CrisisAnalyzer** - **PRIMARY CONSUMER** - Context analysis for crisis detection (Step 10.8)
-- **CrisisPatternManager** - Enhanced pattern detection via context integration
+- **PatternDetectionManager** - Enhanced pattern detection via context integration
 - **API endpoints** - Context analysis data for response enrichment
 
 ### **Critical Data Flow:**
@@ -200,7 +200,7 @@ As part of Step 10.8, this manager was integrated directly into CrisisAnalyzer t
 - **Multiple JSON files** - Requires both context patterns and analysis parameters
 - **Environment variable integration** - Multiple environment variables for configuration
 - **Fallback mechanisms** - Safe defaults when configuration loading fails
-- **Cross-manager dependencies** - Integration with CrisisPatternManager
+- **Cross-manager dependencies** - Integration with PatternDetectionManager
 
 ### **Initialization Resilience:**
 - **Graceful fallback** - Continues to function with basic defaults if configuration fails
@@ -231,7 +231,7 @@ As part of Step 10.8, this manager was integrated directly into CrisisAnalyzer t
 - **`score_term_in_context()`** - Context-aware scoring for crisis detection
 - **`identify_negation_context()`** - Negation handling for crisis contexts
 - **`determine_semantic_context()`** - Crisis-specific semantic analysis
-- **CrisisPatternManager integration** - Crisis-specific context enhancement
+- **PatternDetectionManager integration** - Crisis-specific context enhancement
 
 ---
 

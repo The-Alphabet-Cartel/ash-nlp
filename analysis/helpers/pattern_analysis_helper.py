@@ -11,15 +11,12 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Pattern Analysis Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-5.7-1
-CREATED: 2025-08-21
+FILE VERSION: v3.1-3e-6-2
+CREATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-MIGRATION NOTICE: Methods moved from CrisisAnalyzer for optimization
-Original location: analysis/crisis_analyzer.py - pattern analysis and detection methods
 """
 
 import logging
@@ -39,7 +36,10 @@ class PatternAnalysisHelper:
         Args:
             crisis_analyzer: Parent CrisisAnalyzer instance
         """
+        from .context_integration_helper import ContextIntegrationHelper
+        
         self.crisis_analyzer = crisis_analyzer
+        self.context_helper = ContextIntegrationHelper(crisis_analyzer)
     
     # ========================================================================
     # CONTEXT SIGNAL EXTRACTION
@@ -116,7 +116,7 @@ class PatternAnalysisHelper:
             
         return sentiment_context
 
-    def perform_enhanced_context_analysis(self, message: str, crisis_pattern_manager=None) -> Dict[str, Any]:
+    def perform_enhanced_context_analysis(self, message: str, pattern_detection_manager=None) -> Dict[str, Any]:
         """
         Perform enhanced context analysis with optional crisis pattern integration
         Migrated from: CrisisAnalyzer.perform_enhanced_context_analysis()
@@ -125,12 +125,12 @@ class PatternAnalysisHelper:
         # Start with basic context signals
         context = self.extract_context_signals(message)
         
-        if crisis_pattern_manager:
+        if pattern_detection_manager:
             try:
-                # Get enhanced pattern analysis from CrisisPatternManager
-                context_patterns = crisis_pattern_manager.get_crisis_context_patterns()
-                positive_patterns = crisis_pattern_manager.get_positive_context_patterns()
-                temporal_analysis = crisis_pattern_manager.analyze_temporal_indicators(message)
+                # Get enhanced pattern analysis from PatternDetectionManager
+                patterns_context = pattern_detection_manager.get_patterns_context()
+                positive_patterns = pattern_detection_manager.get_positive_patterns()
+                temporal_analysis = pattern_detection_manager.analyze_temporal_indicators(message)
                 
                 # Merge advanced analysis into context
                 context.update({
@@ -139,7 +139,7 @@ class PatternAnalysisHelper:
                     'pattern_manager_status': 'available'
                 })
                 
-                logger.debug("Enhanced context analysis completed with CrisisPatternManager")
+                logger.debug("Enhanced context analysis completed with PatternDetectionManager")
                 
             except Exception as e:
                 logger.error(f"Error in enhanced context analysis: {e}")
@@ -153,7 +153,7 @@ class PatternAnalysisHelper:
                 'crisis_context_available': False,
                 'pattern_manager_status': 'not_available'
             })
-            logger.debug("Basic context analysis only - CrisisPatternManager not available")
+            logger.debug("Basic context analysis only - PatternDetectionManager not available")
         
         return context
     
@@ -268,12 +268,12 @@ class PatternAnalysisHelper:
         # Check if pattern analysis is enabled
         pattern_analysis_enabled = self.crisis_analyzer._feature_cache.get('pattern_analysis', False)
         
-        if pattern_analysis_enabled and self.crisis_analyzer.crisis_pattern_manager:
+        if pattern_analysis_enabled and self.crisis_analyzer.pattern_detection_manager:
             logger.debug("Pattern analysis enabled for basic analysis")
             
-            # Use CrisisPatternManager methods directly
+            # Use PatternDetectionManager methods directly
             try:
-                enhanced_patterns = self.crisis_analyzer.crisis_pattern_manager.check_enhanced_crisis_patterns(message)
+                enhanced_patterns = self.crisis_analyzer.pattern_detection_manager.check_patterns_crisis(message)
                 
                 # Simple crisis level determination based on patterns
                 if enhanced_patterns.get('matches'):
@@ -328,7 +328,7 @@ class PatternAnalysisHelper:
                     'enhanced_consolidation': True
                 }
             },
-            'requires_staff_review': self.crisis_analyzer._determine_staff_review_requirement(confidence, crisis_level),
+            'requires_staff_review': self.context_helper.determine_staff_review_requirement(confidence, crisis_level),
             'processing_time': time.time() - start_time
         }
     

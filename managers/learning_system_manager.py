@@ -11,11 +11,10 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Learning System Manager for Ash-NLP Service
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 3.2 - LearningSystemManager Implementation (Corrected)
 CLEAN ARCHITECTURE: v3.1 Compliant with proper UnifiedConfigManager usage
-MIGRATION STATUS: Learning methods extracted from both AnalysisConfigManager and CrisisThresholdManager
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """

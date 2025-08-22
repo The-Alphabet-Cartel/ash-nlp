@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Analysis Config Manager for Ash NLP Service (RENAMED from AnalysisParametersManager)
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
 RENAMED FROM: managers/analysis_parameters_manager.py
@@ -32,16 +32,7 @@ class AnalysisConfigManager:
     """
     Analysis Config Manager with Phase 3e functionality and v3.1 JSON compatibility
     
-    RENAMED FROM: AnalysisParametersManager (Phase 3e Step 5.7)
-    
-    PHASE 3E STEP 5.1 UPDATES:
-    - Crisis analysis methods migrated to CrisisAnalyzer for better consolidation
-    - Learning methods previously migrated to LearningSystemManager (Step 3)
-    - Core analysis parameter functionality preserved
-    - Migration references provided for moved methods
-    
-    Hybrid approach: Preserves all current enhanced functionality while ensuring
-    compatibility with Clean v3.1 JSON configuration standards.
+    RENAMED FROM: AnalysisParametersManager (Phase 3e Step 6)
     """
     
     def __init__(self, config_manager):
@@ -92,150 +83,6 @@ class AnalysisConfigManager:
         except Exception as e:
             logger.error(f"❌ Failed to load analysis parameters: {e}")
             raise ValueError(f"Analysis parameters configuration error: {e}")
-    
-    # ========================================================================
-    # CRISIS ANALYSIS METHODS - PHASE 3E STEP 5.1: MIGRATED TO CRISIS ANALYZER
-    # ========================================================================
-    
-    def get_crisis_thresholds(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 5.1: Crisis threshold management now handled by CrisisAnalyzer
-        
-        This method has been migrated to CrisisAnalyzer for specialized crisis analysis
-        functionality and better consolidation of crisis-related parameters.
-        
-        Returns:
-            Dictionary indicating where to get crisis thresholds
-        """
-        logger.info("ℹ️ Phase 3e Step 5.1: Crisis thresholds now managed by CrisisAnalyzer")
-        logger.info("💡 Use CrisisAnalyzer.get_analysis_crisis_thresholds() for crisis threshold configuration")
-        
-        return {
-            'note': 'Crisis thresholds managed by CrisisAnalyzer',
-            'use_instead': 'CrisisAnalyzer.get_analysis_crisis_thresholds()',
-            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
-            'migration_date': '2025-08-18',
-            'phase': '3e.5.1',
-            'benefits': [
-                'Specialized crisis analysis functionality management',
-                'Enhanced crisis threshold processing',
-                'Consolidated crisis-related parameters',
-                'Better separation of concerns',
-                'Improved crisis detection accuracy'
-            ]
-        }
-
-    def get_analysis_timeouts(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 5.1: Analysis timeout management now handled by CrisisAnalyzer
-        
-        This method has been migrated to CrisisAnalyzer for specialized timeout
-        handling in crisis analysis scenarios.
-        
-        Returns:
-            Dictionary indicating where to get analysis timeouts
-        """
-        logger.info("ℹ️ Phase 3e Step 5.1: Analysis timeouts now managed by CrisisAnalyzer")
-        logger.info("💡 Use CrisisAnalyzer.get_analysis_timeouts() for timeout configuration")
-        
-        return {
-            'note': 'Analysis timeouts managed by CrisisAnalyzer',
-            'use_instead': 'CrisisAnalyzer.get_analysis_timeouts()',
-            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
-            'migration_date': '2025-08-18',
-            'phase': '3e.5.1',
-            'benefits': [
-                'Specialized timeout management for crisis scenarios',
-                'Enhanced analysis performance control',
-                'Crisis-specific timeout optimization',
-                'Better error handling for timeouts',
-                'Improved system reliability'
-            ]
-        }
-
-    def get_confidence_boosts(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 5.1: Confidence boost management now handled by CrisisAnalyzer
-        
-        This method has been migrated to CrisisAnalyzer for specialized confidence
-        boost handling in crisis analysis algorithms.
-        
-        Returns:
-            Dictionary indicating where to get confidence boosts
-        """
-        logger.info("ℹ️ Phase 3e Step 5.1: Confidence boosts now managed by CrisisAnalyzer")
-        logger.info("💡 Use CrisisAnalyzer.get_analysis_confidence_boosts() for confidence boost configuration")
-        
-        return {
-            'note': 'Confidence boosts managed by CrisisAnalyzer',
-            'use_instead': 'CrisisAnalyzer.get_analysis_confidence_boosts()',
-            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
-            'migration_date': '2025-08-18',
-            'phase': '3e.5.1',
-            'benefits': [
-                'Specialized confidence boost algorithms for crisis detection',
-                'Enhanced accuracy in crisis analysis',
-                'Crisis-specific confidence adjustments',
-                'Better false positive/negative handling',
-                'Improved crisis detection reliability'
-            ]
-        }
-
-    def get_pattern_weights(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 5.1: Pattern weight management now handled by CrisisAnalyzer
-        
-        This method has been migrated to CrisisAnalyzer for specialized pattern
-        weighting in crisis analysis scenarios.
-        
-        Returns:
-            Dictionary indicating where to get pattern weights
-        """
-        logger.info("ℹ️ Phase 3e Step 5.1: Pattern weights now managed by CrisisAnalyzer")
-        logger.info("💡 Use CrisisAnalyzer.get_analysis_pattern_weights() for pattern weight configuration")
-        
-        return {
-            'note': 'Pattern weights managed by CrisisAnalyzer',
-            'use_instead': 'CrisisAnalyzer.get_analysis_pattern_weights()',
-            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
-            'migration_date': '2025-08-18',
-            'phase': '3e.5.1',
-            'benefits': [
-                'Specialized pattern weighting for crisis scenarios',
-                'Enhanced pattern recognition in crisis detection',
-                'Crisis-specific pattern optimization',
-                'Better pattern matching accuracy',
-                'Improved crisis analysis precision'
-            ]
-        }
-
-    def get_algorithm_parameters(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 5.1: Algorithm parameter management now handled by CrisisAnalyzer
-        
-        This method has been migrated to CrisisAnalyzer for specialized algorithm
-        parameter management in crisis analysis.
-        
-        Returns:
-            Dictionary indicating where to get algorithm parameters
-        """
-        logger.info("ℹ️ Phase 3e Step 5.1: Algorithm parameters now managed by CrisisAnalyzer")
-        logger.info("💡 Use CrisisAnalyzer.get_analysis_algorithm_parameters() for algorithm parameter configuration")
-        
-        return {
-            'note': 'Algorithm parameters managed by CrisisAnalyzer',
-            'use_instead': 'CrisisAnalyzer.get_analysis_algorithm_parameters()',
-            'reason': 'Phase 3e Step 5.1 crisis analysis consolidation - moved to specialized crisis analyzer',
-            'migration_date': '2025-08-18',
-            'phase': '3e.5.1',
-            'benefits': [
-                'Specialized algorithm parameters for crisis analysis',
-                'Enhanced algorithm performance for crisis detection',
-                'Crisis-specific algorithm optimization',
-                'Better algorithm tuning capabilities',
-                'Improved crisis analysis effectiveness'
-            ]
-        }
     
     # ========================================================================
     # PRESERVED CONFIDENCE BOOST PARAMETERS - Core Algorithm Configuration
@@ -587,89 +434,6 @@ class AnalysisConfigManager:
             }
     
     # ========================================================================
-    # ENSEMBLE WEIGHT ACCESS - PHASE 3D CLEANED: REMOVED DUPLICATE VARIABLES
-    # ========================================================================
-    
-    def get_ensemble_weights(self) -> Dict[str, float]:
-        """
-        PHASE 3D CLEANED: Get ensemble weights from ModelEnsembleManager instead
-        
-        Note: This method now refers users to ModelEnsembleManager for ensemble weights.
-        The duplicate NLP_ANALYSIS_ENSEMBLE_WEIGHT_* variables have been removed.
-        
-        Returns:
-            Dictionary indicating where to get ensemble weights
-        """
-        logger.info("ℹ️ Phase 3d: Ensemble weights now managed by ModelEnsembleManager")
-        logger.info("💡 Use ModelEnsembleManager.get_model_weights() for ensemble weights")
-        
-        return {
-            'note': 'Ensemble weights managed by ModelEnsembleManager',
-            'use_instead': 'ModelEnsembleManager.get_model_weights()',
-            'reason': 'Phase 3d duplicate variable cleanup - removed NLP_ANALYSIS_ENSEMBLE_WEIGHT_* variables'
-        }
-    
-    # ========================================================================
-    # LEARNING SYSTEM PARAMETERS - PHASE 3E STEP 3 FUNCTIONALITY
-    # ========================================================================
-
-    def get_learning_system_parameters(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 3: Learning system parameters now managed by LearningSystemManager
-        
-        This method has been migrated to LearningSystemManager for better consolidation
-        and specialized learning functionality management.
-        
-        Returns:
-            Dictionary indicating where to get learning system parameters
-        """
-        logger.info("ℹ️ Phase 3e: Learning system parameters now managed by LearningSystemManager")
-        logger.info("💡 Use LearningSystemManager.get_learning_parameters() for learning system configuration")
-        
-        return {
-            'note': 'Learning system parameters managed by LearningSystemManager',
-            'use_instead': 'LearningSystemManager.get_learning_parameters()',
-            'reason': 'Phase 3e Step 3 learning method consolidation - moved to specialized learning manager',
-            'migration_date': '2025-08-17',
-            'phase': '3e.3',
-            'benefits': [
-                'Specialized learning functionality management',
-                'Enhanced false positive/negative handling',
-                'Consolidated learning system configuration',
-                'Better separation of concerns',
-                'Improved maintainability'
-            ]
-        }
-
-    def validate_learning_system_parameters(self) -> Dict[str, Any]:
-        """
-        PHASE 3E STEP 3: Learning system parameter validation now managed by LearningSystemManager
-        
-        This validation method has been migrated to LearningSystemManager for specialized
-        learning parameter validation with enhanced bounds checking.
-        
-        Returns:
-            Dictionary indicating where to get learning system validation
-        """
-        logger.info("ℹ️ Phase 3e: Learning parameter validation now managed by LearningSystemManager")
-        logger.info("💡 Use LearningSystemManager.validate_learning_parameters() for learning system validation")
-        
-        return {
-            'note': 'Learning parameter validation managed by LearningSystemManager', 
-            'use_instead': 'LearningSystemManager.validate_learning_parameters()',
-            'reason': 'Phase 3e Step 3 learning method consolidation - moved to specialized learning manager',
-            'migration_date': '2025-08-17',
-            'phase': '3e.3',
-            'enhanced_features': [
-                'Advanced bounds checking using SharedUtilitiesManager',
-                'Comprehensive validation error reporting',
-                'Learning-specific parameter range validation',
-                'Enhanced error handling and fallbacks',
-                'Structured validation results'
-            ]
-        }
-    
-    # ========================================================================
     # AGGREGATE ACCESS METHODS - Enhanced for v3.1 with Phase 3e Updates
     # ========================================================================
     
@@ -711,22 +475,12 @@ class AnalysisConfigManager:
                 'performance_settings': self.get_performance_parameters(),
                 'debugging_settings': self.get_debugging_settings(),
                 'experimental_features': self.get_experimental_features()
-            },
-            'migration_references': {
-                'learning_system_note': self.get_learning_system_parameters(),  # Migration info
-                'ensemble_weights_info': self.get_ensemble_weights(),  # Migration info
-                'crisis_thresholds_note': self.get_crisis_thresholds(),  # Migration info
-                'confidence_boosts_note': self.get_confidence_boosts(),  # Migration info
-                'pattern_weights_note': self.get_pattern_weights(),  # Migration info
-                'algorithm_parameters_note': self.get_algorithm_parameters(),  # Migration info
-                'analysis_timeouts_note': self.get_analysis_timeouts()  # Migration info
             }
         }
 
     def validate_parameters(self) -> Dict[str, Any]:
         """
         Validate all analysis parameters with v3.1 compliance checks
-        Updated for Phase 3e Step 5.1 with crisis analysis migration awareness
         
         Returns:
             Dictionary with validation results
@@ -741,9 +495,6 @@ class AnalysisConfigManager:
                 warnings.append("Missing _metadata section - not fully v3.1 compliant")
             elif metadata.get('configuration_version', '').startswith('3d.'):
                 logger.info("✅ Configuration is v3.1 compliant")
-            
-            # Note about migrated crisis analysis methods
-            warnings.append("Phase 3e Step 5.1: Crisis analysis methods migrated to CrisisAnalyzer")
             
             # Validate confidence boost parameters (preserved)
             boost_params = self.get_confidence_boost_parameters()
@@ -795,13 +546,12 @@ class AnalysisConfigManager:
             metadata = self._full_config.get('_metadata', {})
             
             return {
-                'manager_version': 'v3.1e-5.7-renamed',
+                'manager_version': 'v3.1e-6-1',
                 'manager_name': 'AnalysisConfigManager (renamed from AnalysisParametersManager)',
                 'json_configuration_version': metadata.get('configuration_version', 'unknown'),
                 'json_compliance': metadata.get('compliance', 'unknown'),
                 'last_updated': metadata.get('updated_date', 'unknown'),
-                'total_parameter_categories': 9,  # Parameter categories after migration
-                'migrated_methods': 5,  # Crisis analysis methods migrated to CrisisAnalyzer
+                'total_parameter_categories': 9,
                 'integration_mode': self.get_integration_settings().get('integration_mode', 'unknown'),
                 'performance_timeout_ms': self.get_performance_parameters().get('timeout_ms', 'unknown'),
                 'debug_logging_enabled': self.get_debugging_settings().get('enable_detailed_logging', False),
@@ -814,8 +564,7 @@ class AnalysisConfigManager:
                     'crisis_analysis_migrated': 'Methods moved to CrisisAnalyzer',
                     'learning_system_migrated': 'Methods moved to LearningSystemManager',
                     'preserved_core_parameters': 'Analysis parameters maintained',
-                    'enhanced_specialization': 'Better separation of concerns',
-                    'migration_references': 'All moved methods have migration guidance'
+                    'enhanced_specialization': 'Better separation of concerns'
                 }
             }
             

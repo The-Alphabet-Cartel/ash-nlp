@@ -11,22 +11,12 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Analyzer for Ash-NLP Service v3.1
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-2
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization and Zero-Shot Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
-OPTIMIZATION STATUS: Reduced from ~1,940 lines to ~1,000 lines (48% reduction)
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-OPTIMIZATION CHANGES:
-- Moved ensemble analysis methods to analysis/helpers/ensemble_analysis_helper.py
-- Moved scoring calculation methods to analysis/helpers/scoring_calculation_helper.py  
-- Moved pattern analysis methods to analysis/helpers/pattern_analysis_helper.py
-- Moved context integration methods to analysis/helpers/context_integration_helper.py
-- Implemented actual zero-shot model analysis (replacing placeholders)
-- Maintained 100% API compatibility
-- Added migration references for all moved methods
 """
 
 import logging
@@ -47,33 +37,15 @@ class CrisisAnalyzer:
     """
     PHASE 3E SUB-STEP 5.5-6: Optimized crisis analyzer with helper file architecture
     
-    OPTIMIZATION SUMMARY:
-    - File size reduced from ~1,940 lines to ~1,000 lines (48% reduction)
-    - Methods organized into logical helper files for better maintainability
-    - Zero-shot model implementation replacing placeholder methods
-    - 100% API compatibility maintained
-    - Enhanced performance through better separation of concerns
-    
     HELPER FILES:
     - EnsembleAnalysisHelper: Ensemble coordination and zero-shot model analysis
     - ScoringCalculationHelper: Scoring calculations and result combination
     - PatternAnalysisHelper: Pattern detection and context signal extraction
     - ContextIntegrationHelper: Response building and cache management
-    
-    Previous Phases:
-    - Phase 3a: Clean v3.1 architecture with JSON-based patterns
-    - Phase 3b: Analysis parameters from AnalysisConfigManager  
-    - Phase 3c: Mode-aware thresholds from CrisisThresholdManager
-    - Phase 3d Step 7: Feature flags and performance settings from dedicated managers
-    - Phase 3d Step 10.6: Consolidated scoring functions (no more utils/scoring_helpers.py)
-    - Phase 3d Step 10.7: Consolidated community patterns (no more utils/community_patterns.py)
-    - Phase 3d Step 10.8: ContextPatternManager integration (no more utils/context_helpers.py)
-    - Phase 3e Step 4.2: SharedUtilitiesManager and LearningSystemManager integration
-    - Phase 3e Step 5.5-6: Helper file optimization and zero-shot implementation
     """
     
     def __init__(self, unified_config, model_ensemble_manager,
-        crisis_pattern_manager=None, analysis_config_manager=None,
+        pattern_detection_manager=None, analysis_config_manager=None,
         crisis_threshold_manager=None, feature_config_manager=None,
         performance_config_manager=None, context_pattern_manager=None,
         shared_utilities_manager=None, learning_system_manager=None,
@@ -82,26 +54,21 @@ class CrisisAnalyzer:
         Initialize Optimized Crisis Analyzer with helper file architecture
         
         Args:
-            # Existing dependencies (maintained)
             model_ensemble_manager: Model ensemble manager for ensemble analysis
-            crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
+            pattern_detection_manager: PatternDetectionManager for pattern-based analysis
             analysis_config_manager: AnalysisConfigManager for configurable parameters
             crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
             feature_config_manager: FeatureConfigManager for feature flags
             performance_config_manager: PerformanceConfigManager for performance settings
             context_pattern_manager: ContextPatternManager for context analysis
-            
-            # Phase 3e dependencies
             shared_utilities_manager: SharedUtilitiesManager for common utilities
             learning_system_manager: LearningSystemManager for adaptive learning
-            
-            # ADDED: ZeroShotManager for label management
             zero_shot_manager: ZeroShotManager for zero-shot label configuration and management
         """
         # Manager dependencies
         self.unified_config_manager = unified_config
         self.model_ensemble_manager = model_ensemble_manager
-        self.crisis_pattern_manager = crisis_pattern_manager
+        self.pattern_detection_manager = pattern_detection_manager
         self.analysis_config_manager = analysis_config_manager
         self.crisis_threshold_manager = crisis_threshold_manager
         self.feature_config_manager = feature_config_manager
@@ -208,102 +175,6 @@ class CrisisAnalyzer:
         logger.debug("analyze_message called - delegating to optimized analyze_crisis for backward compatibility")
         return await self.analyze_crisis(message, user_id, channel_id)
 
-    # ========================================================================
-    # MIGRATION REFERENCES FOR MOVED METHODS
-    # ========================================================================
-    
-    # ENSEMBLE ANALYSIS METHODS - Moved to EnsembleAnalysisHelper
-    async def _perform_ensemble_analysis(self, *args, **kwargs):
-        """MIGRATION REFERENCE: Moved to analysis/helpers/ensemble_analysis_helper.py"""
-        logger.warning("_perform_ensemble_analysis moved to EnsembleAnalysisHelper - use ensemble_helper.perform_ensemble_analysis()")
-        return await self.ensemble_helper.perform_ensemble_analysis(*args, **kwargs)
-    
-    async def _analyze_depression(self, message: str) -> Dict:
-        """MIGRATION REFERENCE: Enhanced and moved to EnsembleAnalysisHelper"""
-        logger.warning("_analyze_depression enhanced and moved to EnsembleAnalysisHelper")
-        return await self.ensemble_helper._analyze_depression_with_zero_shot(message)
-    
-    async def _analyze_sentiment(self, message: str) -> Dict:
-        """MIGRATION REFERENCE: Enhanced and moved to EnsembleAnalysisHelper"""
-        logger.warning("_analyze_sentiment enhanced and moved to EnsembleAnalysisHelper")
-        return await self.ensemble_helper._analyze_sentiment_with_zero_shot(message)
-    
-    async def _analyze_emotional_distress(self, message: str) -> Dict:
-        """MIGRATION REFERENCE: Enhanced and moved to EnsembleAnalysisHelper"""
-        logger.warning("_analyze_emotional_distress enhanced and moved to EnsembleAnalysisHelper")
-        return await self.ensemble_helper._analyze_emotional_distress_with_zero_shot(message)
-    
-    # SCORING METHODS - Moved to ScoringCalculationHelper
-    def extract_depression_score(self, *args, **kwargs) -> Tuple[float, List[str]]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/scoring_calculation_helper.py"""
-        return self.scoring_helper.extract_depression_score(*args, **kwargs)
-    
-    def enhanced_depression_analysis(self, *args, **kwargs) -> Dict:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/scoring_calculation_helper.py"""
-        return self.scoring_helper.enhanced_depression_analysis(*args, **kwargs)
-    
-    def _combine_analysis_results(self, *args, **kwargs) -> Dict:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/scoring_calculation_helper.py"""
-        return self.scoring_helper.combine_analysis_results(*args, **kwargs)
-    
-    def combine_ensemble_model_results(self, *args, **kwargs) -> Dict[str, Any]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/scoring_calculation_helper.py"""
-        return self.scoring_helper.combine_ensemble_model_results(*args, **kwargs)
-    
-    def apply_analysis_ensemble_weights(self, *args, **kwargs) -> Dict[str, Any]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/scoring_calculation_helper.py"""
-        return self.scoring_helper.apply_analysis_ensemble_weights(*args, **kwargs)
-    
-    # PATTERN ANALYSIS METHODS - Moved to PatternAnalysisHelper
-    def extract_context_signals(self, message: str) -> Dict[str, Any]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/pattern_analysis_helper.py"""
-        return self.pattern_helper.extract_context_signals(message)
-    
-    def detect_negation_context(self, message: str) -> bool:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/pattern_analysis_helper.py"""
-        return self.pattern_helper.detect_negation_context(message)
-    
-    def analyze_sentiment_context(self, *args, **kwargs) -> Dict[str, Any]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/pattern_analysis_helper.py"""
-        return self.pattern_helper.analyze_sentiment_context(*args, **kwargs)
-    
-    def perform_enhanced_context_analysis(self, *args, **kwargs) -> Dict[str, Any]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/pattern_analysis_helper.py"""
-        return self.pattern_helper.perform_enhanced_context_analysis(*args, **kwargs)
-    
-    def score_term_in_context(self, *args, **kwargs) -> Dict[str, Any]:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/pattern_analysis_helper.py"""
-        return self.pattern_helper.score_term_in_context(*args, **kwargs)
-    
-    # CONTEXT INTEGRATION METHODS - Moved to ContextIntegrationHelper
-    def _create_error_response(self, *args, **kwargs) -> Dict:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        return self.context_helper.create_error_response(*args, **kwargs)
-    
-    def _create_timeout_response(self, *args, **kwargs) -> Dict:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        return self.context_helper.create_timeout_response(*args, **kwargs)
-    
-    def _ensemble_crisis_analysis(self, *args, **kwargs) -> Dict:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        return self.context_helper.ensemble_crisis_analysis(*args, **kwargs)
-    
-    def _refresh_feature_cache(self):
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        self.context_helper.refresh_feature_cache()
-    
-    def _refresh_performance_cache(self):
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        self.context_helper.refresh_performance_cache()
-    
-    def _determine_staff_review_requirement(self, final_score: float, crisis_level: str) -> bool:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        return self.context_helper.determine_staff_review_requirement(final_score, crisis_level)
-    
-    def _fallback_crisis_level(self, confidence: float) -> str:
-        """MIGRATION REFERENCE: Moved to analysis/helpers/context_integration_helper.py"""
-        return self.context_helper.fallback_crisis_level(confidence)
-    
     # ========================================================================
     # PHASE 3E STEP 4.2: CONSOLIDATED ANALYSIS METHODS (Maintained)
     # ========================================================================
@@ -434,9 +305,9 @@ class CrisisAnalyzer:
             if self.shared_utilities_manager:
                 return self.shared_utilities_manager.get_config_section_safely(
                     'analysis_config', 'pattern_weights', {
-                        'crisis_patterns': 0.6,
+                        'patterns_crisis': 0.6,
                         'community_patterns': 0.3,
-                        'context_patterns': 0.4,
+                        'patterns_context': 0.4,
                         'temporal_patterns': 0.2
                     }
                 )
@@ -445,15 +316,15 @@ class CrisisAnalyzer:
             else:
                 logger.warning("⚠️ No config manager available - using default pattern weights")
                 return {
-                    'crisis_patterns': 0.6,
+                    'patterns_crisis': 0.6,
                     'community_patterns': 0.3,
-                    'context_patterns': 0.4,
+                    'patterns_context': 0.4,
                     'temporal_patterns': 0.2
                 }
         except Exception as e:
             return self._safe_analysis_execution(
                 "get_analysis_pattern_weights",
-                lambda: {'crisis_patterns': 0.6, 'community_patterns': 0.3}
+                lambda: {'patterns_crisis': 0.6, 'community_patterns': 0.3}
             )
 
     def get_analysis_algorithm_parameters(self) -> Dict[str, Any]:
@@ -777,7 +648,7 @@ class CrisisAnalyzer:
 # ============================================================================
 
 def create_crisis_analyzer(unified_config, model_ensemble_manager,
-    crisis_pattern_manager=None, analysis_config_manager=None,
+    pattern_detection_manager=None, analysis_config_manager=None,
     crisis_threshold_manager=None, feature_config_manager=None,
     performance_config_manager=None, context_pattern_manager=None,
     shared_utilities_manager=None, learning_system_manager=None,
@@ -788,7 +659,7 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager,
     Args:
         # Existing parameters (maintained)
         model_ensemble_manager: Model ensemble manager for ensemble analysis
-        crisis_pattern_manager: CrisisPatternManager for pattern-based analysis
+        pattern_detection_manager: PatternDetectionManager for pattern-based analysis
         analysis_config_manager: AnalysisConfigManager for configurable parameters
         crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
         feature_config_manager: FeatureConfigManager for feature flags
@@ -808,7 +679,7 @@ def create_crisis_analyzer(unified_config, model_ensemble_manager,
     return CrisisAnalyzer(
         unified_config,
         model_ensemble_manager=model_ensemble_manager,
-        crisis_pattern_manager=crisis_pattern_manager,
+        pattern_detection_manager=pattern_detection_manager,
         analysis_config_manager=analysis_config_manager,
         crisis_threshold_manager=crisis_threshold_manager,
         feature_config_manager=feature_config_manager,

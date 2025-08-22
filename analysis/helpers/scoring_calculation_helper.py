@@ -11,15 +11,12 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Scoring Calculation Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-5.7-1
-CREATED: 2025-08-21
+FILE VERSION: v3.1-3e-6-2
+CREATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-MIGRATION NOTICE: Methods moved from CrisisAnalyzer for optimization
-Original location: analysis/crisis_analyzer.py - scoring and calculation methods
 """
 
 import logging
@@ -38,7 +35,10 @@ class ScoringCalculationHelper:
         Args:
             crisis_analyzer: Parent CrisisAnalyzer instance
         """
+        from .context_integration_helper import ContextIntegrationHelper
+        
         self.crisis_analyzer = crisis_analyzer
+        self.context_helper = ContextIntegrationHelper(crisis_analyzer)
     
     # ========================================================================
     # CONSOLIDATED SCORING FUNCTIONS (Migrated from CrisisAnalyzer)
@@ -46,7 +46,7 @@ class ScoringCalculationHelper:
     
     def extract_depression_score(self, message: str, sentiment_model=None,
         analysis_config_manager=None, context=None,
-        crisis_pattern_manager=None) -> Tuple[float, List[str]]:
+        pattern_detection_manager=None) -> Tuple[float, List[str]]:
         """
         Extract depression indicators from message text
         Migrated from: CrisisAnalyzer.extract_depression_score()
@@ -54,7 +54,7 @@ class ScoringCalculationHelper:
         
         # Use injected managers if not provided
         param_manager = analysis_config_manager or self.crisis_analyzer.analysis_config_manager
-        pattern_manager = crisis_pattern_manager or self.crisis_analyzer.crisis_pattern_manager
+        pattern_manager = pattern_detection_manager or self.crisis_analyzer.pattern_detection_manager
         
         logger.debug(f"Depression analysis for: '{message[:50]}...'")
         
@@ -75,7 +75,7 @@ class ScoringCalculationHelper:
                 except Exception as e:
                     logger.warning(f"Sentiment analysis failed: {e}")
             
-            # Pattern-based detection using CrisisPatternManager if available
+            # Pattern-based detection using PatternDetectionManager if available
             if pattern_manager:
                 try:
                     pattern_result = pattern_manager.analyze_enhanced_patterns(message)
@@ -150,14 +150,14 @@ class ScoringCalculationHelper:
 
     def enhanced_depression_analysis(self, message: str, base_score: float = 0.0,
         sentiment_model=None, analysis_config_manager=None, context=None,
-        crisis_pattern_manager=None) -> Dict:
+        pattern_detection_manager=None) -> Dict:
         """
         Enhanced depression analysis with detailed breakdown
         Migrated from: CrisisAnalyzer.enhanced_depression_analysis()
         """
         
         # Use injected manager if not provided
-        pattern_manager = crisis_pattern_manager or self.crisis_analyzer.crisis_pattern_manager
+        pattern_manager = pattern_detection_manager or self.crisis_analyzer.pattern_detection_manager
         
         logger.debug(f"Enhanced depression analysis: base_score={base_score:.3f}")
         
@@ -174,11 +174,11 @@ class ScoringCalculationHelper:
                 except Exception as e:
                     logger.warning(f"Sentiment analysis failed: {e}")
             
-            # Pattern-based adjustments using CrisisPatternManager if available
+            # Pattern-based adjustments using PatternDetectionManager if available
             pattern_adjustment = 0.0
             if pattern_manager:
                 try:
-                    # Apply context weights using CrisisPatternManager
+                    # Apply context weights using PatternDetectionManager
                     modified_score, weight_details = pattern_manager.apply_context_weights(message, base_score)
                     pattern_adjustment = modified_score - base_score
                     
@@ -358,7 +358,7 @@ class ScoringCalculationHelper:
                     }
                 }
             },
-            'requires_staff_review': self.crisis_analyzer._determine_staff_review_requirement(final_score, crisis_level),
+            'requires_staff_review': self.context_helper.determine_staff_review_requirement(final_score, crisis_level),
             'processing_time': time.time() - start_time
         }
 

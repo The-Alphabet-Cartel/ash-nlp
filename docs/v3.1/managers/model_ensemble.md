@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_model_ensemble_manager(config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-4.3-2  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-6-1
+**LAST MODIFIED**: 2025-08-22
 
 ---
 
@@ -220,7 +220,7 @@ result = await crisis_analyzer.analyze_message(message, user_id, channel_id)
 This manager follows a **delegation pattern** where it coordinates models but delegates analysis to CrisisAnalyzer. This is different from traditional managers that contain business logic.
 
 ### **Zero-Shot Classification Services:**
-Provides semantic classification services to other components (especially CrisisPatternManager) for advanced pattern matching beyond keyword detection.
+Provides semantic classification services to other components (especially PatternDetectionManager) for advanced pattern matching beyond keyword detection.
 
 ### **Future Learning Integration:**
 Contains placeholder methods for learning-based ensemble optimization that will be activated in future phases.
@@ -238,4 +238,4 @@ Contains placeholder methods for learning-based ensemble optimization that will 
 
 **Key Finding**: Follows delegation pattern - coordinates models but delegates analysis to CrisisAnalyzer
 
-**Next Manager**: crisis_pattern_manager.py
+**Next Manager**: pattern_detection.py

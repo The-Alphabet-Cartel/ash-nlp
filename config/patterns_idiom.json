@@ -1,16 +1,13 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.10-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
     "description": "Crisis idiom patterns for detecting metaphorical and idiomatic expressions of distress",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards",
     "idiom_count": 35,
-    "manager_integration": "crisis_pattern_manager.py",
-    "step_10_10_changes": "Removed all unused environment variable configuration overhead"
+    "manager_integration": "pattern_detection.py"
   },
 
   "patterns": {
@@ -83,9 +80,9 @@
   "usage_instructions": {
     "integration": {
       "description": "How to integrate crisis idioms with the crisis detection system",
-      "primary_manager": "crisis_pattern_manager.py",
+      "primary_manager": "pattern_detection.py",
       "loader_method": "get_idiom_patterns()",
-      "access_pattern": "UnifiedConfigManager.get_crisis_patterns('crisis_idiom_patterns')",
+      "access_pattern": "UnifiedConfigManager.get_patterns_crisis('patterns_idiom')",
       "fallback_behavior": "Use safe defaults with comprehensive logging if configuration fails"
     },
     "resilient_operation": {

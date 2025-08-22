@@ -5,8 +5,8 @@
 **Status**: 🔄 **IN PROGRESS**  
 **Factory Function**: `create_zero_shot_manager(config_manager)`  
 **Dependencies**: UnifiedConfigManager  
-**FILE VERSION**: v3.1-3e-1.1-1  
-**LAST MODIFIED**: 2025-08-17  
+**FILE VERSION**: v3.1-3e-6-1  
+**LAST MODIFIED**: 2025-08-22  
 
 ---
 
@@ -96,7 +96,7 @@ The **ZeroShotManager** (inferred from ModelEnsembleManager zero-shot methods) m
 3. **Multi-hypothesis testing** - Test messages against multiple pattern hypotheses
 
 ### **Classification Integration:**
-1. **Integration with CrisisPatternManager** - Provide semantic classification services
+1. **Integration with PatternDetectionManager** - Provide semantic classification services
 2. **Fallback to keyword matching** - Graceful degradation when zero-shot unavailable
 3. **Classification result validation** - Ensure classification results are reliable
 
@@ -116,7 +116,7 @@ The **ZeroShotManager** (inferred from ModelEnsembleManager zero-shot methods) m
 - **Environment variables** - Via UnifiedConfigManager for zero-shot settings
 
 ### **Integration Points:**
-- **Called by**: CrisisPatternManager for semantic pattern detection
+- **Called by**: PatternDetectionManager for semantic pattern detection
 - **Uses**: Zero-shot classification models for semantic analysis
 - **Provides to**: Semantic classification services, advanced pattern detection
 
@@ -145,7 +145,7 @@ The **ZeroShotManager** (inferred from ModelEnsembleManager zero-shot methods) m
 - **UnifiedConfigManager** - Configuration loading and environment variable access
 
 ### **Downstream Consumers:**
-- **CrisisPatternManager** - **PRIMARY CONSUMER** - Semantic pattern detection
+- **PatternDetectionManager** - **PRIMARY CONSUMER** - Semantic pattern detection
 - **Analysis systems** - Advanced pattern classification
 - **Research systems** - Semantic analysis capabilities
 
@@ -188,7 +188,7 @@ The ZeroShotManager represents an advanced AI capability that enables:
 - **Advanced pattern recognition** - More sophisticated crisis detection
 
 ### **Integration with Crisis Detection:**
-- **Enhanced pattern detection** - Provides semantic classification to CrisisPatternManager
+- **Enhanced pattern detection** - Provides semantic classification to PatternDetectionManager
 - **Fallback architecture** - Graceful degradation to keyword matching when unavailable
 - **Confidence-based decisions** - Semantic confidence scores for pattern matching
 
@@ -237,7 +237,7 @@ if confidence >= threshold:
 - **Zero-shot model management** - Specialized model handling
 - **Hypothesis testing methods** - Semantic analysis capabilities
 - **Zero-shot capabilities reporting** - Service availability and status
-- **Integration with CrisisPatternManager** - Semantic pattern detection services
+- **Integration with PatternDetectionManager** - Semantic pattern detection services
 
 ---
 
@@ -247,7 +247,7 @@ if confidence >= threshold:
 The zero-shot capabilities were enhanced in Step 10.4 to provide semantic pattern detection:
 - **Semantic classification** replaces simple keyword matching
 - **Hypothesis-driven detection** enables more sophisticated pattern recognition
-- **Integration with CrisisPatternManager** provides advanced crisis detection
+- **Integration with PatternDetectionManager** provides advanced crisis detection
 
 ### **Future AI Development:**
 - **Model fine-tuning** - Adapt zero-shot models for crisis detection domain

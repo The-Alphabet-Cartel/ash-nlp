@@ -1,22 +1,13 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-1",
-    "last_modified": "2025-08-14",
+    "file_version": "v3.1-3d-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
     "description": "Crisis burden patterns - COMPLETELY SIMPLIFIED in Step 10.10 with 100% infrastructure reuse",
-    "created_date": "2025-08-12",
-    "updated_date": "2025-08-14",
     "compliance": "Clean Architecture v3.1 Standards + Rule #7 PERFECTION",
     "pattern_count": 30,
-    "manager_integration": "crisis_pattern_manager.py",
-    "step_10_10_changes": {
-      "variables_removed": 34,
-      "variables_mapped": 6,
-      "variables_preserved": 0,
-      "cleanup_impact": "100% reduction - perfect infrastructure reuse",
-      "achievement": "RECORD BREAKING - zero new variables needed"
-    },
+    "manager_integration": "pattern_detection.py",
     "environment_overrides": {
       "enabled": "${NLP_FEATURE_PATTERN_ANALYSIS}",
       "burden_weight": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
@@ -168,9 +159,9 @@
   "usage_instructions": {
     "integration": {
       "description": "Perfect integration using existing crisis pattern infrastructure",
-      "primary_manager": "crisis_pattern_manager.py",
+      "primary_manager": "pattern_detection.py",
       "loader_method": "get_burden_patterns()",
-      "access_pattern": "UnifiedConfigManager.get_crisis_patterns('crisis_burden_patterns')",
+      "access_pattern": "UnifiedConfigManager.get_patterns_crisis('patterns_burden')",
       "infrastructure_reuse": "100% reuse of existing NLP_CONFIG_* variables - zero new variables"
     },
     "environment_override_examples": {

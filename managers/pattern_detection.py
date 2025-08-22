@@ -1,4 +1,4 @@
-# ash-nlp/managers/crisis_pattern_manager.py
+# ash-nlp/managers/pattern_detection_manager.py
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
 CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
@@ -11,24 +11,14 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Pattern Manager for Ash NLP Service - OPTIMIZED
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
-LAST MODIFIED: 2025-08-21
-PHASE: 3e Sub-step 5.3 - CrisisPatternManager cleanup + optimization
+FILE VERSION: v3.1-3e-6-2
+LAST MODIFIED: 2025-08-22
+PHASE: 3e Sub-step 5.3 - PatternDetectionManager cleanup + optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-OPTIMIZATION: Reduced from ~1400 to ~790 lines via helper extraction + migration consolidation
-- Helper methods extracted to crisis_pattern_helpers.py
-- Migration references consolidated into single handler
-- Core functionality preserved with enhanced organization
-
 SAFETY NOTICE: This manager handles life-threatening crisis patterns that require immediate intervention.
-
-PHASE 3e SUB-STEP 5.3 CHANGES:
-- Consolidated migration references for 5 methods moved to SharedUtilities + LearningSystem
-- Extracted helper methods for better code organization
-- Maintained all crisis detection and LGBTQIA+ community support functionality
 """
 
 import logging
@@ -38,11 +28,11 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple, Union
 from datetime import datetime
 from managers.unified_config_manager import UnifiedConfigManager, create_unified_config_manager
-from managers.helpers.crisis_pattern_helper import CrisisPatternHelper, create_crisis_pattern_helper
+from managers.helpers.pattern_detection_helper import CrisisPatternHelper, create_pattern_detection_helper
 
 logger = logging.getLogger(__name__)
 
-class CrisisPatternManager:
+class PatternDetectionManager:
     """
     Crisis Pattern Manager with consolidated context pattern support and v3.1 JSON compatibility
     
@@ -71,26 +61,26 @@ class CrisisPatternManager:
         self._compiled_regex_cache = {}
         
         # Initialize helper methods
-        self._helpers = create_crisis_pattern_helper(config_manager)
+        self._helpers = create_pattern_detection_helper(config_manager)
         
-        logger.info("CrisisPatternManager v3.1-3e-5.3-optimized initializing...")
+        logger.info("PatternDetectionManager v3.1-3e-5.3-optimized initializing...")
         self._load_all_patterns()
-        logger.info(f"CrisisPatternManager initialized with {len(self._patterns_cache)} pattern sets")
+        logger.info(f"PatternDetectionManager initialized with {len(self._patterns_cache)} pattern sets")
 
     def _load_all_patterns(self) -> None:
         """Load all crisis pattern configurations with v3.1 consolidation support"""
         pattern_files = [
-            'context_patterns',
-            'temporal_indicators_patterns',
-            'community_vocabulary_patterns',
-            'enhanced_crisis_patterns',
-            'crisis_idiom_patterns',
-            'crisis_burden_patterns',
+            'patterns_context',
+            'patterns_temporal',
+            'patterns_community',
+            'patterns_crisis',
+            'patterns_idiom',
+            'patterns_burden',
         ]
         
         for pattern_type in pattern_files:
             try:
-                patterns = self.config_manager.get_crisis_patterns(pattern_type)
+                patterns = self.config_manager.get_patterns_crisis(pattern_type)
                 if patterns:
                     self._patterns_cache[pattern_type] = patterns
                     logger.debug(f"Loaded {pattern_type}: {len(patterns.get('patterns', {}) if isinstance(patterns.get('patterns'), dict) else patterns)} pattern groups")
@@ -101,116 +91,12 @@ class CrisisPatternManager:
                 self._patterns_cache[pattern_type] = {}
 
     # ========================================================================
-    # PHASE 3e SUB-STEP 5.3: CONSOLIDATED MIGRATION HANDLER
-    # ========================================================================
-    
-    def _handle_deprecated_method(self, method_name: str, target_manager: str, target_method: str, *args, **kwargs) -> Any:
-        """
-        🔄 CONSOLIDATED MIGRATION HANDLER: All migrated methods redirect through here
-        
-        ✅ Benefits of Migration to SharedUtilities/LearningSystem:
-        - Centralized functionality across all managers
-        - Consistent patterns throughout the system  
-        - Reduced code duplication (eliminates 50+ duplicate methods)
-        - Enhanced error handling and monitoring
-        - Better maintainability with single source of truth
-        
-        📍 Migration Mappings:
-        - validate_pattern_structure() → SharedUtilitiesManager.validate_data_structure()
-        - format_pattern_output() → SharedUtilitiesManager.format_response_data()
-        - log_pattern_performance() → SharedUtilitiesManager.log_performance_metric()
-        - update_pattern_from_feedback() → LearningSystemManager.update_patterns_from_feedback()
-        - evaluate_pattern_effectiveness() → LearningSystemManager.evaluate_pattern_performance()
-        
-        🔧 Usage Example:
-            from managers.shared_utilities_manager import create_shared_utilities_manager
-            from managers.learning_system_manager import create_learning_system_manager
-            
-            shared_utils = create_shared_utilities_manager(config_manager)
-            learning_system = create_learning_system_manager(config_manager, shared_utils)
-            
-            # Use new locations instead of deprecated methods
-        
-        ⚠️ DEPRECATED: All referenced methods will be removed in Phase 3f
-        """
-        logger.warning(f"🔄 {method_name}() moved to {target_manager}.{target_method}() - Update your code!")
-        
-        # Provide backward compatibility fallbacks
-        if method_name == 'validate_pattern_structure':
-            pattern_data = args[0] if args else {}
-            if not isinstance(pattern_data, dict):
-                return False
-            required_fields = ['pattern', 'crisis_level']
-            return all(field in pattern_data for field in required_fields)
-            
-        elif method_name == 'format_pattern_output':
-            pattern_results = args[0] if args else []
-            format_type = args[1] if len(args) > 1 else 'standard'
-            return {
-                'pattern_results': pattern_results,
-                'format_type': format_type,
-                'total_patterns': len(pattern_results),
-                'timestamp': time.time(),
-                'source': 'CrisisPatternManager_fallback'
-            }
-            
-        elif method_name == 'log_pattern_performance':
-            pattern_name = args[0] if args else 'unknown'
-            execution_time = args[1] if len(args) > 1 else 0.0
-            success = args[2] if len(args) > 2 else True
-            details = args[3] if len(args) > 3 else None
-            
-            status = "SUCCESS" if success else "FAILED"
-            logger.info(f"Pattern Performance [{status}]: {pattern_name} - {execution_time:.3f}s")
-            if details:
-                logger.debug(f"Pattern Performance Details: {details}")
-            return True  # Return True instead of None for backward compatibility
-            
-        elif method_name == 'update_pattern_from_feedback':
-            logger.info(f"Pattern update feedback received - Use LearningSystemManager for actual learning")
-            return True
-            
-        elif method_name == 'evaluate_pattern_effectiveness':
-            pattern_name = args[0] if args else 'unknown'
-            time_period = args[1] if len(args) > 1 else '24h'
-            return {
-                'pattern_name': pattern_name,
-                'time_period': time_period,
-                'effectiveness_score': 0.0,
-                'evaluation_available': False,
-                'message': f'Use LearningSystemManager.evaluate_pattern_performance() for actual evaluation',
-                'source': 'CrisisPatternManager_fallback'
-            }
-        
-        return None
-    
-    def validate_pattern_structure(self, pattern_data: Dict[str, Any]) -> bool:
-        """Migrated to SharedUtilitiesManager.validate_data_structure()"""
-        return self._handle_deprecated_method('validate_pattern_structure', 'SharedUtilitiesManager', 'validate_data_structure', pattern_data)
-    
-    def format_pattern_output(self, pattern_results: List[Dict[str, Any]], format_type: str = 'standard') -> Dict[str, Any]:
-        """Migrated to SharedUtilitiesManager.format_response_data()"""
-        return self._handle_deprecated_method('format_pattern_output', 'SharedUtilitiesManager', 'format_response_data', pattern_results, format_type)
-    
-    def log_pattern_performance(self, pattern_name: str, execution_time: float, success: bool, details: Dict[str, Any] = None) -> None:
-        """Migrated to SharedUtilitiesManager.log_performance_metric()"""
-        return self._handle_deprecated_method('log_pattern_performance', 'SharedUtilitiesManager', 'log_performance_metric', pattern_name, execution_time, success, details)
-    
-    def update_pattern_from_feedback(self, pattern_name: str, feedback_data: Dict[str, Any]) -> bool:
-        """Migrated to LearningSystemManager.update_patterns_from_feedback()"""
-        return self._handle_deprecated_method('update_pattern_from_feedback', 'LearningSystemManager', 'update_patterns_from_feedback', pattern_name, feedback_data)
-    
-    def evaluate_pattern_effectiveness(self, pattern_name: str, time_period: str = '24h') -> Dict[str, Any]:
-        """Migrated to LearningSystemManager.evaluate_pattern_performance()"""
-        return self._handle_deprecated_method('evaluate_pattern_effectiveness', 'LearningSystemManager', 'evaluate_pattern_performance', pattern_name, time_period)
-
-    # ========================================================================
     # ENHANCED PATTERNS ACCESS - v3.1 Compatible
     # ========================================================================
     
     def get_enhanced_patterns(self) -> Dict[str, Any]:
         """Get enhanced crisis patterns with v3.1 JSON compatibility"""
-        return self._patterns_cache.get('enhanced_crisis_patterns', {})
+        return self._patterns_cache.get('patterns_crisis', {})
 
     def analyze_enhanced_patterns(self, message: str) -> Dict[str, Any]:
         """Analyze enhanced crisis patterns with v3.1 JSON compatibility"""
@@ -479,7 +365,7 @@ class CrisisPatternManager:
             logger.error(f"Error applying context weights: {e}")
             return base_crisis_score, {'error': str(e), 'weights_applied': [], 'total_adjustment': 0.0}
 
-    def check_enhanced_crisis_patterns(self, message: str) -> Dict[str, Any]:
+    def check_patterns_crisis(self, message: str) -> Dict[str, Any]:
         """Check for enhanced crisis patterns - Updated for Phase 3e consolidation"""
         try:
             enhanced_analysis = self.analyze_enhanced_patterns(message)
@@ -563,49 +449,49 @@ class CrisisPatternManager:
     # CONSOLIDATED CONTEXT PATTERN ACCESS METHODS
     # ========================================================================
     
-    def get_consolidated_context_patterns(self) -> Dict[str, Any]:
+    def get_consolidated_patterns_context(self) -> Dict[str, Any]:
         """Get consolidated context patterns"""
-        return self._patterns_cache.get('context_patterns', {})
+        return self._patterns_cache.get('patterns_context', {})
     
-    def get_crisis_context_patterns(self) -> Dict[str, Any]:
+    def get_patterns_context(self) -> Dict[str, Any]:
         """Get crisis context patterns that amplify crisis detection"""
-        consolidated = self.get_consolidated_context_patterns()
+        consolidated = self.get_consolidated_patterns_context()
         if consolidated and 'crisis_amplification_patterns' in consolidated:
             return {
                 'patterns': consolidated['crisis_amplification_patterns'],
                 'configuration': consolidated.get('configuration', {}),
                 'processing_rules': consolidated.get('processing_rules', {}),
                 '_metadata': consolidated.get('_metadata', {}),
-                'source': 'consolidated_context_patterns'
+                'source': 'consolidated_patterns_context'
             }
-        
-        legacy_patterns = self._patterns_cache.get('crisis_context_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: Using legacy crisis_context_patterns.json - migrate to context_patterns.json")
-        
-        return legacy_patterns
+
+        logger.warning("⚠️ Context patterns not found ...")
+        return {
+            'patterns': 'Not Found!',
+            'configuration': 'Not Found!'
+        }
     
-    def get_positive_context_patterns(self) -> Dict[str, Any]:
+    def get_positive_patterns(self) -> Dict[str, Any]:
         """Get positive context patterns that reduce false positives"""
-        consolidated = self.get_consolidated_context_patterns()
+        consolidated = self.get_consolidated_patterns_context()
         if consolidated and 'positive_reduction_patterns' in consolidated:
             return {
                 'patterns': consolidated['positive_reduction_patterns'],
                 'configuration': consolidated.get('configuration', {}),
                 'processing_rules': consolidated.get('processing_rules', {}),
                 '_metadata': consolidated.get('_metadata', {}),
-                'source': 'consolidated_context_patterns'
+                'source': 'consolidated_patterns_context'
             }
-        
-        legacy_patterns = self._patterns_cache.get('positive_context_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: Using legacy positive_context_patterns.json - migrate to context_patterns.json")
-        
-        return legacy_patterns
+
+        logger.warning("⚠️ Positive patterns not found ...")
+        return {
+            'patterns': 'Not Found!',
+            'configuration': 'Not Found!'
+        }
     
     def get_context_weights(self) -> Dict[str, Any]:
         """Get context weight multipliers for pattern matching"""
-        consolidated = self.get_consolidated_context_patterns()
+        consolidated = self.get_consolidated_patterns_context()
         if consolidated:
             weights = {
                 'crisis_context_words': {},
@@ -613,7 +499,7 @@ class CrisisPatternManager:
                 'configuration': consolidated.get('configuration', {}),
                 'processing_rules': consolidated.get('processing_rules', {}),
                 '_metadata': consolidated.get('_metadata', {}),
-                'source': 'consolidated_context_patterns'
+                'source': 'consolidated_patterns_context'
             }
             
             # Extract crisis amplifier words
@@ -639,18 +525,18 @@ class CrisisPatternManager:
                 }
             
             return weights
-        
-        legacy_patterns = self._patterns_cache.get('context_weights_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: Using legacy context_weights_patterns.json - migrate to context_patterns.json")
-        
-        return legacy_patterns
 
+        logger.warning("⚠️ Context weights not found ...")
+        return {
+            'patterns': 'Not Found!',
+            'configuration': 'Not Found!'
+        }
+    
     # ========================================================================
     # CORE PATTERN ACCESS METHODS - Backward Compatibility
     # ========================================================================
     
-    def get_crisis_patterns(self) -> List[Dict[str, Any]]:
+    def get_patterns_crisis(self) -> List[Dict[str, Any]]:
         """Get all crisis patterns for backward compatibility"""
         all_patterns = []
         
@@ -691,30 +577,20 @@ class CrisisPatternManager:
 
     def get_temporal_indicators(self) -> Dict[str, Any]:
         """Get temporal indicator patterns for time-based crisis modification"""
-        return self._patterns_cache.get('temporal_indicators_patterns', {})
+        return self._patterns_cache.get('patterns_temporal', {})
     
     def get_community_vocabulary(self) -> Dict[str, Any]:
         """Get community-specific vocabulary patterns"""
-        return self._patterns_cache.get('community_vocabulary_patterns', {})
+        return self._patterns_cache.get('patterns_community', {})
     
     def get_idiom_patterns(self) -> Dict[str, Any]:
         """Get idiom-based crisis patterns"""
-        return self._patterns_cache.get('crisis_idiom_patterns', {})
+        return self._patterns_cache.get('patterns_idiom', {})
     
     def get_burden_patterns(self) -> Dict[str, Any]:
         """Get burden and stress-related patterns"""
-        return self._patterns_cache.get('crisis_burden_patterns', {})
+        return self._patterns_cache.get('patterns_burden', {})
     
-    def get_lgbtqia_patterns(self) -> Dict[str, Any]:
-        """Get LGBTQIA+ community specific patterns (DEPRECATED - use community_vocabulary)"""
-        legacy_patterns = self._patterns_cache.get('crisis_lgbtqia_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: crisis_lgbtqia_patterns.json - content merged into community_vocabulary_patterns.json")
-            return legacy_patterns
-        
-        logger.info("ℹ️ LGBTQIA+ patterns are now part of community_vocabulary_patterns.json")
-        return {}
-
     # ========================================================================
     # PATTERN EXTRACTION METHODS - Using Helpers
     # ========================================================================
@@ -974,11 +850,11 @@ class CrisisPatternManager:
             metadata = enhanced_patterns.get('_metadata', {})
             
             # Check consolidation status
-            has_consolidated_context = 'context_patterns' in self._patterns_cache
+            has_consolidated_context = 'patterns_context' in self._patterns_cache
             has_legacy_context_files = any(f in self._patterns_cache for f in 
-                ['crisis_context_patterns', 'positive_context_patterns', 'context_weights_patterns'])
+                ['patterns_context', 'positive_patterns', 'context_weights_patterns'])
             has_legacy_community_files = any(f in self._patterns_cache for f in
-                ['crisis_lgbtqia_patterns', 'crisis_community_vocabulary'])
+                ['crisis_lgbtqia_patterns', 'patterns_community'])
             
             return {
                 'status': 'operational',
@@ -992,7 +868,7 @@ class CrisisPatternManager:
                     'migration_references_consolidated': True,
                     'estimated_line_reduction': '~610 lines',
                     'target_line_count': '~790 lines',
-                    'helper_file': 'crisis_pattern_helpers.py'
+                    'helper_file': 'pattern_detection_helpers.py'
                 },
                 'phase_3e_status': {
                     'sub_step': '5.3',
@@ -1023,35 +899,26 @@ class CrisisPatternManager:
                                                      not f.startswith('positive_context') and 
                                                      not f.startswith('context_weights') and
                                                      not f == 'crisis_lgbtqia_patterns' and
-                                                     not f == 'crisis_community_vocabulary'])
+                                                     not f == 'patterns_community'])
                 },
                 'pattern_files_status': {
                     'v3_1_compliant': [
-                        'community_vocabulary_patterns',
-                        'temporal_indicators_patterns',
-                        'enhanced_crisis_patterns',
-                        'crisis_idiom_patterns',
-                        'crisis_burden_patterns'
+                        'patterns_community',
+                        'patterns_temporal',
+                        'patterns_crisis',
+                        'patterns_idiom',
+                        'patterns_burden'
                     ],
                     'consolidated': [
-                        'context_patterns'
+                        'patterns_context'
                     ],
-                    'eliminated': [
-                        'crisis_lgbtqia_patterns',
-                        'crisis_community_vocabulary',
-                        'crisis_context_patterns',
-                        'positive_context_patterns',
-                        'context_weights_patterns'
-                    ]
                 },
                 'phase_3e_consolidated_migration_handler': {
                     'validate_pattern_structure': 'SharedUtilitiesManager.validate_data_structure()',
                     'format_pattern_output': 'SharedUtilitiesManager.format_response_data()',
                     'log_pattern_performance': 'SharedUtilitiesManager.log_performance_metric()',
                     'update_pattern_from_feedback': 'LearningSystemManager.update_patterns_from_feedback()',
-                    'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()',
-                    'handler_method': '_handle_deprecated_method()',
-                    'consolidation_benefit': 'Single migration reference point for all deprecated methods'
+                    'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()'
                 },
                 'safety_features': {
                     'immediate_intervention_detection': True,
@@ -1076,18 +943,18 @@ class CrisisPatternManager:
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
 # ============================================================================
 
-def create_crisis_pattern_manager(config_manager: UnifiedConfigManager) -> CrisisPatternManager:
+def create_pattern_detection_manager(config_manager: UnifiedConfigManager) -> PatternDetectionManager:
     """
-    Factory function to create CrisisPatternManager instance
+    Factory function to create PatternDetectionManager instance
     
     Args:
         config_manager: UnifiedConfigManager instance
         
     Returns:
-        CrisisPatternManager instance with Phase 3e optimization and migration references
+        PatternDetectionManager instance with Phase 3e optimization and migration references
     """
-    return CrisisPatternManager(config_manager)
+    return PatternDetectionManager(config_manager)
 
-__all__ = ['CrisisPatternManager', 'create_crisis_pattern_manager']
+__all__ = ['PatternDetectionManager', 'create_pattern_detection_manager']
 
-logger.info("✅ CrisisPatternManager v3.1-3e-5.3-optimized loaded - Hybrid optimization complete!")
+logger.info("✅ PatternDetectionManager v3.1-3e-5.3-optimized loaded - Hybrid optimization complete!")

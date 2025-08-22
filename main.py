@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ash-NLP Main Application Entry Point for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.7-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -38,7 +38,7 @@ from managers.unified_config_manager import create_unified_config_manager
 # MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
 # ============================================================================
 from managers.analysis_config import create_analysis_config_manager
-from managers.crisis_pattern_manager import create_crisis_pattern_manager
+from managers.pattern_detection import create_pattern_detection_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.learning_system_manager import create_learning_system_manager
 from managers.logging_config_manager import create_logging_config_manager
@@ -158,7 +158,7 @@ def initialize_unified_managers():
         logger.info("✅ Context pattern manager initialized...")
 
         logger.info("🔧 Initializing crisis pattern manager...")
-        crisis_pattern = create_crisis_pattern_manager(unified_config)
+        pattern_detection = create_pattern_detection_manager(unified_config)
         logger.info("✅ Crisis pattern manager initialized...")
 
         logger.info("🔧 Initializing feature config manager...")
@@ -212,7 +212,7 @@ def initialize_unified_managers():
         settings = create_settings_manager(
             unified_config,
             analysis_config_manager=analysis_config,
-            crisis_pattern_manager=crisis_pattern,
+            pattern_detection_manager=pattern_detection,
             feature_config_manager=feature_config,
             learning_system_manager=learning_system,
             logging_config_manager=logging_config,
@@ -231,7 +231,7 @@ def initialize_unified_managers():
         crisis_analyzer = create_crisis_analyzer(
             unified_config,
             model_ensemble_manager=model_ensemble,
-            crisis_pattern_manager=crisis_pattern,
+            pattern_detection_manager=pattern_detection,
             analysis_config_manager=analysis_config,
             crisis_threshold_manager=crisis_threshold,
             feature_config_manager=feature_config,
@@ -263,7 +263,7 @@ def initialize_unified_managers():
             'analysis_config': analysis_config,
             'context_pattern': context_pattern,
             'crisis_analyzer': crisis_analyzer,
-            'crisis_pattern': crisis_pattern,
+            'pattern_detection': pattern_detection,
             'feature_config': feature_config,
             'learning_system': learning_system,
             'logging_config': logging_config,
@@ -354,7 +354,7 @@ def create_fastapi_app():
             app, 
             managers['crisis_analyzer'],
             managers['pydantic'],
-            crisis_pattern_manager=managers['crisis_pattern'],
+            pattern_detection_manager=managers['pattern_detection'],
             crisis_threshold_manager=managers['crisis_threshold']
         )
         
@@ -365,7 +365,7 @@ def create_fastapi_app():
                 managers['unified_config'], 
                 managers['settings'], 
                 zero_shot_manager=managers['zero_shot'],
-                crisis_pattern_manager=managers['crisis_pattern'],
+                pattern_detection_manager=managers['pattern_detection'],
                 model_ensemble_manager=managers['model_ensemble'],
                 analysis_config_manager=managers['analysis_config'],
                 crisis_threshold_manager=managers['crisis_threshold']
