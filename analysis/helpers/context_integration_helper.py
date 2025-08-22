@@ -273,7 +273,7 @@ class ContextIntegrationHelper:
         Migrated from: CrisisAnalyzer._determine_staff_review_requirement()
         """
         try:
-            # Use ThresholdMappingManager if available for staff review determination
+            # Use CrisisThresholdManager if available for staff review determination
             if self.crisis_analyzer.threshold_mapping_manager:
                 try:
                     # Try different possible method names for staff review
@@ -284,7 +284,7 @@ class ContextIntegrationHelper:
                     elif hasattr(self.crisis_analyzer.threshold_mapping_manager, 'get_staff_review_requirement'):
                         return self.crisis_analyzer.threshold_mapping_manager.get_staff_review_requirement(final_score, crisis_level)
                     else:
-                        logger.debug("ThresholdMappingManager has no known staff review method - using fallback")
+                        logger.debug("CrisisThresholdManager has no known staff review method - using fallback")
                 except Exception as e:
                     logger.warning(f"Staff review determination via manager failed: {e}")
             
