@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ash-NLP Main Application Entry Point for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.7-1
 LAST MODIFIED: 2025-08-21
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -37,7 +37,7 @@ from managers.unified_config_manager import create_unified_config_manager
 # ============================================================================
 # MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
 # ============================================================================
-from managers.analysis_parameters_manager import create_analysis_parameters_manager
+from managers.analysis_config_manager import create_analysis_config_manager
 from managers.crisis_pattern_manager import create_crisis_pattern_manager
 from managers.feature_config_manager import create_feature_config_manager
 from managers.learning_system_manager import create_learning_system_manager
@@ -49,7 +49,7 @@ from managers.server_config_manager import create_server_config_manager
 from managers.settings_manager import create_settings_manager
 from managers.shared_utilities import create_shared_utilities_manager
 from managers.storage_config_manager import create_storage_config_manager
-from managers.threshold_mapping_manager import create_threshold_mapping_manager
+from managers.crisis_threshold_manager import create_crisis_threshold_manager
 from managers.zero_shot_manager import create_zero_shot_manager
 from managers.context_pattern_manager import create_context_pattern_manager
 
@@ -150,7 +150,7 @@ def initialize_unified_managers():
         logger.info("✅ UnifiedConfigManager created successfully")
 
         logger.info("🔧 Initializing analysis parameters manager...")
-        analysis_parameters = create_analysis_parameters_manager(unified_config)
+        analysis_config = create_analysis_config_manager(unified_config)
         logger.info("✅ Analysis parameters manager initialized...")
 
         logger.info("🔧 Initializing context pattern manager...")
@@ -194,7 +194,7 @@ def initialize_unified_managers():
         logger.info("✅ Storage manager initialized...")
 
         logger.info("🔧 Initializing threshold mapping manager...")
-        threshold_mapping = create_threshold_mapping_manager(unified_config)
+        crisis_threshold = create_crisis_threshold_manager(unified_config)
         logger.info("✅ Threshold mapping manager initialized...")
 
         logger.info("🔧 Initializing zero shot manager...")
@@ -211,7 +211,7 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing settings manager...")
         settings = create_settings_manager(
             unified_config,
-            analysis_parameters_manager=analysis_parameters,
+            analysis_config_manager=analysis_config,
             crisis_pattern_manager=crisis_pattern,
             feature_config_manager=feature_config,
             learning_system_manager=learning_system,
@@ -222,7 +222,7 @@ def initialize_unified_managers():
             server_config_manager=server_config,
             shared_utilities_manager=shared_utilities,
             storage_config_manager=storage_config,
-            threshold_mapping_manager=threshold_mapping,
+            crisis_threshold_manager=crisis_threshold,
             zero_shot_manager=zero_shot
         )
         logger.info("✅ Settings manager initialized...")
@@ -232,8 +232,8 @@ def initialize_unified_managers():
             unified_config,
             model_ensemble_manager=model_ensemble,
             crisis_pattern_manager=crisis_pattern,
-            analysis_parameters_manager=analysis_parameters,
-            threshold_mapping_manager=threshold_mapping,
+            analysis_config_manager=analysis_config,
+            crisis_threshold_manager=crisis_threshold,
             feature_config_manager=feature_config,
             performance_config_manager=performance_config,
             context_pattern_manager=context_pattern,
@@ -260,7 +260,7 @@ def initialize_unified_managers():
 
         managers = {
             'unified_config': unified_config,
-            'analysis_parameters': analysis_parameters,
+            'analysis_config': analysis_config,
             'context_pattern': context_pattern,
             'crisis_analyzer': crisis_analyzer,
             'crisis_pattern': crisis_pattern,
@@ -274,7 +274,7 @@ def initialize_unified_managers():
             'settings': settings,
             'shared_utilities': shared_utilities,
             'storage_config': storage_config,
-            'threshold_mapping': threshold_mapping,
+            'crisis_threshold': crisis_threshold,
             'zero_shot': zero_shot
         }
         
@@ -355,7 +355,7 @@ def create_fastapi_app():
             managers['crisis_analyzer'],
             managers['pydantic'],
             crisis_pattern_manager=managers['crisis_pattern'],
-            threshold_mapping_manager=managers['threshold_mapping']
+            crisis_threshold_manager=managers['crisis_threshold']
         )
         
         # Admin endpoints with ZeroShotManager
@@ -367,8 +367,8 @@ def create_fastapi_app():
                 zero_shot_manager=managers['zero_shot'],
                 crisis_pattern_manager=managers['crisis_pattern'],
                 model_ensemble_manager=managers['model_ensemble'],
-                analysis_parameters_manager=managers['analysis_parameters'],
-                threshold_mapping_manager=managers['threshold_mapping']
+                analysis_config_manager=managers['analysis_config'],
+                crisis_threshold_manager=managers['crisis_threshold']
             )
             if managers['model_ensemble'] and managers['zero_shot']:
                 logger.info("✅ Full admin endpoints registered with Model Ensemble Manager and ZeroShotManager")
