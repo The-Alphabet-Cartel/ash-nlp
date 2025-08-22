@@ -49,7 +49,7 @@ from managers.server_config_manager import create_server_config_manager
 from managers.settings_manager import create_settings_manager
 from managers.shared_utilities import create_shared_utilities_manager
 from managers.storage_config_manager import create_storage_config_manager
-from managers.crisis_threshold_manager import create_crisis_threshold_manager
+from managers.crisis_threshold import create_crisis_threshold_manager
 from managers.zero_shot_manager import create_zero_shot_manager
 from managers.context_pattern_manager import create_context_pattern_manager
 
