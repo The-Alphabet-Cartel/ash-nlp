@@ -50,7 +50,7 @@ class StorageConfigManager:
     
     def __init__(self, config_manager):
         """Initialize with UnifiedConfigManager for Clean v3.1 compliance"""
-        from .shared_utilities_manager import SharedUtilitiesManager
+        from .shared_utilities import SharedUtilitiesManager
         
         self.config_manager = config_manager
         shared_utils = SharedUtilitiesManager(config_manager)
