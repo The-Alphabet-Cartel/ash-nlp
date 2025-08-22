@@ -1,16 +1,15 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.12-3",
-    "last_modified": "2025-08-13",
+    "file_version": "v3.1-3d-5.7-1",
+    "last_modified": "2025-08-21",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.1",
     "description": "Machine learning system configuration for adaptive NLP crisis detection (Future Implementation)",
     "created_date": "2025-08-12",
-    "updated_date": "2025-08-12",
     "compliance": "Clean Architecture v3.1 Standards",
     "consolidation_source": "learning_parameters.json + learning_settings.json",
     "status": "future_ready",
-    "managers": ["AnalysisParametersManager", "LearningSystem"],
+    "managers": ["AnalysisConfigManager", "LearningSystem"],
     "environment_overrides": {
       "description": "All learning settings support environment variable overrides",
       "pattern": "${NLP_LEARNING_*CATEGORY*_*SETTING*}",
