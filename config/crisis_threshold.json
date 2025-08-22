@@ -1,15 +1,11 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3e-5.7-1",
-    "last_modified": "2025-08-21",
+    "file_version": "v3.1-3e-6-1",
+    "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
-    "configuration_version": "3d.10.10",
     "description": "Phase 3d Step 10.10: Threshold mapping configuration with cleaned environment variables following Clean Architecture Charter Rule #7",
     "ensemble_modes_supported": ["consensus", "majority", "weighted"],
-    "migration_phase": "3d",
-    "step": "10.10",
-    "compliance": "Clean Architecture v3.1 Standards + Rule #7 Environment Variable Compliance",
-    "step_10_10_summary": "MIXED MAPPING + PRESERVATION - 14 variables mapped to existing, 21 preserved for .env.template addition"
+    "compliance": "Clean Architecture v3.1 Standards + Rule #7 Environment Variable Compliance"
   },
   
   "crisis_threshold_by_mode": {

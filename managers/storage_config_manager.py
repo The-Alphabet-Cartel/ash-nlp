@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Storage Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 5.5 - StorageConfigManager Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -46,13 +46,15 @@ class StorageConfigManager:
     - Backup configuration
     - Cleanup and maintenance settings
     - Environment variable integration
-    
-    Utility methods migrated to SharedUtilitiesManager for improved architecture.
     """
     
     def __init__(self, config_manager):
         """Initialize with UnifiedConfigManager for Clean v3.1 compliance"""
+        from .shared_utilities_manager import SharedUtilitiesManager
+        
         self.config_manager = config_manager
+        shared_utils = SharedUtilitiesManager(config_manager)
+
         self.config = {}
         
         logger.info("StorageConfigManager v3.1e optimized initializing...")
@@ -253,40 +255,6 @@ class StorageConfigManager:
         return self.get_cleanup_settings().get('enable_automatic_cleanup', True)
     
     # ========================================================================
-    # UTILITY METHOD MIGRATION REFERENCE
-    # ========================================================================
-    
-    def validate_directories(self) -> Dict[str, bool]:
-        """
-        MIGRATION REFERENCE: Directory validation moved to SharedUtilitiesManager
-        
-        For directory validation, use:
-        from managers.shared_utilities_manager import SharedUtilitiesManager
-        shared_utils = SharedUtilitiesManager(...)
-        validation_results = shared_utils.validate_directories(directories_dict)
-        
-        Benefits of migration:
-        - Reusable directory validation across all managers
-        - Consistent directory creation and permission handling
-        - Better error handling and logging
-        - Centralized directory management utilities
-        """
-        directories = self.get_directories()
-        validation_results = {}
-        
-        # Fallback implementation for backward compatibility
-        for name, path in directories.items():
-            try:
-                Path(path).mkdir(parents=True, exist_ok=True)
-                validation_results[name] = True
-                logger.debug(f"Directory validated: {name} -> {path}")
-            except Exception as e:
-                validation_results[name] = False
-                logger.warning(f"Directory validation failed: {name} -> {path}: {e}")
-        
-        return validation_results
-    
-    # ========================================================================
     # STATUS AND COMPREHENSIVE ACCESS
     # ========================================================================
     
@@ -327,7 +295,7 @@ class StorageConfigManager:
             'cache_settings': self.get_cache_settings(),
             'backup_settings': self.get_backup_settings(),
             'cleanup_settings': self.get_cleanup_settings(),
-            'directory_validation': self.validate_directories(),
+            'directory_validation': self.shared_utils.validate_directories(),
             'status': self.get_status()
         }
 

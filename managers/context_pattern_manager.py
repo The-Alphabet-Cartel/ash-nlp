@@ -1,11 +1,5 @@
 # ash-nlp/managers/context_pattern_manager.py
 """
-Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
----
-*****************  CORE SYSTEM VISION (Never to be violated):  *****************
-Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. FIRST: Uses Zero-Shot AI models for primary semantic classification
@@ -15,23 +9,15 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Context Pattern Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 LAST MODIFIED: 2025-08-22
-PHASE: 3e, Sub-step 5.4 - ContextPatternManager Cleanup
+PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant
-CONSOLIDATION STATUS: Methods migrated to SharedUtilities + CrisisAnalyzer with references
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 SAFETY NOTICE: This manager provides context analysis for crisis detection patterns.
 Context signals help determine the severity and urgency of mental health crisis situations.
-
-MIGRATION REFERENCES (Phase 3e):
-- validate_context_data() → SharedUtilitiesManager.validate_data_structure()
-- log_context_performance() → SharedUtilitiesManager.log_performance_metric()  
-- extract_context_signals() → CrisisAnalyzer.extract_context_signals()
-- analyze_sentiment_context() → CrisisAnalyzer.analyze_sentiment_context()
-- score_term_in_context() → CrisisAnalyzer.score_term_in_context()
 """
 
 import logging
@@ -144,121 +130,8 @@ class ContextPatternManager:
         }
 
     # ========================================================================
-    # MIGRATION REFERENCES - Phase 3e Consolidation
-    # ========================================================================
-
-    def _handle_deprecated_method(self, method_name: str, new_location: str, 
-                                 additional_info: str = "") -> Dict[str, Any]:
-        """
-        Consolidated handler for deprecated methods moved during Phase 3e consolidation
-        
-        Args:
-            method_name: Name of the deprecated method
-            new_location: Where the method has been moved to
-            additional_info: Additional context for the migration
-            
-        Returns:
-            Dictionary with migration information and benefits
-        """
-        migration_info = {
-            'status': 'moved',
-            'original_method': method_name,
-            'new_location': new_location,
-            'migration_phase': 'Phase 3e - Manager Consolidation',
-            'benefits': [
-                'Eliminated code duplication across managers',
-                'Centralized utility functions for better maintainability',
-                'Improved architecture compliance with Clean v3.1',
-                'Enhanced crisis detection through consolidated analysis'
-            ],
-            'usage_instruction': f'Use {new_location} instead of ContextPatternManager.{method_name}()',
-            'additional_info': additional_info
-        }
-        
-        logger.info(f"🔄 Method '{method_name}' has been moved to {new_location} (Phase 3e)")
-        return migration_info
-
-    def validate_context_data(self, *args, **kwargs) -> Dict[str, Any]:
-        """
-        DEPRECATED: Moved to SharedUtilitiesManager.validate_data_structure()
-        
-        This method has been moved to SharedUtilitiesManager for better code organization.
-        """
-        return self._handle_deprecated_method(
-            'validate_context_data',
-            'SharedUtilitiesManager.validate_data_structure',
-            'Context data validation is now handled by centralized validation utilities'
-        )
-
-    def log_context_performance(self, *args, **kwargs) -> Dict[str, Any]:
-        """
-        DEPRECATED: Moved to SharedUtilitiesManager.log_performance_metric()
-        
-        This method has been moved to SharedUtilitiesManager for better code organization.
-        """
-        return self._handle_deprecated_method(
-            'log_context_performance',
-            'SharedUtilitiesManager.log_performance_metric',
-            'Performance logging is now handled by centralized logging utilities'
-        )
-
-    def extract_context_signals(self, *args, **kwargs) -> Dict[str, Any]:
-        """
-        DEPRECATED: Moved to CrisisAnalyzer.extract_context_signals()
-        
-        This method has been moved to CrisisAnalyzer for enhanced crisis detection capabilities.
-        """
-        return self._handle_deprecated_method(
-            'extract_context_signals',
-            'CrisisAnalyzer.extract_context_signals',
-            'Context signal extraction is now part of the enhanced crisis analysis system'
-        )
-
-    def analyze_sentiment_context(self, *args, **kwargs) -> Dict[str, Any]:
-        """
-        DEPRECATED: Moved to CrisisAnalyzer.analyze_sentiment_context()
-        
-        This method has been moved to CrisisAnalyzer for enhanced crisis detection capabilities.
-        """
-        return self._handle_deprecated_method(
-            'analyze_sentiment_context',
-            'CrisisAnalyzer.analyze_sentiment_context',
-            'Sentiment context analysis is now integrated with crisis detection algorithms'
-        )
-
-    def score_term_in_context(self, *args, **kwargs) -> Dict[str, Any]:
-        """
-        DEPRECATED: Moved to CrisisAnalyzer.score_term_in_context()
-        
-        This method has been moved to CrisisAnalyzer for enhanced crisis detection capabilities.
-        """
-        return self._handle_deprecated_method(
-            'score_term_in_context',
-            'CrisisAnalyzer.score_term_in_context',
-            'Term scoring in context is now optimized for crisis detection scenarios'
-        )
-
-    # ========================================================================
     # CORE CONTEXT ANALYSIS METHODS - Enhanced and Crisis-Specific
     # ========================================================================
-
-    def detect_negation_context(self, message: str) -> bool:
-        """
-        Detect if the message contains negation that might affect crisis interpretation
-        
-        Args:
-            message: Message text to analyze
-            
-        Returns:
-            True if negation patterns detected, False otherwise
-        """
-        message_lower = message.lower().strip()
-        
-        for pattern in self.basic_negation_patterns:
-            if re.search(pattern, message_lower):
-                return True
-        
-        return False
 
     def process_sentiment_with_flip(self, message: str, sentiment_score: float) -> Dict[str, Any]:
         """
@@ -291,59 +164,6 @@ class ContextPatternManager:
             logger.debug(f"Basic sentiment flip applied: {sentiment_score} → {-sentiment_score}")
         
         return processed_sentiment
-
-    def perform_enhanced_context_analysis(self, message: str, pattern_detection_manager=None) -> Dict[str, Any]:
-        """
-        Perform enhanced context analysis with optional crisis pattern integration
-        
-        Args:
-            message: Message text to analyze  
-            pattern_detection_manager: Optional PatternDetectionManager for enhanced analysis
-            
-        Returns:
-            Enhanced context analysis results
-        """
-        
-        # Basic context information
-        context = {
-            'message_length': len(message),
-            'word_count': len(message.split()),
-            'has_question_mark': '?' in message,
-            'has_exclamation': '!' in message,
-            'has_capitalization': any(c.isupper() for c in message),
-            'negation_context': self.detect_negation_context(message),
-            'temporal_indicators': self._extract_basic_temporal_indicators(message.lower()),
-        }
-        
-        if pattern_detection_manager:
-            try:
-                # Get enhanced pattern analysis from PatternDetectionManager
-                temporal_analysis = pattern_detection_manager.analyze_temporal_indicators(message)
-                
-                # Merge advanced analysis into context
-                context.update({
-                    'crisis_context_available': True,
-                    'temporal_analysis': temporal_analysis,
-                    'pattern_manager_status': 'available'
-                })
-                
-                logger.debug("Enhanced context analysis completed with PatternDetectionManager")
-                
-            except Exception as e:
-                logger.error(f"Error in enhanced context analysis: {e}")
-                context.update({
-                    'crisis_context_available': False,
-                    'pattern_manager_status': 'error',
-                    'pattern_manager_error': str(e)
-                })
-        else:
-            context.update({
-                'crisis_context_available': False,
-                'pattern_manager_status': 'not_available'
-            })
-            logger.debug("Basic context analysis only - PatternDetectionManager not available")
-        
-        return context
 
     # ========================================================================
     # CONFIGURATION HELPERS - Using existing .env.template variables
@@ -422,14 +242,7 @@ class ContextPatternManager:
             'context_window': self._get_context_window(),
             'context_boost_weight': self._get_context_boost_weight(),
             'negative_threshold': self._get_negative_threshold(),
-            'patterns_available': len(self.basic_negation_patterns),
-            'migrated_methods': [
-                'validate_context_data → SharedUtilitiesManager.validate_data_structure',
-                'log_context_performance → SharedUtilitiesManager.log_performance_metric',
-                'extract_context_signals → CrisisAnalyzer.extract_context_signals',
-                'analyze_sentiment_context → CrisisAnalyzer.analyze_sentiment_context',
-                'score_term_in_context → CrisisAnalyzer.score_term_in_context'
-            ]
+            'patterns_available': len(self.basic_negation_patterns)
         }
 
     def reload_configuration(self) -> bool:

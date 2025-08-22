@@ -1,11 +1,10 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: Phase 3e Step 4.2 - Analysis method consolidation with SharedUtilities and LearningSystem
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -364,69 +363,6 @@ def get_implemented_features():
         }
     }
 
-def get_migration_status():
-    """Get Phase 3e Step 4.2 migration status"""
-    return {
-        "current_phase": "3e",
-        "current_step": "4.2_complete",
-        "migration": "analysis_methods_consolidated_with_learning_integration",
-        "completed_consolidations": [
-            "utils/scoring_helpers.py",       # Phase 3d Step 10.6
-            "utils/community_patterns.py",   # Phase 3d Step 10.7  
-            "utils/context_helpers.py",      # Phase 3d Step 10.8
-            "analysis_methods_consolidation" # Phase 3e Step 4.2 NEW
-        ],
-        "consolidated_methods": {
-            "analysis_config_methods": 5,
-            "crisis_threshold_methods": 4,
-            "model_ensemble_methods": 3,
-            "total_methods": 12
-        },
-        "new_integrations": [
-            "SharedUtilitiesManager",
-            "LearningSystemManager"
-        ],
-        "architecture_compliance": "clean_v3_1_enhanced",
-        "version": "v3.1.3e.4.2.1"
-    }
-
-def get_consolidation_summary():
-    """Get Phase 3e Step 4.2 consolidation summary"""
-    return {
-        "phase": "3e_step_4.2",
-        "objective": "consolidate_analysis_methods_into_crisis_analyzer",
-        "methods_consolidated": {
-            "from_analysis_config_manager": [
-                "get_analysis_crisis_thresholds",
-                "get_analysis_timeouts",
-                "get_analysis_confidence_boosts", 
-                "get_analysis_pattern_weights",
-                "get_analysis_algorithm_parameters"
-            ],
-            "from_crisis_threshold_manager": [
-                "apply_crisis_thresholds",
-                "calculate_crisis_level_from_confidence",
-                "validate_crisis_analysis_thresholds",
-                "get_crisis_threshold_for_mode"
-            ],
-            "from_model_ensemble_manager": [
-                "perform_ensemble_crisis_analysis",
-                "combine_ensemble_model_results", 
-                "apply_analysis_ensemble_weights"
-            ]
-        },
-        "new_capabilities": [
-            "learning_system_integration",
-            "shared_utilities_integration", 
-            "enhanced_error_handling",
-            "adaptive_threshold_adjustment"
-        ],
-        "configuration_access": "unified_via_shared_utilities_manager",
-        "backward_compatibility": "maintained",
-        "total_methods_added": 12,
-        "dependencies_added": ["SharedUtilitiesManager", "LearningSystemManager"]
-    }
-
 # ============================================================================
 # ENHANCED FACTORY FUNCTIONS - Phase 3e Step 4.2
 # ============================================================================
@@ -577,13 +513,11 @@ __all__ = [
     "get_analysis_workflows", 
     "get_available_analyzers",
     "get_implemented_features",
-    "get_migration_status",          # Phase 3d Step 10.6 + Phase 3e Step 4.2
-    "get_consolidation_summary",     # Phase 3e Step 4.2 NEW
-    
+
     # Factory functions
-    "create_crisis_analyzer",                    # Enhanced for Phase 3e
-    "create_enhanced_crisis_analyzer",       # Phase 3e Step 4.2 NEW
-    "validate_crisis_analyzer_dependencies",     # Phase 3e Step 4.2 NEW
+    "create_crisis_analyzer",
+    "create_enhanced_crisis_analyzer",
+    "validate_crisis_analyzer_dependencies",
 ]
 
 logger.info("✅ Enhanced Analysis Package v3.1-3e-4.2-1 loaded:")

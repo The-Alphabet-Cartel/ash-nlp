@@ -11,15 +11,12 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Context Integration Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 CREATED: 2025-08-21
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-MIGRATION NOTICE: Methods moved from CrisisAnalyzer for optimization
-Original location: analysis/crisis_analyzer.py - context integration and response building methods
 """
 
 import logging

@@ -8,7 +8,7 @@
     "compliance": "Clean Architecture v3.1 Standards",
     "repository": "https://github.com/the-alphabet-cartel/ash-nlp",
     "community": "The Alphabet Cartel - https://discord.gg/alphabetcartel",
-    "safety_notice": "These patterns detect life-threatening situations and require immediate professional response",
+    "safety_notice": "These patterns detect life-threatening situations and require immediate professional response"
   },
 
   "patterns": {

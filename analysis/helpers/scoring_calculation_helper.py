@@ -11,15 +11,12 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Scoring Calculation Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 CREATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-MIGRATION NOTICE: Methods moved from CrisisAnalyzer for optimization
-Original location: analysis/crisis_analyzer.py - scoring and calculation methods
 """
 
 import logging
@@ -38,7 +35,10 @@ class ScoringCalculationHelper:
         Args:
             crisis_analyzer: Parent CrisisAnalyzer instance
         """
+        from .context_integration_helper import ContextIntegrationHelper
+        
         self.crisis_analyzer = crisis_analyzer
+        self.context_helper = ContextIntegrationHelper(crisis_analyzer)
     
     # ========================================================================
     # CONSOLIDATED SCORING FUNCTIONS (Migrated from CrisisAnalyzer)
@@ -358,7 +358,7 @@ class ScoringCalculationHelper:
                     }
                 }
             },
-            'requires_staff_review': self.crisis_analyzer._determine_staff_review_requirement(final_score, crisis_level),
+            'requires_staff_review': self.context_helper._determine_staff_review_requirement(final_score, crisis_level),
             'processing_time': time.time() - start_time
         }
 

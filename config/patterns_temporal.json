@@ -7,7 +7,7 @@
     "description": "Temporal indicators that modify crisis detection based on time-related expressions and urgency",
     "compliance": "Clean Architecture v3.1 Standards",
     "pattern_count": 45,
-    "manager_integration": "pattern_detection.py",
+    "manager_integration": "pattern_detection.py"
   },
 
   "configuration": {

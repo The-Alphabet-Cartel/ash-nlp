@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Performance Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
+FILE VERSION: v3.1-3e-5.5-6-2
 LAST MODIFIED: 2025-08-21
 PHASE: 3e Step 5.5 - PerformanceConfigManager Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -45,8 +45,6 @@ class PerformanceConfigManager:
     - Performance profile management
     - Settings validation and defaults
     - Performance monitoring configuration
-    
-    Utility methods have been migrated to SharedUtilitiesManager for improved architecture.
     """
     
     def __init__(self, config_manager):
@@ -56,7 +54,11 @@ class PerformanceConfigManager:
         Args:
             config_manager: UnifiedConfigManager instance for accessing configuration
         """
+        from .shared_utilities import SharedUtilitiesManager
+        
         self.config_manager = config_manager
+        self.shared_utils = SharedUtilitiesManager(config_manager)
+
         self.config_cache = {}
         self.validation_errors = []
         
@@ -189,148 +191,53 @@ class PerformanceConfigManager:
             logger.warning(f"Error during performance settings validation: {e}")
     
     # ========================================================================
-    # UTILITY METHOD MIGRATION REFERENCES
-    # ========================================================================
-    
-    def _get_performance_setting(self, category: str, setting: str, default: Any, type_converter: type) -> Any:
-        """
-        MIGRATION REFERENCE: This method has been moved to SharedUtilitiesManager
-        
-        For configuration setting access with type conversion, use:
-        from managers.shared_utilities_manager import SharedUtilitiesManager
-        shared_utils = SharedUtilitiesManager(...)
-        value = shared_utils.get_setting_with_type_conversion(category, setting, default, type_converter)
-        
-        Benefits of migration:
-        - Reusable across all configuration managers
-        - Consistent type conversion logic
-        - Better error handling and validation
-        - Reduced code duplication
-        """
-        try:
-            # Fallback implementation for backward compatibility
-            performance_settings = self.config_cache.get('performance_settings', {})
-            category_config = performance_settings.get(category, {})
-            
-            # Get value with fallback to defaults
-            value = category_config.get(setting)
-            if value is None or (isinstance(value, str) and value.startswith('${') and value.endswith('}')):
-                defaults = category_config.get('defaults', {})
-                value = defaults.get(setting, default)
-            
-            # Handle None values for optional settings
-            if value is None and setting in ['max_memory', 'offload_folder']:
-                return None
-            
-            # Basic type conversion
-            if type_converter == int:
-                return int(float(value)) if isinstance(value, str) else int(value)
-            elif type_converter == float:
-                return float(value)
-            elif type_converter == str:
-                return str(value) if value is not None else default
-            elif type_converter == bool:
-                if isinstance(value, str):
-                    return value.lower() in ('true', '1', 'yes', 'on', 'enabled')
-                return bool(value)
-            else:
-                return value
-                
-        except Exception as e:
-            logger.warning(f"Error getting performance setting {category}.{setting}: {e}, using default: {default}")
-            return default
-    
-    def _parse_memory_string(self, memory_str: str) -> int:
-        """
-        MIGRATION REFERENCE: This method has been moved to SharedUtilitiesManager
-        
-        For memory string parsing, use:
-        from managers.shared_utilities_manager import SharedUtilitiesManager
-        shared_utils = SharedUtilitiesManager(...)
-        bytes_value = shared_utils.parse_memory_string(memory_str)
-        
-        Benefits of migration:
-        - Reusable memory parsing across all managers
-        - Consistent memory unit handling
-        - Better error handling for invalid formats
-        - Centralized memory conversion logic
-        """
-        try:
-            # Fallback implementation for backward compatibility
-            if not memory_str:
-                return 0
-            
-            import re
-            pattern = re.compile(r'^(\d+(?:\.\d+)?)\s*([GMK]B?)$', re.IGNORECASE)
-            match = pattern.match(memory_str.strip())
-            
-            if not match:
-                logger.warning(f"Invalid memory format: {memory_str}")
-                return 0
-            
-            value = float(match.group(1))
-            unit = match.group(2).upper()
-            
-            multipliers = {
-                'KB': 1024, 'K': 1024,
-                'MB': 1024 ** 2, 'M': 1024 ** 2,
-                'GB': 1024 ** 3, 'G': 1024 ** 3
-            }
-            
-            return int(value * multipliers.get(unit, 1))
-            
-        except Exception as e:
-            logger.warning(f"Error parsing memory string {memory_str}: {e}")
-            return 0
-    
-    # ========================================================================
     # CONSOLIDATED PERFORMANCE SETTINGS ACCESS
     # ========================================================================
     
     def get_analysis_performance_settings(self) -> Dict[str, Any]:
         """Get all analysis performance settings"""
         return {
-            'timeout_seconds': self._get_performance_setting('analysis_performance', 'timeout_seconds', 30.0, float),
-            'retry_attempts': self._get_performance_setting('analysis_performance', 'retry_attempts', 3, int),
-            'enable_timeout': self._get_performance_setting('analysis_performance', 'enable_timeout', True, bool),
-            'batch_size': self._get_performance_setting('analysis_performance', 'batch_size', 10, int)
+            'timeout_seconds': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'timeout_seconds', 30.0, float),
+            'retry_attempts': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'retry_attempts', 3, int),
+            'enable_timeout': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'enable_timeout', True, bool),
+            'batch_size': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'batch_size', 10, int)
         }
     
     def get_server_performance_settings(self) -> Dict[str, Any]:
         """Get all server performance settings"""
         return {
-            'max_workers': self._get_performance_setting('server_performance', 'max_workers', 4, int),
-            'worker_timeout': self._get_performance_setting('server_performance', 'worker_timeout', 60, int),
-            'request_timeout': self._get_performance_setting('analysis_performance', 'timeout_seconds', 30.0, float),
-            'max_concurrent_requests': self._get_performance_setting('server_performance', 'max_concurrent_requests', 20, int),
-            'workers': self._get_performance_setting('server_performance', 'workers', 1, int)
+            'max_workers': self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_workers', 4, int),
+            'worker_timeout': self.shared_utils.get_setting_with_type_conversion('server_performance', 'worker_timeout', 60, int),
+            'request_timeout': self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'timeout_seconds', 30.0, float),
+            'max_concurrent_requests': self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_concurrent_requests', 20, int),
+            'workers': self.shared_utils.get_setting_with_type_conversion('server_performance', 'workers', 1, int)
         }
     
     def get_model_performance_settings(self) -> Dict[str, Any]:
         """Get all model performance settings"""
         return {
-            'device': self._get_performance_setting('model_performance', 'device', 'auto', str),
-            'device_map': self._get_performance_setting('model_performance', 'device_map', 'auto', str),
-            'load_in_8bit': self._get_performance_setting('model_performance', 'load_in_8bit', False, bool),
-            'load_in_4bit': self._get_performance_setting('model_performance', 'load_in_4bit', False, bool),
-            'max_memory': self._get_performance_setting('model_performance', 'max_memory', None, str),
-            'offload_folder': self._get_performance_setting('model_performance', 'offload_folder', None, str)
+            'device': self.shared_utils.get_setting_with_type_conversion('model_performance', 'device', 'auto', str),
+            'device_map': self.shared_utils.get_setting_with_type_conversion('model_performance', 'device_map', 'auto', str),
+            'load_in_8bit': self.shared_utils.get_setting_with_type_conversion('model_performance', 'load_in_8bit', False, bool),
+            'load_in_4bit': self.shared_utils.get_setting_with_type_conversion('model_performance', 'load_in_4bit', False, bool),
+            'max_memory': self.shared_utils.get_setting_with_type_conversion('model_performance', 'max_memory', None, str),
+            'offload_folder': self.shared_utils.get_setting_with_type_conversion('model_performance', 'offload_folder', None, str)
         }
     
     def get_rate_limiting_performance_settings(self) -> Dict[str, Any]:
         """Get all rate limiting performance settings"""
         return {
-            'rate_limit_per_minute': self._get_performance_setting('rate_limiting_performance', 'rate_limit_per_minute', 120, int),
-            'rate_limit_per_hour': self._get_performance_setting('rate_limiting_performance', 'rate_limit_per_hour', 2000, int),
-            'rate_limit_burst': self._get_performance_setting('rate_limiting_performance', 'rate_limit_burst', 150, int)
+            'rate_limit_per_minute': self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_per_minute', 120, int),
+            'rate_limit_per_hour': self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_per_hour', 2000, int),
+            'rate_limit_burst': self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_burst', 150, int)
         }
     
     def get_cache_performance_settings(self) -> Dict[str, Any]:
         """Get all cache performance settings"""
         return {
-            'model_cache_size_limit': self._get_performance_setting('cache_performance', 'model_cache_size_limit', '10GB', str),
-            'analysis_cache_size_limit': self._get_performance_setting('cache_performance', 'analysis_cache_size_limit', '2GB', str),
-            'cache_expiry_hours': self._get_performance_setting('cache_performance', 'cache_expiry_hours', 24, int)
+            'model_cache_size_limit': self.shared_utils.get_setting_with_type_conversion('cache_performance', 'model_cache_size_limit', '10GB', str),
+            'analysis_cache_size_limit': self.shared_utils.get_setting_with_type_conversion('cache_performance', 'analysis_cache_size_limit', '2GB', str),
+            'cache_expiry_hours': self.shared_utils.get_setting_with_type_conversion('cache_performance', 'cache_expiry_hours', 24, int)
         }
     
     # ========================================================================
@@ -339,31 +246,31 @@ class PerformanceConfigManager:
     
     def get_analysis_timeout(self) -> float:
         """Get analysis timeout in seconds"""
-        return self._get_performance_setting('analysis_performance', 'timeout_seconds', 30.0, float)
+        return self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'timeout_seconds', 30.0, float)
     
     def get_analysis_retry_attempts(self) -> int:
         """Get analysis retry attempts"""
-        return self._get_performance_setting('analysis_performance', 'retry_attempts', 3, int)
+        return self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'retry_attempts', 3, int)
     
     def get_max_workers(self) -> int:
         """Get maximum worker threads"""
-        return self._get_performance_setting('server_performance', 'max_workers', 4, int)
+        return self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_workers', 4, int)
     
     def get_max_concurrent_requests(self) -> int:
         """Get maximum concurrent server requests"""
-        return self._get_performance_setting('server_performance', 'max_concurrent_requests', 20, int)
+        return self.shared_utils.get_setting_with_type_conversion('server_performance', 'max_concurrent_requests', 20, int)
     
     def get_device(self) -> str:
         """Get device setting for model inference"""
-        return self._get_performance_setting('model_performance', 'device', 'auto', str)
+        return self.shared_utils.get_setting_with_type_conversion('model_performance', 'device', 'auto', str)
     
     def get_rate_limit_requests_per_minute(self) -> int:
         """Get rate limit requests per minute"""
-        return self._get_performance_setting('rate_limiting_performance', 'rate_limit_per_minute', 120, int)
+        return self.shared_utils.get_setting_with_type_conversion('rate_limiting_performance', 'rate_limit_per_minute', 120, int)
     
     def get_model_cache_size_limit(self) -> str:
         """Get model cache size limit"""
-        return self._get_performance_setting('cache_performance', 'model_cache_size_limit', '10GB', str)
+        return self.shared_utils.get_setting_with_type_conversion('cache_performance', 'model_cache_size_limit', '10GB', str)
     
     # Legacy compatibility methods
     def get_request_timeout(self) -> float:
@@ -372,11 +279,11 @@ class PerformanceConfigManager:
     
     def is_analysis_timeout_enabled(self) -> bool:
         """Check if analysis timeout is enabled"""
-        return self._get_performance_setting('analysis_performance', 'enable_timeout', True, bool)
+        return self.shared_utils.get_setting_with_type_conversion('analysis_performance', 'enable_timeout', True, bool)
     
     def is_load_in_8bit_enabled(self) -> bool:
         """Check if 8-bit quantization is enabled"""
-        return self._get_performance_setting('model_performance', 'load_in_8bit', False, bool)
+        return self.shared_utils.get_setting_with_type_conversion('model_performance', 'load_in_8bit', False, bool)
     
     # ========================================================================
     # PERFORMANCE PROFILES MANAGEMENT

@@ -11,24 +11,14 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Pattern Manager for Ash NLP Service - OPTIMIZED
 ---
-FILE VERSION: v3.1-3e-6-1
+FILE VERSION: v3.1-3e-6-2
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Sub-step 5.3 - PatternDetectionManager cleanup + optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-OPTIMIZATION: Reduced from ~1400 to ~790 lines via helper extraction + migration consolidation
-- Helper methods extracted to pattern_detection_helpers.py
-- Migration references consolidated into single handler
-- Core functionality preserved with enhanced organization
-
 SAFETY NOTICE: This manager handles life-threatening crisis patterns that require immediate intervention.
-
-PHASE 3e SUB-STEP 5.3 CHANGES:
-- Consolidated migration references for 5 methods moved to SharedUtilities + LearningSystem
-- Extracted helper methods for better code organization
-- Maintained all crisis detection and LGBTQIA+ community support functionality
 """
 
 import logging
@@ -99,110 +89,6 @@ class PatternDetectionManager:
             except Exception as e:
                 logger.error(f"Failed to load {pattern_type}: {e}")
                 self._patterns_cache[pattern_type] = {}
-
-    # ========================================================================
-    # PHASE 3e SUB-STEP 5.3: CONSOLIDATED MIGRATION HANDLER
-    # ========================================================================
-    
-    def _handle_deprecated_method(self, method_name: str, target_manager: str, target_method: str, *args, **kwargs) -> Any:
-        """
-        🔄 CONSOLIDATED MIGRATION HANDLER: All migrated methods redirect through here
-        
-        ✅ Benefits of Migration to SharedUtilities/LearningSystem:
-        - Centralized functionality across all managers
-        - Consistent patterns throughout the system  
-        - Reduced code duplication (eliminates 50+ duplicate methods)
-        - Enhanced error handling and monitoring
-        - Better maintainability with single source of truth
-        
-        📍 Migration Mappings:
-        - validate_pattern_structure() → SharedUtilitiesManager.validate_data_structure()
-        - format_pattern_output() → SharedUtilitiesManager.format_response_data()
-        - log_pattern_performance() → SharedUtilitiesManager.log_performance_metric()
-        - update_pattern_from_feedback() → LearningSystemManager.update_patterns_from_feedback()
-        - evaluate_pattern_effectiveness() → LearningSystemManager.evaluate_pattern_performance()
-        
-        🔧 Usage Example:
-            from managers.shared_utilities_manager import create_shared_utilities_manager
-            from managers.learning_system_manager import create_learning_system_manager
-            
-            shared_utils = create_shared_utilities_manager(config_manager)
-            learning_system = create_learning_system_manager(config_manager, shared_utils)
-            
-            # Use new locations instead of deprecated methods
-        
-        ⚠️ DEPRECATED: All referenced methods will be removed in Phase 3f
-        """
-        logger.warning(f"🔄 {method_name}() moved to {target_manager}.{target_method}() - Update your code!")
-        
-        # Provide backward compatibility fallbacks
-        if method_name == 'validate_pattern_structure':
-            pattern_data = args[0] if args else {}
-            if not isinstance(pattern_data, dict):
-                return False
-            required_fields = ['pattern', 'crisis_level']
-            return all(field in pattern_data for field in required_fields)
-            
-        elif method_name == 'format_pattern_output':
-            pattern_results = args[0] if args else []
-            format_type = args[1] if len(args) > 1 else 'standard'
-            return {
-                'pattern_results': pattern_results,
-                'format_type': format_type,
-                'total_patterns': len(pattern_results),
-                'timestamp': time.time(),
-                'source': 'PatternDetectionManager_fallback'
-            }
-            
-        elif method_name == 'log_pattern_performance':
-            pattern_name = args[0] if args else 'unknown'
-            execution_time = args[1] if len(args) > 1 else 0.0
-            success = args[2] if len(args) > 2 else True
-            details = args[3] if len(args) > 3 else None
-            
-            status = "SUCCESS" if success else "FAILED"
-            logger.info(f"Pattern Performance [{status}]: {pattern_name} - {execution_time:.3f}s")
-            if details:
-                logger.debug(f"Pattern Performance Details: {details}")
-            return True  # Return True instead of None for backward compatibility
-            
-        elif method_name == 'update_pattern_from_feedback':
-            logger.info(f"Pattern update feedback received - Use LearningSystemManager for actual learning")
-            return True
-            
-        elif method_name == 'evaluate_pattern_effectiveness':
-            pattern_name = args[0] if args else 'unknown'
-            time_period = args[1] if len(args) > 1 else '24h'
-            return {
-                'pattern_name': pattern_name,
-                'time_period': time_period,
-                'effectiveness_score': 0.0,
-                'evaluation_available': False,
-                'message': f'Use LearningSystemManager.evaluate_pattern_performance() for actual evaluation',
-                'source': 'PatternDetectionManager_fallback'
-            }
-        
-        return None
-    
-    def validate_pattern_structure(self, pattern_data: Dict[str, Any]) -> bool:
-        """Migrated to SharedUtilitiesManager.validate_data_structure()"""
-        return self._handle_deprecated_method('validate_pattern_structure', 'SharedUtilitiesManager', 'validate_data_structure', pattern_data)
-    
-    def format_pattern_output(self, pattern_results: List[Dict[str, Any]], format_type: str = 'standard') -> Dict[str, Any]:
-        """Migrated to SharedUtilitiesManager.format_response_data()"""
-        return self._handle_deprecated_method('format_pattern_output', 'SharedUtilitiesManager', 'format_response_data', pattern_results, format_type)
-    
-    def log_pattern_performance(self, pattern_name: str, execution_time: float, success: bool, details: Dict[str, Any] = None) -> None:
-        """Migrated to SharedUtilitiesManager.log_performance_metric()"""
-        return self._handle_deprecated_method('log_pattern_performance', 'SharedUtilitiesManager', 'log_performance_metric', pattern_name, execution_time, success, details)
-    
-    def update_pattern_from_feedback(self, pattern_name: str, feedback_data: Dict[str, Any]) -> bool:
-        """Migrated to LearningSystemManager.update_patterns_from_feedback()"""
-        return self._handle_deprecated_method('update_pattern_from_feedback', 'LearningSystemManager', 'update_patterns_from_feedback', pattern_name, feedback_data)
-    
-    def evaluate_pattern_effectiveness(self, pattern_name: str, time_period: str = '24h') -> Dict[str, Any]:
-        """Migrated to LearningSystemManager.evaluate_pattern_performance()"""
-        return self._handle_deprecated_method('evaluate_pattern_effectiveness', 'LearningSystemManager', 'evaluate_pattern_performance', pattern_name, time_period)
 
     # ========================================================================
     # ENHANCED PATTERNS ACCESS - v3.1 Compatible
@@ -578,12 +464,12 @@ class PatternDetectionManager:
                 '_metadata': consolidated.get('_metadata', {}),
                 'source': 'consolidated_patterns_context'
             }
-        
-        legacy_patterns = self._patterns_cache.get('patterns_context', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: Using legacy patterns_context.json - migrate to patterns_context.json")
-        
-        return legacy_patterns
+
+        logger.warning("⚠️ Context patterns not found ...")
+        return {
+            'patterns': 'Not Found!',
+            'configuration': 'Not Found!'
+        }
     
     def get_positive_patterns(self) -> Dict[str, Any]:
         """Get positive context patterns that reduce false positives"""
@@ -596,12 +482,12 @@ class PatternDetectionManager:
                 '_metadata': consolidated.get('_metadata', {}),
                 'source': 'consolidated_patterns_context'
             }
-        
-        legacy_patterns = self._patterns_cache.get('positive_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: Using legacy positive_patterns.json - migrate to patterns_context.json")
-        
-        return legacy_patterns
+
+        logger.warning("⚠️ Positive patterns not found ...")
+        return {
+            'patterns': 'Not Found!',
+            'configuration': 'Not Found!'
+        }
     
     def get_context_weights(self) -> Dict[str, Any]:
         """Get context weight multipliers for pattern matching"""
@@ -639,13 +525,13 @@ class PatternDetectionManager:
                 }
             
             return weights
-        
-        legacy_patterns = self._patterns_cache.get('context_weights_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: Using legacy context_weights_patterns.json - migrate to patterns_context.json")
-        
-        return legacy_patterns
 
+        logger.warning("⚠️ Context weights not found ...")
+        return {
+            'patterns': 'Not Found!',
+            'configuration': 'Not Found!'
+        }
+    
     # ========================================================================
     # CORE PATTERN ACCESS METHODS - Backward Compatibility
     # ========================================================================
@@ -705,16 +591,6 @@ class PatternDetectionManager:
         """Get burden and stress-related patterns"""
         return self._patterns_cache.get('patterns_burden', {})
     
-    def get_lgbtqia_patterns(self) -> Dict[str, Any]:
-        """Get LGBTQIA+ community specific patterns (DEPRECATED - use community_vocabulary)"""
-        legacy_patterns = self._patterns_cache.get('crisis_lgbtqia_patterns', {})
-        if legacy_patterns:
-            logger.warning("⚠️ DEPRECATED: crisis_lgbtqia_patterns.json - content merged into patterns_community.json")
-            return legacy_patterns
-        
-        logger.info("ℹ️ LGBTQIA+ patterns are now part of patterns_community.json")
-        return {}
-
     # ========================================================================
     # PATTERN EXTRACTION METHODS - Using Helpers
     # ========================================================================
@@ -1042,9 +918,7 @@ class PatternDetectionManager:
                     'format_pattern_output': 'SharedUtilitiesManager.format_response_data()',
                     'log_pattern_performance': 'SharedUtilitiesManager.log_performance_metric()',
                     'update_pattern_from_feedback': 'LearningSystemManager.update_patterns_from_feedback()',
-                    'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()',
-                    'handler_method': '_handle_deprecated_method()',
-                    'consolidation_benefit': 'Single migration reference point for all deprecated methods'
+                    'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()'
                 },
                 'safety_features': {
                     'immediate_intervention_detection': True,

@@ -43,7 +43,10 @@ class EnsembleAnalysisHelper:
         Args:
             crisis_analyzer: Parent CrisisAnalyzer instance
         """
+        from .pattern_analysis_helper import PatternAnalysisHelper
+        
         self.crisis_analyzer = crisis_analyzer
+        self.pattern_helper = PatternAnalysisHelper(crisis_analyzer)
         
         logger.info("EnsembleAnalysisHelper v3.1e-5.5-7-3 Phase 3 initialized with manager integration")
         
@@ -56,7 +59,6 @@ class EnsembleAnalysisHelper:
         PHASE 3: AI-FIRST ensemble analysis with pattern enhancement
         ARCHITECTURE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
         
-        Migrated from: CrisisAnalyzer._perform_ensemble_analysis()
         PHASE 3 CHANGE: Uses ModelEnsembleManager for all AI classification
         """
         
@@ -67,13 +69,13 @@ class EnsembleAnalysisHelper:
                 logger.debug("Starting enhanced context analysis via ContextPatternManager...")
                 
                 # Get basic context signals
-                context_signals = self.crisis_analyzer.extract_context_signals(message)
+                context_signals = self.pattern_helper.extract_context_signals(message)
                 
                 # Perform enhanced context analysis with crisis pattern integration
-                enhanced_context = self.crisis_analyzer.perform_enhanced_context_analysis(message)
+                enhanced_context = self.pattern_helper.perform_enhanced_context_analysis(message)
                 
                 # Analyze sentiment context if we have model results
-                sentiment_context = self.crisis_analyzer.analyze_sentiment_context(message, 0.0)  # Will be updated with actual sentiment
+                sentiment_context = self.pattern_helper.analyze_sentiment_context(message, 0.0)  # Will be updated with actual sentiment
                 
                 context_analysis = {
                     'context_signals': context_signals,
@@ -301,7 +303,7 @@ class EnsembleAnalysisHelper:
                     # Update sentiment context with actual sentiment score if available
                     if 'sentiment' in model_results and context_analysis and 'sentiment_context' in context_analysis:
                         sentiment_score = model_results['sentiment'].get('score', 0.0)
-                        updated_sentiment_context = self.crisis_analyzer.analyze_sentiment_context(message, sentiment_score)
+                        updated_sentiment_context = self.pattern_helper.analyze_sentiment_context(message, sentiment_score)
                         context_analysis['sentiment_context'] = updated_sentiment_context
                 else:
                     logger.warning("ModelEnsembleManager returned unexpected result format")
@@ -407,7 +409,6 @@ class EnsembleAnalysisHelper:
     async def detect_depression_semantically(self, message: str) -> Dict:
         """
         PHASE 3: AI-FIRST semantic depression detection via ModelEnsembleManager
-        RENAMED: (was _analyze_depression_with_zero_shot)
         ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
         """
         try:
@@ -432,7 +433,6 @@ class EnsembleAnalysisHelper:
     async def detect_sentiment_semantically(self, message: str) -> Dict:
         """
         PHASE 3: AI-FIRST semantic sentiment detection via ModelEnsembleManager
-        RENAMED: (was _analyze_sentiment_with_zero_shot)
         ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
         """
         try:
@@ -457,7 +457,6 @@ class EnsembleAnalysisHelper:
     async def detect_distress_semantically(self, message: str) -> Dict:
         """
         PHASE 3: AI-FIRST semantic distress detection via ModelEnsembleManager
-        RENAMED: (was _analyze_emotional_distress_with_zero_shot)
         ARCHITECTURE FIX: Uses ModelEnsembleManager instead of direct transformers
         """
         try:

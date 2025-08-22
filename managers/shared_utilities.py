@@ -11,11 +11,10 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 SharedUtilitiesManager for Ash-NLP Service
 ---
-FILE VERSION: v3.1-3e-5.5-6-1
-LAST MODIFIED: 2025-08-21
+FILE VERSION: v3.1-3e-6-1
+LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 2.2 - SharedUtilitiesManager Implementation
 CLEAN ARCHITECTURE: v3.1 Compliant
-MIGRATION STATUS: SharedUtilitiesManager implementation complete
 """
 
 import json

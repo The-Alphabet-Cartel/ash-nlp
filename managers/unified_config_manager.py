@@ -546,43 +546,6 @@ class UnifiedConfigManager:
         """Get crisis pattern configuration by type - UPDATED for consolidation support"""
         logger.debug(f"Getting crisis patterns: {pattern_type}")
         
-        # Handle requests for eliminated files
-        eliminated_files = {
-            'patterns_context': 'patterns_context',
-            'positive_patterns': 'patterns_context', 
-            'context_weights_patterns': 'patterns_context',
-            'crisis_lgbtqia_patterns': 'patterns_community',
-            'patterns_community': 'patterns_community'
-        }
-        
-        if pattern_type in eliminated_files:
-            target_file = eliminated_files[pattern_type]
-            logger.info(f"{pattern_type}.json was consolidated into {target_file}.json")
-            
-            # Load the consolidated file instead
-            consolidated_config = self.get_patterns_crisis(target_file)
-            if not consolidated_config:
-                logger.warning(f"Consolidated file {target_file}.json not found")
-                return {}
-            
-            # Extract the relevant section based on pattern type
-            if pattern_type == 'patterns_context':
-                return consolidated_config.get('crisis_amplification_patterns', {})
-            elif pattern_type == 'positive_patterns':
-                return consolidated_config.get('positive_reduction_patterns', {})
-            elif pattern_type == 'context_weights_patterns':
-                # Reconstruct the weights structure from consolidated file
-                weights = {}
-                crisis_amp = consolidated_config.get('crisis_amplification_patterns', {})
-                if 'crisis_amplifier_words' in crisis_amp:
-                    weights['crisis_context_words'] = crisis_amp['crisis_amplifier_words']
-                positive_red = consolidated_config.get('positive_reduction_patterns', {})
-                if 'positive_reducer_words' in positive_red:
-                    weights['positive_context_words'] = positive_red['positive_reducer_words']
-                return weights
-            elif pattern_type in ['crisis_lgbtqia_patterns', 'patterns_community']:
-                return consolidated_config
-        
         try:
             # Load the specific pattern configuration file
             config_file_path = self.config_dir / f"{pattern_type}.json"
