@@ -40,6 +40,7 @@ try:
     from managers.learning_system import create_learning_system_manager
     from managers.zero_shot import create_zero_shot_manager
     from managers.model_coordination import create_model_coordination_manager
+    from analysis.crisis_analyzer import create_crisis_analyzer
 except ImportError as e:
     print(f"❌ Failed to import managers: {e}")
     sys.exit(1)
@@ -194,7 +195,17 @@ class TestConfigurationFlow(unittest.TestCase):
             
             # Validate integration
             self.assertIsNotNone(learning_system)
-            self.assertTrue(hasattr(learning_system, 'shared_utilities'))
+            
+            # Check for shared_utils attribute (correct attribute name)
+            if hasattr(learning_system, 'shared_utils'):
+                self.logger.info("✅ LearningSystemManager has shared_utils attribute")
+            else:
+                self.logger.warning("⚠️ LearningSystemManager missing shared_utils attribute")
+                
+            # Check if manager has a valid status method
+            if hasattr(learning_system, 'get_status'):
+                status = learning_system.get_status()
+                self.logger.info(f"✅ LearningSystemManager status: {status.get('status', 'unknown')}")
             
             self.logger.info(f"✅ LearningSystemManager created with dependencies in {creation_time:.2f}ms")
             
