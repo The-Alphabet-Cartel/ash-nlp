@@ -183,6 +183,7 @@ def initialize_unified_managers():
         logger.info("🔧 Initializing feature config manager...")
         logger.info("==========================================================")
         feature_config = create_feature_config_manager(unified_config)
+        logger.info("==========================================================")
         logger.info("✅ Feature config manager initialized...")
         logger.info("==========================================================")
 
