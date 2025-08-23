@@ -85,7 +85,7 @@
         "type": "boolean"
       },
       "cache_max_entries": {
-        "type": "integer"
+        "type": "integer",
         "range": [0, 250]
       },
       "cache_max_memory_mb": {
