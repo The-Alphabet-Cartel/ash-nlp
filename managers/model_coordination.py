@@ -581,6 +581,224 @@ class ModelCoordinationManager:
             logger.error(f"❌ Zero-shot classification failed for {model_type}: {e}")
             return await self._pattern_fallback_classification(text, labels, model_type)
     
+    def classify_sync_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 7: Synchronous ensemble classification for performance optimization
+        
+        This method provides synchronous model coordination to eliminate async/sync
+        conversion overhead in the performance-optimized analysis path.
+        
+        Args:
+            text: Text to classify
+            zero_shot_manager: ZeroShotManager instance for label management
+            
+        Returns:
+            Synchronous ensemble classification results
+        """
+        try:
+            model_results = {}
+            models = self.get_model_definitions()
+            
+            # Get labels from ZeroShotManager if available
+            if zero_shot_manager:
+                try:
+                    all_labels = zero_shot_manager.get_all_labels()
+                    zero_shot_settings = zero_shot_manager.get_zero_shot_settings()
+                    hypothesis_template = zero_shot_settings.get('hypothesis_template', "This text expresses {}.")
+                    logger.debug("Using ZeroShotManager for synchronous label management")
+                except Exception as e:
+                    logger.warning(f"ZeroShotManager access failed in sync mode: {e}")
+                    all_labels = {}
+                    hypothesis_template = "This text expresses {}."
+            else:
+                all_labels = {}
+                hypothesis_template = "This text expresses {}."
+            
+            # Classify with each model (synchronous)
+            for model_type in models.keys():
+                try:
+                    # Get labels for this model type
+                    if isinstance(all_labels, dict) and model_type in all_labels:
+                        model_labels = all_labels[model_type]
+                    elif isinstance(all_labels, dict):
+                        model_labels = all_labels.get('crisis', all_labels.get('enhanced_crisis', []))
+                    else:
+                        model_labels = self._get_fallback_labels(model_type)
+                    
+                    if not model_labels:
+                        model_labels = self._get_fallback_labels(model_type)
+                    
+                    # Synchronous classification (no async)
+                    result = self._classify_sync_direct(text, model_labels, model_type, hypothesis_template)
+                    model_results[model_type] = result
+                    
+                except Exception as e:
+                    logger.error(f"Model {model_type} sync classification failed: {e}")
+                    model_results[model_type] = {
+                        'score': 0.0,
+                        'confidence': 0.0,
+                        'error': str(e),
+                        'model_type': model_type,
+                        'method': 'sync_error'
+                    }
+            
+            # Perform ensemble voting (synchronous)
+            ensemble_result = self._perform_ensemble_voting(model_results)
+            
+            return {
+                'ensemble_score': ensemble_result['score'],
+                'ensemble_confidence': ensemble_result['confidence'], 
+                'ensemble_mode': self.get_ensemble_mode(),
+                'individual_results': model_results,
+                'models_used': len(model_results),
+                'zero_shot_manager_used': zero_shot_manager is not None,
+                'method': 'sync_ensemble_classification',
+                'performance_optimized': True
+            }
+            
+        except Exception as e:
+            logger.error(f"Synchronous ensemble classification failed: {e}")
+            return {
+                'ensemble_score': 0.0,
+                'ensemble_confidence': 0.0,
+                'error': str(e),
+                'method': 'sync_ensemble_error'
+            }
+    
+    def _classify_sync_direct(self, text: str, labels: List[str], model_type: str, 
+                            hypothesis_template: str) -> Dict[str, Any]:
+        """
+        PHASE 3E STEP 7: Direct synchronous classification
+        
+        Eliminates async overhead by using synchronous model inference.
+        Falls back to pattern matching if transformers unavailable.
+        
+        Args:
+            text: Text to classify
+            labels: Classification labels
+            model_type: Model type (depression, sentiment, emotional_distress) 
+            hypothesis_template: Template for hypothesis generation
+            
+        Returns:
+            Synchronous classification result
+        """
+        try:
+            if not TRANSFORMERS_AVAILABLE:
+                return self._sync_pattern_fallback(text, labels, model_type)
+            
+            # Get model configuration
+            model_config = self.get_model_config(model_type)
+            if not model_config:
+                return self._sync_pattern_fallback(text, labels, model_type)
+            
+            model_name = model_config.get('name')
+            if not model_name:
+                return self._sync_pattern_fallback(text, labels, model_type)
+            
+            # Get cached pipeline (synchronous)
+            classifier = self._get_cached_pipeline_sync(model_name)
+            if classifier is None:
+                return self._sync_pattern_fallback(text, labels, model_type)
+            
+            # Perform synchronous zero-shot classification
+            logger.debug(f"Running sync zero-shot classification: {model_type} with {model_name}")
+            
+            # Direct synchronous call (no async executor)
+            result = classifier(text, labels)
+            
+            # Process result into crisis score
+            crisis_score = self._process_classification_result(result, labels)
+            
+            return {
+                'score': crisis_score,
+                'confidence': min(0.9, crisis_score + 0.1),
+                'model': model_name,
+                'model_type': model_type,
+                'method': 'sync_zero_shot_classification',
+                'labels_used': len(labels),
+                'transformers_used': True,
+                'device': self.device,
+                'sync_optimized': True
+            }
+
+        except Exception as e:
+            logger.error(f"Sync zero-shot classification failed for {model_type}: {e}")
+            return self._sync_pattern_fallback(text, labels, model_type)
+    
+    def _get_cached_pipeline_sync(self, model_name: str):
+        """
+        Get cached pipeline synchronously (no async lock)
+        Returns cached pipeline or None if not available
+        """
+        if not TRANSFORMERS_AVAILABLE:
+            return None
+            
+        # Check cache first (no async lock for performance)
+        if model_name in self._model_cache:
+            logger.debug(f"Using cached model synchronously: {model_name}")
+            return self._model_cache[model_name]
+        
+        # If not cached, return None to fall back to pattern matching
+        # This avoids loading models during performance-critical analysis
+        logger.debug(f"Model {model_name} not cached, using pattern fallback")
+        return None
+    
+    def _sync_pattern_fallback(self, text: str, labels: List[str], model_type: str) -> Dict[str, Any]:
+        """
+        Synchronous pattern-based fallback classification
+        
+        Args:
+            text: Text to classify
+            labels: Classification labels (unused in pattern matching)
+            model_type: Model type for context
+            
+        Returns:
+            Pattern-based classification result
+        """
+        try:
+            text_lower = text.lower()
+            
+            # Model-specific keyword sets
+            if model_type == 'depression':
+                keywords = ['suicide', 'suicidal', 'hopeless', 'worthless', 'depression', 'kill myself']
+            elif model_type == 'sentiment':
+                keywords = ['hate', 'angry', 'furious', 'terrible', 'awful', 'worst']
+            elif model_type == 'emotional_distress':
+                keywords = ['crisis', 'breakdown', 'panic', 'overwhelmed', 'distress', 'emergency']
+            else:
+                keywords = ['crisis', 'help', 'emergency', 'urgent', 'desperate']
+            
+            # Count keyword matches
+            matches = sum(1 for keyword in keywords if keyword in text_lower)
+            
+            # Calculate score based on matches
+            base_score = min(0.8, matches * 0.2)
+            
+            # Boost score for multiple matches
+            if matches >= 3:
+                base_score = min(0.9, base_score + 0.1)
+            
+            return {
+                'score': base_score,
+                'confidence': min(0.7, base_score + 0.1),
+                'model': f'sync_pattern_{model_type}',
+                'model_type': model_type,
+                'method': 'sync_pattern_fallback',
+                'keywords_matched': matches,
+                'transformers_used': False,
+                'sync_optimized': True
+            }
+            
+        except Exception as e:
+            logger.error(f"Sync pattern fallback failed for {model_type}: {e}")
+            return {
+                'score': 0.0,
+                'confidence': 0.0,
+                'error': str(e),
+                'model_type': model_type,
+                'method': 'sync_pattern_error'
+            }
+
     async def classify_with_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
         """
         PHASE 3: Ensemble classification using multiple models
