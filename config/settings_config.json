@@ -65,5 +65,40 @@
       "zero_shot",
       "pydantic"
     ]
+  },
+
+  "cache_settings": {
+    "enable_config_caching": "${NLP_PERFORMANCE_ENABLE_CONFIG_CACHING}",
+    "cache_max_entries": "${NLP_CONFIG_CACHE_MAX_ENTRIES}",
+    "cache_max_memory_mb": "${NLP_CONFIG_CACHE_MAX_MEMORY_MB}",
+    "cache_ttl_seconds": "${NLP_CONFIG_CACHE_TTL_SECONDS}",
+    "cache_file_watching": "${NLP_CONFIG_CACHE_FILE_WATCHING}",
+    "defaults": {
+      "enable_config_caching": true,
+      "cache_max_entries": 50,
+      "cache_max_memory_mb": 25,
+      "cache_ttl_seconds": 300,
+      "cache_file_watching": true
+    },
+    "validation": {
+      "enable_config_caching": {
+        "type": "boolean"
+      },
+      "cache_max_entries": {
+        "type": "integer",
+        "range": [0, 250]
+      },
+      "cache_max_memory_mb": {
+        "type": "integer",
+        "range": [0, 1024]
+      },
+      "cache_ttl_seconds": {
+        "type": "integeter",
+        "range": [0, 1800]
+      },
+      "cache_file_watching": {
+        "type": "boolean"
+      }
+    }
   }
 }
