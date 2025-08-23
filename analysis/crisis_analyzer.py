@@ -139,8 +139,10 @@ class CrisisAnalyzer:
     
     async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
-        Perform comprehensive crisis analysis using ensemble of models and patterns
-        FIXED: Proper async handling and error management
+        PHASE 3E STEP 7: Performance-optimized crisis analysis - MAIN API ENTRY POINT
+        
+        This is the main entry point called by API endpoints.
+        Uses performance optimizer for sub-500ms target achievement.
         """
         start_time = time.time()
         logger.info(f"🔍 Starting optimized crisis analysis for user {user_id} in channel {channel_id}")
@@ -153,17 +155,42 @@ class CrisisAnalyzer:
             # Check if ensemble is enabled by feature flag
             ensemble_enabled = self._feature_cache.get('ensemble_enabled', True)
             
-            # FIXED: Temporarily disable learning path to avoid async issues
             if ensemble_enabled:
-                logger.debug("✅ Ensemble analysis enabled - delegating to ensemble helper")
-                return await self.context_helper.ensemble_crisis_analysis(message, user_id, channel_id, start_time)
+                logger.debug("🚀 Using performance-optimized analysis path")
+                # Use performance optimizer for critical path
+                optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
+                
+                # Apply learning adjustments if available
+                if self.learning_system_manager:
+                    try:
+                        learning_result = self.learning_system_manager.apply_learning_adjustments(
+                            optimized_result, user_id, channel_id
+                        )
+                        optimized_result.update({
+                            'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
+                            'learning_metadata': learning_result.get('metadata', {}),
+                            'learning_applied': True
+                        })
+                    except Exception as e:
+                        logger.warning(f"Learning adjustment failed: {e}")
+                        optimized_result['learning_applied'] = False
+                else:
+                    optimized_result['learning_applied'] = False
+                
+                processing_time = (time.time() - start_time) * 1000
+                optimized_result['api_processing_time'] = processing_time
+                
+                logger.info(f"✅ Optimized crisis analysis: {processing_time:.1f}ms")
+                return optimized_result
             else:
                 logger.debug("🔥 Ensemble analysis disabled - delegating to pattern helper")
                 return await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, start_time)
                 
         except Exception as e:
             logger.error(f"❌ Optimized crisis analysis failed: {e}")
-            return self.context_helper.create_error_response(message, user_id, channel_id, str(e), start_time)
+            logger.warning("Falling back to original helper-based analysis")
+            # Fallback to original helper-based analysis
+            return await self.context_helper.ensemble_crisis_analysis(message, user_id, channel_id, start_time)
 
     async def analyze_message(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
