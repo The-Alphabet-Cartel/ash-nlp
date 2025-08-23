@@ -340,10 +340,22 @@ class TestFullIntegration(unittest.TestCase):
             
             # Process realistic load
             successful = 0
-            for message in realistic_messages:
+            for i, message in enumerate(realistic_messages):
                 try:
                     if hasattr(crisis_analyzer, 'analyze_message'):
-                        result = crisis_analyzer.analyze_message(message)
+                        import inspect
+                        if asyncio.iscoroutinefunction(crisis_analyzer.analyze_message):
+                            result = asyncio.run(crisis_analyzer.analyze_message(
+                                message,
+                                user_id=f"realistic_user_{i}",
+                                channel_id="realistic_test_channel"
+                            ))
+                        else:
+                            result = crisis_analyzer.analyze_message(
+                                message,
+                                user_id=f"realistic_user_{i}",
+                                channel_id="realistic_test_channel"
+                            )
                     elif hasattr(crisis_analyzer, 'analyze'):
                         result = crisis_analyzer.analyze(message)
                     else:
@@ -384,7 +396,19 @@ class TestFullIntegration(unittest.TestCase):
                 try:
                     if test_input is not None and crisis_analyzer:
                         if hasattr(crisis_analyzer, 'analyze_message'):
-                            result = crisis_analyzer.analyze_message(str(test_input))
+                            import inspect
+                            if asyncio.iscoroutinefunction(crisis_analyzer.analyze_message):
+                                result = asyncio.run(crisis_analyzer.analyze_message(
+                                    str(test_input),
+                                    user_id=f"error_recovery_user_{i}",
+                                    channel_id="error_recovery_channel"
+                                ))
+                            else:
+                                result = crisis_analyzer.analyze_message(
+                                    str(test_input),
+                                    user_id=f"error_recovery_user_{i}",
+                                    channel_id="error_recovery_channel"
+                                )
                         elif hasattr(crisis_analyzer, 'analyze'):
                             result = crisis_analyzer.analyze(str(test_input))
                             
