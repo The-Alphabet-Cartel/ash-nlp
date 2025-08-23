@@ -94,6 +94,10 @@ class CrisisAnalyzer:
         self.pattern_helper = PatternAnalysisHelper(self)
         self.context_helper = ContextIntegrationHelper(self)
         
+        # PHASE 3E STEP 7: Performance optimization integration
+        self.performance_optimizer = integrate_performance_optimizations(self)
+        logger.info("🚀 Performance optimizations integrated - targeting 500ms analysis time")
+
         # Cache attributes
         self._feature_cache = {}
         self._performance_cache = {}
