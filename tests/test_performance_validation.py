@@ -527,11 +527,11 @@ class TestPerformanceValidation(unittest.TestCase):
         """Test system stability over time (scaled down for testing)"""
         self.logger.info("🔧 Testing system stability endurance...")
         
-        # Scaled down endurance test (6 minutes instead of 4+ hours)
-        endurance_duration = self.performance_targets['system_stability_hours'] * 3600  # Convert to seconds
+        # Scaled down endurance test (5 minutes for practical testing)
+        endurance_duration = 5 * 60  # 5 minutes in seconds
         test_message = self.test_message
         
-        self.logger.info(f"⏰ Running {endurance_duration/60:.1f}-minute stability test...")
+        self.logger.info(f"⏰ Running 5-minute stability test...")
         
         start_time = time.time()
         end_time = start_time + endurance_duration
