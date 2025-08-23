@@ -303,12 +303,22 @@ class UnifiedConfigManager:
 
     def _load_config_file_original(self, config_name: str) -> Dict[str, Any]:
         """
-        Original load_config_file implementation (your existing code unchanged)
+        Original load_config_file implementation with enhanced config file handling
+        
+        FIXED: Support for dynamic config names and better error handling
         """
+        # Check if config_name is in the predefined mapping
         config_file = self.config_files.get(config_name)
+        
         if not config_file:
-            logger.error(f"Unknown configuration: {config_name}")
-            return {}
+            # ENHANCEMENT: Try to construct filename for dynamic configs (like test configs)
+            # This allows tests and dynamic configs to work without modifying the main mapping
+            if config_name.endswith('.json'):
+                config_file = config_name
+            else:
+                config_file = f"{config_name}.json"
+            
+            logger.debug(f"Config '{config_name}' not in predefined mapping, trying filename: {config_file}")
         
         config_path = self.config_dir / config_file
         
@@ -326,7 +336,7 @@ class UnifiedConfigManager:
             # Apply legacy fallback for any remaining placeholders
             processed_config = self.value_helper.apply_defaults_fallback(processed_config)
             
-            logger.info(f"Loaded configuration: {config_name}")
+            logger.debug(f"Successfully loaded configuration: {config_name}")
             return processed_config
             
         except json.JSONDecodeError as e:
