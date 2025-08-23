@@ -18,6 +18,37 @@
       "cleanup_impact": "61% reduction in environment variables"
     }
   },
+
+  "pattern_weights": {
+    "patterns_crisis"': "${NLP_ANALYSIS_PATTERNS_CRISIS}",
+    "community_patterns": "${NLP_ANALYSIS_PATTERNS_COMMUNITY}",
+    "patterns_context": "${NLP_ANALYSIS_PATTERNS_CONTEXT}",
+    "temporal_patterns": "${NLP_ANALYSIS_PATTERNS_TEMPORAL}",
+    "defaults": {
+      "patterns_crisis": 0.6,
+      "community_patterns": 0.3,
+      "patterns_context": 0.4,
+      "temporal_patterns": 0.2
+    },
+    "validation": {
+      "patterns_crisis": {
+        "type": "float",
+        "range": [0.001, 1.000]
+      },
+      "community_patterns": {
+        "type": "float",
+        "range": [0.001, 1.000]
+      },
+      "patterns_context": {
+        "type": "float",
+        "range": [0.001, 1.000]
+      },
+      "temporal_patterns": {
+        "type": "float",
+        "range": [0.001, 1.000]
+      }
+    }
+  },
   
   "semantic_analysis": {
     "description": "Parameters for semantic and context analysis of crisis indicators",
