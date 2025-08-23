@@ -65,8 +65,8 @@ class TestPerformanceValidation(unittest.TestCase):
         console_handler.setFormatter(formatter)
         
         # Configure logger
-        cls.logger = logging.getLogger('PerformanceValidationTest')
-        cls.logger.setLevel(logging.INFO)
+        cls.logger = logging.getLogger(__name__)
+        cls.logger.setLevel(logging.DEBUG)
         cls.logger.handlers = [console_handler]
         
         cls.logger.info("🚀 Starting Performance Validation Tests")
