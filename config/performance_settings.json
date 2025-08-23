@@ -35,6 +35,29 @@
         }
       }
     },
+    
+    "cache_performance": {
+      "model_cache_size_limit": "${NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT}",
+      "analysis_cache_size_limit": "${NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT}",
+      "cache_performance.cache_expiry_hours": "${NLP_STORAGE_CACHE_EXPIRY_HOURS}",
+      "defaults": {
+        "model_cache_size_limit": "10GB",
+        "analysis_cache_size_limit": "2GB",
+        "cache_performance.cache_expiry_hours": 24
+      },
+      "validation": {
+        "model_cache_size_limit": {
+          "type": "string"
+        },
+        "analysis_cache_size_limit": {
+          "type": "string"
+        },
+        "cache_performance.cache_expiry_hours": {
+          "type": "integer",
+          "range": [0, 24]
+        }
+      }
+    },
 
     "server_performance": {
       "description": "Server processing and worker management settings",
