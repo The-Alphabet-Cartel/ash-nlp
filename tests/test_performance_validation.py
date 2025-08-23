@@ -191,20 +191,26 @@ class TestPerformanceValidation(unittest.TestCase):
         if config_access_times:
             avg_access_time = statistics.mean(config_access_times)
             max_access_time = max(config_access_times)
+            min_access_time = min(config_access_times)
             
-            self.logger.info(f"📊 Configuration Access Performance:")
-            self.logger.info(f"   Average: {avg_access_time:.3f}ms")
-            self.logger.info(f"   Maximum: {max_access_time:.3f}ms")
-            self.logger.info(f"   Target: {target_time}ms")
+            self.logger.info(f"📊 Configuration Access Performance Metrics:")
+            self.logger.info(f"   TARGET: <{target_time}ms per access")
+            self.logger.info(f"   CURRENT AVERAGE: {avg_access_time:.3f}ms")
+            self.logger.info(f"   FASTEST ACCESS: {min_access_time:.3f}ms")
+            self.logger.info(f"   SLOWEST ACCESS: {max_access_time:.3f}ms")
+            self.logger.info(f"   CONFIGS TESTED: {len(config_access_times)}")
             
             if avg_access_time <= target_time:
-                self.logger.info(f"🚀 Config Access: EXCELLENT (avg {avg_access_time:.3f}ms <= {target_time}ms)")
+                margin = target_time - avg_access_time
+                self.logger.info(f"🚀 Config Access: EXCELLENT - {margin:.3f}ms under target")
                 performance_grade = "EXCELLENT"
             elif avg_access_time <= target_time * 2:
-                self.logger.info(f"✅ Config Access: GOOD (avg {avg_access_time:.3f}ms <= {target_time * 2}ms)")
+                excess = avg_access_time - target_time
+                self.logger.info(f"✅ Config Access: GOOD - Only {excess:.3f}ms over target")
                 performance_grade = "GOOD"
             else:
-                self.logger.warning(f"⚠️ Config Access: SLOW (avg {avg_access_time:.3f}ms > {target_time * 2}ms)")
+                excess = avg_access_time - target_time
+                self.logger.warning(f"⚠️ Config Access: SLOW - {excess:.3f}ms over target")
                 performance_grade = "SLOW"
                 
             # Store result
@@ -273,28 +279,39 @@ class TestPerformanceValidation(unittest.TestCase):
             min_time = min(analysis_times)
             max_time = max(analysis_times)
             median_time = statistics.median(analysis_times)
+            p90_time = statistics.quantiles(analysis_times, n=10)[8]  # 90th percentile
+            p95_time = statistics.quantiles(analysis_times, n=20)[18]  # 95th percentile
             
-            self.logger.info(f"📊 Crisis Analysis Performance Summary:")
-            self.logger.info(f"   Average: {avg_time:.2f}ms")
-            self.logger.info(f"   Median: {median_time:.2f}ms") 
-            self.logger.info(f"   Range: {min_time:.2f}ms - {max_time:.2f}ms")
-            self.logger.info(f"   🎯 TARGET: {target_time}ms")
+            self.logger.info(f"📊 CRITICAL METRIC - Crisis Analysis Performance:")
+            self.logger.info(f"   TARGET: {target_time}ms per analysis")
+            self.logger.info(f"   CURRENT AVERAGE: {avg_time:.1f}ms")
+            self.logger.info(f"   FASTEST: {min_time:.1f}ms")
+            self.logger.info(f"   SLOWEST: {max_time:.1f}ms")
+            self.logger.info(f"   MEDIAN: {median_time:.1f}ms")
+            self.logger.info(f"   90th PERCENTILE: {p90_time:.1f}ms")
+            self.logger.info(f"   95th PERCENTILE: {p95_time:.1f}ms")
+            self.logger.info(f"   PERFORMANCE GAP: {max(0, avg_time - target_time):.1f}ms over target")
+            self.logger.info(f"   SPEED IMPROVEMENT NEEDED: {((avg_time / target_time - 1) * 100):.1f}%")
             
-            # Performance evaluation
+            # Performance evaluation with specific numbers
             if avg_time <= target_time:
-                self.logger.info(f"🚀 Crisis Analysis: TARGET ACHIEVED! ({avg_time:.2f}ms <= {target_time}ms)")
+                self.logger.info(f"🚀 Crisis Analysis: TARGET ACHIEVED! ({avg_time:.1f}ms <= {target_time}ms)")
                 performance_grade = "TARGET_ACHIEVED"
             elif avg_time <= target_time * 1.2:
-                self.logger.info(f"✅ Crisis Analysis: VERY CLOSE ({avg_time:.2f}ms <= {target_time * 1.2}ms)")
+                improvement_needed = avg_time - target_time
+                self.logger.info(f"✅ Crisis Analysis: VERY CLOSE - Need {improvement_needed:.1f}ms improvement")
                 performance_grade = "VERY_CLOSE"
             elif avg_time <= target_time * 1.5:
-                self.logger.warning(f"⚠️ Crisis Analysis: NEEDS IMPROVEMENT ({avg_time:.2f}ms <= {target_time * 1.5}ms)")
+                improvement_needed = avg_time - target_time
+                self.logger.warning(f"⚠️ Crisis Analysis: NEEDS OPTIMIZATION - Need {improvement_needed:.1f}ms improvement")
                 performance_grade = "NEEDS_IMPROVEMENT"
             elif avg_time <= target_time * 2:
-                self.logger.error(f"❌ Crisis Analysis: SLOW ({avg_time:.2f}ms <= {target_time * 2}ms)")
+                improvement_needed = avg_time - target_time
+                self.logger.error(f"❌ Crisis Analysis: SLOW - Need {improvement_needed:.1f}ms improvement")
                 performance_grade = "SLOW"
             else:
-                self.logger.error(f"❌ Crisis Analysis: VERY SLOW ({avg_time:.2f}ms > {target_time * 2}ms)")
+                improvement_needed = avg_time - target_time
+                self.logger.error(f"❌ Crisis Analysis: VERY SLOW - Need {improvement_needed:.1f}ms improvement")
                 performance_grade = "VERY_SLOW"
                 
             # Store detailed results
@@ -405,18 +422,35 @@ class TestPerformanceValidation(unittest.TestCase):
         else:
             actual_throughput = 0
             
-        self.logger.info(f"📊 Concurrent Load Test Results:")
-        self.logger.info(f"   Total analyses attempted: {total_analyses}")
-        self.logger.info(f"   Successful: {successful_analyses}")
-        self.logger.info(f"   Failed: {failed_analyses}")
-        self.logger.info(f"   Success rate: {(successful_analyses/total_analyses)*100:.1f}%")
-        self.logger.info(f"   Total time: {total_load_time:.2f}s")
-        self.logger.info(f"   Throughput: {actual_throughput:.2f} analyses/second")
-        self.logger.info(f"   🎯 Target throughput: {target_throughput} analyses/second")
+        self.logger.info(f"📊 Concurrent Load Test - Detailed Metrics:")
+        self.logger.info(f"   CONCURRENCY: {num_concurrent} threads x {num_iterations} iterations")
+        self.logger.info(f"   TOTAL OPERATIONS: {total_analyses}")
+        self.logger.info(f"   SUCCESSFUL: {successful_analyses} ({(successful_analyses/total_analyses)*100:.1f}%)")
+        self.logger.info(f"   FAILED: {failed_analyses} ({(failed_analyses/total_analyses)*100:.1f}%)")
+        self.logger.info(f"   TOTAL TIME: {total_load_time:.2f}s")
+        self.logger.info(f"   THROUGHPUT: {actual_throughput:.2f} analyses/second")
+        self.logger.info(f"   TARGET THROUGHPUT: {target_throughput} analyses/second")
+        
+        throughput_gap = target_throughput - actual_throughput
+        if actual_throughput >= target_throughput:
+            self.logger.info(f"   THROUGHPUT STATUS: TARGET ACHIEVED! (+{actual_throughput - target_throughput:.2f} over target)")
+        else:
+            self.logger.info(f"   THROUGHPUT GAP: {throughput_gap:.2f} analyses/second short of target")
         
         if analysis_times:
             avg_concurrent_time = statistics.mean(analysis_times)
-            self.logger.info(f"   Average concurrent analysis time: {avg_concurrent_time:.2f}ms")
+            self.logger.info(f"   CONCURRENT ANALYSIS TIME: {avg_concurrent_time:.1f}ms average")
+            
+            # Compare to single-threaded performance if available
+            single_thread_time = self.__class__.performance_results.get('crisis_analysis', {}).get('avg_time_ms')
+            if single_thread_time:
+                overhead = avg_concurrent_time - single_thread_time
+                overhead_pct = (overhead / single_thread_time) * 100
+                self.logger.info(f"   CONCURRENT OVERHEAD: {overhead:.1f}ms ({overhead_pct:.1f}% slower than single-thread)")
+        
+        self.logger.info(f"   🎯 TARGETS vs ACTUALS:")
+        self.logger.info(f"      Success Rate Target: >90% | Actual: {(successful_analyses/total_analyses)*100:.1f}%")
+        self.logger.info(f"      Throughput Target: {target_throughput}/s | Actual: {actual_throughput:.2f}/s")
             
         # Performance evaluation
         success_rate = successful_analyses / total_analyses if total_analyses > 0 else 0
@@ -645,69 +679,63 @@ class TestPerformanceValidation(unittest.TestCase):
             cls.logger.info("🎯 PERFORMANCE TARGETS vs ACTUAL RESULTS:")
             cls.logger.info("-" * 60)
             
+            # Crisis Analysis - THE CRITICAL METRIC
+            if 'crisis_analysis' in cls.performance_results:
+                crisis_result = cls.performance_results['crisis_analysis']
+                cls.logger.info("🚨 CRISIS ANALYSIS (CRITICAL METRIC):")
+                cls.logger.info(f"   TARGET: {crisis_result['target_ms']}ms per analysis")
+                cls.logger.info(f"   ACTUAL AVERAGE: {crisis_result['avg_time_ms']:.1f}ms")
+                cls.logger.info(f"   PERFORMANCE RANGE: {crisis_result['min_time_ms']:.1f}ms - {crisis_result['max_time_ms']:.1f}ms")
+                cls.logger.info(f"   MEDIAN: {crisis_result.get('median_time_ms', 'N/A'):.1f}ms")
+                cls.logger.info(f"   STATUS: {crisis_result['grade']}")
+                
+                if crisis_result['meets_target']:
+                    cls.logger.info("   RESULT: TARGET ACHIEVED!")
+                else:
+                    improvement = crisis_result['improvement_needed_ms']
+                    speed_up = ((crisis_result['avg_time_ms'] / crisis_result['target_ms']) - 1) * 100
+                    cls.logger.info(f"   OPTIMIZATION NEEDED: {improvement:.1f}ms faster ({speed_up:.1f}% speed improvement)")
+                    
+                    # Specific optimization recommendations
+                    if crisis_result['avg_time_ms'] > 1000:
+                        cls.logger.info("   RECOMMENDATION: Focus on major algorithmic optimizations")
+                    elif crisis_result['avg_time_ms'] > 750:
+                        cls.logger.info("   RECOMMENDATION: Optimize model loading and caching")
+                    else:
+                        cls.logger.info("   RECOMMENDATION: Fine-tune processing pipeline")
+                cls.logger.info("")
+                
             # Manager Initialization
             if 'manager_initialization' in cls.performance_results:
                 mgr_result = cls.performance_results['manager_initialization']
-                cls.logger.info(f"Manager Initialization:")
-                cls.logger.info(f"   Target: {mgr_result['target_ms']}ms")
-                cls.logger.info(f"   Actual: {mgr_result['time_ms']:.2f}ms")
-                cls.logger.info(f"   Grade: {mgr_result['grade']}")
-                cls.logger.info(f"   Status: {'✅ PASS' if mgr_result['meets_target'] else '⚠️ NEEDS IMPROVEMENT'}")
+                cls.logger.info("🔧 MANAGER INITIALIZATION:")
+                cls.logger.info(f"   TARGET: {mgr_result['target_ms']}ms")
+                cls.logger.info(f"   ACTUAL: {mgr_result['time_ms']:.1f}ms")
+                cls.logger.info(f"   STATUS: {mgr_result['grade']}")
                 cls.logger.info("")
                 
             # Configuration Access
             if 'configuration_access' in cls.performance_results:
                 config_result = cls.performance_results['configuration_access']
-                cls.logger.info(f"Configuration Access:")
-                cls.logger.info(f"   Target: {config_result['target_ms']}ms")
-                cls.logger.info(f"   Actual: {config_result['avg_time_ms']:.3f}ms (avg)")
-                cls.logger.info(f"   Grade: {config_result['grade']}")
-                cls.logger.info(f"   Status: {'✅ PASS' if config_result['meets_target'] else '⚠️ NEEDS IMPROVEMENT'}")
-                cls.logger.info("")
-                
-            # Crisis Analysis - THE CRITICAL METRIC
-            if 'crisis_analysis' in cls.performance_results:
-                crisis_result = cls.performance_results['crisis_analysis']
-                cls.logger.info(f"🚨 CRISIS ANALYSIS (CRITICAL METRIC):")
-                cls.logger.info(f"   Target: {crisis_result['target_ms']}ms")
-                cls.logger.info(f"   Actual: {crisis_result['avg_time_ms']:.2f}ms (avg)")
-                cls.logger.info(f"   Range: {crisis_result['min_time_ms']:.2f}ms - {crisis_result['max_time_ms']:.2f}ms")
-                cls.logger.info(f"   Grade: {crisis_result['grade']}")
-                cls.logger.info(f"   Status: {'🚀 TARGET ACHIEVED!' if crisis_result['meets_target'] else '⚠️ NEEDS OPTIMIZATION'}")
-                if not crisis_result['meets_target']:
-                    cls.logger.info(f"   Improvement needed: {crisis_result['improvement_needed_ms']:.2f}ms")
-                cls.logger.info("")
-                
-            # Memory Behavior
-            if 'memory_behavior' in cls.performance_results:
-                mem_result = cls.performance_results['memory_behavior']
-                cls.logger.info(f"Memory Behavior:")
-                cls.logger.info(f"   Objects per analysis: {mem_result['objects_per_analysis']:.1f}")
-                cls.logger.info(f"   Grade: {mem_result['grade']}")
-                cls.logger.info("")
-                
-            # Stability Endurance
-            if 'stability_endurance' in cls.performance_results:
-                stab_result = cls.performance_results['stability_endurance']
-                cls.logger.info(f"System Stability:")
-                cls.logger.info(f"   Duration: {stab_result['duration_minutes']:.2f} minutes")
-                cls.logger.info(f"   Success rate: {stab_result['success_rate']*100:.1f}%")
-                cls.logger.info(f"   Grade: {stab_result['grade']}")
+                cls.logger.info("⚙️ CONFIGURATION ACCESS:")
+                cls.logger.info(f"   TARGET: <{config_result['target_ms']}ms per access")
+                cls.logger.info(f"   ACTUAL AVERAGE: {config_result['avg_time_ms']:.3f}ms")
+                cls.logger.info(f"   SLOWEST ACCESS: {config_result['max_time_ms']:.3f}ms")
+                cls.logger.info(f"   STATUS: {config_result['grade']}")
                 cls.logger.info("")
                 
         # Load test results
         if cls.load_test_results:
             load_result = cls.load_test_results
-            cls.logger.info("⚡ CONCURRENT LOAD TEST RESULTS:")
-            cls.logger.info("-" * 40)
-            cls.logger.info(f"   Throughput: {load_result['throughput_per_sec']:.2f} analyses/second")
-            cls.logger.info(f"   Target: {load_result['target_throughput_per_sec']} analyses/second")
-            cls.logger.info(f"   Success rate: {load_result['success_rate']*100:.1f}%")
-            cls.logger.info(f"   Stability: {load_result['stability_grade']}")
+            cls.logger.info("⚡ CONCURRENT PERFORMANCE:")
+            cls.logger.info(f"   THROUGHPUT TARGET: {load_result['target_throughput_per_sec']}/s")
+            cls.logger.info(f"   ACTUAL THROUGHPUT: {load_result['throughput_per_sec']:.2f}/s")
+            cls.logger.info(f"   CONCURRENCY SUCCESS: {load_result['success_rate']*100:.1f}%")
+            cls.logger.info(f"   CONCURRENT vs SINGLE-THREAD: {load_result.get('avg_concurrent_time_ms', 0):.1f}ms")
             cls.logger.info("")
             
-        # Performance recommendations
-        cls.logger.info("🔧 PERFORMANCE OPTIMIZATION RECOMMENDATIONS:")
+        # Performance optimization targets
+        cls.logger.info("🔧 PERFORMANCE OPTIMIZATION PRIORITIES:")
         cls.logger.info("-" * 50)
         
         recommendations = []
@@ -716,44 +744,38 @@ class TestPerformanceValidation(unittest.TestCase):
         if 'crisis_analysis' in cls.performance_results:
             crisis_perf = cls.performance_results['crisis_analysis']
             if not crisis_perf['meets_target']:
-                improvement_pct = ((crisis_perf['avg_time_ms'] / crisis_perf['target_ms']) - 1) * 100
+                current_ms = crisis_perf['avg_time_ms']
+                target_ms = crisis_perf['target_ms']
+                improvement_pct = ((current_ms / target_ms) - 1) * 100
+                
                 recommendations.append(
-                    f"🚨 CRITICAL: Optimize crisis analysis speed by {improvement_pct:.0f}% "
-                    f"({crisis_perf['avg_time_ms']:.0f}ms → {crisis_perf['target_ms']}ms)"
+                    f"1. CRITICAL: Reduce analysis time by {improvement_pct:.0f}% "
+                    f"({current_ms:.0f}ms → {target_ms}ms target)"
                 )
                 
-        # Check configuration access
-        if 'configuration_access' in cls.performance_results:
-            config_perf = cls.performance_results['configuration_access']
-            if not config_perf['meets_target']:
-                recommendations.append(
-                    f"⚡ Optimize configuration access patterns "
-                    f"(current: {config_perf['avg_time_ms']:.2f}ms)"
-                )
-                
-        # Check memory behavior
-        if 'memory_behavior' in cls.performance_results:
-            mem_perf = cls.performance_results['memory_behavior']
-            if mem_perf['grade'] in ['CONCERNING']:
-                recommendations.append(
-                    f"💾 Review memory usage patterns "
-                    f"({mem_perf['objects_per_analysis']:.1f} objects/analysis)"
-                )
-                
-        # Check concurrent performance
-        if cls.load_test_results:
-            load_perf = cls.load_test_results
-            if load_perf['success_rate'] < 0.95:
-                recommendations.append(
-                    f"🔄 Improve concurrent stability "
-                    f"({load_perf['success_rate']*100:.1f}% success rate)"
-                )
-                
+                # Specific bottleneck recommendations
+                if current_ms > 1500:
+                    recommendations.append("   - Consider model quantization or smaller models")
+                    recommendations.append("   - Implement model result caching")
+                elif current_ms > 1000:
+                    recommendations.append("   - Optimize GPU memory usage")
+                    recommendations.append("   - Parallelize model inference")
+                elif current_ms > 750:
+                    recommendations.append("   - Cache frequently accessed patterns")
+                    recommendations.append("   - Optimize text preprocessing")
+                else:
+                    recommendations.append("   - Fine-tune configuration access")
+                    recommendations.append("   - Optimize helper class operations")
+                    
+        # Check other performance areas
+        if cls.load_test_results and cls.load_test_results['success_rate'] < 0.95:
+            recommendations.append("2. Improve concurrent processing stability")
+            
         if recommendations:
-            for i, rec in enumerate(recommendations, 1):
-                cls.logger.info(f"   {i}. {rec}")
+            for rec in recommendations:
+                cls.logger.info(f"   {rec}")
         else:
-            cls.logger.info("   ✅ No major performance issues detected!")
+            cls.logger.info("   ✅ All performance targets met!")
             
         cls.logger.info("")
         cls.logger.info("=" * 80)
