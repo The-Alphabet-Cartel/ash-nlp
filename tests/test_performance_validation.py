@@ -242,7 +242,19 @@ class TestPerformanceValidation(unittest.TestCase):
                 start_time = time.time()
                 
                 if hasattr(self.crisis_analyzer, 'analyze_message'):
-                    result = self.crisis_analyzer.analyze_message(test_message)
+                    import inspect
+                    if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                        result = asyncio.run(self.crisis_analyzer.analyze_message(
+                            test_message,
+                            user_id=f"perf_test_user_{i}",
+                            channel_id="performance_test_channel"
+                        ))
+                    else:
+                        result = self.crisis_analyzer.analyze_message(
+                            test_message,
+                            user_id=f"perf_test_user_{i}",
+                            channel_id="performance_test_channel"
+                        )
                 elif hasattr(self.crisis_analyzer, 'analyze'):
                     result = self.crisis_analyzer.analyze(test_message)
                 else:
@@ -331,7 +343,21 @@ class TestPerformanceValidation(unittest.TestCase):
                 start_time = time.time()
                 
                 if hasattr(self.crisis_analyzer, 'analyze_message'):
-                    result = self.crisis_analyzer.analyze_message(message)
+                    import inspect
+                    if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                        # Note: asyncio.run creates a new event loop, which works for testing
+                        # but in production this would be handled differently
+                        result = asyncio.run(self.crisis_analyzer.analyze_message(
+                            message,
+                            user_id=f"concurrent_user_{iteration}",
+                            channel_id="concurrent_test_channel"
+                        ))
+                    else:
+                        result = self.crisis_analyzer.analyze_message(
+                            message,
+                            user_id=f"concurrent_user_{iteration}",
+                            channel_id="concurrent_test_channel"
+                        )
                 elif hasattr(self.crisis_analyzer, 'analyze'):
                     result = self.crisis_analyzer.analyze(message)
                 else:
@@ -442,7 +468,19 @@ class TestPerformanceValidation(unittest.TestCase):
         for i in range(num_analyses):
             try:
                 if hasattr(self.crisis_analyzer, 'analyze_message'):
-                    result = self.crisis_analyzer.analyze_message(test_message)
+                    import inspect
+                    if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                        result = asyncio.run(self.crisis_analyzer.analyze_message(
+                            test_message,
+                            user_id=f"memory_test_user_{i}",
+                            channel_id="memory_test_channel"
+                        ))
+                    else:
+                        result = self.crisis_analyzer.analyze_message(
+                            test_message,
+                            user_id=f"memory_test_user_{i}",
+                            channel_id="memory_test_channel"
+                        )
                 elif hasattr(self.crisis_analyzer, 'analyze'):
                     result = self.crisis_analyzer.analyze(test_message)
             except Exception as e:
@@ -507,7 +545,19 @@ class TestPerformanceValidation(unittest.TestCase):
                 analysis_start = time.time()
                 
                 if hasattr(self.crisis_analyzer, 'analyze_message'):
-                    result = self.crisis_analyzer.analyze_message(test_message)
+                    import inspect
+                    if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                        result = asyncio.run(self.crisis_analyzer.analyze_message(
+                            test_message,
+                            user_id=f"endurance_user_{successful_analyses}",
+                            channel_id="endurance_test_channel"
+                        ))
+                    else:
+                        result = self.crisis_analyzer.analyze_message(
+                            test_message,
+                            user_id=f"endurance_user_{successful_analyses}",
+                            channel_id="endurance_test_channel"
+                        )
                 elif hasattr(self.crisis_analyzer, 'analyze'):
                     result = self.crisis_analyzer.analyze(test_message)
                 else:
