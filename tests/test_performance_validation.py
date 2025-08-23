@@ -124,20 +124,24 @@ class TestPerformanceValidation(unittest.TestCase):
         init_time = self.__class__.init_time
         target_time = self.performance_targets['manager_init_ms']
         
-        self.logger.info(f"📊 Manager initialization time: {init_time:.2f}ms")
-        self.logger.info(f"🎯 Target time: {target_time}ms")
+        self.logger.info("=" * 60)
+        self.logger.info("📊 MANAGER INITIALIZATION PERFORMANCE METRICS")
+        self.logger.info("=" * 60)
+        self.logger.info(f"TARGET: {target_time}ms")
+        self.logger.info(f"ACTUAL: {init_time:.1f}ms")
+        self.logger.info(f"DIFFERENCE: {init_time - target_time:.1f}ms")
         
         if init_time <= target_time:
-            self.logger.info(f"🚀 Manager Initialization: EXCELLENT ({init_time:.2f}ms <= {target_time}ms)")
+            self.logger.info(f"🚀 Manager Initialization: EXCELLENT ({init_time:.1f}ms <= {target_time}ms)")
             performance_grade = "EXCELLENT"
         elif init_time <= target_time * 1.5:
-            self.logger.info(f"✅ Manager Initialization: GOOD ({init_time:.2f}ms <= {target_time * 1.5}ms)")
+            self.logger.info(f"✅ Manager Initialization: GOOD ({init_time:.1f}ms <= {target_time * 1.5}ms)")
             performance_grade = "GOOD"
         elif init_time <= target_time * 2:
-            self.logger.warning(f"⚠️ Manager Initialization: ACCEPTABLE ({init_time:.2f}ms <= {target_time * 2}ms)")
+            self.logger.warning(f"⚠️ Manager Initialization: ACCEPTABLE ({init_time:.1f}ms <= {target_time * 2}ms)")
             performance_grade = "ACCEPTABLE"
         else:
-            self.logger.error(f"❌ Manager Initialization: SLOW ({init_time:.2f}ms > {target_time * 2}ms)")
+            self.logger.error(f"❌ Manager Initialization: SLOW ({init_time:.1f}ms > {target_time * 2}ms)")
             performance_grade = "SLOW"
             
         # Store result
@@ -147,6 +151,8 @@ class TestPerformanceValidation(unittest.TestCase):
             'grade': performance_grade,
             'meets_target': init_time <= target_time
         }
+        
+        self.logger.info("=" * 60)
         
         # Don't fail test if slow, just record performance
         self.assertIsNotNone(self.managers, "Managers should be initialized")
@@ -193,12 +199,14 @@ class TestPerformanceValidation(unittest.TestCase):
             max_access_time = max(config_access_times)
             min_access_time = min(config_access_times)
             
-            self.logger.info(f"📊 Configuration Access Performance Metrics:")
-            self.logger.info(f"   TARGET: <{target_time}ms per access")
-            self.logger.info(f"   CURRENT AVERAGE: {avg_access_time:.3f}ms")
-            self.logger.info(f"   FASTEST ACCESS: {min_access_time:.3f}ms")
-            self.logger.info(f"   SLOWEST ACCESS: {max_access_time:.3f}ms")
-            self.logger.info(f"   CONFIGS TESTED: {len(config_access_times)}")
+            self.logger.info("=" * 60)
+            self.logger.info("📊 CONFIGURATION ACCESS PERFORMANCE METRICS")
+            self.logger.info("=" * 60)
+            self.logger.info(f"TARGET: <{target_time}ms per access")
+            self.logger.info(f"AVERAGE: {avg_access_time:.3f}ms")
+            self.logger.info(f"FASTEST: {min_access_time:.3f}ms")
+            self.logger.info(f"SLOWEST: {max_access_time:.3f}ms")
+            self.logger.info(f"TESTS: {len(config_access_times)} configs")
             
             if avg_access_time <= target_time:
                 margin = target_time - avg_access_time
@@ -217,11 +225,14 @@ class TestPerformanceValidation(unittest.TestCase):
             self.__class__.performance_results['configuration_access'] = {
                 'avg_time_ms': avg_access_time,
                 'max_time_ms': max_access_time,
+                'min_time_ms': min_access_time,
                 'target_ms': target_time,
                 'grade': performance_grade,
                 'meets_target': avg_access_time <= target_time,
                 'total_tests': len(config_access_times)
             }
+            
+            self.logger.info("=" * 60)
             
             # Performance assertion (should be very fast)
             self.assertLessEqual(max_access_time, target_time * 3, 
@@ -269,7 +280,7 @@ class TestPerformanceValidation(unittest.TestCase):
                 analysis_time = (time.time() - start_time) * 1000
                 analysis_times.append(analysis_time)
                 
-                self.logger.info(f"   Run {i+1}: {analysis_time:.2f}ms")
+                self.logger.info(f"   Run {i+1}: {analysis_time:.1f}ms")
                 
             except Exception as e:
                 self.logger.error(f"   ❌ Run {i+1} failed: {e}")
@@ -279,23 +290,36 @@ class TestPerformanceValidation(unittest.TestCase):
             min_time = min(analysis_times)
             max_time = max(analysis_times)
             median_time = statistics.median(analysis_times)
-            p90_time = statistics.quantiles(analysis_times, n=10)[8]  # 90th percentile
-            p95_time = statistics.quantiles(analysis_times, n=20)[18]  # 95th percentile
             
-            self.logger.info(f"📊 CRITICAL METRIC - Crisis Analysis Performance:")
-            self.logger.info(f"   TARGET: {target_time}ms per analysis")
-            self.logger.info(f"   CURRENT AVERAGE: {avg_time:.1f}ms")
-            self.logger.info(f"   FASTEST: {min_time:.1f}ms")
-            self.logger.info(f"   SLOWEST: {max_time:.1f}ms")
-            self.logger.info(f"   MEDIAN: {median_time:.1f}ms")
-            self.logger.info(f"   90th PERCENTILE: {p90_time:.1f}ms")
-            self.logger.info(f"   95th PERCENTILE: {p95_time:.1f}ms")
-            self.logger.info(f"   PERFORMANCE GAP: {max(0, avg_time - target_time):.1f}ms over target")
-            self.logger.info(f"   SPEED IMPROVEMENT NEEDED: {((avg_time / target_time - 1) * 100):.1f}%")
+            try:
+                p90_time = statistics.quantiles(analysis_times, n=10)[8]  # 90th percentile
+                p95_time = statistics.quantiles(analysis_times, n=20)[18]  # 95th percentile
+            except:
+                p90_time = max_time
+                p95_time = max_time
+            
+            self.logger.info("=" * 80)
+            self.logger.info("📊 CRISIS ANALYSIS PERFORMANCE - CRITICAL METRIC")
+            self.logger.info("=" * 80)
+            self.logger.info(f"TARGET: {target_time}ms per analysis")
+            self.logger.info(f"AVERAGE: {avg_time:.1f}ms")
+            self.logger.info(f"MEDIAN: {median_time:.1f}ms")
+            self.logger.info(f"FASTEST: {min_time:.1f}ms")
+            self.logger.info(f"SLOWEST: {max_time:.1f}ms")
+            self.logger.info(f"90th PERCENTILE: {p90_time:.1f}ms")
+            self.logger.info(f"95th PERCENTILE: {p95_time:.1f}ms")
+            
+            if avg_time > target_time:
+                gap = avg_time - target_time
+                improvement_pct = ((avg_time / target_time) - 1) * 100
+                self.logger.info(f"PERFORMANCE GAP: {gap:.1f}ms over target")
+                self.logger.info(f"IMPROVEMENT NEEDED: {improvement_pct:.1f}% speed increase")
+            else:
+                self.logger.info("PERFORMANCE: TARGET ACHIEVED!")
             
             # Performance evaluation with specific numbers
             if avg_time <= target_time:
-                self.logger.info(f"🚀 Crisis Analysis: TARGET ACHIEVED! ({avg_time:.1f}ms <= {target_time}ms)")
+                self.logger.info(f"🚀 Crisis Analysis: TARGET ACHIEVED!")
                 performance_grade = "TARGET_ACHIEVED"
             elif avg_time <= target_time * 1.2:
                 improvement_needed = avg_time - target_time
@@ -314,16 +338,36 @@ class TestPerformanceValidation(unittest.TestCase):
                 self.logger.error(f"❌ Crisis Analysis: VERY SLOW - Need {improvement_needed:.1f}ms improvement")
                 performance_grade = "VERY_SLOW"
                 
+            # Optimization recommendations
+            self.logger.info("🔧 OPTIMIZATION RECOMMENDATIONS:")
+            if avg_time > 1500:
+                self.logger.info("   - Consider model quantization or smaller models")
+                self.logger.info("   - Implement aggressive result caching")
+            elif avg_time > 1000:
+                self.logger.info("   - Optimize GPU memory usage patterns")
+                self.logger.info("   - Cache model inference results")
+            elif avg_time > 750:
+                self.logger.info("   - Cache frequently accessed patterns")
+                self.logger.info("   - Optimize text preprocessing pipeline")
+            else:
+                self.logger.info("   - Fine-tune configuration access patterns")
+                self.logger.info("   - Optimize helper class operations")
+                
+            self.logger.info("=" * 80)
+                
             # Store detailed results
             self.__class__.performance_results['crisis_analysis'] = {
                 'avg_time_ms': avg_time,
                 'median_time_ms': median_time,
                 'min_time_ms': min_time,
                 'max_time_ms': max_time,
+                'p90_time_ms': p90_time,
+                'p95_time_ms': p95_time,
                 'target_ms': target_time,
                 'grade': performance_grade,
                 'meets_target': avg_time <= target_time,
                 'improvement_needed_ms': max(0, avg_time - target_time),
+                'improvement_needed_pct': ((avg_time / target_time) - 1) * 100 if avg_time > target_time else 0,
                 'total_runs': len(analysis_times)
             }
             
@@ -422,36 +466,39 @@ class TestPerformanceValidation(unittest.TestCase):
         else:
             actual_throughput = 0
             
-        self.logger.info(f"📊 Concurrent Load Test - Detailed Metrics:")
-        self.logger.info(f"   CONCURRENCY: {num_concurrent} threads x {num_iterations} iterations")
-        self.logger.info(f"   TOTAL OPERATIONS: {total_analyses}")
-        self.logger.info(f"   SUCCESSFUL: {successful_analyses} ({(successful_analyses/total_analyses)*100:.1f}%)")
-        self.logger.info(f"   FAILED: {failed_analyses} ({(failed_analyses/total_analyses)*100:.1f}%)")
-        self.logger.info(f"   TOTAL TIME: {total_load_time:.2f}s")
-        self.logger.info(f"   THROUGHPUT: {actual_throughput:.2f} analyses/second")
-        self.logger.info(f"   TARGET THROUGHPUT: {target_throughput} analyses/second")
+        self.logger.info("=" * 70)
+        self.logger.info("📊 CONCURRENT LOAD TEST - DETAILED METRICS")
+        self.logger.info("=" * 70)
+        self.logger.info(f"CONCURRENCY: {num_concurrent} threads x {num_iterations} iterations")
+        self.logger.info(f"TOTAL OPERATIONS: {total_analyses}")
+        self.logger.info(f"SUCCESSFUL: {successful_analyses} ({(successful_analyses/total_analyses)*100:.1f}%)")
+        self.logger.info(f"FAILED: {failed_analyses} ({(failed_analyses/total_analyses)*100:.1f}%)")
+        self.logger.info(f"TOTAL TIME: {total_load_time:.2f}s")
+        self.logger.info(f"THROUGHPUT: {actual_throughput:.2f} analyses/second")
+        self.logger.info(f"TARGET THROUGHPUT: {target_throughput} analyses/second")
         
         throughput_gap = target_throughput - actual_throughput
         if actual_throughput >= target_throughput:
-            self.logger.info(f"   THROUGHPUT STATUS: TARGET ACHIEVED! (+{actual_throughput - target_throughput:.2f} over target)")
+            self.logger.info(f"THROUGHPUT STATUS: TARGET ACHIEVED! (+{actual_throughput - target_throughput:.2f} over target)")
         else:
-            self.logger.info(f"   THROUGHPUT GAP: {throughput_gap:.2f} analyses/second short of target")
+            self.logger.info(f"THROUGHPUT GAP: {throughput_gap:.2f} analyses/second short of target")
         
         if analysis_times:
             avg_concurrent_time = statistics.mean(analysis_times)
-            self.logger.info(f"   CONCURRENT ANALYSIS TIME: {avg_concurrent_time:.1f}ms average")
+            self.logger.info(f"CONCURRENT ANALYSIS TIME: {avg_concurrent_time:.1f}ms average")
             
             # Compare to single-threaded performance if available
             single_thread_time = self.__class__.performance_results.get('crisis_analysis', {}).get('avg_time_ms')
             if single_thread_time:
                 overhead = avg_concurrent_time - single_thread_time
                 overhead_pct = (overhead / single_thread_time) * 100
-                self.logger.info(f"   CONCURRENT OVERHEAD: {overhead:.1f}ms ({overhead_pct:.1f}% slower than single-thread)")
+                self.logger.info(f"CONCURRENT OVERHEAD: {overhead:.1f}ms ({overhead_pct:.1f}% slower than single-thread)")
         
-        self.logger.info(f"   🎯 TARGETS vs ACTUALS:")
-        self.logger.info(f"      Success Rate Target: >90% | Actual: {(successful_analyses/total_analyses)*100:.1f}%")
-        self.logger.info(f"      Throughput Target: {target_throughput}/s | Actual: {actual_throughput:.2f}/s")
-            
+        self.logger.info(f"🎯 TARGETS vs ACTUALS:")
+        self.logger.info(f"   Success Rate Target: >90% | Actual: {(successful_analyses/total_analyses)*100:.1f}%")
+        self.logger.info(f"   Throughput Target: {target_throughput}/s | Actual: {actual_throughput:.2f}/s")
+        self.logger.info("=" * 70)
+        
         # Performance evaluation
         success_rate = successful_analyses / total_analyses if total_analyses > 0 else 0
         throughput_grade = "GOOD" if actual_throughput >= target_throughput else "NEEDS_IMPROVEMENT"
@@ -525,11 +572,13 @@ class TestPerformanceValidation(unittest.TestCase):
         final_objects = len(gc.get_objects())
         object_growth = final_objects - initial_objects
         
-        self.logger.info(f"📊 Memory Behavior Analysis:")
-        self.logger.info(f"   Initial objects: {initial_objects}")
-        self.logger.info(f"   Final objects: {final_objects}")
-        self.logger.info(f"   Object growth: {object_growth}")
-        self.logger.info(f"   Growth per analysis: {object_growth/num_analyses:.1f}")
+        self.logger.info("=" * 60)
+        self.logger.info("📊 MEMORY BEHAVIOR ANALYSIS")
+        self.logger.info("=" * 60)
+        self.logger.info(f"INITIAL OBJECTS: {initial_objects}")
+        self.logger.info(f"FINAL OBJECTS: {final_objects}")
+        self.logger.info(f"OBJECT GROWTH: {object_growth}")
+        self.logger.info(f"GROWTH PER ANALYSIS: {object_growth/num_analyses:.1f}")
         
         # Memory behavior evaluation
         objects_per_analysis = object_growth / num_analyses
@@ -543,6 +592,8 @@ class TestPerformanceValidation(unittest.TestCase):
         else:
             self.logger.warning(f"⚠️ Memory Behavior: CONCERNING ({objects_per_analysis:.1f} objects/analysis)")
             memory_grade = "CONCERNING"
+            
+        self.logger.info("=" * 60)
             
         # Store results
         self.__class__.performance_results['memory_behavior'] = {
@@ -612,27 +663,33 @@ class TestPerformanceValidation(unittest.TestCase):
         actual_duration = time.time() - start_time
         total_analyses = successful_analyses + failed_analyses
         
-        self.logger.info(f"📊 Stability Endurance Test Results:")
-        self.logger.info(f"   Duration: {actual_duration/60:.2f} minutes")
-        self.logger.info(f"   Total analyses: {total_analyses}")
-        self.logger.info(f"   Successful: {successful_analyses}")
-        self.logger.info(f"   Failed: {failed_analyses}")
+        self.logger.info("=" * 70)
+        self.logger.info("📊 STABILITY ENDURANCE TEST RESULTS")
+        self.logger.info("=" * 70)
+        self.logger.info(f"DURATION: {actual_duration/60:.2f} minutes")
+        self.logger.info(f"TOTAL ANALYSES: {total_analyses}")
+        self.logger.info(f"SUCCESSFUL: {successful_analyses}")
+        self.logger.info(f"FAILED: {failed_analyses}")
         
         if total_analyses > 0:
             success_rate = successful_analyses / total_analyses
             analyses_per_minute = total_analyses / (actual_duration / 60)
             
-            self.logger.info(f"   Success rate: {success_rate*100:.1f}%")
-            self.logger.info(f"   Rate: {analyses_per_minute:.1f} analyses/minute")
+            self.logger.info(f"SUCCESS RATE: {success_rate*100:.1f}%")
+            self.logger.info(f"RATE: {analyses_per_minute:.1f} analyses/minute")
             
             if analysis_times:
                 avg_time = statistics.mean(analysis_times)
-                time_degradation = abs(analysis_times[-10:][0] - analysis_times[:10][0]) if len(analysis_times) > 20 else 0
-                
-                self.logger.info(f"   Average analysis time: {avg_time:.2f}ms")
-                if time_degradation > 0:
-                    self.logger.info(f"   Performance degradation: {time_degradation:.2f}ms")
-                    
+                if len(analysis_times) > 20:
+                    early_avg = statistics.mean(analysis_times[:10])
+                    late_avg = statistics.mean(analysis_times[-10:])
+                    time_degradation = late_avg - early_avg
+                    self.logger.info(f"AVERAGE ANALYSIS TIME: {avg_time:.1f}ms")
+                    if abs(time_degradation) > 10:
+                        self.logger.info(f"PERFORMANCE CHANGE: {time_degradation:+.1f}ms over test duration")
+                    else:
+                        self.logger.info("PERFORMANCE: Stable throughout test")
+                        
             # Stability evaluation
             if success_rate >= 0.98:
                 self.logger.info(f"🚀 System Stability: EXCELLENT ({success_rate*100:.1f}% over {actual_duration/60:.1f}min)")
@@ -646,6 +703,8 @@ class TestPerformanceValidation(unittest.TestCase):
             else:
                 self.logger.error(f"❌ System Stability: POOR ({success_rate*100:.1f}% over {actual_duration/60:.1f}min)")
                 stability_grade = "POOR"
+                
+            self.logger.info("=" * 70)
                 
             # Store results
             self.__class__.performance_results['stability_endurance'] = {
@@ -670,9 +729,9 @@ class TestPerformanceValidation(unittest.TestCase):
         """Generate comprehensive performance report"""
         cls.logger.info("🧹 Generating comprehensive performance report...")
         
-        cls.logger.info("=" * 80)
+        cls.logger.info("=" * 90)
         cls.logger.info("📊 COMPREHENSIVE PERFORMANCE VALIDATION REPORT")
-        cls.logger.info("=" * 80)
+        cls.logger.info("=" * 90)
         
         # Overall performance summary
         if cls.performance_results:
@@ -686,21 +745,26 @@ class TestPerformanceValidation(unittest.TestCase):
                 cls.logger.info(f"   TARGET: {crisis_result['target_ms']}ms per analysis")
                 cls.logger.info(f"   ACTUAL AVERAGE: {crisis_result['avg_time_ms']:.1f}ms")
                 cls.logger.info(f"   PERFORMANCE RANGE: {crisis_result['min_time_ms']:.1f}ms - {crisis_result['max_time_ms']:.1f}ms")
-                cls.logger.info(f"   MEDIAN: {crisis_result.get('median_time_ms', 'N/A'):.1f}ms")
+                cls.logger.info(f"   MEDIAN: {crisis_result.get('median_time_ms', 0):.1f}ms")
+                cls.logger.info(f"   90th PERCENTILE: {crisis_result.get('p90_time_ms', 0):.1f}ms")
+                cls.logger.info(f"   95th PERCENTILE: {crisis_result.get('p95_time_ms', 0):.1f}ms")
                 cls.logger.info(f"   STATUS: {crisis_result['grade']}")
                 
                 if crisis_result['meets_target']:
-                    cls.logger.info("   RESULT: TARGET ACHIEVED!")
+                    cls.logger.info("   RESULT: 🚀 TARGET ACHIEVED!")
                 else:
                     improvement = crisis_result['improvement_needed_ms']
-                    speed_up = ((crisis_result['avg_time_ms'] / crisis_result['target_ms']) - 1) * 100
+                    speed_up = crisis_result.get('improvement_needed_pct', 0)
                     cls.logger.info(f"   OPTIMIZATION NEEDED: {improvement:.1f}ms faster ({speed_up:.1f}% speed improvement)")
                     
                     # Specific optimization recommendations
-                    if crisis_result['avg_time_ms'] > 1000:
+                    current_ms = crisis_result['avg_time_ms']
+                    if current_ms > 1500:
                         cls.logger.info("   RECOMMENDATION: Focus on major algorithmic optimizations")
-                    elif crisis_result['avg_time_ms'] > 750:
+                    elif current_ms > 1000:
                         cls.logger.info("   RECOMMENDATION: Optimize model loading and caching")
+                    elif current_ms > 750:
+                        cls.logger.info("   RECOMMENDATION: Cache frequently accessed patterns")
                     else:
                         cls.logger.info("   RECOMMENDATION: Fine-tune processing pipeline")
                 cls.logger.info("")
@@ -731,7 +795,7 @@ class TestPerformanceValidation(unittest.TestCase):
             cls.logger.info(f"   THROUGHPUT TARGET: {load_result['target_throughput_per_sec']}/s")
             cls.logger.info(f"   ACTUAL THROUGHPUT: {load_result['throughput_per_sec']:.2f}/s")
             cls.logger.info(f"   CONCURRENCY SUCCESS: {load_result['success_rate']*100:.1f}%")
-            cls.logger.info(f"   CONCURRENT vs SINGLE-THREAD: {load_result.get('avg_concurrent_time_ms', 0):.1f}ms")
+            cls.logger.info(f"   CONCURRENT ANALYSIS TIME: {load_result.get('avg_concurrent_time_ms', 0):.1f}ms")
             cls.logger.info("")
             
         # Performance optimization targets
@@ -746,7 +810,7 @@ class TestPerformanceValidation(unittest.TestCase):
             if not crisis_perf['meets_target']:
                 current_ms = crisis_perf['avg_time_ms']
                 target_ms = crisis_perf['target_ms']
-                improvement_pct = ((current_ms / target_ms) - 1) * 100
+                improvement_pct = crisis_perf.get('improvement_needed_pct', 0)
                 
                 recommendations.append(
                     f"1. CRITICAL: Reduce analysis time by {improvement_pct:.0f}% "
@@ -756,15 +820,15 @@ class TestPerformanceValidation(unittest.TestCase):
                 # Specific bottleneck recommendations
                 if current_ms > 1500:
                     recommendations.append("   - Consider model quantization or smaller models")
-                    recommendations.append("   - Implement model result caching")
+                    recommendations.append("   - Implement aggressive model result caching")
                 elif current_ms > 1000:
-                    recommendations.append("   - Optimize GPU memory usage")
-                    recommendations.append("   - Parallelize model inference")
+                    recommendations.append("   - Optimize GPU memory usage patterns")
+                    recommendations.append("   - Parallelize model inference where possible")
                 elif current_ms > 750:
                     recommendations.append("   - Cache frequently accessed patterns")
-                    recommendations.append("   - Optimize text preprocessing")
+                    recommendations.append("   - Optimize text preprocessing pipeline")
                 else:
-                    recommendations.append("   - Fine-tune configuration access")
+                    recommendations.append("   - Fine-tune configuration access patterns")
                     recommendations.append("   - Optimize helper class operations")
                     
         # Check other performance areas
@@ -778,9 +842,9 @@ class TestPerformanceValidation(unittest.TestCase):
             cls.logger.info("   ✅ All performance targets met!")
             
         cls.logger.info("")
-        cls.logger.info("=" * 80)
+        cls.logger.info("=" * 90)
         cls.logger.info("✅ Performance Validation Test Suite Complete!")
-        cls.logger.info("=" * 80)
+        cls.logger.info("=" * 90)
 
 
 if __name__ == '__main__':
