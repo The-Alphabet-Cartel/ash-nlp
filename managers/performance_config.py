@@ -242,31 +242,31 @@ class PerformanceConfigManager:
     
     def get_analysis_timeout(self) -> float:
         """Get analysis timeout in seconds"""
-        return self.config_manager.get_config_section('performance_settings', 'analysis_performance.timeout_seconds', 30.0)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.timeout_seconds', 30.0)
     
     def get_analysis_retry_attempts(self) -> int:
         """Get analysis retry attempts"""
-        return self.config_manager.get_config_section('performance_settings', 'analysis_performance.retry_attempts', 3)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.retry_attempts', 3)
     
     def get_max_workers(self) -> int:
         """Get maximum worker threads"""
-        return self.config_manager.get_config_section('performance_settings', 'server_performance.max_workers', 4)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.server_performance.max_workers', 4)
     
     def get_max_concurrent_requests(self) -> int:
         """Get maximum concurrent server requests"""
-        return self.config_manager.get_config_section('performance_settings', 'server_performance.max_concurrent_requests', 20)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.server_performance.max_concurrent_requests', 20)
     
     def get_device(self) -> str:
         """Get device setting for model inference"""
-        return self.config_manager.get_config_section('performance_settings', 'model_performance.device', 'auto')
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.device', 'auto')
     
     def get_rate_limit_requests_per_minute(self) -> int:
         """Get rate limit requests per minute"""
-        return self.config_manager.get_config_section('performance_settings', 'rate_limiting_performance.rate_limit_per_minute', 120)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.rate_limiting_performance.rate_limit_per_minute', 120)
     
     def get_model_cache_size_limit(self) -> str:
         """Get model cache size limit"""
-        return self.config_manager.get_config_section('performance_settings', 'cache_performance.model_cache_size_limit', '10GB')
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.cache_performance.model_cache_size_limit', '10GB')
     
     # Legacy compatibility methods
     def get_request_timeout(self) -> float:
@@ -275,11 +275,11 @@ class PerformanceConfigManager:
     
     def is_analysis_timeout_enabled(self) -> bool:
         """Check if analysis timeout is enabled"""
-        return self.config_manager.get_config_section('performance_settings', 'analysis_performance.enable_timeout', True)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.enable_timeout', True)
     
     def is_load_in_8bit_enabled(self) -> bool:
         """Check if 8-bit quantization is enabled"""
-        return self.config_manager.get_config_section('performance_settings', 'model_performance.load_in_8bit', False)
+        return self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.load_in_8bit', False)
     
     # ========================================================================
     # PERFORMANCE PROFILES MANAGEMENT
