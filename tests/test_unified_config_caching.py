@@ -162,6 +162,9 @@ class TestUnifiedConfigManagerCaching(unittest.TestCase):
     
     def test_cache_invalidation_on_file_change(self):
         """Test that cache invalidates when files are modified - FIXED VERSION"""
+        import os  # Add this import at the top of the method
+        import time  # Also ensure time is imported
+        
         config_name = 'analysis_config'
         section_path = 'algorithm_parameters'
         
@@ -176,8 +179,7 @@ class TestUnifiedConfigManagerCaching(unittest.TestCase):
         stats_before = self.manager.get_cache_statistics()
         self.assertGreater(stats_before['current_entries'], 0, "Cache should have entries after first access")
         
-        # FIXED: Add a small delay to ensure file modification time difference
-        import time
+        # Add a small delay to ensure file modification time difference
         time.sleep(0.2)  # 200ms delay to ensure mtime difference
         
         # Modify the file (update modification time and content)
@@ -197,11 +199,10 @@ class TestUnifiedConfigManagerCaching(unittest.TestCase):
             f.flush()
             os.fsync(f.fileno())  # Force filesystem sync
         
-        # FIXED: Add another small delay to ensure mtime propagation  
+        # Add another small delay to ensure mtime propagation  
         time.sleep(0.1)
         
         # Verify file was actually modified
-        import os
         new_mtime = os.path.getmtime(config_path)
         
         # Access again - should detect file change and reload
