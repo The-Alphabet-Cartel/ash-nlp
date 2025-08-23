@@ -30,6 +30,7 @@ from .helpers.ensemble_analysis_helper import EnsembleAnalysisHelper
 from .helpers.scoring_calculation_helper import ScoringCalculationHelper
 from .helpers.pattern_analysis_helper import PatternAnalysisHelper
 from .helpers.context_integration_helper import ContextIntegrationHelper
+from .performance_optimizations import integrate_performance_optimizations
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +94,10 @@ class CrisisAnalyzer:
         self.pattern_helper = PatternAnalysisHelper(self)
         self.context_helper = ContextIntegrationHelper(self)
         
+        # PHASE 3E STEP 7: Performance optimization integration
+        self.performance_optimizer = integrate_performance_optimizations(self)
+        logger.info("🚀 Performance optimizations integrated - targeting 500ms analysis time")
+
         # Cache attributes
         self._feature_cache = {}
         self._performance_cache = {}
@@ -134,8 +139,10 @@ class CrisisAnalyzer:
     
     async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
-        Perform comprehensive crisis analysis using ensemble of models and patterns
-        FIXED: Proper async handling and error management
+        PHASE 3E STEP 7: Performance-optimized crisis analysis - MAIN API ENTRY POINT
+        
+        This is the main entry point called by API endpoints.
+        Uses performance optimizer for sub-500ms target achievement.
         """
         start_time = time.time()
         logger.info(f"🔍 Starting optimized crisis analysis for user {user_id} in channel {channel_id}")
@@ -148,17 +155,42 @@ class CrisisAnalyzer:
             # Check if ensemble is enabled by feature flag
             ensemble_enabled = self._feature_cache.get('ensemble_enabled', True)
             
-            # FIXED: Temporarily disable learning path to avoid async issues
             if ensemble_enabled:
-                logger.debug("✅ Ensemble analysis enabled - delegating to ensemble helper")
-                return await self.context_helper.ensemble_crisis_analysis(message, user_id, channel_id, start_time)
+                logger.debug("🚀 Using performance-optimized analysis path")
+                # Use performance optimizer for critical path
+                optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
+                
+                # Apply learning adjustments if available
+                if self.learning_system_manager:
+                    try:
+                        learning_result = self.learning_system_manager.apply_learning_adjustments(
+                            optimized_result, user_id, channel_id
+                        )
+                        optimized_result.update({
+                            'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
+                            'learning_metadata': learning_result.get('metadata', {}),
+                            'learning_applied': True
+                        })
+                    except Exception as e:
+                        logger.warning(f"Learning adjustment failed: {e}")
+                        optimized_result['learning_applied'] = False
+                else:
+                    optimized_result['learning_applied'] = False
+                
+                processing_time = (time.time() - start_time) * 1000
+                optimized_result['api_processing_time'] = processing_time
+                
+                logger.info(f"✅ Optimized crisis analysis: {processing_time:.1f}ms")
+                return optimized_result
             else:
                 logger.debug("🔥 Ensemble analysis disabled - delegating to pattern helper")
                 return await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, start_time)
                 
         except Exception as e:
             logger.error(f"❌ Optimized crisis analysis failed: {e}")
-            return self.context_helper.create_error_response(message, user_id, channel_id, str(e), start_time)
+            logger.warning("Falling back to original helper-based analysis")
+            # Fallback to original helper-based analysis
+            return await self.context_helper.ensemble_crisis_analysis(message, user_id, channel_id, start_time)
 
     async def analyze_message(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
@@ -517,7 +549,8 @@ class CrisisAnalyzer:
 
     def perform_ensemble_crisis_analysis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
-        FIXED: Enhanced ensemble analysis - made sync to avoid async issues
+        PHASE 3E STEP 7: Performance-optimized ensemble analysis
+        TARGET: Sub-500ms analysis time with fallback safety
         """
         try:
             start_time = time.time()
@@ -526,71 +559,90 @@ class CrisisAnalyzer:
             if not self._validate_analysis_input(message, user_id, channel_id):
                 raise ValueError("Invalid analysis input")
             
+            # Use performance optimizer for critical path
+            logger.debug("🚀 Using performance-optimized analysis path")
+            optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
+            
+            # Apply learning adjustments if available
+            if self.learning_system_manager:
+                try:
+                    learning_result = self.learning_system_manager.apply_learning_adjustments(
+                        optimized_result, user_id, channel_id
+                    )
+                    optimized_result.update({
+                        'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
+                        'learning_metadata': learning_result.get('metadata', {}),
+                        'learning_applied': True
+                    })
+                except Exception as e:
+                    logger.warning(f"Learning adjustment failed: {e}")
+                    optimized_result['learning_applied'] = False
+            else:
+                optimized_result['learning_applied'] = False
+            
+            processing_time = (time.time() - start_time) * 1000
+            optimized_result['total_processing_time'] = processing_time
+            
+            logger.info(f"✅ Optimized ensemble analysis: {processing_time:.1f}ms")
+            return optimized_result
+            
+        except Exception as e:
+            # Fallback to original method if optimization fails
+            logger.warning(f"Performance optimization failed, using fallback: {e}")
+            return self._original_ensemble_analysis(message, user_id, channel_id)
+    
+    def _original_ensemble_analysis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
+        """
+        Original ensemble analysis method preserved as fallback
+        """
+        try:
+            start_time = time.time()
+            
             # Get ensemble weights from algorithm parameters
             algorithm_params = self.get_analysis_algorithm_parameters()
             ensemble_weights = algorithm_params.get('ensemble_weights', [0.4, 0.3, 0.3])
             
             # Use async run to get basic ensemble result
-            try:
-                base_result = asyncio.run(self.ensemble_helper.perform_ensemble_analysis(message, user_id, channel_id, start_time))
-                
-                # Apply learning adjustments if available
-                if self.learning_system_manager:
-                    try:
-                        learning_result = self.learning_system_manager.apply_learning_adjustments(
-                            base_result, user_id, channel_id
-                        )
-                        base_result.update({
-                            'learning_adjusted_score': learning_result.get('adjusted_score', base_result.get('crisis_score', 0.0)),
-                            'learning_metadata': learning_result.get('metadata', {}),
-                            'learning_applied': True
-                        })
-                    except Exception as e:
-                        logger.error(f"Learning adjustment failed: {e}")
-                        base_result['learning_applied'] = False
-                else:
+            base_result = asyncio.run(self.ensemble_helper.perform_ensemble_analysis(message, user_id, channel_id, start_time))
+            
+            # Apply learning adjustments if available
+            if self.learning_system_manager:
+                try:
+                    learning_result = self.learning_system_manager.apply_learning_adjustments(
+                        base_result, user_id, channel_id
+                    )
+                    base_result.update({
+                        'learning_adjusted_score': learning_result.get('adjusted_score', base_result.get('crisis_score', 0.0)),
+                        'learning_metadata': learning_result.get('metadata', {}),
+                        'learning_applied': True
+                    })
+                except Exception as e:
+                    logger.error(f"Learning adjustment failed: {e}")
                     base_result['learning_applied'] = False
-                
-                return base_result
-                
-            except Exception as e:
-                logger.error(f"Ensemble analysis execution failed: {e}")
-                # Return safe fallback result
-                return {
-                    'crisis_score': 0.5,
-                    'crisis_level': 'medium',
-                    'ensemble_weights_used': ensemble_weights,
-                    'learning_applied': False,
-                    'method': 'safe_fallback',
-                    'message': message,
-                    'user_id': user_id,
-                    'channel_id': channel_id,
-                    'needs_response': True,
-                    'confidence_score': 0.5,
-                    'detected_categories': ['fallback'],
-                    'requires_staff_review': True,
-                    'processing_time': time.time() - start_time,
-                    'error': str(e)
-                }
+            else:
+                base_result['learning_applied'] = False
+            
+            return base_result
             
         except Exception as e:
-            logger.error(f"❌ Ensemble analysis failed: {e}")
-            return self._safe_analysis_execution(
-                "perform_ensemble_crisis_analysis",
-                lambda: {
-                    'error': str(e), 
-                    'crisis_score': 0.0, 
-                    'crisis_level': 'error',
-                    'message': message,
-                    'user_id': user_id,
-                    'channel_id': channel_id,
-                    'needs_response': True,
-                    'confidence_score': 0.0,
-                    'detected_categories': ['error'],
-                    'requires_staff_review': True,
-                    'processing_time': 0.0
-                }
-            )
+            logger.error(f"Original ensemble analysis execution failed: {e}")
+            # Return safe fallback result
+            return {
+                'crisis_score': 0.5,
+                'crisis_level': 'medium',
+                'ensemble_weights_used': ensemble_weights,
+                'learning_applied': False,
+                'method': 'safe_fallback',
+                'message': message,
+                'user_id': user_id,
+                'channel_id': channel_id,
+                'needs_response': True,
+                'confidence_score': 0.5,
+                'detected_categories': ['fallback'],
+                'requires_staff_review': True,
+                'processing_time': (time.time() - start_time) * 1000,
+                'error': str(e)
+            }
 
     # ========================================================================
     # SHARED UTILITIES INTEGRATION (Maintained)
