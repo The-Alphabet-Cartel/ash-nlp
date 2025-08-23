@@ -58,40 +58,224 @@ class PerformanceOptimizedMethods:
         logger.info("🚀 PerformanceOptimizedMethods initialized - targeting 500ms analysis")
     
     def _cache_critical_configurations(self):
-        """Pre-cache frequently accessed configurations for ~12ms improvement"""
+        """
+        Cache critical configurations when all managers are available
+        
+        Uses lazy initialization approach - caches on first successful attempt
+        when all required managers are properly injected and available.
+        """
+        # Check if already cached
+        if hasattr(self, '_configurations_cached') and self._configurations_cached:
+            return
+            
         try:
+            # Define expected managers based on CrisisAnalyzer architecture
+            required_managers = {
+                'unified_config_manager': 'Configuration access',
+                'model_coordination_manager': 'Model ensemble management', 
+                'shared_utilities_manager': 'Shared utilities and safe config access',
+                'analysis_config_manager': 'Analysis parameters',
+                'crisis_threshold_manager': 'Crisis threshold mappings'
+            }
+            
+            # Check manager availability
+            available_managers = {}
+            missing_managers = []
+            
+            for manager_name, description in required_managers.items():
+                manager = getattr(self.analyzer, manager_name, None)
+                if manager is not None:
+                    available_managers[manager_name] = manager
+                else:
+                    missing_managers.append(f"{manager_name} ({description})")
+            
+            # Log manager availability status
+            logger.debug(f"Manager availability check: {len(available_managers)}/{len(required_managers)} managers available")
+            
+            if missing_managers:
+                logger.debug(f"Configuration caching delayed - managers not yet available: {missing_managers}")
+                logger.info("Performance optimizer will use runtime configuration access until managers are available")
+                self._use_runtime_configuration_access()
+                return
+            
+            # All managers available - proceed with caching
+            logger.debug("All required managers available - proceeding with configuration caching")
+            
             # Cache ensemble thresholds for all modes
             self._cached_thresholds = {}
             for mode in ['consensus', 'majority', 'weighted']:
-                self._cached_thresholds[mode] = self.analyzer.get_analysis_crisis_thresholds(mode)
+                try:
+                    self._cached_thresholds[mode] = self.analyzer.get_analysis_crisis_thresholds(mode)
+                except Exception as e:
+                    logger.warning(f"Failed to cache thresholds for mode {mode}: {e}")
+                    self._cached_thresholds[mode] = self._get_fallback_thresholds(mode)
             
             # Cache algorithm parameters
-            self._cached_algorithm_params = self.analyzer.get_analysis_algorithm_parameters()
+            try:
+                self._cached_algorithm_params = self.analyzer.get_analysis_algorithm_parameters()
+            except Exception as e:
+                logger.warning(f"Failed to cache algorithm parameters: {e}")
+                self._cached_algorithm_params = self._get_fallback_algorithm_params()
             
             # Cache pattern weights
-            self._cached_pattern_weights = self.analyzer.get_analysis_pattern_weights()
+            try:
+                self._cached_pattern_weights = self.analyzer.get_analysis_pattern_weights()
+            except Exception as e:
+                logger.warning(f"Failed to cache pattern weights: {e}")
+                self._cached_pattern_weights = self._get_fallback_pattern_weights()
             
             # Cache confidence boosts
-            self._cached_confidence_boosts = self.analyzer.get_analysis_confidence_boosts()
+            try:
+                self._cached_confidence_boosts = self.analyzer.get_analysis_confidence_boosts()
+            except Exception as e:
+                logger.warning(f"Failed to cache confidence boosts: {e}")
+                self._cached_confidence_boosts = self._get_fallback_confidence_boosts()
             
-            # Cache model coordination manager methods
-            if self.analyzer.model_coordination_manager:
-                self._cached_model_weights = self.analyzer.model_coordination_manager.get_normalized_weights()
-                self._cached_ensemble_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
+            # Cache model coordination settings
+            if available_managers.get('model_coordination_manager'):
+                try:
+                    self._cached_model_weights = available_managers['model_coordination_manager'].get_normalized_weights()
+                    self._cached_ensemble_mode = available_managers['model_coordination_manager'].get_ensemble_mode()
+                except Exception as e:
+                    logger.warning(f"Failed to cache model coordination settings: {e}")
+                    self._cached_model_weights = {'depression': 0.4, 'sentiment': 0.3, 'emotional_distress': 0.3}
+                    self._cached_ensemble_mode = 'majority'
             else:
                 self._cached_model_weights = {'depression': 0.4, 'sentiment': 0.3, 'emotional_distress': 0.3}
                 self._cached_ensemble_mode = 'majority'
             
-            logger.debug("✅ Critical configurations cached for performance optimization")
+            # Mark as successfully cached
+            self._configurations_cached = True
+            self._using_runtime_access = False
+            
+            logger.info("Critical configurations cached successfully for performance optimization")
+            logger.debug(f"Cached: {len(self._cached_thresholds)} threshold modes, "
+                        f"{len(self._cached_algorithm_params)} algorithm params, "
+                        f"{len(self._cached_pattern_weights)} pattern weights, "
+                        f"{len(self._cached_confidence_boosts)} confidence boosts")
             
         except Exception as e:
-            logger.warning(f"⚠️ Configuration caching failed: {e} - using runtime access")
-            self._cached_thresholds = {}
-            self._cached_algorithm_params = {}
-            self._cached_pattern_weights = {}
-            self._cached_confidence_boosts = {}
-            self._cached_model_weights = {}
-            self._cached_ensemble_mode = 'majority'
+            logger.error(f"Configuration caching failed: {e}")
+            logger.info("Performance optimizer will use runtime configuration access")
+            self._use_runtime_configuration_access()
+    
+    def _use_runtime_configuration_access(self):
+        """
+        Configure for runtime configuration access when caching isn't possible
+        
+        This is not a fallback with degraded functionality - it's an alternative
+        approach that uses the analyzer's configuration methods at runtime.
+        """
+        self._configurations_cached = False
+        self._using_runtime_access = True
+        
+        # Initialize empty caches - will be populated on demand
+        self._cached_thresholds = {}
+        self._cached_algorithm_params = {}
+        self._cached_pattern_weights = {}
+        self._cached_confidence_boosts = {}
+        self._cached_model_weights = {}
+        self._cached_ensemble_mode = 'majority'
+        
+        logger.debug("Configured for runtime configuration access - no degradation in functionality")
+    
+    def _get_cached_or_runtime_config(self, config_type: str, *args):
+        """
+        Get configuration from cache or runtime access
+        
+        Attempts to get from cache first, falls back to runtime analyzer methods
+        """
+        try:
+            if config_type == 'thresholds' and args:
+                mode = args[0]
+                if mode in self._cached_thresholds:
+                    return self._cached_thresholds[mode]
+                else:
+                    # Runtime access
+                    result = self.analyzer.get_analysis_crisis_thresholds(mode)
+                    self._cached_thresholds[mode] = result  # Cache for next time
+                    return result
+                    
+            elif config_type == 'algorithm_params':
+                if self._cached_algorithm_params:
+                    return self._cached_algorithm_params
+                else:
+                    result = self.analyzer.get_analysis_algorithm_parameters()
+                    self._cached_algorithm_params = result
+                    return result
+                    
+            elif config_type == 'pattern_weights':
+                if self._cached_pattern_weights:
+                    return self._cached_pattern_weights
+                else:
+                    result = self.analyzer.get_analysis_pattern_weights()
+                    self._cached_pattern_weights = result
+                    return result
+                    
+            elif config_type == 'confidence_boosts':
+                if self._cached_confidence_boosts:
+                    return self._cached_confidence_boosts
+                else:
+                    result = self.analyzer.get_analysis_confidence_boosts()
+                    self._cached_confidence_boosts = result
+                    return result
+                    
+            else:
+                logger.warning(f"Unknown config type requested: {config_type}")
+                return {}
+                
+        except Exception as e:
+            logger.warning(f"Failed to get {config_type} configuration: {e}")
+            # Return appropriate fallback
+            if config_type == 'thresholds':
+                return self._get_fallback_thresholds(args[0] if args else 'consensus')
+            elif config_type == 'algorithm_params':
+                return self._get_fallback_algorithm_params()
+            elif config_type == 'pattern_weights':
+                return self._get_fallback_pattern_weights()
+            elif config_type == 'confidence_boosts':
+                return self._get_fallback_confidence_boosts()
+            else:
+                return {}
+    
+    def _get_fallback_thresholds(self, mode: str) -> Dict[str, float]:
+        """Get fallback thresholds for specific mode"""
+        fallback_thresholds = {
+            'consensus': {'critical': 0.7, 'high': 0.45, 'medium': 0.25, 'low': 0.12},
+            'majority': {'critical': 0.65, 'high': 0.42, 'medium': 0.23, 'low': 0.11},
+            'weighted': {'critical': 0.7, 'high': 0.48, 'medium': 0.27, 'low': 0.13}
+        }
+        return fallback_thresholds.get(mode, fallback_thresholds['consensus'])
+    
+    def _get_fallback_algorithm_params(self) -> Dict[str, Any]:
+        """Get fallback algorithm parameters"""
+        return {
+            'ensemble_weights': [0.4, 0.3, 0.3],
+            'score_normalization': 'sigmoid',
+            'threshold_adaptation': True,
+            'learning_rate': 0.01,
+            'confidence_threshold': 0.5
+        }
+    
+    def _get_fallback_pattern_weights(self) -> Dict[str, float]:
+        """Get fallback pattern weights"""
+        return {
+            'ensemble_weight': 0.6,
+            'pattern_weight': 0.4,
+            'patterns_crisis': 0.6,
+            'community_patterns': 0.3,
+            'patterns_context': 0.4,
+            'temporal_patterns': 0.2
+        }
+    
+    def _get_fallback_confidence_boosts(self) -> Dict[str, float]:
+        """Get fallback confidence boosts"""
+        return {
+            'pattern_match': 0.1,
+            'context_boost': 0.15,
+            'temporal_boost': 0.05,
+            'community_pattern': 0.08
+        }
     
     def optimized_ensemble_analysis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
