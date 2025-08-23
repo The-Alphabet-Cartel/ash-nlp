@@ -334,8 +334,8 @@ class CrisisAnalyzer:
         MAINTAINED: Core configuration method kept in main class
         """
         try:
-            if self.shared_utilities_manager:
-                return self.shared_utilities_manager.get_config_section_safely(
+            if self.unified_config_manager:
+                return self.unified_config_manager.get_config_section(
                     'analysis_config', 'pattern_weights', {
                         'patterns_crisis': 0.6,
                         'community_patterns': 0.3,
@@ -343,8 +343,6 @@ class CrisisAnalyzer:
                         'temporal_patterns': 0.2
                     }
                 )
-            elif self.analysis_config_manager:
-                return self.analysis_config_manager.get_pattern_weights()
             else:
                 logger.warning("⚠️ No config manager available - using default pattern weights")
                 return {
@@ -353,6 +351,7 @@ class CrisisAnalyzer:
                     'patterns_context': 0.4,
                     'temporal_patterns': 0.2
                 }
+
         except Exception as e:
             return self._safe_analysis_execution(
                 "get_analysis_pattern_weights",
