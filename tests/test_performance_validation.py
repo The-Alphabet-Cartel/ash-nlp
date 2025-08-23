@@ -34,6 +34,7 @@ except ImportError:
 # Import main initialization function
 try:
     from main import initialize_unified_managers
+    from analysis.crisis_analyzer import create_crisis_analyzer
 except ImportError as e:
     print(f"❌ Failed to import main: {e}")
     sys.exit(1)
