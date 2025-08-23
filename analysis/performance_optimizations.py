@@ -493,9 +493,10 @@ class PerformanceOptimizedMethods:
             pattern_score = pattern_result.get('score', 0.0)
             
             # Use cached pattern weights
-            ensemble_weight = self._cached_pattern_weights.get('ensemble_weight', 0.6)
-            pattern_weight = self._cached_pattern_weights.get('pattern_weight', 0.4)
-            
+            weights = self._get_cached_or_runtime_config('pattern_weights')
+            ensemble_weight = weights.get('ensemble_weight', 0.6)
+            pattern_weight = weights.get('pattern_weight', 0.4)
+
             # Normalize weights if needed
             total_weight = ensemble_weight + pattern_weight
             if total_weight > 0:
@@ -508,7 +509,8 @@ class PerformanceOptimizedMethods:
             
             # Apply cached confidence boost if significant pattern match
             if pattern_score > 0.3:
-                confidence_boost = self._cached_confidence_boosts.get('pattern_match', 0.1)
+                confidence_boosts = self._get_cached_or_runtime_config('confidence_boosts')
+                confidence_boost = confidence_boosts.get('pattern_match', 0.1)
                 combined_score = min(1.0, combined_score + confidence_boost)
             
             return max(0.0, min(1.0, combined_score))
@@ -523,9 +525,7 @@ class PerformanceOptimizedMethods:
         """
         try:
             # Use cached thresholds for default mode
-            thresholds = self._cached_thresholds.get('consensus', {
-                'critical': 0.7, 'high': 0.45, 'medium': 0.25, 'low': 0.12
-            })
+            thresholds = self._get_cached_or_runtime_config('thresholds', 'consensus')
             
             if score >= thresholds.get('critical', 0.7):
                 return 'critical'
