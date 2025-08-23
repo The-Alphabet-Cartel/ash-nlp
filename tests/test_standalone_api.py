@@ -77,16 +77,17 @@ def test_server_health(server_config):
 def get_server_status(server_config):
     """Get comprehensive server status including warmup info"""
     try:
-        status_url = f"{server_config['base_url']}/status"
-        response = requests.get(status_url, timeout=10)
+        # Try /health endpoint for detailed status
+        health_url = f"{server_config['base_url']}/health"
+        response = requests.get(health_url, timeout=10)
         
         if response.status_code == 200:
             return True, response.json()
         else:
-            return False, f"Status check returned {response.status_code}"
+            return False, f"Health endpoint returned {response.status_code}"
             
     except Exception as e:
-        return False, f"Status check failed: {e}"
+        return False, f"Health endpoint failed: {e}"
 
 def test_api_crisis_analysis_performance(logger, server_config):
     """Test crisis analysis performance via API calls"""
@@ -274,14 +275,14 @@ def main():
         print(f"   Version: {health_data.get('version', 'Unknown')}")
     
     # Test 2: Server Status (including warmup info)
-    print(f"\n📊 TEST 2: Server Status & Warmup Info")
+    print(f"\n📊 TEST 2: Server Health & Warmup Info")
     print("-" * 50)
     
     status_ok, status_data = get_server_status(server_config)
     if status_ok and isinstance(status_data, dict):
-        print("✅ Server status retrieved successfully")
+        print("✅ Detailed server health retrieved successfully")
         
-        # Look for warmup information
+        # Look for warmup information in health response
         if 'model_coordination_manager' in status_data:
             mcm_status = status_data['model_coordination_manager']
             print(f"   Models Loaded: {mcm_status.get('models_configured', 'Unknown')}")
@@ -293,11 +294,11 @@ def main():
                 print(f"   Cold Start Eliminated: {warmup_status.get('cold_start_eliminated', 'Unknown')}")
                 print(f"   Ready for Production: {warmup_status.get('ready_for_production', 'Unknown')}")
             else:
-                print("   ⚠️ No warmup status found in server response")
+                print("   ⚠️ No warmup status found in health response")
         else:
-            print("   ⚠️ No model coordination manager status found")
+            print("   ⚠️ No model coordination manager status found in health response")
     else:
-        print(f"⚠️ Could not retrieve detailed server status: {status_data}")
+        print(f"⚠️ Could not retrieve detailed status from /health: {status_data}")
     
     # Test 3: API Performance
     print(f"\n🚨 TEST 3: API Crisis Analysis Performance")
