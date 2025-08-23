@@ -30,6 +30,7 @@ from .helpers.ensemble_analysis_helper import EnsembleAnalysisHelper
 from .helpers.scoring_calculation_helper import ScoringCalculationHelper
 from .helpers.pattern_analysis_helper import PatternAnalysisHelper
 from .helpers.context_integration_helper import ContextIntegrationHelper
+from .performance_optimizations import integrate_performance_optimizations
 
 logger = logging.getLogger(__name__)
 
