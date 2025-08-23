@@ -171,10 +171,27 @@ class TestCrisisDetectionWorkflow(unittest.TestCase):
         test_message = "This is a basic test message to verify analysis works."
         
         try:
-            # Try analyze_message method first
+            # Try analyze_message method first (with required parameters)
             if hasattr(self.crisis_analyzer, 'analyze_message'):
                 start_time = time.time()
-                result = self.crisis_analyzer.analyze_message(test_message)
+                
+                # Check if it's async
+                import inspect
+                if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                    # Async method - run with test parameters
+                    result = asyncio.run(self.crisis_analyzer.analyze_message(
+                        test_message, 
+                        user_id="test_user_123",
+                        channel_id="test_channel_456"
+                    ))
+                else:
+                    # Sync method - call with test parameters
+                    result = self.crisis_analyzer.analyze_message(
+                        test_message,
+                        user_id="test_user_123", 
+                        channel_id="test_channel_456"
+                    )
+                    
                 analysis_time = (time.time() - start_time) * 1000
                 
                 self.logger.info(f"✅ analyze_message completed in {analysis_time:.2f}ms")
@@ -234,9 +251,23 @@ class TestCrisisDetectionWorkflow(unittest.TestCase):
             try:
                 start_time = time.time()
                 
-                # Use available analysis method
+                # Use available analysis method with proper parameters
                 if hasattr(self.crisis_analyzer, 'analyze_message'):
-                    result = self.crisis_analyzer.analyze_message(message)
+                    import inspect
+                    if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                        # Async method
+                        result = asyncio.run(self.crisis_analyzer.analyze_message(
+                            message,
+                            user_id=f"test_user_{i+1}",
+                            channel_id="test_channel_crisis"
+                        ))
+                    else:
+                        # Sync method
+                        result = self.crisis_analyzer.analyze_message(
+                            message,
+                            user_id=f"test_user_{i+1}",
+                            channel_id="test_channel_crisis"
+                        )
                 elif hasattr(self.crisis_analyzer, 'analyze'):
                     result = self.crisis_analyzer.analyze(message)
                 else:
@@ -306,9 +337,21 @@ class TestCrisisDetectionWorkflow(unittest.TestCase):
                 try:
                     start_time = time.time()
                     
-                    # Use available analysis method
+                    # Use available analysis method with proper parameters
                     if hasattr(self.crisis_analyzer, 'analyze_message'):
-                        result = self.crisis_analyzer.analyze_message(message)
+                        import inspect
+                        if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                            result = asyncio.run(self.crisis_analyzer.analyze_message(
+                                message,
+                                user_id=f"test_user_cat_{category}_{i}",
+                                channel_id=f"test_channel_{category}"
+                            ))
+                        else:
+                            result = self.crisis_analyzer.analyze_message(
+                                message,
+                                user_id=f"test_user_cat_{category}_{i}",
+                                channel_id=f"test_channel_{category}"
+                            )
                     elif hasattr(self.crisis_analyzer, 'analyze'):
                         result = self.crisis_analyzer.analyze(message)
                     else:
@@ -422,7 +465,19 @@ class TestCrisisDetectionWorkflow(unittest.TestCase):
                 start_time = time.time()
                 
                 if hasattr(self.crisis_analyzer, 'analyze_message'):
-                    result = self.crisis_analyzer.analyze_message(message)
+                    import inspect
+                    if asyncio.iscoroutinefunction(self.crisis_analyzer.analyze_message):
+                        result = asyncio.run(self.crisis_analyzer.analyze_message(
+                            message,
+                            user_id=f"stability_user_{i}",
+                            channel_id="stability_test_channel"
+                        ))
+                    else:
+                        result = self.crisis_analyzer.analyze_message(
+                            message,
+                            user_id=f"stability_user_{i}",
+                            channel_id="stability_test_channel"
+                        )
                 elif hasattr(self.crisis_analyzer, 'analyze'):
                     result = self.crisis_analyzer.analyze(message)
                 else:
