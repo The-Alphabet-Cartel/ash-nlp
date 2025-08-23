@@ -20,7 +20,7 @@
   },
 
   "pattern_weights": {
-    "patterns_crisis"': "${NLP_ANALYSIS_PATTERNS_CRISIS}",
+    "patterns_crisis": "${NLP_ANALYSIS_PATTERNS_CRISIS}",
     "community_patterns": "${NLP_ANALYSIS_PATTERNS_COMMUNITY}",
     "patterns_context": "${NLP_ANALYSIS_PATTERNS_CONTEXT}",
     "temporal_patterns": "${NLP_ANALYSIS_PATTERNS_TEMPORAL}",
