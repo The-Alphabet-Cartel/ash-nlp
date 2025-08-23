@@ -127,8 +127,177 @@ class ModelCoordinationManager:
                     
             logger.info(f"Model preloading complete. Cached models: {len(self._model_cache)}")
             
+            # NEW: Warmup the complete analysis pipeline to eliminate cold start penalty
+            warmup_success = await self._warmup_analysis_pipeline()
+            if warmup_success:
+                logger.info("🔥 Analysis pipeline warmup successful - cold start penalty eliminated")
+            else:
+                logger.warning("⚠️ Analysis pipeline warmup had issues - may experience cold start penalty")
+            
         except Exception as e:
             logger.error(f"Model preloading failed: {e}")
+
+    async def _warmup_analysis_pipeline(self):
+        """
+        Warmup the complete analysis pipeline to eliminate cold start penalty
+        
+        This method creates a temporary CrisisAnalyzer and runs a complete analysis
+        to ensure all components are initialized and cached properly.
+        """
+        try:
+            logger.info("🔥 Starting analysis pipeline warmup...")
+            warmup_start_time = time.time()
+            
+            # Import here to avoid circular imports
+            try:
+                from analysis import create_crisis_analyzer
+            except ImportError as e:
+                logger.warning(f"Cannot import CrisisAnalyzer for warmup: {e}")
+                return False
+            
+            # Get other managers from config if available
+            shared_utilities_manager = None
+            learning_system_manager = None
+            pattern_detection_manager = None
+            
+            # Try to get additional managers for complete warmup
+            try:
+                # These may not be available in all configurations
+                if hasattr(self.config_manager, 'get_manager'):
+                    shared_utilities_manager = self.config_manager.get_manager('shared_utilities')
+                    learning_system_manager = self.config_manager.get_manager('learning_system')
+                    pattern_detection_manager = self.config_manager.get_manager('pattern_detection')
+            except Exception as e:
+                logger.debug(f"Additional managers not available for warmup: {e}")
+            
+            # Create a temporary CrisisAnalyzer for warmup
+            logger.debug("Creating temporary CrisisAnalyzer for warmup...")
+            try:
+                warmup_analyzer = create_crisis_analyzer(
+                    unified_config=self.config_manager,
+                    model_coordination_manager=self,
+                    shared_utilities_manager=shared_utilities_manager,
+                    learning_system_manager=learning_system_manager,
+                    pattern_detection_manager=pattern_detection_manager
+                )
+            except Exception as e:
+                logger.warning(f"Failed to create CrisisAnalyzer for warmup: {e}")
+                return False
+            
+            # Warmup test message - realistic but generic to exercise key paths
+            warmup_message = "This is a warmup test to initialize the analysis pipeline and cache components."
+            
+            # Run a complete analysis to warm up all components
+            logger.debug("Running warmup analysis to initialize all components...")
+            analysis_start_time = time.time()
+            
+            try:
+                # Check if analyze_message is async or sync
+                import inspect
+                if hasattr(warmup_analyzer, 'analyze_message'):
+                    if inspect.iscoroutinefunction(warmup_analyzer.analyze_message):
+                        warmup_result = await warmup_analyzer.analyze_message(
+                            message=warmup_message,
+                            user_id="warmup_user",
+                            channel_id="warmup_channel"
+                        )
+                    else:
+                        warmup_result = warmup_analyzer.analyze_message(
+                            message=warmup_message,
+                            user_id="warmup_user", 
+                            channel_id="warmup_channel"
+                        )
+                elif hasattr(warmup_analyzer, 'analyze'):
+                    warmup_result = warmup_analyzer.analyze(warmup_message)
+                else:
+                    logger.warning("No suitable analysis method found on CrisisAnalyzer")
+                    return False
+                    
+            except Exception as e:
+                logger.warning(f"Warmup analysis execution failed: {e}")
+                # Still consider partial success if we got this far
+                warmup_result = {'status': 'partial_warmup', 'error': str(e)}
+            
+            analysis_time = (time.time() - analysis_start_time) * 1000
+            total_warmup_time = (time.time() - warmup_start_time) * 1000
+            
+            # Evaluate warmup success
+            if warmup_result and (
+                warmup_result.get('status') == 'success' or 
+                'score' in warmup_result or 
+                'crisis_level' in warmup_result
+            ):
+                logger.info(f"✅ Analysis pipeline warmup successful!")
+                logger.info(f"   Warmup analysis time: {analysis_time:.1f}ms")
+                logger.info(f"   Total warmup time: {total_warmup_time:.1f}ms")
+                
+                # Store warmup metadata for health checks
+                self._pipeline_warmed = True
+                self._warmup_time_ms = total_warmup_time
+                self._warmup_analysis_time_ms = analysis_time
+                self._warmup_success = True
+                
+                return True
+            else:
+                logger.warning(f"⚠️ Analysis pipeline warmup completed with issues")
+                logger.warning(f"   Warmup analysis time: {analysis_time:.1f}ms")
+                logger.warning(f"   Total warmup time: {total_warmup_time:.1f}ms")
+                logger.warning(f"   Result: {warmup_result}")
+                
+                # Store partial warmup metadata
+                self._pipeline_warmed = True
+                self._warmup_time_ms = total_warmup_time  
+                self._warmup_analysis_time_ms = analysis_time
+                self._warmup_success = False
+                
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Analysis pipeline warmup failed: {e}")
+            
+            # Store failure metadata
+            self._pipeline_warmed = False
+            self._warmup_time_ms = None
+            self._warmup_analysis_time_ms = None 
+            self._warmup_success = False
+            
+            return False
+
+    def get_warmup_status(self) -> Dict[str, Any]:
+        """
+        Get warmup status for health checks and diagnostics
+        
+        Returns:
+            Dictionary with warmup status information
+        """
+        try:
+            models = self.get_model_definitions()
+            preload_status = self.get_preload_status()
+            
+            return {
+                'pipeline_warmed': getattr(self, '_pipeline_warmed', False),
+                'warmup_success': getattr(self, '_warmup_success', None),
+                'total_warmup_time_ms': getattr(self, '_warmup_time_ms', None),
+                'warmup_analysis_time_ms': getattr(self, '_warmup_analysis_time_ms', None),
+                'models_preloaded': preload_status.get('preload_complete', False),
+                'models_cached': len(self._model_cache),
+                'total_models_configured': len(models),
+                'transformers_available': TRANSFORMERS_AVAILABLE,
+                'cold_start_eliminated': (
+                    getattr(self, '_pipeline_warmed', False) and 
+                    getattr(self, '_warmup_success', False)
+                ),
+                'ready_for_production': (
+                    preload_status.get('preload_complete', False) and
+                    getattr(self, '_pipeline_warmed', False)
+                )
+            }
+        except Exception as e:
+            return {
+                'error': str(e), 
+                'pipeline_warmed': False,
+                'ready_for_production': False
+            }
 
     def get_preload_status(self) -> Dict[str, Any]:
         """Get status of model preloading for health checks"""
