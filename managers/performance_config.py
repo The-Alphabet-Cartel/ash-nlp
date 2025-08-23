@@ -193,47 +193,47 @@ class PerformanceConfigManager:
     def get_analysis_performance_settings(self) -> Dict[str, Any]:
         """Get all analysis performance settings"""
         return {
-            'timeout_seconds': self.config_manager.get_config_section('performance_settings', 'analysis_performance.timeout_seconds', 30.0),
-            'retry_attempts': self.config_manager.get_config_section('performance_settings', 'analysis_performance.retry_attempts', 3),
-            'enable_timeout': self.config_manager.get_config_section('performance_settings', 'analysis_performance.enable_timeout', True),
-            'batch_size': self.config_manager.get_config_section('performance_settings', 'analysis_performance.batch_size', 10)
+            'timeout_seconds': self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.timeout_seconds', 30.0),
+            'retry_attempts': self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.retry_attempts', 3),
+            'enable_timeout': self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.enable_timeout', True),
+            'batch_size': self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.batch_size', 10)
         }
     
     def get_server_performance_settings(self) -> Dict[str, Any]:
         """Get all server performance settings"""
         return {
-            'max_workers': self.config_manager.get_config_section('performance_settings', 'server_performance.max_workers', 4),
-            'worker_timeout': self.config_manager.get_config_section('performance_settings', 'server_performance.worker_timeout', 60),
-            'request_timeout': self.config_manager.get_config_section('performance_settings', 'analysis_performance.timeout_seconds', 30.0),
-            'max_concurrent_requests': self.config_manager.get_config_section('performance_settings', 'server_performance.max_concurrent_requests', 20),
-            'workers': self.config_manager.get_config_section('performance_settings', 'server_performance.workers', 1)
+            'max_workers': self.config_manager.get_config_section('performance_settings', 'performance_settings.server_performance.max_workers', 4),
+            'worker_timeout': self.config_manager.get_config_section('performance_settings', 'performance_settings.server_performance.worker_timeout', 60),
+            'request_timeout': self.config_manager.get_config_section('performance_settings', 'performance_settings.analysis_performance.timeout_seconds', 30.0),
+            'max_concurrent_requests': self.config_manager.get_config_section('performance_settings', 'performance_settings.server_performance.max_concurrent_requests', 20),
+            'workers': self.config_manager.get_config_section('performance_settings', 'performance_settings.server_performance.workers', 1)
         }
     
     def get_model_performance_settings(self) -> Dict[str, Any]:
         """Get all model performance settings"""
         return {
-            'device': self.config_manager.get_config_section('performance_settings', 'model_performance.device', 'auto'),
-            'device_map': self.config_manager.get_config_section('performance_settings', 'model_performance.device_map', 'auto'),
-            'load_in_8bit': self.config_manager.get_config_section('performance_settings', 'model_performance.load_in_8bit', False),
-            'load_in_4bit': self.config_manager.get_config_section('performance_settings', 'model_performance.load_in_4bit', False),
-            'max_memory': self.config_manager.get_config_section('performance_settings', 'model_performance.max_memory', None),
-            'offload_folder': self.config_manager.get_config_section('performance_settings', 'model_performance.offload_folder', None)
+            'device': self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.device', 'auto'),
+            'device_map': self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.device_map', 'auto'),
+            'load_in_8bit': self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.load_in_8bit', False),
+            'load_in_4bit': self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.load_in_4bit', False),
+            'max_memory': self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.max_memory', None),
+            'offload_folder': self.config_manager.get_config_section('performance_settings', 'performance_settings.model_performance.offload_folder', None)
         }
     
     def get_rate_limiting_performance_settings(self) -> Dict[str, Any]:
         """Get all rate limiting performance settings"""
         return {
-            'rate_limit_per_minute': self.config_manager.get_config_section('performance_settings', 'rate_limiting_performance.rate_limit_per_minute', 120),
-            'rate_limit_per_hour': self.config_manager.get_config_section('performance_settings', 'rate_limiting_performance.rate_limit_per_hour', 2000),
-            'rate_limit_burst': self.config_manager.get_config_section('performance_settings', 'rate_limiting_performance.rate_limit_burst', 150)
+            'rate_limit_per_minute': self.config_manager.get_config_section('performance_settings', 'performance_settings.rate_limiting_performance.rate_limit_per_minute', 120),
+            'rate_limit_per_hour': self.config_manager.get_config_section('performance_settings', 'performance_settings.rate_limiting_performance.rate_limit_per_hour', 2000),
+            'rate_limit_burst': self.config_manager.get_config_section('performance_settings', 'performance_settings.rate_limiting_performance.rate_limit_burst', 150)
         }
     
     def get_cache_performance_settings(self) -> Dict[str, Any]:
         """Get all cache performance settings"""
         return {
-            'model_cache_size_limit': self.config_manager.get_config_section('performance_settings', 'cache_performance.model_cache_size_limit', '10GB'),
-            'analysis_cache_size_limit': self.config_manager.get_config_section('performance_settings', 'cache_performance.analysis_cache_size_limit', '2GB'),
-            'cache_expiry_hours': self.config_manager.get_config_section('performance_settings', 'cache_performance.cache_expiry_hours', 24)
+            'model_cache_size_limit': self.config_manager.get_config_section('performance_settings', 'performance_settings.cache_performance.model_cache_size_limit', '10GB'),
+            'analysis_cache_size_limit': self.config_manager.get_config_section('performance_settings', 'performance_settings.cache_performance.analysis_cache_size_limit', '2GB'),
+            'cache_expiry_hours': self.config_manager.get_config_section('performance_settings', 'performance_settings.cache_performance.cache_expiry_hours', 24)
         }
     
     # ========================================================================
