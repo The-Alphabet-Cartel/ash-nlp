@@ -463,8 +463,8 @@ class PerformanceOptimizedMethods:
             if not self.analyzer.pattern_detection_manager:
                 return {'score': 0.0, 'confidence': 0.0, 'method': 'no_pattern_manager'}
             
-            # Direct pattern detection call
-            pattern_result = self.analyzer.pattern_detection_manager.detect_crisis_patterns(message)
+            # Direct pattern detection call using correct method name
+            pattern_result = self.analyzer.pattern_detection_manager.analyze_enhanced_patterns(message)
             
             # Extract score from pattern result
             pattern_score = 0.0
@@ -481,7 +481,7 @@ class PerformanceOptimizedMethods:
             }
             
         except Exception as e:
-            logger.error(f"❌ Direct pattern analysis failed: {e}")
+            logger.error(f"Direct pattern analysis failed: {e}")
             return {'score': 0.0, 'confidence': 0.0, 'method': 'pattern_error', 'error': str(e)}
     
     def _fast_score_combination(self, ensemble_result: Dict, pattern_result: Dict) -> float:
