@@ -42,6 +42,10 @@ from managers.helpers.unified_config_value_helper import (
     UnifiedConfigValueHelper,
     create_value_helper
 )
+from managers.helpers.unified_config_caching_helper import (
+    UnifiedConfigCachingHelper,
+    create_caching_helper
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,19 +77,19 @@ class UnifiedConfigManager:
         """
         self.config_dir = Path(config_dir)
         
-        # Configuration file mappings - UPDATED for v3.1 consolidation
+        # Configuration file mappings
         self.config_files = {
             # Core algorithm configuration
             'analysis_config': 'analysis_config.json',
             'crisis_threshold': 'crisis_threshold.json',
             
             # Pattern files
+            'patterns_burden': 'patterns_burden.json',
             'patterns_community': 'patterns_community.json',
             'patterns_context': 'patterns_context.json',
-            'patterns_temporal': 'patterns_temporal.json',
             'patterns_crisis': 'patterns_crisis.json',
             'patterns_idiom': 'patterns_idiom.json',
-            'patterns_burden': 'patterns_burden.json',
+            'patterns_temporal': 'patterns_temporal.json',
             
             # Core system configuration
             'feature_flags': 'feature_flags.json',
@@ -103,6 +107,17 @@ class UnifiedConfigManager:
         self.schema_helper = create_schema_helper(self.config_dir, self.config_files)
         self.variable_schemas = self.schema_helper.initialize_schemas()
         self.value_helper = create_value_helper(self.variable_schemas)
+        
+        # PHASE 3E STEP 7: Initialize caching helper for performance optimization
+        caching_enabled = os.getenv('NLP_PERFORMANCE_ENABLE_CONFIG_CACHING', 'true').lower() == 'true'
+        if caching_enabled:
+            self.caching_helper = create_caching_helper(self.config_dir, self.config_files)
+            self._caching_enabled = True
+            logger.info("🚀 UnifiedConfigManager intelligent caching enabled - system-wide performance enhancement")
+        else:
+            self.caching_helper = None
+            self._caching_enabled = False
+            logger.info("UnifiedConfigManager caching disabled by configuration")
         
         # Load and validate all environment variables
         self.env_config = self._load_all_environment_variables()
@@ -268,13 +283,27 @@ class UnifiedConfigManager:
     
     def load_config_file(self, config_name: str) -> Dict[str, Any]:
         """
-        Load and parse configuration file with enhanced placeholder resolution
+        Load and parse configuration file with enhanced placeholder resolution and intelligent caching
         
         Args:
             config_name: Name of configuration to load
             
         Returns:
             Processed configuration dictionary
+        """
+        # Use caching if enabled
+        if self._caching_enabled and self.caching_helper:
+            def load_function() -> Dict[str, Any]:
+                return self._load_config_file_original(config_name)
+            
+            return self.caching_helper.get_cached_config_file(config_name, load_function)
+        else:
+            # Caching disabled - use original method
+            return self._load_config_file_original(config_name)
+
+    def _load_config_file_original(self, config_name: str) -> Dict[str, Any]:
+        """
+        Original load_config_file implementation (your existing code unchanged)
         """
         config_file = self.config_files.get(config_name)
         if not config_file:
@@ -313,7 +342,7 @@ class UnifiedConfigManager:
     
     def get_config_section(self, config_file: str, section_path: str = None, default: Any = None) -> Any:
         """
-        Get a specific section from a configuration file with support for nested paths
+        Get a specific section from a configuration file with support for nested paths and intelligent caching
         
         Args:
             config_file: Name of the configuration file (e.g., 'analysis_config')
@@ -322,6 +351,20 @@ class UnifiedConfigManager:
             
         Returns:
             The requested configuration section or default value
+        """
+        # Use caching if enabled
+        if self._caching_enabled and self.caching_helper:
+            def load_function() -> Any:
+                return self._get_config_section_original(config_file, section_path, default)
+            
+            return self.caching_helper.get_cached_config_section(config_file, section_path, default, load_function)
+        else:
+            # Caching disabled - use original method
+            return self._get_config_section_original(config_file, section_path, default)
+
+    def _get_config_section_original(self, config_file: str, section_path: str = None, default: Any = None) -> Any:
+        """
+        Original get_config_section implementation (your existing code unchanged)
         """
         try:
             # Load the configuration file
@@ -569,21 +612,22 @@ class UnifiedConfigManager:
             return {}
     
     def get_status(self) -> Dict[str, Any]:
-        """Get status of UnifiedConfigManager with optimization info"""
-        return {
+        """Get status of UnifiedConfigManager with caching and optimization info"""
+        status = {
             'status': 'operational',
-            'version': 'v3.1e_optimized_with_helpers',
-            'enhancement': 'Helper File Architecture with Enhanced Performance',
+            'version': 'v3.1e_optimized_with_helpers_and_caching',
+            'enhancement': 'Helper File Architecture with Enhanced Performance and Intelligent Caching',
             'config_files': len(self.config_files),
             'variables_managed': len([k for k in os.environ.keys() if k.startswith('NLP_') or k.startswith('GLOBAL_')]),
             'config_directory': str(self.config_dir),
-            'architecture': 'Clean v3.1 with Helper File Optimization',
+            'architecture': 'Clean v3.1 with Helper File Optimization and Intelligent Caching',
             'optimization_status': {
                 'helper_files_used': True,
                 'schema_helper': 'managers/helpers/unified_config_schema_helper.py',
                 'value_helper': 'managers/helpers/unified_config_value_helper.py',
+                'caching_helper': 'managers/helpers/unified_config_caching_helper.py' if self._caching_enabled else 'disabled',
                 'main_file_reduction': '40% (1089 -> ~650 lines)',
-                'extracted_functionality': ['Schema management', 'Value conversion', 'Documentation']
+                'extracted_functionality': ['Schema management', 'Value conversion', 'Intelligent caching', 'Documentation']
             },
             'schema_system': {
                 'total_schemas': len(self.variable_schemas),
@@ -593,6 +637,80 @@ class UnifiedConfigManager:
                 'validation_source': 'JSON configuration files + essential core'
             }
         }
+        
+        # PHASE 3E STEP 7: Add cache statistics if caching is enabled
+        if self._caching_enabled and self.caching_helper:
+            try:
+                cache_stats = self.caching_helper.get_cache_statistics()
+                status['caching'] = {
+                    'enabled': True,
+                    'hit_rate_percent': cache_stats['hit_rate'],
+                    'performance_improvement_factor': cache_stats['performance_improvement'],
+                    'total_requests': cache_stats['total_requests'],
+                    'cache_entries': cache_stats['current_entries'],
+                    'memory_usage_mb': cache_stats['memory_usage_mb'],
+                    'memory_utilization_percent': cache_stats['memory_utilization_pct'],
+                    'efficiency_rating': cache_stats['cache_efficiency'],
+                    'average_load_time_ms': cache_stats['average_load_time_ms'],
+                    'average_cached_time_ms': cache_stats['average_cached_time_ms']
+                }
+                
+                # Add performance summary
+                if cache_stats['total_requests'] > 0:
+                    status['caching']['performance_summary'] = f"Cache improving config access by {cache_stats['performance_improvement']:.1f}x " + \
+                                                             f"({cache_stats['average_load_time_ms']:.1f}ms → {cache_stats['average_cached_time_ms']:.2f}ms)"
+            except Exception as e:
+                status['caching'] = {'enabled': True, 'status': 'error', 'error': str(e)}
+        else:
+            status['caching'] = {'enabled': False, 'reason': 'disabled by NLP_PERFORMANCE_ENABLE_CONFIG_CACHING=false'}
+        
+        return status
+
+    # ============================================================================
+    # Cache management methods
+    # ============================================================================
+
+    def get_cache_statistics(self) -> Dict[str, Any]:
+        """
+        Get detailed cache performance statistics
+        
+        Returns:
+            Dictionary with cache statistics or empty dict if caching disabled
+        """
+        if self._caching_enabled and self.caching_helper:
+            return self.caching_helper.get_cache_statistics()
+        else:
+            return {'enabled': False}
+
+    def clear_configuration_cache(self, pattern: str = None) -> int:
+        """
+        Clear configuration cache entries
+        
+        Args:
+            pattern: Optional pattern to match cache keys (None clears all)
+            
+        Returns:
+            Number of cache entries cleared
+        """
+        if self._caching_enabled and self.caching_helper:
+            return self.caching_helper.clear_cache(pattern)
+        else:
+            return 0
+
+    def invalidate_configuration_cache(self, config_name: str) -> int:
+        """
+        Invalidate cache entries for a specific configuration file
+        
+        Args:
+            config_name: Name of configuration file to invalidate
+            
+        Returns:
+            Number of cache entries invalidated
+        """
+        if self._caching_enabled and self.caching_helper:
+            return self.caching_helper.invalidate_config(config_name)
+        else:
+            return 0
 
 # ============================================================================
 # FACTORY FUNCTION - Clean v3.1 Architecture Compliance
@@ -612,4 +730,4 @@ def create_unified_config_manager(config_dir: str = "/app/config") -> UnifiedCon
 
 __all__ = ['UnifiedConfigManager', 'create_unified_config_manager']
 
-logger.info("UnifiedConfigManager v3.1e optimized loaded - Helper file architecture with 40% size reduction")
+logger.info("UnifiedConfigManager v3.1e with intelligent caching loaded")
