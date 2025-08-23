@@ -6,7 +6,7 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-6-2
+**FILE VERSION**: v3.1-3e-6-3
 **LAST MODIFIED**: 2025-08-22
 **PHASE**: 3e
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
@@ -107,6 +107,11 @@
 ```
 ash/ash-nlp/
 ├── analysis/                                # Analysis components
+|   ├── helpers/
+|   |   ├── context_integration_helper.py
+|   |   ├── ensemble_analysis_helper.py
+|   |   ├── pattern_analysis_helper.py
+|   |   └── scoring_calculation_helper.py
 │   ├── __init__.py
 │   └── crisis_analyzer.py
 ├── api/                                     # API endpoints
@@ -120,6 +125,7 @@ ash/ash-nlp/
 ├── config/                                  # JSON configuration files
 │   ├── __init__.py
 │   ├── analysis_config.json
+│   ├── crisis_threshold.json
 │   ├── feature_flags.json
 │   ├── label_config.json
 │   ├── learning_system.json
@@ -132,25 +138,25 @@ ash/ash-nlp/
 │   ├── patterns_idiom.json
 │   ├── patterns_temporal.json
 │   ├── performance_settings.json
-│   ├── server_setting.json
-│   ├── storage_settings.json
-│   └── crisis_threshold.json
+│   ├── server_config.json
+│   ├── setting_config.json
+│   └── storage_settings.json
 ├── data/                                    # DATA Storage
 ├── docs/                                    # Documentation
 │   ├── v3.1/
 │   │   ├── managers/
 |   |   │   ├── analysis_config.md
 |   |   │   ├── context_analysis.md
-|   |   │   ├── pattern_detection.md
+|   |   │   ├── crisis_threshold.md
 |   |   │   ├── feature_config.md
 |   |   │   ├── logging_config.md
 |   |   │   ├── model_coordination.md
+|   |   │   ├── pattern_detection.md
 |   |   │   ├── performance_config.md
 |   |   │   ├── pydantic.md
 |   |   │   ├── server_config.md
 |   |   │   ├── settings.md
 |   |   │   ├── storage_config.md
-|   |   │   ├── crisis_threshold.md
 |   |   │   ├── unified_config.md
 |   |   │   └── zero_shot.md
 │   │   ├── phase/
@@ -163,21 +169,20 @@ ash/ash-nlp/
 |   |   │   │       ├── 2.1_shared_utilities_architecture_design.md
 |   |   │   │       ├── 3.1_learning_method_extraction_plan.md
 |   |   │   │       ├── 4.1_analysis_method_consolidation_plan.md
+|   |   │   │       ├── 5.5_implmenentation_plan.md
+|   |   │   │       ├── 5.5-6_completion_summary.md
+|   |   │   │       ├── 5.5-7_zero_shot_ai_recovery_implementation_plan.md
+|   |   │   │       ├── 5.6_cross_manager_integration_testing_plan.md
+|   |   │   │       ├── 6.1_manager_renaming.md
 |   |   │   │       ├── step_1.md
 |   |   │   │       ├── step_2.md
 |   |   │   │       ├── step_3.md
 |   |   │   │       ├── step_4.md
-|   |   │   │       ├── step_5-8.md.bak
 |   |   │   │       ├── step_5.md
 |   |   │   │       ├── step_6.md
 |   |   │   │       ├── step_7.md
 |   |   │   │       ├── step_8.md
 |   |   │   │       └── tracker.md
-|   │   │   └── 4/
-|   |   │       ├── a/
-|   |   │       │   └── tracker.md
-|   |   │       └── b/
-|   |   │           └── tracker.md
 │   │   ├── clean_architecture_charter_v3.1.md
 │   │   ├── frequently_asked_questions_v3.1.md
 │   │   └── migration_guide_v3.1.md
@@ -187,38 +192,31 @@ ash/ash-nlp/
 ├── learning_data/                           # Learning Data Storage
 ├── logs/                                    # Logs Storage
 ├── managers/                                # All manager classes
+|   ├── helpers/
+|   |   ├── pattern_detection_helper.py
+|   |   ├── unified_config_schema_helper.py
+|   |   └── unified_config_value_helper.py
 │   ├── __init__.py
 │   ├── analysis_config.py
 │   ├── context_analysis.py
 │   ├── crisis_threshold.py
-│   ├── feature_config_manager.py
-│   ├── learning_system_manager.py
-│   ├── logging_config_manager.py
-│   ├── model_coordination_manager.py
+│   ├── feature_config.py
+│   ├── learning_system.py
+│   ├── logging_config.py
+│   ├── model_coordination.py
 │   ├── pattern_detection.py
-│   ├── performance_config_manager.py
-│   ├── pydantic_manager.py
-│   ├── server_config_manager.py
-│   ├── settings_manager.py
+│   ├── performance_config.py
+│   ├── pydantic.py
+│   ├── server_config.py
+│   ├── settings.py
 │   ├── shared_utilities.py
-│   ├── storage_config_manager.py
+│   ├── storage_config.py
 │   ├── unified_config.py
-│   └── zero_shot_manager.py
+│   └── zero_shot.py
 ├── models/                                  # Models Storage
 │   ├── cache/                               # Models Cache
 │   └── offload/                             # Models Offloading
 ├── tests/                                   # Testing Scripts
-│   └── phase/
-|       ├── 3/
-|       │   └── e/
-|       |       ├── test_analysis_config_cleanup.py
-|       |       ├── test_crisis_analyzer_integration.py
-|       |       ├── test_learning_system_manager.py
-|       |       ├── test_shared_utilities_manager.py
-|       |       └── test_crisis_threshold_cleanup.py
-|       └── 4/
-|           ├── a/
-|           └── b/
 ├── tmp/                                     # Temporary Files
 |   └── uploads/                             # Temporary Uploads
 ├── __init__.py
