@@ -77,8 +77,6 @@ class CrisisAnalyzer:
         self.context_analysis_manager = context_analysis_manager
         self.shared_utilities_manager = shared_utilities_manager
         self.learning_system_manager = learning_system_manager
-        
-        # ADDED: ZeroShotManager integration
         self.zero_shot_manager = zero_shot_manager
         
         # Basic negation patterns
