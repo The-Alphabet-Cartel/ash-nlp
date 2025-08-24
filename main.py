@@ -135,6 +135,7 @@ def create_fastapi_app():
     # Add ensemble endpoints  
     add_ensemble_endpoints(app,
                             crisis_analyzer=crisis_analyzer,
+                            model_coordination_manager=model_coordination,
                             pydantic_manager=pydantic,
                             pattern_detection_manager=pattern_detection,
                             crisis_threshold_manager=crisis_threshold)
