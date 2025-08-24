@@ -499,33 +499,28 @@ if __name__ == "__main__":
         # Get server configuration from unified config with CORRECT paths
         host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
         port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
-        workers = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
-        reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
         
         logger.info(f"🔍 Debug - host: '{host}' (type: {type(host).__name__})")
         logger.info(f"🔍 Debug - port: '{port}' (type: {type(port).__name__})")
-        logger.info(f"🔍 Debug - workers_raw: '{workers}' (type: {type(workers).__name__})")
-        logger.info(f"🔍 Debug - reload_raw: '{reload}' (type: {type(reload).__name__})")
-        
-        logger.info(f"🌐 Server configuration: {host}:{port}")
-        logger.info(f"👥 Workers: {workers} (type: {type(workers).__name__})")
-        logger.info(f"🔄 Auto-reload: {reload} (type: {type(reload).__name__})")
         
         logger.info("=" * 70)
         logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
         logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
         logger.info("=" * 70)
         
-        # *** DO NOT CREATE APP HERE ***
-        # Let uvicorn import and create it when needed
+        # *** CREATE AND INITIALIZE APP HERE - BEFORE UVICORN STARTS ***
+        logger.info("🔧 Creating and initializing FastAPI application...")
+        app = create_fastapi_app()
+        logger.info("✅ FastAPI application fully initialized and ready")
         
-        # Start server using import string (required for multiple workers)
+        # Now start uvicorn with the already-initialized app object
+        logger.info("🚀 Starting uvicorn server with initialized application...")
         uvicorn.run(
-            "main:app",  # Import string - uvicorn will import and create app
+            app,  # Pass the initialized app object directly
             host=host,
             port=port,
-            workers=workers,
-            reload=reload,
+            workers=1,  # Force single worker when passing app object
+            reload=False,  # Force reload=False when passing app object  
             log_config=None,
             access_log=False
         )
@@ -536,24 +531,6 @@ if __name__ == "__main__":
         logger.error(f"❌ Application startup failed: {e}")
         raise
 
-
 # ============================================================================
-# MODULE-LEVEL APP FOR UVICORN IMPORT STRING (COMPLETELY DEFERRED)
+# NO MODULE-LEVEL APP CREATION - ONLY FOR DIRECT EXECUTION
 # ============================================================================
-
-app = None
-
-def create_app_when_imported():
-    """Create app only when uvicorn imports this module"""
-    global app
-    if app is None:
-        # This will only run when uvicorn imports the module
-        app = create_fastapi_app()
-    return app
-
-# This only runs when uvicorn imports the module, not during direct execution
-if __name__ != "__main__":
-    app = create_app_when_imported()
-else:
-    # When running directly, don't create app at all
-    app = None
