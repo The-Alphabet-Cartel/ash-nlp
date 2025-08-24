@@ -489,78 +489,45 @@ if __name__ == "__main__":
         logger.info("            🚀 ASH-NLP SERVICE STARTUP")
         logger.info("==========================================================")
         
-        # Get server configuration from unified config
-        # CLEAR CACHE FIRST to ensure validation changes take effect
+        # Clear cache first to ensure validation applies
         try:
             cache_cleared = unified_config.clear_configuration_cache()
             logger.info(f"🧹 Cleared {cache_cleared} cache entries to ensure validation applies")
         except Exception as e:
             logger.warning(f"⚠️ Could not clear cache: {e}")
         
+        # Get server configuration from unified config with CORRECT paths
         host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
         port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
-        workers_raw = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
-        reload_raw = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
+        workers = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
+        reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
         
-        # Debug the raw values
         logger.info(f"🔍 Debug - host: '{host}' (type: {type(host).__name__})")
         logger.info(f"🔍 Debug - port: '{port}' (type: {type(port).__name__})")
-        logger.info(f"🔍 Debug - workers_raw: '{workers_raw}' (type: {type(workers_raw).__name__})")
-        logger.info(f"🔍 Debug - reload_raw: '{reload_raw}' (type: {type(reload_raw).__name__})")
-        
-        # Force type conversion as backup
-        try:
-            workers = int(workers_raw) if workers_raw is not None else 2
-        except (ValueError, TypeError) as e:
-            logger.warning(f"⚠️ Failed to convert workers '{workers_raw}' to int: {e}, using default 2")
-            workers = 2
-            
-        try:
-            if isinstance(reload_raw, str):
-                reload = reload_raw.lower() in ('true', '1', 'yes', 'on')
-            else:
-                reload = bool(reload_raw)
-        except (ValueError, TypeError) as e:
-            logger.warning(f"⚠️ Failed to convert reload '{reload_raw}' to bool: {e}, using default False")
-            reload = False
+        logger.info(f"🔍 Debug - workers_raw: '{workers}' (type: {type(workers).__name__})")
+        logger.info(f"🔍 Debug - reload_raw: '{reload}' (type: {type(reload).__name__})")
         
         logger.info(f"🌐 Server configuration: {host}:{port}")
         logger.info(f"👥 Workers: {workers} (type: {type(workers).__name__})")
         logger.info(f"🔄 Auto-reload: {reload} (type: {type(reload).__name__})")
         
-        # Also debug the validation system
-        try:
-            validation_rules = unified_config._get_validation_rules('server_config', 'server_configuration.application_settings')
-            logger.info(f"🔍 Validation rules found: {validation_rules}")
-        except Exception as e:
-            logger.error(f"❌ Error getting validation rules: {e}")
-        
         logger.info("=" * 70)
         logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
         logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
         logger.info("=" * 70)
-#        host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
-#        port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
-#        workers = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
-#        reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
-#        
-#        logger.info(f"🌐 Server configuration: {host}:{port}")
-#        logger.info(f"👥 Workers: {workers} (type: {type(workers).__name__})")
-#        logger.info(f"🔄 Auto-reload: {reload} (type: {type(workers).__name__})")
-#        logger.info("=" * 70)
-#        logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
-#        logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
-#        logger.info("=" * 70)
+        
+        # *** DO NOT CREATE APP HERE ***
+        # Let uvicorn import and create it when needed
         
         # Start server using import string (required for multiple workers)
         uvicorn.run(
-            "main:app",  # Import string instead of app object
+            "main:app",  # Import string - uvicorn will import and create app
             host=host,
             port=port,
             workers=workers,
             reload=reload,
-            log_config=None,  # Use our custom logging
-            access_log=False  # Disable default access logging
+            log_config=None,
+            access_log=False
         )
         
     except KeyboardInterrupt:
@@ -571,27 +538,22 @@ if __name__ == "__main__":
 
 
 # ============================================================================
-# MODULE-LEVEL APP FOR UVICORN IMPORT STRING (DEFERRED CREATION)
+# MODULE-LEVEL APP FOR UVICORN IMPORT STRING (COMPLETELY DEFERRED)
 # ============================================================================
 
-# Global variable to hold the app instance
 app = None
 
-def get_app():
-    """
-    Lazy app factory for uvicorn import string
-    This ensures the app is only created when actually needed by uvicorn
-    """
+def create_app_when_imported():
+    """Create app only when uvicorn imports this module"""
     global app
     if app is None:
+        # This will only run when uvicorn imports the module
         app = create_fastapi_app()
     return app
 
-# Only create app when this module is imported by uvicorn, not during direct execution
+# This only runs when uvicorn imports the module, not during direct execution
 if __name__ != "__main__":
-    # This runs when uvicorn imports the module using "main:app"
-    app = get_app()
+    app = create_app_when_imported()
 else:
-    # This runs when executing the script directly
-    # App will be created by uvicorn via import string later
+    # When running directly, don't create app at all
     app = None
