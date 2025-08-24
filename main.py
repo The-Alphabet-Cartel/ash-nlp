@@ -124,7 +124,6 @@ def create_fastapi_app():
 
     # Add admin endpoints
     add_admin_endpoints(app,
-                        unified_config=unified_config,
                         model_coordination_manager=model_coordination,
                         zero_shot_manager=zero_shot,
                         pattern_detection_manager=pattern_detection,
