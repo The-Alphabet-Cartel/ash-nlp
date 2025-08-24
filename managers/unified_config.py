@@ -567,39 +567,69 @@ class UnifiedConfigManager:
                 min_value = range_val[0] if range_val[0] is not None else min_value
                 max_value = range_val[1] if range_val[1] is not None else max_value
         
-        # FIXED: Handle both JSON Schema and internal type names
+        # ENHANCED: Handle multiple types (e.g., ["string", "null"])
+        if isinstance(expected_type, list):
+            type_list = expected_type
+        else:
+            type_list = [expected_type]
+        
+        # Normalize type names (JSON Schema -> internal)
         type_mapping = {
             'integer': 'int',
-            'boolean': 'bool',
+            'boolean': 'bool', 
             'string': 'str',
             'array': 'list',
-            'number': 'float'
+            'number': 'float',
+            'null': 'null'
         }
-        normalized_type = type_mapping.get(expected_type, expected_type)
         
-        # Type conversion
-        try:
-            if normalized_type == 'bool':
-                if isinstance(value, str):
-                    converted_value = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
-                else:
-                    converted_value = bool(value)
-            elif normalized_type == 'int':
-                converted_value = int(float(value))  # Handle string floats like "2.0"
-            elif normalized_type == 'float':
-                converted_value = float(value)
-            elif normalized_type == 'list':
-                if isinstance(value, str):
-                    converted_value = [item.strip() for item in value.split(',')]
-                elif isinstance(value, list):
-                    converted_value = value
-                else:
-                    converted_value = [str(value)]
-            else:  # str
-                converted_value = str(value) if value is not None else ''
+        normalized_types = [type_mapping.get(t, t) for t in type_list]
+        
+        # Handle null/None values first
+        if value is None or (isinstance(value, str) and value.lower() in ('null', 'none', '')):
+            if 'null' in normalized_types:
+                logger.debug(f"JSON validation applied to {setting_name}: '{value}' -> None (allowed null)")
+                return None
+            else:
+                raise ValueError(f"Null value not allowed for {setting_name}: expected types {type_list}")
+        
+        # Try each allowed type until one succeeds
+        conversion_errors = []
+        
+        for normalized_type in normalized_types:
+            if normalized_type == 'null':
+                continue  # Already handled above
                 
-        except (ValueError, TypeError) as e:
-            raise ValueError(f"Type conversion failed for {setting_name}: cannot convert '{value}' to {normalized_type}: {e}")
+            try:
+                # Type conversion
+                if normalized_type == 'bool':
+                    if isinstance(value, str):
+                        converted_value = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
+                    else:
+                        converted_value = bool(value)
+                elif normalized_type == 'int':
+                    converted_value = int(float(value))  # Handle string floats like "2.0"
+                elif normalized_type == 'float':
+                    converted_value = float(value)
+                elif normalized_type == 'list':
+                    if isinstance(value, str):
+                        converted_value = [item.strip() for item in value.split(',')]
+                    elif isinstance(value, list):
+                        converted_value = value
+                    else:
+                        converted_value = [str(value)]
+                else:  # str
+                    converted_value = str(value) if value is not None else ''
+                
+                # If we get here, conversion succeeded
+                break
+                    
+            except (ValueError, TypeError) as e:
+                conversion_errors.append(f"{normalized_type}: {e}")
+                continue
+        else:
+            # No type conversion succeeded
+            raise ValueError(f"Type conversion failed for {setting_name}: cannot convert '{value}' to any of {type_list}. Errors: {'; '.join(conversion_errors)}")
         
         # Validate choices
         if choices and converted_value not in choices:
