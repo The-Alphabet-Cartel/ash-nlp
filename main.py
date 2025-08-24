@@ -490,18 +490,67 @@ if __name__ == "__main__":
         logger.info("==========================================================")
         
         # Get server configuration from unified config
+        # CLEAR CACHE FIRST to ensure validation changes take effect
+        try:
+            cache_cleared = unified_config.clear_configuration_cache()
+            logger.info(f"🧹 Cleared {cache_cleared} cache entries to ensure validation applies")
+        except Exception as e:
+            logger.warning(f"⚠️ Could not clear cache: {e}")
+        
         host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
         port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
-        workers = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
-        reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
+        workers_raw = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
+        reload_raw = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
+        
+        # Debug the raw values
+        logger.info(f"🔍 Debug - host: '{host}' (type: {type(host).__name__})")
+        logger.info(f"🔍 Debug - port: '{port}' (type: {type(port).__name__})")
+        logger.info(f"🔍 Debug - workers_raw: '{workers_raw}' (type: {type(workers_raw).__name__})")
+        logger.info(f"🔍 Debug - reload_raw: '{reload_raw}' (type: {type(reload_raw).__name__})")
+        
+        # Force type conversion as backup
+        try:
+            workers = int(workers_raw) if workers_raw is not None else 2
+        except (ValueError, TypeError) as e:
+            logger.warning(f"⚠️ Failed to convert workers '{workers_raw}' to int: {e}, using default 2")
+            workers = 2
+            
+        try:
+            if isinstance(reload_raw, str):
+                reload = reload_raw.lower() in ('true', '1', 'yes', 'on')
+            else:
+                reload = bool(reload_raw)
+        except (ValueError, TypeError) as e:
+            logger.warning(f"⚠️ Failed to convert reload '{reload_raw}' to bool: {e}, using default False")
+            reload = False
         
         logger.info(f"🌐 Server configuration: {host}:{port}")
         logger.info(f"👥 Workers: {workers} (type: {type(workers).__name__})")
-        logger.info(f"🔄 Auto-reload: {reload} (type: {type(workers).__name__})")
+        logger.info(f"🔄 Auto-reload: {reload} (type: {type(reload).__name__})")
+        
+        # Also debug the validation system
+        try:
+            validation_rules = unified_config._get_validation_rules('server_config', 'server_configuration.application_settings')
+            logger.info(f"🔍 Validation rules found: {validation_rules}")
+        except Exception as e:
+            logger.error(f"❌ Error getting validation rules: {e}")
+        
         logger.info("=" * 70)
         logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
         logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
         logger.info("=" * 70)
+#        host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
+#        port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
+#        workers = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
+#        reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
+#        
+#        logger.info(f"🌐 Server configuration: {host}:{port}")
+#        logger.info(f"👥 Workers: {workers} (type: {type(workers).__name__})")
+#        logger.info(f"🔄 Auto-reload: {reload} (type: {type(workers).__name__})")
+#        logger.info("=" * 70)
+#        logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
+#        logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
+#        logger.info("=" * 70)
         
         # Start server using import string (required for multiple workers)
         uvicorn.run(
