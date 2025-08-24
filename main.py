@@ -361,8 +361,12 @@ try:
     # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
     # ========================================================================
+    logger.info("=" * 70)
+    logger.info("=" * 70)
     logger.info("🔧 Preloading ensemble models for shared memory optimization...")
     logger.info("⏱️ Model loading may take several minutes on first startup...")
+    logger.info("=" * 70)
+    logger.info("=" * 70)
     
     start_time = time.time()
     
@@ -375,8 +379,12 @@ try:
         logger.info("🔄 Triggering model preload for memory sharing...")
         try:
             # Trigger model loading by accessing model definitions
+            logger.info("=" * 70)
+            logger.info("🔧 Preloading models now...")
+            model_coordination.preload_models()
             models = model_coordination.get_model_definitions()
             logger.info(f"📦 Found {len(models)} models configured for preload")
+            logger.info("=" * 70)
             
             # Force model initialization for memory sharing
             for model_name, model_info in models.items():
@@ -389,14 +397,20 @@ try:
             logger.info("🔄 Models will be loaded on-demand by workers")
     
     preload_time = time.time() - start_time
+    logger.info("=" * 70)
     logger.info(f"✅ Model preloading completed in {preload_time:.2f} seconds")
+    logger.info("=" * 70)
     
     # ========================================================================
     # CREATE FASTAPI APP AT MODULE LEVEL
     # ========================================================================
+    logger.info("=" * 70)
     logger.info("🔧 Creating FastAPI application at module level...")
+    logger.info("=" * 70)
     app = create_fastapi_app()
+    logger.info("=" * 70)
     logger.info("✅ FastAPI application created and configured")
+    logger.info("=" * 70)
     
     logger.info("=" * 70)
     logger.info("✅ ALL INITIALIZATION COMPLETE")
