@@ -496,8 +496,8 @@ if __name__ == "__main__":
         reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
         
         logger.info(f"🌐 Server configuration: {host}:{port}")
-        logger.info(f"👥 Workers: {workers}")
-        logger.info(f"🔄 Auto-reload: {reload}")
+        logger.info(f"👥 Workers: {workers} (type: {type(workers).__name__})")
+        logger.info(f"🔄 Auto-reload: {reload} (type: {type(workers).__name__})")
         logger.info("=" * 70)
         logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
         logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
