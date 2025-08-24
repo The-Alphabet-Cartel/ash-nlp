@@ -56,16 +56,37 @@ EXPOSE 8881
 HEALTHCHECK --interval=60s --timeout=35s --start-period=300s --retries=3 \
     CMD curl -f http://localhost:8881/health || exit 1
 
-# Start the service
-CMD ["python", "main.py"]
-
+# Production: Start with gunicorn multi-worker
+CMD ["gunicorn", "-c", "gunicorn_config.py", "main:app"]
+    
+# Development alternative (comment out production CMD above and uncomment below):
+# CMD ["python", "dev_server.py"]
+    
 # Updated labels for API server version
 LABEL maintainer="The Alphabet Cartel" \
-      version="3.1" \
-      description="Ash NLP Server - Mental Health Support with Analytics" \
-      org.opencontainers.image.source="https://github.com/The-Alphabet-Cartel/ash" \
-      feature.conversation-isolation="enabled" \
-      feature.api-server="enabled" \
-      feature.analytics-dashboard="supported" \
-      api.port="8881" \
-      api.endpoints="/analyze,/health,/admin/status,/admin/labels/status,/admin/labels/config,/admin/labels/current,/admin/labels/list,/admin/labels/validate,/admin/labels/details/safety_first,/admin/labels/export/safety_first,/admin/labels/simple-switch,/admin/labels/switch,/ensemble/config,/ensemble/health,/ensemble/status,/learning_statistics,/analyze_false_negative,/analyze_false_positive,/update_learning_model"
+    version="3.1" \
+    description="Ash NLP Server - Mental Health Support with Analytics" \
+    org.opencontainers.image.source="https://github.com/The-Alphabet-Cartel/ash" \
+    feature.conversation-isolation="enabled" \
+    feature.api-server="enabled" \
+    feature.analytics-dashboard="supported" \
+    api.port="8881" \
+    api.endpoints="/analyze, \
+      /health, \
+      /admin/status, \
+      /admin/labels/status, \
+      /admin/labels/config, \
+      /admin/labels/current, \
+      /admin/labels/list, \
+      /admin/labels/validate, \
+      /admin/labels/details/safety_first, \
+      /admin/labels/export/safety_first, \
+      /admin/labels/simple-switch, \
+      /admin/labels/switch, \
+      /ensemble/config, \
+      /ensemble/health, \
+      /ensemble/status, \
+      /learning_statistics, \
+      /analyze_false_negative, \
+      /analyze_false_positive, \
+      /update_learning_model"
