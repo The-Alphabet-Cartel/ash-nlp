@@ -489,9 +489,6 @@ if __name__ == "__main__":
         logger.info("            🚀 ASH-NLP SERVICE STARTUP")
         logger.info("==========================================================")
         
-        # Create application
-        app = create_fastapi_app()
-        
         # Get server configuration from unified config
         host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
         port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
@@ -506,9 +503,9 @@ if __name__ == "__main__":
         logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
         logger.info("=" * 70)
         
-        # Start server
+        # Start server using import string (required for multiple workers)
         uvicorn.run(
-            app,
+            "main:app",  # Import string instead of app object
             host=host,
             port=port,
             workers=workers,
@@ -522,3 +519,12 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"❌ Application startup failed: {e}")
         raise
+
+
+# ============================================================================
+# MODULE-LEVEL APP FOR UVICORN IMPORT STRING
+# ============================================================================
+
+# Create app at module level so "main:app" import works
+# This is required when using uvicorn.run("main:app", ...)
+app = create_fastapi_app()
