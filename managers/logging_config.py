@@ -64,61 +64,13 @@ class LoggingConfigManager:
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
             config = self.unified_config.get_config_section('logging_settings')
-            
-            if config and 'logging_configuration' in config:
-                logger.info("Logging configuration loaded from JSON with environment overrides")
-                return config['logging_configuration']
-            elif config:
-                # Handle flattened configuration structure
-                logger.info("Logging configuration loaded with enhanced structure")
-                return config
-            else:
-                logger.warning("Logging configuration not found in JSON, using fallback")
-                return self._get_fallback_logging_config()
-                
+            logger.info("Logging configuration loaded from JSON with environment overrides")
+
+            return config['logging_configuration']
+
         except Exception as e:
             logger.error(f"Error loading logging configuration: {e}")
-            logger.info("Falling back to safe defaults per Clean Architecture Charter Rule #5")
-            return self._get_fallback_logging_config()
-    
-    def _get_fallback_logging_config(self) -> Dict[str, Any]:
-        """Get fallback logging configuration using enhanced Phase 3e environment variable patterns"""
-        logger.info("Using enhanced fallback logging configuration")
-        
-        # PHASE 3E: Enhanced fallback with better structure and validation
-        return {
-            'global_settings': {
-                'log_level': self.unified_config.get_env('GLOBAL_LOG_LEVEL', 'INFO'),  # PRESERVED GLOBAL
-                'log_file': self.unified_config.get_env('NLP_STORAGE_LOG_FILE', 'nlp_service.log'),
-                'log_directory': self.unified_config.get_env('NLP_STORAGE_LOGS_DIR', './logs'),
-                'enable_console_output': self.unified_config.get_env_bool('GLOBAL_LOGGING_ENABLE_CONSOLE', True),
-                'enable_file_output': self.unified_config.get_env_bool('GLOBAL_LOGGING_ENABLE_FILE', True)
-            },
-            'detailed_logging': {
-                'enable_detailed': self.unified_config.get_env_bool('NLP_LOGGING_ENABLE_DETAILED', True),
-                'include_raw_labels': self.unified_config.get_env_bool('NLP_LOGGING_INCLUDE_RAW_LABELS', True),
-                'analysis_steps': self.unified_config.get_env_bool('NLP_LOGGING_ANALYSIS_STEPS', False),
-                'performance_metrics': self.unified_config.get_env_bool('NLP_LOGGING_PERFORMANCE_METRICS', True),
-                'include_reasoning': self.unified_config.get_env_bool('NLP_LOGGING_INCLUDE_REASONING', True)
-            },
-            'component_logging': {
-                'threshold_changes': self.unified_config.get_env_bool('NLP_LOGGING_THRESHOLD_CHANGES', True),
-                'model_disagreements': self.unified_config.get_env_bool('NLP_LOGGING_MODEL_DISAGREEMENTS', True),
-                'staff_review_triggers': self.unified_config.get_env_bool('NLP_LOGGING_STAFF_REVIEW_TRIGGERS', True),
-                'pattern_adjustments': self.unified_config.get_env_bool('NLP_LOGGING_PATTERN_ADJUSTMENTS', True),
-                'learning_updates': self.unified_config.get_env_bool('NLP_LOGGING_LEARNING_UPDATES', True),
-                'label_mappings': self.unified_config.get_env_bool('NLP_LOGGING_LABEL_MAPPINGS', True),
-                'ensemble_decisions': self.unified_config.get_env_bool('NLP_LOGGING_ENSEMBLE_DECISIONS', True),
-                'crisis_detection': self.unified_config.get_env_bool('NLP_LOGGING_CRISIS_DETECTION', True)
-            },
-            'development_logging': {
-                'debug_mode': self.unified_config.get_env_bool('NLP_LOGGING_DEBUG_MODE', False),
-                'trace_requests': self.unified_config.get_env_bool('NLP_LOGGING_TRACE_REQUESTS', False),
-                'log_configuration_loading': self.unified_config.get_env_bool('NLP_LOGGING_CONFIG_LOADING', False),
-                'log_manager_initialization': self.unified_config.get_env_bool('NLP_LOGGING_MANAGER_INIT', True),
-                'log_environment_variables': self.unified_config.get_env_bool('NLP_LOGGING_ENV_VARS', False)
-            }
-        }
+            return
     
     # ========================================================================
     # GLOBAL LOGGING SETTINGS ACCESS METHODS (Phase 3e Enhanced)
