@@ -301,7 +301,7 @@ def setup_unified_logging(unified_config_manager):
     try:
         # Get logging configuration through unified config
         log_level = unified_config_manager.get_config_section('logging_settings', 'global_settings.log_level', 'INFO')
-        log_detailed = unified_config_manager.get_config_section('logging_settings', 'detailed_logging.enable_detailed', 'true')
+        log_detailed = unified_config_manager.get_config_section('logging_settings', 'detailed_logging.enable_detailed', True)
         enable_file_logging = unified_config_manager.get_config_section('logging_settings', 'global_settings.enable_file_output', False)
         log_file = unified_config_manager.get_config_section('logging_settings', 'global_settings.log_file', 'nlp_service.log')
         
@@ -353,7 +353,7 @@ def setup_unified_logging(unified_config_manager):
                 logging.warning(f"⚠️ Could not setup file logging: {e}")
         
         logging.info("🎨 Unified colorlog logging configured successfully")
-        logging.info(f"📊 Log level: {log_level}, Format: {log_format}")
+        logging.info(f"📊 Log level: {log_level}")
         
     except Exception as e:
         # Fallback to basic logging
