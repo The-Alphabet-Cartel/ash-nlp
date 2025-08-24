@@ -504,7 +504,6 @@ if __name__ == "__main__":
         logger.info(f"🔍 Debug - port: '{port}' (type: {type(port).__name__})")
         
         logger.info("=" * 70)
-        logger.info("🎉 PHASE 3D STEP 9: UNIFIED CONFIGURATION OPERATIONAL")
         logger.info("🏳️‍🌈 Ready to serve The Alphabet Cartel community!")
         logger.info("=" * 70)
         
@@ -526,6 +525,9 @@ if __name__ == "__main__":
             log_config=None,
             access_log=False
         )
+        logger.info("=" * 70)
+        logger.info("🎉 Server initialized 🎉")
+        logger.info("=" * 70)
         
     except KeyboardInterrupt:
         logger.info("🛑 Shutdown requested by user")
