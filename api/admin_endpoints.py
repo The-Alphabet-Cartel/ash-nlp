@@ -757,7 +757,8 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
     # Call the enhanced setup function with ALL managers
     try:
         setup_admin_endpoints(
-            app=app, config_manager,
+            app=app,
+            config_manager,
             model_coordination_manager=model_coordination_manager,
             zero_shot_manager=zero_shot_manager,
             pattern_detection_manager=pattern_detection_manager,
