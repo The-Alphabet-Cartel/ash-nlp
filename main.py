@@ -30,13 +30,9 @@ from fastapi import FastAPI
 import uvicorn
 
 # ============================================================================
-# STEP 9: UNIFIED CONFIGURATION MANAGER IMPORT
-# ============================================================================
-from managers.unified_config import create_unified_config_manager
-
-# ============================================================================
 # MANAGER IMPORTS - ALL USING FACTORY FUNCTIONS (CLEAN V3.1)
 # ============================================================================
+from managers.unified_config import create_unified_config_manager
 from managers.analysis_config import create_analysis_config_manager
 from managers.pattern_detection import create_pattern_detection_manager
 from managers.feature_config import create_feature_config_manager
@@ -61,79 +57,7 @@ from api.admin_endpoints import add_admin_endpoints
 from api.ensemble_endpoints import add_ensemble_endpoints
 
 # ============================================================================
-# PHASE 3D STEP 9: UNIFIED CONFIGURATION LOGGING SETUP
-# ============================================================================
-
-def setup_unified_logging(unified_config_manager):
-    """
-    Setup colorlog logging with unified configuration management
-    Phase 3d Step 9: Uses UnifiedConfigManager for all logging configuration
-    """
-    try:
-        # Get logging configuration through unified config
-        log_level = unified_config_manager.get_env('GLOBAL_LOG_LEVEL', 'INFO')
-        log_format = unified_config_manager.get_env('NLP_LOG_FORMAT', 'detailed')
-        enable_file_logging = unified_config_manager.get_env_bool('NLP_LOG_ENABLE_FILE_LOGGING', True)
-        log_file = unified_config_manager.get_env('NLP_LOG_FILE', 'nlp_service.log')
-        
-        # Configure colorlog formatter
-        if log_format == 'simple':
-            log_format_string = '%(log_color)s%(levelname)s%(reset)s: %(message)s'
-        else:  # detailed
-            log_format_string = '%(log_color)s%(asctime)s - %(name)s - %(levelname)s%(reset)s: %(message)s'
-        
-        # Create colorlog formatter
-        formatter = colorlog.ColoredFormatter(
-            log_format_string,
-            datefmt='%Y-%m-%d %H:%M:%S',
-            reset=True,
-            log_colors={
-                'DEBUG': 'cyan',
-                'INFO': 'green',
-                'WARNING': 'yellow',
-                'ERROR': 'red',
-                'CRITICAL': 'red,bg_white',
-            }
-        )
-        
-        # Configure root logger
-        root_logger = logging.getLogger()
-        root_logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
-        
-        # Clear existing handlers
-        for handler in root_logger.handlers[:]:
-            root_logger.removeHandler(handler)
-        
-        # Console handler
-        console_handler = colorlog.StreamHandler()
-        console_handler.setFormatter(formatter)
-        root_logger.addHandler(console_handler)
-        
-        # Optional file handler
-        if enable_file_logging:
-            try:
-                file_handler = logging.FileHandler(log_file)
-                file_formatter = logging.Formatter(
-                    '%(asctime)s - %(name)s - %(levelname)s: %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S'
-                )
-                file_handler.setFormatter(file_formatter)
-                root_logger.addHandler(file_handler)
-                logging.info(f"📁 File logging enabled: {log_file}")
-            except Exception as e:
-                logging.warning(f"⚠️ Could not setup file logging: {e}")
-        
-        logging.info("🎨 Unified colorlog logging configured successfully")
-        logging.info(f"📊 Log level: {log_level}, Format: {log_format}")
-        
-    except Exception as e:
-        # Fallback to basic logging
-        logging.basicConfig(level=logging.INFO)
-        logging.error(f"❌ Failed to setup unified logging: {e}")
-        logging.info("🔄 Using fallback basic logging configuration")
-
-# ============================================================================
-# PHASE 3D STEP 9: UNIFIED MANAGER INITIALIZATION
+# UNIFIED MANAGER INITIALIZATION
 # ============================================================================
 
 def initialize_unified_managers():
@@ -366,7 +290,79 @@ def initialize_unified_managers():
         raise
 
 # ============================================================================
-# PHASE 3D STEP 9: FASTAPI APPLICATION FACTORY
+# UNIFIED CONFIGURATION LOGGING SETUP
+# ============================================================================
+
+def setup_unified_logging(unified_config_manager):
+    """
+    Setup colorlog logging with unified configuration management
+    Phase 3d Step 9: Uses UnifiedConfigManager for all logging configuration
+    """
+    try:
+        # Get logging configuration through unified config
+        log_level = unified_config_manager.get_config_section('logging_settings', 'global_settings.log_level', 'INFO')
+        log_detailed = unified_config_manager.get_config_section('logging_settings', 'detailed_logging.enable_detailed', 'true')
+        enable_file_logging = unified_config_manager.get_config_section('logging_settings', 'global_settings.enable_file_output', False)
+        log_file = unified_config_manager.get_config_section('logging_settings', 'global_settings.log_file', 'nlp_service.log')
+        
+        # Configure colorlog formatter
+        if log_detailed == False:
+            log_format_string = '%(log_color)s%(levelname)s%(reset)s: %(message)s'
+        else:  # detailed
+            log_format_string = '%(log_color)s%(asctime)s - %(name)s - %(levelname)s%(reset)s: %(message)s'
+        
+        # Create colorlog formatter
+        formatter = colorlog.ColoredFormatter(
+            log_format_string,
+            datefmt='%Y-%m-%d %H:%M:%S',
+            reset=True,
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'red,bg_white',
+            }
+        )
+        
+        # Configure root logger
+        root_logger = logging.getLogger()
+        root_logger.setLevel(getattr(logging, log_level.upper(), logging.INFO))
+        
+        # Clear existing handlers
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+        
+        # Console handler
+        console_handler = colorlog.StreamHandler()
+        console_handler.setFormatter(formatter)
+        root_logger.addHandler(console_handler)
+        
+        # Optional file handler
+        if enable_file_logging:
+            try:
+                file_handler = logging.FileHandler(log_file)
+                file_formatter = logging.Formatter(
+                    '%(asctime)s - %(name)s - %(levelname)s: %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S'
+                )
+                file_handler.setFormatter(file_formatter)
+                root_logger.addHandler(file_handler)
+                logging.info(f"📁 File logging enabled: {log_file}")
+            except Exception as e:
+                logging.warning(f"⚠️ Could not setup file logging: {e}")
+        
+        logging.info("🎨 Unified colorlog logging configured successfully")
+        logging.info(f"📊 Log level: {log_level}, Format: {log_format}")
+        
+    except Exception as e:
+        # Fallback to basic logging
+        logging.basicConfig(level=logging.INFO)
+        logging.error(f"❌ Failed to setup unified logging: {e}")
+        logging.info("🔄 Using fallback basic logging configuration")
+
+# ============================================================================
+# FASTAPI APPLICATION FACTORY
 # ============================================================================
 
 def create_fastapi_app():
@@ -497,10 +493,10 @@ if __name__ == "__main__":
         app = create_fastapi_app()
         
         # Get server configuration from unified config
-        host = unified_config.get_env('NLP_SERVER_HOST', '0.0.0.0')
-        port = unified_config.get_env_int('GLOBAL_NLP_API_PORT', 8881)
-        workers = unified_config.get_env_int('NLP_SERVER_WORKERS', 1)
-        reload = unified_config.get_env_bool('NLP_SERVER_RELOAD', False)
+        host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
+        port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
+        workers = unified_config.get_config_section('server_config', 'application_settings.workers', 2)
+        reload = unified_config.get_config_section('server_config', 'application_settings.reload_on_changes', False)
         
         logger.info(f"🌐 Server configuration: {host}:{port}")
         logger.info(f"👥 Workers: {workers}")
