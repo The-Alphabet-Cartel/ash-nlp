@@ -59,7 +59,7 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pattern_detection_manager=None,
+def setup_admin_endpoints(app, config_manager, model_coordination_manager, zero_shot_manager, pattern_detection_manager=None,
                          analysis_config_manager=None, crisis_threshold_manager=None):
     """
     Setup admin endpoints with complete Phase 3c manager architecture
@@ -77,9 +77,13 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     # CLEAN V3.1 VALIDATION - No Fallbacks
     # ========================================================================
     
+    if not config_manager:
+        logger.error("❌ UnifiedConfigManager is required for admin endpoints")
+        raise RuntimeError("UnifiedConfigManager is required for admin endpoints")
+
     if not model_coordination_manager:
-        logger.error("❌ Model Ensemble Manager is required for admin endpoints")
-        raise RuntimeError("Model Ensemble Manager required for admin endpoints")
+        logger.error("❌ ModelEnsembleManager is required for admin endpoints")
+        raise RuntimeError("ModelEnsembleManager required for admin endpoints")
     
     if not zero_shot_manager:
         logger.error("❌ ZeroShotManager is required for admin endpoints")
@@ -110,11 +114,12 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
                     "/admin/labels/switch"
                 ],
                 "managers": {
-                    "zero_shot_manager": zero_shot_manager is not None,
+                    "unified_config_manager": config_manager is not None,
+                    "analysis_config_manager": analysis_config_manager is not None,
+                    "crisis_threshold_manager": crisis_threshold_manager is not None,
                     "model_coordination_manager": model_coordination_manager is not None,
                     "pattern_detection_manager": pattern_detection_manager is not None,
-                    "analysis_config_manager": analysis_config_manager is not None,
-                    "crisis_threshold_manager": crisis_threshold_manager is not None
+                    "zero_shot_manager": zero_shot_manager is not None
                 }
             }
             
@@ -752,7 +757,7 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
     # Call the enhanced setup function with ALL managers
     try:
         setup_admin_endpoints(
-            app=app,
+            app=app, config_manager,
             model_coordination_manager=model_coordination_manager,
             zero_shot_manager=zero_shot_manager,
             pattern_detection_manager=pattern_detection_manager,
