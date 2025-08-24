@@ -355,7 +355,7 @@ try:
             for model_name, model_info in models.items():
                 logger.info(f"🔄 Preloading model: {model_name}")
                 # This will cache the model in master process memory
-                model_coordination._get_cached_pipeline(model_name, model_info)
+                model_coordination._get_cached_pipeline_sync(model_name)
                 
         except Exception as e:
             logger.warning(f"⚠️ Model preload encountered issues: {e}")
