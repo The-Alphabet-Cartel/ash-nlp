@@ -525,9 +525,6 @@ if __name__ == "__main__":
             log_config=None,
             access_log=False
         )
-        logger.info("=" * 70)
-        logger.info("🎉 Server initialized 🎉")
-        logger.info("=" * 70)
         
     except KeyboardInterrupt:
         logger.info("🛑 Shutdown requested by user")
