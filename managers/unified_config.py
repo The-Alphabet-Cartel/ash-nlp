@@ -376,6 +376,7 @@ class UnifiedConfigManager:
         """
         Original get_config_section implementation WITH PROPER VALIDATION
         """
+        logger.debug(f"_get_config_section_original called: {config_file}, {section_path}")
         try:
             # Load the configuration file
             config_data = self.load_config_file(config_file)
@@ -386,49 +387,54 @@ class UnifiedConfigManager:
             
             # If no section path specified, return entire config (but validate it)
             if section_path is None:
+                logger.debug(f"No section path - validating entire config for {config_file}")
                 return self._apply_json_validation(config_data, config_file, "root")
             
             # Navigate through the nested path
             result = config_data
             path_parts = section_path.split('.')
+            logger.debug(f"Navigating path: {path_parts}")
             
-            for part in path_parts:
+            for i, part in enumerate(path_parts):
+                logger.debug(f"  Step {i+1}: Looking for '{part}' in {type(result).__name__}")
                 if isinstance(result, dict) and part in result:
                     result = result[part]
+                    logger.debug(f"  Step {i+1}: Found '{part}', type now: {type(result).__name__}")
                 else:
                     logger.debug(f"Section path '{section_path}' not found in '{config_file}', using default")
                     return default if default is not None else {}
             
+            logger.debug(f"Navigation complete. Final result type: {type(result).__name__}")
+            logger.debug(f"Final result sample: {str(result)[:200]}...")
+            
             # CRITICAL FIX: Apply JSON validation to the final result
+            logger.debug(f"About to apply JSON validation to {config_file}:{section_path}")
             validated_result = self._apply_json_validation(result, config_file, section_path)
+            logger.debug(f"JSON validation complete. Result type: {type(validated_result).__name__}")
             
             logger.debug(f"Retrieved and validated section '{section_path}' from '{config_file}'")
             return validated_result
             
         except Exception as e:
             logger.error(f"Error getting config section '{section_path}' from '{config_file}': {e}")
+            import traceback
+            traceback.print_exc()
             return default if default is not None else {}
 
     def _apply_json_validation(self, data: Any, config_file: str, section_path: str) -> Any:
         """
         Apply JSON validation rules to configuration data
-        
-        This method finds the appropriate validation block for the given data
-        and applies type conversion and validation rules.
-        
-        Args:
-            data: Configuration data to validate
-            config_file: Source configuration file name
-            section_path: Path to the data within the config file
-            
-        Returns:
-            Validated and type-converted data
         """
+        logger.debug(f"_apply_json_validation called: {config_file}, {section_path}, data type: {type(data).__name__}")
+        
         if not isinstance(data, dict):
+            logger.debug(f"Data is not dict, returning as-is: {type(data).__name__}")
             return data
             
         # Load validation rules for this config file
         validation_rules = self._get_validation_rules(config_file, section_path)
+        logger.debug(f"Validation rules retrieved: {validation_rules}")
+        
         if not validation_rules:
             logger.debug(f"No validation rules found for {config_file}:{section_path}")
             return data
@@ -437,26 +443,32 @@ class UnifiedConfigManager:
         validated_data = {}
         
         for key, value in data.items():
+            logger.debug(f"Processing key '{key}' with value '{value}' (type: {type(value).__name__})")
+            
             # Skip metadata and validation blocks
             if key.startswith('_') or key in ('defaults', 'validation'):
+                logger.debug(f"  Skipping metadata/validation key: {key}")
                 validated_data[key] = value
                 continue
                 
             # Apply validation if rules exist for this key
             if key in validation_rules:
+                logger.debug(f"  Found validation rules for key '{key}': {validation_rules[key]}")
                 try:
                     validated_value = self._validate_json_setting(key, value, validation_rules[key])
                     validated_data[key] = validated_value
-                    logger.debug(f"Validated {config_file}:{section_path}.{key}: {value} -> {validated_value} ({type(validated_value).__name__})")
+                    logger.info(f"Validated {config_file}:{section_path}.{key}: {value} -> {validated_value} ({type(validated_value).__name__})")
                 except Exception as e:
                     logger.warning(f"Validation failed for {config_file}:{section_path}.{key}: {e}, keeping original value")
                     validated_data[key] = value
             else:
                 # No validation rules - keep original value
+                logger.debug(f"  No validation rules for key '{key}', keeping original")
                 validated_data[key] = value
-                
+        
+        logger.debug(f"Validation complete. Returning: {type(validated_data).__name__}")
         return validated_data
-    
+
     def _get_validation_rules(self, config_file: str, section_path: str) -> Dict[str, Any]:
         """
         Get validation rules for a specific config section
@@ -522,18 +534,28 @@ class UnifiedConfigManager:
                 min_value = range_val[0] if range_val[0] is not None else min_value
                 max_value = range_val[1] if range_val[1] is not None else max_value
         
+        # FIXED: Handle both JSON Schema and internal type names
+        type_mapping = {
+            'integer': 'int',
+            'boolean': 'bool',
+            'string': 'str',
+            'array': 'list',
+            'number': 'float'
+        }
+        normalized_type = type_mapping.get(expected_type, expected_type)
+        
         # Type conversion
         try:
-            if expected_type == 'bool':
+            if normalized_type == 'bool':
                 if isinstance(value, str):
                     converted_value = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
                 else:
                     converted_value = bool(value)
-            elif expected_type == 'int':
+            elif normalized_type == 'int':
                 converted_value = int(float(value))  # Handle string floats like "2.0"
-            elif expected_type == 'float':
+            elif normalized_type == 'float':
                 converted_value = float(value)
-            elif expected_type == 'list':
+            elif normalized_type == 'list':
                 if isinstance(value, str):
                     converted_value = [item.strip() for item in value.split(',')]
                 elif isinstance(value, list):
@@ -544,7 +566,7 @@ class UnifiedConfigManager:
                 converted_value = str(value) if value is not None else ''
                 
         except (ValueError, TypeError) as e:
-            raise ValueError(f"Type conversion failed for {setting_name}: cannot convert '{value}' to {expected_type}: {e}")
+            raise ValueError(f"Type conversion failed for {setting_name}: cannot convert '{value}' to {normalized_type}: {e}")
         
         # Validate choices
         if choices and converted_value not in choices:
@@ -559,6 +581,7 @@ class UnifiedConfigManager:
             if converted_value > max_value:
                 raise ValueError(f"Value too high for {setting_name}: {converted_value} > {max_value}")
         
+        logger.debug(f"JSON validation applied to {setting_name}: '{value}' ({type(value).__name__}) -> {converted_value} ({type(converted_value).__name__})")
         return converted_value
     
     def get_config_section_with_env_fallback(self, config_file: str, section_path: str, 
