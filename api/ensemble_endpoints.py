@@ -348,7 +348,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
         logger.warning(f"Error comparing crisis levels: {e}")
         return 'low'  # Safe fallback
 
-def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, pattern_detection_manager=None, crisis_threshold_manager=None):
+def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_manager, pydantic_manager, pattern_detection_manager=None, crisis_threshold_manager=None):
     """
     Phase 3e: Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
     Clean v3.1 implementation with improved error handling and Phase 3e patterns
