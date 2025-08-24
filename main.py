@@ -138,137 +138,137 @@ def initialize_unified_managers():
     Phase 3d Step 9: Complete unified configuration architecture
     """
     logger = logging.getLogger(__name__)
-    logger.info("==========================================================")
+    logger.info("=" * 70)
     logger.info("🚀 Initializing unified configuration management system...")
-    logger.info("==========================================================")
+    logger.info("=" * 70)
     
     try:
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🏗️ Creating UnifiedConfigManager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         unified_config = create_unified_config_manager()
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ UnifiedConfigManager created successfully")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing analysis parameters manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         analysis_config = create_analysis_config_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Analysis parameters manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing context pattern manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         context_analysis = create_context_analysis_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Context pattern manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing crisis pattern manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         pattern_detection = create_pattern_detection_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Crisis pattern manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing feature config manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         feature_config = create_feature_config_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Feature config manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing logging config manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logging_config = create_logging_config_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Logging config manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing models ensemble manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         model_coordination = create_model_coordination_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Models ensemble manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing performance config manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         performance_config = create_performance_config_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Performance config manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing pydantic manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         pydantic = create_pydantic_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Pydantic manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing server config manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         server_config = create_server_config_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Server config manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing shared utilities manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         shared_utilities = create_shared_utilities_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Shared utilities manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing storage manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         storage_config = create_storage_config_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Storage manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing threshold mapping manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         crisis_threshold = create_crisis_threshold_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Threshold mapping manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing zero shot manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         zero_shot = create_zero_shot_manager(unified_config)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Zero shot manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing learning system manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         learning_system = create_learning_system_manager(
             unified_config,
             shared_utils=shared_utilities
         )
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Learning system manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing settings manager...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         settings = create_settings_manager(
             unified_config,
             analysis_config_manager=analysis_config,
@@ -285,13 +285,13 @@ def initialize_unified_managers():
             crisis_threshold_manager=crisis_threshold,
             zero_shot_manager=zero_shot
         )
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Settings manager initialized...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
 
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("🔧 Initializing analysis components...")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         crisis_analyzer = create_crisis_analyzer(
             unified_config,
             model_coordination_manager=model_coordination,
@@ -305,18 +305,18 @@ def initialize_unified_managers():
             learning_system_manager=learning_system,
             zero_shot_manager=zero_shot
         )
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("✅ Analysis components initialized")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         
     # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
     # ========================================================================
         if model_coordination:
             try:
-                logger.info("==========================================================")
+                logger.info("=" * 70)
                 logger.info("📊 Preloading AI models...")
-                logger.info("==========================================================")
+                logger.info("=" * 70)
                 asyncio.run(model_coordination.preload_models())
                 
                 # Log preload status
@@ -485,9 +485,9 @@ if __name__ == "__main__":
         setup_unified_logging(unified_config)
         
         logger = logging.getLogger(__name__)
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         logger.info("            🚀 ASH-NLP SERVICE STARTUP")
-        logger.info("==========================================================")
+        logger.info("=" * 70)
         
         # Clear cache first to ensure validation applies
         try:
@@ -514,7 +514,9 @@ if __name__ == "__main__":
         logger.info("✅ FastAPI application fully initialized and ready")
         
         # Now start uvicorn with the already-initialized app object
+        logger.info("=" * 70)
         logger.info("🚀 Starting uvicorn server with initialized application...")
+        logger.info("=" * 70)
         uvicorn.run(
             app,  # Pass the initialized app object directly
             host=host,
