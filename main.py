@@ -113,7 +113,7 @@ def setup_unified_logging(unified_config):
 
 def create_fastapi_app():
     """Create and configure the FastAPI application"""
-    
+
     app = FastAPI(
         title="Ash-NLP Crisis Detection API",
         description="Mental Health Crisis Detection for The Alphabet Cartel LGBTQIA+ Community",
@@ -121,22 +121,23 @@ def create_fastapi_app():
         docs_url="/docs",
         redoc_url="/redoc"
     )
-    
+
     # Add admin endpoints
-    add_admin_endpoints(app, 
-                       unified_config=unified_config,
-                       crisis_analyzer=crisis_analyzer,
-                       zero_shot_manager=zero_shot,
-                       settings_manager=settings)
-    
+    add_admin_endpoints(app,
+                        unified_config=unified_config,
+                        model_coordination_manager=model_coordination_manager,
+                        zero_shot_manager=zero_shot_manager,
+                        pattern_detection_manager=pattern_detection_manager,
+                        analysis_config_manager=analysis_config_manager,
+                        crisis_threshold_manager=crisis_threshold_manager)
+
     # Add ensemble endpoints  
     add_ensemble_endpoints(app,
-                          unified_config=unified_config,
-                          crisis_analyzer=crisis_analyzer,
-                          model_coordination_manager=model_coordination,
-                          analysis_config_manager=analysis_config,
-                          pattern_detection_manager=pattern_detection)
-    
+                            crisis_analyzer=crisis_analyzer,
+                            pydantic=pydantic,
+                            pattern_detection_manager=pattern_detection,
+                            crisis_threshold_manager=crisis_threshold)
+
     return app
 
 # ============================================================================
