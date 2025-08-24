@@ -492,8 +492,8 @@ if __name__ == "__main__":
         # Get server configuration from unified config
         host = unified_config.get_config_section('server_config', 'server_configuration.network_settings.host', '0.0.0.0')
         port = unified_config.get_config_section('server_config', 'server_configuration.network_settings.port', 8881)
-        workers = unified_config.get_config_section('server_config', 'application_settings.workers', 2)
-        reload = unified_config.get_config_section('server_config', 'application_settings.reload_on_changes', False)
+        workers = unified_config.get_config_section('server_config', 'server_configuration.application_settings.workers', 2)
+        reload = unified_config.get_config_section('server_config', 'server_configuration.application_settings.reload_on_changes', False)
         
         logger.info(f"🌐 Server configuration: {host}:{port}")
         logger.info(f"👥 Workers: {workers}")
