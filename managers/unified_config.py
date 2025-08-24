@@ -374,7 +374,7 @@ class UnifiedConfigManager:
 
     def _get_config_section_original(self, config_file: str, section_path: str = None, default: Any = None) -> Any:
         """
-        Original get_config_section implementation (your existing code unchanged)
+        Original get_config_section implementation WITH PROPER VALIDATION
         """
         try:
             # Load the configuration file
@@ -384,9 +384,9 @@ class UnifiedConfigManager:
                 logger.warning(f"Configuration file '{config_file}' not found or empty")
                 return default if default is not None else {}
             
-            # If no section path specified, return entire config
+            # If no section path specified, return entire config (but validate it)
             if section_path is None:
-                return config_data
+                return self._apply_json_validation(config_data, config_file, "root")
             
             # Navigate through the nested path
             result = config_data
@@ -399,12 +399,167 @@ class UnifiedConfigManager:
                     logger.debug(f"Section path '{section_path}' not found in '{config_file}', using default")
                     return default if default is not None else {}
             
-            logger.debug(f"Retrieved section '{section_path}' from '{config_file}'")
-            return result
+            # CRITICAL FIX: Apply JSON validation to the final result
+            validated_result = self._apply_json_validation(result, config_file, section_path)
+            
+            logger.debug(f"Retrieved and validated section '{section_path}' from '{config_file}'")
+            return validated_result
             
         except Exception as e:
             logger.error(f"Error getting config section '{section_path}' from '{config_file}': {e}")
             return default if default is not None else {}
+
+    def _apply_json_validation(self, data: Any, config_file: str, section_path: str) -> Any:
+        """
+        Apply JSON validation rules to configuration data
+        
+        This method finds the appropriate validation block for the given data
+        and applies type conversion and validation rules.
+        
+        Args:
+            data: Configuration data to validate
+            config_file: Source configuration file name
+            section_path: Path to the data within the config file
+            
+        Returns:
+            Validated and type-converted data
+        """
+        if not isinstance(data, dict):
+            return data
+            
+        # Load validation rules for this config file
+        validation_rules = self._get_validation_rules(config_file, section_path)
+        if not validation_rules:
+            logger.debug(f"No validation rules found for {config_file}:{section_path}")
+            return data
+            
+        # Apply validation to each setting in the data
+        validated_data = {}
+        
+        for key, value in data.items():
+            # Skip metadata and validation blocks
+            if key.startswith('_') or key in ('defaults', 'validation'):
+                validated_data[key] = value
+                continue
+                
+            # Apply validation if rules exist for this key
+            if key in validation_rules:
+                try:
+                    validated_value = self._validate_json_setting(key, value, validation_rules[key])
+                    validated_data[key] = validated_value
+                    logger.debug(f"Validated {config_file}:{section_path}.{key}: {value} -> {validated_value} ({type(validated_value).__name__})")
+                except Exception as e:
+                    logger.warning(f"Validation failed for {config_file}:{section_path}.{key}: {e}, keeping original value")
+                    validated_data[key] = value
+            else:
+                # No validation rules - keep original value
+                validated_data[key] = value
+                
+        return validated_data
+    
+    def _get_validation_rules(self, config_file: str, section_path: str) -> Dict[str, Any]:
+        """
+        Get validation rules for a specific config section
+        
+        Args:
+            config_file: Configuration file name
+            section_path: Path to the section within the config
+            
+        Returns:
+            Dictionary of validation rules for settings in this section
+        """
+        try:
+            # Load the raw config file to get validation block
+            config_path = self.config_dir / self.config_files.get(config_file, f"{config_file}.json")
+            if not config_path.exists():
+                return {}
+                
+            with open(config_path, 'r', encoding='utf-8') as f:
+                raw_config = json.load(f)
+            
+            # Navigate to the section containing validation rules
+            validation_section = raw_config
+            if section_path != "root":
+                path_parts = section_path.split('.')
+                for part in path_parts:
+                    if isinstance(validation_section, dict) and part in validation_section:
+                        validation_section = validation_section[part]
+                    else:
+                        return {}
+            
+            # Get the validation block from this section
+            if isinstance(validation_section, dict) and 'validation' in validation_section:
+                return validation_section['validation']
+            else:
+                return {}
+                
+        except Exception as e:
+            logger.debug(f"Error getting validation rules for {config_file}:{section_path}: {e}")
+            return {}
+    
+    def _validate_json_setting(self, setting_name: str, value: Any, validation_rules: Dict[str, Any]) -> Any:
+        """
+        Validate and convert a single setting based on JSON validation rules
+        
+        Args:
+            setting_name: Name of the setting (for error messages)
+            value: Current value to validate
+            validation_rules: Validation rules dictionary
+            
+        Returns:
+            Validated and type-converted value
+        """
+        # Get validation parameters
+        expected_type = validation_rules.get('type', 'str')
+        choices = validation_rules.get('enum') or validation_rules.get('choices')
+        min_value = validation_rules.get('min_value')
+        max_value = validation_rules.get('max_value')
+        
+        # Handle range validation (can be list [min, max])
+        if 'range' in validation_rules:
+            range_val = validation_rules['range']
+            if isinstance(range_val, list) and len(range_val) >= 2:
+                min_value = range_val[0] if range_val[0] is not None else min_value
+                max_value = range_val[1] if range_val[1] is not None else max_value
+        
+        # Type conversion
+        try:
+            if expected_type == 'bool':
+                if isinstance(value, str):
+                    converted_value = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
+                else:
+                    converted_value = bool(value)
+            elif expected_type == 'int':
+                converted_value = int(float(value))  # Handle string floats like "2.0"
+            elif expected_type == 'float':
+                converted_value = float(value)
+            elif expected_type == 'list':
+                if isinstance(value, str):
+                    converted_value = [item.strip() for item in value.split(',')]
+                elif isinstance(value, list):
+                    converted_value = value
+                else:
+                    converted_value = [str(value)]
+            else:  # str
+                converted_value = str(value) if value is not None else ''
+                
+        except (ValueError, TypeError) as e:
+            raise ValueError(f"Type conversion failed for {setting_name}: cannot convert '{value}' to {expected_type}: {e}")
+        
+        # Validate choices
+        if choices and converted_value not in choices:
+            raise ValueError(f"Invalid choice for {setting_name}: '{converted_value}' not in {choices}")
+        
+        # Validate numeric ranges
+        if min_value is not None and isinstance(converted_value, (int, float)):
+            if converted_value < min_value:
+                raise ValueError(f"Value too low for {setting_name}: {converted_value} < {min_value}")
+        
+        if max_value is not None and isinstance(converted_value, (int, float)):
+            if converted_value > max_value:
+                raise ValueError(f"Value too high for {setting_name}: {converted_value} > {max_value}")
+        
+        return converted_value
     
     def get_config_section_with_env_fallback(self, config_file: str, section_path: str, 
                                            env_prefix: str = None, default: Any = None) -> Any:
