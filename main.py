@@ -508,8 +508,8 @@ if __name__ == "__main__":
             "main:app",  # Import string instead of app object
             host=host,
             port=port,
-            workers=workers,
-            reload=reload,
+            workers=int(workers),
+            reload=bool(reload),
             log_config=None,  # Use our custom logging
             access_log=False  # Disable default access logging
         )
