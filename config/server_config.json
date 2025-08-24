@@ -37,8 +37,8 @@
 
     "application_settings": {
       "description": "Application-level configuration and behavior settings",
-      "debug_mode": "${NLP_SERVER_APPLICATION_DEBUG_MODE}",
-      "workers": "${NLP_SERVER_APPLICATION_WORKERS}",
+      "debug_mode": "${NLP_LOGGING_DEBUG_MODE}",
+      "workers": "${NLP_PERFORMANCE_WORKERS}",
       "reload_on_changes": "${NLP_SERVER_APPLICATION_RELOAD_ON_CHANGES}",
       "defaults": {
         "debug_mode": false,
