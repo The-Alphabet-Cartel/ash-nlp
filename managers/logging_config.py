@@ -54,24 +54,17 @@ class LoggingConfigManager:
         """
         self.unified_config = unified_config_manager
         
-        # Load logging configuration using Phase 3e patterns
-        self.logging_config = self._load_logging_configuration()
-        
-        logger.info("LoggingConfigManager v3.1e-5.5 initialized - Phase 3e patterns applied")
-    
-    def _load_logging_configuration(self) -> Dict[str, Any]:
-        """Load logging configuration using Phase 3e get_config_section patterns"""
         try:
-            # PHASE 3E: Use get_config_section instead of load_config_file
-            config = self.unified_config.get_config_section('logging_settings')
-            logger.info("Logging configuration loaded from JSON with environment overrides")
-
-            return config['logging_configuration']
+            # Load logging configuration using Phase 3e patterns
+            self.logging_config = self.unified_config.get_config_section('logging_settings')
+            logger.info("LoggingConfigManager v3.1e-5.5 initialized - Phase 3e patterns applied")
+            
+            return
 
         except Exception as e:
             logger.error(f"Error loading logging configuration: {e}")
             return
-    
+
     # ========================================================================
     # GLOBAL LOGGING SETTINGS ACCESS METHODS (Phase 3e Enhanced)
     # ========================================================================
