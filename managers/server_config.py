@@ -65,117 +65,14 @@ class ServerConfigManager:
         try:
             # PHASE 3E: Use get_config_section instead of load_config_file
             config = self.unified_config.get_config_section('server_config')
-            
-            if config and 'server_configuration' in config:
-                logger.info("Server configuration loaded from JSON with environment overrides")
-                return config
-            elif config:
-                # Handle flattened configuration structure
-                logger.info("Server configuration loaded with enhanced structure")
-                return {'server_configuration': config}
-            else:
-                logger.warning("Server configuration not found in JSON, using fallback")
-                return self._get_fallback_server_config()
+            logger.info("Server configuration loaded from JSON with environment overrides")
+
+            return config
                 
         except Exception as e:
             logger.error(f"Error loading server configuration: {e}")
-            logger.info("Falling back to safe defaults per Clean Architecture Charter Rule #5")
-            return self._get_fallback_server_config()
-    
-    def _get_fallback_server_config(self) -> Dict[str, Any]:
-        """Get fallback server configuration using enhanced environment variable patterns"""
-        logger.info("Using enhanced fallback server configuration")
-        
-        # PHASE 3E: Enhanced fallback with better structure and validation
-        return {
-            'server_configuration': {
-                'network_settings': {
-                    'host': self.unified_config.get_env('NLP_SERVER_NETWORK_HOST', '0.0.0.0'),
-                    'port': self.unified_config.get_env_int('NLP_SERVER_NETWORK_PORT', 8881),
-                    'enable_ssl': self.unified_config.get_env_bool('NLP_SERVER_NETWORK_ENABLE_SSL', False),
-                    'ssl_cert_path': self.unified_config.get_env('NLP_SERVER_NETWORK_SSL_CERT_PATH', './certs/server.crt'),
-                    'ssl_key_path': self.unified_config.get_env('NLP_SERVER_NETWORK_SSL_KEY_PATH', './certs/server.key'),
-                    'defaults': {
-                        'host': '0.0.0.0',
-                        'port': 8881,
-                        'enable_ssl': False,
-                        'ssl_cert_path': './certs/server.crt',
-                        'ssl_key_path': './certs/server.key'
-                    }
-                },
-                'application_settings': {
-                    'debug_mode': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_DEBUG_MODE', False),
-                    'workers': self.unified_config.get_env_int('NLP_SERVER_APPLICATION_WORKERS', 1),
-                    'reload_on_changes': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_RELOAD_ON_CHANGES', False),
-                    'access_log': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_ACCESS_LOG', True),
-                    'error_log': self.unified_config.get_env_bool('NLP_SERVER_APPLICATION_ERROR_LOG', True),
-                    'defaults': {
-                        'debug_mode': False,
-                        'workers': 1,
-                        'reload_on_changes': False,
-                        'access_log': True,
-                        'error_log': True
-                    }
-                },
-                'performance_settings': {
-                    'max_concurrent_requests': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                    'request_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_REQUEST_TIMEOUT', 40),
-                    'worker_timeout': self.unified_config.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
-                    'keep_alive_timeout': self.unified_config.get_env_int('NLP_SERVER_PERFORMANCE_KEEP_ALIVE_TIMEOUT', 2),
-                    'max_request_size': self.unified_config.get_env('NLP_SERVER_PERFORMANCE_MAX_REQUEST_SIZE', '10MB'),
-                    'defaults': {
-                        'max_concurrent_requests': 20,
-                        'request_timeout': 40,
-                        'worker_timeout': 60,
-                        'keep_alive_timeout': 2,
-                        'max_request_size': '10MB'
-                    }
-                },
-                'security_settings': {
-                    'rate_limiting': {
-                        'enable_rate_limiting': self.unified_config.get_env_bool('NLP_SERVER_SECURITY_RATE_LIMIT_ENABLE', True),
-                        'requests_per_minute': self.unified_config.get_env_int('NLP_SERVER_SECURITY_RATE_LIMIT_PER_MINUTE', 60),
-                        'requests_per_hour': self.unified_config.get_env_int('NLP_SERVER_SECURITY_RATE_LIMIT_PER_HOUR', 1000),
-                        'burst_size': self.unified_config.get_env_int('NLP_SERVER_SECURITY_RATE_LIMIT_BURST_SIZE', 100),
-                        'defaults': {
-                            'enable_rate_limiting': True,
-                            'requests_per_minute': 60,
-                            'requests_per_hour': 1000,
-                            'burst_size': 100
-                        }
-                    },
-                    'cors': {
-                        'enable_cors': self.unified_config.get_env_bool('GLOBAL_ENABLE_CORS', True),
-                        'allowed_origins': self.unified_config.get_env('GLOBAL_CORS_ALLOWED_ORIGINS', '["*"]'),
-                        'allowed_methods': self.unified_config.get_env('GLOBAL_CORS_ALLOWED_METHODS', '["GET", "POST", "OPTIONS"]'),
-                        'allowed_headers': self.unified_config.get_env('GLOBAL_CORS_ALLOWED_HEADERS', '["Content-Type", "Authorization"]'),
-                        'defaults': {
-                            'enable_cors': True,
-                            'allowed_origins': ['*'],
-                            'allowed_methods': ['GET', 'POST', 'OPTIONS'],
-                            'allowed_headers': ['Content-Type', 'Authorization']
-                        }
-                    }
-                },
-                'monitoring': {
-                    'health_check_endpoint': self.unified_config.get_env('NLP_SERVER_MONITORING_HEALTH_ENDPOINT', '/health'),
-                    'metrics_endpoint': self.unified_config.get_env('NLP_SERVER_MONITORING_METRICS_ENDPOINT', '/metrics'),
-                    'status_endpoint': self.unified_config.get_env('NLP_SERVER_MONITORING_STATUS_ENDPOINT', '/status'),
-                    'enable_health_checks': self.unified_config.get_env_bool('NLP_SERVER_MONITORING_ENABLE_HEALTH_CHECKS', True),
-                    'health_check_interval': self.unified_config.get_env_int('NLP_SERVER_MONITORING_HEALTH_CHECK_INTERVAL', 30),
-                    'log_health_status': self.unified_config.get_env_bool('NLP_SERVER_MONITORING_LOG_HEALTH_STATUS', True),
-                    'defaults': {
-                        'health_check_endpoint': '/health',
-                        'metrics_endpoint': '/metrics',
-                        'status_endpoint': '/status',
-                        'enable_health_checks': True,
-                        'health_check_interval': 30,
-                        'log_health_status': True
-                    }
-                }
-            }
-        }
-    
+            return
+
     def _get_setting_with_defaults(self, section: str, subsection: str, setting: str, default: Any) -> Any:
         """
         Helper to get setting with enhanced Phase 3e defaults fallback and error handling
