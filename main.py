@@ -381,7 +381,7 @@ try:
             # Trigger model loading by accessing model definitions
             logger.info("=" * 70)
             logger.info("🔧 Preloading models now...")
-            model_coordination.preload_models()
+            asyncio.run(model_coordination.preload_models())
             models = model_coordination.get_model_definitions()
             logger.info(f"📦 Found {len(models)} models configured for preload")
             logger.info("=" * 70)
