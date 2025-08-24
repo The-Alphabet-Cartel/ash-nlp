@@ -763,8 +763,7 @@ def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager
             zero_shot_manager=zero_shot_manager,
             pattern_detection_manager=pattern_detection_manager,
             analysis_config_manager=analysis_config_manager,
-            crisis_threshold_manager=crisis_threshold_manager
-        )
+            crisis_threshold_manager=crisis_threshold_manager)
         
         # Include the admin router
         app.include_router(admin_router)
