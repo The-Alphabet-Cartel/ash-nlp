@@ -571,9 +571,27 @@ if __name__ == "__main__":
 
 
 # ============================================================================
-# MODULE-LEVEL APP FOR UVICORN IMPORT STRING
+# MODULE-LEVEL APP FOR UVICORN IMPORT STRING (DEFERRED CREATION)
 # ============================================================================
 
-# Create app at module level so "main:app" import works
-# This is required when using uvicorn.run("main:app", ...)
-app = create_fastapi_app()
+# Global variable to hold the app instance
+app = None
+
+def get_app():
+    """
+    Lazy app factory for uvicorn import string
+    This ensures the app is only created when actually needed by uvicorn
+    """
+    global app
+    if app is None:
+        app = create_fastapi_app()
+    return app
+
+# Only create app when this module is imported by uvicorn, not during direct execution
+if __name__ != "__main__":
+    # This runs when uvicorn imports the module using "main:app"
+    app = get_app()
+else:
+    # This runs when executing the script directly
+    # App will be created by uvicorn via import string later
+    app = None
