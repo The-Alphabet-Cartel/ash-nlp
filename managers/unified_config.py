@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Unified Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-3
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 5.5 - UnifiedConfigManager Optimization with Helper Files
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -498,97 +498,91 @@ class UnifiedConfigManager:
         except Exception as e:
             logger.error(f"Error listing sections in '{config_file}': {e}")
             return []
-    
+
     # ========================================================================
     # CONFIGURATION CONVENIENCE METHODS FOR OTHER MANAGERS
     # ========================================================================
-    
+
     def get_hardware_configuration(self) -> Dict[str, Any]:
         """Get hardware configuration for models"""
         try:
             return {
-                'device': self.get_env('NLP_MODEL_DEVICE', 'auto'),
-                'precision': self.get_env('NLP_MODEL_PRECISION', 'float16'),
-                'max_batch_size': self.get_env_int('NLP_MODEL_MAX_BATCH_SIZE', 32),
-                'inference_threads': self.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
-                'max_memory': self.get_env('NLP_MODEL_MAX_MEMORY', None),
-                'offload_folder': self.get_env('NLP_MODEL_OFFLOAD_FOLDER', './models/offload'),
-                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache')
+                'device': self.get_config_section('model_coordination', 'hardware_settings.device', 'auto'),
+                'precision': self.get_config_section('model_coordination', 'hardware_settings.model_precision', 'float16'),
+                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './models/cache')
             }
         except Exception as e:
             logger.error(f"Error getting hardware configuration: {e}")
             return {
-                'device': 'auto', 'precision': 'float16', 'max_batch_size': 32,
-                'inference_threads': 16, 'max_memory': None,
-                'offload_folder': './models/offload', 'cache_directory': './models/cache'
+                'device': 'auto',
+                'precision': 'float16',
+                'cache_directory': './models/cache'
             }
-    
+
     def get_model_configuration(self) -> Dict[str, Any]:
         """Get model configuration settings"""
         try:
             return {
-                'depression_model': self.get_env('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-                'depression_weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
-                'sentiment_model': self.get_env('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
-                'sentiment_weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
-                'emotional_distress_model': self.get_env('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-                'emotional_distress_weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'majority'),
-                'gap_detection_enabled': self.get_env_bool('NLP_ENSEMBLE_GAP_DETECTION_ENABLED', True),
-                'disagreement_threshold': self.get_env_int('NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD', 2),
-                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
+                'depression_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.depression.name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
+                'depression_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.depression.weight', 0.4),
+                'sentiment_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.sentiment.name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'sentiment_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.sentiment.weight', 0.3),
+                'emotional_distress_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.emotional_distress.name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
+                'emotional_distress_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.emotional_distress.weight', 0.3),
+                'ensemble_mode': self.get_config_section('model_coordination', 'ensemble_config.mode', 'majority'),
+                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './models/cache'),
                 'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
             }
         except Exception as e:
             logger.error(f"Error getting model configuration: {e}")
             return {
-                'depression_model': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0', 'depression_weight': 0.4,
-                'sentiment_model': 'Lowerated/lm6-deberta-v3-topic-sentiment', 'sentiment_weight': 0.3,
-                'emotional_distress_model': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli', 'emotional_distress_weight': 0.3,
-                'ensemble_mode': 'consensus', 'gap_detection_enabled': True, 'disagreement_threshold': 2,
-                'cache_directory': './models/cache', 'huggingface_token': None
+                'depression_model': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0',
+                'depression_weight': 0.4,
+                'sentiment_model': 'Lowerated/lm6-deberta-v3-topic-sentiment',
+                'sentiment_weight': 0.3,
+                'emotional_distress_model': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli',
+                'emotional_distress_weight': 0.3,
+                'ensemble_mode': 'consensus',
+                'cache_directory': './models/cache',
+                'huggingface_token': None
             }
     
     def get_performance_configuration(self) -> Dict[str, Any]:
         """Get performance configuration settings"""
         try:
             return {
-                'max_concurrent_requests': self.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                'request_timeout': self.get_env_int('GLOBAL_REQUEST_TIMEOUT', 30),
-                'worker_timeout': self.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
-                'analysis_timeout_ms': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS', 5000),
-                'analysis_cache_ttl': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL', 300),
-                'enable_optimization': self.get_env_bool('NLP_PERFORMANCE_ENABLE_OPTIMIZATION', True),
-                'batch_size': self.get_env_int('NLP_PERFORMANCE_BATCH_SIZE', 32),
-                'cache_size': self.get_env_int('NLP_PERFORMANCE_CACHE_SIZE', 1000)
+                'request_timeout': self.get_config_section('performance_settings', 'performance_settings.server_performance.request_timeout', 30),
+                'max_concurrent_requests': self.get_config_section('performance_settings', 'performance_settings.server_performance.max_concurrent_requests', 20),
+                'worker_timeout': self.get_config_section('performance_settings', 'performance_settings.server_performance.worker_timeout', 60),
             }
         except Exception as e:
             logger.error(f"Error getting performance configuration: {e}")
             return {
-                'max_concurrent_requests': 20, 'request_timeout': 40, 'worker_timeout': 60,
-                'analysis_timeout_ms': 5000, 'analysis_cache_ttl': 300, 'enable_optimization': True,
-                'batch_size': 32, 'cache_size': 1000
+                'request_timeout': 40,
+                'max_concurrent_requests': 20,
+                'worker_timeout': 60
             }
     
     def get_storage_configuration(self) -> Dict[str, Any]:
         """Get storage configuration settings"""
         try:
             return {
-                'data_directory': self.get_env('NLP_STORAGE_DATA_DIR', './data'),
-                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIR', './cache'),
-                'log_directory': self.get_env('NLP_STORAGE_LOG_DIR', './logs'),
-                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIR', './backups'),
-                'models_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
-                'enable_compression': self.get_env_bool('NLP_STORAGE_ENABLE_COMPRESSION', False),
-                'retention_days': self.get_env_int('NLP_STORAGE_RETENTION_DAYS', 30),
-                'log_file': self.get_env('NLP_STORAGE_LOG_FILE', 'nlp_service.log')
+                'data_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.data_directory', './data'),
+                'cache_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.cache_directory', './cache'),
+                'log_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.logs_directory', './logs'),
+                'backup_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.backup_directory', './backups'),
+                'models_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.models_directory', './models/cache'),
+                'log_file': self.get_config_section('logging_settings', 'global_settings.log_file', 'nlp_service.log')
             }
         except Exception as e:
             logger.error(f"Error getting storage configuration: {e}")
             return {
-                'data_directory': './data', 'cache_directory': './cache', 'log_directory': './logs',
-                'backup_directory': './backups', 'models_directory': './models/cache',
-                'enable_compression': False, 'retention_days': 30, 'log_file': 'nlp_service.log'
+                'data_directory': './data',
+                'cache_directory': './cache',
+                'log_directory': './logs',
+                'backup_directory': './backups',
+                'models_directory': './models/cache',
+                'log_file': 'nlp_service.log'
             }
     
     # ========================================================================
