@@ -74,11 +74,7 @@ class SharedUtilitiesManager:
         self._last_operation_status = {}
         
         # Initialize utility status with error handling
-        try:
-            self.initialization_time = unified_config.get_env_str('SHARED_UTILS_INIT_TIME', str(id(self)))
-        except Exception as e:
-            self.initialization_time = str(id(self))
-            self.logger.warning(f"⚠️ Could not get initialization time from config: {e}")
+        self.initialization_time = str(id(self))
             
         self.logger.info(f"✅ SharedUtilitiesManager initialized (ID: {self.initialization_time})")
     

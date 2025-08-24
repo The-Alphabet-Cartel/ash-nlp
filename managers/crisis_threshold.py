@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Mode-Aware Crisis Threshold Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-3
-LAST MODIFIED: 2025-08-22
-PHASE: 3e, Step 5.7 - Manager Renaming and Import Updates
+FILE VERSION: v3.1-3e-7-1
+LAST MODIFIED: 2025-08-23
+PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant
 RENAMED FROM: managers/threshold_mapping_manager.py
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -64,89 +64,16 @@ class CrisisThresholdManager:
         SIMPLIFIED: No more manual environment variable resolution needed
         """
         try:
-            raw_config = self.unified_config.get_config_section('crisis_threshold')
-            
-            if not raw_config:
-                logger.warning("⚠️ Threshold mapping configuration not found, using environment fallbacks")
-                self.threshold_config = self._get_fallback_threshold_config()
-            else:
-                self.threshold_config = raw_config
-                logger.info("✅ Threshold mapping configuration loaded (environment resolution via get_config_section)")
+            self.threshold_config = self.unified_config.get_config_section('crisis_threshold')
+            logger.info("✅ Threshold mapping configuration loaded (environment resolution via get_config_section)")
             
             # Validate threshold configuration
             self._validate_threshold_config()
-            
             logger.info("✅ Threshold mapping configuration loaded and validated")
             
         except Exception as e:
             logger.error(f"❌ Error loading threshold mapping configuration: {e}")
             self._validation_errors.append(f"Configuration loading error: {str(e)}")
-            # Fallback to safe defaults
-            self.threshold_config = self._get_fallback_threshold_config()
-    
-    def _get_fallback_threshold_config(self) -> Dict[str, Any]:
-        """Get fallback threshold configuration using UnifiedConfigManager"""
-        # STEP 9 CHANGE: Use unified_config instead of os.getenv() for all fallbacks
-        return {
-            'crisis_threshold_by_mode': {
-                'consensus': {
-                    'crisis_level_mapping': {
-                        'crisis_to_high': self.unified_config.get_env_float('NLP_THRESHOLD_CONSENSUS_CRISIS_TO_HIGH', 0.50),
-                        'crisis_to_medium': self.unified_config.get_env_float('NLP_THRESHOLD_CONSENSUS_CRISIS_TO_MEDIUM', 0.30),
-                        'mild_crisis_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_CONSENSUS_MILD_CRISIS_TO_LOW', 0.15),
-                        'negative_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_CONSENSUS_NEGATIVE_TO_LOW', 0.10),
-                        'unknown_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_CONSENSUS_UNKNOWN_TO_LOW', 0.20)
-                    },
-                    'staff_review_thresholds': {
-                        'high_always': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS', True),
-                        'medium_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE', 0.75),
-                        'low_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE', 0.5),
-                        'on_disagreement': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT', True)
-                    }
-                },
-                'majority': {
-                    'crisis_level_mapping': {
-                        'crisis_to_high': self.unified_config.get_env_float('NLP_THRESHOLD_MAJORITY_CRISIS_TO_HIGH', 0.45),
-                        'crisis_to_medium': self.unified_config.get_env_float('NLP_THRESHOLD_MAJORITY_CRISIS_TO_MEDIUM', 0.25),
-                        'mild_crisis_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_MAJORITY_MILD_CRISIS_TO_LOW', 0.12),
-                        'negative_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_MAJORITY_NEGATIVE_TO_LOW', 0.08),
-                        'unknown_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_MAJORITY_UNKNOWN_TO_LOW', 0.18)
-                    },
-                    'staff_review_thresholds': {
-                        'high_always': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS', True),
-                        'medium_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE', 0.70),
-                        'low_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE', 0.45),
-                        'on_disagreement': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT', True)
-                    }
-                },
-                'weighted': {
-                    'crisis_level_mapping': {
-                        'crisis_to_high': self.unified_config.get_env_float('NLP_THRESHOLD_WEIGHTED_CRISIS_TO_HIGH', 0.40),
-                        'crisis_to_medium': self.unified_config.get_env_float('NLP_THRESHOLD_WEIGHTED_CRISIS_TO_MEDIUM', 0.22),
-                        'mild_crisis_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_WEIGHTED_MILD_CRISIS_TO_LOW', 0.10),
-                        'negative_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_WEIGHTED_NEGATIVE_TO_LOW', 0.06),
-                        'unknown_to_low': self.unified_config.get_env_float('NLP_THRESHOLD_WEIGHTED_UNKNOWN_TO_LOW', 0.15)
-                    },
-                    'staff_review_thresholds': {
-                        'high_always': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS', True),
-                        'medium_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE', 0.65),
-                        'low_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE', 0.40),
-                        'on_disagreement': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT', True)
-                    }
-                }
-            },
-            'global_staff_review': {
-                'high_always': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_HIGH_ALWAYS', True),
-                'medium_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_MEDIUM_CONFIDENCE', 0.75),
-                'low_confidence': self.unified_config.get_env_float('NLP_THRESHOLD_STAFF_REVIEW_LOW_CONFIDENCE', 0.5),
-                'on_disagreement': self.unified_config.get_env_bool('NLP_THRESHOLD_STAFF_REVIEW_ON_DISAGREEMENT', True)
-            },
-            'learning_thresholds': {
-                'learning_rate': self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_RATE', 0.1),
-                'max_adjustments_per_day': self.unified_config.get_env_int('NLP_THRESHOLD_LEARNING_MAX_ADJUSTMENTS_PER_DAY', 50),
-                'min_confidence_for_learning': self.unified_config.get_env_float('NLP_THRESHOLD_LEARNING_MIN_CONFIDENCE', 0.3)
-            }
-        }
     
     def _validate_threshold_config(self):
         """
@@ -336,18 +263,19 @@ class CrisisThresholdManager:
     def get_current_ensemble_mode(self) -> str:
         """Get current ensemble mode UnifiedConfigManager"""
         logger.debug("📋 Getting ensemble mode from JSON...")
-        mode = self.unified_config.get_config_section(
-            'model_coordination',
-            'ensemble_config.mode',
-            'majority'
-        )
-        if mode:
+        try:
+            mode = self.unified_config.get_config_section(
+                'model_coordination',
+                'ensemble_config.mode',
+                'majority'
+            )
             logger.debug(f"🔧 Ensemble mode: {mode}")
+            
             return mode
-        else:
-            mode = self.unified_config.get_env('NLP_ENSEMBLE_MODE', 'majority')
-            logger.error("⚠️ Ensemble mode not found, using ENV...")
-            return mode
+        
+        except Exception as e:
+            logger.error(f"⚠️ Ensemble mode not found, {e}")
+            return
 
     def get_ensemble_thresholds_for_mode(self, mode) -> Dict[str, float]:
         """

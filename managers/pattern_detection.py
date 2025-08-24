@@ -274,9 +274,9 @@ class PatternDetectionManager:
             
             # Use existing environment variables instead of undefined ones
             try:
-                context_boost_weight = float(self.config_manager.get_env('NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT', 1.5))
+                context_boost_weight = self.config_manager.get_config_section('analysis_config', 'semantic_analysis.context_boost_weight', 1.5)
                 crisis_base_weight = context_boost_weight * 0.1
-                crisis_multiplier = float(self.config_manager.get_env('NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER', 1.0))
+                crisis_multiplier = self.config_manager.get_config_section('patterns_context', 'configuration.crisis_amplification', 1.0)
                 max_boost = crisis_base_weight * crisis_multiplier * 2.0
                 
             except Exception as e:
@@ -325,7 +325,7 @@ class PatternDetectionManager:
             # Additional context boost from hopelessness detection
             if any(word in message_lower for word in ['hopeless', 'hope', 'despair', 'desperate']):
                 try:
-                    enhanced_weight = float(self.config_manager.get_env('NLP_CONFIG_ENHANCED_CRISIS_WEIGHT', 1.2))
+                    enhanced_weight = self.config_manager.get_config_section('patterns_context' 'hopelessness_context.enhanced_weight', 1.2)
                     hopelessness_boost = (enhanced_weight - 1.0) * 0.2
                     if hopelessness_boost > 0:
                         total_adjustment += hopelessness_boost
@@ -334,7 +334,7 @@ class PatternDetectionManager:
                             'type': 'enhanced_crisis_boost',
                             'adjustment': hopelessness_boost,
                             'weight': enhanced_weight,
-                            'source': 'NLP_CONFIG_ENHANCED_CRISIS_WEIGHT'
+                            'source': 'patterns_context.json'
                         })
                 except Exception as e:
                     logger.warning(f"Error applying enhanced crisis weight: {e}")

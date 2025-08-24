@@ -133,12 +133,14 @@
  
   "label_mapping": {
     "default_label_set": "${NLP_ZERO_SHOT_DEFAULT_LABEL_SET}",
+    "configured_set": "${NLP_ZERO_SHOT_LABEL_SET}",
     "enable_label_switching": "${NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING}",
     "fallback_behavior": "enhanced_crisis",
     "case_sensitive": false,
     "normalize_labels": true,
     "defaults": {
       "default_label_set": "enhanced_crisis",
+      "configured_set": "enhanced_crisis",
       "enable_label_switching": true,
       "fallback_behavior": "enhanced_crisis",
       "case_sensitive": false,
@@ -146,6 +148,9 @@
     },
     "validation": {
       "default_label_set": {
+        "type": "string"
+      },
+      "configured_set": {
         "type": "string"
       },
       "enable_label_switching": {

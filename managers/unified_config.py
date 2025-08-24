@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Unified Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
+FILE VERSION: v3.1-3e-6-3
 LAST MODIFIED: 2025-08-22
 PHASE: 3e Step 5.5 - UnifiedConfigManager Optimization with Helper Files
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -374,7 +374,7 @@ class UnifiedConfigManager:
 
     def _get_config_section_original(self, config_file: str, section_path: str = None, default: Any = None) -> Any:
         """
-        Original get_config_section implementation (your existing code unchanged)
+        Original get_config_section implementation WITH PROPER VALIDATION FOR LEAF VALUES
         """
         try:
             # Load the configuration file
@@ -384,9 +384,9 @@ class UnifiedConfigManager:
                 logger.warning(f"Configuration file '{config_file}' not found or empty")
                 return default if default is not None else {}
             
-            # If no section path specified, return entire config
+            # If no section path specified, return entire config (but validate it)
             if section_path is None:
-                return config_data
+                return self._apply_json_validation(config_data, config_file, "root")
             
             # Navigate through the nested path
             result = config_data
@@ -399,12 +399,253 @@ class UnifiedConfigManager:
                     logger.debug(f"Section path '{section_path}' not found in '{config_file}', using default")
                     return default if default is not None else {}
             
-            logger.debug(f"Retrieved section '{section_path}' from '{config_file}'")
-            return result
+            # ENHANCED: Handle both dictionary sections and leaf values
+            if isinstance(result, dict):
+                # Dictionary section - apply validation normally
+                validated_result = self._apply_json_validation(result, config_file, section_path)
+                logger.debug(f"Retrieved and validated section '{section_path}' from '{config_file}'")
+                return validated_result
+            else:
+                # Leaf value - find parent section and apply specific validation
+                validated_result = self._validate_leaf_value(result, config_file, section_path)
+                logger.debug(f"Retrieved and validated leaf value '{section_path}' from '{config_file}'")
+                return validated_result
             
         except Exception as e:
             logger.error(f"Error getting config section '{section_path}' from '{config_file}': {e}")
             return default if default is not None else {}
+
+    def _validate_leaf_value(self, value: Any, config_file: str, section_path: str) -> Any:
+        """
+        Validate a single leaf value by finding its parent section's validation rules
+        
+        Args:
+            value: The leaf value to validate
+            config_file: Source configuration file name  
+            section_path: Full path to the leaf value
+            
+        Returns:
+            Validated and type-converted leaf value
+        """
+        # Extract parent section path and leaf key
+        path_parts = section_path.split('.')
+        if len(path_parts) < 2:
+            # Can't validate root level items without context
+            return value
+            
+        parent_path = '.'.join(path_parts[:-1])
+        leaf_key = path_parts[-1]
+        
+        logger.debug(f"Validating leaf: {leaf_key} in parent: {parent_path}")
+        
+        # Get validation rules from parent section
+        validation_rules = self._get_validation_rules(config_file, parent_path)
+        
+        if not validation_rules or leaf_key not in validation_rules:
+            logger.debug(f"No validation rule found for {leaf_key} in {parent_path}")
+            return value
+        
+        # Apply validation to the leaf value
+        try:
+            validated_value = self._validate_json_setting(leaf_key, value, validation_rules[leaf_key])
+            logger.debug(f"Leaf validation: {config_file}:{section_path} = {value} -> {validated_value} ({type(validated_value).__name__})")
+            return validated_value
+        except Exception as e:
+            logger.warning(f"Leaf validation failed for {config_file}:{section_path}: {e}, returning original value")
+            return value
+
+    def _apply_json_validation(self, data: Any, config_file: str, section_path: str) -> Any:
+        """
+        Apply JSON validation rules to configuration data
+        """
+        logger.debug(f"_apply_json_validation called: {config_file}, {section_path}, data type: {type(data).__name__}")
+        
+        if not isinstance(data, dict):
+            logger.debug(f"Data is not dict, returning as-is: {type(data).__name__}")
+            return data
+            
+        # Load validation rules for this config file
+        validation_rules = self._get_validation_rules(config_file, section_path)
+        logger.debug(f"Validation rules retrieved: {validation_rules}")
+        
+        if not validation_rules:
+            logger.debug(f"No validation rules found for {config_file}:{section_path}")
+            return data
+            
+        # Apply validation to each setting in the data
+        validated_data = {}
+        
+        for key, value in data.items():
+            logger.debug(f"Processing key '{key}' with value '{value}' (type: {type(value).__name__})")
+            
+            # Skip metadata and validation blocks
+            if key.startswith('_') or key in ('defaults', 'validation'):
+                logger.debug(f"  Skipping metadata/validation key: {key}")
+                validated_data[key] = value
+                continue
+                
+            # Apply validation if rules exist for this key
+            if key in validation_rules:
+                logger.debug(f"  Found validation rules for key '{key}': {validation_rules[key]}")
+                try:
+                    validated_value = self._validate_json_setting(key, value, validation_rules[key])
+                    validated_data[key] = validated_value
+                    logger.info(f"Validated {config_file}:{section_path}.{key}: {value} -> {validated_value} ({type(validated_value).__name__})")
+                except Exception as e:
+                    logger.warning(f"Validation failed for {config_file}:{section_path}.{key}: {e}, keeping original value")
+                    validated_data[key] = value
+            else:
+                # No validation rules - keep original value
+                logger.debug(f"  No validation rules for key '{key}', keeping original")
+                validated_data[key] = value
+        
+        logger.debug(f"Validation complete. Returning: {type(validated_data).__name__}")
+        return validated_data
+
+    def _get_validation_rules(self, config_file: str, section_path: str) -> Dict[str, Any]:
+        """
+        Get validation rules for a specific config section
+        
+        Args:
+            config_file: Configuration file name
+            section_path: Path to the section within the config
+            
+        Returns:
+            Dictionary of validation rules for settings in this section
+        """
+        try:
+            # Load the raw config file to get validation block
+            config_path = self.config_dir / self.config_files.get(config_file, f"{config_file}.json")
+            if not config_path.exists():
+                return {}
+                
+            with open(config_path, 'r', encoding='utf-8') as f:
+                raw_config = json.load(f)
+            
+            # Navigate to the section containing validation rules
+            validation_section = raw_config
+            if section_path != "root":
+                path_parts = section_path.split('.')
+                for part in path_parts:
+                    if isinstance(validation_section, dict) and part in validation_section:
+                        validation_section = validation_section[part]
+                    else:
+                        return {}
+            
+            # Get the validation block from this section
+            if isinstance(validation_section, dict) and 'validation' in validation_section:
+                return validation_section['validation']
+            else:
+                return {}
+                
+        except Exception as e:
+            logger.debug(f"Error getting validation rules for {config_file}:{section_path}: {e}")
+            return {}
+    
+    def _validate_json_setting(self, setting_name: str, value: Any, validation_rules: Dict[str, Any]) -> Any:
+        """
+        Validate and convert a single setting based on JSON validation rules
+        
+        Args:
+            setting_name: Name of the setting (for error messages)
+            value: Current value to validate
+            validation_rules: Validation rules dictionary
+            
+        Returns:
+            Validated and type-converted value
+        """
+        # Get validation parameters
+        expected_type = validation_rules.get('type', 'str')
+        choices = validation_rules.get('enum') or validation_rules.get('choices')
+        min_value = validation_rules.get('min_value')
+        max_value = validation_rules.get('max_value')
+        
+        # Handle range validation (can be list [min, max])
+        if 'range' in validation_rules:
+            range_val = validation_rules['range']
+            if isinstance(range_val, list) and len(range_val) >= 2:
+                min_value = range_val[0] if range_val[0] is not None else min_value
+                max_value = range_val[1] if range_val[1] is not None else max_value
+        
+        # ENHANCED: Handle multiple types (e.g., ["string", "null"])
+        if isinstance(expected_type, list):
+            type_list = expected_type
+        else:
+            type_list = [expected_type]
+        
+        # Normalize type names (JSON Schema -> internal)
+        type_mapping = {
+            'integer': 'int',
+            'boolean': 'bool', 
+            'string': 'str',
+            'array': 'list',
+            'number': 'float',
+            'null': 'null'
+        }
+        
+        normalized_types = [type_mapping.get(t, t) for t in type_list]
+        
+        # Handle null/None values first
+        if value is None or (isinstance(value, str) and value.lower() in ('null', 'none', '')):
+            if 'null' in normalized_types:
+                logger.debug(f"JSON validation applied to {setting_name}: '{value}' -> None (allowed null)")
+                return None
+            else:
+                raise ValueError(f"Null value not allowed for {setting_name}: expected types {type_list}")
+        
+        # Try each allowed type until one succeeds
+        conversion_errors = []
+        
+        for normalized_type in normalized_types:
+            if normalized_type == 'null':
+                continue  # Already handled above
+                
+            try:
+                # Type conversion
+                if normalized_type == 'bool':
+                    if isinstance(value, str):
+                        converted_value = value.lower() in ('true', '1', 'yes', 'on', 'enabled')
+                    else:
+                        converted_value = bool(value)
+                elif normalized_type == 'int':
+                    converted_value = int(float(value))  # Handle string floats like "2.0"
+                elif normalized_type == 'float':
+                    converted_value = float(value)
+                elif normalized_type == 'list':
+                    if isinstance(value, str):
+                        converted_value = [item.strip() for item in value.split(',')]
+                    elif isinstance(value, list):
+                        converted_value = value
+                    else:
+                        converted_value = [str(value)]
+                else:  # str
+                    converted_value = str(value) if value is not None else ''
+                
+                # If we get here, conversion succeeded
+                break
+                    
+            except (ValueError, TypeError) as e:
+                conversion_errors.append(f"{normalized_type}: {e}")
+                continue
+        else:
+            # No type conversion succeeded
+            raise ValueError(f"Type conversion failed for {setting_name}: cannot convert '{value}' to any of {type_list}. Errors: {'; '.join(conversion_errors)}")
+        
+        # Validate choices
+        if choices and converted_value not in choices:
+            raise ValueError(f"Invalid choice for {setting_name}: '{converted_value}' not in {choices}")
+        
+        # Validate numeric ranges
+        if min_value is not None and isinstance(converted_value, (int, float)):
+            if converted_value < min_value:
+                raise ValueError(f"Value too low for {setting_name}: {converted_value} < {min_value}")
+        
+        if max_value is not None and isinstance(converted_value, (int, float)):
+            if converted_value > max_value:
+                raise ValueError(f"Value too high for {setting_name}: {converted_value} > {max_value}")
+        
+        logger.debug(f"JSON validation applied to {setting_name}: '{value}' ({type(value).__name__}) -> {converted_value} ({type(converted_value).__name__})")
+        return converted_value
     
     def get_config_section_with_env_fallback(self, config_file: str, section_path: str, 
                                            env_prefix: str = None, default: Any = None) -> Any:
@@ -498,97 +739,91 @@ class UnifiedConfigManager:
         except Exception as e:
             logger.error(f"Error listing sections in '{config_file}': {e}")
             return []
-    
+
     # ========================================================================
     # CONFIGURATION CONVENIENCE METHODS FOR OTHER MANAGERS
     # ========================================================================
-    
+
     def get_hardware_configuration(self) -> Dict[str, Any]:
         """Get hardware configuration for models"""
         try:
             return {
-                'device': self.get_env('NLP_MODEL_DEVICE', 'auto'),
-                'precision': self.get_env('NLP_MODEL_PRECISION', 'float16'),
-                'max_batch_size': self.get_env_int('NLP_MODEL_MAX_BATCH_SIZE', 32),
-                'inference_threads': self.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
-                'max_memory': self.get_env('NLP_MODEL_MAX_MEMORY', None),
-                'offload_folder': self.get_env('NLP_MODEL_OFFLOAD_FOLDER', './models/offload'),
-                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache')
+                'device': self.get_config_section('model_coordination', 'hardware_settings.device', 'auto'),
+                'precision': self.get_config_section('model_coordination', 'hardware_settings.model_precision', 'float16'),
+                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './models/cache')
             }
         except Exception as e:
             logger.error(f"Error getting hardware configuration: {e}")
             return {
-                'device': 'auto', 'precision': 'float16', 'max_batch_size': 32,
-                'inference_threads': 16, 'max_memory': None,
-                'offload_folder': './models/offload', 'cache_directory': './models/cache'
+                'device': 'auto',
+                'precision': 'float16',
+                'cache_directory': './models/cache'
             }
-    
+
     def get_model_configuration(self) -> Dict[str, Any]:
         """Get model configuration settings"""
         try:
             return {
-                'depression_model': self.get_env('NLP_MODEL_DEPRESSION_NAME', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-                'depression_weight': self.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
-                'sentiment_model': self.get_env('NLP_MODEL_SENTIMENT_NAME', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
-                'sentiment_weight': self.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
-                'emotional_distress_model': self.get_env('NLP_MODEL_DISTRESS_NAME', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-                'emotional_distress_weight': self.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                'ensemble_mode': self.get_env('NLP_ENSEMBLE_MODE', 'majority'),
-                'gap_detection_enabled': self.get_env_bool('NLP_ENSEMBLE_GAP_DETECTION_ENABLED', True),
-                'disagreement_threshold': self.get_env_int('NLP_ENSEMBLE_DISAGREEMENT_THRESHOLD', 2),
-                'cache_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
+                'depression_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.depression.name', 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
+                'depression_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.depression.weight', 0.4),
+                'sentiment_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.sentiment.name', 'Lowerated/lm6-deberta-v3-topic-sentiment'),
+                'sentiment_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.sentiment.weight', 0.3),
+                'emotional_distress_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.emotional_distress.name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
+                'emotional_distress_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.emotional_distress.weight', 0.3),
+                'ensemble_mode': self.get_config_section('model_coordination', 'ensemble_config.mode', 'majority'),
+                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './models/cache'),
                 'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
             }
         except Exception as e:
             logger.error(f"Error getting model configuration: {e}")
             return {
-                'depression_model': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0', 'depression_weight': 0.4,
-                'sentiment_model': 'Lowerated/lm6-deberta-v3-topic-sentiment', 'sentiment_weight': 0.3,
-                'emotional_distress_model': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli', 'emotional_distress_weight': 0.3,
-                'ensemble_mode': 'consensus', 'gap_detection_enabled': True, 'disagreement_threshold': 2,
-                'cache_directory': './models/cache', 'huggingface_token': None
+                'depression_model': 'MoritzLaurer/deberta-v3-base-zeroshot-v2.0',
+                'depression_weight': 0.4,
+                'sentiment_model': 'Lowerated/lm6-deberta-v3-topic-sentiment',
+                'sentiment_weight': 0.3,
+                'emotional_distress_model': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli',
+                'emotional_distress_weight': 0.3,
+                'ensemble_mode': 'consensus',
+                'cache_directory': './models/cache',
+                'huggingface_token': None
             }
     
     def get_performance_configuration(self) -> Dict[str, Any]:
         """Get performance configuration settings"""
         try:
             return {
-                'max_concurrent_requests': self.get_env_int('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', 20),
-                'request_timeout': self.get_env_int('GLOBAL_REQUEST_TIMEOUT', 30),
-                'worker_timeout': self.get_env_int('NLP_PERFORMANCE_WORKER_TIMEOUT', 60),
-                'analysis_timeout_ms': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_TIMEOUT_MS', 5000),
-                'analysis_cache_ttl': self.get_env_int('NLP_PERFORMANCE_ANALYSIS_CACHE_TTL', 300),
-                'enable_optimization': self.get_env_bool('NLP_PERFORMANCE_ENABLE_OPTIMIZATION', True),
-                'batch_size': self.get_env_int('NLP_PERFORMANCE_BATCH_SIZE', 32),
-                'cache_size': self.get_env_int('NLP_PERFORMANCE_CACHE_SIZE', 1000)
+                'request_timeout': self.get_config_section('performance_settings', 'performance_settings.server_performance.request_timeout', 30),
+                'max_concurrent_requests': self.get_config_section('performance_settings', 'performance_settings.server_performance.max_concurrent_requests', 20),
+                'worker_timeout': self.get_config_section('performance_settings', 'performance_settings.server_performance.worker_timeout', 60),
             }
         except Exception as e:
             logger.error(f"Error getting performance configuration: {e}")
             return {
-                'max_concurrent_requests': 20, 'request_timeout': 40, 'worker_timeout': 60,
-                'analysis_timeout_ms': 5000, 'analysis_cache_ttl': 300, 'enable_optimization': True,
-                'batch_size': 32, 'cache_size': 1000
+                'request_timeout': 40,
+                'max_concurrent_requests': 20,
+                'worker_timeout': 60
             }
     
     def get_storage_configuration(self) -> Dict[str, Any]:
         """Get storage configuration settings"""
         try:
             return {
-                'data_directory': self.get_env('NLP_STORAGE_DATA_DIR', './data'),
-                'cache_directory': self.get_env('NLP_STORAGE_CACHE_DIR', './cache'),
-                'log_directory': self.get_env('NLP_STORAGE_LOG_DIR', './logs'),
-                'backup_directory': self.get_env('NLP_STORAGE_BACKUP_DIR', './backups'),
-                'models_directory': self.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
-                'enable_compression': self.get_env_bool('NLP_STORAGE_ENABLE_COMPRESSION', False),
-                'retention_days': self.get_env_int('NLP_STORAGE_RETENTION_DAYS', 30),
-                'log_file': self.get_env('NLP_STORAGE_LOG_FILE', 'nlp_service.log')
+                'data_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.data_directory', './data'),
+                'cache_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.cache_directory', './cache'),
+                'log_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.logs_directory', './logs'),
+                'backup_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.backup_directory', './backups'),
+                'models_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.models_directory', './models/cache'),
+                'log_file': self.get_config_section('logging_settings', 'global_settings.log_file', 'nlp_service.log')
             }
         except Exception as e:
             logger.error(f"Error getting storage configuration: {e}")
             return {
-                'data_directory': './data', 'cache_directory': './cache', 'log_directory': './logs',
-                'backup_directory': './backups', 'models_directory': './models/cache',
-                'enable_compression': False, 'retention_days': 30, 'log_file': 'nlp_service.log'
+                'data_directory': './data',
+                'cache_directory': './cache',
+                'log_directory': './logs',
+                'backup_directory': './backups',
+                'models_directory': './models/cache',
+                'log_file': 'nlp_service.log'
             }
     
     # ========================================================================

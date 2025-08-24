@@ -340,10 +340,6 @@ class ModelCoordinationManager:
             # Use get_config_section instead of get_model_configuration
             model_config = self.config_manager.get_config_section('model_coordination')
             
-            if not model_config:
-                logger.warning("No model_coordination.json found, using environment fallback")
-                return self._get_fallback_model_config()
-            
             # Extract model definitions from configuration
             ensemble_models = model_config.get('ensemble_models', {})
             model_definitions = ensemble_models.get('model_definitions', {})
@@ -360,55 +356,8 @@ class ModelCoordinationManager:
             return result
             
         except Exception as e:
-            logger.warning(f"Error loading model configuration: {e}, using fallback")
-            return self._get_fallback_model_config()
-    
-    def _get_fallback_model_config(self) -> Dict[str, Any]:
-        """Get fallback model configuration using environment variables"""
-        logger.info("Using environment variable fallback for model configuration")
-        
-        return {
-            'models': {
-                'depression': {
-                    'name': self.config_manager.get_env_str('NLP_MODEL_DEPRESSION_NAME', 
-                                                          'MoritzLaurer/deberta-v3-base-zeroshot-v2.0'),
-                    'weight': self.config_manager.get_env_float('NLP_MODEL_DEPRESSION_WEIGHT', 0.4),
-                    'type': 'zero-shot-classification',
-                    'pipeline_task': 'zero-shot-classification'
-                },
-                'sentiment': {
-                    'name': self.config_manager.get_env_str('NLP_MODEL_SENTIMENT_NAME', 
-                                                          'Lowerated/lm6-deberta-v3-topic-sentiment'),
-                    'weight': self.config_manager.get_env_float('NLP_MODEL_SENTIMENT_WEIGHT', 0.3),
-                    'type': 'zero-shot-classification',
-                    'pipeline_task': 'zero-shot-classification'
-                },
-                'emotional_distress': {
-                    'name': self.config_manager.get_env_str('NLP_MODEL_DISTRESS_NAME', 
-                                                          'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
-                    'weight': self.config_manager.get_env_float('NLP_MODEL_DISTRESS_WEIGHT', 0.3),
-                    'type': 'zero-shot-classification',
-                    'pipeline_task': 'zero-shot-classification'
-                }
-            },
-            'ensemble_mode': self.config_manager.get_env_str('NLP_ENSEMBLE_MODE', 'majority'),
-            'hardware_settings': self._get_hardware_settings_from_env(),
-            'validation': {
-                'ensure_weights_sum_to_one': True,
-                'fail_on_invalid_weights': True
-            }
-        }
-    
-    def _get_hardware_settings_from_env(self) -> Dict[str, Any]:
-        """Get hardware settings from environment variables"""
-        return {
-            'device': self.config_manager.get_env_str('NLP_MODEL_DEVICE', 'auto'),
-            'precision': self.config_manager.get_env_str('NLP_MODEL_PRECISION', 'float16'),
-            'max_batch_size': self.config_manager.get_env_int('NLP_MODEL_MAX_BATCH_SIZE', 32),
-            'inference_threads': self.config_manager.get_env_int('NLP_MODEL_INFERENCE_THREADS', 16),
-            'max_memory': self.config_manager.get_env_str('NLP_MODEL_MAX_MEMORY', ''),
-            'offload_folder': self.config_manager.get_env_str('NLP_MODEL_OFFLOAD_FOLDER', './models/offload')
-        }
+            logger.warning(f"Error loading model configuration: {e}")
+            return
     
     def _get_device_config(self) -> str:
         """Get device configuration for AI models"""

@@ -379,8 +379,8 @@ class ZeroShotManager:
         """
         try:
             # PHASE 3E: Enhanced configuration access using environment variable patterns
-            configured_set = self.unified_config.get_env('NLP_ZERO_SHOT_LABEL_SET', 'crisis_labels')
-            label_switching_enabled = self.unified_config.get_env_bool('NLP_ZERO_SHOT_ENABLE_LABEL_SET_SWITCHING', True)
+            configured_set = self.unified_config.get_config_section('label_config', 'label_mapping.configured_set', 'enhanced_crisis')
+            label_switching_enabled = self.unified_config.get_config_section('label_config', 'label_mapping.enable_label_switching', True)
             
             return {
                 'manager_version': 'v3.1e-5.5-5',

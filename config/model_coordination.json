@@ -204,14 +204,14 @@
     "device_map": "${NLP_HARDWARE_DEVICE_MAP}",
     "load_in_8bit": "${NLP_HARDWARE_LOAD_IN_8BIT}",
     "load_in_4bit": "${NLP_HARDWARE_LOAD_IN_4BIT}",
-    "torch_dtype": "${NLP_HARDWARE_TORCH_DTYPE}",
+    "model_precision": "${NLP_HARDWARE_PRECISION}",
     "cache_dir": "${NLP_STORAGE_MODELS_DIR}",
     "defaults": {
       "device": "auto",
       "device_map": "auto",
       "load_in_8bit": false,
       "load_in_4bit": false,
-      "torch_dtype": "float16",
+      "model_precision": "float16",
       "cache_dir": "./models/cache"
     },
     "validation": {
@@ -232,7 +232,7 @@
         "type": "boolean",
         "description": "Load models in 4-bit precision"
       },
-      "torch_dtype": {
+      "model_precision": {
         "type": "string",
         "allowed_values": ["float16", "float32", "bfloat16"],
         "description": "Torch data type for model weights"
