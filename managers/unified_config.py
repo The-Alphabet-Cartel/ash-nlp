@@ -374,9 +374,8 @@ class UnifiedConfigManager:
 
     def _get_config_section_original(self, config_file: str, section_path: str = None, default: Any = None) -> Any:
         """
-        Original get_config_section implementation WITH PROPER VALIDATION
+        Original get_config_section implementation WITH PROPER VALIDATION FOR LEAF VALUES
         """
-        logger.debug(f"_get_config_section_original called: {config_file}, {section_path}")
         try:
             # Load the configuration file
             config_data = self.load_config_file(config_file)
@@ -387,39 +386,73 @@ class UnifiedConfigManager:
             
             # If no section path specified, return entire config (but validate it)
             if section_path is None:
-                logger.debug(f"No section path - validating entire config for {config_file}")
                 return self._apply_json_validation(config_data, config_file, "root")
             
             # Navigate through the nested path
             result = config_data
             path_parts = section_path.split('.')
-            logger.debug(f"Navigating path: {path_parts}")
             
-            for i, part in enumerate(path_parts):
-                logger.debug(f"  Step {i+1}: Looking for '{part}' in {type(result).__name__}")
+            for part in path_parts:
                 if isinstance(result, dict) and part in result:
                     result = result[part]
-                    logger.debug(f"  Step {i+1}: Found '{part}', type now: {type(result).__name__}")
                 else:
                     logger.debug(f"Section path '{section_path}' not found in '{config_file}', using default")
                     return default if default is not None else {}
             
-            logger.debug(f"Navigation complete. Final result type: {type(result).__name__}")
-            logger.debug(f"Final result sample: {str(result)[:200]}...")
-            
-            # CRITICAL FIX: Apply JSON validation to the final result
-            logger.debug(f"About to apply JSON validation to {config_file}:{section_path}")
-            validated_result = self._apply_json_validation(result, config_file, section_path)
-            logger.debug(f"JSON validation complete. Result type: {type(validated_result).__name__}")
-            
-            logger.debug(f"Retrieved and validated section '{section_path}' from '{config_file}'")
-            return validated_result
+            # ENHANCED: Handle both dictionary sections and leaf values
+            if isinstance(result, dict):
+                # Dictionary section - apply validation normally
+                validated_result = self._apply_json_validation(result, config_file, section_path)
+                logger.debug(f"Retrieved and validated section '{section_path}' from '{config_file}'")
+                return validated_result
+            else:
+                # Leaf value - find parent section and apply specific validation
+                validated_result = self._validate_leaf_value(result, config_file, section_path)
+                logger.debug(f"Retrieved and validated leaf value '{section_path}' from '{config_file}'")
+                return validated_result
             
         except Exception as e:
             logger.error(f"Error getting config section '{section_path}' from '{config_file}': {e}")
-            import traceback
-            traceback.print_exc()
             return default if default is not None else {}
+
+    def _validate_leaf_value(self, value: Any, config_file: str, section_path: str) -> Any:
+        """
+        Validate a single leaf value by finding its parent section's validation rules
+        
+        Args:
+            value: The leaf value to validate
+            config_file: Source configuration file name  
+            section_path: Full path to the leaf value
+            
+        Returns:
+            Validated and type-converted leaf value
+        """
+        # Extract parent section path and leaf key
+        path_parts = section_path.split('.')
+        if len(path_parts) < 2:
+            # Can't validate root level items without context
+            return value
+            
+        parent_path = '.'.join(path_parts[:-1])
+        leaf_key = path_parts[-1]
+        
+        logger.debug(f"Validating leaf: {leaf_key} in parent: {parent_path}")
+        
+        # Get validation rules from parent section
+        validation_rules = self._get_validation_rules(config_file, parent_path)
+        
+        if not validation_rules or leaf_key not in validation_rules:
+            logger.debug(f"No validation rule found for {leaf_key} in {parent_path}")
+            return value
+        
+        # Apply validation to the leaf value
+        try:
+            validated_value = self._validate_json_setting(leaf_key, value, validation_rules[leaf_key])
+            logger.debug(f"Leaf validation: {config_file}:{section_path} = {value} -> {validated_value} ({type(validated_value).__name__})")
+            return validated_value
+        except Exception as e:
+            logger.warning(f"Leaf validation failed for {config_file}:{section_path}: {e}, returning original value")
+            return value
 
     def _apply_json_validation(self, data: Any, config_file: str, section_path: str) -> Any:
         """
