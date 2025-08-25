@@ -189,6 +189,8 @@ class ModelCoordinationManager:
         if not TRANSFORMERS_AVAILABLE:
             return None
         
+        logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")        
+        
         # Check if we're in a worker process and have CPU preloaded models
         if hasattr(self, '_model_cache') and model_name in self._model_cache:
             # Use worker CUDA transfer logic
@@ -222,6 +224,8 @@ class ModelCoordinationManager:
                     load_device = 'cpu'
                     device_id = -1
                     logger.info(f"🔧 Loading {model_name} on CPU (fallback)")
+
+                logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
                 
                 # Create pipeline with proper configuration
                 classifier = pipeline(
