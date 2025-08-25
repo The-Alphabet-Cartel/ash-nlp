@@ -700,6 +700,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_man
     
     @app.get("/debug/worker-status")
     async def debug_worker_status():
+        import os
         try:
             return {
                 "worker_pid": os.getpid(),
