@@ -363,7 +363,7 @@ try:
     # ========================================================================
     logger.info("=" * 70)
     logger.info("=" * 70)
-    logger.info("🔧 Preloading models for gunicorn multi-worker deployment...")
+    logger.info("🔧 Starting model preloading for gunicorn multi-worker deployment...")
     logger.info("=" * 70)
     logger.info("=" * 70)
 
@@ -378,42 +378,30 @@ try:
     try:
         # Check if models are already preloaded
         model_status = model_coordination.get_preload_status()
+        logger.info(f"📊 Initial preload status: {model_status}")
         
         if not model_status.get('preload_complete', False):
             logger.info("🚀 Starting CPU model preloading for memory sharing...")
+            logger.info("=" * 70)
             
-            # Get model definitions
-            models = model_coordination.get_model_definitions()
+            # Use your existing async preloading method
             preload_start_time = time.time()
-            
-            for model_name, model_info in models.items():
-                if model_info.get('enabled', True):
-                    model_id = model_info.get('name')
-                    logger.info(f"🔄 Preloading model on CPU: {model_name} ({model_id})")
-                    
-                    try:
-                        # Use the existing _get_cached_pipeline method which now respects CPU mode
-                        pipeline = await model_coordination._get_or_load_pipeline(model_id)
-                        
-                        if pipeline:
-                            logger.info(f"✅ CPU preload successful: {model_name}")
-                        else:
-                            logger.warning(f"⚠️ CPU preload failed: {model_name}")
-                            
-                    except Exception as e:
-                        logger.error(f"❌ Error preloading {model_name}: {e}")
-                        
+            asyncio.run(model_coordination.preload_models())
             preload_time = (time.time() - preload_start_time) * 1000
-            logger.info(f"✅ CPU model preloading complete in {preload_time:.1f}ms")
+            
+            logger.info("=" * 70)
+            logger.info(f"✅ CPU model preloading completed in {preload_time:.1f}ms")
             
             # Final preload status check
             final_status = model_coordination.get_preload_status()
             logger.info(f"📊 Preload summary: {final_status.get('models_loaded', 0)}/{final_status.get('total_models_configured', 0)} models loaded")
+            logger.info("=" * 70)
             
         else:
             logger.info("📦 Models already preloaded, skipping preload phase")
         
         logger.info("🏭 CPU preloading complete - workers will transfer to CUDA on first request")
+        logger.info("=" * 70)
         
     finally:
         # Restore original device setting for workers
@@ -421,11 +409,9 @@ try:
         logger.info(f"🔄 Restored device setting to: {original_device}")
         logger.info("✅ Workers will now use CUDA when processing requests")
 
-    # Continue with rest of your existing main.py initialization...
-    logger.info("=" * 70)
     logger.info("🚀 Master process initialization complete - ready for gunicorn workers")
     logger.info("=" * 70)
-    
+
     # ========================================================================
     # CREATE FASTAPI APP AT MODULE LEVEL
     # ========================================================================
