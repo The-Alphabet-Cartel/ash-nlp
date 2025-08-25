@@ -189,7 +189,7 @@ class ModelCoordinationManager:
         if not TRANSFORMERS_AVAILABLE:
             return None
         
-        logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")        
+        logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
         
         # Check if we're in a worker process and have CPU preloaded models
         if hasattr(self, '_model_cache') and model_name in self._model_cache:
@@ -225,8 +225,8 @@ class ModelCoordinationManager:
                     device_id = -1
                     logger.info(f"🔧 Loading {model_name} on CPU (fallback)")
 
-                logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
-                
+                logger.info(f"🔍 Current NLP_HARDWARE_DEVICE: '{os.environ.get('NLP_HARDWARE_DEVICE', 'NOT_SET')}'")
+
                 # Create pipeline with proper configuration
                 classifier = pipeline(
                     "zero-shot-classification",
