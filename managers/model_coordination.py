@@ -303,6 +303,9 @@ class ModelCoordinationManager:
         This prevents timeout issues during actual crisis analysis
         """
         try:
+            logger.info("DEBUG: preload_models method starting")
+            logger.info(f"DEBUG: Current NLP_HARDWARE_DEVICE = {os.environ.get('NLP_HARDWARE_DEVICE', 'NOT_SET')}")
+            logger.info(f"DEBUG: Cached self.device = {self.device}")
             logger.info("Starting model preloading during container startup...")
             
             models = self.get_model_definitions()
@@ -320,7 +323,9 @@ class ModelCoordinationManager:
                 
                 try:
                     logger.info(f"Preloading model: {model_type} ({model_name})")
+                    logger.info(f"DEBUG: About to call _get_or_load_pipeline({model_name})")
                     pipeline_obj = await self._get_or_load_pipeline(model_name)
+                    logger.info(f"DEBUG: _get_or_load_pipeline returned: {type(pipeline_obj)}")
                     
                     if pipeline_obj:
                         logger.info(f"Successfully preloaded: {model_type}")
