@@ -987,7 +987,7 @@ class ModelCoordinationManager:
         if not TRANSFORMERS_AVAILABLE:
             return None
         
-        logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
+        logger.info(f"🔧 About to create pipeline with device_id: {self.device})
         
         # Check if we're in a worker process and have CPU preloaded models
         if hasattr(self, '_model_cache') and model_name in self._model_cache:
