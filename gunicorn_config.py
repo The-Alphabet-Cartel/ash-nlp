@@ -11,131 +11,153 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Gunicorn Production Server Configuration for Multi-Worker Deployment
 ---
-FILE VERSION: v3.1-gunicorn-1-1
+FILE VERSION: v3.1-gunicorn-1-2
 LAST MODIFIED: 2025-08-24
-PHASE: Gunicorn Migration - Production Multi-Worker Setup
+PHASE: Gunicorn Migration - Production Multi-Worker Setup with CUDA Transfer
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 PURPOSE: Enable multi-worker production deployment while preserving startup logging
-STRATEGY: preload_app=True for model sharing, optimized for 64GB RAM + RTX 3060
-
-Optimized for:
-- AMD Ryzen 7 5800x (8 cores/16 threads) 
-- NVIDIA RTX 3060 (12GB VRAM)
-- 64GB RAM
-- 3 worker processes
+STRATEGY: preload_app=True for model sharing, CPU preload + worker CUDA transfer
 """
 
 import os
 from pathlib import Path
 
-# ========================================================================
-# SERVER CONFIGURATION
-# ========================================================================
+# ============================================================================
+# SERVER CONFIGURATION - INTEGRATED WITH ASH-NLP ENVIRONMENT VARIABLES
+# ============================================================================
 
-bind = "0.0.0.0:8881"  # Match current uvicorn config
-workers = 3  # Reduced from 5 for better memory management
+# Network Configuration - Uses existing NLP environment variables
+bind = f"{os.getenv('NLP_SERVER_HOST', '0.0.0.0')}:{os.getenv('GLOBAL_NLP_API_PORT', '8881')}"
+backlog = 2048  # Connection backlog
+
+# Worker Configuration - Uses existing performance environment variables
+workers = int(os.getenv('NLP_PERFORMANCE_WORKERS', '3'))  # Default 3 workers for memory optimization
 worker_class = "uvicorn.workers.UvicornWorker"  # ASGI support for FastAPI
-worker_connections = 1000
-max_requests = 1000
-max_requests_jitter = 100
+worker_connections = int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', '1000'))
+max_requests = int(os.getenv('NLP_GUNICORN_MAX_REQUESTS', '1000'))  # Uses gunicorn-specific override
+max_requests_jitter = 100  # Add randomness to prevent thundering herd
 
-# ========================================================================
-# PROCESS MANAGEMENT (CRITICAL FOR MODEL SHARING)
-# ========================================================================
+# ============================================================================
+# MEMORY OPTIMIZATION STRATEGY
+# ============================================================================
 
-preload_app = True  # CRITICAL: Enables CPU model preloading and memory sharing
-proc_name = "ash-nlp-crisis-detection"
-user = None  # Keep as current user in Docker
-group = None
+# CRITICAL: Model Memory Sharing Strategy
+preload_app = True  # Load models once in master, share via copy-on-write
+                   # Memory benefit: ~15GB total vs ~24GB (3x8GB) without preload
 
-# ========================================================================
-# TIMEOUTS (IMPORTANT FOR MODEL LOADING AND CUDA TRANSFER)
-# ========================================================================
+# Process Management
+proc_name = "ash-nlp-crisis-detection"  # Process name for monitoring
+user = None   # Keep as current Docker user
+group = None  # Keep as current Docker group
 
-timeout = 120  # Increased for NLP model initialization and CUDA transfers
-graceful_timeout = 30
-keepalive = 2
-
-# ========================================================================
-# LOGGING INTEGRATION
-# ========================================================================
-
-accesslog = "-"  # stdout
-errorlog = "-"   # stderr  
-loglevel = "info"
-capture_output = True
-
-# ========================================================================
+# ============================================================================
 # PERFORMANCE TUNING
-# ========================================================================
+# ============================================================================
 
-worker_tmp_dir = "/dev/shm"  # Use shared memory for better performance
+# Timeouts - Uses existing performance environment variables  
+timeout = int(os.getenv('NLP_PERFORMANCE_WORKER_TIMEOUT', '120'))  # Worker timeout from .env.template (was 60)
+graceful_timeout = int(os.getenv('NLP_GUNICORN_GRACEFUL_TIMEOUT', '30'))  # Graceful shutdown time
+keepalive = int(os.getenv('NLP_GUNICORN_KEEPALIVE', '2'))  # Keep-alive connections
 
-# ========================================================================
-# LIFECYCLE HOOKS FOR MONITORING
-# ========================================================================
+# Performance Optimizations - Enhanced with environment variable integration
+worker_tmp_dir = os.getenv('NLP_GUNICORN_WORKER_TMP_DIR', '/dev/shm')  # Use shared memory for performance
+                             # Requires Docker --tmpfs /dev/shm:rw,noexec,nosuid,size=1g
+
+# Request Timeout Integration - Uses global timeout setting
+worker_timeout = int(os.getenv('GLOBAL_REQUEST_TIMEOUT', '30'))  # Global request timeout
+
+# ============================================================================
+# LOGGING INTEGRATION - USES ASH-NLP ENVIRONMENT VARIABLES
+# ============================================================================
+
+# Logging Configuration - Integrated with existing logging system
+accesslog = "-" if os.getenv('GLOBAL_LOGGING_ENABLE_CONSOLE', 'true').lower() == 'true' else None
+errorlog = "-"   # stderr - integrates with Docker logging  
+loglevel = os.getenv('GLOBAL_LOG_LEVEL', 'info').lower()  # Uses global log level
+capture_output = True  # Capture stdout/stderr from workers
+
+# Disable gunicorn's default access logging (we have our own)
+disable_redirect_access_to_syslog = True
+
+# ============================================================================
+# LIFECYCLE HOOKS - PRESERVE STARTUP LOGGING SEQUENCE
+# ============================================================================
 
 def on_starting(server):
-    """Called when the master process is initialized"""
-    print("🚀 Ash-NLP Gunicorn Master Starting - Crisis Detection System initializing...")
-    print(f"🔧 Configuration: {server.num_workers} workers, preload_app={preload_app}")
+    """Called just before the master process is initialized"""
+    print("🚀 Gunicorn master starting - Ash-NLP Crisis Detection System initializing...")
+    print(f"🏳️‍🌈 Serving The Alphabet Cartel LGBTQIA+ Community")
+    print(f"⚙️ Configuration: {server.cfg.workers} workers, preload_app={server.cfg.preload_app}")
 
 def when_ready(server):
-    """Called when the server is ready to serve requests"""
-    print(f"✅ Ash-NLP ready with {server.num_workers} workers - Community protection active!")
-    print("🏳️‍🌈 Serving The Alphabet Cartel LGBTQIA+ Community")
+    """Called just after the server is started"""
+    print(f"✅ Ash-NLP ready with {server.cfg.workers} workers - Community protection active")
+    print(f"🌐 Listening on: {server.cfg.bind}")
+    print(f"🧠 Model memory sharing: {'ENABLED' if server.cfg.preload_app else 'DISABLED'}")
 
 def worker_int(worker):
-    """Called when a worker receives a SIGINT signal"""
-    print(f"🛑 Worker {worker.pid} shutting down gracefully...")
+    """Called just after a worker exited on SIGINT or SIGQUIT"""
+    print(f"🛑 Worker {worker.pid} shutting down gracefully")
 
 def pre_fork(server, worker):
-    """Called just before a worker process is forked"""
-    print(f"🔄 Forking worker {worker.age} (PID will be assigned after fork)")
+    """Called just before a worker is forked"""
+    print(f"🔄 Forking worker {worker.age} (PID will be assigned)")
 
 def post_fork(server, worker):
-    """Called after a worker has been forked"""
+    """Called just after a worker has been forked"""
     print(f"👥 Worker {worker.pid} ready for crisis detection")
     print(f"🔧 Worker {worker.pid} will transfer models to CUDA on first request")
 
 def worker_abort(worker):
-    """Called when a worker process is aborted"""
+    """Called when a worker receives the SIGABRT signal"""
     print(f"⚠️ Worker {worker.pid} aborted - possible memory/timeout issue")
-    print("💡 Check memory usage and model loading performance")
-
-def on_exit(server):
-    """Called when the master process exits"""
-    print("👋 Ash-NLP shutting down - Crisis detection service stopping")
-
-# ========================================================================
-# MONITORING AND DEBUG HOOKS
-# ========================================================================
+    print(f"⚠️ Worker exit code: {worker.tmp.returncode}")
+    print(f"💡 Check memory usage and CUDA transfer performance")
 
 def pre_request(worker, req):
-    """Optional: Log high-latency requests"""
-    # Uncomment for debugging request patterns
+    """Called just before a worker processes the request (optional monitoring)"""
+    # Uncomment for request-level monitoring
     # worker.log.info(f"Processing: {req.method} {req.path}")
     pass
 
 def post_request(worker, req, environ, resp):
-    """Optional: Log response metrics"""
-    # Uncomment for debugging response patterns  
+    """Called after a worker processes the request (optional monitoring)"""
+    # Uncomment for detailed response monitoring  
     # worker.log.info(f"Completed: {req.method} {req.path} - Status: {resp.status}")
     pass
 
-# ========================================================================
-# MEMORY AND RESOURCE OPTIMIZATION
-# ========================================================================
+# ============================================================================
+# ENVIRONMENT VARIABLE INTEGRATION - ASH-NLP COMPATIBLE
+# ============================================================================
 
-# Environment-based worker scaling (override via Docker environment)
-workers = int(os.environ.get('NLP_GUNICORN_WORKERS', workers))
+# Load environment variables with defaults from Ash-NLP .env.template
+# This ensures consistency with the existing configuration system
 
-# Validate worker count for memory constraints
-if workers > 5:
-    print(f"⚠️ Warning: {workers} workers may exceed memory capacity. Recommended: ≤5")
+# Core Server Configuration
+bind = f"{os.getenv('NLP_SERVER_HOST', '0.0.0.0')}:{os.getenv('GLOBAL_NLP_API_PORT', '8881')}"
+workers = int(os.getenv('NLP_PERFORMANCE_WORKERS', '3'))  # Changed default to 3 for memory optimization
+timeout = int(os.getenv('NLP_PERFORMANCE_WORKER_TIMEOUT', '120'))  # Extended for model loading
+worker_connections = int(os.getenv('NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS', '20'))
 
-print(f"🔧 Gunicorn Config Loaded: {workers} workers, preload_app={preload_app}")
+# Gunicorn-specific overrides (for fine-tuning beyond standard NLP variables)
+max_requests = int(os.getenv('NLP_GUNICORN_MAX_REQUESTS', '1000'))
+worker_tmp_dir = os.getenv('NLP_GUNICORN_WORKER_TMP_DIR', '/dev/shm')
+
+# Rate Limiting Integration - Uses existing rate limiting configuration
+max_requests = min(max_requests, int(os.getenv('NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR', '2000')))
+
+print(f"📋 Gunicorn Configuration Loaded from Environment:")
+print(f"   Bind Address: {bind}")
+print(f"   Workers: {workers}")
+print(f"   Timeout: {timeout}s") 
+print(f"   Worker Connections: {worker_connections}")
+print(f"   Preload App: {preload_app}")
+print(f"   Worker Class: {worker_class}")
+print(f"   Log Level: {loglevel}")
+print(f"   Max Requests: {max_requests}")
+print(f"   Worker Tmp Dir: {worker_tmp_dir}")
 print(f"💾 Expected memory usage: ~{8 + (workers * 3)}GB (CPU preload + {workers} CUDA workers)")
+print(f"🔧 CUDA transfer strategy: CPU preload → Worker CUDA transfer on first request")
