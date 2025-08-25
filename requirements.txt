@@ -26,9 +26,7 @@ pytest>=7.0.0
 pytest-asyncio>=0.21.0
 
 # Production dependencies
-gunicorn>=20.1.0
-
 python-dotenv>=1.0.0
 
-# Colorize logs!
+# Colorize logs
 colorlog>=6.8.0
