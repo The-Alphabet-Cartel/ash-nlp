@@ -170,82 +170,6 @@ class ModelCoordinationManager:
             logger.debug(f"💻 Using CPU pipeline for {model_name}")
             return cpu_pipeline
 
-    async def _get_or_load_pipeline(self, model_name: str):
-        """
-        UPDATED: Load or get cached zero-shot classification pipeline with worker CUDA transfer
-        
-        This method now handles:
-        1. CPU preloading in master process (gunicorn preload_app)
-        2. Worker-specific CUDA transfer on first request
-        3. Caching at both CPU and CUDA levels
-        4. Real-time device detection (checks current environment state)
-        
-        Args:
-            model_name: Hugging Face model name
-            
-        Returns:
-            Zero-shot classification pipeline or None if loading fails
-        """
-        if not TRANSFORMERS_AVAILABLE:
-            return None
-        
-        logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
-        
-        # Check if we're in a worker process and have CPU preloaded models
-        if hasattr(self, '_model_cache') and model_name in self._model_cache:
-            # Use worker CUDA transfer logic
-            return self._get_worker_cuda_pipeline(model_name, {})
-        
-        # Original loading logic for non-preloaded scenarios
-        async with self._model_loading_lock:
-            # Check cache first
-            if model_name in self._model_cache:
-                logger.debug(f"📦 Using cached model: {model_name}")
-                return self._model_cache[model_name]
-            
-            try:
-                logger.info(f"🔥 Loading zero-shot model: {model_name}")
-                
-                # Get cache directory
-                cache_dir = self._get_model_cache_dir()
-                
-                # FIXED: Check current environment variable state, not cached self.device
-                current_device_env = os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower()
-                
-                if current_device_env == 'cpu':
-                    load_device = 'cpu'
-                    device_id = -1
-                    logger.info(f"🔧 Loading {model_name} on CPU (forced by environment)")
-                elif current_device_env == 'cuda' or (current_device_env == 'auto' and torch.cuda.is_available()):
-                    load_device = 'cuda'
-                    device_id = 0
-                    logger.info(f"🔧 Loading {model_name} on CUDA (device_id=0)")
-                else:
-                    load_device = 'cpu'
-                    device_id = -1
-                    logger.info(f"🔧 Loading {model_name} on CPU (fallback)")
-
-                logger.info(f"🔍 Current NLP_HARDWARE_DEVICE: '{os.environ.get('NLP_HARDWARE_DEVICE', 'NOT_SET')}'")
-
-                # Create pipeline with proper configuration
-                classifier = pipeline(
-                    "zero-shot-classification",
-                    model=model_name,
-                    device=device_id,
-                    cache_dir=cache_dir,
-                    return_all_scores=True
-                )
-                
-                # Cache the pipeline
-                self._model_cache[model_name] = classifier
-                
-                logger.info(f"✅ Model loaded successfully: {model_name} on {load_device}")
-                return classifier
-                
-            except Exception as e:
-                logger.error(f"❌ Failed to load model {model_name}: {e}")
-                return None
-
     def get_worker_cuda_status(self) -> Dict[str, Any]:
         """Get status of worker CUDA transfers for monitoring"""
         try:
@@ -1043,7 +967,13 @@ class ModelCoordinationManager:
     
     async def _get_or_load_pipeline(self, model_name: str):
         """
-        PHASE 3: Load or get cached zero-shot classification pipeline
+        UPDATED: Load or get cached zero-shot classification pipeline with worker CUDA transfer
+        
+        This method now handles:
+        1. CPU preloading in master process (gunicorn preload_app)
+        2. Worker-specific CUDA transfer on first request
+        3. Caching at both CPU and CUDA levels
+        4. Real-time device detection (checks current environment state)
         
         Args:
             model_name: Hugging Face model name
@@ -1053,9 +983,15 @@ class ModelCoordinationManager:
         """
         if not TRANSFORMERS_AVAILABLE:
             return None
-            
-        logger.info(f"🔍 Current NLP_HARDWARE_DEVICE: '{os.environ.get('NLP_HARDWARE_DEVICE', 'NOT_SET')}'")
-
+        
+        logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
+        
+        # Check if we're in a worker process and have CPU preloaded models
+        if hasattr(self, '_model_cache') and model_name in self._model_cache:
+            # Use worker CUDA transfer logic
+            return self._get_worker_cuda_pipeline(model_name, {})
+        
+        # Original loading logic for non-preloaded scenarios
         async with self._model_loading_lock:
             # Check cache first
             if model_name in self._model_cache:
@@ -1068,7 +1004,7 @@ class ModelCoordinationManager:
                 # Get cache directory
                 cache_dir = self._get_model_cache_dir()
                 
-                # DEVICE DETECTION LOGIC - ADD THIS:
+                # FIXED: Check current environment variable state, not cached self.device
                 current_device_env = os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower()
                 
                 if current_device_env == 'cpu':
@@ -1083,14 +1019,14 @@ class ModelCoordinationManager:
                     load_device = 'cpu'
                     device_id = -1
                     logger.info(f"🔧 Loading {model_name} on CPU (fallback)")
-                
-                logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
+
+                logger.info(f"🔍 Current NLP_HARDWARE_DEVICE: '{os.environ.get('NLP_HARDWARE_DEVICE', 'NOT_SET')}'")
 
                 # Create pipeline with proper configuration
                 classifier = pipeline(
                     "zero-shot-classification",
                     model=model_name,
-                    device=device_id,  # USE device_id INSTEAD OF self.device
+                    device=device_id,
                     cache_dir=cache_dir,
                     return_all_scores=True
                 )
@@ -1104,7 +1040,7 @@ class ModelCoordinationManager:
             except Exception as e:
                 logger.error(f"❌ Failed to load model {model_name}: {e}")
                 return None
-    
+
     def _get_model_cache_dir(self) -> str:
         """Get model cache directory from configuration"""
         try:
