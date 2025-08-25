@@ -384,9 +384,20 @@ try:
             logger.info("🚀 Starting CPU model preloading for memory sharing...")
             logger.info("=" * 70)
             
+            # Force CPU for master process preloading
+            original_device = os.environ.get('NLP_HARDWARE_DEVICE', 'auto')
+            os.environ['NLP_HARDWARE_DEVICE'] = 'cpu'
+
             # Use your existing async preloading method
             preload_start_time = time.time()
-            asyncio.run(model_coordination.preload_models())
+
+            try:
+                # Your existing asyncio.run(model_coordination.preload_models()) here
+                asyncio.run(model_coordination.preload_models())
+            finally:
+                # Restore original device setting for workers
+                os.environ['NLP_HARDWARE_DEVICE'] = original_device
+
             preload_time = (time.time() - preload_start_time) * 1000
             
             logger.info("=" * 70)
