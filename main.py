@@ -384,10 +384,6 @@ try:
             logger.info("🚀 Starting CPU model preloading for memory sharing...")
             logger.info("=" * 70)
             
-            # Force CPU for master process preloading
-            original_device = os.environ.get('NLP_HARDWARE_DEVICE', 'auto')
-            os.environ['NLP_HARDWARE_DEVICE'] = 'cpu'
-
             # Use your existing async preloading method
             preload_start_time = time.time()
 
