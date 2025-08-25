@@ -1054,6 +1054,8 @@ class ModelCoordinationManager:
         if not TRANSFORMERS_AVAILABLE:
             return None
             
+        logger.info(f"🔍 Current NLP_HARDWARE_DEVICE: '{os.environ.get('NLP_HARDWARE_DEVICE', 'NOT_SET')}'")
+
         async with self._model_loading_lock:
             # Check cache first
             if model_name in self._model_cache:
@@ -1066,6 +1068,8 @@ class ModelCoordinationManager:
                 # Get cache directory
                 cache_dir = self._get_model_cache_dir()
                 
+                logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
+
                 # Create pipeline with proper configuration
                 classifier = pipeline(
                     "zero-shot-classification",
