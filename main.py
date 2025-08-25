@@ -363,42 +363,67 @@ try:
     # ========================================================================
     logger.info("=" * 70)
     logger.info("=" * 70)
-    logger.info("🔧 Preloading ensemble models for shared memory optimization...")
-    logger.info("⏱️ Model loading may take several minutes on first startup...")
+    logger.info("🔧 Preloading models for gunicorn multi-worker deployment...")
     logger.info("=" * 70)
     logger.info("=" * 70)
-    
-    start_time = time.time()
-    
-    # This should preload all models into the master process
-    # Workers will inherit them via copy-on-write memory sharing
-    model_status = model_coordination.get_preload_status()
-    logger.info(f"📊 Model preload status: {model_status}")
-    
-    if not model_status.get('preload_complete', False):
-        logger.info("🔄 Triggering model preload for memory sharing...")
-        try:
-            # Trigger model loading by accessing model definitions
-            logger.info("=" * 70)
-            logger.info("🔧 Preloading models now...")
-            asyncio.run(model_coordination.preload_models())
-            models = model_coordination.get_model_definitions()
-            logger.info(f"📦 Found {len(models)} models configured for preload")
-            logger.info("=" * 70)
+
+    # Force CPU for master process preloading (avoid CUDA context issues)
+    original_device = os.environ.get('NLP_HARDWARE_DEVICE', 'auto')
+    logger.info(f"💾 Original device setting: {original_device}")
+
+    # Temporarily force CPU for preloading
+    os.environ['NLP_HARDWARE_DEVICE'] = 'cpu'
+    logger.info("🔧 Forcing CPU mode for master process model preloading")
+
+    try:
+        # Check if models are already preloaded
+        model_status = model_coordination.get_preload_status()
+        
+        if not model_status.get('preload_complete', False):
+            logger.info("🚀 Starting CPU model preloading for memory sharing...")
             
-            # Force model initialization for memory sharing
+            # Get model definitions
+            models = model_coordination.get_model_definitions()
+            preload_start_time = time.time()
+            
             for model_name, model_info in models.items():
-                logger.info(f"🔄 Preloading model: {model_name}")
-                # This will cache the model in master process memory
-                model_coordination._get_cached_pipeline_sync(model_name)
-                
-        except Exception as e:
-            logger.warning(f"⚠️ Model preload encountered issues: {e}")
-            logger.info("🔄 Models will be loaded on-demand by workers")
-    
-    preload_time = time.time() - start_time
+                if model_info.get('enabled', True):
+                    model_id = model_info.get('name')
+                    logger.info(f"🔄 Preloading model on CPU: {model_name} ({model_id})")
+                    
+                    try:
+                        # Use the existing _get_cached_pipeline method which now respects CPU mode
+                        pipeline = await model_coordination._get_or_load_pipeline(model_id)
+                        
+                        if pipeline:
+                            logger.info(f"✅ CPU preload successful: {model_name}")
+                        else:
+                            logger.warning(f"⚠️ CPU preload failed: {model_name}")
+                            
+                    except Exception as e:
+                        logger.error(f"❌ Error preloading {model_name}: {e}")
+                        
+            preload_time = (time.time() - preload_start_time) * 1000
+            logger.info(f"✅ CPU model preloading complete in {preload_time:.1f}ms")
+            
+            # Final preload status check
+            final_status = model_coordination.get_preload_status()
+            logger.info(f"📊 Preload summary: {final_status.get('models_loaded', 0)}/{final_status.get('total_models_configured', 0)} models loaded")
+            
+        else:
+            logger.info("📦 Models already preloaded, skipping preload phase")
+        
+        logger.info("🏭 CPU preloading complete - workers will transfer to CUDA on first request")
+        
+    finally:
+        # Restore original device setting for workers
+        os.environ['NLP_HARDWARE_DEVICE'] = original_device
+        logger.info(f"🔄 Restored device setting to: {original_device}")
+        logger.info("✅ Workers will now use CUDA when processing requests")
+
+    # Continue with rest of your existing main.py initialization...
     logger.info("=" * 70)
-    logger.info(f"✅ Model preloading completed in {preload_time:.2f} seconds")
+    logger.info("🚀 Master process initialization complete - ready for gunicorn workers")
     logger.info("=" * 70)
     
     # ========================================================================
