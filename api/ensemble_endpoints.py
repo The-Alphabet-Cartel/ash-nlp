@@ -701,17 +701,59 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_man
     @app.get("/debug/worker-status")
     async def debug_worker_status():
         import os
+        import multiprocessing
+        
         try:
+            # Check if transformers is available
+            try:
+                import torch
+                transformers_available = True
+                cuda_available = torch.cuda.is_available()
+            except ImportError:
+                transformers_available = False
+                cuda_available = False
+            
+            # Get worker info
+            worker_pid = os.getpid()
+            process_name = multiprocessing.current_process().name
+            
+            # Model coordination manager status
+            models_cached = len(model_coordination_manager._model_cache) if hasattr(model_coordination_manager, '_model_cache') else 0
+            worker_cuda_cache = len(getattr(model_coordination_manager, '_worker_cuda_cache', {}))
+            
+            # Get device config safely
+            try:
+                device_config = model_coordination_manager._get_device_config()
+            except Exception as e:
+                device_config = f"error: {str(e)}"
+            
+            # Get cache keys safely
+            try:
+                cache_keys = list(model_coordination_manager._model_cache.keys()) if hasattr(model_coordination_manager, '_model_cache') else []
+            except Exception as e:
+                cache_keys = f"error: {str(e)}"
+            
+            # Check if we're in a worker process
+            is_worker = process_name != 'MainProcess' or worker_pid != os.getppid()
+            
             return {
-                "worker_pid": os.getpid(),
-                "models_cached": len(model_coordination_manager._model_cache),
-                "worker_cuda_cache": len(getattr(model_coordination_manager, '_worker_cuda_cache', {})),
-                "device_config": model_coordination_manager._get_device_config(),
-                "cache_keys": list(model_coordination_manager._model_cache.keys()),
-                "cuda_available": torch.cuda.is_available() if TRANSFORMERS_AVAILABLE else False
+                "worker_pid": worker_pid,
+                "process_name": process_name,
+                "is_worker_process": is_worker,
+                "models_cached": models_cached,
+                "worker_cuda_cache": worker_cuda_cache,
+                "device_config": device_config,
+                "cache_keys": cache_keys,
+                "transformers_available": transformers_available,
+                "cuda_available": cuda_available,
+                "gunicorn_env_vars": {
+                    "GUNICORN_WORKERS": os.getenv('NLP_GUNICORN_WORKERS'),
+                    "PRELOAD_APP": os.getenv('NLP_GUNICORN_PRELOAD_APP'),
+                    "HARDWARE_DEVICE": os.getenv('NLP_HARDWARE_DEVICE')
+                }
             }
         except Exception as e:
-            return {"error": str(e)}
+            return {"error": str(e), "worker_pid": os.getpid()}
     # ========================================================================
     
     logger.info("Clean v3.1 Phase 3e Three Zero-Shot Model Ensemble endpoints configured successfully")
