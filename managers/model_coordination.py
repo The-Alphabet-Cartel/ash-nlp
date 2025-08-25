@@ -93,11 +93,21 @@ class ModelCoordinationManager:
     # ========================================================================
 
     def _should_use_cuda(self) -> bool:
-        """Check if CUDA should be used in current context"""
+        """Check if CUDA should be used in current context (checks current environment state)"""
+        current_device_env = os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower()
+        
+        # If explicitly set to CPU, don't use CUDA
+        if current_device_env == 'cpu':
+            return False
+        
+        # If explicitly set to CUDA, use it (if available)
+        if current_device_env == 'cuda':
+            return torch.cuda.is_available()
+        
+        # If auto, use original logic but check current environment
         return (
-            self.device == 'cuda' and 
             torch.cuda.is_available() and
-            os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower() != 'cpu'
+            current_device_env != 'cpu'  # Double-check we're not forcing CPU
         )
 
     def _get_worker_cuda_pipeline(self, model_name: str, model_info: dict):
@@ -168,6 +178,7 @@ class ModelCoordinationManager:
         1. CPU preloading in master process (gunicorn preload_app)
         2. Worker-specific CUDA transfer on first request
         3. Caching at both CPU and CUDA levels
+        4. Real-time device detection (checks current environment state)
         
         Args:
             model_name: Hugging Face model name
@@ -196,13 +207,21 @@ class ModelCoordinationManager:
                 # Get cache directory
                 cache_dir = self._get_model_cache_dir()
                 
-                # Determine device for initial loading
-                # If NLP_HARDWARE_DEVICE is set to 'cpu' (master preload), use CPU
-                # Otherwise use configured device
-                load_device = 'cpu' if os.environ.get('NLP_HARDWARE_DEVICE', '').lower() == 'cpu' else self.device
-                device_id = 0 if load_device == 'cuda' else -1
+                # FIXED: Check current environment variable state, not cached self.device
+                current_device_env = os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower()
                 
-                logger.info(f"🔧 Loading {model_name} on device: {load_device}")
+                if current_device_env == 'cpu':
+                    load_device = 'cpu'
+                    device_id = -1
+                    logger.info(f"🔧 Loading {model_name} on CPU (forced by environment)")
+                elif current_device_env == 'cuda' or (current_device_env == 'auto' and torch.cuda.is_available()):
+                    load_device = 'cuda'
+                    device_id = 0
+                    logger.info(f"🔧 Loading {model_name} on CUDA (device_id=0)")
+                else:
+                    load_device = 'cpu'
+                    device_id = -1
+                    logger.info(f"🔧 Loading {model_name} on CPU (fallback)")
                 
                 # Create pipeline with proper configuration
                 classifier = pipeline(
