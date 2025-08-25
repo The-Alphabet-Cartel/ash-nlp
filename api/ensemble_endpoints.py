@@ -402,7 +402,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_man
     logger.info("Adding Clean v3.1 Three Zero-Shot Model Ensemble endpoints (Phase 3e)")
     
     # ========================================================================
-    # ENSEMBLE ANALYSIS ENDPOINT - Phase 3e Enhanced
+    # ENSEMBLE ANALYSIS ENDPOINT
     # ========================================================================
     @app.post("/analyze", response_model=models['CrisisResponse'])
     async def analyze_message_clean(request: models['MessageRequest']):
@@ -545,7 +545,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_man
                 )
     
     # ========================================================================
-    # HEALTH CHECK ENDPOINT - Phase 3e Enhanced
+    # HEALTH CHECK ENDPOINT
     # ========================================================================
     
     @app.get("/health")
@@ -640,7 +640,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_man
             }
     
     # ========================================================================
-    # CONFIGURATION AND STATUS ENDPOINTS - Phase 3e Enhanced
+    # CONFIGURATION AND STATUS ENDPOINTS
     # ========================================================================
     
     @app.get("/ensemble/config")
@@ -693,6 +693,25 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, model_coordination_man
         except Exception as e:
             logger.error(f"Error getting ensemble configuration: {e}")
             raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
+    
+    # ========================================================================
+    # DEBUG MODEL CACHE STATUS ENDPOINT
+    # ========================================================================
+    
+    @app.get("/debug/worker-status")
+    async def debug_worker_status():
+        try:
+            return {
+                "worker_pid": os.getpid(),
+                "models_cached": len(model_coordination_manager._model_cache),
+                "worker_cuda_cache": len(getattr(model_coordination_manager, '_worker_cuda_cache', {})),
+                "device_config": model_coordination_manager._get_device_config(),
+                "cache_keys": list(model_coordination_manager._model_cache.keys()),
+                "cuda_available": torch.cuda.is_available() if TRANSFORMERS_AVAILABLE else False
+            }
+        except Exception as e:
+            return {"error": str(e)}
+    # ========================================================================
     
     logger.info("Clean v3.1 Phase 3e Three Zero-Shot Model Ensemble endpoints configured successfully")
     logger.info("Phase 3e Enhancement: Enhanced error handling and validation applied throughout")
