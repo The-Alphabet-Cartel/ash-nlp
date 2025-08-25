@@ -89,6 +89,188 @@ class ModelCoordinationManager:
         logger.info(f"🔧 ModelCoordinationManager device configuration: {self.device}")
     
     # ========================================================================
+    # GUNICORN WORKER CUDA TRANSFER METHODS
+    # ========================================================================
+
+    def _should_use_cuda(self) -> bool:
+        """Check if CUDA should be used in current context"""
+        return (
+            self.device == 'cuda' and 
+            torch.cuda.is_available() and
+            os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower() != 'cpu'
+        )
+
+    def _get_worker_cuda_pipeline(self, model_name: str, model_info: dict):
+        """
+        Transfer CPU-preloaded model to CUDA for worker use
+        
+        This solves the CUDA multiprocessing problem by:
+        1. Master process preloads models on CPU (shared memory)
+        2. Workers transfer to CUDA on first request (per-worker CUDA context)
+        
+        Args:
+            model_name: Name of the model to transfer
+            model_info: Model configuration dictionary
+            
+        Returns:
+            CUDA pipeline if successful, CPU pipeline as fallback
+        """
+        # Initialize worker CUDA cache if not exists
+        if not hasattr(self, '_worker_cuda_cache'):
+            self._worker_cuda_cache = {}
+            logger.info("🔧 Initializing worker CUDA cache")
+        
+        # Return cached CUDA pipeline if available
+        if model_name in self._worker_cuda_cache:
+            logger.debug(f"📦 Using cached CUDA pipeline: {model_name}")
+            return self._worker_cuda_cache[model_name]
+        
+        # Get CPU model from master process cache
+        cpu_pipeline = self._model_cache.get(model_name)
+        
+        if cpu_pipeline is None:
+            logger.warning(f"⚠️ CPU model not found in cache: {model_name}")
+            return None
+        
+        # Transfer to CUDA if available and desired
+        if self._should_use_cuda():
+            try:
+                logger.info(f"🔄 Transferring model to CUDA: {model_name}")
+                start_time = time.time()
+                
+                # Create CUDA pipeline by transferring the CPU model
+                cuda_pipeline = cpu_pipeline.model.to('cuda')
+                
+                # Update the pipeline's device
+                cpu_pipeline.device = torch.device('cuda')
+                cpu_pipeline.model = cuda_pipeline
+                
+                # Cache the CUDA pipeline
+                self._worker_cuda_cache[model_name] = cpu_pipeline
+                
+                transfer_time = (time.time() - start_time) * 1000
+                logger.info(f"✅ CUDA transfer complete in {transfer_time:.1f}ms: {model_name}")
+                
+                return cpu_pipeline
+                
+            except Exception as e:
+                logger.warning(f"⚠️ CUDA transfer failed for {model_name}, using CPU: {e}")
+                return cpu_pipeline
+        else:
+            logger.debug(f"💻 Using CPU pipeline for {model_name}")
+            return cpu_pipeline
+
+    async def _get_or_load_pipeline(self, model_name: str):
+        """
+        UPDATED: Load or get cached zero-shot classification pipeline with worker CUDA transfer
+        
+        This method now handles:
+        1. CPU preloading in master process (gunicorn preload_app)
+        2. Worker-specific CUDA transfer on first request
+        3. Caching at both CPU and CUDA levels
+        
+        Args:
+            model_name: Hugging Face model name
+            
+        Returns:
+            Zero-shot classification pipeline or None if loading fails
+        """
+        if not TRANSFORMERS_AVAILABLE:
+            return None
+        
+        # Check if we're in a worker process and have CPU preloaded models
+        if hasattr(self, '_model_cache') and model_name in self._model_cache:
+            # Use worker CUDA transfer logic
+            return self._get_worker_cuda_pipeline(model_name, {})
+        
+        # Original loading logic for non-preloaded scenarios
+        async with self._model_loading_lock:
+            # Check cache first
+            if model_name in self._model_cache:
+                logger.debug(f"📦 Using cached model: {model_name}")
+                return self._model_cache[model_name]
+            
+            try:
+                logger.info(f"🔥 Loading zero-shot model: {model_name}")
+                
+                # Get cache directory
+                cache_dir = self._get_model_cache_dir()
+                
+                # Determine device for initial loading
+                # If NLP_HARDWARE_DEVICE is set to 'cpu' (master preload), use CPU
+                # Otherwise use configured device
+                load_device = 'cpu' if os.environ.get('NLP_HARDWARE_DEVICE', '').lower() == 'cpu' else self.device
+                device_id = 0 if load_device == 'cuda' else -1
+                
+                logger.info(f"🔧 Loading {model_name} on device: {load_device}")
+                
+                # Create pipeline with proper configuration
+                classifier = pipeline(
+                    "zero-shot-classification",
+                    model=model_name,
+                    device=device_id,
+                    cache_dir=cache_dir,
+                    return_all_scores=True
+                )
+                
+                # Cache the pipeline
+                self._model_cache[model_name] = classifier
+                
+                logger.info(f"✅ Model loaded successfully: {model_name} on {load_device}")
+                return classifier
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to load model {model_name}: {e}")
+                return None
+
+    def get_worker_cuda_status(self) -> Dict[str, Any]:
+        """Get status of worker CUDA transfers for monitoring"""
+        try:
+            cuda_cache_size = len(getattr(self, '_worker_cuda_cache', {}))
+            cpu_cache_size = len(self._model_cache)
+            
+            return {
+                'worker_cuda_cache_size': cuda_cache_size,
+                'cpu_cache_size': cpu_cache_size,
+                'cuda_available': torch.cuda.is_available(),
+                'should_use_cuda': self._should_use_cuda(),
+                'current_device_env': os.environ.get('NLP_HARDWARE_DEVICE', 'auto'),
+                'cuda_models_loaded': list(getattr(self, '_worker_cuda_cache', {}).keys()),
+                'worker_ready': cuda_cache_size > 0 if self._should_use_cuda() else cpu_cache_size > 0
+            }
+        except Exception as e:
+            return {'error': str(e), 'worker_ready': False}
+
+    # ========================================================================
+    # PRELOAD STATUS UPDATE FOR GUNICORN
+    # ========================================================================
+
+    def get_preload_status(self) -> Dict[str, Any]:
+        """
+        UPDATED: Get status of model preloading for health checks with worker support
+        """
+        try:
+            models = self.get_model_definitions()
+            total_models = len(models)
+            loaded_models = len(self._model_cache)
+            
+            # Check worker CUDA status if applicable
+            worker_cuda_status = self.get_worker_cuda_status()
+            
+            return {
+                'total_models_configured': total_models,
+                'models_loaded': loaded_models,
+                'preload_complete': loaded_models == total_models,
+                'cached_model_names': list(self._model_cache.keys()),
+                'transformers_available': TRANSFORMERS_AVAILABLE,
+                'worker_cuda_ready': worker_cuda_status.get('worker_ready', False),
+                'cuda_transfers_completed': worker_cuda_status.get('worker_cuda_cache_size', 0),
+                'deployment_mode': 'gunicorn_worker' if hasattr(self, '_worker_cuda_cache') else 'single_process'
+            }
+        except Exception as e:
+            return {'error': str(e), 'preload_complete': False}
+
+    # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
     # ========================================================================
     
