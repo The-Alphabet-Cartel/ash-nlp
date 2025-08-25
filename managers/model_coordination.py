@@ -981,6 +981,9 @@ class ModelCoordinationManager:
         Returns:
             Zero-shot classification pipeline or None if loading fails
         """
+        import time
+        start = time.time()
+
         if not TRANSFORMERS_AVAILABLE:
             return None
         
@@ -1035,6 +1038,7 @@ class ModelCoordinationManager:
                 self._model_cache[model_name] = classifier
                 
                 logger.info(f"✅ Model loaded successfully: {model_name} on {load_device}")
+                logger.info(f"Model {model_name} inference took {(time.time() - start)*1000:.1f}ms")
                 return classifier
                 
             except Exception as e:
