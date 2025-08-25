@@ -1068,13 +1068,29 @@ class ModelCoordinationManager:
                 # Get cache directory
                 cache_dir = self._get_model_cache_dir()
                 
+                # DEVICE DETECTION LOGIC - ADD THIS:
+                current_device_env = os.environ.get('NLP_HARDWARE_DEVICE', 'auto').lower()
+                
+                if current_device_env == 'cpu':
+                    load_device = 'cpu'
+                    device_id = -1
+                    logger.info(f"🔧 Loading {model_name} on CPU (forced by environment)")
+                elif current_device_env == 'cuda' or (current_device_env == 'auto' and torch.cuda.is_available()):
+                    load_device = 'cuda'
+                    device_id = 0
+                    logger.info(f"🔧 Loading {model_name} on CUDA (device_id=0)")
+                else:
+                    load_device = 'cpu'
+                    device_id = -1
+                    logger.info(f"🔧 Loading {model_name} on CPU (fallback)")
+                
                 logger.info(f"🔧 About to create pipeline with device_id: {device_id} (load_device: {load_device})")
 
                 # Create pipeline with proper configuration
                 classifier = pipeline(
                     "zero-shot-classification",
                     model=model_name,
-                    device=0 if self.device == 'cuda' else -1,
+                    device=device_id,  # USE device_id INSTEAD OF self.device
                     cache_dir=cache_dir,
                     return_all_scores=True
                 )
@@ -1082,7 +1098,7 @@ class ModelCoordinationManager:
                 # Cache the pipeline
                 self._model_cache[model_name] = classifier
                 
-                logger.info(f"✅ Model loaded successfully: {model_name}")
+                logger.info(f"✅ Model loaded successfully: {model_name} on {load_device}")
                 return classifier
                 
             except Exception as e:
