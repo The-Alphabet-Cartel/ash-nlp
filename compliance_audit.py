@@ -342,8 +342,8 @@ class Phase3eArchitectureAudit:
             
             # Check for factory function existence
             if expected_factory in content:
-                # Check for proper factory pattern
-                factory_pattern = rf'def\s+{re.escape(expected_factory)}\s*\([^)]*\):'
+                # Check for proper factory pattern (with optional return type annotation)
+                factory_pattern = rf'def\s+{re.escape(expected_factory)}\s*\([^)]*\)(?:\s*->\s*[^:]+)?:'
                 if re.search(factory_pattern, content):
                     return {
                         'compliant': True,
