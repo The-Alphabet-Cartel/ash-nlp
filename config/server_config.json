@@ -1,0 +1,229 @@
+{
+  "_metadata": {
+    "file_version": "v3.1-3d-5.5-1",
+    "last_modified": "2025-08-14",
+    "clean_architecture": "v3.1 Compliant",
+    "configuration_version": "3d.10.10",
+    "description": "Server infrastructure configuration for NLP crisis detection system",
+    "created_date": "2025-08-12",
+    "updated_date": "2025-08-14",
+    "compliance": "Clean Architecture v3.1 Standards",
+    "manager": "ServerConfigManager",
+    "cleanup_note": "Step 10.10 - MAJOR CONSOLIDATION achieved - eliminated server configuration chaos by mapping to existing variables"
+  },
+
+  "server_configuration": {
+    "network_settings": {
+      "description": "Network configuration for server binding and access",
+      "host": "${NLP_SERVER_HOST}",
+      "port": "${GLOBAL_NLP_API_PORT}",
+      "defaults": {
+        "host": "0.0.0.0",
+        "port": 8881
+      },
+      "validation": {
+        "host": {
+          "type": "string",
+          "pattern": "^(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|0\\.0\\.0\\.0|localhost)$",
+          "description": "Server host IP address or hostname"
+        },
+        "port": {
+          "type": "integer",
+          "range": [1024, 65535],
+          "description": "Server port number"
+        }
+      }
+    },
+
+    "application_settings": {
+      "description": "Application-level configuration and behavior settings",
+      "debug_mode": "${NLP_LOGGING_DEBUG_MODE}",
+      "workers": "${NLP_PERFORMANCE_WORKERS}",
+      "reload_on_changes": "${NLP_SERVER_APPLICATION_RELOAD_ON_CHANGES}",
+      "defaults": {
+        "debug_mode": false,
+        "workers": 1,
+        "reload_on_changes": false
+      },
+      "validation": {
+        "debug_mode": {
+          "type": "boolean",
+          "description": "Enable debug mode (development only)"
+        },
+        "workers": {
+          "type": "integer",
+          "range": [1, 16],
+          "description": "Number of worker processes"
+        },
+        "reload_on_changes": {
+          "type": "boolean",
+          "description": "Auto-reload server on code changes"
+        }
+      }
+    },
+
+    "performance_settings": {
+      "description": "Server performance and resource management settings",
+      "max_concurrent_requests": "${NLP_PERFORMANCE_MAX_CONCURRENT_REQUESTS}",
+      "request_timeout": "${GLOBAL_REQUEST_TIMEOUT}",
+      "worker_timeout": "${NLP_PERFORMANCE_WORKER_TIMEOUT}",
+      "defaults": {
+        "max_concurrent_requests": 20,
+        "request_timeout": 40,
+        "worker_timeout": 60
+      },
+      "validation": {
+        "max_concurrent_requests": {
+          "type": "integer",
+          "range": [1, 1000],
+          "description": "Maximum concurrent HTTP requests"
+        },
+        "request_timeout": {
+          "type": "integer",
+          "range": [5, 300],
+          "unit": "seconds",
+          "description": "HTTP request timeout"
+        },
+        "worker_timeout": {
+          "type": "integer",
+          "range": [10, 600],
+          "unit": "seconds",
+          "description": "Worker process timeout"
+        }
+      }
+    },
+
+    "security_settings": {
+      "description": "Security controls and access management",
+      "rate_limiting": {
+        "enable_rate_limiting": "${NLP_SERVER_SECURITY_RATE_LIMIT_ENABLE}",
+        "requests_per_minute": "${NLP_PERFORMANCE_RATE_LIMIT_PER_MINUTE}",
+        "requests_per_hour": "${NLP_PERFORMANCE_RATE_LIMIT_PER_HOUR}",
+        "burst_size": "${NLP_SECURITY_BURST_LIMIT}",
+        "defaults": {
+          "enable_rate_limiting": true,
+          "requests_per_minute": 120,
+          "requests_per_hour": 2000,
+          "burst_size": 150
+        },
+        "validation": {
+          "enable_rate_limiting": {
+            "type": "boolean",
+            "description": "Enable rate limiting protection"
+          },
+          "requests_per_minute": {
+            "type": "integer",
+            "range": [10, 1000],
+            "description": "Maximum requests per minute"
+          },
+          "requests_per_hour": {
+            "type": "integer",
+            "range": [100, 10000],
+            "description": "Maximum requests per hour"
+          },
+          "burst_size": {
+            "type": "integer",
+            "range": [10, 500],
+            "description": "Maximum burst requests allowed"
+          }
+        }
+      },
+      "cors": {
+        "enable_cors": "${GLOBAL_ENABLE_CORS}",
+        "allowed_origins": "${GLOBAL_CORS_ALLOWED_ORIGINS}",
+        "allowed_methods": "${GLOBAL_CORS_ALLOWED_METHODS}",
+        "allowed_headers": "${GLOBAL_CORS_ALLOWED_HEADERS}",
+        "defaults": {
+          "enable_cors": true,
+          "allowed_origins": ["*"],
+          "allowed_methods": ["GET", "POST", "OPTIONS"],
+          "allowed_headers": ["Content-Type", "Authorization"]
+        },
+        "validation": {
+          "enable_cors": {
+            "type": "boolean",
+            "description": "Enable Cross-Origin Resource Sharing"
+          },
+          "allowed_origins": {
+            "type": "array",
+            "description": "List of allowed CORS origins"
+          },
+          "allowed_methods": {
+            "type": "array",
+            "description": "List of allowed HTTP methods"
+          },
+          "allowed_headers": {
+            "type": "array",
+            "description": "List of allowed request headers"
+          }
+        }
+      }
+    },
+
+    "monitoring": {
+      "health_check_endpoint": "/health",
+      "metrics_endpoint": "/metrics",
+      "status_endpoint": "/status",
+      "enable_health_checks": "${NLP_SERVER_ENABLE_HEALTH_CHECKS}",
+      "health_check_interval": "${NLP_SERVER_HEALTH_CHECK_INTERVAL}",
+      "log_health_status": "${NLP_SERVER_LOG_HEALTH}",
+      "defaults": {
+        "enable_health_checks": false,
+        "health_check_interval": 30,
+        "log_health_status": false
+      },
+      "validation": {
+        "enable_health_checks": {
+          "type": "boolean"
+        },
+        "health_check_interval": {
+          "type": "integer"
+        },
+        "log_health_status": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+
+  "deployment_profiles": {
+    "description": "Pre-configured deployment profiles for different environments",
+    "development": {
+      "description": "Development environment settings",
+      "debug_mode": true,
+      "workers": 1,
+      "reload_on_changes": true,
+      "request_timeout": 60,
+      "enable_ssl": false,
+      "rate_limiting": {
+        "requests_per_minute": 200,
+        "requests_per_hour": 5000
+      }
+    },
+    "production": {
+      "description": "Production environment settings",
+      "debug_mode": false,
+      "workers": 4,
+      "reload_on_changes": false,
+      "request_timeout": 30,
+      "enable_ssl": true,
+      "rate_limiting": {
+        "requests_per_minute": 120,
+        "requests_per_hour": 2000
+      }
+    },
+    "high_performance": {
+      "description": "High-performance production settings",
+      "debug_mode": false,
+      "workers": 8,
+      "reload_on_changes": false,
+      "request_timeout": 20,
+      "max_concurrent_requests": 100,
+      "enable_ssl": true,
+      "rate_limiting": {
+        "requests_per_minute": 300,
+        "requests_per_hour": 5000
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
 # ash-nlp/__init__.py
 """
 Ash NLP Service for Ash NLP Service
-FILE VERSION: v3.1-3d-10.11-3-1
-LAST MODIFIED: 2025-08-13
+FILE VERSION: v3.1-3d-6-2
+LAST MODIFIED: 2025-08-22
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 try:
     from .managers import (
         UnifiedConfigManager, create_unified_config_manager,
-        ModelEnsembleManager, create_model_ensemble_manager,
+        ModelCoordinationManager, create_model_coordination_manager,
         PydanticManager, create_pydantic_manager,
-        CrisisPatternManager, create_crisis_pattern_manager,
+        PatternDetectionManager, create_pattern_detection_manager,
         SettingsManager, create_settings_manager,
         get_manager_status
     )
@@ -34,12 +34,12 @@ except ImportError as e:
     # Set all to None for graceful degradation
     UnifiedConfigManager = None
     create_unified_config_manager = None
-    ModelEnsembleManager = None
-    create_model_ensemble_manager = None
+    ModelCoordinationManager = None
+    create_model_coordination_manager = None
     PydanticManager = None
     create_pydantic_manager = None
-    CrisisPatternManager = None
-    create_crisis_pattern_manager = None
+    PatternDetectionManager = None
+    create_pattern_detection_manager = None
     SettingsManager = None
     create_settings_manager = None
     get_manager_status = None
@@ -77,42 +77,42 @@ def get_pydantic_models():
             "Check configuration and dependencies."
         )
 
-def create_model_ensemble_manager():
+def create_model_coordination_manager():
     """
-    Create ModelEnsembleManager instance with proper dependency injection
+    Create ModelCoordinationManager instance with proper dependency injection
     
     Returns:
-        ModelEnsembleManager instance for external usage
+        ModelCoordinationManager instance for external usage
         
     Raises:
-        RuntimeError: If ModelEnsembleManager not available
+        RuntimeError: If ModelCoordinationManager not available
     """
-    if not MANAGERS_AVAILABLE or not ModelEnsembleManager:
+    if not MANAGERS_AVAILABLE or not ModelCoordinationManager:
         raise RuntimeError(
-            "Clean v3.1: ModelEnsembleManager not available. "
+            "Clean v3.1: ModelCoordinationManager not available. "
             "Ensure managers are properly installed in managers/ directory."
         )
     
     # Import factory function
-    from .managers import create_model_ensemble_manager as _create_model_ensemble_manager
-    return _create_model_ensemble_manager()
+    from .managers import create_model_coordination_manager as _create_model_coordination_manager
+    return _create_model_coordination_manager()
 
-def create_crisis_pattern_manager_instance(config_manager=None):
+def create_pattern_detection_manager_instance(config_manager=None):
     """
-    Create CrisisPatternManager instance with proper dependency injection
+    Create PatternDetectionManager instance with proper dependency injection
     
     Args:
         config_manager: Optional UnifiedConfigManager instance. If None, creates one.
         
     Returns:
-        CrisisPatternManager instance for external usage
+        PatternDetectionManager instance for external usage
         
     Raises:
-        RuntimeError: If CrisisPatternManager v3.1 not available
+        RuntimeError: If PatternDetectionManager v3.1 not available
     """
-    if not MANAGERS_AVAILABLE or not CrisisPatternManager:
+    if not MANAGERS_AVAILABLE or not PatternDetectionManager:
         raise RuntimeError(
-            "Clean v3.1: CrisisPatternManager not available. "
+            "Clean v3.1: PatternDetectionManager not available. "
             "Ensure managers are properly installed in managers/ directory."
         )
     
@@ -120,15 +120,15 @@ def create_crisis_pattern_manager_instance(config_manager=None):
     if config_manager is None:
         if not UnifiedConfigManager:
             raise RuntimeError(
-                "Clean v3.1: UnifiedConfigManager not available for CrisisPatternManager dependency injection."
+                "Clean v3.1: UnifiedConfigManager not available for PatternDetectionManager dependency injection."
             )
         
         # Use factory function to create UnifiedConfigManager
         config_manager = create_unified_config_manager()
     
     # Import factory function
-    from .managers import create_crisis_pattern_manager
-    return create_crisis_pattern_manager(config_manager)
+    from .managers import create_pattern_detection_manager
+    return create_pattern_detection_manager(config_manager)
 
 def create_unified_config_manager_instance(config_dir: str = "/app/config"):
     """
@@ -196,13 +196,13 @@ __all__ = [
     'create_unified_config_manager_instance',
     
     # Core Managers
-    'ModelEnsembleManager',
-    'create_model_ensemble_manager',
+    'ModelCoordinationManager',
+    'create_model_coordination_manager',
     'PydanticManager',
     'create_pydantic_manager',
-    'CrisisPatternManager',
-    'create_crisis_pattern_manager',
-    'create_crisis_pattern_manager_instance',
+    'PatternDetectionManager',
+    'create_pattern_detection_manager',
+    'create_pattern_detection_manager_instance',
     'SettingsManager',
     'create_settings_manager',
     
