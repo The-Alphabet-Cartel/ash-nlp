@@ -1,7 +1,7 @@
 <!-- ash-nlp/README.md -->
 <!--
 README Documentation for Ash-NLP Service
-FILE VERSION: v3.1-3d-8.3-1
+FILE VERSION: v3.1-1
 LAST MODIFIED: 2025-08-26
 PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant

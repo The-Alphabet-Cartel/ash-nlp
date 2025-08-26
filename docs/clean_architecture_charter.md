@@ -1,11 +1,19 @@
+<!-- ash-nlp/docs/clean_architecture_charter.md -->
+<!--
+Clean Architecture Charter for Ash-NLP Service
+FILE VERSION: v3.1-1
+LAST MODIFIED: 2025-08-26
+PHASE: 3e
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Clean v3.1 Architecture Charter - Ash-NLP (Production Ready)
 ## Sacred Principles - NEVER TO BE VIOLATED
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-6-3
-**LAST UPDATED**: 2025-08-22
+**FILE VERSION**: v3.1-1
+**LAST UPDATED**: 2025-08-26
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
 ---
@@ -387,40 +395,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 
 ---
 
-## 📋 **PHASE INTEGRATION REQUIREMENTS**
-
-### **Phase 3a: Crisis Pattern Manager**
-- **Principle**: All crisis patterns externalized to JSON
-- **Integration**: PatternDetectionManager used throughout system
-- **Factory**: `create_pattern_detection_manager(config_manager)`
-- **Resilience**: Falls back to basic patterns if JSON unavailable
-
-### **Phase 3b: Analysis Parameters Manager** 
-- **Principle**: All algorithm parameters externalized to JSON
-- **Integration**: AnalysisConfigManager integrated with SettingsManager
-- **Factory**: `create_analysis_config_manager(config_manager)`
-- **Resilience**: Uses safe algorithm defaults if parameters unavailable
-
-### **Phase 3c: Threshold Mapping Manager**
-- **Principle**: All thresholds and mappings externalized to JSON with mode-awareness
-- **Integration**: CrisisThresholdManager integrated throughout analysis pipeline
-- **Factory**: `create_crisis_threshold_manager(config_manager, model_coordination_manager)`
-- **Resilience**: Provides conservative thresholds if configuration fails
-
-### **Phase 3d: Environmental Variable Cleanup**
-- **Principle**: Complete audit and cleanup of the Environmental Variables system
-- **Integration**: Single, clean, comprehensive unified configuration system
-- **Factory**: `create_unified_config_manager(config_dir)`
-- **Resilience**: Schema-based validation with intelligent type conversion
-
-### **Phase 3d Step 10.6: Scoring Function Consolidation** *(Current)*
-- **Principle**: Eliminate `utils/scoring_helpers.py` by consolidating functions into `CrisisAnalyzer`
-- **Integration**: All scoring functions as `CrisisAnalyzer` instance methods with dependency injection
-- **Factory**: Uses existing `create_crisis_analyzer()` factory function
-- **Resilience**: Manager-aware fallbacks when dependencies unavailable
-- **File Versioning**: All updated files include version headers for tracking
-
-### **Future Phases**
+## **Future Work Requirements**
 - **MUST follow established patterns**
 - **MUST use factory functions**
 - **MUST maintain cumulative integration**

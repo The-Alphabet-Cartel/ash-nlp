@@ -1,12 +1,20 @@
 <!-- ash-nlp/docs/v3.1/frequently_asked_questions_v3.1.md -->
 <!--
 Frequently Asked Questions for Ash-NLP Service
-FILE VERSION: v3.1-3d-10-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d, Step 10.6 - Documentation Update for File Versioning
+FILE VERSION: v3.1-1
+LAST MODIFIED: 2025-08-26
 CLEAN ARCHITECTURE: v3.1 Compliant
 -->
 # ❓Frequently Asked Questions (FAQ)❓
+
+**Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
+**Project**: Ash-NLP v3.1 Manager Consolidation  
+**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
+**FILE VERSION**: v3.1-1
+**LAST MODIFIED**: 2025-08-26
+**CLEAN ARCHITECTURE**: v3.1 Compliant  
+
+---
 
 ## Phase 3d
 1. **Migration Strategy**

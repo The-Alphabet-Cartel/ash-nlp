@@ -1,4 +1,10 @@
 <!-- ash-nlp/docs/v3.1/migration_guide_v3.1.md -->
+<!--
+Migration Guide for Ash-NLP Service
+FILE VERSION: v3.1-1
+LAST MODIFIED: 2025-08-26
+CLEAN ARCHITECTURE: v3.1 Compliant
+-->
 # Migration Guide v3.1 - Ash-NLP (Phase 3d Complete - Phase 3e In Progress)
 
 ## Clean Architecture with Production Excellence + Advanced Features Integration
@@ -6,9 +12,8 @@
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1 Manager Consolidation  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-3e-6-3
-**LAST MODIFIED**: 2025-08-22
-**PHASE**: 3e
+**FILE VERSION**: v3.1-1
+**LAST MODIFIED**: 2025-08-26
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
 ---
