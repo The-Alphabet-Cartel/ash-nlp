@@ -31,28 +31,35 @@ class Phase3eArchitectureAudit:
     - Rule 4: Configuration Access
     """
     
-    def __init__(self, project_root: str = "."):
+    def __init__(self, project_root: str = ".."):
         self.project_root = Path(project_root)
         self.managers_dir = self.project_root / "managers"
         self.analysis_dir = self.project_root / "analysis"
         
-        # Phase 3e manager inventory
+        # If running from tests directory, adjust paths
+        current_dir = Path.cwd()
+        if current_dir.name == "tests":
+            self.project_root = current_dir.parent
+            self.managers_dir = self.project_root / "managers" 
+            self.analysis_dir = self.project_root / "analysis"
+        
+        # Phase 3e manager inventory (actual file names)
         self.phase_3e_managers = [
-            "analysis_config_manager.py",
-            "crisis_threshold_manager.py", 
-            "feature_config_manager.py",
-            "learning_system_manager.py",
-            "logging_config_manager.py",
-            "model_coordination_manager.py",
-            "pattern_detection_manager.py",
-            "performance_config_manager.py",
-            "pydantic_manager.py",
-            "server_config_manager.py",
-            "settings_manager.py",
-            "shared_utilities_manager.py",
-            "storage_config_manager.py",
-            "unified_config_manager.py",
-            "zero_shot_manager.py"
+            "analysis_config.py",
+            "crisis_threshold.py", 
+            "feature_config.py",
+            "learning_system.py",
+            "logging_config.py",
+            "model_coordination.py",
+            "pattern_detection.py",
+            "performance_config.py",
+            "pydantic.py",
+            "server_config.py",
+            "settings.py",
+            "shared_utilities.py",
+            "storage_config.py",
+            "unified_config.py",
+            "zero_shot.py"
         ]
         
         self.audit_results = {
@@ -182,23 +189,23 @@ class Phase3eArchitectureAudit:
             'score': 0.0
         }
         
-        # Define expected responsibilities based on Phase 3e design
+        # Define expected responsibilities based on Phase 3e design (updated names)
         expected_responsibilities = {
-            'unified_config_manager': 'Configuration management and environment variable access',
-            'crisis_threshold_manager': 'Crisis level threshold determination',
-            'model_coordination_manager': 'AI model coordination and ensemble management',
-            'pattern_detection_manager': 'Crisis pattern detection and matching',
-            'analysis_config_manager': 'Analysis parameter configuration',
-            'shared_utilities_manager': 'Shared utility methods and common functionality',
-            'learning_system_manager': 'Learning and adaptation system management',
-            'feature_config_manager': 'Feature flag and toggle management',
-            'pydantic_manager': 'Data model definitions and validation',
-            'performance_config_manager': 'Performance configuration settings',
-            'logging_config_manager': 'Logging configuration and setup',
-            'server_config_manager': 'Server configuration management',
-            'settings_manager': 'Application settings coordination',
-            'storage_config_manager': 'Storage configuration management',
-            'zero_shot_manager': 'Zero-shot classification label management'
+            'unified_config': 'Configuration management and environment variable access',
+            'crisis_threshold': 'Crisis level threshold determination',
+            'model_coordination': 'AI model coordination and ensemble management',
+            'pattern_detection': 'Crisis pattern detection and matching',
+            'analysis_config': 'Analysis parameter configuration',
+            'shared_utilities': 'Shared utility methods and common functionality',
+            'learning_system': 'Learning and adaptation system management',
+            'feature_config': 'Feature flag and toggle management',
+            'pydantic': 'Data model definitions and validation',
+            'performance_config': 'Performance configuration settings',
+            'logging_config': 'Logging configuration and setup',
+            'server_config': 'Server configuration management',
+            'settings': 'Application settings coordination',
+            'storage_config': 'Storage configuration management',
+            'zero_shot': 'Zero-shot classification label management'
         }
         
         for manager_file in self.phase_3e_managers:
@@ -252,7 +259,7 @@ class Phase3eArchitectureAudit:
             manager_name = manager_file.replace('.py', '')
             
             # Skip UnifiedConfigManager itself
-            if manager_name == 'unified_config_manager':
+            if manager_name == 'unified_config':
                 rule_4_results['compliant_managers'].append(manager_name)
                 rule_4_results['config_patterns'][manager_name] = {
                     'compliant': True,
@@ -330,7 +337,8 @@ class Phase3eArchitectureAudit:
             with open(manager_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            expected_factory = f"create_{manager_name}"
+            # Expected factory function name based on actual file names
+            expected_factory = f"create_{manager_name.replace('.py', '')}"
             
             # Check for factory function existence
             if expected_factory in content:
@@ -358,7 +366,7 @@ class Phase3eArchitectureAudit:
         except Exception as e:
             return {
                 'compliant': False,
-                'factory_function': f"create_{manager_name}",
+                'factory_function': f"create_{manager_name.replace('.py', '')}",
                 'issues': [f'Error reading file: {str(e)}']
             }
     
@@ -421,7 +429,7 @@ class Phase3eArchitectureAudit:
             # Check for get_config_section usage (Phase 3e pattern)
             if 'get_config_section' not in content:
                 # Allow some managers to not use this pattern
-                exempted_managers = ['pydantic_manager', 'settings_manager']
+                exempted_managers = ['pydantic', 'settings']
                 if manager_name not in exempted_managers:
                     issues.append('No get_config_section() usage found (Phase 3e pattern)')
             
