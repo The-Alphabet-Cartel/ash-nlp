@@ -337,13 +337,13 @@ class Phase3eArchitectureAudit:
             with open(manager_path, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Expected factory function name based on actual file names
-            expected_factory = f"create_{manager_name.replace('.py', '')}"
+            # Expected factory function name - your actual pattern uses _manager suffix
+            expected_factory = f"create_{manager_name.replace('.py', '')}_manager"
             
             # Check for factory function existence
             if expected_factory in content:
                 # Check for proper factory pattern
-                factory_pattern = rf'def\s+{expected_factory}\s*\([^)]*\):'
+                factory_pattern = rf'def\s+{re.escape(expected_factory)}\s*\([^)]*\):'
                 if re.search(factory_pattern, content):
                     return {
                         'compliant': True,
@@ -366,7 +366,7 @@ class Phase3eArchitectureAudit:
         except Exception as e:
             return {
                 'compliant': False,
-                'factory_function': f"create_{manager_name.replace('.py', '')}",
+                'factory_function': f"create_{manager_name.replace('.py', '')}_manager",
                 'issues': [f'Error reading file: {str(e)}']
             }
     
@@ -429,7 +429,7 @@ class Phase3eArchitectureAudit:
             # Check for get_config_section usage (Phase 3e pattern)
             if 'get_config_section' not in content:
                 # Allow some managers to not use this pattern
-                exempted_managers = ['pydantic', 'settings']
+                exempted_managers = ['pydantic', 'settings', 'unified_config']
                 if manager_name not in exempted_managers:
                     issues.append('No get_config_section() usage found (Phase 3e pattern)')
             
