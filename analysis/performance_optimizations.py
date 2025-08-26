@@ -281,16 +281,7 @@ class PerformanceOptimizedMethods:
         """
         PHASE 3E STEP 7: Performance-optimized ensemble analysis
         
-        Eliminates async/sync conversion overhead and reduces helper delegation
-        TARGET: ~79ms improvement over original method
-        
-        Args:
-            message: Message to analyze
-            user_id: User identifier
-            channel_id: Channel identifier
-            
-        Returns:
-            Crisis analysis results in sub-500ms
+        UPDATED: Now passes user_id and channel_id to pattern analysis
         """
         analysis_start = time.time()
         
@@ -302,8 +293,8 @@ class PerformanceOptimizedMethods:
             # Direct model coordination (eliminates helper delegation) - ~18ms savings
             ensemble_result = self._direct_ensemble_classification(message)
             
-            # Direct pattern analysis (eliminates helper delegation) - ~15ms savings
-            pattern_result = self._direct_pattern_analysis(message)
+            # FIXED: Direct pattern analysis with proper parameters (eliminates helper delegation) - ~15ms savings
+            pattern_result = self._direct_pattern_analysis(message, user_id, channel_id)
             
             # Streamlined score combination (cached configs) - ~12ms savings
             combined_score = self._fast_score_combination(ensemble_result, pattern_result)
@@ -455,34 +446,134 @@ class PerformanceOptimizedMethods:
         }
         return label_sets.get(model_type, ["high crisis", "medium crisis", "low crisis"])
     
-    def _direct_pattern_analysis(self, message: str) -> Dict[str, Any]:
+    def _direct_pattern_analysis(self, message: str, user_id: str = "performance_test", channel_id: str = "performance_test") -> Dict[str, Any]:
         """
-        Direct pattern analysis without helper delegation (~15ms improvement)
+        FIXED: Direct pattern analysis without helper delegation (~15ms improvement)
+        
+        FIXES:
+        1. Uses correct method: analyze_message() instead of analyze_enhanced_patterns()
+        2. Includes user_id and channel_id parameters (required by analyze_message)
+        3. Extracts all pattern details correctly
         """
         try:
             if not self.analyzer.pattern_detection_manager:
-                return {'score': 0.0, 'confidence': 0.0, 'method': 'no_pattern_manager'}
+                return {'score': 0.0, 'confidence': 0.0, 'method': 'no_pattern_manager', 'details': {}}
             
-            # Direct pattern detection call using correct method name
-            pattern_result = self.analyzer.pattern_detection_manager.analyze_enhanced_patterns(message)
+            # FIXED: Use the correct main analysis method with required parameters
+            pattern_result = self.analyzer.pattern_detection_manager.analyze_message(message, user_id, channel_id)
             
-            # Extract score from pattern result
+            # Extract score from pattern result - try multiple possible keys
             pattern_score = 0.0
             if isinstance(pattern_result, dict):
-                pattern_score = pattern_result.get('crisis_score', 0.0)
-                if pattern_score == 0.0:
-                    pattern_score = pattern_result.get('score', 0.0)
+                # Try various score keys that might be present
+                pattern_score = (
+                    pattern_result.get('crisis_score', 0.0) or
+                    pattern_result.get('score', 0.0) or
+                    pattern_result.get('confidence_score', 0.0) or
+                    pattern_result.get('overall_score', 0.0)
+                )
+            
+            # Enhanced pattern details extraction
+            enhanced_details = self._extract_pattern_details_from_result(pattern_result)
             
             return {
                 'score': pattern_score,
-                'confidence': min(0.8, pattern_score + 0.2),
-                'method': 'optimized_direct_pattern',
-                'details': pattern_result if isinstance(pattern_result, dict) else {}
+                'confidence': min(0.8, pattern_score + 0.2) if pattern_score > 0 else 0.2,
+                'method': 'optimized_direct_pattern_main',
+                'details': enhanced_details,
+                'raw_result': pattern_result if isinstance(pattern_result, dict) else {}
             }
             
         except Exception as e:
             logger.error(f"Direct pattern analysis failed: {e}")
-            return {'score': 0.0, 'confidence': 0.0, 'method': 'pattern_error', 'error': str(e)}
+            logger.exception("Pattern analysis error details:")
+            return {'score': 0.0, 'confidence': 0.0, 'method': 'pattern_error', 'error': str(e), 'details': {}}
+
+    def _extract_pattern_details_from_result(self, pattern_result: Dict) -> Dict[str, Any]:
+        """
+        Extract detailed pattern information from the pattern analysis result
+        
+        This method properly extracts all the pattern matches that are being logged:
+        - Enhanced pattern matches: hopelessness_patterns → feel hopeless (level: high)  
+        - Community patterns and context patterns
+        - Critical pattern indicators
+        """
+        try:
+            if not isinstance(pattern_result, dict):
+                return {}
+            
+            # Initialize details structure
+            details = {
+                'enhanced_patterns': {},
+                'community_patterns': [],
+                'pattern_matches': [],
+                'context_patterns': [],
+                'temporal_patterns': [],
+                'crisis_indicators': []
+            }
+            
+            # Extract patterns_found (main result from analyze_message)
+            patterns_found = pattern_result.get('patterns_found', [])
+            if patterns_found:
+                details['pattern_matches'] = patterns_found
+                
+                # Process each found pattern
+                for pattern in patterns_found:
+                    if isinstance(pattern, dict):
+                        pattern_group = pattern.get('pattern_group', pattern.get('category', ''))
+                        pattern_level = pattern.get('level', pattern.get('crisis_level', 'unknown'))
+                        
+                        if pattern_group:
+                            # Add to enhanced patterns by group
+                            if pattern_group not in details['enhanced_patterns']:
+                                details['enhanced_patterns'][pattern_group] = []
+                            details['enhanced_patterns'][pattern_group].append({
+                                'text': pattern.get('text', pattern.get('pattern', '')),
+                                'level': pattern_level,
+                                'confidence': pattern.get('confidence', 0.0)
+                            })
+                            
+                            # Add to crisis indicators if high level
+                            if pattern_level in ['high', 'critical']:
+                                details['crisis_indicators'].append(pattern_group)
+            
+            # Extract safety flags
+            safety_flags = pattern_result.get('safety_flags', {})
+            if safety_flags:
+                details['safety_flags'] = safety_flags
+                
+                # Extract critical patterns from safety flags
+                critical_patterns = safety_flags.get('critical_patterns_detected', [])
+                if critical_patterns:
+                    details['crisis_indicators'].extend(critical_patterns)
+            
+            # Extract community patterns
+            community_patterns = pattern_result.get('community_patterns', [])
+            if community_patterns:
+                details['community_patterns'] = community_patterns
+                
+            # Extract context patterns  
+            context_patterns = pattern_result.get('context_patterns', [])
+            if context_patterns:
+                details['context_patterns'] = context_patterns
+                
+            # Extract temporal indicators
+            temporal_indicators = pattern_result.get('temporal_indicators', [])
+            if temporal_indicators:
+                details['temporal_patterns'] = temporal_indicators
+            
+            # Remove duplicates from crisis indicators
+            details['crisis_indicators'] = list(set(details['crisis_indicators']))
+            
+            logger.debug(f"Pattern details extracted: {len(details['pattern_matches'])} matches, "
+                        f"{len(details['enhanced_patterns'])} pattern groups, "
+                        f"{len(details['crisis_indicators'])} crisis indicators")
+            
+            return details
+            
+        except Exception as e:
+            logger.error(f"Failed to extract pattern details: {e}")
+            return {}
     
     def _fast_score_combination(self, ensemble_result: Dict, pattern_result: Dict) -> float:
         """
@@ -701,7 +792,7 @@ class PerformanceOptimizedMethods:
 
     def _extract_detailed_pattern_analysis(self, pattern_result: Dict) -> Dict[str, Any]:
         """
-        Extract detailed pattern analysis results
+        ENHANCED: Extract detailed pattern analysis results
         
         This captures the pattern matches being logged:
         - Enhanced pattern matches: hopelessness_patterns → feel hopeless (level: high)
@@ -712,43 +803,31 @@ class PerformanceOptimizedMethods:
             if not isinstance(pattern_result, dict):
                 return self._get_empty_pattern_analysis()
             
-            # Extract pattern details from the result
+            # Get the enhanced details from our improved extraction
             details = pattern_result.get('details', {})
-            enhanced_patterns = details.get('enhanced_patterns', {}) if details else {}
-            community_patterns = details.get('community_patterns', []) if details else []
-            matches = details.get('matches', []) if details else []
             
-            # Try to get from pattern_result directly if not in details
-            if not enhanced_patterns:
+            # Extract pattern details - now using the corrected structure
+            enhanced_patterns = details.get('enhanced_patterns', {})
+            community_patterns = details.get('community_patterns', [])
+            matches = details.get('pattern_matches', [])
+            crisis_indicators = details.get('crisis_indicators', [])
+            
+            # If details is empty, try extracting directly from pattern_result
+            if not details:
                 enhanced_patterns = pattern_result.get('enhanced_patterns', {})
-            if not community_patterns:
                 community_patterns = pattern_result.get('community_patterns', [])
-            if not matches:
-                matches = pattern_result.get('matches', [])
-            
-            # If we have access to pattern detection manager, get live results
-            if hasattr(self.analyzer, 'pattern_detection_manager') and self.analyzer.pattern_detection_manager:
-                try:
-                    manager = self.analyzer.pattern_detection_manager
-                    if hasattr(manager, '_last_analysis_result'):
-                        recent_patterns = getattr(manager, '_last_analysis_result', {})
-                        if recent_patterns:
-                            enhanced_patterns.update(recent_patterns.get('enhanced_patterns', {}))
-                            community_patterns.extend(recent_patterns.get('community_patterns', []))
-                            matches.extend(recent_patterns.get('matches', []))
-                except Exception as e:
-                    logger.debug(f"Could not access recent pattern results: {e}")
-            
+                matches = pattern_result.get('patterns_found', pattern_result.get('matches', []))
+                
             return {
                 'enhanced_patterns': enhanced_patterns,
                 'community_patterns': community_patterns,
                 'matches': matches,
-                'confidence': pattern_result.get('confidence', 0.0),
+                'confidence': pattern_result.get('confidence', pattern_result.get('score', 0.0)),
                 'severity_level': self._determine_pattern_severity(matches),
-                'critical_patterns': self._extract_critical_patterns(matches),
-                'temporal_analysis': pattern_result.get('temporal_analysis', {}),
-                'linguistic_features': pattern_result.get('linguistic_features', {}),
-                'severity_indicators': self._extract_severity_indicators(matches)
+                'critical_patterns': crisis_indicators,
+                'temporal_analysis': details.get('temporal_patterns', {}),
+                'linguistic_features': details.get('context_patterns', {}),
+                'severity_indicators': crisis_indicators[:5]  # Top 5 indicators
             }
             
         except Exception as e:
