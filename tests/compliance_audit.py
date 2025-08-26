@@ -31,10 +31,17 @@ class Phase3eArchitectureAudit:
     - Rule 4: Configuration Access
     """
     
-    def __init__(self, project_root: str = "."):
+    def __init__(self, project_root: str = ".."):
         self.project_root = Path(project_root)
         self.managers_dir = self.project_root / "managers"
         self.analysis_dir = self.project_root / "analysis"
+        
+        # If running from tests directory, adjust paths
+        current_dir = Path.cwd()
+        if current_dir.name == "tests":
+            self.project_root = current_dir.parent
+            self.managers_dir = self.project_root / "managers" 
+            self.analysis_dir = self.project_root / "analysis"
         
         # Phase 3e manager inventory
         self.phase_3e_managers = [
