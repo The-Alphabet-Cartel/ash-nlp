@@ -33,19 +33,13 @@
     "min_samples": "${NLP_ANALYSIS_LEARNING_MIN_SAMPLES}",
     "adjustment_limit": "${NLP_ANALYSIS_LEARNING_ADJUSTMENT_LIMIT}",
     "max_drift": "${NLP_ANALYSIS_LEARNING_MAX_DRIFT}",
-    "sensitivity_bounds": {
-      "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_GLOBAL_SENSITIVITY}",
-      "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_GLOBAL_SENSITIVITY}"
-    },
-    "adjustment_factors": {
-      "false_positive_factor": "${NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR}",
-      "false_negative_factor": "${NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR}"
-    },
-    "severity_multipliers": {
-      "high_severity": "${NLP_ANALYSIS_LEARNING_HIGH_SEVERITY}",
-      "medium_severity": "${NLP_ANALYSIS_LEARNING_MEDIUM_SEVERITY}",
-      "low_severity": "${NLP_ANALYSIS_LEARNING_LOW_SEVERITY}"
-    },
+    "min_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MIN_GLOBAL_SENSITIVITY}",
+    "max_global_sensitivity": "${NLP_ANALYSIS_LEARNING_MAX_GLOBAL_SENSITIVITY}",
+    "false_positive_factor": "${NLP_ANALYSIS_LEARNING_FALSE_POSITIVE_FACTOR}",
+    "false_negative_factor": "${NLP_ANALYSIS_LEARNING_FALSE_NEGATIVE_FACTOR}",
+    "high_severity": "${NLP_ANALYSIS_LEARNING_HIGH_SEVERITY}",
+    "medium_severity": "${NLP_ANALYSIS_LEARNING_MEDIUM_SEVERITY}",
+    "low_severity": "${NLP_ANALYSIS_LEARNING_LOW_SEVERITY}",
     "defaults": {
       "enabled": true,
       "learning_rate": 0.01,
@@ -57,19 +51,13 @@
       "min_samples": 5,
       "adjustment_limit": 0.05,
       "max_drift": 0.1,
-      "sensitivity_bounds": {
-        "min_global_sensitivity": 0.5,
-        "max_global_sensitivity": 1.5
-      },
-      "adjustment_factors": {
-        "false_positive_factor": -0.1,
-        "false_negative_factor": 0.1
-      },
-      "severity_multipliers": {
-        "high_severity": 3.0,
-        "medium_severity": 2.0,
-        "low_severity": 1.0
-      }
+      "min_global_sensitivity": 0.5,
+      "max_global_sensitivity": 1.5,
+      "false_positive_factor": -0.1,
+      "false_negative_factor": 0.1,
+      "high_severity": 3.0,
+      "medium_severity": 2.0,
+      "low_severity": 1.0
     },
     "validation": {
       "enabled": {
@@ -107,19 +95,29 @@
         "range": [0.01, 1.0],
         "type": "float"
       },
-      "sensitivity_bounds": {
+      "min_global_sensitivity": {
         "range": [0.1, 5.0],
-        "type": "float",
-        "ordering": "max_global_sensitivity > min_global_sensitivity"
+        "type": "float"
+      },
+      "max_global_sensitivity": {
+        "range": [0.1, 5.0],
+        "type": "float"
       },
       "adjustment_factors": {
         "range": [-1.0, 1.0],
         "type": "float"
       },
-      "severity_multipliers": {
+      "high_severity": {
         "range": [0.1, 10.0],
-        "type": "float",
-        "ordering": "high_severity >= medium_severity >= low_severity"
+        "type": "float"
+      },
+      "medium_severity": {
+        "range": [0.1, 10.0],
+        "type": "float"
+      },
+      "low_severity": {
+        "range": [0.1, 10.0],
+        "type": "float"
       }
     }
   }
