@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Performance Optimizations Module for Crisis Analyzer - Phase 3e Step 7
 ---
-FILE VERSION: v3.1-3e-7-1
-LAST MODIFIED: 2025-08-23
-PHASE: 3e Step 7 - Performance Optimization Integration (TARGET: 500ms)
+FILE VERSION: v3.1-3e-4a-1
+LAST MODIFIED: 2025-08-27
+PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -810,21 +810,26 @@ class PerformanceOptimizedMethods:
                               score: float, crisis_level: str, ensemble_result: Dict, 
                               pattern_result: Dict, start_time: float) -> Dict[str, Any]:
         """
-        Enhanced optimized response assembly (~8ms improvement) WITH detailed analysis preservation
+        Enhanced optimized response assembly with advanced features support
         
         FIXES:
         1. Includes comprehensive analysis_results structure (eliminates has_analysis_results=False)
         2. Captures detailed AI model scores and pattern matches
         3. Eliminates "fallback to top-level keys" messages
         4. Maintains performance while providing complete analysis details
+        5. NEW: Conditionally populates advanced features based on feature flags
         """
         processing_time = (time.time() - start_time) * 1000
         
         # Extract detailed model results from ensemble_result
         model_results = self._extract_detailed_model_results(ensemble_result)
         
-        # Extract detailed pattern analysis from pattern_result  
+        # Extract detailed pattern analysis from pattern_result with enhancement
         detailed_patterns = self._extract_detailed_pattern_analysis(pattern_result)
+        enhanced_patterns = self._enhance_pattern_extraction(detailed_patterns, pattern_result, message)
+        
+        # NEW: Get feature flags for conditional population
+        feature_flags = self._get_feature_flags()
         
         # Build comprehensive analysis_results structure (like original system)
         analysis_results = {
@@ -842,7 +847,7 @@ class PerformanceOptimizedMethods:
             'detected_categories': self._extract_categories(ensemble_result, pattern_result),
             'processing_start_time': start_time,
             'processing_time': processing_time,
-            'optimization_version': 'v3.1-3e-7-1-enhanced',
+            'optimization_version': 'v3.1-4a-1',
             
             # DETAILED AI MODEL RESULTS (eliminates fallback messages)
             'model_analysis': {
@@ -853,22 +858,11 @@ class PerformanceOptimizedMethods:
                 'individual_scores': self._extract_individual_scores(model_results)
             },
             
-            # DETAILED PATTERN ANALYSIS (captures logged pattern matches)
-            'pattern_analysis': {
-                'enhanced_patterns': detailed_patterns.get('enhanced_patterns', {}),
-                'community_patterns': detailed_patterns.get('community_patterns', []),
-                'pattern_matches': detailed_patterns.get('matches', []),
-                'pattern_confidence': detailed_patterns.get('confidence', 0.0),
-                'pattern_severity': detailed_patterns.get('severity_level', 'none'),
-                'critical_patterns': detailed_patterns.get('critical_patterns', [])
-            },
+            # FIXED: CONDITIONAL PATTERN ANALYSIS POPULATION BASED ON FEATURE FLAGS
+            'pattern_analysis': self._build_conditional_pattern_analysis(enhanced_patterns, feature_flags),
             
-            # CONTEXT AND METADATA
-            'context_analysis': {
-                'temporal_factors': detailed_patterns.get('temporal_analysis', {}),
-                'linguistic_indicators': detailed_patterns.get('linguistic_features', {}),
-                'severity_indicators': detailed_patterns.get('severity_indicators', [])
-            }
+            # FIXED: CONDITIONAL CONTEXT ANALYSIS POPULATION BASED ON FEATURE FLAGS  
+            'context_analysis': self._build_conditional_context_analysis(enhanced_patterns, pattern_result, feature_flags, message)
         }
         
         # Main response structure (eliminates backward compatibility fallback)
@@ -887,7 +881,7 @@ class PerformanceOptimizedMethods:
             'detected_categories': self._extract_categories(ensemble_result, pattern_result),
             'processing_start_time': start_time,
             'processing_time': processing_time,
-            'optimization_version': 'v3.1-3e-7-1-enhanced',
+            'optimization_version': 'v3.1-4a-1',
             'optimization_applied': True,
             'target_achievement': processing_time <= 500,
             
@@ -895,6 +889,296 @@ class PerformanceOptimizedMethods:
             # This eliminates the "has_analysis_results=False" log message
             'analysis_results': analysis_results
         }
+
+    def _get_feature_flags(self) -> Dict[str, bool]:
+        """
+        Get feature flags from feature_config_manager with resilient fallbacks
+        Following Clean Architecture Charter Rule #5
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        try:
+            if self.analyzer.feature_config_manager:
+                return {
+                    'advanced_context': self.analyzer.feature_config_manager.is_advanced_context_enabled(),
+                    'community_vocab': self.analyzer.feature_config_manager.is_community_vocab_enabled(),
+                    'temporal_patterns': self.analyzer.feature_config_manager.is_temporal_patterns_enabled(),
+                    'pattern_analysis': self.analyzer.feature_config_manager.is_pattern_analysis_enabled(),
+                    'context_analysis': self.analyzer.feature_config_manager.is_context_analysis_enabled()
+                }
+            else:
+                logger.warning("Feature config manager not available, using safe defaults")
+                return self._get_fallback_feature_flags()
+                
+        except Exception as e:
+            logger.error(f"Failed to get feature flags: {e}, using safe defaults")
+            return self._get_fallback_feature_flags()
+
+    def _get_fallback_feature_flags(self) -> Dict[str, bool]:
+        """
+        Safe defaults for feature flags per Clean Architecture Charter Rule #5
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        return {
+            'advanced_context': False,
+            'community_vocab': False,  # Safe default - disable experimental features
+            'temporal_patterns': False,  # Safe default - disable experimental features
+            'pattern_analysis': True,   # Core functionality enabled
+            'context_analysis': True    # Core functionality enabled
+        }
+
+    def _build_conditional_pattern_analysis(self, detailed_patterns: Dict[str, Any], 
+                                          feature_flags: Dict[str, bool]) -> Dict[str, Any]:
+        """
+        NEW METHOD: Build pattern analysis section conditionally based on feature flags
+        
+        This is the core fix for the advanced features issue:
+        - enhanced_patterns populated only if advanced_context is enabled  
+        - community_patterns populated only if community_vocab is enabled
+        - Other fields populated based on standard pattern analysis being enabled
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        try:
+            pattern_analysis = {}
+            
+            # Always include basic pattern info if pattern analysis is enabled
+            if feature_flags.get('pattern_analysis', True):
+                pattern_analysis.update({
+                    'pattern_matches': detailed_patterns.get('matches', []),
+                    'pattern_confidence': detailed_patterns.get('confidence', 0.0),
+                    'pattern_severity': detailed_patterns.get('severity_level', 'none'),
+                    'critical_patterns': detailed_patterns.get('critical_patterns', [])
+                })
+            
+            # ADVANCED CONTEXT FEATURE: Enhanced patterns only if enabled
+            if feature_flags.get('advanced_context', False):
+                enhanced_patterns = detailed_patterns.get('enhanced_patterns', {})
+                if enhanced_patterns:
+                    pattern_analysis['enhanced_patterns'] = enhanced_patterns
+                    logger.debug(f"Advanced context enabled: populated enhanced_patterns with {len(enhanced_patterns)} groups")
+                else:
+                    pattern_analysis['enhanced_patterns'] = {}
+                    logger.debug("Advanced context enabled but no enhanced patterns found")
+            else:
+                pattern_analysis['enhanced_patterns'] = {}
+                logger.debug("Advanced context disabled: enhanced_patterns set to empty")
+            
+            # COMMUNITY VOCAB FEATURE: Community patterns only if enabled  
+            if feature_flags.get('community_vocab', False):
+                community_patterns = detailed_patterns.get('community_patterns', [])
+                if community_patterns:
+                    pattern_analysis['community_patterns'] = community_patterns
+                    logger.debug(f"Community vocab enabled: populated community_patterns with {len(community_patterns)} patterns")
+                else:
+                    pattern_analysis['community_patterns'] = []
+                    logger.debug("Community vocab enabled but no community patterns found")
+            else:
+                pattern_analysis['community_patterns'] = []
+                logger.debug("Community vocab disabled: community_patterns set to empty")
+            
+            return pattern_analysis
+            
+        except Exception as e:
+            logger.error(f"Failed to build conditional pattern analysis: {e}")
+            # Resilient fallback per Clean Architecture Charter Rule #5
+            return {
+                'enhanced_patterns': {},
+                'community_patterns': [],
+                'pattern_matches': [],
+                'pattern_confidence': 0.0,
+                'pattern_severity': 'none',
+                'critical_patterns': []
+            }
+
+    def _build_conditional_context_analysis(self, detailed_patterns: Dict[str, Any], 
+                                          pattern_result: Dict[str, Any],
+                                          feature_flags: Dict[str, bool], 
+                                          message: str) -> Dict[str, Any]:
+        """
+        NEW METHOD: Build context analysis section conditionally based on feature flags
+        
+        This is the core fix for temporal_factors and other context fields:
+        - temporal_factors populated only if temporal_patterns is enabled
+        - linguistic_indicators populated only if advanced_context is enabled  
+        - severity_indicators populated based on pattern analysis
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        try:
+            context_analysis = {}
+            
+            # TEMPORAL PATTERNS FEATURE: Temporal factors only if enabled
+            if feature_flags.get('temporal_patterns', False):
+                temporal_factors = self._extract_temporal_factors(detailed_patterns, pattern_result, message)
+                if temporal_factors:
+                    context_analysis['temporal_factors'] = temporal_factors
+                    logger.debug(f"Temporal patterns enabled: populated temporal_factors with {len(temporal_factors)} factors")
+                else:
+                    context_analysis['temporal_factors'] = []
+                    logger.debug("Temporal patterns enabled but no temporal factors found")
+            else:
+                context_analysis['temporal_factors'] = []
+                logger.debug("Temporal patterns disabled: temporal_factors set to empty")
+            
+            # ADVANCED CONTEXT FEATURE: Linguistic indicators only if enabled
+            if feature_flags.get('advanced_context', False):
+                linguistic_indicators = detailed_patterns.get('linguistic_features', [])
+                if linguistic_indicators:
+                    context_analysis['linguistic_indicators'] = linguistic_indicators
+                    logger.debug(f"Advanced context enabled: populated linguistic_indicators with {len(linguistic_indicators)} indicators")
+                else:
+                    context_analysis['linguistic_indicators'] = []
+                    logger.debug("Advanced context enabled but no linguistic indicators found")
+            else:
+                context_analysis['linguistic_indicators'] = []
+                logger.debug("Advanced context disabled: linguistic_indicators set to empty")
+            
+            # PATTERN ANALYSIS FEATURE: Severity indicators if pattern analysis enabled
+            if feature_flags.get('pattern_analysis', True):
+                severity_indicators = detailed_patterns.get('severity_indicators', [])[:5]  # Top 5
+                context_analysis['severity_indicators'] = severity_indicators
+                if severity_indicators:
+                    logger.debug(f"Pattern analysis enabled: populated severity_indicators with {len(severity_indicators)} indicators")
+            else:
+                context_analysis['severity_indicators'] = []
+            
+            return context_analysis
+            
+        except Exception as e:
+            logger.error(f"Failed to build conditional context analysis: {e}")
+            # Resilient fallback per Clean Architecture Charter Rule #5
+            return {
+                'temporal_factors': [],
+                'linguistic_indicators': [],
+                'severity_indicators': []
+            }
+
+    def _extract_temporal_factors(self, detailed_patterns: Dict[str, Any], 
+                                pattern_result: Dict[str, Any], 
+                                message: str) -> List[Dict[str, Any]]:
+        """
+        NEW METHOD: Extract temporal factors from analysis results
+        
+        This method ensures temporal factors are properly extracted when temporal_patterns is enabled
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        try:
+            temporal_factors = []
+            
+            # Try to get temporal analysis from detailed patterns first
+            temporal_analysis = detailed_patterns.get('temporal_analysis', {})
+            
+            # If not found, try to get from pattern result details
+            if not temporal_analysis:
+                temporal_analysis = pattern_result.get('details', {}).get('temporal_analysis', {})
+            
+            # If still not found, try to extract directly using pattern detection manager
+            if not temporal_analysis and self.analyzer.pattern_detection_manager:
+                try:
+                    temporal_analysis = self.analyzer.pattern_detection_manager.analyze_temporal_indicators(message)
+                    logger.debug("Extracted temporal analysis directly from pattern detection manager")
+                except Exception as e:
+                    logger.debug(f"Direct temporal analysis extraction failed: {e}")
+            
+            # Convert temporal analysis to temporal factors format
+            if temporal_analysis:
+                found_indicators = temporal_analysis.get('found_indicators', [])
+                for indicator in found_indicators:
+                    temporal_factors.append({
+                        'indicator_type': indicator.get('indicator_type', 'unknown'),
+                        'temporal_category': indicator.get('temporal_category', 'general'),
+                        'urgency_score': indicator.get('urgency_score', 0.0),
+                        'matched_phrase': indicator.get('matched_phrase', ''),
+                        'crisis_boost': indicator.get('crisis_boost', 0.0)
+                    })
+                
+                # Add overall temporal assessment if present
+                if temporal_analysis.get('urgency_score', 0) > 0:
+                    temporal_factors.append({
+                        'indicator_type': 'overall_assessment',
+                        'temporal_category': 'assessment',
+                        'urgency_score': temporal_analysis.get('urgency_score', 0.0),
+                        'temporal_context': temporal_analysis.get('temporal_context', ''),
+                        'analysis_confidence': temporal_analysis.get('confidence', 0.0)
+                    })
+            
+            return temporal_factors
+            
+        except Exception as e:
+            logger.error(f"Failed to extract temporal factors: {e}")
+            return []
+
+    def _enhance_pattern_extraction(self, detailed_patterns: Dict[str, Any], 
+                                  pattern_result: Dict[str, Any], 
+                                  message: str) -> Dict[str, Any]:
+        """
+        NEW METHOD: Enhance pattern extraction with direct extraction when needed
+        
+        This method addresses cases where pattern details are insufficient by
+        attempting direct extraction using the pattern detection manager
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        try:
+            enhanced_patterns = detailed_patterns.copy()
+            
+            # Check if we need to enhance community patterns
+            if not enhanced_patterns.get('community_patterns') and self.analyzer.pattern_detection_manager and message:
+                try:
+                    community_patterns = self.analyzer.pattern_detection_manager.extract_community_patterns(message)
+                    if community_patterns:
+                        enhanced_patterns['community_patterns'] = community_patterns
+                        logger.debug(f"Direct extraction: {len(community_patterns)} community patterns")
+                except Exception as e:
+                    logger.debug(f"Direct community pattern extraction failed: {e}")
+            
+            # Check if we need to enhance enhanced_patterns from patterns_found
+            if not enhanced_patterns.get('enhanced_patterns'):
+                patterns_found = pattern_result.get('patterns_found', [])
+                if patterns_found:
+                    enhanced_patterns['enhanced_patterns'] = self._reconstruct_enhanced_patterns(patterns_found)
+                    logger.debug(f"Reconstructed enhanced patterns: {len(enhanced_patterns['enhanced_patterns'])} groups")
+            
+            return enhanced_patterns
+            
+        except Exception as e:
+            logger.error(f"Failed to enhance pattern extraction: {e}")
+            return detailed_patterns
+
+    def _reconstruct_enhanced_patterns(self, patterns_found: List[Dict]) -> Dict[str, List[Dict]]:
+        """
+        NEW METHOD: Reconstruct enhanced patterns from patterns_found array
+        
+        This helps when the enhanced_patterns field is empty but patterns_found has data
+        
+        ADD THIS METHOD to PerformanceOptimizedMethods class
+        """
+        try:
+            enhanced_patterns = {}
+            
+            for pattern in patterns_found:
+                if isinstance(pattern, dict):
+                    pattern_group = pattern.get('pattern_group', pattern.get('category', ''))
+                    pattern_level = pattern.get('level', pattern.get('crisis_level', 'unknown'))
+                    
+                    if pattern_group:
+                        # Add to enhanced patterns by group
+                        if pattern_group not in enhanced_patterns:
+                            enhanced_patterns[pattern_group] = []
+                        enhanced_patterns[pattern_group].append({
+                            'text': pattern.get('text', pattern.get('pattern', '')),
+                            'level': pattern_level,
+                            'confidence': pattern.get('confidence', 0.0)
+                        })
+            
+            return enhanced_patterns
+            
+        except Exception as e:
+            logger.error(f"Failed to reconstruct enhanced patterns: {e}")
+            return {}
 
     def _extract_detailed_model_results(self, ensemble_result: Dict) -> Dict[str, Any]:
         """
