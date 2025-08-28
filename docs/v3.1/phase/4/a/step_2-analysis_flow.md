@@ -66,21 +66,21 @@ POST /analyze
   # EXISTING FIELDS... +
   
   "analysis_execution_tracking": {
-    "step_1_zero_shot_ai": {
+    "zero_shot_ai": {
       "executed": true,
       "method": "ensemble_consensus",
       "models_used": ["model_1", "model_2", "model_3"],
       "individual_scores": [0.78, 0.71, 0.76],
       "processing_time_ms": 145.2
     },
-    "step_2_pattern_enhancement": {
+    "pattern_enhancements": {
       "executed": true,
       "patterns_matched": ["emotional_distress", "seeking_help"],
       "enhancement_applied": true,
       "confidence_boost": 0.05,
       "processing_time_ms": 32.1
     },
-    "step_3_learning_adjustments": {
+    "learning_adjustments": {
       "executed": true,
       "threshold_adjustments": {"medium": -0.02},
       "confidence_modifications": 0.02,
@@ -99,7 +99,7 @@ POST /analyze
 # Expected Response:
 {
   "analysis_execution_tracking": {
-    "step_1_zero_shot_ai": {
+    "zero_shot_ai": {
       "executed": false,
       "error": "Models not available",
       "fallback_triggered": true
@@ -147,9 +147,9 @@ async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> D
     """Enhanced analysis with step tracking"""
     start_time = time.time()
     execution_tracking = {
-        "step_1_zero_shot_ai": {"executed": False},
-        "step_2_pattern_enhancement": {"executed": False}, 
-        "step_3_learning_adjustments": {"executed": False}
+        "zero_shot_ai": {"executed": False},
+        "pattern_enhancements": {"executed": False}, 
+        "learning_adjustments": {"executed": False}
     }
     
     try:
@@ -159,14 +159,14 @@ async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> D
             ensemble_result = await self.model_coordination_manager.classify_ensemble_async(
                 message, self.zero_shot_manager
             )
-            execution_tracking["step_1_zero_shot_ai"] = {
+            execution_tracking["zero_shot_ai"] = {
                 "executed": True,
                 "method": ensemble_result.get('method', 'unknown'),
                 "models_used": ensemble_result.get('models_used', []),
                 "processing_time_ms": (time.time() - step1_start) * 1000
             }
         except Exception as e:
-            execution_tracking["step_1_zero_shot_ai"] = {
+            execution_tracking["zero_shot_ai"] = {
                 "executed": False,
                 "error": str(e),
                 "fallback_triggered": True
@@ -176,13 +176,13 @@ async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> D
         step2_start = time.time()
         try:
             pattern_result = self.pattern_detection_manager.analyze_enhanced_patterns(message)
-            execution_tracking["step_2_pattern_enhancement"] = {
+            execution_tracking["pattern_enhancements"] = {
                 "executed": True,
                 "patterns_matched": pattern_result.get('patterns_found', []),
                 "processing_time_ms": (time.time() - step2_start) * 1000
             }
         except Exception as e:
-            execution_tracking["step_2_pattern_enhancement"] = {
+            execution_tracking["pattern_enhancements"] = {
                 "executed": False,
                 "error": str(e)
             }
@@ -194,13 +194,13 @@ async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> D
                 learning_adjustments = self.learning_system_manager.apply_threshold_adjustments(
                     confidence, 'consensus'
                 )
-                execution_tracking["step_3_learning_adjustments"] = {
+                execution_tracking["learning_adjustments"] = {
                     "executed": True,
                     "adjustments_applied": learning_adjustments,
                     "processing_time_ms": (time.time() - step3_start) * 1000
                 }
         except Exception as e:
-            execution_tracking["step_3_learning_adjustments"] = {
+            execution_tracking["learning_adjustments"] = {
                 "executed": False,
                 "error": str(e)
             }
@@ -261,17 +261,17 @@ class TestAnalysisFlowVerification:
         tracking = data["analysis_execution_tracking"]
         
         # Verify Step 1: Zero-Shot AI executed
-        assert "step_1_zero_shot_ai" in tracking
-        assert tracking["step_1_zero_shot_ai"]["executed"] is True
-        assert "processing_time_ms" in tracking["step_1_zero_shot_ai"]
+        assert "zero_shot_ai" in tracking
+        assert tracking["zero_shot_ai"]["executed"] is True
+        assert "processing_time_ms" in tracking["zero_shot_ai"]
         
         # Verify Step 2: Pattern Enhancement executed  
-        assert "step_2_pattern_enhancement" in tracking
-        assert tracking["step_2_pattern_enhancement"]["executed"] is True
+        assert "pattern_enhancements" in tracking
+        assert tracking["pattern_enhancements"]["executed"] is True
         
         # Verify Step 3: Learning System (if available)
-        if "step_3_learning_adjustments" in tracking:
-            assert "executed" in tracking["step_3_learning_adjustments"]
+        if "learning_adjustments" in tracking:
+            assert "executed" in tracking["learning_adjustments"]
         
         # Verify timing information
         assert "total_processing_time_ms" in data
