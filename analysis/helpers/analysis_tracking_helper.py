@@ -51,10 +51,11 @@ class AnalysisTrackingHelper:
         try:
             if self.crisis_analyzer.unified_config_manager:
                 # UnifiedConfigManager handles env var overrides and type conversion automatically
+                # Use the correct config file: analysis_tracking.json, not analysis_config.json
                 tracking_config = self.crisis_analyzer.unified_config_manager.get_config_section(
-                    'analysis_config', 'tracking.enabled', True
+                    'analysis_tracking', 'tracking.enabled', True
                 )
-                logger.debug(f"Tracking configuration loaded: {tracking_config}")
+                logger.debug(f"Tracking configuration loaded from analysis_tracking: {tracking_config}")
                 return tracking_config
             else:
                 logger.warning("UnifiedConfigManager not available, defaulting tracking to enabled")
@@ -165,7 +166,7 @@ class AnalysisTrackingHelper:
             return final_result
         
         # Calculate summary statistics for enabled tracking
-        steps_attempted = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"] 
+        steps_attempted = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"]
                              if tracking[step].get("started", False))
         steps_completed = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"] 
                              if tracking[step].get("completed", False))
@@ -240,25 +241,37 @@ class AnalysisTrackingHelper:
             raise RuntimeError("ModelCoordinationManager not available")
 
     def get_zero_shot_labels_info(self) -> Dict[str, Any]:
-        """Get detailed zero-shot labels information for tracking"""
+        """Get detailed zero-shot labels information for tracking (only when tracking enabled)"""
+        # Check both general tracking and specific zero-shot tracking
+        if not self.enable_tracking:
+            return {"labels_available": False, "reason": "Analysis tracking disabled"}
+        
+        # Check specific zero-shot tracking setting from the correct config file
+        try:
+            zero_shot_tracking = self.crisis_analyzer.unified_config_manager.get_config_section(
+                'analysis_tracking', 'step_tracking.zero_shot_ai_tracking', True
+            )
+            if not zero_shot_tracking:
+                return {"labels_available": False, "reason": "Zero-shot AI tracking disabled"}
+        except Exception:
+            # If we can't read the config, respect the general tracking setting
+            pass
+            
         try:
             if not self.crisis_analyzer.zero_shot_manager:
                 return {"labels_available": False, "reason": "ZeroShotManager not available"}
             
-            # Get comprehensive label information
+            # Get lightweight label information (no full label lists to avoid performance hit)
             current_label_set = self.crisis_analyzer.zero_shot_manager.get_current_label_set()
-            all_labels = self.crisis_analyzer.zero_shot_manager.get_all_labels()
             zero_shot_settings = self.crisis_analyzer.zero_shot_manager.get_zero_shot_settings()
             
             return {
                 "labels_available": True,
                 "current_label_set": current_label_set,
-                "labels_by_category": all_labels,
-                "total_label_categories": len(all_labels),
-                "total_labels": sum(len(labels) for labels in all_labels.values()),
                 "hypothesis_template": zero_shot_settings.get("hypothesis_template", "This text expresses {}."),
                 "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.3),
-                "multi_label": zero_shot_settings.get("multi_label", False)
+                "multi_label": zero_shot_settings.get("multi_label", False),
+                "note": "Full labels available in ai_model_details section"
             }
             
         except Exception as e:
