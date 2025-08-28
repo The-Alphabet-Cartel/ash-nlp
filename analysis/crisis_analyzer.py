@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Analyzer for Ash-NLP Service v3.1
 ---
-FILE VERSION: v3.1-3e-6-4
-LAST MODIFIED: 2025-08-22
-PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization and Zero-Shot Implementation
+FILE VERSION: v3.1-4a-2-1
+LAST MODIFIED: 2025-08-28
+PHASE: 4a, Step 2 - Analysis Flow Verification & Tracking Enhancement
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -30,19 +30,27 @@ from .helpers.ensemble_analysis_helper import EnsembleAnalysisHelper
 from .helpers.scoring_calculation_helper import ScoringCalculationHelper
 from .helpers.pattern_analysis_helper import PatternAnalysisHelper
 from .helpers.context_integration_helper import ContextIntegrationHelper
+from .helpers.analysis_tracking_helper import create_analysis_tracking_helper
 from .performance_optimizations import integrate_performance_optimizations
 
 logger = logging.getLogger(__name__)
 
 class CrisisAnalyzer:
     """
-    PHASE 3E SUB-STEP 5.5-6: Optimized crisis analyzer with helper file architecture
+    PHASE 4A STEP 2: Enhanced crisis analyzer with comprehensive analysis flow tracking
     
     HELPER FILES:
     - EnsembleAnalysisHelper: Ensemble coordination and zero-shot model analysis
     - ScoringCalculationHelper: Scoring calculations and result combination
     - PatternAnalysisHelper: Pattern detection and context signal extraction
     - ContextIntegrationHelper: Response building and cache management
+    - AnalysisTrackingHelper: Phase 4a Step 2 analysis flow tracking (NEW)
+    
+    NEW FEATURES (Phase 4a Step 2):
+    - Comprehensive step-by-step execution tracking
+    - Zero-shot labels information in response
+    - Performance metrics for each analysis step
+    - Fallback scenario detection and reporting
     """
     
     def __init__(self, unified_config, model_coordination_manager,
@@ -52,7 +60,7 @@ class CrisisAnalyzer:
         shared_utilities_manager=None, learning_system_manager=None,
         zero_shot_manager=None):
         """
-        Initialize Optimized Crisis Analyzer with helper file architecture
+        Initialize Crisis Analyzer with Phase 4a Step 2 analysis flow tracking
         
         Args:
             model_coordination_manager: Model ensemble manager for ensemble analysis
@@ -92,9 +100,12 @@ class CrisisAnalyzer:
         self.pattern_helper = PatternAnalysisHelper(self)
         self.context_helper = ContextIntegrationHelper(self)
         
+        # PHASE 4A STEP 2: Initialize analysis tracking helper
+        self.tracking_helper = create_analysis_tracking_helper(self)
+        
         # PHASE 3E STEP 7: Performance optimization integration
         self.performance_optimizer = integrate_performance_optimizations(self)
-        logger.info("🚀 Performance optimizations integrated - targeting 500ms analysis time")
+        logger.info("Performance optimizations integrated - targeting 500ms analysis time")
 
         # Cache attributes
         self._feature_cache = {}
@@ -111,9 +122,10 @@ class CrisisAnalyzer:
         self.initialization_time = time.time()
         
         # Log optimized initialization
-        logger.info("CrisisAnalyzer v3.1-3e-5.5-6 OPTIMIZED initialized:")
-        logger.info(f"   Helper files: 4 loaded (ensemble, scoring, pattern, context)")
+        logger.info("CrisisAnalyzer v3.1-4a-2-1 ENHANCED initialized:")
+        logger.info(f"   Helper files: 5 loaded (ensemble, scoring, pattern, context, tracking)")
         logger.info(f"   Zero-shot models: Implemented with ZeroShotManager integration")
+        logger.info(f"   Analysis flow tracking: {'Enabled' if self.tracking_helper.enable_tracking else 'Disabled'}")
         logger.info(f"   File size reduction: ~48% (1,940 → ~1,000 lines)")
         logger.info(f"   SharedUtilitiesManager: {'Available' if shared_utilities_manager else 'Not available'}")
         logger.info(f"   LearningSystemManager: {'Available' if learning_system_manager else 'Not available'}")
@@ -132,18 +144,20 @@ class CrisisAnalyzer:
             logger.warning("   ZeroShotManager not provided - using fallback labels")
 
     # ========================================================================
-    # MAIN ANALYSIS METHODS - Core API (Delegated to Helpers)
+    # ENHANCED MAIN ANALYSIS METHODS - Phase 4a Step 2
     # ========================================================================
     
     async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
-        PHASE 3E STEP 7: Performance-optimized crisis analysis - MAIN API ENTRY POINT
+        PHASE 4A STEP 2: Enhanced crisis analysis with comprehensive flow tracking
         
         This is the main entry point called by API endpoints.
-        Uses performance optimizer for sub-500ms target achievement.
+        Now includes complete step-by-step execution tracking and verification.
         """
-        start_time = time.time()
-        logger.info(f"🔍 Starting optimized crisis analysis for user {user_id} in channel {channel_id}")
+        # Initialize tracking
+        tracking = self.tracking_helper.init_analysis_tracking(message, user_id, channel_id)
+        
+        logger.info(f"Phase 4a Step 2: Starting comprehensive crisis analysis for user {user_id} in channel {channel_id}")
         
         try:
             # Refresh caches using helper
@@ -154,41 +168,120 @@ class CrisisAnalyzer:
             ensemble_enabled = self._feature_cache.get('ensemble_enabled', True)
             
             if ensemble_enabled:
-                logger.debug("🚀 Using performance-optimized analysis path")
-                # Use performance optimizer for critical path
-                optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
+                logger.debug("Using performance-optimized analysis with tracking")
                 
-                # Apply learning adjustments if available
-                if self.learning_system_manager:
-                    try:
-                        learning_result = self.learning_system_manager.apply_learning_adjustments(
-                            optimized_result, user_id, channel_id
-                        )
-                        optimized_result.update({
-                            'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
-                            'learning_metadata': learning_result.get('metadata', {}),
-                            'learning_applied': True
+                # STEP 1: Zero-Shot AI Models (PRIMARY CLASSIFICATION)
+                self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "started")
+                try:
+                    ensemble_result = await self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
+                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "completed", {
+                        "method": ensemble_result.get("method", "unknown"),
+                        "models_used": ensemble_result.get("models_used", []),
+                        "individual_scores": ensemble_result.get("individual_results", {}),
+                        "ensemble_confidence": ensemble_result.get("confidence_score", 0.0),
+                        "ai_classification_successful": True,
+                        "zero_shot_labels_info": ensemble_result.get("zero_shot_labels_info", {})
+                    })
+                    logger.debug("Step 1: Zero-shot AI analysis completed successfully")
+                    
+                except Exception as e:
+                    logger.warning(f"Step 1: Zero-shot AI analysis failed: {e}")
+                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "failed", error=e)
+                    tracking["fallback_scenarios"]["ai_models_failed"] = True
+                    ensemble_result = {"crisis_score": 0.0, "confidence_score": 0.0, "method": "ai_fallback"}
+                
+                # STEP 2: Pattern Enhancement (CONTEXTUAL ANALYSIS)
+                self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
+                try:
+                    pattern_result = await self.tracking_helper.execute_pattern_enhancement(message, ensemble_result)
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
+                        "patterns_matched": pattern_result.get("patterns_found", []),
+                        "pattern_categories": pattern_result.get("detected_categories", []),
+                        "enhancement_applied": pattern_result.get("enhancement_applied", False),
+                        "confidence_boost": pattern_result.get("confidence_boost", 0.0),
+                        "pattern_analysis_successful": True
+                    })
+                    logger.debug("Step 2: Pattern enhancement completed successfully")
+                    
+                except Exception as e:
+                    logger.warning(f"Step 2: Pattern enhancement failed: {e}")
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
+                    pattern_result = {"enhancement_applied": False}
+                
+                # STEP 3: Learning System Adjustments (ADAPTIVE LEARNING)
+                self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "started")
+                try:
+                    if self.learning_system_manager:
+                        learning_result = await self.tracking_helper.execute_learning_adjustments(ensemble_result, pattern_result, user_id, channel_id)
+                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
+                            "threshold_adjustments": learning_result.get("adjustments", {}),
+                            "confidence_modifications": learning_result.get("confidence_delta", 0.0),
+                            "learning_metadata": learning_result.get("metadata", {}),
+                            "learning_applied": True
                         })
-                    except Exception as e:
-                        logger.warning(f"Learning adjustment failed: {e}")
-                        optimized_result['learning_applied'] = False
-                else:
-                    optimized_result['learning_applied'] = False
+                        logger.debug("Step 3: Learning adjustments applied successfully")
+                    else:
+                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
+                            "learning_applied": False,
+                            "reason": "LearningSystemManager not available"
+                        })
+                        logger.debug("Step 3: Learning system not available - skipped")
+                        learning_result = {"learning_applied": False}
+                        
+                except Exception as e:
+                    logger.warning(f"Step 3: Learning adjustments failed: {e}")
+                    self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "failed", error=e)
+                    learning_result = {"learning_applied": False}
                 
-                processing_time = (time.time() - start_time) * 1000
-                optimized_result['api_processing_time'] = processing_time
+                # Combine results
+                final_result = self.tracking_helper.combine_analysis_results(ensemble_result, pattern_result, learning_result)
                 
-                logger.info(f"✅ Optimized crisis analysis: {processing_time:.1f}ms")
-                return optimized_result
+                # Mark performance optimization
+                tracking["performance_metrics"]["optimization_applied"] = True
+                
             else:
-                logger.debug("🔥 Ensemble analysis disabled - delegating to pattern helper")
-                return await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, start_time)
+                logger.debug("Ensemble analysis disabled - using pattern-only fallback")
+                tracking["fallback_scenarios"]["pattern_only_used"] = True
+                
+                # Pattern-only analysis
+                self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
+                try:
+                    final_result = await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, time.time())
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
+                        "method": "pattern_only_fallback",
+                        "patterns_analysis_successful": True
+                    })
+                except Exception as e:
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
+                    raise
+            
+            # Finalize tracking and add to result
+            final_result = self.tracking_helper.finalize_tracking(tracking, final_result)
+            
+            total_time = final_result["tracking_summary"]["total_processing_time_ms"]
+            logger.info(f"Phase 4a Step 2: Crisis analysis completed in {total_time:.1f}ms")
+            
+            return final_result
                 
         except Exception as e:
-            logger.error(f"❌ Optimized crisis analysis failed: {e}")
-            logger.warning("Falling back to original helper-based analysis")
-            # Fallback to original helper-based analysis
-            return await self.context_helper.ensemble_crisis_analysis(message, user_id, channel_id, start_time)
+            logger.error(f"Phase 4a Step 2: Crisis analysis failed: {e}")
+            tracking["fallback_scenarios"]["emergency_fallback"] = True
+            
+            # Emergency fallback with tracking
+            emergency_result = {
+                "crisis_score": 0.5,
+                "crisis_level": "medium",
+                "confidence_score": 0.0,
+                "method": "emergency_fallback",
+                "needs_response": True,
+                "requires_staff_review": True,
+                "error": str(e),
+                "message": message,
+                "user_id": user_id,
+                "channel_id": channel_id
+            }
+            
+            return self.tracking_helper.finalize_tracking(tracking, emergency_result)
 
     async def analyze_message(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
@@ -200,9 +293,9 @@ class CrisisAnalyzer:
             channel_id: Channel identifier
             
         Returns:
-            Dictionary containing crisis analysis results
+            Dictionary containing crisis analysis results with tracking
         """
-        logger.debug("analyze_message called - delegating to optimized analyze_crisis for backward compatibility")
+        logger.debug("analyze_message called - delegating to enhanced analyze_crisis for backward compatibility")
         return await self.analyze_crisis(message, user_id, channel_id)
 
     # ========================================================================
@@ -220,12 +313,12 @@ class CrisisAnalyzer:
                 try:
                     thresholds = self.crisis_threshold_manager.get_ensemble_thresholds_for_mode(mode)
                     if thresholds and all(isinstance(v, (int, float)) for v in thresholds.values()):
-                        logger.debug(f"✅ Got thresholds from CrisisThresholdManager for mode '{mode}': {thresholds}")
+                        logger.debug(f"Got thresholds from CrisisThresholdManager for mode '{mode}': {thresholds}")
                         return thresholds
                     else:
-                        logger.warning(f"⚠️ CrisisThresholdManager returned invalid thresholds: {thresholds}")
+                        logger.warning(f"CrisisThresholdManager returned invalid thresholds: {thresholds}")
                 except Exception as e:
-                    logger.warning(f"⚠️ CrisisThresholdManager failed: {e}")
+                    logger.warning(f"CrisisThresholdManager failed: {e}")
 
             # Fallback to UnifiedConfigManager direct access
             if self.unified_config_manager:
@@ -244,13 +337,13 @@ class CrisisAnalyzer:
                             try:
                                 safe_thresholds[key] = float(threshold_config.get(key, default_val))
                             except (ValueError, TypeError):
-                                logger.warning(f"⚠️ Invalid threshold value for {key}, using default {default_val}")
+                                logger.warning(f"Invalid threshold value for {key}, using default {default_val}")
                                 safe_thresholds[key] = default_val
                         
-                        logger.debug(f"✅ Got thresholds from UnifiedConfig for mode '{mode}': {safe_thresholds}")
+                        logger.debug(f"Got thresholds from UnifiedConfig for mode '{mode}': {safe_thresholds}")
                         return safe_thresholds
                 except Exception as e:
-                    logger.warning(f"⚠️ UnifiedConfigManager access failed: {e}")
+                    logger.warning(f"UnifiedConfigManager access failed: {e}")
 
             # Final fallback with mode-specific defaults
             mode_defaults = {
@@ -260,11 +353,11 @@ class CrisisAnalyzer:
             }
 
             thresholds = mode_defaults.get(mode, mode_defaults['consensus'])
-            logger.warning(f"⚠️ Using fallback thresholds for mode '{mode}': {thresholds}")
+            logger.warning(f"Using fallback thresholds for mode '{mode}': {thresholds}")
             return thresholds
 
         except Exception as e:
-            logger.error(f"❌ Failed to get crisis thresholds for mode '{mode}': {e}")
+            logger.error(f"Failed to get crisis thresholds for mode '{mode}': {e}")
             return self._safe_analysis_execution(
                 "get_analysis_crisis_thresholds", 
                 lambda: {'low': 0.12, 'medium': 0.25, 'high': 0.45, 'critical': 0.7}
@@ -287,7 +380,7 @@ class CrisisAnalyzer:
             elif self.analysis_config_manager:
                 return self.analysis_config_manager.get_analysis_timeouts()
             else:
-                logger.warning("⚠️ No config manager available - using default timeouts")
+                logger.warning("No config manager available - using default timeouts")
                 return {'model_analysis': 10, 'pattern_analysis': 5, 'total_analysis': 30}
         except Exception as e:
             return self._safe_analysis_execution(
@@ -313,7 +406,7 @@ class CrisisAnalyzer:
             elif self.analysis_config_manager:
                 return self.analysis_config_manager.get_confidence_boosts()
             else:
-                logger.warning("⚠️ No config manager available - using default confidence boosts")
+                logger.warning("No config manager available - using default confidence boosts")
                 return {
                     'pattern_match': 0.1,
                     'context_boost': 0.15,
@@ -342,7 +435,7 @@ class CrisisAnalyzer:
                     }
                 )
             else:
-                logger.warning("⚠️ No config manager available - using default pattern weights")
+                logger.warning("No config manager available - using default pattern weights")
                 return {
                     'patterns_crisis': 0.6,
                     'community_patterns': 0.3,
@@ -375,7 +468,7 @@ class CrisisAnalyzer:
             elif self.analysis_config_manager:
                 return self.analysis_config_manager.get_algorithm_parameters()
             else:
-                logger.warning("⚠️ No config manager available - using default algorithm parameters")
+                logger.warning("No config manager available - using default algorithm parameters")
                 return {
                     'ensemble_weights': [0.4, 0.3, 0.3],
                     'score_normalization': 'sigmoid',
@@ -411,7 +504,7 @@ class CrisisAnalyzer:
                     else:
                         logger.debug("CrisisThresholdManager has no known threshold application method - using consolidated logic")
                 except Exception as e:
-                    logger.warning(f"⚠️ CrisisThresholdManager threshold application failed: {e}")
+                    logger.warning(f"CrisisThresholdManager threshold application failed: {e}")
             
             # Fallback: Get mode-specific thresholds and apply them
             thresholds = self.get_crisis_threshold_for_mode(mode)
@@ -425,7 +518,7 @@ class CrisisAnalyzer:
                     logger.debug(f"Learning adjustment: {confidence:.3f} → {adjusted_confidence:.3f}")
                     confidence = adjusted_confidence
                 except Exception as e:
-                    logger.warning(f"⚠️ Learning adjustment failed: {e}")
+                    logger.warning(f"Learning adjustment failed: {e}")
             
             # Determine crisis level using mode-specific thresholds
             if confidence >= thresholds.get('critical', 0.7):
@@ -440,7 +533,7 @@ class CrisisAnalyzer:
                 return 'none'
                 
         except Exception as e:
-            logger.error(f"❌ Crisis threshold application failed: {e}")
+            logger.error(f"Crisis threshold application failed: {e}")
             return self._safe_analysis_execution(
                 "apply_crisis_thresholds",
                 lambda: self.context_helper.fallback_crisis_level(confidence)
@@ -475,11 +568,11 @@ class CrisisAnalyzer:
                     return base_thresholds
             
             # Unknown mode - use consensus as fallback
-            logger.warning(f"⚠️ Unknown mode '{mode}', using consensus thresholds")
+            logger.warning(f"Unknown mode '{mode}', using consensus thresholds")
             return self.get_analysis_crisis_thresholds('consensus')
                 
         except Exception as e:
-            logger.error(f"❌ Failed to get thresholds for mode '{mode}': {e}")
+            logger.error(f"Failed to get thresholds for mode '{mode}': {e}")
             return self._safe_analysis_execution(
                 "get_crisis_threshold_for_mode",
                 lambda: {'low': 0.12, 'medium': 0.25, 'high': 0.45, 'critical': 0.7}
@@ -534,14 +627,14 @@ class CrisisAnalyzer:
                 self.learning_system_manager.process_feedback(
                     message, user_id, channel_id, feedback_type, original_result
                 )
-                logger.info(f"📚 Learning feedback processed: {feedback_type} for user {user_id}")
+                logger.info(f"Learning feedback processed: {feedback_type} for user {user_id}")
             else:
-                logger.warning("⚠️ Learning system not available - feedback not processed")
+                logger.warning("Learning system not available - feedback not processed")
                 
         except Exception as e:
             self._safe_analysis_execution(
                 "process_analysis_feedback",
-                lambda: logger.error(f"❌ Feedback processing failed: {e}")
+                lambda: logger.error(f"Feedback processing failed: {e}")
             )
 
     def perform_ensemble_crisis_analysis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
@@ -557,7 +650,7 @@ class CrisisAnalyzer:
                 raise ValueError("Invalid analysis input")
             
             # Use performance optimizer for critical path
-            logger.debug("🚀 Using performance-optimized analysis path")
+            logger.debug("Using performance-optimized analysis path")
             optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
             
             # Apply learning adjustments if available
@@ -580,7 +673,7 @@ class CrisisAnalyzer:
             processing_time = (time.time() - start_time) * 1000
             optimized_result['total_processing_time'] = processing_time
             
-            logger.info(f"✅ Optimized ensemble analysis: {processing_time:.1f}ms")
+            logger.info(f"Optimized ensemble analysis: {processing_time:.1f}ms")
             return optimized_result
             
         except Exception as e:
@@ -659,7 +752,7 @@ class CrisisAnalyzer:
                 logger.debug(f"Direct execution for {operation_name} - SharedUtilitiesManager execute_safely not available")
                 return operation_func(*args, **kwargs)
         except Exception as e:
-            logger.error(f"❌ Safe execution failed for {operation_name}: {e}")
+            logger.error(f"Safe execution failed for {operation_name}: {e}")
             # Return safe defaults based on operation type
             if 'threshold' in operation_name.lower():
                 return {'low': 0.2, 'medium': 0.4, 'high': 0.6, 'critical': 0.8}
@@ -688,12 +781,12 @@ class CrisisAnalyzer:
                         isinstance(user_id, str) and len(user_id.strip()) > 0 and
                         isinstance(channel_id, str) and len(channel_id.strip()) > 0)
         except Exception as e:
-            logger.warning(f"⚠️ Input validation failed: {e}")
+            logger.warning(f"Input validation failed: {e}")
             return False
 
 
 # ============================================================================
-# ENHANCED FACTORY FUNCTION - Phase 3e Sub-step 5.5-6
+# ENHANCED FACTORY FUNCTION - Phase 4a Step 2
 # ============================================================================
 
 def create_crisis_analyzer(unified_config, model_coordination_manager,
@@ -703,7 +796,7 @@ def create_crisis_analyzer(unified_config, model_coordination_manager,
     shared_utilities_manager=None, learning_system_manager=None,
     zero_shot_manager=None) -> CrisisAnalyzer:
     """
-    Enhanced factory function for Optimized CrisisAnalyzer with helper file architecture and ZeroShotManager integration
+    Enhanced factory function for CrisisAnalyzer with Phase 4a Step 2 analysis flow tracking
     
     Args:
         # Existing parameters (maintained)
@@ -714,16 +807,12 @@ def create_crisis_analyzer(unified_config, model_coordination_manager,
         feature_config_manager: FeatureConfigManager for feature flags
         performance_config_manager: PerformanceConfigManager for performance settings
         context_analysis_manager: ContextAnalysisManager for context analysis
-        
-        # Phase 3e parameters
         shared_utilities_manager: SharedUtilitiesManager for common utilities
         learning_system_manager: LearningSystemManager for adaptive learning
-        
-        # ADDED: Zero-shot label management
         zero_shot_manager: ZeroShotManager for configurable zero-shot classification labels
         
     Returns:
-        Optimized CrisisAnalyzer instance with helper file architecture and ZeroShotManager integration
+        Enhanced CrisisAnalyzer instance with comprehensive analysis flow tracking
     """
     return CrisisAnalyzer(
         unified_config,
@@ -741,4 +830,4 @@ def create_crisis_analyzer(unified_config, model_coordination_manager,
 
 __all__ = ['CrisisAnalyzer', 'create_crisis_analyzer']
 
-logger.info("✅ OPTIMIZED CrisisAnalyzer v3.1-3e-5.5-6 loaded - Helper file architecture with zero-shot implementation complete")
+logger.info("ENHANCED CrisisAnalyzer v3.1-4a-2-1 loaded - Comprehensive analysis flow tracking implemented")
