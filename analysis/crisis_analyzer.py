@@ -171,10 +171,10 @@ class CrisisAnalyzer:
                 logger.debug("Using performance-optimized analysis with tracking")
                 
                 # STEP 1: Zero-Shot AI Models (PRIMARY CLASSIFICATION)
-                self.tracking_helper.update_tracking_step(tracking, "zero_shot_ai", "started")
+                self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "started")
                 try:
                     ensemble_result = await self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
-                    self.tracking_helper.update_tracking_step(tracking, "zero_shot_ai", "completed", {
+                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "completed", {
                         "method": ensemble_result.get("method", "unknown"),
                         "models_used": ensemble_result.get("models_used", []),
                         "individual_scores": ensemble_result.get("individual_results", {}),
@@ -186,15 +186,15 @@ class CrisisAnalyzer:
                     
                 except Exception as e:
                     logger.warning(f"Step 1: Zero-shot AI analysis failed: {e}")
-                    self.tracking_helper.update_tracking_step(tracking, "zero_shot_ai", "failed", error=e)
+                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "failed", error=e)
                     tracking["fallback_scenarios"]["ai_models_failed"] = True
                     ensemble_result = {"crisis_score": 0.0, "confidence_score": 0.0, "method": "ai_fallback"}
                 
                 # STEP 2: Pattern Enhancement (CONTEXTUAL ANALYSIS)
-                self.tracking_helper.update_tracking_step(tracking, "pattern_enhancements", "started")
+                self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
                 try:
                     pattern_result = await self.tracking_helper.execute_pattern_enhancement(message, ensemble_result)
-                    self.tracking_helper.update_tracking_step(tracking, "pattern_enhancements", "completed", {
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
                         "patterns_matched": pattern_result.get("patterns_found", []),
                         "pattern_categories": pattern_result.get("detected_categories", []),
                         "enhancement_applied": pattern_result.get("enhancement_applied", False),
@@ -205,15 +205,15 @@ class CrisisAnalyzer:
                     
                 except Exception as e:
                     logger.warning(f"Step 2: Pattern enhancement failed: {e}")
-                    self.tracking_helper.update_tracking_step(tracking, "pattern_enhancements", "failed", error=e)
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
                     pattern_result = {"enhancement_applied": False}
                 
                 # STEP 3: Learning System Adjustments (ADAPTIVE LEARNING)
-                self.tracking_helper.update_tracking_step(tracking, "learning_adjustments", "started")
+                self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "started")
                 try:
                     if self.learning_system_manager:
                         learning_result = await self.tracking_helper.execute_learning_adjustments(ensemble_result, pattern_result, user_id, channel_id)
-                        self.tracking_helper.update_tracking_step(tracking, "learning_adjustments", "completed", {
+                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
                             "threshold_adjustments": learning_result.get("adjustments", {}),
                             "confidence_modifications": learning_result.get("confidence_delta", 0.0),
                             "learning_metadata": learning_result.get("metadata", {}),
@@ -221,7 +221,7 @@ class CrisisAnalyzer:
                         })
                         logger.debug("Step 3: Learning adjustments applied successfully")
                     else:
-                        self.tracking_helper.update_tracking_step(tracking, "learning_adjustments", "completed", {
+                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
                             "learning_applied": False,
                             "reason": "LearningSystemManager not available"
                         })
@@ -230,7 +230,7 @@ class CrisisAnalyzer:
                         
                 except Exception as e:
                     logger.warning(f"Step 3: Learning adjustments failed: {e}")
-                    self.tracking_helper.update_tracking_step(tracking, "learning_adjustments", "failed", error=e)
+                    self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "failed", error=e)
                     learning_result = {"learning_applied": False}
                 
                 # Combine results
@@ -244,15 +244,15 @@ class CrisisAnalyzer:
                 tracking["fallback_scenarios"]["pattern_only_used"] = True
                 
                 # Pattern-only analysis
-                self.tracking_helper.update_tracking_step(tracking, "pattern_enhancements", "started")
+                self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
                 try:
                     final_result = await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, time.time())
-                    self.tracking_helper.update_tracking_step(tracking, "pattern_enhancements", "completed", {
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
                         "method": "pattern_only_fallback",
                         "patterns_analysis_successful": True
                     })
                 except Exception as e:
-                    self.tracking_helper.update_tracking_step(tracking, "pattern_enhancements", "failed", error=e)
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
                     raise
             
             # Finalize tracking and add to result
