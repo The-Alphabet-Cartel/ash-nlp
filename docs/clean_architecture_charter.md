@@ -1,19 +1,19 @@
 <!-- ash-nlp/docs/clean_architecture_charter.md -->
 <!--
 Clean Architecture Charter for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
+FILE VERSION: v3.1-2
+LAST MODIFIED: 2025-08-28
 CLEAN ARCHITECTURE: v3.1 Compliant
 -->
-# Clean v3.1 Architecture Charter - Ash-NLP (Production Ready)
+# Clean Architecture Charter - Ash-NLP (Production Ready)
+
 ## Sacred Principles - NEVER TO BE VIOLATED
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Project**: Ash-NLP v3.1
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
+**FILE VERSION**: v3.1-2
+**LAST UPDATED**: 2025-08-28
 **CLEAN ARCHITECTURE**: v3.1 Compliant  
 
 ---
@@ -114,7 +114,7 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 4. **Document Reuse**: Clearly document which existing variables are being leveraged
 5. **Test Thoroughly**: Ensure existing functionality isn't impacted by reuse
 
-#### **Step 10.7 Success Example**:
+#### **Success Example**:
 ```bash
 # ❌ WRONG: Creating new undefined variables
 ${NLP_CRISIS_AMPLIFIER_BASE_WEIGHT}     # New variable
@@ -144,6 +144,12 @@ NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.0  # Existing variable
 #### **Benefits of Rule #8**:
 - **Tests the actual implementation**: Not just the logic behind it
 - **Ensures readability for human counterparts**: Key for testing so that we may assist in the testing and troubleshooting sequences
+
+#### **Rule #9: Always ask for the current version of a specific file before making any modifications, changes, or edits to that file - STANDARD**
+- **Prevents wasted time on edits to old code**
+- **Ensures that everyone is on the "same page"**
+- **Reduces confusion between team members**
+- **Reduces frustration between team members**
 
 ---
 
@@ -412,10 +418,11 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 2. **Does this preserve all previous phase functionality?** ✅ Required  
 3. **Does this follow dependency injection principles?** ✅ Required
 4. **Does this maintain JSON + environment configuration?** ✅ Required
-5. **Does this implement resilient error handling?** ✅ **PRODUCTION CRITICAL**
-6. **Does this maintain operational continuity for crisis detection?** ✅ **LIFE-SAVING REQUIRED**
-7. **Does this include proper file versioning?** ✅ **TRACKING REQUIRED**
-8. **Does this check existing environment variables first?** ✅ **NEW REQUIREMENT**
+5. **Does this implement resilient error handling?** ✅ **PRODUCTION CRITICAL** - Required
+6. **Does this maintain operational continuity for crisis detection?** ✅ **LIFE-SAVING** - Required
+7. **Does this include proper file versioning?** ✅ Required
+8. **Does this check existing environment variables first?** ✅ Required
+9. **Have I verified we are working on the same file version?** ✅ Required
 
 ---
 
@@ -429,10 +436,11 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ❌ Allowing system crashes for recoverable problems
 - ❌ Missing file version headers in code files
 - ❌ Inconsistent version numbering across files
-- ❌ **Creating new environment variables without first checking current `.env.template` file**
-- ❌ **Duplicating functionality with different variable names**
-- ❌ **Ignoring existing infrastructure in favor of "clean slate" approaches**
-- ❌ **Adding variables without considering conversion/mapping possibilities**
+- ❌ Creating new environment variables without first checking current `.env.template` file
+- ❌ Duplicating functionality with different variable names
+- ❌ Ignoring existing infrastructure in favor of "clean slate" approaches
+- ❌ Adding variables without considering conversion/mapping possibilities
+- ❌ Not asking for current file version before making changes, edits, or modifications
 
 ---
 
@@ -445,7 +453,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ✅ Clean dependency injection throughout
 - ✅ Production-ready resilient error handling
 - ✅ Consistent file versioning across all code files
-- ✅ **Consistent environment variables across all code files**
+- ✅ Consistent environment variables across all code files
 
 ### **Integration Health:**
 - ✅ Tests use same patterns as production code
@@ -454,7 +462,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 - ✅ Configuration overrides working consistently
 - ✅ System maintains availability under adverse conditions
 - ✅ File versions track accurately across conversations
-- ✅ **Environment variable bloat is avoided**
+- ✅ Environment variable bloat is avoided
 
 ### **Production Readiness:**
 - ✅ **Operational continuity preserved** under configuration issues
