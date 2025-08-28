@@ -179,8 +179,7 @@ class CrisisAnalyzer:
                         "models_used": ensemble_result.get("models_used", []),
                         "individual_scores": ensemble_result.get("individual_results", {}),
                         "ensemble_confidence": ensemble_result.get("confidence_score", 0.0),
-                        "ai_classification_successful": True,
-                        "zero_shot_labels_info": ensemble_result.get("zero_shot_labels_info", {})
+                        "ai_classification_successful": True
                     })
                     logger.debug("Step 1: Zero-shot AI analysis completed successfully")
                     
