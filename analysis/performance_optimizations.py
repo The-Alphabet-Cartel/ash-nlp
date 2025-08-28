@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Performance Optimizations Module for Crisis Analyzer - Phase 3e Step 7
 ---
-FILE VERSION: v3.1-3e-4a-2
-LAST MODIFIED: 2025-08-27
+FILE VERSION: v3.1-3e-4a-3
+LAST MODIFIED: 2025-08-28
 PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -535,8 +535,16 @@ class PerformanceOptimizedMethods:
             
             # Extract patterns_found (primary result from analyze_message)
             patterns_found = pattern_result.get('patterns_found', [])
+
+            # NEW: Also check patterns_triggered if patterns_found is empty
+            if not patterns_found:
+                patterns_triggered = pattern_result.get('patterns_triggered', [])
+                if patterns_triggered:
+                    patterns_found = patterns_triggered
+                    logger.debug(f"🔧 Using patterns_triggered as patterns_found: {len(patterns_found)} patterns")
+
             logger.debug(f"🔍 Found {len(patterns_found)} patterns in patterns_found")
-            
+
             if patterns_found:
                 details['pattern_matches'] = patterns_found
                 
@@ -827,6 +835,10 @@ class PerformanceOptimizedMethods:
         # Extract detailed pattern analysis from pattern_result with enhancement
         detailed_patterns = self._extract_detailed_pattern_analysis(pattern_result)
         enhanced_patterns = self._enhance_pattern_extraction(detailed_patterns, pattern_result, message)
+
+        # Ensure pattern_matches is properly set before debug
+        if not enhanced_patterns.get('pattern_matches') and detailed_patterns.get('pattern_matches'):
+            enhanced_patterns['pattern_matches'] = detailed_patterns['pattern_matches']
         enhanced_patterns = self._debug_pattern_flow(enhanced_patterns)
 
         # NEW: Get feature flags for conditional population
