@@ -827,7 +827,8 @@ class PerformanceOptimizedMethods:
         # Extract detailed pattern analysis from pattern_result with enhancement
         detailed_patterns = self._extract_detailed_pattern_analysis(pattern_result)
         enhanced_patterns = self._enhance_pattern_extraction(detailed_patterns, pattern_result, message)
-        
+        enhanced_patterns = self._debug_pattern_flow(enhanced_patterns)
+
         # NEW: Get feature flags for conditional population
         feature_flags = self._get_feature_flags()
         
@@ -1231,6 +1232,28 @@ class PerformanceOptimizedMethods:
             logger.error(f"Failed to reconstruct enhanced patterns: {e}")
             logger.exception("Pattern reconstruction error:")
             return {}
+
+    def _debug_pattern_flow(self, detailed_patterns: Dict[str, Any]) -> Dict[str, Any]:
+        """Debug method to trace pattern flow and force reconstruction if needed"""
+        try:
+            logger.info(f"DEBUG: Enhanced patterns before enhancement: {detailed_patterns.get('enhanced_patterns', 'MISSING')}")
+            logger.info(f"DEBUG: Pattern matches count: {len(detailed_patterns.get('pattern_matches', []))}")
+            
+            current_enhanced = detailed_patterns.get('enhanced_patterns', {})
+            pattern_matches = detailed_patterns.get('pattern_matches', [])
+            
+            # Force reconstruction if enhanced_patterns is empty but we have pattern_matches
+            if (not current_enhanced or len(current_enhanced) == 0) and pattern_matches:
+                logger.info("DEBUG: Forcing pattern reconstruction due to empty enhanced_patterns")
+                reconstructed = self._reconstruct_enhanced_patterns(pattern_matches)
+                detailed_patterns['enhanced_patterns'] = reconstructed
+                logger.info(f"DEBUG: Reconstructed enhanced patterns: {list(reconstructed.keys())}")
+            
+            return detailed_patterns
+            
+        except Exception as e:
+            logger.error(f"Debug pattern flow failed: {e}")
+            return detailed_patterns
 
     def _extract_detailed_model_results(self, ensemble_result: Dict) -> Dict[str, Any]:
         """
