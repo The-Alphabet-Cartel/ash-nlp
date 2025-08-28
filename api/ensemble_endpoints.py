@@ -240,8 +240,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
                 'pattern_confidence': pattern_confidence,
                 'final_determination': final_crisis_level,
                 'pattern_available': not bool(pattern_error),
-                'safety_bias_applied': crisis_threshold_manager is not None,
-                'phase_3e_enhanced': True
+                'safety_bias_applied': crisis_threshold_manager is not None
             }
         }
         
@@ -256,8 +255,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
             'model_info': 'Integration error - using conservative fallback',
             'reasoning': f"Integration failed: {str(e)}",
             'staff_review_required': True,  # Always require review on errors
-            'integration_error': str(e),
-            'phase_3e_enhanced': True
+            'integration_error': str(e)
         }
 
 def _get_fallback_crisis_mapping() -> Dict[str, float]:
@@ -486,10 +484,8 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                         'redundant_processing': False,
                         'feature_flags_respected': True,
                         'api_processing_time_ms': processing_time_ms,
-                        'phase_3e_enhanced': True,
                         'enhanced_validation': True,
-                        'context_analysis_available': bool(analysis_results.get('context_analysis')),
-                        'note': 'Phase 3e: Enhanced error handling and validation applied'
+                        'context_analysis_available': bool(analysis_results.get('context_analysis'))
                     }
                 )
             except Exception as e:
@@ -533,8 +529,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     analysis={
                         'error': str(e),
                         'architecture': 'clean_v3_1_error_handling',
-                        'processing_time_ms': processing_time_ms,
-                        'phase_3e_enhanced': True
+                        'processing_time_ms': processing_time_ms
                     }
                 )
             except Exception as response_error:
