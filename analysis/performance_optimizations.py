@@ -11,7 +11,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Performance Optimizations Module for Crisis Analyzer - Phase 3e Step 7
 ---
-FILE VERSION: v3.1-3e-4a-1
+FILE VERSION: v3.1-3e-4a-2
 LAST MODIFIED: 2025-08-27
 PHASE: 3e
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -1115,32 +1115,52 @@ class PerformanceOptimizedMethods:
                                   pattern_result: Dict[str, Any], 
                                   message: str) -> Dict[str, Any]:
         """
-        NEW METHOD: Enhance pattern extraction with direct extraction when needed
+        UPDATED: Enhance pattern extraction with direct extraction when needed
         
         This method addresses cases where pattern details are insufficient by
         attempting direct extraction using the pattern detection manager
         
-        ADD THIS METHOD to PerformanceOptimizedMethods class
+        REPLACE THIS METHOD in PerformanceOptimizedMethods class
         """
         try:
             enhanced_patterns = detailed_patterns.copy()
             
+            # ENHANCED: Check if we need to enhance enhanced_patterns from pattern_matches
+            current_enhanced = enhanced_patterns.get('enhanced_patterns', {})
+            if not current_enhanced and enhanced_patterns.get('pattern_matches'):
+                logger.debug("🔧 Enhanced patterns empty, reconstructing from pattern_matches")
+                enhanced_patterns['enhanced_patterns'] = self._reconstruct_enhanced_patterns(enhanced_patterns['pattern_matches'])
+                
             # Check if we need to enhance community patterns
             if not enhanced_patterns.get('community_patterns') and self.analyzer.pattern_detection_manager and message:
                 try:
                     community_patterns = self.analyzer.pattern_detection_manager.extract_community_patterns(message)
                     if community_patterns:
                         enhanced_patterns['community_patterns'] = community_patterns
-                        logger.debug(f"Direct extraction: {len(community_patterns)} community patterns")
+                        logger.debug(f"🔧 Direct extraction: {len(community_patterns)} community patterns")
                 except Exception as e:
-                    logger.debug(f"Direct community pattern extraction failed: {e}")
+                    logger.debug(f"🔧 Direct community pattern extraction failed: {e}")
             
-            # Check if we need to enhance enhanced_patterns from patterns_found
-            if not enhanced_patterns.get('enhanced_patterns'):
-                patterns_found = pattern_result.get('patterns_found', [])
-                if patterns_found:
-                    enhanced_patterns['enhanced_patterns'] = self._reconstruct_enhanced_patterns(patterns_found)
-                    logger.debug(f"Reconstructed enhanced patterns: {len(enhanced_patterns['enhanced_patterns'])} groups")
+            # NEW: Also try to extract community patterns from pattern_matches if they have community pattern_type
+            if not enhanced_patterns.get('community_patterns') and enhanced_patterns.get('pattern_matches'):
+                community_patterns = []
+                for pattern in enhanced_patterns['pattern_matches']:
+                    # Check if this is a community-related pattern
+                    pattern_type = pattern.get('pattern_type', '')
+                    details = pattern.get('details', {})
+                    
+                    if pattern_type == 'community' or details.get('pattern_type') == 'community':
+                        community_patterns.append({
+                            'pattern_type': details.get('pattern_group', pattern_type),
+                            'matched_term': details.get('matched_text', pattern.get('matched_text', '')),
+                            'crisis_level': details.get('crisis_level', pattern.get('crisis_level', 'low')),
+                            'confidence': details.get('confidence', pattern.get('confidence', 0.5)),
+                            'community_context': 'lgbtqia+'
+                        })
+                        
+                if community_patterns:
+                    enhanced_patterns['community_patterns'] = community_patterns
+                    logger.debug(f"🔧 Extracted {len(community_patterns)} community patterns from pattern_matches")
             
             return enhanced_patterns
             
@@ -1150,34 +1170,66 @@ class PerformanceOptimizedMethods:
 
     def _reconstruct_enhanced_patterns(self, patterns_found: List[Dict]) -> Dict[str, List[Dict]]:
         """
-        NEW METHOD: Reconstruct enhanced patterns from patterns_found array
+        FIXED: Reconstruct enhanced patterns from patterns_found array with nested structure support
         
-        This helps when the enhanced_patterns field is empty but patterns_found has data
+        This fixes the issue where pattern_group is nested inside a 'details' object
         
-        ADD THIS METHOD to PerformanceOptimizedMethods class
+        REPLACE THIS METHOD in PerformanceOptimizedMethods class
         """
         try:
             enhanced_patterns = {}
             
             for pattern in patterns_found:
-                if isinstance(pattern, dict):
-                    pattern_group = pattern.get('pattern_group', pattern.get('category', ''))
-                    pattern_level = pattern.get('level', pattern.get('crisis_level', 'unknown'))
+                if not isinstance(pattern, dict):
+                    continue
                     
-                    if pattern_group:
-                        # Add to enhanced patterns by group
-                        if pattern_group not in enhanced_patterns:
-                            enhanced_patterns[pattern_group] = []
-                        enhanced_patterns[pattern_group].append({
-                            'text': pattern.get('text', pattern.get('pattern', '')),
-                            'level': pattern_level,
-                            'confidence': pattern.get('confidence', 0.0)
-                        })
+                # Try multiple ways to extract pattern information
+                pattern_group = None
+                pattern_level = None
+                pattern_text = None
+                confidence = 0.0
+                
+                # Method 1: Check top level first
+                pattern_group = pattern.get('pattern_group')
+                pattern_level = pattern.get('level', pattern.get('crisis_level', pattern.get('urgency')))
+                pattern_text = pattern.get('text', pattern.get('pattern_name', pattern.get('matched_text', pattern.get('matched_pattern'))))
+                confidence = pattern.get('confidence', pattern.get('weight', 0.0))
+                
+                # Method 2: Check nested in 'details' object (THIS IS THE KEY FIX)
+                if not pattern_group and 'details' in pattern:
+                    details = pattern['details']
+                    if isinstance(details, dict):
+                        pattern_group = details.get('pattern_group')
+                        pattern_level = pattern_level or details.get('level', details.get('crisis_level', details.get('urgency')))
+                        pattern_text = pattern_text or details.get('text', details.get('pattern_name', details.get('matched_text', details.get('matched_pattern'))))
+                        confidence = confidence or details.get('confidence', details.get('weight', 0.0))
+                        
+                        logger.debug(f"🔧 Extracted from nested details: group={pattern_group}, text={pattern_text}, level={pattern_level}")
+                
+                # Method 3: Fallback to pattern_type as group
+                if not pattern_group:
+                    pattern_group = pattern.get('pattern_type', pattern.get('category'))
+                
+                # Only proceed if we have at least a pattern group
+                if pattern_group:
+                    # Add to enhanced patterns by group
+                    if pattern_group not in enhanced_patterns:
+                        enhanced_patterns[pattern_group] = []
+                        
+                    enhanced_patterns[pattern_group].append({
+                        'text': pattern_text or 'unknown',
+                        'level': pattern_level or 'unknown',
+                        'confidence': float(confidence) if confidence else 0.0
+                    })
+                    
+                    logger.debug(f"🔧 Added to enhanced_patterns[{pattern_group}]: {pattern_text} (level: {pattern_level})")
             
+            logger.debug(f"🔧 Reconstructed enhanced patterns: {list(enhanced_patterns.keys())} with {sum(len(v) for v in enhanced_patterns.values())} total patterns")
             return enhanced_patterns
             
         except Exception as e:
             logger.error(f"Failed to reconstruct enhanced patterns: {e}")
+            logger.exception("Pattern reconstruction error:")
             return {}
 
     def _extract_detailed_model_results(self, ensemble_result: Dict) -> Dict[str, Any]:
