@@ -69,21 +69,21 @@ _combine_analysis_results()      # Combine all steps with tracking
   
   // NEW: COMPREHENSIVE TRACKING
   "analysis_execution_tracking": {
-    "zero_shot_ai": {
+    "step_1_zero_shot_ai": {
       "executed": true,
       "processing_time_ms": 145.2,
       "method": "sync_ensemble",
       "models_used": ["model_1", "model_2", "model_3"],
       "ai_classification_successful": true
     },
-    "pattern_enhancements": {
+    "step_2_pattern_enhancement": {
       "executed": true,
       "processing_time_ms": 32.1,
       "patterns_matched": ["emotional_distress", "seeking_help"],
       "enhancement_applied": true,
       "confidence_boost": 0.05
     },
-    "learning_adjustments": {
+    "step_3_learning_adjustments": {
       "executed": true,
       "processing_time_ms": 8.3,
       "learning_applied": true,
