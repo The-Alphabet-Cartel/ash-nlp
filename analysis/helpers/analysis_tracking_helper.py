@@ -44,27 +44,44 @@ class AnalysisTrackingHelper:
         self.crisis_analyzer = crisis_analyzer
         self.enable_tracking = self._get_tracking_config()
         
-        logger.debug("AnalysisTrackingHelper initialized for Phase 4a Step 2")
+        logger.info(f"AnalysisTrackingHelper initialized: tracking={'enabled' if self.enable_tracking else 'disabled'}")
     
     def _get_tracking_config(self) -> bool:
-        """Get analysis tracking configuration setting"""
+        """Get analysis tracking configuration setting with environment variable support"""
         try:
             if self.crisis_analyzer.unified_config_manager:
-                # Check for tracking configuration in analysis config
+                # UnifiedConfigManager handles env var overrides and type conversion automatically
                 tracking_config = self.crisis_analyzer.unified_config_manager.get_config_section(
-                    'analysis_config', 'tracking', {'enabled': True}
+                    'analysis_config', 'tracking.enabled', True
                 )
-                return tracking_config.get('enabled', True)
+                logger.debug(f"Tracking configuration loaded: {tracking_config}")
+                return tracking_config
             else:
-                return True  # Default to enabled
+                logger.warning("UnifiedConfigManager not available, defaulting tracking to enabled")
+                return True
+                
         except Exception as e:
-            logger.warning(f"Failed to get tracking config: {e}")
-            return True  # Default to enabled
+            logger.error(f"Failed to get tracking config: {e}")
+            return True  # Default to enabled for safety
 
     def init_analysis_tracking(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """Initialize analysis execution tracking structure"""
+        # If tracking is disabled, return minimal structure
+        if not self.enable_tracking:
+            return {
+                "tracking_enabled": False,
+                "analysis_start_time": time.time(),
+                "message_metadata": {
+                    "message_length": len(message),
+                    "user_id": user_id,
+                    "channel_id": channel_id,
+                    "timestamp": time.time()
+                }
+            }
+        
+        # Full tracking structure when enabled
         return {
-            "tracking_enabled": self.enable_tracking,
+            "tracking_enabled": True,
             "analysis_start_time": time.time(),
             "message_metadata": {
                 "message_length": len(message),
@@ -72,17 +89,17 @@ class AnalysisTrackingHelper:
                 "channel_id": channel_id,
                 "timestamp": time.time()
             },
-            "zero_shot_ai": {
+            "step_1_zero_shot_ai": {
                 "executed": False,
                 "started": False,
                 "completed": False
             },
-            "pattern_enhancements": {
+            "step_2_pattern_enhancement": {
                 "executed": False,
                 "started": False,
                 "completed": False
             },
-            "learning_adjustments": {
+            "step_3_learning_adjustments": {
                 "executed": False,
                 "started": False,
                 "completed": False
@@ -135,16 +152,22 @@ class AnalysisTrackingHelper:
 
     def finalize_tracking(self, tracking: Dict[str, Any], final_result: Dict[str, Any]) -> Dict[str, Any]:
         """Finalize tracking information and add to result"""
-        if not self.enable_tracking:
-            return final_result
-        
         current_time = time.time()
         total_time_ms = (current_time - tracking["analysis_start_time"]) * 1000
         
-        # Calculate summary statistics
-        steps_attempted = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"] 
+        # If tracking is disabled, add minimal tracking info
+        if not self.enable_tracking or not tracking.get("tracking_enabled", True):
+            final_result["analysis_execution_tracking"] = {
+                "tracking_enabled": False,
+                "message_metadata": tracking.get("message_metadata", {}),
+                "total_processing_time_ms": total_time_ms
+            }
+            return final_result
+        
+        # Calculate summary statistics for enabled tracking
+        steps_attempted = sum(1 for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"] 
                              if tracking[step].get("started", False))
-        steps_completed = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"] 
+        steps_completed = sum(1 for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"] 
                              if tracking[step].get("completed", False))
         
         # Add summary information
@@ -153,17 +176,17 @@ class AnalysisTrackingHelper:
             "steps_attempted": steps_attempted,
             "steps_completed": steps_completed,
             "success_rate": (steps_completed / max(steps_attempted, 1)) * 100,
-            "performance_target_met": total_time_ms <= tracking["performance_metrics"]["target_time_ms"],
+            "performance_target_met": total_time_ms <= tracking.get("performance_metrics", {}).get("target_time_ms", 500),
             "analysis_method": final_result.get("method", "unknown"),
             "crisis_detection_pipeline": {
-                "ai_models_used": tracking["zero_shot_ai"].get("completed", False),
-                "pattern_enhancement_applied": tracking["pattern_enhancements"].get("completed", False),
-                "learning_adjustments_applied": tracking["learning_adjustments"].get("completed", False)
+                "ai_models_used": tracking["step_1_zero_shot_ai"].get("completed", False),
+                "pattern_enhancement_applied": tracking["step_2_pattern_enhancement"].get("completed", False),
+                "learning_adjustments_applied": tracking["step_3_learning_adjustments"].get("completed", False)
             }
         }
         
         # Clean up internal tracking fields
-        for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"]:
+        for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"]:
             if step in tracking:
                 # Remove internal timestamps but keep processing times
                 tracking[step].pop("start_time", None)
