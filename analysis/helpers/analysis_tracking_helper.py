@@ -90,17 +90,17 @@ class AnalysisTrackingHelper:
                 "channel_id": channel_id,
                 "timestamp": time.time()
             },
-            "zero_shot_ai": {
+            "step_1_zero_shot_ai": {
                 "executed": False,
                 "started": False,
                 "completed": False
             },
-            "pattern_enhancements": {
+            "step_2_pattern_enhancement": {
                 "executed": False,
                 "started": False,
                 "completed": False
             },
-            "learning_adjustments": {
+            "step_3_learning_adjustments": {
                 "executed": False,
                 "started": False,
                 "completed": False
