@@ -52,9 +52,9 @@ class TestAnalysisFlowVerification:
         self.expected_tracking_keys = [
             "tracking_enabled",
             "message_metadata", 
-            "step_1_zero_shot_ai",
-            "step_2_pattern_enhancement",
-            "step_3_learning_adjustments",
+            "zero_shot_ai",
+            "pattern_enhancements",
+            "learning_adjustments",
             "fallback_scenarios",
             "performance_metrics"
         ]
@@ -112,17 +112,17 @@ class TestAnalysisFlowVerification:
             assert key in summary, f"Missing summary key: {key}"
         
         # Verify step execution details
-        step1 = tracking["step_1_zero_shot_ai"]
+        step1 = tracking["zero_shot_ai"]
         assert step1.get("executed", False), "Step 1 (Zero-shot AI) was not executed"
         assert "processing_time_ms" in step1, "Step 1 missing processing time"
         assert step1.get("processing_time_ms", 0) > 0, "Step 1 processing time should be > 0"
         
-        step2 = tracking["step_2_pattern_enhancement"] 
+        step2 = tracking["pattern_enhancements"] 
         assert step2.get("executed", False), "Step 2 (Pattern Enhancement) was not executed"
         assert "processing_time_ms" in step2, "Step 2 missing processing time"
         
         # Step 3 might not execute if learning manager not available
-        step3 = tracking["step_3_learning_adjustments"]
+        step3 = tracking["learning_adjustments"]
         if step3.get("executed", False):
             assert "processing_time_ms" in step3, "Step 3 missing processing time"
         
@@ -178,8 +178,8 @@ class TestAnalysisFlowVerification:
                 "crisis_score": data.get("crisis_score", 0.0),
                 "steps_completed": summary["steps_completed"],
                 "processing_time": summary["total_processing_time_ms"],
-                "ai_used": tracking["step_1_zero_shot_ai"].get("executed", False),
-                "patterns_used": tracking["step_2_pattern_enhancement"].get("executed", False)
+                "ai_used": tracking["zero_shot_ai"].get("executed", False),
+                "patterns_used": tracking["pattern_enhancements"].get("executed", False)
             }
             
             print(f"     Crisis Level: {results[message_type]['crisis_level']}")
@@ -275,7 +275,7 @@ class TestAnalysisFlowVerification:
         tracking = data["analysis_execution_tracking"]
         
         # Verify Step 1: Zero-Shot AI Analysis
-        step1 = tracking["step_1_zero_shot_ai"]
+        step1 = tracking["zero_shot_ai"]
         print(f"\n   📋 Step 1: Zero-Shot AI Analysis")
         print(f"     Executed: {step1.get('executed', False)}")
         print(f"     Time: {step1.get('processing_time_ms', 0):.1f}ms")
@@ -287,7 +287,7 @@ class TestAnalysisFlowVerification:
             print(f"     AI Confidence: {step1.get('ensemble_confidence', 0.0):.3f}")
         
         # Verify Step 2: Pattern Enhancement
-        step2 = tracking["step_2_pattern_enhancement"]
+        step2 = tracking["pattern_enhancements"]
         print(f"\n   📋 Step 2: Pattern Enhancement")
         print(f"     Executed: {step2.get('executed', False)}")
         print(f"     Time: {step2.get('processing_time_ms', 0):.1f}ms")
@@ -300,7 +300,7 @@ class TestAnalysisFlowVerification:
             print(f"     Confidence Boost: {step2.get('confidence_boost', 0.0):.3f}")
         
         # Verify Step 3: Learning Adjustments
-        step3 = tracking["step_3_learning_adjustments"]
+        step3 = tracking["learning_adjustments"]
         print(f"\n   📋 Step 3: Learning Adjustments")
         print(f"     Executed: {step3.get('executed', False)}")
         
@@ -685,7 +685,7 @@ SAMPLE_ENHANCED_RESPONSE = {
             "channel_id": "test_channel_456",
             "timestamp": 1693363200.123
         },
-        "step_1_zero_shot_ai": {
+        "zero_shot_ai": {
             "executed": True,
             "started": True,
             "completed": True,
@@ -700,7 +700,7 @@ SAMPLE_ENHANCED_RESPONSE = {
             "ensemble_confidence": 0.82,
             "ai_classification_successful": True
         },
-        "step_2_pattern_enhancement": {
+        "pattern_enhancements": {
             "executed": True,
             "started": True,
             "completed": True,
@@ -711,7 +711,7 @@ SAMPLE_ENHANCED_RESPONSE = {
             "confidence_boost": 0.05,
             "pattern_analysis_successful": True
         },
-        "step_3_learning_adjustments": {
+        "learning_adjustments": {
             "executed": True,
             "started": True,
             "completed": True,
