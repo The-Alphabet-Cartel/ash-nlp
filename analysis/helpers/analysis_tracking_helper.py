@@ -350,7 +350,8 @@ class AnalysisTrackingHelper:
             "ai_model_details": {
                 "models_used": ai_result.get("models_used", []),
                 "individual_results": ai_result.get("individual_results", {}),
-                "base_confidence": base_confidence
+                "base_confidence": base_confidence,
+                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
             },
             "pattern_analysis": {
                 "patterns_matched": pattern_result.get("patterns_found", []),
