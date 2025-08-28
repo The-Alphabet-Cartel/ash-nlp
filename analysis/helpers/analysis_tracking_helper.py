@@ -166,9 +166,9 @@ class AnalysisTrackingHelper:
             return final_result
         
         # Calculate summary statistics for enabled tracking
-        steps_attempted = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"]
+        steps_attempted = sum(1 for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"] 
                              if tracking[step].get("started", False))
-        steps_completed = sum(1 for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"] 
+        steps_completed = sum(1 for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"] 
                              if tracking[step].get("completed", False))
         
         # Add summary information
@@ -180,14 +180,14 @@ class AnalysisTrackingHelper:
             "performance_target_met": total_time_ms <= tracking.get("performance_metrics", {}).get("target_time_ms", 500),
             "analysis_method": final_result.get("method", "unknown"),
             "crisis_detection_pipeline": {
-                "ai_models_used": tracking["zero_shot_ai"].get("completed", False),
-                "pattern_enhancement_applied": tracking["pattern_enhancements"].get("completed", False),
-                "learning_adjustments_applied": tracking["learning_adjustments"].get("completed", False)
+                "ai_models_used": tracking["step_1_zero_shot_ai"].get("completed", False),
+                "pattern_enhancement_applied": tracking["step_2_pattern_enhancement"].get("completed", False),
+                "learning_adjustments_applied": tracking["step_3_learning_adjustments"].get("completed", False)
             }
         }
         
         # Clean up internal tracking fields
-        for step in ["zero_shot_ai", "pattern_enhancements", "learning_adjustments"]:
+        for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"]:
             if step in tracking:
                 # Remove internal timestamps but keep processing times
                 tracking[step].pop("start_time", None)
