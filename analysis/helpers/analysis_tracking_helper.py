@@ -245,7 +245,7 @@ class AnalysisTrackingHelper:
             raise RuntimeError("ModelCoordinationManager not available")
 
     def get_zero_shot_labels_info(self) -> Dict[str, Any]:
-        """Get zero-shot labels information for tracking (lightweight reference only)"""
+        """Get detailed zero-shot labels information for tracking (only when tracking enabled)"""
         # Check both general tracking and specific zero-shot tracking
         if not self.enable_tracking:
             return {"labels_available": False, "reason": "Analysis tracking disabled"}
@@ -265,18 +265,20 @@ class AnalysisTrackingHelper:
             if not self.crisis_analyzer.zero_shot_manager:
                 return {"labels_available": False, "reason": "ZeroShotManager not available"}
             
-            # Get ONLY lightweight metadata - no duplicate label fetching
-            # The full labels are already in the main ai_model_details section
+            # Get full label information when tracking is enabled
             current_label_set = self.crisis_analyzer.zero_shot_manager.get_current_label_set()
+            all_labels = self.crisis_analyzer.zero_shot_manager.get_all_labels()
             zero_shot_settings = self.crisis_analyzer.zero_shot_manager.get_zero_shot_settings()
             
             return {
                 "labels_available": True,
                 "current_label_set": current_label_set,
+                "labels_by_category": all_labels,
+                "total_label_categories": len(all_labels),
+                "total_labels": sum(len(labels) for labels in all_labels.values()),
                 "hypothesis_template": zero_shot_settings.get("hypothesis_template", "This text expresses {}."),
                 "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.3),
-                "multi_label": zero_shot_settings.get("multi_label", False),
-                "full_labels_location": "See ai_model_details.zero_shot_labels_info for complete label lists"
+                "multi_label": zero_shot_settings.get("multi_label", False)
             }
             
         except Exception as e:
