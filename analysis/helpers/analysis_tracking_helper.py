@@ -265,17 +265,20 @@ class AnalysisTrackingHelper:
             if not self.crisis_analyzer.zero_shot_manager:
                 return {"labels_available": False, "reason": "ZeroShotManager not available"}
             
-            # Get lightweight label information (no full label lists to avoid performance hit)
+            # Get full label information when tracking is enabled
             current_label_set = self.crisis_analyzer.zero_shot_manager.get_current_label_set()
+            all_labels = self.crisis_analyzer.zero_shot_manager.get_all_labels()
             zero_shot_settings = self.crisis_analyzer.zero_shot_manager.get_zero_shot_settings()
             
             return {
                 "labels_available": True,
                 "current_label_set": current_label_set,
+                "labels_by_category": all_labels,
+                "total_label_categories": len(all_labels),
+                "total_labels": sum(len(labels) for labels in all_labels.values()),
                 "hypothesis_template": zero_shot_settings.get("hypothesis_template", "This text expresses {}."),
                 "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.3),
-                "multi_label": zero_shot_settings.get("multi_label", False),
-                "note": "Full labels available in ai_model_details section"
+                "multi_label": zero_shot_settings.get("multi_label", False)
             }
             
         except Exception as e:
