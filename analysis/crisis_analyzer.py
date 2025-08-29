@@ -157,6 +157,55 @@ class CrisisAnalyzer:
         # Initialize tracking
         tracking = self.tracking_helper.init_analysis_tracking(message, user_id, channel_id)
         
+        # Check if tracking is actually enabled - if not, use original optimized path
+        if not self.tracking_helper.enable_tracking:
+            logger.debug("Tracking disabled - using original optimized analysis path")
+            try:
+                # Use the existing optimized performance path directly
+                start_time = time.time()
+                optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
+                
+                # Apply learning if available
+                if self.learning_system_manager:
+                    try:
+                        learning_result = self.learning_system_manager.apply_learning_adjustments(
+                            optimized_result, user_id, channel_id
+                        )
+                        optimized_result.update({
+                            'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
+                            'learning_metadata': learning_result.get('metadata', {}),
+                            'learning_applied': True
+                        })
+                    except Exception as e:
+                        logger.warning(f"Learning adjustment failed: {e}")
+                        optimized_result['learning_applied'] = False
+                else:
+                    optimized_result['learning_applied'] = False
+                
+                processing_time = (time.time() - start_time) * 1000
+                optimized_result['api_processing_time'] = processing_time
+                
+                # Add minimal tracking info only
+                return self.tracking_helper.finalize_tracking(tracking, optimized_result)
+                
+            except Exception as e:
+                logger.error(f"Optimized analysis failed: {e}")
+                # Return simple fallback without complex tracking
+                return {
+                    "crisis_score": 0.5,
+                    "crisis_level": "medium",
+                    "confidence_score": 0.0,
+                    "method": "emergency_fallback",
+                    "needs_response": True,
+                    "requires_staff_review": True,
+                    "error": str(e),
+                    "analysis_execution_tracking": {
+                        "tracking_enabled": False,
+                        "total_processing_time_ms": (time.time() - time.time()) * 1000
+                    }
+                }
+        
+        # Full tracking enabled - proceed with detailed tracking
         logger.info(f"Phase 4a Step 2: Starting comprehensive crisis analysis for user {user_id} in channel {channel_id}")
         
         try:
@@ -237,11 +286,13 @@ class CrisisAnalyzer:
                 final_result = self.tracking_helper.combine_analysis_results(ensemble_result, pattern_result, learning_result)
                 
                 # Mark performance optimization
-                tracking["performance_metrics"]["optimization_applied"] = True
+                if "performance_metrics" in tracking:
+                    tracking["performance_metrics"]["optimization_applied"] = True
                 
             else:
                 logger.debug("Ensemble analysis disabled - using pattern-only fallback")
-                tracking["fallback_scenarios"]["pattern_only_used"] = True
+                if "fallback_scenarios" in tracking:
+                    tracking["fallback_scenarios"]["pattern_only_used"] = True
                 
                 # Pattern-only analysis
                 self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
@@ -258,14 +309,15 @@ class CrisisAnalyzer:
             # Finalize tracking and add to result
             final_result = self.tracking_helper.finalize_tracking(tracking, final_result)
             
-            total_time = final_result["tracking_summary"]["total_processing_time_ms"]
+            total_time = final_result.get("tracking_summary", {}).get("total_processing_time_ms", 0)
             logger.info(f"Phase 4a Step 2: Crisis analysis completed in {total_time:.1f}ms")
             
             return final_result
                 
         except Exception as e:
             logger.error(f"Phase 4a Step 2: Crisis analysis failed: {e}")
-            tracking["fallback_scenarios"]["emergency_fallback"] = True
+            if "fallback_scenarios" in tracking:
+                tracking["fallback_scenarios"]["emergency_fallback"] = True
             
             # Emergency fallback with tracking
             emergency_result = {
