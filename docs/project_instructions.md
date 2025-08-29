@@ -1,6 +1,6 @@
 <!-- ash-nlp/docs/project_instructions.md -->
 <!--
-Ash-NLP Project Instructions for Ash-NLP Service
+Project Instructions for Ash-NLP Service
 FILE VERSION: v3.1-1
 LAST MODIFIED: 2025-08-28
 CLEAN ARCHITECTURE: v3.1 Compliant
