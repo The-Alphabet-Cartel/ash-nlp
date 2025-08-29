@@ -167,9 +167,13 @@ class AnalysisTrackingHelper:
         
         # Calculate summary statistics for enabled tracking
         steps_attempted = sum(1 for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"] 
-                             if tracking[step].get("started", False))
+                             if step in tracking and tracking[step].get("started", False))
         steps_completed = sum(1 for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"] 
-                             if tracking[step].get("completed", False))
+                             if step in tracking and tracking[step].get("completed", False))
+        
+        # Safely get performance metrics
+        performance_metrics = tracking.get("performance_metrics", {})
+        target_time_ms = performance_metrics.get("target_time_ms", 500)
         
         # Add summary information
         tracking_summary = {
@@ -177,18 +181,18 @@ class AnalysisTrackingHelper:
             "steps_attempted": steps_attempted,
             "steps_completed": steps_completed,
             "success_rate": (steps_completed / max(steps_attempted, 1)) * 100,
-            "performance_target_met": total_time_ms <= tracking.get("performance_metrics", {}).get("target_time_ms", 500),
+            "performance_target_met": total_time_ms <= target_time_ms,
             "analysis_method": final_result.get("method", "unknown"),
             "crisis_detection_pipeline": {
-                "ai_models_used": tracking["step_1_zero_shot_ai"].get("completed", False),
-                "pattern_enhancement_applied": tracking["step_2_pattern_enhancement"].get("completed", False),
-                "learning_adjustments_applied": tracking["step_3_learning_adjustments"].get("completed", False)
+                "ai_models_used": tracking.get("step_1_zero_shot_ai", {}).get("completed", False),
+                "pattern_enhancement_applied": tracking.get("step_2_pattern_enhancement", {}).get("completed", False),
+                "learning_adjustments_applied": tracking.get("step_3_learning_adjustments", {}).get("completed", False)
             }
         }
         
-        # Clean up internal tracking fields
+        # Clean up internal tracking fields safely
         for step in ["step_1_zero_shot_ai", "step_2_pattern_enhancement", "step_3_learning_adjustments"]:
-            if step in tracking:
+            if step in tracking and isinstance(tracking[step], dict):
                 # Remove internal timestamps but keep processing times
                 tracking[step].pop("start_time", None)
                 tracking[step].pop("end_time", None)
