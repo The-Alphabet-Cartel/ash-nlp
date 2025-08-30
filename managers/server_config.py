@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Centralized Server Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3e, Sub-step 5.5, Task 5 - ServerConfigManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -389,7 +389,7 @@ class ServerConfigManager:
                 'deployment_profiles': self.get_deployment_profiles(),
                 'metadata': {
                     'phase': '3e-5.5',
-                    'architecture': 'clean_v3.1e_unified_config',
+                    'architecture': 'clean',
                     'configuration_version': '3e.5.5',
                     'consolidation_complete': True,
                     'v31_compliant': True,
@@ -511,7 +511,7 @@ class ServerConfigManager:
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_server_config_manager(unified_config_manager) -> ServerConfigManager:

@@ -1394,7 +1394,7 @@ class ModelCoordinationManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_model_coordination_manager(config_manager) -> ModelCoordinationManager:

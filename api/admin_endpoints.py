@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Admin endpoints for label management and system administration for Ash NLP Service v3.1
 ---
-FILE VERSION: v3.1-3d-6-2
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -98,7 +98,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             status = {
                 "admin_available": True,
                 "phase": "3c",
-                "architecture": "clean_v3.1_with_phase_3c_integration",
+                "architecture": "clean",
                 "endpoints": [
                     "/admin/status",
                     "/admin/configuration/summary",  # New Phase 3c endpoint
@@ -168,17 +168,13 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             logger.error(f"❌ Error getting admin status: {e}")
             return {"error": str(e), "admin_available": False, "phase": "3c"}
 
-    # ========================================================================
-    # NEW Phase 3c Configuration Summary Endpoint - ADD THIS
-    # ========================================================================
-    
     @app.get("/admin/configuration/summary")
     async def configuration_summary():
         """Get complete configuration summary - Phase 3c"""
         try:
             summary = {
                 "phase": "3c",
-                "architecture": "clean_v3.1",
+                "architecture": "clean",
                 "configuration_externalized": True,
                 "components": {}
             }

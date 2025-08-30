@@ -512,7 +512,7 @@ class LoggingConfigManager:
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_logging_config_manager(unified_config_manager) -> LoggingConfigManager:

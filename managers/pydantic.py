@@ -445,7 +445,7 @@ class PydanticManager:
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_pydantic_manager(config_manager) -> PydanticManager:

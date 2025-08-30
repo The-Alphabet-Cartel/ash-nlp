@@ -457,7 +457,7 @@ class SettingsManager:
         }
     
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 def create_settings_manager(unified_config,
     analysis_config_manager=None, pattern_detection_manager=None,

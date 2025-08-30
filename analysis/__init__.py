@@ -1,8 +1,8 @@
 # ash-nlp/analysis/__init__.py
 """
 Analysis Package for Ash-NLP Service v3.1
-FILE VERSION: v3.1-3e-6-4
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3e Step 4.2 - Enhanced analysis with consolidated methods and learning integration
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 from .crisis_analyzer import CrisisAnalyzer
 
 # ============================================================================
-# ANALYSIS METADATA - Phase 3e Step 4.2 Enhanced
+# ANALYSIS METADATA
 # ============================================================================
 
 ANALYSIS_CAPABILITIES = {
@@ -25,12 +25,12 @@ ANALYSIS_CAPABILITIES = {
         "input": "text_message",
         "output": "crisis_level_with_learning_enhancement_and_shared_utilities",
         "features": [
-            "consolidated_analysis_methods",  # Phase 3e Step 4.2 NEW
-            "learning_system_integration",   # Phase 3e Step 4.2 NEW  
-            "shared_utilities_integration",  # Phase 3e Step 4.2 NEW
+            "consolidated_analysis_methods",
+            "learning_system_integration",
+            "shared_utilities_integration",
             "three_model_coordination_analysis",
             "context_signal_extraction", 
-            "consolidated_scoring_functions",  # Phase 3d Step 10.6
+            "consolidated_scoring_functions",
             "safety_first_scoring",
             "community_pattern_integration",
             "configurable_analysis_config",
@@ -40,10 +40,10 @@ ANALYSIS_CAPABILITIES = {
         ],
         "processing_time": "<80ms (configurable via performance settings)",
         "accuracy_target": "80%+ (enhanced with learning and consolidated methods)",
-        "consolidation_status": "12_methods_consolidated_from_3_managers"  # Phase 3e Step 4.2
+        "consolidation_status": "12_methods_consolidated_from_3_managers"
     },
     
-    "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
+    "consolidated_analysis_methods": {
         "description": "Analysis methods consolidated from AnalysisParameters, ThresholdMapping, and ModelEnsemble managers",
         "location": "CrisisAnalyzer instance methods",
         "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelCoordinationManager"],
@@ -75,7 +75,7 @@ ANALYSIS_CAPABILITIES = {
         ]
     },
 
-    "learning_system_integration": {  # Phase 3e Step 4.2 NEW
+    "learning_system_integration": {
         "description": "Adaptive learning system for crisis detection improvement",
         "capabilities": [
             "threshold_adjustment_based_on_feedback",
@@ -90,7 +90,7 @@ ANALYSIS_CAPABILITIES = {
         "feedback_types": ["false_positive", "false_negative", "correct"]
     },
 
-    "shared_utilities_integration": {  # Phase 3e Step 4.2 NEW
+    "shared_utilities_integration": {
         "description": "Common utilities for error handling and configuration access",
         "capabilities": [
             "safe_analysis_execution",
@@ -105,7 +105,7 @@ ANALYSIS_CAPABILITIES = {
         ]
     },
 
-    "scoring_functions": {  # Phase 3d Step 10.6 (maintained)
+    "scoring_functions": {
         "description": "Consolidated scoring functions integrated into CrisisAnalyzer",
         "location": "CrisisAnalyzer instance methods",
         "functions": [
@@ -125,7 +125,7 @@ ANALYSIS_CAPABILITIES = {
         "capabilities": [
             "ensemble_analysis_toggle",
             "pattern_integration_control",
-            "learning_system_toggle",  # Phase 3e Step 4.2 NEW
+            "learning_system_toggle",
             "experimental_feature_flags",
             "development_debug_options"
         ]
@@ -143,19 +143,19 @@ ANALYSIS_CAPABILITIES = {
 }
 
 ANALYSIS_WORKFLOWS = {
-    "enhanced_crisis_detection": {  # Phase 3e Step 4.2 Enhanced
+    "enhanced_crisis_detection": {
         "description": "Full crisis detection with consolidated methods and learning",
         "steps": [
-            "validate_input_with_shared_utilities",     # Phase 3e Step 4.2 NEW
+            "validate_input_with_shared_utilities",
             "check_feature_flags",
             "apply_performance_settings", 
-            "get_consolidated_analysis_config",     # Phase 3e Step 4.2 NEW
+            "get_consolidated_analysis_config",
             "extract_context_signals",
-            "run_enhanced_ensemble_analysis",           # Phase 3e Step 4.2 NEW
+            "run_enhanced_ensemble_analysis",
             "apply_pattern_detection_analysis",
             "use_consolidated_scoring_functions",
-            "apply_consolidated_thresholds",            # Phase 3e Step 4.2 NEW
-            "integrate_learning_adjustments",           # Phase 3e Step 4.2 NEW
+            "apply_consolidated_thresholds",
+            "integrate_learning_adjustments",
             "combine_ensemble_results",
             "apply_pattern_adjustments",
             "map_to_crisis_level",
@@ -165,7 +165,7 @@ ANALYSIS_WORKFLOWS = {
         "phase": "3e.4.2"
     },
 
-    "learning_enhanced_analysis": {  # Phase 3e Step 4.2 NEW
+    "learning_enhanced_analysis": {
         "description": "Crisis analysis with learning system integration",
         "steps": [
             "perform_base_ensemble_analysis",
@@ -179,7 +179,7 @@ ANALYSIS_WORKFLOWS = {
         "triggers": ["analyze_message_with_learning", "process_analysis_feedback"]
     },
     
-    "consolidated_scoring": {  # Phase 3d Step 10.6 (maintained)
+    "consolidated_scoring": {
         "description": "Scoring functions now integrated as CrisisAnalyzer methods",
         "steps": [
             "access_via_crisis_analyzer_instance",
@@ -195,7 +195,7 @@ ANALYSIS_WORKFLOWS = {
         ]
     },
 
-    "safe_analysis_execution": {  # Phase 3e Step 4.2 NEW
+    "safe_analysis_execution": {
         "description": "Error-resilient analysis using SharedUtilities patterns",
         "steps": [
             "validate_analysis_input",
@@ -231,7 +231,7 @@ ANALYSIS_WORKFLOWS = {
 }
 
 # ============================================================================
-# INFORMATION FUNCTIONS - Phase 3e Step 4.2 Enhanced
+# INFORMATION FUNCTIONS
 # ============================================================================
 
 def get_analysis_capabilities():
@@ -249,7 +249,7 @@ def get_available_analyzers():
     }
 
 def get_implemented_features():
-    """Get detailed feature implementation status including Phase 3e Step 4.2"""
+    """Get detailed feature implementation status"""
     return {
         "core_analysis": {
             "status": "implemented",
@@ -257,7 +257,7 @@ def get_implemented_features():
             "managers": ["ModelCoordinationManager", "PatternDetectionManager", "AnalysisConfigManager", "CrisisThresholdManager"]
         },
         
-        "consolidated_analysis_methods": {  # Phase 3e Step 4.2 NEW
+        "consolidated_analysis_methods": {
             "status": "implemented",
             "description": "Analysis methods consolidated from multiple managers into CrisisAnalyzer",
             "source_managers": ["AnalysisConfigManager", "CrisisThresholdManager", "ModelCoordinationManager"],
@@ -271,7 +271,7 @@ def get_implemented_features():
             ]
         },
 
-        "learning_system_integration": {  # Phase 3e Step 4.2 NEW
+        "learning_system_integration": {
             "status": "implemented", 
             "description": "Adaptive learning system for crisis detection improvement",
             "managers": ["LearningSystemManager"],
@@ -284,7 +284,7 @@ def get_implemented_features():
             "feedback_processing": "real_time_learning_adjustments"
         },
 
-        "shared_utilities_integration": {  # Phase 3e Step 4.2 NEW
+        "shared_utilities_integration": {
             "status": "implemented",
             "description": "Common utilities for error handling and configuration access",
             "managers": ["SharedUtilitiesManager"],
@@ -321,7 +321,7 @@ def get_implemented_features():
             "enhancement": "learning_adjusted_thresholds"
         },
 
-        "scoring_consolidation": {  # Phase 3d Step 10.6 (maintained)
+        "scoring_consolidation": {
             "status": "implemented",
             "description": "Consolidated scoring functions integrated into CrisisAnalyzer",
             "managers": ["CrisisAnalyzer with dependency injection"],
@@ -344,7 +344,7 @@ def get_implemented_features():
             "capabilities": [
                 "ensemble_analysis_control",
                 "pattern_integration_toggle",
-                "learning_system_control",  # Phase 3e Step 4.2 NEW
+                "learning_system_control",
                 "experimental_feature_management",
                 "development_debug_controls"
             ]
@@ -364,7 +364,7 @@ def get_implemented_features():
     }
 
 # ============================================================================
-# ENHANCED FACTORY FUNCTIONS - Phase 3e Step 4.2
+# ENHANCED FACTORY FUNCTIONS
 # ============================================================================
 
 def create_crisis_analyzer(unified_config, model_coordination_manager, pattern_detection_manager=None, 
@@ -373,13 +373,7 @@ def create_crisis_analyzer(unified_config, model_coordination_manager, pattern_d
                           context_analysis_manager=None, shared_utilities_manager=None,
                           learning_system_manager=None, zero_shot_manager=None):
     """
-    Create and return an enhanced CrisisAnalyzer instance with Phase 3e Step 4.2 integration
-    
-    Phase 3e Enhancements:
-    - Consolidated analysis methods from AnalysisParameters, ThresholdMapping, ModelEnsemble managers
-    - SharedUtilitiesManager integration for error handling and configuration access
-    - LearningSystemManager integration for adaptive learning and threshold adjustment
-    - Enhanced crisis detection with learning feedback processing
+    Create and return an enhanced CrisisAnalyzer instance
     
     Args:
         # Existing parameters (maintained for backward compatibility)
@@ -390,17 +384,11 @@ def create_crisis_analyzer(unified_config, model_coordination_manager, pattern_d
         feature_config_manager: FeatureConfigManager for feature flags (Phase 3d Step 7)
         performance_config_manager: PerformanceConfigManager for performance settings (Phase 3d Step 7)
         context_analysis_manager: ContextAnalysisManager for context analysis (Phase 3d Step 10.8)
-        
-        # NEW Phase 3e Step 4.2 parameters
         shared_utilities_manager: SharedUtilitiesManager for common utilities and error handling
         learning_system_manager: LearningSystemManager for adaptive learning and feedback processing
         
     Returns:
-        Enhanced CrisisAnalyzer instance with Phase 3e capabilities:
-        - 12+ consolidated analysis methods
-        - Learning system integration for adaptive analysis
-        - Shared utilities for resilient error handling
-        - Backward compatibility with existing functionality
+        Enhanced CrisisAnalyzer instance
     """
     return CrisisAnalyzer(
         unified_config,
@@ -420,19 +408,16 @@ def create_crisis_analyzer(unified_config, model_coordination_manager, pattern_d
 def create_enhanced_crisis_analyzer(unified_config, model_coordination_manager, shared_utilities_manager, 
                                         learning_system_manager, **kwargs):
     """
-    Convenience factory function for Phase 3e enhanced CrisisAnalyzer
-    
-    This function emphasizes the new Phase 3e dependencies while maintaining
-    backward compatibility with optional legacy dependencies.
+    Convenience factory function for CrisisAnalyzer
     
     Args:
         model_coordination_manager: Required - Model ensemble manager
-        shared_utilities_manager: Required - SharedUtilitiesManager for Phase 3e
-        learning_system_manager: Required - LearningSystemManager for Phase 3e
+        shared_utilities_manager: Required - SharedUtilitiesManager
+        learning_system_manager: Required - LearningSystemManager
         **kwargs: Optional legacy managers for backward compatibility
         
     Returns:
-        Enhanced CrisisAnalyzer with Phase 3e capabilities
+        CrisisAnalyzer
     """
     return create_crisis_analyzer(
         unified_config,
@@ -448,9 +433,9 @@ def validate_crisis_analyzer_dependencies(unified_config=None, model_coordinatio
     Validate dependencies for CrisisAnalyzer creation
     
     Args:
-        model_coordination_manager: Model ensemble manager (required)
-        shared_utilities_manager: SharedUtilitiesManager (recommended for Phase 3e)
-        learning_system_manager: LearningSystemManager (recommended for Phase 3e)
+        model_coordination_manager: Model ensemble manager
+        shared_utilities_manager: SharedUtilitiesManager
+        learning_system_manager: LearningSystemManager
         **kwargs: Other optional managers
         
     Returns:
@@ -473,14 +458,13 @@ def validate_crisis_analyzer_dependencies(unified_config=None, model_coordinatio
         validation_result["valid"] = False
         validation_result["errors"].append("model_coordination_manager is required")
     
-    # Phase 3e recommendations
     if not shared_utilities_manager:
         validation_result["warnings"].append("shared_utilities_manager not provided - reduced error handling capabilities")
-        validation_result["recommendations"].append("Include SharedUtilitiesManager for Phase 3e enhanced error handling")
+        validation_result["recommendations"].append("Include SharedUtilitiesManager")
     
     if not learning_system_manager:
         validation_result["warnings"].append("learning_system_manager not provided - no adaptive learning")
-        validation_result["recommendations"].append("Include LearningSystemManager for Phase 3e adaptive learning capabilities")
+        validation_result["recommendations"].append("Include LearningSystemManager")
     
     # Determine configuration phase
     if shared_utilities_manager and learning_system_manager:
@@ -520,9 +504,4 @@ __all__ = [
     "validate_crisis_analyzer_dependencies",
 ]
 
-logger.info("✅ Enhanced Analysis Package v3.1-3e-4.2-1 loaded:")
-logger.info("   🎯 12+ analysis methods consolidated into CrisisAnalyzer")
-logger.info("   🧠 LearningSystemManager integration for adaptive analysis")
-logger.info("   🛠️ SharedUtilitiesManager integration for resilient error handling")
-logger.info("   🔄 Backward compatibility maintained with existing functionality")
-logger.info("   📈 Phase 3e Step 4.2 analysis method consolidation complete!")
+logger.info("✅ Analysis Package Loaded:")

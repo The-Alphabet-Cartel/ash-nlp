@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Pattern Manager for Ash NLP Service - OPTIMIZED
 ---
-FILE VERSION: v3.1-3e-6-3
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3e Sub-step 5.3 - PatternDetectionManager cleanup + optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -192,7 +192,7 @@ class PatternDetectionManager:
                             'context_required': context_required,
                             'confidence': min(weight + 0.1, 1.0),  # Slight confidence boost for matches
                             'category_description': category_description,
-                            'matched_via': 'enhanced_patterns_v3.1'
+                            'matched_via': 'enhanced_patterns'
                         }
                         
                         patterns_found.append(pattern_result)
@@ -425,7 +425,7 @@ class PatternDetectionManager:
                 'confidence_score': enhanced_analysis.get('confidence_score', 0.0),
                 'safety_flags': safety_flags,
                 'critical_patterns_count': len(safety_flags.get('critical_patterns_detected', [])),
-                'source': 'analyze_enhanced_patterns_v3.1_phase_3e',
+                'source': 'analyze_enhanced_patterns',
                 'phase_3e_migration_complete': True
             }
             
@@ -940,7 +940,7 @@ class PatternDetectionManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_pattern_detection_manager(config_manager: UnifiedConfigManager) -> PatternDetectionManager:

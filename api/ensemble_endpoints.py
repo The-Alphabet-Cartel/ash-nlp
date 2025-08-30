@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-3
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3e, Step 5.6 - Integration Testing Updates
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 
 def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pattern_result: Dict[str, Any], crisis_threshold_manager=None) -> Dict[str, Any]:
     """
-    Phase 3e: Combine ensemble and pattern analysis results with enhanced error handling
     Mode-aware integration with dynamic threshold configuration
     
     Args:
@@ -94,7 +93,6 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
                     logger.warning(f"Error processing pattern: {e}")
                     continue
         
-        # Phase 3e: Mode-aware ensemble prediction to crisis level mapping
         final_crisis_level = 'none'
         final_confidence = ensemble_confidence
         integration_reasoning = []
@@ -202,7 +200,6 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
         except Exception as e:
             logger.warning(f"Error processing ensemble categories: {e}")
         
-        # Phase 3e: Determine staff review requirement with enhanced error handling
         staff_review_required = False
         if crisis_threshold_manager:
             try:
@@ -279,7 +276,7 @@ def _get_fallback_pattern_config() -> Dict[str, float]:
 
 def _map_ensemble_prediction_to_crisis_level(prediction: str, confidence: float, crisis_mapping: Dict[str, float]) -> str:
     """
-    Phase 3e: Map ensemble prediction to crisis level with enhanced error handling
+    Map ensemble prediction to crisis level with enhanced error handling
     """
     try:
         pred_lower = prediction.lower()
@@ -350,8 +347,7 @@ def max_crisis_level(level1: str, level2: str) -> str:
 
 def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, pattern_detection_manager=None, crisis_threshold_manager=None):
     """
-    Phase 3e: Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
-    Clean v3.1 implementation with improved error handling and Phase 3e patterns
+    Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
     
     Args:
         app: FastAPI application instance
@@ -362,7 +358,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     """
     
     # ========================================================================
-    # ENHANCED VALIDATION - Phase 3e
+    # ENHANCED VALIDATION
     # ========================================================================
     
     if not crisis_analyzer:
@@ -385,7 +381,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
         logger.error(f"Failed to load Pydantic models: {e}")
         raise RuntimeError(f"Pydantic model loading failed: {e}")
     
-    # Phase 3e: Enhanced threshold manager validation
     if crisis_threshold_manager:
         try:
             current_mode = crisis_threshold_manager.get_current_ensemble_mode()
@@ -399,22 +394,19 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     else:
         logger.warning("CrisisThresholdManager not provided - using fallback thresholds")
     
-    logger.info("Adding Clean v3.1 Three Zero-Shot Model Ensemble endpoints (Phase 3e)")
+    logger.info("Adding Clean v3.1 Three Zero-Shot Model Ensemble endpoints")
     
     # ========================================================================
-    # ENSEMBLE ANALYSIS ENDPOINT - Phase 3e Enhanced
+    # ENSEMBLE ANALYSIS ENDPOINT
     # ========================================================================
     @app.post("/analyze", response_model=models['CrisisResponse'])
     async def analyze_message_clean(request: models['MessageRequest']):
         """
-        Clean v3.1 Architecture: Single Analysis via CrisisAnalyzer
-        Phase 3e: Enhanced error handling and validation
-        
         Uses CrisisAnalyzer as the single source of truth for all analysis logic
         """
         try:
             start_time = time.time()
-            logger.debug(f"Clean v3.1 Architecture: Analyzing message from user {request.user_id}")
+            logger.debug(f"Clean Architecture: Analyzing message from user {request.user_id}")
             
             # Enhanced validation
             if not crisis_analyzer:
@@ -478,18 +470,17 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     detected_categories=complete_analysis.get('detected_categories', []),
                     method=complete_analysis.get('method', 'crisis_analyzer_complete_phase_3e'),
                     processing_time_ms=processing_time_ms,
-                    model_info=complete_analysis.get('model_info', 'Clean v3.1 Architecture - CrisisAnalyzer Complete (Phase 3e)'),
+                    model_info=complete_analysis.get('model_info', 'Clean Architecture - CrisisAnalyzer Complete'),
                     reasoning=complete_analysis.get('reasoning', 'Single analysis via CrisisAnalyzer with enhanced validation'),
                     analysis={
                         'complete_analysis': complete_analysis,
-                        'architecture': 'clean_v3.1',
+                        'architecture': 'clean',
                         'redundant_processing': False,
                         'feature_flags_respected': True,
                         'api_processing_time_ms': processing_time_ms,
                         'phase_3e_enhanced': True,
                         'enhanced_validation': True,
-                        'context_analysis_available': bool(analysis_results.get('context_analysis')),
-                        'note': 'Phase 3e: Enhanced error handling and validation applied'
+                        'context_analysis_available': bool(analysis_results.get('context_analysis'))
                     }
                 )
             except Exception as e:
@@ -508,7 +499,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             
             logger.debug(f"Clean Architecture Result: {crisis_level} (conf: {confidence_score:.3f}) via {method}")
             logger.debug(f"Feature flags applied: {feature_flags}")
-            logger.info(f"Phase 3e Enhancement: API response extraction successful with validation")
+            logger.info(f"API response extraction successful with validation")
             
             return response
             
@@ -528,11 +519,11 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     detected_categories=[],
                     method='error_clean_architecture_phase_3e',
                     processing_time_ms=processing_time_ms,
-                    model_info='Clean v3.1 Architecture - Error (Phase 3e)',
+                    model_info='Clean Architecture - Error',
                     reasoning=f"Error during clean analysis: {str(e)}",
                     analysis={
                         'error': str(e),
-                        'architecture': 'clean_v3_1_error_handling',
+                        'architecture': 'clean_error_handling',
                         'processing_time_ms': processing_time_ms,
                         'phase_3e_enhanced': True
                     }
@@ -545,13 +536,13 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 )
     
     # ========================================================================
-    # HEALTH CHECK ENDPOINT - Phase 3e Enhanced
+    # HEALTH CHECK ENDPOINT
     # ========================================================================
     
     @app.get("/health")
     async def ensemble_health_check():
         """
-        Phase 3e: Health check for ensemble system with enhanced validation
+        Health check for ensemble system with validation
         """
         start_time = time.time()
         
@@ -578,7 +569,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 except Exception as e:
                     pattern_info = {'error': str(e)}
             
-            # Phase 3e: Enhanced threshold manager validation
             threshold_manager_status = crisis_threshold_manager is not None
             threshold_info = {}
             if crisis_threshold_manager:
@@ -601,7 +591,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 "timestamp": time.time(),
                 "processing_time_ms": processing_time_ms,
                 "phase": "3e",
-                "architecture": "clean_v3_1",
+                "architecture": "clean",
                 "enhanced_validation": True,
                 "components": {
                     "ensemble_models": {
@@ -635,23 +625,23 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 "processing_time_ms": (time.time() - start_time) * 1000,
                 "error": str(e),
                 "phase": "3e",
-                "architecture": "clean_v3_1",
+                "architecture": "clean",
                 "enhanced_validation": True
             }
     
     # ========================================================================
-    # CONFIGURATION AND STATUS ENDPOINTS - Phase 3e Enhanced
+    # CONFIGURATION AND STATUS ENDPOINTS
     # ========================================================================
     
     @app.get("/ensemble/config")
     async def get_ensemble_configuration():
-        """Get current ensemble configuration with enhanced validation - Phase 3e"""
+        """Get current ensemble configuration with validation"""
         try:
             config = {
                 "ensemble_method": "three_zero_shot_models",
                 "models_loaded": False,
                 "phase": "3e",
-                "architecture": "clean_v3_1",
+                "architecture": "clean",
                 "enhanced_validation": True
             }
             
@@ -694,10 +684,8 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             logger.error(f"Error getting ensemble configuration: {e}")
             raise HTTPException(status_code=500, detail=f"Configuration error: {str(e)}")
     
-    logger.info("Clean v3.1 Phase 3e Three Zero-Shot Model Ensemble endpoints configured successfully")
-    logger.info("Phase 3e Enhancement: Enhanced error handling and validation applied throughout")
+    logger.info("Zero-Shot Model Ensemble endpoints configured successfully")
     
-    # Phase 3e: Enhanced configuration summary logging
     if crisis_threshold_manager:
         try:
             current_mode = crisis_threshold_manager.get_current_ensemble_mode()
@@ -707,4 +695,4 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
         except Exception as e:
             logger.warning(f"Could not log threshold configuration: {e}")
     
-    logger.info("Phase 3e Step 5.6: Ensemble endpoints ready for integration testing")
+    logger.info("Ensemble endpoints ready")

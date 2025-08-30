@@ -579,7 +579,7 @@ class AnalysisConfigManager:
             }
 
 # ============================================================================
-# Factory Function - Clean v3.1 Architecture Compliance (RENAMED)
+# Factory Function - Clean Architecture Compliance
 # ============================================================================
 
 def create_analysis_config_manager(config_manager) -> AnalysisConfigManager:

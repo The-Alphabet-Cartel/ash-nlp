@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ash-NLP Main Application Entry Point for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -63,7 +63,6 @@ from api.ensemble_endpoints import add_ensemble_endpoints
 def setup_unified_logging(unified_config_manager):
     """
     Setup colorlog logging with unified configuration management
-    Phase 3d Step 9: Uses UnifiedConfigManager for all logging configuration
     """
     try:
         # Get logging configuration through unified config
@@ -135,7 +134,6 @@ def setup_unified_logging(unified_config_manager):
 def initialize_unified_managers():
     """
     Initialize all managers using UnifiedConfigManager
-    Phase 3d Step 9: Complete unified configuration architecture
     """
     logger = logging.getLogger(__name__)
     logger.info("=" * 70)
@@ -368,7 +366,6 @@ def initialize_unified_managers():
 def create_fastapi_app():
     """
     Create FastAPI application with unified configuration
-    Phase 3d Step 9: Complete unified configuration integration
     """
     logger = logging.getLogger(__name__)
     
@@ -381,7 +378,7 @@ def create_fastapi_app():
         # Create FastAPI app
         app = FastAPI(
             title="Ash-NLP Crisis Detection Service",
-            description="LGBTQIA+ Mental Health Crisis Detection API with Clean v3.1 Architecture",
+            description="LGBTQIA+ Mental Health Crisis Detection API with Clean Architecture",
             version="3.1d-step9",
             docs_url="/docs",
             redoc_url="/redoc"
@@ -390,7 +387,7 @@ def create_fastapi_app():
         # Add health endpoint with unified configuration status
         @app.get("/health")
         async def health_check():
-            """Enhanced health check with unified configuration status"""
+            """Health check"""
             try:
                 # Get storage status if available
                 storage_status = "available" if managers.get('storage_config') else "unavailable"
@@ -399,7 +396,7 @@ def create_fastapi_app():
                     "status": "healthy",
                     "timestamp": time.time(),
                     "version": "3.1d",
-                    "architecture": "clean_v3.1_unified_config",
+                    "architecture": "clean",
                     "phase_3d": "operational",
                     "unified_config_manager": "active",
                     "managers_loaded": list(managers.keys()),
@@ -471,7 +468,7 @@ if __name__ == "__main__":
     import time
     
     try:
-        print("🎉 Starting Ash-NLP Crisis Detection Service v3.1d Step 9")
+        print("🎉 Starting Ash-NLP Crisis Detection Service")
         print("🏳️‍🌈 Serving The Alphabet Cartel LGBTQIA+ Community")
         print("🏛️ Repository: https://github.com/the-alphabet-cartel/ash-nlp")
         print("💬 Discord: https://discord.gg/alphabetcartel")
@@ -531,7 +528,3 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"❌ Application startup failed: {e}")
         raise
-
-# ============================================================================
-# NO MODULE-LEVEL APP CREATION - ONLY FOR DIRECT EXECUTION
-# ============================================================================

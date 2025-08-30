@@ -537,7 +537,7 @@ class ZeroShotManager:
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_zero_shot_manager(unified_config_manager) -> ZeroShotManager:

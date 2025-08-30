@@ -5,7 +5,7 @@
   "detected_categories": [],
   "method": "enhanced_three_step_analysis",
   "processing_time_ms": 566.6120052337646,
-  "model_info": "Clean v3.1 Architecture - CrisisAnalyzer Complete (Phase 3e)",
+  "model_info": "Clean Architecture - CrisisAnalyzer Complete",
   "reasoning": "Single analysis via CrisisAnalyzer with enhanced validation",
   "analysis": {
     "complete_analysis": {
