@@ -850,22 +850,7 @@ class CrisisThresholdManager:
             'crisis_level_mapping': self.get_crisis_level_mapping_for_mode(),
             'staff_review_thresholds': self.get_staff_review_thresholds_for_mode(),
             'validation_status': self.get_validation_status(),
-            'available_modes': list(self.threshold_config.get('crisis_threshold_by_mode', {}).keys()) if self.threshold_config else [],
-            'phase_3e_changes': {
-                'sub_step_5_2_completed': 'Methods moved to CrisisAnalyzer and LearningSystemManager',
-                'step_5_7_completed': 'Manager renamed from ThresholdMappingManager to CrisisThresholdManager',
-                'crisis_analyzer_methods': [
-                    'apply_crisis_thresholds()',
-                    'calculate_crisis_level_from_confidence()',
-                    'validate_crisis_analysis_thresholds()',
-                    'get_crisis_threshold_for_mode()'
-                ],
-                'learning_system_methods': [
-                    'adapt_crisis_thresholds()'
-                ],
-                'preserved_functionality': 'All core threshold mapping and staff review functionality maintained',
-                'enhanced_specialization': 'Better separation of configuration vs analysis vs learning concerns'
-            }
+            'available_modes': list(self.threshold_config.get('crisis_threshold_by_mode', {}).keys()) if self.threshold_config else []
         }
 
 # ============================================================================

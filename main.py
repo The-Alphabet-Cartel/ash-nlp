@@ -397,7 +397,6 @@ def create_fastapi_app():
                     "timestamp": time.time(),
                     "version": "3.1d",
                     "architecture": "clean",
-                    "phase_3d": "operational",
                     "unified_config_manager": "active",
                     "managers_loaded": list(managers.keys()),
                     "total_managers": len(managers),

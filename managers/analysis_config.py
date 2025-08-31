@@ -449,14 +449,12 @@ class AnalysisConfigManager:
             'architecture': 'clean-v3.1-crisis-analysis-consolidated', 
             'json_version': metadata.get('configuration_version', 'unknown'),
             'compliance': metadata.get('compliance', 'unknown'),
-            'manager_renamed': 'AnalysisParametersManager -> AnalysisConfigManager (Step 5.7)',
-            'phase_3e_step_5_1_changes': {
-                'crisis_analysis_consolidation': 'Crisis analysis methods moved to CrisisAnalyzer',
-                'learning_consolidation': 'Learning methods moved to LearningSystemManager (Step 3)',
-                'enhanced_specialization': 'Better separation of analysis vs crisis vs learning concerns',
-                'consolidated_utilities': 'Uses SharedUtilitiesManager for common operations',
-                'preserved_functionality': 'All analysis parameter functionality maintained'
-            },
+            'manager_renamed': 'AnalysisParametersManager -> AnalysisConfigManager',
+            'crisis_analysis_consolidation': 'Crisis analysis methods moved to CrisisAnalyzer',
+            'learning_consolidation': 'Learning methods moved to LearningSystemManager',
+            'enhanced_specialization': 'Better separation of analysis vs crisis vs learning concerns',
+            'consolidated_utilities': 'Uses SharedUtilitiesManager for common operations',
+            'preserved_functionality': 'All analysis parameter functionality maintained',
             'migrated_to_crisis_analyzer': {
                 'get_crisis_thresholds': 'CrisisAnalyzer.get_analysis_crisis_thresholds()',
                 'get_analysis_timeouts': 'CrisisAnalyzer.get_analysis_timeouts()', 
@@ -521,7 +519,6 @@ class AnalysisConfigManager:
                 'warnings': warnings,
                 'parameters_validated': 'analysis-config-post-crisis-migration',
                 'json_compliance': 'v3.1' if metadata else 'partial',
-                'phase_3e_step_5_7_status': 'manager-renamed-analysis-parameters-to-analysis-config',
                 'validation_timestamp': str(datetime.now())
             }
             
@@ -558,14 +555,12 @@ class AnalysisConfigManager:
                 'contextual_weighting_enabled': True,  # v3.1 feature
                 'manager_initialized': True,
                 'configuration_loaded': self._full_config is not None,
-                'phase_3e_step_5_7_features': {
-                    'manager_renamed': 'AnalysisParametersManager -> AnalysisConfigManager',
-                    'filename_updated': 'analysis_parameters_manager.py -> analysis_config.py',
-                    'crisis_analysis_migrated': 'Methods moved to CrisisAnalyzer',
-                    'learning_system_migrated': 'Methods moved to LearningSystemManager',
-                    'preserved_core_parameters': 'Analysis parameters maintained',
-                    'enhanced_specialization': 'Better separation of concerns'
-                }
+                'manager_renamed': 'AnalysisParametersManager -> AnalysisConfigManager',
+                'filename_updated': 'analysis_parameters_manager.py -> analysis_config.py',
+                'crisis_analysis_migrated': 'Methods moved to CrisisAnalyzer',
+                'learning_system_migrated': 'Methods moved to LearningSystemManager',
+                'preserved_core_parameters': 'Analysis parameters maintained',
+                'enhanced_specialization': 'Better separation of concerns'
             }
             
         except Exception as e:

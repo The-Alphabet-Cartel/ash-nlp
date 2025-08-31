@@ -560,8 +560,7 @@ class FeatureConfigManager:
                 'core_features_enabled': all(self.get_core_system_features().values()),
                 'experimental_features_count': len(self.get_experimental_features()),
                 'learning_features_enabled': any(self.get_learning_features().values()),
-                'initialization_status': 'complete',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'complete'
             }
             
         except Exception as e:
@@ -570,8 +569,7 @@ class FeatureConfigManager:
                 'manager_version': 'v3.1e-5.5-3',
                 'phase': '3e Sub-step 5.5 Task 5',
                 'error': str(e),
-                'initialization_status': 'error',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'error'
             }
     
     def _get_feature_flag(self, category: str, feature: str, default: bool) -> bool:

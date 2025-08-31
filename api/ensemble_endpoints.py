@@ -237,8 +237,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
                 'pattern_confidence': pattern_confidence,
                 'final_determination': final_crisis_level,
                 'pattern_available': not bool(pattern_error),
-                'safety_bias_applied': crisis_threshold_manager is not None,
-                'phase_3e_enhanced': True
+                'safety_bias_applied': crisis_threshold_manager is not None
             }
         }
         
@@ -253,8 +252,7 @@ def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pat
             'model_info': 'Integration error - using conservative fallback',
             'reasoning': f"Integration failed: {str(e)}",
             'staff_review_required': True,  # Always require review on errors
-            'integration_error': str(e),
-            'phase_3e_enhanced': True
+            'integration_error': str(e)
         }
 
 def _get_fallback_crisis_mapping() -> Dict[str, float]:
@@ -468,7 +466,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     crisis_level=crisis_level,
                     confidence_score=confidence_score,
                     detected_categories=complete_analysis.get('detected_categories', []),
-                    method=complete_analysis.get('method', 'crisis_analyzer_complete_phase_3e'),
+                    method=complete_analysis.get('method', 'crisis_analyzer'),
                     processing_time_ms=processing_time_ms,
                     model_info=complete_analysis.get('model_info', 'Clean Architecture - CrisisAnalyzer Complete'),
                     reasoning=complete_analysis.get('reasoning', 'Single analysis via CrisisAnalyzer with enhanced validation'),
@@ -478,7 +476,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                         'redundant_processing': False,
                         'feature_flags_respected': True,
                         'api_processing_time_ms': processing_time_ms,
-                        'phase_3e_enhanced': True,
                         'enhanced_validation': True,
                         'context_analysis_available': bool(analysis_results.get('context_analysis'))
                     }
@@ -517,15 +514,14 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     crisis_level='none',
                     confidence_score=0.0,
                     detected_categories=[],
-                    method='error_clean_architecture_phase_3e',
+                    method='error_clean_architecture',
                     processing_time_ms=processing_time_ms,
                     model_info='Clean Architecture - Error',
                     reasoning=f"Error during clean analysis: {str(e)}",
                     analysis={
                         'error': str(e),
                         'architecture': 'clean_error_handling',
-                        'processing_time_ms': processing_time_ms,
-                        'phase_3e_enhanced': True
+                        'processing_time_ms': processing_time_ms
                     }
                 )
             except Exception as response_error:
@@ -613,8 +609,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     "context_analysis": True,
                     "mode_aware_thresholds": threshold_manager_status,
                     "staff_review_logic": threshold_manager_status,
-                    "enhanced_error_handling": True,
-                    "phase_3e_validation": True
+                    "enhanced_error_handling": True
                 }
             }
             
