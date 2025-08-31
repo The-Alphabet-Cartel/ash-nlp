@@ -889,7 +889,7 @@ class PatternDetectionManager:
                 'format_pattern_output': 'SharedUtilitiesManager.format_response_data()',
                 'log_pattern_performance': 'SharedUtilitiesManager.log_performance_metric()',
                 'update_pattern_from_feedback': 'LearningSystemManager.update_patterns_from_feedback()',
-                'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()'
+                'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()',
                 'safety_features': {
                     'immediate_intervention_detection': True,
                     'auto_escalation_support': True,
