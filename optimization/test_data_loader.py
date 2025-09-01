@@ -40,7 +40,7 @@ class TestDataLoader:
     - maybe_low_none.json (50 phrases)
     """
     
-    def __init__(self, test_data_dir: str = "./phrases"):
+    def __init__(self, test_data_dir: str = "./optimization/phrases"):
         """
         Initialize test data loader
         
@@ -302,7 +302,7 @@ class TestDataLoader:
         
         return sample_dataset
 
-def create_test_data_loader(test_data_dir: str = "./phrases") -> TestDataLoader:
+def create_test_data_loader(test_data_dir: str = "./optimization/phrases") -> TestDataLoader:
     """
     Factory function to create TestDataLoader instance
     
