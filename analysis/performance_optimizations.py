@@ -59,10 +59,7 @@ class PerformanceOptimizedMethods:
     
     def _cache_critical_configurations(self):
         """
-        Cache critical configurations when all managers are available
-        
-        Uses lazy initialization approach - caches on first successful attempt
-        when all required managers are properly injected and available.
+        UPDATED: Cache critical configurations with CrisisThresholdManager integration
         """
         # Check if already cached
         if hasattr(self, '_configurations_cached') and self._configurations_cached:
@@ -101,14 +98,33 @@ class PerformanceOptimizedMethods:
             # All managers available - proceed with caching
             logger.debug("All required managers available - proceeding with configuration caching")
             
-            # Cache ensemble thresholds for all modes
+            # Cache ensemble thresholds for all modes using CrisisThresholdManager if available
             self._cached_thresholds = {}
-            for mode in ['consensus', 'majority', 'weighted']:
+            if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
                 try:
-                    self._cached_thresholds[mode] = self.analyzer.get_analysis_crisis_thresholds(mode)
+                    for mode in ['consensus', 'majority', 'weighted']:
+                        threshold_mgr = self.analyzer.crisis_threshold_manager
+                        # Get ensemble thresholds from CrisisThresholdManager
+                        ensemble_thresholds = threshold_mgr.get_ensemble_thresholds_for_mode(mode)
+                        self._cached_thresholds[mode] = ensemble_thresholds
+                        logger.debug(f"📋 Cached {mode} thresholds from CrisisThresholdManager: {ensemble_thresholds}")
                 except Exception as e:
-                    logger.warning(f"Failed to cache thresholds for mode {mode}: {e}")
-                    self._cached_thresholds[mode] = self._get_fallback_thresholds(mode)
+                    logger.warning(f"Failed to cache thresholds from CrisisThresholdManager: {e}")
+                    # Fall back to analyzer method
+                    for mode in ['consensus', 'majority', 'weighted']:
+                        try:
+                            self._cached_thresholds[mode] = self.analyzer.get_analysis_crisis_thresholds(mode)
+                        except Exception as e2:
+                            logger.warning(f"Failed to cache thresholds for mode {mode}: {e2}")
+                            self._cached_thresholds[mode] = self._get_fallback_thresholds(mode)
+            else:
+                logger.info("📋 CrisisThresholdManager not available, using analyzer methods for threshold caching")
+                for mode in ['consensus', 'majority', 'weighted']:
+                    try:
+                        self._cached_thresholds[mode] = self.analyzer.get_analysis_crisis_thresholds(mode)
+                    except Exception as e:
+                        logger.warning(f"Failed to cache thresholds for mode {mode}: {e}")
+                        self._cached_thresholds[mode] = self._get_fallback_thresholds(mode)
             
             # Cache algorithm parameters
             try:
@@ -117,12 +133,34 @@ class PerformanceOptimizedMethods:
                 logger.warning(f"Failed to cache algorithm parameters: {e}")
                 self._cached_algorithm_params = self._get_fallback_algorithm_params()
             
-            # Cache pattern weights
-            try:
-                self._cached_pattern_weights = self.analyzer.get_analysis_pattern_weights()
-            except Exception as e:
-                logger.warning(f"Failed to cache pattern weights: {e}")
-                self._cached_pattern_weights = self._get_fallback_pattern_weights()
+            # Cache pattern weights from CrisisThresholdManager if available
+            if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
+                try:
+                    pattern_config = self.analyzer.crisis_threshold_manager.get_pattern_integration_config()
+                    self._cached_pattern_weights = {
+                        'ensemble_weight': pattern_config.get('ensemble_weight', 0.6),
+                        'pattern_weight': pattern_config.get('pattern_weight', 0.4),
+                        'patterns_crisis': 0.6,  # Keep backward compatibility
+                        'community_patterns': 0.3,
+                        'patterns_context': 0.4,
+                        'temporal_patterns': 0.2
+                    }
+                    logger.debug("📋 Cached pattern weights from CrisisThresholdManager")
+                except Exception as e:
+                    logger.warning(f"Failed to cache pattern weights from CrisisThresholdManager: {e}")
+                    # Fall back to existing logic
+                    try:
+                        self._cached_pattern_weights = self.analyzer.get_analysis_pattern_weights()
+                    except Exception as e2:
+                        logger.warning(f"Failed to cache pattern weights: {e2}")
+                        self._cached_pattern_weights = self._get_fallback_pattern_weights()
+            else:
+                # Use existing logic
+                try:
+                    self._cached_pattern_weights = self.analyzer.get_analysis_pattern_weights()
+                except Exception as e:
+                    logger.warning(f"Failed to cache pattern weights: {e}")
+                    self._cached_pattern_weights = self._get_fallback_pattern_weights()
             
             # Cache confidence boosts
             try:
@@ -148,7 +186,7 @@ class PerformanceOptimizedMethods:
             self._configurations_cached = True
             self._using_runtime_access = False
             
-            logger.info("Critical configurations cached successfully for performance optimization")
+            logger.info("📋 Critical configurations cached successfully with CrisisThresholdManager integration")
             logger.debug(f"Cached: {len(self._cached_thresholds)} threshold modes, "
                         f"{len(self._cached_algorithm_params)} algorithm params, "
                         f"{len(self._cached_pattern_weights)} pattern weights, "
@@ -332,6 +370,8 @@ class PerformanceOptimizedMethods:
         """
         Direct ensemble classification without helper delegation (~18ms improvement)
         Synchronous implementation to eliminate async/sync conversion overhead (~22ms)
+        
+        FIXED: Now properly reports the actual ensemble method being used
         """
         try:
             if not self.analyzer.model_coordination_manager:
@@ -357,12 +397,15 @@ class PerformanceOptimizedMethods:
             # Direct ensemble voting using cached mode
             ensemble_score = self._fast_ensemble_voting(model_results, self._cached_ensemble_mode)
             
+            # FIXED: Report the actual ensemble method being used
+            method_name = f"optimized_{self._cached_ensemble_mode}_ensemble"
+            
             return {
                 'score': ensemble_score,
                 'confidence': min(0.9, ensemble_score + 0.1),
                 'individual_results': model_results,
-                'ensemble_mode': self._cached_ensemble_mode,
-                'method': 'optimized_direct_ensemble'
+                'ensemble_mode': self._cached_ensemble_mode,  # This was already correct
+                'method': method_name  # FIXED: Now shows the actual method
             }
             
         except Exception as e:
@@ -730,16 +773,41 @@ class PerformanceOptimizedMethods:
     
     def _fast_score_combination(self, ensemble_result: Dict, pattern_result: Dict) -> float:
         """
-        Fast score combination using cached weights (~12ms improvement)
+        ENHANCED: Fast score combination that respects pattern integration config
+        
+        Now uses CrisisThresholdManager for pattern integration weights if available
         """
         try:
             ensemble_score = ensemble_result.get('score', 0.0)
             pattern_score = pattern_result.get('score', 0.0)
             
-            # Use cached pattern weights
-            weights = self._get_cached_or_runtime_config('pattern_weights')
-            ensemble_weight = weights.get('ensemble_weight', 0.6)
-            pattern_weight = weights.get('pattern_weight', 0.4)
+            # Try to get pattern integration config from CrisisThresholdManager
+            if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
+                try:
+                    pattern_config = self.analyzer.crisis_threshold_manager.get_pattern_integration_config()
+                    ensemble_weight = pattern_config.get('ensemble_weight', 0.6)
+                    pattern_weight = pattern_config.get('pattern_weight', 0.4)
+                    pattern_multiplier = pattern_config.get('pattern_weight_multiplier', 1.2)
+                    logger.debug(f"🔧 Using CrisisThresholdManager pattern config: ensemble={ensemble_weight}, pattern={pattern_weight}, multiplier={pattern_multiplier}")
+                except Exception as e:
+                    logger.warning(f"⚠️ Pattern config from CrisisThresholdManager failed: {e}")
+                    # Fall back to cached weights
+                    weights = self._get_cached_or_runtime_config('pattern_weights')
+                    ensemble_weight = weights.get('ensemble_weight', 0.6)
+                    pattern_weight = weights.get('pattern_weight', 0.4)
+                    pattern_multiplier = 1.0
+            else:
+                # Use cached pattern weights
+                weights = self._get_cached_or_runtime_config('pattern_weights')
+                ensemble_weight = weights.get('ensemble_weight', 0.6)
+                pattern_weight = weights.get('pattern_weight', 0.4)
+                pattern_multiplier = 1.0
+
+            # Apply pattern multiplier if significant pattern match
+            if pattern_score > 0.3:
+                adjusted_pattern_score = pattern_score * pattern_multiplier
+                logger.debug(f"🔧 Pattern score multiplied: {pattern_score:.3f} → {adjusted_pattern_score:.3f} (×{pattern_multiplier})")
+                pattern_score = min(1.0, adjusted_pattern_score)
 
             # Normalize weights if needed
             total_weight = ensemble_weight + pattern_weight
@@ -751,12 +819,22 @@ class PerformanceOptimizedMethods:
             
             combined_score = (ensemble_score * ensemble_weight) + (pattern_score * pattern_weight)
             
-            # Apply cached confidence boost if significant pattern match
+            # Apply confidence boost for significant pattern matches using CrisisThresholdManager config
             if pattern_score > 0.3:
-                confidence_boosts = self._get_cached_or_runtime_config('confidence_boosts')
-                confidence_boost = confidence_boosts.get('pattern_match', 0.1)
+                if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
+                    try:
+                        pattern_config = self.analyzer.crisis_threshold_manager.get_pattern_integration_config()
+                        confidence_boost = pattern_config.get('confidence_boost_limit', 0.15)
+                    except Exception:
+                        confidence_boost = 0.1
+                else:
+                    confidence_boosts = self._get_cached_or_runtime_config('confidence_boosts')
+                    confidence_boost = confidence_boosts.get('pattern_match', 0.1)
+                
                 combined_score = min(1.0, combined_score + confidence_boost)
+                logger.debug(f"🔧 Applied confidence boost: +{confidence_boost:.3f}")
             
+            logger.debug(f"🔧 Score combination: ensemble({ensemble_score:.3f}×{ensemble_weight:.2f}) + pattern({pattern_score:.3f}×{pattern_weight:.2f}) = {combined_score:.3f}")
             return max(0.0, min(1.0, combined_score))
             
         except Exception as e:
@@ -765,11 +843,24 @@ class PerformanceOptimizedMethods:
     
     def _fast_threshold_application(self, score: float) -> str:
         """
-        Fast threshold application using cached thresholds (~8ms improvement)
+        FIXED: Fast threshold application using CrisisThresholdManager properly
+        
+        This now respects mode-specific thresholds and adjusted thresholds from CrisisThresholdManager
         """
         try:
-            # Use cached thresholds for default mode
-            thresholds = self._get_cached_or_runtime_config('thresholds', 'consensus')
+            # Use CrisisThresholdManager if available for proper mode-aware thresholds
+            if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
+                try:
+                    # Use the proper crisis level determination with mode-aware thresholds
+                    crisis_level = self.analyzer.crisis_threshold_manager.determine_crisis_level(score)
+                    logger.debug(f"🎯 Threshold application via CrisisThresholdManager: {score:.3f} → {crisis_level}")
+                    return crisis_level
+                except Exception as e:
+                    logger.warning(f"⚠️ CrisisThresholdManager failed, using fallback: {e}")
+                    # Continue to fallback logic below
+            
+            # Fallback to cached thresholds if CrisisThresholdManager unavailable
+            thresholds = self._get_cached_or_runtime_config('thresholds', self._cached_ensemble_mode)
             
             if score >= thresholds.get('critical', 0.7):
                 return 'critical'
@@ -784,35 +875,90 @@ class PerformanceOptimizedMethods:
                 
         except Exception as e:
             logger.error(f"❌ Fast threshold application failed: {e}")
-            # Safe fallback
-            if score >= 0.7:
+            # Safe fallback with more aggressive thresholds (matching CrisisThresholdManager philosophy)
+            if score >= 0.75:
                 return 'critical'
-            elif score >= 0.45:
+            elif score >= 0.35:  # More aggressive like CrisisThresholdManager
                 return 'high'
             elif score >= 0.25:
                 return 'medium'
-            else:
+            elif score >= 0.12:
                 return 'low'
+            else:
+                return 'none'
     
     def _fast_ensemble_voting(self, model_results: Dict, ensemble_mode: str) -> float:
-        """Fast ensemble voting using cached mode"""
+        """
+        Fixed: Fast ensemble voting that properly implements all three modes
+        
+        Args:
+            model_results: Dictionary of model results with scores and weights
+            ensemble_mode: 'weighted', 'majority', or 'consensus'
+        
+        Returns:
+            Ensemble score based on the specified mode
+        """
         try:
             valid_results = [r for r in model_results.values() if 'score' in r]
             
             if not valid_results:
                 return 0.0
             
+            # Extract scores for mode-specific calculations
+            scores = [r.get('score', 0.0) for r in valid_results]
+            
             if ensemble_mode == 'weighted':
+                # Weighted ensemble voting - use model weights
                 total_weight = sum(r.get('weight', 0.0) for r in valid_results)
                 if total_weight > 0:
-                    return sum(r.get('score', 0.0) * r.get('weight', 0.0) for r in valid_results) / total_weight
-            
-            # Default to average (majority/consensus)
-            return sum(r.get('score', 0.0) for r in valid_results) / len(valid_results)
-            
+                    weighted_score = sum(r.get('score', 0.0) * r.get('weight', 0.0) for r in valid_results) / total_weight
+                    logger.debug(f"Weighted ensemble: {weighted_score:.3f} (total_weight: {total_weight:.3f})")
+                    return weighted_score
+                else:
+                    # Fallback to equal weighting if weights are invalid
+                    return sum(scores) / len(scores)
+                    
+            elif ensemble_mode == 'majority':
+                # Majority ensemble voting - simple average
+                avg_score = sum(scores) / len(scores)
+                logger.debug(f"Majority ensemble: {avg_score:.3f} (models: {len(scores)})")
+                return avg_score
+                
+            elif ensemble_mode == 'consensus':
+                # Consensus ensemble voting - penalize disagreement
+                if len(scores) < 2:
+                    return scores[0] if scores else 0.0
+                
+                # Calculate score standard deviation to measure agreement
+                mean_score = sum(scores) / len(scores)
+                score_variance = sum((s - mean_score)**2 for s in scores) / len(scores)
+                score_std = score_variance**0.5
+                
+                # Apply disagreement penalty (same logic as ModelCoordinationManager)
+                if score_std > 0.3:  # High disagreement
+                    # Reduce confidence in the result when models disagree
+                    consensus_score = mean_score * 0.7  # 30% penalty for disagreement
+                    logger.debug(f"Consensus ensemble: {consensus_score:.3f} (disagreement penalty applied, std: {score_std:.3f})")
+                else:
+                    # Models agree, use average score
+                    consensus_score = mean_score
+                    logger.debug(f"Consensus ensemble: {consensus_score:.3f} (models agree, std: {score_std:.3f})")
+                
+                return consensus_score
+                
+            else:
+                # Unknown mode - default to majority (simple average)
+                logger.warning(f"Unknown ensemble mode '{ensemble_mode}', defaulting to majority")
+                return sum(scores) / len(scores)
+                
         except Exception as e:
-            logger.error(f"❌ Fast ensemble voting failed: {e}")
-            return 0.0
+            logger.error(f"❌ Fast ensemble voting failed for mode '{ensemble_mode}': {e}")
+            # Safe fallback
+            try:
+                scores = [r.get('score', 0.0) for r in model_results.values() if isinstance(r, dict) and 'score' in r]
+                return sum(scores) / len(scores) if scores else 0.0
+            except:
+                return 0.0
     
     def _fast_response_assembly(self, message: str, user_id: str, channel_id: str, 
                               score: float, crisis_level: str, ensemble_result: Dict, 
