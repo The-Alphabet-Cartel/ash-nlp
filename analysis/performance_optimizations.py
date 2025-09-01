@@ -320,20 +320,53 @@ class PerformanceOptimizedMethods:
     # ========================================================================
     def refresh_cached_weights(self):
         """
-        Refresh cached model weights from current configuration
-        
-        Call this method when environment variables change to update cached weights
-        without restarting the container.
+        ENHANCED: Refresh cached model weights with forced config reload
         """
         try:
             if self.analyzer.model_coordination_manager:
-                # Refresh model weights from current config
-                self._cached_model_weights = self.analyzer.model_coordination_manager.get_normalized_weights()
-                self._cached_ensemble_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
+                # STEP 1: Force the ModelCoordinationManager to reload config from environment
+                if hasattr(self.analyzer.model_coordination_manager, 'unified_config_manager'):
+                    try:
+                        # Force the config manager to re-read environment variables
+                        config_manager = self.analyzer.model_coordination_manager.unified_config_manager
+                        
+                        # Force reload of model configuration section
+                        if hasattr(config_manager, 'reload_configuration'):
+                            config_manager.reload_configuration()
+                            logger.info("🔄 Forced UnifiedConfigManager to reload configuration")
+                        elif hasattr(config_manager, '_clear_cache'):
+                            config_manager._clear_cache()
+                            logger.info("🔄 Cleared UnifiedConfigManager cache")
+                        
+                    except Exception as e:
+                        logger.warning(f"Failed to force config reload: {e}")
                 
-                logger.info(f"🔄 Refreshed cached weights: {self._cached_model_weights}")
-                logger.info(f"🔄 Refreshed ensemble mode: {self._cached_ensemble_mode}")
+                # STEP 2: Get fresh weights from model coordination manager
+                current_weights = self.analyzer.model_coordination_manager.get_normalized_weights()
+                current_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
                 
+                # STEP 3: Update our cache
+                old_weights = self._cached_model_weights.copy()
+                old_mode = self._cached_ensemble_mode
+                
+                self._cached_model_weights = current_weights
+                self._cached_ensemble_mode = current_mode
+                
+                # STEP 4: Log changes
+                logger.info(f"🔄 Weight cache refresh:")
+                logger.info(f"   Old weights: {old_weights}")
+                logger.info(f"   New weights: {current_weights}")
+                logger.info(f"   Old mode: {old_mode}")
+                logger.info(f"   New mode: {current_mode}")
+                
+                # STEP 5: Verify changes actually occurred
+                weights_changed = old_weights != current_weights
+                mode_changed = old_mode != current_mode
+                
+                if not weights_changed and not mode_changed:
+                    logger.warning("⚠️ No changes detected after refresh - configuration may still be cached!")
+                    return False
+                    
                 return True
             else:
                 logger.warning("Cannot refresh weights: model_coordination_manager not available")
@@ -341,6 +374,45 @@ class PerformanceOptimizedMethods:
                 
         except Exception as e:
             logger.error(f"Failed to refresh cached weights: {e}")
+            return False
+
+    def force_environment_variable_reload(self):
+        """
+        NUCLEAR OPTION: Force immediate reload from environment variables
+        """
+        try:
+            # Read directly from environment variables, bypassing all caching
+            depression_weight = float(os.getenv('NLP_MODEL_DEPRESSION_WEIGHT', '0.4'))
+            sentiment_weight = float(os.getenv('NLP_MODEL_SENTIMENT_WEIGHT', '0.3'))
+            distress_weight = float(os.getenv('NLP_MODEL_DISTRESS_WEIGHT', '0.3'))
+            ensemble_mode = os.getenv('NLP_ENSEMBLE_MODE', 'majority')
+            
+            # Normalize weights
+            total_weight = depression_weight + sentiment_weight + distress_weight
+            if total_weight > 0:
+                depression_weight /= total_weight
+                sentiment_weight /= total_weight
+                distress_weight /= total_weight
+            
+            # Update cache directly
+            old_weights = self._cached_model_weights.copy()
+            old_mode = self._cached_ensemble_mode
+            
+            self._cached_model_weights = {
+                'depression': depression_weight,
+                'sentiment': sentiment_weight,
+                'emotional_distress': distress_weight
+            }
+            self._cached_ensemble_mode = ensemble_mode
+            
+            logger.info("🚨 NUCLEAR RELOAD from environment variables:")
+            logger.info(f"   Old: {old_weights} ({old_mode})")
+            logger.info(f"   New: {self._cached_model_weights} ({ensemble_mode})")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Nuclear environment reload failed: {e}")
             return False
 
     def force_recache_all_configurations(self):
