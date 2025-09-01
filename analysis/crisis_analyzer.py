@@ -126,7 +126,6 @@ class CrisisAnalyzer:
         logger.info(f"   Helper files: 5 loaded (ensemble, scoring, pattern, context, tracking)")
         logger.info(f"   Zero-shot models: Implemented with ZeroShotManager integration")
         logger.info(f"   Analysis flow tracking: {'Enabled' if self.tracking_helper.enable_tracking else 'Disabled'}")
-        logger.info(f"   File size reduction: ~48% (1,940 → ~1,000 lines)")
         logger.info(f"   SharedUtilitiesManager: {'Available' if shared_utilities_manager else 'Not available'}")
         logger.info(f"   LearningSystemManager: {'Available' if learning_system_manager else 'Not available'}")
         logger.info(f"   ZeroShotManager: {'Available' if zero_shot_manager else 'Not available'}")
