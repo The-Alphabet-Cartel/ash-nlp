@@ -445,7 +445,7 @@ class WeightOptimizer:
         }
     
     def _set_temporary_weights(self, individual: Individual):
-        """Set temporary weights for evaluation and refresh system cache"""
+        """Set temporary weights for evaluation and FORCE cache refresh"""
         # Set environment variables
         os.environ['NLP_MODEL_DEPRESSION_WEIGHT'] = str(individual.depression_weight)
         os.environ['NLP_MODEL_SENTIMENT_WEIGHT'] = str(individual.sentiment_weight)
@@ -456,29 +456,59 @@ class WeightOptimizer:
                     f"weights=({individual.depression_weight:.3f}, "
                     f"{individual.sentiment_weight:.3f}, {individual.distress_weight:.3f})")
         
-        # CRITICAL: Refresh the NLP system cache to pick up new weights
+        # NUCLEAR OPTION: Force reload from environment variables
         try:
             refresh_endpoint = self.config.api_endpoint.replace('/analyze', '/ensemble/refresh-weights')
-            logger.debug(f"Triggering cache refresh at: {refresh_endpoint}")
+            logger.debug(f"FORCING nuclear cache reload at: {refresh_endpoint}")
             
-            response = requests.post(refresh_endpoint, timeout=10)
+            # Call with force_reload=true to bypass all caching
+            response = requests.post(f"{refresh_endpoint}?force_reload=true", timeout=10)
             if response.status_code == 200:
                 refresh_result = response.json()
-                logger.debug("Cache refresh successful")
+                logger.debug("Nuclear cache reload successful")
                 
-                # Log the weights that are now cached
-                if 'refresh_results' in refresh_result:
-                    perf_opt = refresh_result['refresh_results'].get('performance_optimizer', {})
-                    if 'weights' in perf_opt:
-                        logger.info(f"Cached weights updated to: {perf_opt['weights']}")
-                    if 'ensemble_mode' in perf_opt:
-                        logger.info(f"Cached ensemble mode updated to: {perf_opt['ensemble_mode']}")
+                # Verify the weights were actually updated
+                refresh_data = refresh_result.get('refresh_results', {})
+                env_data = refresh_data.get('current_environment', {})
+                perf_opt = refresh_data.get('performance_optimizer', {})
+                
+                # Log what the system saw
+                logger.info(f"Environment variables seen by API:")
+                logger.info(f"  DEPRESSION: {env_data.get('NLP_MODEL_DEPRESSION_WEIGHT')}")
+                logger.info(f"  SENTIMENT: {env_data.get('NLP_MODEL_SENTIMENT_WEIGHT')}")
+                logger.info(f"  DISTRESS: {env_data.get('NLP_MODEL_DISTRESS_WEIGHT')}")
+                logger.info(f"  MODE: {env_data.get('NLP_ENSEMBLE_MODE')}")
+                
+                if 'cached_weights' in perf_opt:
+                    cached_weights = perf_opt['cached_weights']
+                    logger.info(f"Cached weights after reload: {cached_weights}")
+                    
+                    # VERIFY the weights actually changed
+                    expected_weights = {
+                        'depression': individual.depression_weight,
+                        'sentiment': individual.sentiment_weight,
+                        'emotional_distress': individual.distress_weight
+                    }
+                    
+                    # Check if weights match (with small tolerance for normalization)
+                    weights_match = all(
+                        abs(cached_weights.get(key, 0) - expected_weights[key]) < 0.01
+                        for key in expected_weights
+                    )
+                    
+                    if weights_match:
+                        logger.info("✅ Weights successfully updated and match expected values")
+                    else:
+                        logger.error(f"❌ Weight mismatch! Expected: {expected_weights}, Got: {cached_weights}")
+                        logger.error("The system is still not reading environment variables correctly!")
+                
             else:
-                logger.warning(f"Cache refresh failed with status {response.status_code}")
+                logger.error(f"Nuclear cache reload failed with status {response.status_code}")
+                logger.error("Weights will NOT be applied - optimization results will be invalid!")
                 
         except Exception as e:
-            logger.warning(f"Failed to refresh cache - weights may not be applied: {e}")
-            logger.warning("This will cause the optimization to test the same cached weights repeatedly!")
+            logger.error(f"CRITICAL: Failed to force reload cache - weights NOT applied: {e}")
+            logger.error("This will cause the optimization to test the same cached weights repeatedly!")
     
     def _restore_environment_variables(self, backup: Dict[str, str]):
         """Restore environment variables from backup and refresh cache"""
