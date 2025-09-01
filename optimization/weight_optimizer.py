@@ -43,7 +43,7 @@ class OptimizationConfiguration:
     crossover_rate: float = 0.8
     weight_precision: float = 0.05
     performance_target_ms: float = 200.0
-    improvement_threshold: float = 0.05  # 5% improvement required
+    improvement_threshold: float = 0.02  # 2% improvement required
     k_fold_validation: int = 5
     holdout_percentage: float = 0.2
     api_endpoint: str = "http://localhost:8881/analyze"
@@ -159,11 +159,11 @@ class WeightOptimizer:
         Returns:
             Dictionary with baseline performance metrics
         """
-        logger.info("🎯 Establishing baseline performance with current weights...")
+        logger.info("🎯 Establishing baseline performance with default weights...")
         
-        # Current configuration (40/30/30 with majority mode)
+        # Current configuration (40/30/30 with consensus mode)
         baseline_individual = Individual(
-            ensemble_mode='majority',
+            ensemble_mode='consensus',
             depression_weight=0.4,
             sentiment_weight=0.3,
             distress_weight=0.3
