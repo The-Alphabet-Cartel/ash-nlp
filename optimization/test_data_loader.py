@@ -37,7 +37,7 @@ class TestDataLoader:
     - none_priority.json (50 phrases)
     - maybe_high_medium.json (50 phrases)
     - maybe_medium_low.json (50 phrases)
-    - maybe_low_none.json (50 phrases)
+    - maybe_low_none.json (45 phrases)
     """
     
     def __init__(self, test_data_dir: str = "./optimization/phrases"):
@@ -92,8 +92,8 @@ class TestDataLoader:
         logger.info(f"Total phrases loaded: {total_phrases} across {len(test_dataset)} categories")
         
         # Validate expected total
-        if total_phrases != 350:  # 7 categories × 50 phrases each
-            logger.warning(f"Expected 350 phrases, loaded {total_phrases}")
+        if total_phrases != 345:  # 7 categories × 50 phrases each
+            logger.warning(f"Expected 345 phrases, loaded {total_phrases}")
         
         return test_dataset
     
