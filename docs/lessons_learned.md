@@ -1,19 +1,18 @@
 <!-- ash-nlp/docs/lessons_learned.md -->
 <!--
-Lessons Learned for Ash-NLP Service
+Lessons Learned for Ash Service
 FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
+LAST MODIFIED: 2025-09-1
 CLEAN ARCHITECTURE: v3.1 Compliant
 -->
 # Lessons Learned - Ash-NLP v3.1 Development
 
-**Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
-**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
+**Project**: Ash-NLP v3.1  
+**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
+**FILE VERSION**: v3.1-1  
+**LAST UPDATED**: 2025-09-1  
+**CLEAN ARCHITECTURE**: Compliant  
 
 ---
 
