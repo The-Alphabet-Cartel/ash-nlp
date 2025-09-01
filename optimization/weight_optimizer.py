@@ -630,7 +630,7 @@ class WeightOptimizer:
         else:
             return f"NO IMPROVEMENT: {improvement_percentage:.2f}% change. Recommend keeping current configuration."
     
-    def save_results(self, results: Dict[str, Any], output_dir: str = "./optimization_results"):
+    def save_results(self, results: Dict[str, Any], output_dir: str = "./optimization/results"):
         """Save optimization results to files"""
         output_path = Path(output_dir)
         output_path.mkdir(exist_ok=True)
