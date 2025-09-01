@@ -288,21 +288,27 @@ class WeightOptimizer:
     
     def _evaluate_population(self, population: List[Individual]):
         """Evaluate fitness for all individuals in population"""
-        logger.info(f"Evaluating population of {len(population)} individuals...")
+        logger.info(f"🧬 Evaluating population of {len(population)} individuals...")
         
         for i, individual in enumerate(population):
             if individual.fitness == 0.0:  # Not yet evaluated
                 try:
+                    eval_start_time = time.time()
+                    logger.info(f"🧪 Evaluating individual {i+1}/{len(population)}: "
+                               f"{individual.ensemble_mode} mode, "
+                               f"weights=({individual.depression_weight:.3f}, "
+                               f"{individual.sentiment_weight:.3f}, {individual.distress_weight:.3f})")
+                    
                     performance = self._evaluate_individual(individual)
                     individual.fitness = performance['f1_score']
                     individual.performance_ms = performance['avg_response_time_ms']
                     
-                    logger.debug(f"Individual {i+1}: F1={individual.fitness:.4f}, "
-                               f"Performance={individual.performance_ms:.1f}ms, "
-                               f"Mode={individual.ensemble_mode}")
+                    eval_time = time.time() - eval_start_time
+                    logger.info(f"✅ Individual {i+1} complete: F1={individual.fitness:.4f}, "
+                               f"Performance={individual.performance_ms:.1f}ms, Time={eval_time:.1f}s")
                     
                 except Exception as e:
-                    logger.warning(f"Evaluation failed for individual {i+1}: {e}")
+                    logger.warning(f"❌ Evaluation failed for individual {i+1}: {e}")
                     individual.fitness = 0.0
                     individual.performance_ms = 999.0
     
@@ -370,8 +376,10 @@ class WeightOptimizer:
                         
                         self.total_api_calls += 1
                         
-                        if (i + 1) % 50 == 0:
-                            logger.debug(f"Evaluated {i+1}/{len(self.all_test_data)} phrases...")
+                        if (i + 1) % 25 == 0:
+                            progress_pct = ((i + 1) / len(self.all_test_data)) * 100
+                            logger.info(f"Progress: {i+1}/{len(self.all_test_data)} phrases ({progress_pct:.1f}%) - "
+                                      f"Avg response: {statistics.mean(response_times[-25:]):.1f}ms")
                     
                     else:
                         logger.warning(f"API call failed with status {response.status_code}")
