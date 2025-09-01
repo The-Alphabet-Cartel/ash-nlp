@@ -58,22 +58,68 @@
       },
       "validation": {
         "crisis_level_mapping": {
-          "type": "float",
-          "range": [0.00, 1.0],
+          "crisis_to_high": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "crisis_to_medium": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "mild_crisis_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "negative_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "unknown_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
           "ordering": "crisis_to_high > crisis_to_medium"
         },
         "ensemble_thresholds": {
-          "type": "float", 
-          "range": [0.00, 1.0],
+          "critical": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "high": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "medium": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "low": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
           "ordering": "high > medium > low"
         },
         "staff_review_thresholds": {
-          "high_always": {"type": "boolean"},
-          "medium_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-          "low_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-          "on_model_disagreement": {"type": "boolean"},
-          "gap_detection_review": {"type": "boolean"},
-          "pattern_mismatch_review": {"type": "boolean"}
+          "high_always": {
+            "type": "boolean"
+          },
+          "medium_confidence_threshold": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "low_confidence_threshold": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "on_model_disagreement": {
+            "type": "boolean"
+          },
+          "gap_detection_review": {
+            "type": "boolean"
+          },
+          "pattern_mismatch_review": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -126,22 +172,68 @@
       },
       "validation": {
         "crisis_level_mapping": {
-          "type": "float",
-          "range": [0.00, 1.0],
+          "crisis_to_high": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "crisis_to_medium": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "mild_crisis_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "negative_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "unknown_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
           "ordering": "crisis_to_high > crisis_to_medium"
         },
         "ensemble_thresholds": {
-          "type": "float",
-          "range": [0.00, 1.0],
+          "critical": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "high": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "medium": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "low": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
           "ordering": "high > medium > low"
         },
         "staff_review_thresholds": {
-          "high_always": {"type": "boolean"},
-          "medium_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-          "low_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-          "on_model_disagreement": {"type": "boolean"},
-          "gap_detection_review": {"type": "boolean"},
-          "pattern_mismatch_review": {"type": "boolean"}
+          "high_always": {
+            "type": "boolean"
+          },
+          "medium_confidence_threshold": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "low_confidence_threshold": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "on_model_disagreement": {
+            "type": "boolean"
+          },
+          "gap_detection_review": {
+            "type": "boolean"
+          },
+          "pattern_mismatch_review": {
+            "type": "boolean"
+          }
         }
       }
     },
@@ -194,22 +286,68 @@
       },
       "validation": {
         "crisis_level_mapping": {
-          "type": "float",
-          "range": [0.00, 1.0],
+          "crisis_to_high": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "crisis_to_medium": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "mild_crisis_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "negative_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "unknown_to_low": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
           "ordering": "crisis_to_high > crisis_to_medium"
         },
         "ensemble_thresholds": {
-          "type": "float",
-          "range": [0.00, 1.0],
+          "critical": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "high": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "medium": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
+          "low": {
+            "type": "float", 
+            "range": [0.001, 1.000]
+          },
           "ordering": "high > medium > low"
         },
         "staff_review_thresholds": {
-          "high_always": {"type": "boolean"},
-          "medium_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-          "low_confidence_threshold": {"type": "float", "range": [0.0, 1.0]},
-          "on_model_disagreement": {"type": "boolean"},
-          "gap_detection_review": {"type": "boolean"},
-          "pattern_mismatch_review": {"type": "boolean"}
+          "high_always": {
+            "type": "boolean"
+          },
+          "medium_confidence_threshold": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "low_confidence_threshold": {
+            "type": "float",
+            "range": [0.001, 1.000]
+          },
+          "on_model_disagreement": {
+            "type": "boolean"
+          },
+          "gap_detection_review": {
+            "type": "boolean"
+          },
+          "pattern_mismatch_review": {
+            "type": "boolean"
+          }
         }
       }
     }
@@ -233,11 +371,26 @@
         "community_pattern_boost": 1.1
       },
       "validation": {
-        "pattern_weight_multiplier": {"type": "float", "range": [0.5, 2.0]},
-        "confidence_boost_limit": {"type": "float", "range": [0.0, 0.5]},
-        "escalation_required_minimum": {"type": "string", "allowed": ["none", "low", "medium", "high"]},
-        "pattern_override_threshold": {"type": "float", "range": [0.0, 1.0]},
-        "community_pattern_boost": {"type": "float", "range": [0.5, 2.0]}
+        "pattern_weight_multiplier": {
+          "type": "float",
+          "range": [0.001, 2.000]
+        },
+        "confidence_boost_limit": {
+          "type": "float",
+          "range": [0.001, 0.500]
+        },
+        "escalation_required_minimum": {
+          "type": "string",
+          "allowed": ["none", "low", "medium", "high"]
+        },
+        "pattern_override_threshold": {
+          "type": "float",
+          "range": [0.001, 1.000]
+        },
+        "community_pattern_boost": {
+          "type": "float",
+          "range": [0.001, 2.000]
+        }
       }
     },
     
@@ -254,10 +407,21 @@
         "min_agreement_score": 0.6
       },
       "validation": {
-        "sensitivity_threshold": {"type": "float", "range": [0.0, 1.0]},
-        "auto_escalation": {"type": "boolean"},
-        "max_confidence_spread": {"type": "float", "range": [0.0, 1.0]},
-        "min_agreement_score": {"type": "float", "range": [0.0, 1.0]}
+        "sensitivity_threshold": {
+          "type": "float",
+          "range": [0.001, 1.000]
+        },
+        "auto_escalation": {
+          "type": "boolean"
+        },
+        "max_confidence_spread": {
+          "type": "float",
+          "range": [0.001, 1.000]
+        },
+        "min_agreement_score": {
+          "type": "float",
+          "range": [0.001, 1.000]
+        }
       }
     },
 
@@ -274,10 +438,18 @@
         "cross_mode_check": true
       },
       "validation": {
-        "strict_mode": {"type": "boolean"},
-        "fail_on_invalid": {"type": "boolean"},
-        "log_warnings": {"type": "boolean"},
-        "cross_mode_check": {"type": "boolean"}
+        "strict_mode": {
+          "type": "boolean"
+        },
+        "fail_on_invalid": {
+          "type": "boolean"
+        },
+        "log_warnings": {
+          "type": "boolean"
+        },
+        "cross_mode_check": {
+          "type": "boolean"
+        }
       }
     }
   }
