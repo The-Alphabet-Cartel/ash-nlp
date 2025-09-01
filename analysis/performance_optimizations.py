@@ -889,7 +889,10 @@ class PerformanceOptimizedMethods:
     
     def _fast_ensemble_voting(self, model_results: Dict, ensemble_mode: str) -> float:
         """
-        Fixed: Fast ensemble voting that properly implements all three modes
+        FIXED: Fast ensemble voting that respects weights in ALL modes
+        
+        The previous implementation ignored weights in 'majority' and 'consensus' modes.
+        This fix ensures all modes use model weights, making weight optimization meaningful.
         
         Args:
             model_results: Dictionary of model results with scores and weights
@@ -904,55 +907,44 @@ class PerformanceOptimizedMethods:
             if not valid_results:
                 return 0.0
             
-            # Extract scores for mode-specific calculations
+            # Extract scores and weights for ALL modes
             scores = [r.get('score', 0.0) for r in valid_results]
+            weights = [r.get('weight', 0.0) for r in valid_results]
+            total_weight = sum(weights)
             
-            if ensemble_mode == 'weighted':
-                # Weighted ensemble voting - use model weights
-                total_weight = sum(r.get('weight', 0.0) for r in valid_results)
-                if total_weight > 0:
-                    weighted_score = sum(r.get('score', 0.0) * r.get('weight', 0.0) for r in valid_results) / total_weight
-                    logger.debug(f"Weighted ensemble: {weighted_score:.3f} (total_weight: {total_weight:.3f})")
-                    return weighted_score
+            # Calculate weighted score for ALL modes (weights always matter!)
+            if total_weight > 0:
+                weighted_score = sum(score * weight for score, weight in zip(scores, weights)) / total_weight
+                logger.debug(f"{ensemble_mode} ensemble (weighted): {weighted_score:.3f} (total_weight: {total_weight:.3f})")
+                
+                if ensemble_mode == 'consensus':
+                    # Apply consensus-specific logic to the weighted score
+                    if len(scores) >= 2:
+                        # Calculate disagreement based on weighted mean
+                        score_variance = sum(weight * (score - weighted_score)**2 for score, weight in zip(scores, weights)) / total_weight
+                        score_std = score_variance**0.5
+                        
+                        # Apply disagreement penalty for consensus
+                        if score_std > 0.3:  # High disagreement
+                            consensus_score = weighted_score * 0.7  # 30% penalty
+                            logger.debug(f"Consensus disagreement penalty: {weighted_score:.3f} -> {consensus_score:.3f} (std: {score_std:.3f})")
+                            return consensus_score
+                        else:
+                            logger.debug(f"Consensus agreement: {weighted_score:.3f} (std: {score_std:.3f})")
+                            return weighted_score
+                    else:
+                        return weighted_score
                 else:
-                    # Fallback to equal weighting if weights are invalid
-                    return sum(scores) / len(scores)
-                    
-            elif ensemble_mode == 'majority':
-                # Majority ensemble voting - simple average
+                    # For 'weighted' and 'majority' modes, just return the weighted score
+                    return weighted_score
+            else:
+                # Fallback to simple average if weights are invalid
                 avg_score = sum(scores) / len(scores)
-                logger.debug(f"Majority ensemble: {avg_score:.3f} (models: {len(scores)})")
+                logger.debug(f"{ensemble_mode} ensemble (simple avg fallback): {avg_score:.3f} (invalid weights)")
                 return avg_score
                 
-            elif ensemble_mode == 'consensus':
-                # Consensus ensemble voting - penalize disagreement
-                if len(scores) < 2:
-                    return scores[0] if scores else 0.0
-                
-                # Calculate score standard deviation to measure agreement
-                mean_score = sum(scores) / len(scores)
-                score_variance = sum((s - mean_score)**2 for s in scores) / len(scores)
-                score_std = score_variance**0.5
-                
-                # Apply disagreement penalty (same logic as ModelCoordinationManager)
-                if score_std > 0.3:  # High disagreement
-                    # Reduce confidence in the result when models disagree
-                    consensus_score = mean_score * 0.7  # 30% penalty for disagreement
-                    logger.debug(f"Consensus ensemble: {consensus_score:.3f} (disagreement penalty applied, std: {score_std:.3f})")
-                else:
-                    # Models agree, use average score
-                    consensus_score = mean_score
-                    logger.debug(f"Consensus ensemble: {consensus_score:.3f} (models agree, std: {score_std:.3f})")
-                
-                return consensus_score
-                
-            else:
-                # Unknown mode - default to majority (simple average)
-                logger.warning(f"Unknown ensemble mode '{ensemble_mode}', defaulting to majority")
-                return sum(scores) / len(scores)
-                
         except Exception as e:
-            logger.error(f"❌ Fast ensemble voting failed for mode '{ensemble_mode}': {e}")
+            logger.error(f"Fast ensemble voting failed for mode '{ensemble_mode}': {e}")
             # Safe fallback
             try:
                 scores = [r.get('score', 0.0) for r in model_results.values() if isinstance(r, dict) and 'score' in r]
