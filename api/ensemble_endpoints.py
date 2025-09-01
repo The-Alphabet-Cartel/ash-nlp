@@ -624,8 +624,45 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             }
     
     # ========================================================================
-    # WEIGHTS REFRESH
+    # WEIGHTS
     # ========================================================================
+    @app.post("/ensemble/set-weights")
+    async def set_ensemble_weights(
+        depression_weight: float,
+        sentiment_weight: float,
+        distress_weight: float,
+        ensemble_mode: str = "majority"
+    ):
+        """Directly set weights without environment variables"""
+        try:
+            # Normalize weights
+            total = depression_weight + sentiment_weight + distress_weight
+            if total > 0:
+                depression_weight /= total
+                sentiment_weight /= total
+                distress_weight /= total
+            
+            # Update performance optimizer directly
+            if hasattr(crisis_analyzer, 'performance_optimizer'):
+                crisis_analyzer.performance_optimizer._cached_model_weights = {
+                    'depression': depression_weight,
+                    'sentiment': sentiment_weight,
+                    'emotional_distress': distress_weight
+                }
+                crisis_analyzer.performance_optimizer._cached_ensemble_mode = ensemble_mode
+                
+            return {
+                'status': 'success',
+                'weights': {
+                    'depression': depression_weight,
+                    'sentiment': sentiment_weight,
+                    'emotional_distress': distress_weight
+                },
+                'ensemble_mode': ensemble_mode
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
     @app.post("/ensemble/refresh-weights")
     async def refresh_ensemble_weights(force_reload: bool = False):
         """
