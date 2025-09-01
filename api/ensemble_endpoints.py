@@ -634,6 +634,8 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
         Args:
             force_reload: If true, bypass all caching and read directly from environment
         """
+        import os
+        
         try:
             start_time = time.time()
             refresh_results = {}
