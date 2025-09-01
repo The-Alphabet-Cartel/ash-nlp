@@ -302,7 +302,7 @@ class TestDataLoader:
         
         return sample_dataset
 
-def create_test_data_loader(test_data_dir: str = "./test_data") -> TestDataLoader:
+def create_test_data_loader(test_data_dir: str = "./phrases") -> TestDataLoader:
     """
     Factory function to create TestDataLoader instance
     
