@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 def main():
     """Main optimization execution"""
     parser = argparse.ArgumentParser(description='Ash-NLP Ensemble Weight Optimization')
-    parser.add_argument('--test-data-dir', default='./phrases', 
+    parser.add_argument('--test-data-dir', default='./optimization/phrases', 
                        help='Directory containing test data JSON files')
     parser.add_argument('--generations', type=int, default=50,
                        help='Number of evolutionary algorithm generations')
