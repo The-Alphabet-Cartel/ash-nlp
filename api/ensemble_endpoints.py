@@ -627,44 +627,56 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     # WEIGHTS REFRESH
     # ========================================================================
     @app.post("/ensemble/refresh-weights")
-    async def refresh_ensemble_weights():
+    async def refresh_ensemble_weights(force_reload: bool = False):
         """
         Refresh cached ensemble weights from current environment variables
         
-        This endpoint allows the weight optimizer to trigger cache refresh
-        after changing environment variables.
+        Args:
+            force_reload: If true, bypass all caching and read directly from environment
         """
         try:
             start_time = time.time()
             refresh_results = {}
             
+            # Show current environment variables for debugging
+            env_vars = {
+                'NLP_MODEL_DEPRESSION_WEIGHT': os.getenv('NLP_MODEL_DEPRESSION_WEIGHT', 'not_set'),
+                'NLP_MODEL_SENTIMENT_WEIGHT': os.getenv('NLP_MODEL_SENTIMENT_WEIGHT', 'not_set'),
+                'NLP_MODEL_DISTRESS_WEIGHT': os.getenv('NLP_MODEL_DISTRESS_WEIGHT', 'not_set'),
+                'NLP_ENSEMBLE_MODE': os.getenv('NLP_ENSEMBLE_MODE', 'not_set')
+            }
+            refresh_results['current_environment'] = env_vars
+            
             # Refresh CrisisAnalyzer performance optimizer cache
             if hasattr(crisis_analyzer, 'performance_optimizer'):
                 try:
-                    success = crisis_analyzer.performance_optimizer.refresh_cached_weights()
+                    if force_reload:
+                        # Use nuclear option to force environment variable reload
+                        success = crisis_analyzer.performance_optimizer.force_environment_variable_reload()
+                        method = 'nuclear_reload'
+                    else:
+                        # Try normal refresh first
+                        success = crisis_analyzer.performance_optimizer.refresh_cached_weights()
+                        method = 'normal_refresh'
+                        
+                        # If normal refresh failed, try nuclear option
+                        if not success:
+                            logger.warning("Normal refresh failed, trying nuclear reload...")
+                            success = crisis_analyzer.performance_optimizer.force_environment_variable_reload()
+                            method = 'nuclear_fallback'
+                    
                     refresh_results['performance_optimizer'] = {
                         'success': success,
-                        'weights': crisis_analyzer.performance_optimizer._cached_model_weights,
-                        'ensemble_mode': crisis_analyzer.performance_optimizer._cached_ensemble_mode
+                        'method': method,
+                        'cached_weights': crisis_analyzer.performance_optimizer._cached_model_weights,
+                        'cached_mode': crisis_analyzer.performance_optimizer._cached_ensemble_mode
                     }
-                    logger.info(f"Performance optimizer cache refreshed: {success}")
+                    
+                    logger.info(f"Performance optimizer cache refreshed via {method}: {success}")
+                    
                 except Exception as e:
                     refresh_results['performance_optimizer'] = {'error': str(e)}
                     logger.error(f"Failed to refresh performance optimizer cache: {e}")
-            
-            # Also refresh ModelCoordinationManager if accessible
-            if hasattr(crisis_analyzer, 'model_coordination_manager'):
-                try:
-                    current_weights = crisis_analyzer.model_coordination_manager.get_normalized_weights()
-                    current_mode = crisis_analyzer.model_coordination_manager.get_ensemble_mode()
-                    refresh_results['model_coordination'] = {
-                        'weights': current_weights,
-                        'ensemble_mode': current_mode
-                    }
-                    logger.info(f"Model coordination weights: {current_weights}")
-                except Exception as e:
-                    refresh_results['model_coordination'] = {'error': str(e)}
-                    logger.error(f"Failed to get model coordination weights: {e}")
             
             processing_time_ms = (time.time() - start_time) * 1000
             
@@ -672,7 +684,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 'status': 'success',
                 'processing_time_ms': processing_time_ms,
                 'refresh_results': refresh_results,
-                'message': 'Ensemble weights refreshed from environment variables'
+                'message': f'Ensemble weights refreshed via {method if "method" in locals() else "unknown"}'
             }
             
         except Exception as e:
