@@ -315,6 +315,135 @@ class PerformanceOptimizedMethods:
             'community_pattern': 0.08
         }
     
+    # ========================================================================
+    # WEIGHTS REFRESH
+    # ========================================================================
+    def refresh_cached_weights(self):
+        """
+        Refresh cached model weights from current configuration
+        
+        Call this method when environment variables change to update cached weights
+        without restarting the container.
+        """
+        try:
+            if self.analyzer.model_coordination_manager:
+                # Refresh model weights from current config
+                self._cached_model_weights = self.analyzer.model_coordination_manager.get_normalized_weights()
+                self._cached_ensemble_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
+                
+                logger.info(f"🔄 Refreshed cached weights: {self._cached_model_weights}")
+                logger.info(f"🔄 Refreshed ensemble mode: {self._cached_ensemble_mode}")
+                
+                return True
+            else:
+                logger.warning("Cannot refresh weights: model_coordination_manager not available")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to refresh cached weights: {e}")
+            return False
+
+    def force_recache_all_configurations(self):
+        """
+        Force complete recaching of all configurations
+        
+        This is more expensive but ensures everything is up-to-date
+        """
+        try:
+            logger.info("🔄 Forcing complete configuration recache...")
+            
+            # Reset cache flags to force recaching
+            self._configurations_cached = False
+            
+            # Trigger recaching
+            self._cache_critical_configurations()
+            
+            logger.info("✅ Complete configuration recache completed")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Failed to force recache configurations: {e}")
+            return False
+
+    def _get_current_model_weights(self) -> Dict[str, float]:
+        """
+        Get current model weights with cache-busting
+        
+        This method bypasses cache and gets fresh weights from config
+        Use this for weight optimization testing where weights change frequently
+        """
+        try:
+            if self.analyzer.model_coordination_manager:
+                # Get fresh weights directly from manager (bypasses cache)
+                current_weights = self.analyzer.model_coordination_manager.get_normalized_weights()
+                
+                # Compare with cached weights to detect changes
+                if current_weights != self._cached_model_weights:
+                    logger.info(f"🔄 Weight change detected!")
+                    logger.info(f"   Old: {self._cached_model_weights}")
+                    logger.info(f"   New: {current_weights}")
+                    
+                    # Update cache
+                    self._cached_model_weights = current_weights
+                    
+                return current_weights
+            else:
+                return self._cached_model_weights
+                
+        except Exception as e:
+            logger.error(f"Failed to get current model weights: {e}")
+            return self._cached_model_weights
+
+    def _direct_ensemble_classification_with_fresh_weights(self, message: str) -> Dict[str, Any]:
+        """
+        Modified version that uses fresh weights for each classification
+        
+        Use this version during weight optimization to ensure changes are detected
+        """
+        try:
+            if not self.analyzer.model_coordination_manager:
+                return {'score': 0.0, 'confidence': 0.0, 'method': 'no_model_manager'}
+            
+            # Get CURRENT weights (not cached) - THIS IS THE KEY CHANGE
+            current_model_weights = self._get_current_model_weights()
+            current_ensemble_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
+            
+            # Direct synchronous classification calls
+            model_results = {}
+            
+            # Use FRESH model weights
+            for model_type, weight in current_model_weights.items():
+                try:
+                    result = self._classify_sync_direct(message, model_type)
+                    model_results[model_type] = {
+                        'score': result.get('score', 0.0),
+                        'confidence': result.get('confidence', 0.0),
+                        'weight': weight  # Fresh weight, not cached
+                    }
+                except Exception as e:
+                    logger.warning(f"Model {model_type} failed: {e}")
+                    model_results[model_type] = {'score': 0.0, 'confidence': 0.0, 'weight': weight}
+            
+            # Direct ensemble voting using CURRENT mode and weights
+            ensemble_score = self._fast_ensemble_voting(model_results, current_ensemble_mode)
+            
+            method_name = f"optimized_{current_ensemble_mode}_ensemble_fresh_weights"
+            
+            return {
+                'score': ensemble_score,
+                'confidence': min(0.9, ensemble_score + 0.1),
+                'individual_results': model_results,
+                'ensemble_mode': current_ensemble_mode,
+                'method': method_name,
+                'weights_used': current_model_weights  # Include for debugging
+            }
+            
+        except Exception as e:
+            logger.error(f"Direct ensemble classification with fresh weights failed: {e}")
+            return {'score': 0.0, 'confidence': 0.0, 'method': 'fresh_weights_error', 'error': str(e)}
+    # ========================================================================
+    # ========================================================================
+
     def optimized_ensemble_analysis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
         PHASE 3E STEP 7: Performance-optimized ensemble analysis
