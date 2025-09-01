@@ -534,7 +534,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     # ========================================================================
     # HEALTH CHECK ENDPOINT
     # ========================================================================
-    
     @app.get("/health")
     async def ensemble_health_check():
         """
@@ -625,9 +624,67 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             }
     
     # ========================================================================
+    # WEIGHTS REFRESH
+    # ========================================================================
+    @app.post("/ensemble/refresh-weights")
+    async def refresh_ensemble_weights():
+        """
+        Refresh cached ensemble weights from current environment variables
+        
+        This endpoint allows the weight optimizer to trigger cache refresh
+        after changing environment variables.
+        """
+        try:
+            start_time = time.time()
+            refresh_results = {}
+            
+            # Refresh CrisisAnalyzer performance optimizer cache
+            if hasattr(crisis_analyzer, 'performance_optimizer'):
+                try:
+                    success = crisis_analyzer.performance_optimizer.refresh_cached_weights()
+                    refresh_results['performance_optimizer'] = {
+                        'success': success,
+                        'weights': crisis_analyzer.performance_optimizer._cached_model_weights,
+                        'ensemble_mode': crisis_analyzer.performance_optimizer._cached_ensemble_mode
+                    }
+                    logger.info(f"Performance optimizer cache refreshed: {success}")
+                except Exception as e:
+                    refresh_results['performance_optimizer'] = {'error': str(e)}
+                    logger.error(f"Failed to refresh performance optimizer cache: {e}")
+            
+            # Also refresh ModelCoordinationManager if accessible
+            if hasattr(crisis_analyzer, 'model_coordination_manager'):
+                try:
+                    current_weights = crisis_analyzer.model_coordination_manager.get_normalized_weights()
+                    current_mode = crisis_analyzer.model_coordination_manager.get_ensemble_mode()
+                    refresh_results['model_coordination'] = {
+                        'weights': current_weights,
+                        'ensemble_mode': current_mode
+                    }
+                    logger.info(f"Model coordination weights: {current_weights}")
+                except Exception as e:
+                    refresh_results['model_coordination'] = {'error': str(e)}
+                    logger.error(f"Failed to get model coordination weights: {e}")
+            
+            processing_time_ms = (time.time() - start_time) * 1000
+            
+            return {
+                'status': 'success',
+                'processing_time_ms': processing_time_ms,
+                'refresh_results': refresh_results,
+                'message': 'Ensemble weights refreshed from environment variables'
+            }
+            
+        except Exception as e:
+            logger.error(f"Weight refresh failed: {e}")
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Weight refresh failed: {str(e)}"
+            )
+
+    # ========================================================================
     # CONFIGURATION AND STATUS ENDPOINTS
     # ========================================================================
-    
     @app.get("/ensemble/config")
     async def get_ensemble_configuration():
         """Get current ensemble configuration with validation"""
