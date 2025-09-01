@@ -445,16 +445,56 @@ class WeightOptimizer:
         }
     
     def _set_temporary_weights(self, individual: Individual):
-        """Set temporary weights for evaluation"""
+        """Set temporary weights for evaluation and refresh system cache"""
+        # Set environment variables
         os.environ['NLP_MODEL_DEPRESSION_WEIGHT'] = str(individual.depression_weight)
         os.environ['NLP_MODEL_SENTIMENT_WEIGHT'] = str(individual.sentiment_weight)
         os.environ['NLP_MODEL_DISTRESS_WEIGHT'] = str(individual.distress_weight)
         os.environ['NLP_ENSEMBLE_MODE'] = individual.ensemble_mode
+        
+        logger.debug(f"Set environment: {individual.ensemble_mode} mode, "
+                    f"weights=({individual.depression_weight:.3f}, "
+                    f"{individual.sentiment_weight:.3f}, {individual.distress_weight:.3f})")
+        
+        # CRITICAL: Refresh the NLP system cache to pick up new weights
+        try:
+            refresh_endpoint = self.config.api_endpoint.replace('/analyze', '/ensemble/refresh-weights')
+            logger.debug(f"Triggering cache refresh at: {refresh_endpoint}")
+            
+            response = requests.post(refresh_endpoint, timeout=10)
+            if response.status_code == 200:
+                refresh_result = response.json()
+                logger.debug("Cache refresh successful")
+                
+                # Log the weights that are now cached
+                if 'refresh_results' in refresh_result:
+                    perf_opt = refresh_result['refresh_results'].get('performance_optimizer', {})
+                    if 'weights' in perf_opt:
+                        logger.info(f"Cached weights updated to: {perf_opt['weights']}")
+                    if 'ensemble_mode' in perf_opt:
+                        logger.info(f"Cached ensemble mode updated to: {perf_opt['ensemble_mode']}")
+            else:
+                logger.warning(f"Cache refresh failed with status {response.status_code}")
+                
+        except Exception as e:
+            logger.warning(f"Failed to refresh cache - weights may not be applied: {e}")
+            logger.warning("This will cause the optimization to test the same cached weights repeatedly!")
     
     def _restore_environment_variables(self, backup: Dict[str, str]):
-        """Restore environment variables from backup"""
+        """Restore environment variables from backup and refresh cache"""
         for key, value in backup.items():
             os.environ[key] = value
+        
+        # CRITICAL: Refresh cache after restoring original weights
+        try:
+            refresh_endpoint = self.config.api_endpoint.replace('/analyze', '/ensemble/refresh-weights')
+            response = requests.post(refresh_endpoint, timeout=10)
+            if response.status_code == 200:
+                logger.debug("Cache refreshed after restoring original weights")
+            else:
+                logger.warning(f"Failed to refresh cache after restore: {response.status_code}")
+        except Exception as e:
+            logger.warning(f"Failed to refresh cache after restore: {e}")
     
     def _create_next_generation(self, population: List[Individual]) -> List[Individual]:
         """Create next generation using evolutionary operators"""
