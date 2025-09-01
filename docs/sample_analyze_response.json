@@ -1,293 +1,165 @@
 {
-  "needs_response": true,
-  "crisis_level": "high",
-  "confidence_score": 0.5787491679074904,
-  "detected_categories": [],
-  "method": "enhanced_three_step_analysis",
-  "processing_time_ms": 566.6120052337646,
+  "needs_response": false,
+  "crisis_level": "none",
+  "confidence_score": 0.03931337231770158,
+  "detected_categories": [
+    "automated_analysis"
+  ],
+  "method": "performance_optimized",
+  "processing_time_ms": 149.5347023010254,
   "model_info": "Clean Architecture - CrisisAnalyzer Complete",
   "reasoning": "Single analysis via CrisisAnalyzer with enhanced validation",
   "analysis": {
     "complete_analysis": {
-      "crisis_score": 0.4787491679074903,
-      "confidence_score": 0.5787491679074904,
-      "crisis_level": "high",
-      "needs_response": true,
-      "requires_staff_review": true,
-      "method": "enhanced_three_step_analysis",
-      "detected_categories": [],
-      "ai_model_details": {
-        "models_used": 3,
-        "individual_results": {
-          "depression": {
-            "score": 0.27734331951405,
-            "confidence": 0.37734331951405,
-            "model": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-            "model_type": "depression",
-            "method": "sync_zero_shot_classification",
-            "labels_used": 14,
-            "transformers_used": true,
-            "device": "cuda",
-            "sync_optimized": true
-          },
-          "sentiment": {
-            "score": 0.7239484943216669,
-            "confidence": 0.8239484943216668,
-            "model": "Lowerated/lm6-deberta-v3-topic-sentiment",
-            "model_type": "sentiment",
-            "method": "sync_zero_shot_classification",
-            "labels_used": 11,
-            "transformers_used": true,
-            "device": "cuda",
-            "sync_optimized": true
-          },
-          "emotional_distress": {
-            "score": 0.4349556898867542,
-            "confidence": 0.5349556898867542,
-            "model": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-            "model_type": "emotional_distress",
-            "method": "sync_zero_shot_classification",
-            "labels_used": 12,
-            "transformers_used": true,
-            "device": "cuda",
-            "sync_optimized": true
-          }
-        },
-        "base_confidence": 0.5787491679074904,
-        "zero_shot_labels_info": {
-          "labels_available": true,
-          "current_label_set": "enhanced_crisis",
-          "labels_by_category": {
-            "depression": [
-              "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
-              "person stating they want to die, kill themselves, or commit suicide with immediate intent",
-              "person describing specific suicide methods, plans, preparations, or final arrangements",
-              "person expressing complete hopelessness, that nothing will ever get better, or life has no meaning",
-              "person stating they are beyond help, cannot be saved, or are past the point of return",
-              "person describing feeling trapped with no way out or escape from their situation",
-              "person describing active self-harm, cutting, burning, or intentional self-injury behaviors",
-              "person expressing desire to hurt themselves or engage in reckless dangerous behaviors",
-              "person showing severe depression with major breakdown and inability to function daily",
-              "person experiencing moderate depression, significant sadness, but maintaining some daily functioning",
-              "person expressing emotional difficulty, low mood, or distress but still coping with life",
-              "person describing temporary depression, bad periods, or situational emotional struggles",
-              "person showing stable mental health with normal emotional ups and downs and healthy coping",
-              "person demonstrating positive mental health, emotional resilience, and psychological wellbeing"
-            ],
-            "sentiment": [
-              "person expressing devastating emotional pain, complete despair, or overwhelming hopelessness with crisis-level intensity",
-              "person showing intense destructive emotions, uncontrollable rage, or violent emotional breakdown",
-              "person displaying emotional devastation, crushing sadness, or complete psychological collapse",
-              "person expressing significant emotional pain, deep sadness, intense fear, anxiety, or distressing emotions",
-              "person showing frustration, anger, disappointment, worry, or moderate negative emotional states",
-              "person displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
-              "person expressing neutral emotions, balanced feelings, or stable emotional state without extremes",
-              "person showing factual communication, casual conversation, or emotionally neutral expressions",
-              "person expressing contentment, satisfaction, mild happiness, gratitude, or positive emotions",
-              "person showing hope, optimism, appreciation, joy, or constructive positive emotional states",
-              "person expressing intense joy, excitement, euphoria, overwhelming happiness, or peak positive emotional highs"
-            ],
-            "emotional_distress": [
-              "person in acute psychological crisis, mental health emergency, completely unable to cope or function",
-              "person experiencing emotional breakdown, psychological emergency, or complete loss of emotional control",
-              "person showing total inability to manage emotions, daily life, or basic functioning",
-              "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities",
-              "person showing serious emotional distress that significantly impairs work, relationships, or functioning",
-              "person displaying major emotional strain affecting multiple important life areas",
-              "person experiencing moderate emotional distress with some difficulty managing daily activities",
-              "person showing emotional challenges, stress, or strain but maintaining basic life functioning",
-              "person displaying concerning emotional difficulty that interferes with some normal activities",
-              "person handling typical life stress with adequate emotional regulation and healthy coping strategies",
-              "person experiencing normal daily stressors but managing them appropriately with good coping",
-              "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
-            ]
-          },
-          "total_label_categories": 3,
-          "total_labels": 37,
-          "hypothesis_template": "This text expresses {label}",
-          "confidence_threshold": 0.3,
-          "multi_label": false
-        }
-      },
-      "pattern_analysis": {
-        "patterns_matched": [],
-        "enhancement_boost": 0,
-        "pattern_confidence": 0
-      },
-      "learning_adjustments": {
-        "applied": true,
-        "score_adjustment": 0,
-        "metadata": {
-          "original_score": 0.4787491679074903,
-          "adjustment_factor": 1,
-          "learning_enabled": true,
-          "user_id": "test_user",
-          "channel_id": "test_channel"
-        }
-      },
-      "analysis_execution_tracking": {
-        "tracking_enabled": true,
-        "message_metadata": {
-          "message_length": 84,
-          "user_id": "test_user",
-          "channel_id": "test_channel",
-          "timestamp": 1756413272.432845
-        },
-        "zero_shot_ai": {
-          "executed": true,
-          "started": true,
-          "completed": true,
-          "processing_time_ms": 559.1466426849365,
-          "method": "sync_ensemble_classification",
-          "models_used": 3,
-          "individual_scores": {
+      "crisis_score": 0.03931337231770158,
+      "crisis_level": "none",
+      "confidence_score": 0.13931337231770158,
+      "message": "Today was wonderful.  I spent time with my family and friends.  It was a good day.",
+      "user_id": "test_user",
+      "channel_id": "test_channel",
+      "method": "performance_optimized",
+      "ensemble_score": 0.0655222871961693,
+      "pattern_score": 0,
+      "needs_response": false,
+      "requires_staff_review": false,
+      "detected_categories": [
+        "automated_analysis"
+      ],
+      "processing_start_time": 1756740316.0383854,
+      "processing_time": 149.22785758972168,
+      "optimization_version": "v3.1-4a-1",
+      "optimization_applied": true,
+      "target_achievement": true,
+      "analysis_results": {
+        "crisis_score": 0.03931337231770158,
+        "crisis_level": "none",
+        "confidence_score": 0.13931337231770158,
+        "message": "Today was wonderful.  I spent time with my family and friends.  It was a good day.",
+        "user_id": "test_user",
+        "channel_id": "test_channel",
+        "method": "performance_optimized",
+        "ensemble_score": 0.0655222871961693,
+        "pattern_score": 0,
+        "needs_response": false,
+        "requires_staff_review": false,
+        "detected_categories": [
+          "automated_analysis"
+        ],
+        "processing_start_time": 1756740316.0383854,
+        "processing_time": 148.06604385375977,
+        "optimization_version": "v3.1-4a-1",
+        "model_analysis": {
+          "individual_models": {
             "depression": {
-              "score": 0.27734331951405,
-              "confidence": 0.37734331951405,
-              "model": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-              "model_type": "depression",
-              "method": "sync_zero_shot_classification",
-              "labels_used": 14,
-              "transformers_used": true,
-              "device": "cuda",
-              "sync_optimized": true
+              "score": 0.005042436998337507,
+              "confidence": 0.10504243699833751,
+              "weight": 0.4
             },
             "sentiment": {
-              "score": 0.7239484943216669,
-              "confidence": 0.8239484943216668,
-              "model": "Lowerated/lm6-deberta-v3-topic-sentiment",
-              "model_type": "sentiment",
-              "method": "sync_zero_shot_classification",
-              "labels_used": 11,
-              "transformers_used": true,
-              "device": "cuda",
-              "sync_optimized": true
+              "score": 0.004311048425734043,
+              "confidence": 0.10431104842573405,
+              "weight": 0.3
             },
             "emotional_distress": {
-              "score": 0.4349556898867542,
-              "confidence": 0.5349556898867542,
-              "model": "MoritzLaurer/mDeBERTa-v3-base-mnli-xnli",
-              "model_type": "emotional_distress",
-              "method": "sync_zero_shot_classification",
-              "labels_used": 12,
-              "transformers_used": true,
-              "device": "cuda",
-              "sync_optimized": true
+              "score": 0.18721337616443634,
+              "confidence": 0.2872133761644363,
+              "weight": 0.3
             }
           },
-          "ensemble_confidence": 0.5787491679074904,
-          "ai_classification_successful": true,
-          "zero_shot_labels_info": {
-            "labels_available": true,
-            "current_label_set": "enhanced_crisis",
-            "labels_by_category": {
-              "depression": [
-                "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
-                "person stating they want to die, kill themselves, or commit suicide with immediate intent",
-                "person describing specific suicide methods, plans, preparations, or final arrangements",
-                "person expressing complete hopelessness, that nothing will ever get better, or life has no meaning",
-                "person stating they are beyond help, cannot be saved, or are past the point of return",
-                "person describing feeling trapped with no way out or escape from their situation",
-                "person describing active self-harm, cutting, burning, or intentional self-injury behaviors",
-                "person expressing desire to hurt themselves or engage in reckless dangerous behaviors",
-                "person showing severe depression with major breakdown and inability to function daily",
-                "person experiencing moderate depression, significant sadness, but maintaining some daily functioning",
-                "person expressing emotional difficulty, low mood, or distress but still coping with life",
-                "person describing temporary depression, bad periods, or situational emotional struggles",
-                "person showing stable mental health with normal emotional ups and downs and healthy coping",
-                "person demonstrating positive mental health, emotional resilience, and psychological wellbeing"
-              ],
-              "sentiment": [
-                "person expressing devastating emotional pain, complete despair, or overwhelming hopelessness with crisis-level intensity",
-                "person showing intense destructive emotions, uncontrollable rage, or violent emotional breakdown",
-                "person displaying emotional devastation, crushing sadness, or complete psychological collapse",
-                "person expressing significant emotional pain, deep sadness, intense fear, anxiety, or distressing emotions",
-                "person showing frustration, anger, disappointment, worry, or moderate negative emotional states",
-                "person displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
-                "person expressing neutral emotions, balanced feelings, or stable emotional state without extremes",
-                "person showing factual communication, casual conversation, or emotionally neutral expressions",
-                "person expressing contentment, satisfaction, mild happiness, gratitude, or positive emotions",
-                "person showing hope, optimism, appreciation, joy, or constructive positive emotional states",
-                "person expressing intense joy, excitement, euphoria, overwhelming happiness, or peak positive emotional highs"
-              ],
-              "emotional_distress": [
-                "person in acute psychological crisis, mental health emergency, completely unable to cope or function",
-                "person experiencing emotional breakdown, psychological emergency, or complete loss of emotional control",
-                "person showing total inability to manage emotions, daily life, or basic functioning",
-                "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities",
-                "person showing serious emotional distress that significantly impairs work, relationships, or functioning",
-                "person displaying major emotional strain affecting multiple important life areas",
-                "person experiencing moderate emotional distress with some difficulty managing daily activities",
-                "person showing emotional challenges, stress, or strain but maintaining basic life functioning",
-                "person displaying concerning emotional difficulty that interferes with some normal activities",
-                "person handling typical life stress with adequate emotional regulation and healthy coping strategies",
-                "person experiencing normal daily stressors but managing them appropriately with good coping",
-                "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
-              ]
-            },
-            "total_label_categories": 3,
-            "total_labels": 37,
-            "hypothesis_template": "This text expresses {label}",
-            "confidence_threshold": 0.3,
-            "multi_label": false
+          "ensemble_method": "optimized_direct_ensemble",
+          "model_agreement": 0.9703822011119385,
+          "model_confidence": 0.1655222871961693,
+          "individual_scores": {
+            "depression": 0.005042436998337507,
+            "sentiment": 0.004311048425734043,
+            "emotional_distress": 0.18721337616443634
           }
         },
-        "pattern_enhancements": {
-          "executed": true,
-          "started": true,
-          "completed": true,
-          "processing_time_ms": 0.6194114685058594,
-          "patterns_matched": [],
-          "pattern_categories": [],
-          "enhancement_applied": false,
-          "confidence_boost": 0,
-          "pattern_analysis_successful": true
-        },
-        "learning_adjustments": {
-          "executed": true,
-          "started": true,
-          "completed": true,
-          "processing_time_ms": 0.0286102294921875,
-          "threshold_adjustments": {},
-          "confidence_modifications": 0,
-          "learning_metadata": {
-            "original_score": 0.4787491679074903,
-            "adjustment_factor": 1,
-            "learning_enabled": true,
-            "user_id": "test_user",
-            "channel_id": "test_channel"
+        "pattern_analysis": {
+          "pattern_matches": [
+            {
+              "pattern_name": "context_temporal_urgency",
+              "pattern_type": "context_phrase",
+              "crisis_level": "low",
+              "confidence": 0.6,
+              "details": {
+                "phrase_type": "temporal_urgency",
+                "matched_phrase": "today",
+                "crisis_level": "low",
+                "confidence": 0.6,
+                "boost_multiplier": "1.5"
+              }
+            },
+            {
+              "pattern_name": "temporal_recent",
+              "pattern_type": "temporal",
+              "crisis_level": "medium",
+              "confidence": 0.8,
+              "urgency_multiplier": 0.2,
+              "details": {
+                "indicator_type": "recent",
+                "matched_phrase": "today",
+                "crisis_level": "medium",
+                "confidence": 0.8,
+                "urgency_multiplier": 0.2,
+                "time_sensitivity": "normal",
+                "auto_escalate": false
+              }
+            }
+          ],
+          "pattern_confidence": 0.2,
+          "pattern_severity": "low",
+          "critical_patterns": [],
+          "enhanced_patterns": {
+            "context_phrase": [
+              {
+                "text": "context_temporal_urgency",
+                "level": "low",
+                "confidence": 0.6
+              }
+            ],
+            "temporal": [
+              {
+                "text": "temporal_recent",
+                "level": "medium",
+                "confidence": 0.8
+              }
+            ]
           },
-          "learning_applied": true
+          "community_patterns": []
         },
-        "fallback_scenarios": {
-          "ai_models_failed": false,
-          "pattern_only_used": false,
-          "emergency_fallback": false
-        },
-        "performance_metrics": {
-          "target_time_ms": 500,
-          "optimization_applied": true
+        "context_analysis": {
+          "temporal_factors": [],
+          "linguistic_indicators": [],
+          "severity_indicators": []
         }
       },
-      "tracking_summary": {
-        "total_processing_time_ms": 566.3940906524658,
-        "steps_attempted": 3,
-        "steps_completed": 3,
-        "success_rate": 100,
-        "performance_target_met": false,
-        "analysis_method": "enhanced_three_step_analysis",
-        "crisis_detection_pipeline": {
-          "ai_models_used": true,
-          "pattern_enhancement_applied": true,
-          "learning_adjustments_applied": true
-        }
+      "learning_adjusted_score": 0.03931337231770158,
+      "learning_metadata": {
+        "original_score": 0.03931337231770158,
+        "adjustment_factor": 1,
+        "learning_enabled": true,
+        "user_id": "test_user",
+        "channel_id": "test_channel"
+      },
+      "learning_applied": true,
+      "api_processing_time": 149.29628372192383,
+      "analysis_execution_tracking": {
+        "tracking_enabled": false,
+        "message_metadata": {
+          "message_length": 82,
+          "user_id": "test_user",
+          "channel_id": "test_channel",
+          "timestamp": 1756740316.03832
+        },
+        "total_processing_time_ms": 149.36304092407227
       }
     },
-    "architecture": "clean_v3.1",
+    "architecture": "clean",
     "redundant_processing": false,
     "feature_flags_respected": true,
-    "api_processing_time_ms": 566.6120052337646,
+    "api_processing_time_ms": 149.5347023010254,
     "enhanced_validation": true,
-    "context_analysis_available": false
+    "context_analysis_available": true
   }
 }
