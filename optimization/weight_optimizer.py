@@ -248,41 +248,42 @@ class WeightOptimizer:
             raise
     
     def _initialize_population(self) -> List[Individual]:
-        """Initialize population with diverse individuals"""
+        """Initialize population with depression model always having highest weight"""
         population = []
         ensemble_modes = ['consensus', 'majority', 'weighted']
         
-        # Create diverse initial population
         for _ in range(self.config.population_size):
-            # Random ensemble mode
             mode = np.random.choice(ensemble_modes)
             
-            # Random weights with constraint sum = 1.0
-            weights = np.random.dirichlet([1, 1, 1])  # Dirichlet ensures sum = 1
+            # Generate weights with depression >= 0.4 and depression > others
+            min_depression = 0.4  # Minimum depression weight
+            depression_weight = np.random.uniform(min_depression, 0.8)
             
-            # Quantize to precision
-            weights = np.round(weights / self.config.weight_precision) * self.config.weight_precision
-            weights = weights / weights.sum()  # Renormalize after quantization
+            # Remaining weight split between sentiment and distress
+            remaining_weight = 1.0 - depression_weight
+            sentiment_weight = np.random.uniform(0.1, remaining_weight - 0.1)
+            distress_weight = remaining_weight - sentiment_weight
+            
+            # Ensure depression is highest
+            max_other = max(sentiment_weight, distress_weight)
+            if depression_weight <= max_other:
+                # Redistribute to ensure depression dominance
+                excess = max_other - depression_weight + 0.05
+                if sentiment_weight > distress_weight:
+                    sentiment_weight -= excess
+                else:
+                    distress_weight -= excess
+                depression_weight += excess
             
             individual = Individual(
                 ensemble_mode=mode,
-                depression_weight=float(weights[0]),
-                sentiment_weight=float(weights[1]),
-                distress_weight=float(weights[2])
+                depression_weight=depression_weight,
+                sentiment_weight=sentiment_weight,
+                distress_weight=distress_weight
             )
             
-            # Ensure constraints
             individual.normalize_weights()
             population.append(individual)
-        
-        # Add current configuration to population for comparison
-        current_config = Individual(
-            ensemble_mode='majority',
-            depression_weight=0.4,
-            sentiment_weight=0.3,
-            distress_weight=0.3
-        )
-        population[0] = current_config  # Replace first random individual
         
         return population
     
@@ -544,7 +545,7 @@ class WeightOptimizer:
         return child
     
     def _mutate(self, individual: Individual, ensemble_modes: List[str]) -> Individual:
-        """Mutation operation"""
+        """Mutation operation with depression dominance constraint"""
         child = Individual(
             ensemble_mode=individual.ensemble_mode,
             depression_weight=individual.depression_weight,
@@ -552,22 +553,40 @@ class WeightOptimizer:
             distress_weight=individual.distress_weight
         )
         
-        # Ensemble mode mutation
         if np.random.random() < self.config.mutation_rate:
             child.ensemble_mode = np.random.choice(ensemble_modes)
         
-        # Weight mutation
         if np.random.random() < self.config.mutation_rate:
-            # Add Gaussian noise to weights
-            noise = np.random.normal(0, 0.1, 3)
+            # Constrained weight mutation
+            noise = np.random.normal(0, 0.05, 3)  # Smaller mutations
+            
             child.depression_weight += noise[0]
             child.sentiment_weight += noise[1]
             child.distress_weight += noise[2]
             
-            # Ensure positive weights
-            child.depression_weight = max(0.1, child.depression_weight)
+            # Enforce minimum bounds
+            child.depression_weight = max(0.4, child.depression_weight)  # Min 40%
             child.sentiment_weight = max(0.1, child.sentiment_weight)
             child.distress_weight = max(0.1, child.distress_weight)
+            
+            # Normalize
+            child.normalize_weights()
+            
+            # Ensure depression remains dominant after normalization
+            max_other = max(child.sentiment_weight, child.distress_weight)
+            if child.depression_weight <= max_other:
+                # Force redistribution
+                target_depression = max_other + 0.05
+                reduction_needed = target_depression - child.depression_weight
+                
+                # Take from the larger of the other two
+                if child.sentiment_weight > child.distress_weight:
+                    child.sentiment_weight -= reduction_needed
+                else:
+                    child.distress_weight -= reduction_needed
+                
+                child.depression_weight = target_depression
+                child.normalize_weights()
         
         return child
     
