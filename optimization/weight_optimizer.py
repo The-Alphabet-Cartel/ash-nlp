@@ -376,7 +376,7 @@ class WeightOptimizer:
                         
                         self.total_api_calls += 1
                         
-                        if (i + 1) % 25 == 0:
+                        if (i + 1) % 10 == 0:
                             progress_pct = ((i + 1) / len(self.all_test_data)) * 100
                             logger.info(f"Progress: {i+1}/{len(self.all_test_data)} phrases ({progress_pct:.1f}%) - "
                                       f"Avg response: {statistics.mean(response_times[-25:]):.1f}ms")
