@@ -424,33 +424,5 @@
         }
       }
     },
-
-    "validation_configuration": {
-      "description": "Threshold validation and error handling",
-      "strict_mode": "${NLP_THRESHOLD_VALIDATION_STRICT}",
-      "fail_on_invalid": "${NLP_THRESHOLD_VALIDATION_FAIL_ON_INVALID}",
-      "log_warnings": "${NLP_THRESHOLD_VALIDATION_LOG_WARNINGS}",
-      "cross_mode_check": "${NLP_THRESHOLD_VALIDATION_CROSS_MODE_CHECK}",
-      "defaults": {
-        "strict_mode": true,
-        "fail_on_invalid": true,
-        "log_warnings": true,
-        "cross_mode_check": true
-      },
-      "validation": {
-        "strict_mode": {
-          "type": "boolean"
-        },
-        "fail_on_invalid": {
-          "type": "boolean"
-        },
-        "log_warnings": {
-          "type": "boolean"
-        },
-        "cross_mode_check": {
-          "type": "boolean"
-        }
-      }
-    }
   }
 }
