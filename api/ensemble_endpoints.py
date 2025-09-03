@@ -740,8 +740,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     async def reload_env():
         """Reload environment variables"""
         try:
-            if hasattr(crisis_analyzer, 'performance_optimizer'):
-                success = crisis_analyzer.performance_optimizer.force_environment_variable_reload()
+            crisis_analyzer.performance_optimizer.force_environment_variable_reload()
 
             return {
                 'status': 'success',
