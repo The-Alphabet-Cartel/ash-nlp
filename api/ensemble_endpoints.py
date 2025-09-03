@@ -734,27 +734,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             )
 
     # ========================================================================
-    # ENVIRONMENT VARIABLE RELOAD
-    # ========================================================================
-    @app.post("/reload-env")
-    async def reload_env():
-        """Reload environment variables"""
-        try:
-            crisis_analyzer.performance_optimizer.force_environment_variable_reload()
-
-            return {
-                'status': 'success',
-                'message': 'Environment variables reloaded.'
-            }
-            
-        except Exception as e:
-            logger.error(f"Environment variables reload failed: {e}")
-            raise HTTPException(
-                status_code=500, 
-                detail=f"Environment variables reload failed: {str(e)}"
-            )
-
-    # ========================================================================
     # CONFIGURATION AND STATUS ENDPOINTS
     # ========================================================================
     @app.get("/ensemble/config")
