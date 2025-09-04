@@ -972,7 +972,7 @@ class ModelCoordinationManager:
                     logger.debug(f"📊 Top prediction: {top_label} (score={top_score:.3f})")
                     logger.debug(f"📊 Original severity index: {original_index}/{len(labels)-1}")
                     logger.debug(f"📊 Severity weight: {severity_weight:.3f}")
-                    logger.debug(f"📊 Final crisis score: {crisis_score:.3f}")
+                    logger.debug(f"📊 Crisis score: {crisis_score:.3f}")
                     
                 except ValueError:
                     logger.warning(f"⚠️ Top predicted label '{top_label}' not found in original labels")
