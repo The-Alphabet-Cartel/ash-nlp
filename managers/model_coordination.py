@@ -484,7 +484,7 @@ class ModelCoordinationManager:
                 raise ValueError(f"No model name configured for type: {model_type}")
             
             # Load or get cached pipeline
-            classifier = await self._get_or_load_pipeline(model_name)
+            classifier = self._get_or_load_pipeline(model_name)
             if classifier is None:
                 logger.warning(f"⚠️ Could not load model {model_name}, using pattern fallback")
                 return self._pattern_fallback_classification(text, labels, model_type)
@@ -503,7 +503,7 @@ class ModelCoordinationManager:
             # Perform zero-shot classification
             logger.debug(f"🤖 Running zero-shot classification: {model_type} with {model_name}")
             
-            result = await asyncio.get_event_loop().run_in_executor(
+            result = asyncio.get_event_loop().run_in_executor(
                 None, 
                 lambda: classifier(text, labels)
             )
