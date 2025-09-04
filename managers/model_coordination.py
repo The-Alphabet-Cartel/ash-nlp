@@ -949,19 +949,41 @@ class ModelCoordinationManager:
             # Labels are arranged from highest crisis (index 0) to lowest crisis (last index)
             crisis_score = 0.0
             
-            for i, (label, score) in enumerate(zip(predicted_labels, scores)):
+            # DEBUG: Log the transformers result structure for verification
+            logger.debug(f"🔍 Transformers result - labels: {predicted_labels}")
+            logger.debug(f"🔍 Transformers result - scores: {[f'{s:.3f}' for s in scores]}")
+            logger.debug(f"🔍 Original input labels: {labels}")
+
+            # FIXED: Use the highest scoring label as primary crisis indicator
+            # The first label in predicted_labels has the highest confidence
+            if predicted_labels and scores:
+                # Get the highest confidence score and its corresponding label
+                top_label = predicted_labels[0]
+                top_score = scores[0]
+                
+                # Find where this label was positioned in our original severity-ordered labels
                 try:
-                    original_index = labels.index(label)
+                    original_index = labels.index(top_label)
                     # Convert index to severity weight (0 = highest crisis, last = lowest crisis)
-                    severity_weight = 1.0 - (original_index / (len(labels) - 1))
-                    weighted_contribution = score * severity_weight
-                    crisis_score += weighted_contribution
+                    severity_weight = 1.0 - (original_index / (len(labels) - 1)) if len(labels) > 1 else 1.0
                     
-                    logger.debug(f"📊 Label: score={score:.3f}, weight={severity_weight:.3f}")
+                    # Calculate crisis score based on confidence and severity position
+                    crisis_score = top_score * severity_weight
+                    
+                    logger.debug(f"📊 Top prediction: {top_label} (score={top_score:.3f})")
+                    logger.debug(f"📊 Original severity index: {original_index}/{len(labels)-1}")
+                    logger.debug(f"📊 Severity weight: {severity_weight:.3f}")
+                    logger.debug(f"📊 Final crisis score: {crisis_score:.3f}")
                     
                 except ValueError:
-                    logger.warning(f"⚠️ Label '{label}' not found in original labels")
-                    continue
+                    logger.warning(f"⚠️ Top predicted label '{top_label}' not found in original labels")
+                    # Fallback: use raw confidence score
+                    crisis_score = top_score
+                    logger.debug(f"📊 Using fallback score: {crisis_score:.3f}")
+                    
+            else:
+                logger.warning("⚠️ No predictions returned from transformers")
+                crisis_score = 0.0
             
             # Normalize the score to 0-1 range
             crisis_score = max(0.0, min(1.0, crisis_score))
