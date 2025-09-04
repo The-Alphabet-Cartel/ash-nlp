@@ -552,6 +552,7 @@ class ModelCoordinationManager:
             if zero_shot_manager:
                 try:
                     all_labels = zero_shot_manager.get_all_labels()
+                    current_set = zero_shot_manager.get_current_label_set()
                     zero_shot_settings = zero_shot_manager.get_zero_shot_settings()
                     hypothesis_template = zero_shot_settings.get('hypothesis_template', "This text expresses {}.")
                     logger.debug("Using ZeroShotManager for synchronous label management")
@@ -567,10 +568,10 @@ class ModelCoordinationManager:
             for model_type in models.keys():
                 try:
                     # Get labels for this model type
-                    if isinstance(all_labels, dict) and model_type in all_labels:
-                        model_labels = all_labels[model_type]
+                    if isinstance(all_labels, dict) and current_set in all_labels:
+                        model_labels = all_labels[current_set]
                     elif isinstance(all_labels, dict):
-                        model_labels = all_labels.get('crisis', all_labels.get('enhanced_crisis', []))
+                        model_labels = all_labels.get('enhanced_crisis', [])
                     else:
                         model_labels = self._get_fallback_labels(model_type)
                     
@@ -770,6 +771,7 @@ class ModelCoordinationManager:
             if zero_shot_manager:
                 try:
                     all_labels = zero_shot_manager.get_all_labels()
+                    current_set = zero_shot_manager.get_current_label_set()
                     zero_shot_settings = zero_shot_manager.get_zero_shot_settings()
                     hypothesis_template = zero_shot_settings.get('hypothesis_template', hypothesis_template)
                     logger.debug(f"✅ Using ZeroShotManager for label management")
@@ -783,11 +785,10 @@ class ModelCoordinationManager:
             for model_type in models.keys():
                 try:
                     # Get labels for this model type
-                    if isinstance(all_labels, dict) and model_type in all_labels:
-                        model_labels = all_labels[model_type]
+                    if isinstance(all_labels, dict) and current_set in all_labels:
+                        model_labels = all_labels[current_set]
                     elif isinstance(all_labels, dict):
-                        # Use general labels if model-specific not available
-                        model_labels = all_labels.get('crisis', all_labels.get('enhanced_crisis', []))
+                        model_labels = all_labels.get('enhanced_crisis', [])
                     else:
                         model_labels = self._get_fallback_labels(model_type)
                     
