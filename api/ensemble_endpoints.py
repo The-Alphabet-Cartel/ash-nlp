@@ -26,323 +26,6 @@ from fastapi import FastAPI, HTTPException
 
 logger = logging.getLogger(__name__)
 
-def integrate_pattern_and_ensemble_analysis(ensemble_result: Dict[str, Any], pattern_result: Dict[str, Any], crisis_threshold_manager=None) -> Dict[str, Any]:
-    """
-    Mode-aware integration with dynamic threshold configuration
-    
-    Args:
-        ensemble_result: Results from the three-model ensemble
-        pattern_result: Results from crisis pattern analysis  
-        crisis_threshold_manager: CrisisThresholdManager for mode-aware thresholds
-        
-    Returns:
-        Combined analysis with final crisis determination
-    """
-    try:
-        # Extract ensemble consensus with enhanced validation
-        ensemble_consensus = ensemble_result.get('consensus', {})
-        ensemble_prediction = ensemble_consensus.get('prediction', 'unknown')
-        ensemble_confidence = ensemble_consensus.get('confidence', 0.0)
-        
-        # Extract pattern information with enhanced validation
-        patterns_triggered = pattern_result.get('patterns_triggered', [])
-        pattern_error = pattern_result.get('error')
-        
-        # Get current mode and configuration with enhanced error handling
-        if crisis_threshold_manager:
-            try:
-                current_mode = crisis_threshold_manager.get_current_ensemble_mode()
-                crisis_mapping = crisis_threshold_manager.get_crisis_level_mapping_for_mode()
-                pattern_integration_config = crisis_threshold_manager.get_pattern_integration_config()
-                
-                logger.debug(f"Integration using {current_mode} mode thresholds")
-            except Exception as e:
-                logger.warning(f"Error accessing threshold configuration: {e}")
-                current_mode = 'fallback'
-                crisis_mapping = _get_fallback_crisis_mapping()
-                pattern_integration_config = _get_fallback_pattern_config()
-        else:
-            current_mode = 'fallback'
-            crisis_mapping = _get_fallback_crisis_mapping()
-            pattern_integration_config = _get_fallback_pattern_config()
-            logger.warning("Using fallback thresholds - CrisisThresholdManager not available")
-        
-        # Determine pattern severity with enhanced validation
-        pattern_severity = 'none'
-        highest_pattern_level = 'none'
-        pattern_confidence = 0.0
-        
-        if patterns_triggered:
-            for pattern in patterns_triggered:
-                try:
-                    pattern_level = pattern.get('crisis_level', 'low')
-                    pattern_conf = pattern.get('confidence', 0.5)
-                    pattern_confidence = max(pattern_confidence, pattern_conf)
-                    
-                    if pattern_level == 'high':
-                        highest_pattern_level = 'high'
-                        pattern_severity = 'high'
-                        break
-                    elif pattern_level == 'medium' and highest_pattern_level != 'high':
-                        highest_pattern_level = 'medium'
-                        pattern_severity = 'medium'
-                    elif pattern_level == 'low' and highest_pattern_level == 'none':
-                        highest_pattern_level = 'low'
-                        pattern_severity = 'low'
-                except Exception as e:
-                    logger.warning(f"Error processing pattern: {e}")
-                    continue
-        
-        final_crisis_level = 'none'
-        final_confidence = ensemble_confidence
-        integration_reasoning = []
-        
-        # Map ensemble prediction using mode-aware thresholds
-        ensemble_crisis_level = _map_ensemble_prediction_to_crisis_level(
-            ensemble_prediction, ensemble_confidence, crisis_mapping
-        )
-        integration_reasoning.append(f"Ensemble ({current_mode}): {ensemble_prediction} -> {ensemble_crisis_level}")
-        
-        # Pattern integration logic with enhanced error handling
-        if patterns_triggered:
-            integration_reasoning.append(f"Patterns: {len(patterns_triggered)} triggered, highest: {highest_pattern_level}")
-            
-            try:
-                # Apply pattern weight multiplier
-                pattern_multiplier = pattern_integration_config.get('pattern_weight_multiplier', 1.2)
-                weighted_pattern_confidence = pattern_confidence * pattern_multiplier
-                
-                # Pattern override logic
-                pattern_override_threshold = pattern_integration_config.get('pattern_override_threshold', 0.8)
-                
-                if pattern_confidence >= pattern_override_threshold:
-                    # High-confidence patterns can override ensemble results
-                    if pattern_severity == 'high':
-                        final_crisis_level = 'high'
-                        final_confidence = max(final_confidence, weighted_pattern_confidence)
-                        integration_reasoning.append(f"Pattern override: HIGH pattern (conf={pattern_confidence:.3f}) -> HIGH")
-                    elif pattern_severity == 'medium':
-                        final_crisis_level = max_crisis_level(ensemble_crisis_level, 'medium')
-                        final_confidence = max(final_confidence, weighted_pattern_confidence)
-                        integration_reasoning.append(f"Pattern override: MEDIUM pattern (conf={pattern_confidence:.3f}) -> {final_crisis_level}")
-                    else:
-                        final_crisis_level = max_crisis_level(ensemble_crisis_level, 'low')
-                        final_confidence = max(final_confidence, weighted_pattern_confidence)
-                        integration_reasoning.append(f"Pattern override: LOW pattern (conf={pattern_confidence:.3f}) -> {final_crisis_level}")
-                else:
-                    # Normal pattern escalation logic
-                    if pattern_severity == 'high':
-                        final_crisis_level = max_crisis_level(ensemble_crisis_level, 'high')
-                        final_confidence = max(final_confidence, 0.75)
-                        integration_reasoning.append("Pattern escalation: HIGH crisis pattern detected")
-                        
-                    elif pattern_severity == 'medium':
-                        if ensemble_crisis_level in ['high', 'medium']:
-                            final_crisis_level = ensemble_crisis_level
-                        else:
-                            final_crisis_level = max_crisis_level(ensemble_crisis_level, 'medium')
-                        final_confidence = max(final_confidence, 0.60)
-                        integration_reasoning.append(f"Pattern escalation: MEDIUM pattern -> {final_crisis_level}")
-                        
-                    elif pattern_severity == 'low':
-                        final_crisis_level = max_crisis_level(ensemble_crisis_level, 'low')
-                        final_confidence = max(final_confidence, 0.35)
-                        integration_reasoning.append("Pattern escalation: LOW pattern detected")
-            except Exception as e:
-                logger.warning(f"Error in pattern integration logic: {e}")
-                final_crisis_level = ensemble_crisis_level
-                integration_reasoning.append(f"Pattern integration error, using ensemble result: {e}")
-        else:
-            final_crisis_level = ensemble_crisis_level
-            integration_reasoning.append("No patterns triggered, using ensemble result")
-        
-        # Safety checks and bias application with enhanced error handling
-        if crisis_threshold_manager:
-            try:
-                safety_config = crisis_threshold_manager.get_safety_controls_config()
-                safety_bias = safety_config.get('consensus_safety_bias', 0.03)
-                
-                # Apply safety bias toward higher crisis levels
-                final_confidence += safety_bias
-                final_confidence = min(final_confidence, 1.0)
-                
-                # Safety override: Never downgrade from ensemble HIGH
-                if (ensemble_crisis_level == 'high' and 
-                    final_crisis_level != 'high' and 
-                    safety_config.get('enable_safety_override', True)):
-                    final_crisis_level = 'high'
-                    integration_reasoning.append("Safety override: Maintaining ensemble HIGH crisis level")
-                
-                # Fail-safe escalation for very high confidence
-                if (final_confidence >= 0.90 and 
-                    final_crisis_level == 'none' and 
-                    safety_config.get('fail_safe_escalation', True)):
-                    final_crisis_level = 'low'
-                    integration_reasoning.append("Fail-safe escalation: Very high confidence requires response")
-            except Exception as e:
-                logger.warning(f"Error applying safety controls: {e}")
-        
-        # Determine if response needed
-        needs_response = final_crisis_level != 'none'
-        
-        # Build detected categories with enhanced validation
-        detected_categories = []
-        if patterns_triggered:
-            try:
-                detected_categories.extend([p.get('pattern_name', 'unknown_pattern') for p in patterns_triggered])
-            except Exception as e:
-                logger.warning(f"Error extracting pattern categories: {e}")
-        
-        try:
-            ensemble_categories = ensemble_result.get('detected_categories', [])
-            detected_categories.extend(ensemble_categories)
-            detected_categories = list(set(detected_categories))
-        except Exception as e:
-            logger.warning(f"Error processing ensemble categories: {e}")
-        
-        staff_review_required = False
-        if crisis_threshold_manager:
-            try:
-                has_model_disagreement = ensemble_result.get('gap_detection', {}).get('gap_detected', False)
-                has_gap_detection = ensemble_result.get('gap_detection', {}).get('requires_review', False)
-                
-                staff_review_required = crisis_threshold_manager.is_staff_review_required(
-                    final_crisis_level, final_confidence, has_model_disagreement, has_gap_detection
-                )
-            except Exception as e:
-                logger.warning(f"Error determining staff review requirement: {e}")
-                # Fallback staff review logic
-                staff_review_required = (final_crisis_level == 'high' or 
-                                       (final_crisis_level == 'medium' and final_confidence >= 0.45))
-        else:
-            # Fallback staff review logic
-            staff_review_required = (final_crisis_level == 'high' or 
-                                   (final_crisis_level == 'medium' and final_confidence >= 0.45))
-        
-        return {
-            'needs_response': needs_response,
-            'crisis_level': final_crisis_level,
-            'confidence_score': final_confidence,
-            'detected_categories': detected_categories,
-            'method': f'ensemble_and_patterns_integrated_{current_mode}',
-            'model_info': f'Three Zero-Shot Model Ensemble + Crisis Pattern Analysis ({current_mode} mode)',
-            'reasoning': ' | '.join(integration_reasoning),
-            'staff_review_required': staff_review_required,
-            'threshold_mode': current_mode,
-            'integration_details': {
-                'ensemble_prediction': ensemble_prediction,
-                'ensemble_crisis_level': ensemble_crisis_level,
-                'pattern_severity': pattern_severity,
-                'patterns_count': len(patterns_triggered),
-                'pattern_confidence': pattern_confidence,
-                'final_determination': final_crisis_level,
-                'pattern_available': not bool(pattern_error),
-                'safety_bias_applied': crisis_threshold_manager is not None
-            }
-        }
-        
-    except Exception as e:
-        logger.error(f"Error in pattern/ensemble integration: {e}")
-        return {
-            'needs_response': ensemble_result.get('consensus', {}).get('prediction', 'unknown') != 'neutral',
-            'crisis_level': 'low',  # Conservative fallback
-            'confidence_score': ensemble_result.get('consensus', {}).get('confidence', 0.0),
-            'detected_categories': ensemble_result.get('detected_categories', []),
-            'method': 'integration_error_fallback',
-            'model_info': 'Integration error - using conservative fallback',
-            'reasoning': f"Integration failed: {str(e)}",
-            'staff_review_required': True,  # Always require review on errors
-            'integration_error': str(e)
-        }
-
-def _get_fallback_crisis_mapping() -> Dict[str, float]:
-    """Get fallback crisis mapping configuration"""
-    return {
-        'crisis_to_high': 0.50,
-        'crisis_to_medium': 0.30,
-        'mild_crisis_to_low': 0.40,
-        'negative_to_low': 0.70,
-        'unknown_to_low': 0.50
-    }
-
-def _get_fallback_pattern_config() -> Dict[str, float]:
-    """Get fallback pattern integration configuration"""
-    return {
-        'pattern_weight_multiplier': 1.2,
-        'pattern_override_threshold': 0.8
-    }
-
-def _map_ensemble_prediction_to_crisis_level(prediction: str, confidence: float, crisis_mapping: Dict[str, float]) -> str:
-    """
-    Map ensemble prediction to crisis level with enhanced error handling
-    """
-    try:
-        pred_lower = prediction.lower()
-        
-        # CRISIS predictions
-        if pred_lower == 'crisis':
-            if confidence >= crisis_mapping.get('crisis_to_high', 0.50):
-                return 'high'
-            elif confidence >= crisis_mapping.get('crisis_to_medium', 0.30):
-                return 'medium'
-            else:
-                return 'low'  # Any crisis prediction gets at least low
-        
-        # MILD_CRISIS predictions
-        elif pred_lower == 'mild_crisis':
-            if confidence >= crisis_mapping.get('mild_crisis_to_low', 0.40):
-                return 'low'
-            else:
-                return 'none'
-        
-        # NEGATIVE sentiment predictions
-        elif pred_lower in ['negative', 'very_negative']:
-            if confidence >= crisis_mapping.get('negative_to_low', 0.70):
-                return 'low'
-            else:
-                return 'none'
-        
-        # LOW_RISK predictions
-        elif pred_lower in ['low_risk', 'minimal_distress']:
-            if confidence >= 0.80:  # Higher threshold for these
-                return 'low'
-            else:
-                return 'none'
-        
-        # UNKNOWN predictions
-        elif pred_lower == 'unknown':
-            if confidence >= crisis_mapping.get('unknown_to_low', 0.50):
-                return 'low'
-            else:
-                return 'none'
-        
-        # POSITIVE/NEUTRAL predictions
-        elif pred_lower in ['positive', 'very_positive', 'neutral', 'no_risk']:
-            return 'none'
-        
-        # Unexpected predictions
-        else:
-            logger.warning(f"Unexpected ensemble prediction: {prediction}")
-            return 'low' if confidence >= 0.60 else 'none'
-            
-    except Exception as e:
-        logger.error(f"Error mapping ensemble prediction: {e}")
-        return 'low' if confidence >= 0.50 else 'none'
-
-def max_crisis_level(level1: str, level2: str) -> str:
-    """Return the higher crisis level with enhanced validation"""
-    try:
-        crisis_hierarchy = {'none': 0, 'low': 1, 'medium': 2, 'high': 3}
-        reverse_hierarchy = {0: 'none', 1: 'low', 2: 'medium', 3: 'high'}
-        
-        level1_value = crisis_hierarchy.get(level1, 0)
-        level2_value = crisis_hierarchy.get(level2, 0)
-        
-        return reverse_hierarchy.get(max(level1_value, level2_value), 'none')
-    except Exception as e:
-        logger.warning(f"Error comparing crisis levels: {e}")
-        return 'low'  # Safe fallback
-
 def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, pattern_detection_manager=None, crisis_threshold_manager=None):
     """
     Add Three Zero-Shot Model Ensemble endpoints with enhanced validation
@@ -358,7 +41,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     # ========================================================================
     # ENHANCED VALIDATION
     # ========================================================================
-    
     if not crisis_analyzer:
         logger.error("CrisisAnalyzer is required but not provided")
         raise RuntimeError("CrisisAnalyzer required for ensemble endpoints")
@@ -432,9 +114,8 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             processing_time_ms = (time.time() - start_time) * 1000
             
             # ========================================================================
-            # PHASE 3E: ENHANCED RESPONSE EXTRACTION
+            # ENHANCED RESPONSE EXTRACTION
             # ========================================================================
-            
             # Extract from nested analysis_results structure with enhanced validation
             analysis_results = complete_analysis.get('analysis_results', {})
             
@@ -490,7 +171,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             # ========================================================================
             # LOGGING - FINAL RESULT
             # ========================================================================
-            
             method = complete_analysis.get('method', 'unknown')
             feature_flags = complete_analysis.get('feature_flags_applied', {})
             
@@ -534,7 +214,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
     # ========================================================================
     # HEALTH CHECK ENDPOINT
     # ========================================================================
-    @app.get("/health")
+    @app.get("/ensemble/health")
     async def ensemble_health_check():
         """
         Health check for ensemble system with validation
@@ -585,7 +265,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 "status": overall_status,
                 "timestamp": time.time(),
                 "processing_time_ms": processing_time_ms,
-                "phase": "3e",
                 "architecture": "clean",
                 "enhanced_validation": True,
                 "components": {
@@ -618,7 +297,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 "timestamp": time.time(),
                 "processing_time_ms": (time.time() - start_time) * 1000,
                 "error": str(e),
-                "phase": "3e",
                 "architecture": "clean",
                 "enhanced_validation": True
             }
@@ -734,7 +412,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             )
 
     # ========================================================================
-    # CONFIGURATION AND STATUS ENDPOINTS
+    # CONFIGURATION ENDPOINT
     # ========================================================================
     @app.get("/ensemble/config")
     async def get_ensemble_configuration():
@@ -743,7 +421,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             config = {
                 "ensemble_method": "three_zero_shot_models",
                 "models_loaded": False,
-                "phase": "3e",
                 "architecture": "clean",
                 "enhanced_validation": True
             }
