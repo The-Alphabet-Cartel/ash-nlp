@@ -472,7 +472,7 @@ class ModelCoordinationManager:
         try:
             if not TRANSFORMERS_AVAILABLE:
                 logger.warning(f"⚠️ Transformers not available for {model_type} classification")
-                return await self._pattern_fallback_classification(text, labels, model_type)
+                return self._pattern_fallback_classification(text, labels, model_type)
             
             # Get model configuration
             model_config = self.get_model_config(model_type)
@@ -487,7 +487,7 @@ class ModelCoordinationManager:
             classifier = await self._get_or_load_pipeline(model_name)
             if classifier is None:
                 logger.warning(f"⚠️ Could not load model {model_name}, using pattern fallback")
-                return await self._pattern_fallback_classification(text, labels, model_type)
+                return self._pattern_fallback_classification(text, labels, model_type)
             
             # Generate actual hypotheses from labels
             actual_hypotheses = []
@@ -528,7 +528,7 @@ class ModelCoordinationManager:
 
         except Exception as e:
             logger.error(f"❌ Zero-shot classification failed for {model_type}: {e}")
-            return await self._pattern_fallback_classification(text, labels, model_type)
+            return self._pattern_fallback_classification(text, labels, model_type)
     
     def classify_sync_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
         """
