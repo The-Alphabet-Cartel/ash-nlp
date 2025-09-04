@@ -59,7 +59,6 @@ from api.ensemble_endpoints import add_ensemble_endpoints
 # ============================================================================
 # UNIFIED CONFIGURATION LOGGING SETUP
 # ============================================================================
-
 def setup_unified_logging(unified_config_manager):
     """
     Setup colorlog logging with unified configuration management
@@ -130,7 +129,6 @@ def setup_unified_logging(unified_config_manager):
 # ============================================================================
 # UNIFIED MANAGER INITIALIZATION
 # ============================================================================
-
 def initialize_unified_managers():
     """
     Initialize all managers using UnifiedConfigManager
@@ -307,9 +305,9 @@ def initialize_unified_managers():
         logger.info("✅ Analysis components initialized")
         logger.info("=" * 70)
         
-    # ========================================================================
-    # PRELOAD THOSE BIG-ASS MODELS!
-    # ========================================================================
+        # ========================================================================
+        # PRELOAD THOSE BIG-ASS MODELS!
+        # ========================================================================
         if model_coordination:
             try:
                 logger.info("=" * 70)
@@ -362,7 +360,6 @@ def initialize_unified_managers():
 # ============================================================================
 # FASTAPI APPLICATION FACTORY
 # ============================================================================
-
 def create_fastapi_app():
     """
     Create FastAPI application with unified configuration
@@ -395,7 +392,7 @@ def create_fastapi_app():
                 return {
                     "status": "healthy",
                     "timestamp": time.time(),
-                    "version": "3.1d",
+                    "version": "3.1",
                     "architecture": "clean",
                     "unified_config_manager": "active",
                     "managers_loaded": list(managers.keys()),
@@ -403,8 +400,7 @@ def create_fastapi_app():
                     "storage_config_manager": storage_status,
                     "environment_variables": {
                         "total_managed": len(managers['unified_config'].env_config),
-                        "validation": "comprehensive_schema_validation",
-                        "direct_os_getenv_calls": "eliminated"
+                        "validation": "schema_validation"
                     },
                     "community": "The Alphabet Cartel"
                 }
@@ -413,7 +409,7 @@ def create_fastapi_app():
                 return {
                     "status": "error",
                     "error": str(e),
-                    "version": "3.1d"
+                    "version": "3.1"
                 }
         
         # Register API endpoints with manager dependencies
@@ -462,7 +458,6 @@ def create_fastapi_app():
 # ============================================================================
 # MAIN APPLICATION ENTRY POINT
 # ============================================================================
-
 if __name__ == "__main__":
     import time
     
