@@ -452,7 +452,7 @@ class ModelCoordinationManager:
     # PHASE 3: AI CLASSIFICATION METHODS - CORE IMPLEMENTATION
     # ========================================================================
     
-    def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
+    async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
                                 hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
         PHASE 3: PRIMARY AI classification method for EnsembleAnalysisHelper
@@ -472,7 +472,7 @@ class ModelCoordinationManager:
         try:
             if not TRANSFORMERS_AVAILABLE:
                 logger.warning(f"⚠️ Transformers not available for {model_type} classification")
-                return self._pattern_fallback_classification(text, labels, model_type)
+                return await self._pattern_fallback_classification(text, labels, model_type)
             
             # Get model configuration
             model_config = self.get_model_config(model_type)
@@ -484,10 +484,10 @@ class ModelCoordinationManager:
                 raise ValueError(f"No model name configured for type: {model_type}")
             
             # Load or get cached pipeline
-            classifier = self._get_or_load_pipeline(model_name)
+            classifier = await self._get_or_load_pipeline(model_name)
             if classifier is None:
                 logger.warning(f"⚠️ Could not load model {model_name}, using pattern fallback")
-                return self._pattern_fallback_classification(text, labels, model_type)
+                return await self._pattern_fallback_classification(text, labels, model_type)
             
             # Generate actual hypotheses from labels
             actual_hypotheses = []
@@ -503,7 +503,7 @@ class ModelCoordinationManager:
             # Perform zero-shot classification
             logger.debug(f"🤖 Running zero-shot classification: {model_type} with {model_name}")
             
-            result = asyncio.get_event_loop().run_in_executor(
+            result = await asyncio.get_event_loop().run_in_executor(
                 None, 
                 lambda: classifier(text, labels)
             )
@@ -528,7 +528,7 @@ class ModelCoordinationManager:
 
         except Exception as e:
             logger.error(f"❌ Zero-shot classification failed for {model_type}: {e}")
-            return self._pattern_fallback_classification(text, labels, model_type)
+            return await self._pattern_fallback_classification(text, labels, model_type)
     
     def classify_sync_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
         """
@@ -579,9 +579,7 @@ class ModelCoordinationManager:
                         model_labels = self._get_fallback_labels(model_type)
                     
                     # Synchronous classification (no async)
-                    result = self.classify_with_zero_shot(
-                        text, model_labels, model_type, hypothesis_template
-                    )
+                    result = self._classify_sync_direct(text, model_labels, model_type, hypothesis_template)
                     model_results[model_type] = result
                     
                 except Exception as e:
@@ -798,7 +796,7 @@ class ModelCoordinationManager:
                         model_labels = self._get_fallback_labels(model_type)
                     
                     # Perform classification
-                    result = self.classify_with_zero_shot(
+                    result = await self.classify_with_zero_shot(
                         text, model_labels, model_type, hypothesis_template
                     )
                     model_results[model_type] = result
