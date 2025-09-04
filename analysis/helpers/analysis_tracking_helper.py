@@ -213,18 +213,18 @@ class AnalysisTrackingHelper:
             
             # Try synchronous path first (optimized)
             try:
-                if hasattr(self.crisis_analyzer.model_coordination_manager, 'classify_sync_ensemble'):
-                    result = self.crisis_analyzer.model_coordination_manager.classify_sync_ensemble(message, self.crisis_analyzer.zero_shot_manager)
-                    if result:
-                        return {
-                            "crisis_score": result.get("ensemble_score", 0.0),
-                            "confidence_score": result.get("ensemble_confidence", 0.0),
-                            "method": result.get("method", "sync_ensemble"),
-                            "models_used": result.get("models_used", 0),
-                            "individual_results": result.get("individual_results", {}),
-                            "zero_shot_manager_used": result.get("zero_shot_manager_used", False),
-                            "zero_shot_labels_info": zero_shot_labels_info
-                        }
+#                if hasattr(self.crisis_analyzer.model_coordination_manager, 'classify_sync_ensemble'):
+#                    result = self.crisis_analyzer.model_coordination_manager.classify_sync_ensemble(message, self.crisis_analyzer.zero_shot_manager)
+#                    if result:
+#                        return {
+#                            "crisis_score": result.get("ensemble_score", 0.0),
+#                            "confidence_score": result.get("ensemble_confidence", 0.0),
+#                            "method": result.get("method", "sync_ensemble"),
+#                            "models_used": result.get("models_used", 0),
+#                            "individual_results": result.get("individual_results", {}),
+#                            "zero_shot_manager_used": result.get("zero_shot_manager_used", False),
+#                            "zero_shot_labels_info": zero_shot_labels_info
+#                        }
                 
                 # Fallback to async path
                 result = await self.crisis_analyzer.model_coordination_manager.classify_with_ensemble(message, self.crisis_analyzer.zero_shot_manager)
