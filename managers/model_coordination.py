@@ -579,7 +579,7 @@ class ModelCoordinationManager:
                         model_labels = self._get_fallback_labels(model_type)
                     
                     # Synchronous classification (no async)
-                    result = await self.classify_with_zero_shot(
+                    result = self.classify_with_zero_shot(
                         text, model_labels, model_type, hypothesis_template
                     )
                     model_results[model_type] = result
