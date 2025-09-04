@@ -568,9 +568,9 @@ class ModelCoordinationManager:
                 try:
                     # Get labels for this model type
                     if isinstance(all_labels, dict) and model_type in all_labels:
-                        model_labels = all_labels[current_set]
+                        model_labels = all_labels[model_type]
                     elif isinstance(all_labels, dict):
-                        model_labels = all_labels.get('enhanced_crisis', [])
+                        model_labels = all_labels.get('crisis', all_labels.get('enhanced_crisis', []))
                     else:
                         model_labels = self._get_fallback_labels(model_type)
                     
@@ -784,9 +784,10 @@ class ModelCoordinationManager:
                 try:
                     # Get labels for this model type
                     if isinstance(all_labels, dict) and model_type in all_labels:
-                        model_labels = all_labels[current_set]
+                        model_labels = all_labels[model_type]
                     elif isinstance(all_labels, dict):
-                        model_labels = all_labels.get('enhanced_crisis', [])
+                        # Use general labels if model-specific not available
+                        model_labels = all_labels.get('crisis', all_labels.get('enhanced_crisis', []))
                     else:
                         model_labels = self._get_fallback_labels(model_type)
                     
