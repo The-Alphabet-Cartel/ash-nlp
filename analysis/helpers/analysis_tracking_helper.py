@@ -227,7 +227,7 @@ class AnalysisTrackingHelper:
                         }
                 
                 # Fallback to async path
-                result = await self.crisis_analyzer.model_coordination_manager.classify_ensemble_async(message, self.crisis_analyzer.zero_shot_manager)
+                result = await self.crisis_analyzer.model_coordination_manager.classify_with_ensemble(message, self.crisis_analyzer.zero_shot_manager)
                 return {
                     "crisis_score": result.get("ensemble_score", 0.0),
                     "confidence_score": result.get("ensemble_confidence", 0.0),
