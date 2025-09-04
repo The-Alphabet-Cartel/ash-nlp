@@ -452,7 +452,7 @@ class ModelCoordinationManager:
     # PHASE 3: AI CLASSIFICATION METHODS - CORE IMPLEMENTATION
     # ========================================================================
     
-    async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
+    def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
                                 hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
         PHASE 3: PRIMARY AI classification method for EnsembleAnalysisHelper
@@ -579,7 +579,9 @@ class ModelCoordinationManager:
                         model_labels = self._get_fallback_labels(model_type)
                     
                     # Synchronous classification (no async)
-                    result = self._classify_sync_direct(text, model_labels, model_type, hypothesis_template)
+                    result = await self.classify_with_zero_shot(
+                        text, model_labels, model_type, hypothesis_template
+                    )
                     model_results[model_type] = result
                     
                 except Exception as e:
