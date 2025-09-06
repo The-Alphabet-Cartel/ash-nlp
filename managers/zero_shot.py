@@ -410,43 +410,6 @@ class ZeroShotManager:
                 'initialization_status': 'error'
             }
     
-    def activate_profile(self, profile_name: str) -> bool:
-        """
-        Activate a label profile from configuration with Phase 3e enhanced access patterns
-        
-        Args:
-            profile_name: Name of the profile to activate
-            
-        Returns:
-            Boolean indicating if profile was activated successfully
-        
-        NOT CURRENTLY USED!
-        """
-#        try:
-#            # PHASE 3E: Enhanced profile access using get_config_section patterns
-#            profiles = self.unified_config.get_config_section('label_config', 'label_profiles', {})
-#            if not profiles:
-#                # Fallback to direct access
-#                label_config = self.unified_config.get_config_section('label_config')
-#                profiles = label_config.get('label_profiles', {})
-#            
-#            if profile_name not in profiles:
-#                logger.warning(f"Profile '{profile_name}' not found")
-#                return False
-#            
-#            profile = profiles[profile_name]
-#            logger.info(f"Activating label profile: {profile_name}")
-#            
-#            # Switch to profile's label set if specified
-#            if 'label_set' in profile:
-#                return self.switch_label_set(profile['label_set'])
-#            
-#            return True
-#            
-#        except Exception as e:
-#            logger.error(f"Error activating profile '{profile_name}': {e}")
-        return False
-    
     def get_zero_shot_settings(self) -> Dict[str, Any]:
         """
         Get zero-shot classification settings with Phase 3e enhanced access
@@ -464,7 +427,7 @@ class ZeroShotManager:
                 'track_performance': settings.get('track_performance', False),
                 'hypothesis_template': settings.get('hypothesis_template', 'This text expresses {}.'),
                 'multi_label': settings.get('multi_label', False),
-                'confidence_threshold': max(0.0, min(1.0, float(settings.get('confidence_threshold', 0.3)))),
+                'confidence_threshold': max(0.0, min(1.0, float(settings.get('confidence_threshold', 0.5)))),
                 'max_labels': max(1, min(10, int(settings.get('max_labels', 5)))),
                 'normalize_scores': settings.get('normalize_scores', True)
             }
