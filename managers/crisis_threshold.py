@@ -165,12 +165,14 @@ class CrisisThresholdManager:
             ensemble_thresholds = self.get_ensemble_thresholds_for_mode(mode)
             
             # Determine crisis level based on score and thresholds
+            critical_threshold = ensemble_thresholds.get('high', 0.7)
             high_threshold = ensemble_thresholds.get('high', 0.5)
             medium_threshold = ensemble_thresholds.get('medium', 0.3)
             low_threshold = ensemble_thresholds.get('low', 0.15)
             
             # Convert thresholds to floats for safe comparison
             try:
+                critical_threshold = float(critical_threshold)
                 high_threshold = float(high_threshold)
                 medium_threshold = float(medium_threshold)
                 low_threshold = float(low_threshold)
@@ -179,21 +181,19 @@ class CrisisThresholdManager:
                 logger.warning(f"⚠️ Invalid threshold values, using fallback logic")
                 return self._fallback_crisis_level_determination(score)
             
-            # STEP 10.7 FIX: More aggressive thresholds for better crisis detection
-            # The original thresholds were too conservative for mental health crisis detection
-            
             # Adjust thresholds to be more sensitive for crisis detection
             # Scale down the thresholds by 30% for better detection
-            adjusted_high = high_threshold * 0.7   # 0.5 * 0.7 = 0.35 (your 0.39 will hit this!)
-            adjusted_medium = medium_threshold * 0.8  # 0.3 * 0.8 = 0.24
-            adjusted_low = low_threshold * 0.9     # 0.15 * 0.9 = 0.135
+            adjusted_critical = critical_threshold #* 0.6   # 0.7 * 0.6 = 0.42
+            adjusted_high = high_threshold #* 0.7   # 0.5 * 0.7 = 0.35
+            adjusted_medium = medium_threshold #* 0.8  # 0.3 * 0.8 = 0.24
+            adjusted_low = low_threshold #* 0.9     # 0.15 * 0.9 = 0.135
             
-            logger.debug(f"🎯 Adjusted thresholds for {mode}: high={adjusted_high:.3f}, medium={adjusted_medium:.3f}, low={adjusted_low:.3f}")
+            logger.debug(f"🎯 Adjusted thresholds for {mode}: critical={adjusted_critical:.3f}, high={adjusted_high:.3f}, medium={adjusted_medium:.3f}, low={adjusted_low:.3f}")
             
             # Determine crisis level with adjusted thresholds
-            if score >= 0.8:  # Very high confidence - always critical
+            if score >= adjusted_critical:
                 crisis_level = 'critical'
-            elif score >= adjusted_high:  # Your 0.39 >= 0.35 → 'high'!
+            elif score >= adjusted_high:
                 crisis_level = 'high'
             elif score >= adjusted_medium:
                 crisis_level = 'medium'
