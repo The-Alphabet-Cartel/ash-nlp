@@ -163,7 +163,7 @@ class CrisisAnalyzer:
                     start_time = time.time()
                     
                     # Use the same execute_zero_shot_analysis method that tracking uses
-                    optimized_result = self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
+                    optimized_result = await self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
                     
                     # Apply crisis thresholds to the ZeroShot result
                     crisis_score = optimized_result.get('crisis_score', 0.0)
