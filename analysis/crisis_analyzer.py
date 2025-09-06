@@ -522,7 +522,7 @@ class CrisisAnalyzer:
                         'score_normalization': 'sigmoid',
                         'threshold_adaptation': True,
                         'learning_rate': 0.01,
-                        'confidence_threshold': 0.5
+                        'confidence_threshold': 0.25
                     }
                 )
             elif self.analysis_config_manager:
@@ -534,7 +534,7 @@ class CrisisAnalyzer:
                     'score_normalization': 'sigmoid',
                     'threshold_adaptation': True,
                     'learning_rate': 0.01,
-                    'confidence_threshold': 0.5
+                    'confidence_threshold': 0.25
                 }
         except Exception as e:
             return self._safe_analysis_execution(
