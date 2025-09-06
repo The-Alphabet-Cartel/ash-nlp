@@ -145,52 +145,228 @@ class CrisisAnalyzer:
     # ========================================================================
     # ENHANCED MAIN ANALYSIS METHODS - Phase 4a Step 2
     # ========================================================================
-    
     async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
-        """
-        PHASE 4A STEP 2: Enhanced crisis analysis with comprehensive flow tracking
-        
-        This is the main entry point called by API endpoints.
-        Now includes complete step-by-step execution tracking and verification.
-        """
-        # Initialize tracking
-        tracking = self.tracking_helper.init_analysis_tracking(message, user_id, channel_id)
-        
-        # Check if tracking is actually enabled - if not, use original optimized path
-        if not self.tracking_helper.enable_tracking:
-            logger.debug("Tracking disabled - using original optimized analysis path")
-            try:
-                # Use the existing optimized performance path directly
-                start_time = time.time()
-                optimized_result = self.performance_optimizer.optimized_ensemble_analysis(message, user_id, channel_id)
-                
-                # Apply learning if available
-                if self.learning_system_manager:
-                    try:
-                        learning_result = self.learning_system_manager.apply_learning_adjustments(
-                            optimized_result, user_id, channel_id
+            """
+            PHASE 4A STEP 2: Enhanced crisis analysis with comprehensive flow tracking
+            
+            This is the main entry point called by API endpoints.
+            Now includes complete step-by-step execution tracking and verification.
+            """
+            # Initialize tracking
+            tracking = self.tracking_helper.init_analysis_tracking(message, user_id, channel_id)
+            
+            # Check if tracking is actually enabled - if not, use original optimized path
+            if not self.tracking_helper.enable_tracking:
+                logger.debug("Tracking disabled - using ZeroShot-optimized analysis path")
+                try:
+                    # Use ZeroShot-compatible optimized path
+                    start_time = time.time()
+                    
+                    # FIXED: Use ModelCoordinationManager with ZeroShotManager (performance-optimized but ZeroShot-compliant)
+                    if self.model_coordination_manager and hasattr(self.model_coordination_manager, 'classify_sync_ensemble'):
+                        # Use synchronous ensemble for performance while maintaining ZeroShot compliance
+                        ensemble_result = self.model_coordination_manager.classify_sync_ensemble(
+                            message, self.zero_shot_manager
                         )
-                        optimized_result.update({
-                            'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
-                            'learning_metadata': learning_result.get('metadata', {}),
-                            'learning_applied': True
+                        
+                        # Convert to standard format
+                        optimized_result = {
+                            'crisis_score': ensemble_result.get('score', 0.0),
+                            'confidence_score': ensemble_result.get('confidence', 0.0),
+                            'method': f"optimized_{ensemble_result.get('method', 'sync_ensemble')}",
+                            'models_used': ensemble_result.get('models_used', []),
+                            'individual_results': ensemble_result.get('individual_results', {}),
+                            'zero_shot_manager_used': True,
+                            'zero_shot_labels_info': ensemble_result.get('zero_shot_labels_info', {}),
+                            'ensemble_mode': ensemble_result.get('ensemble_mode', 'unknown'),
+                            'needs_response': ensemble_result.get('score', 0.0) >= 0.25,
+                            'requires_staff_review': ensemble_result.get('score', 0.0) >= 0.45
+                        }
+                        
+                        # Apply crisis thresholds
+                        crisis_score = optimized_result['crisis_score']
+                        optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score)
+                        
+                    else:
+                        # Fallback to async method if sync not available
+                        logger.debug("Sync ensemble not available, using async method")
+                        ensemble_result = await self.model_coordination_manager.classify_with_ensemble(
+                            message, self.zero_shot_manager
+                        )
+                        
+                        optimized_result = {
+                            'crisis_score': ensemble_result.get('ensemble_score', 0.0),
+                            'confidence_score': ensemble_result.get('ensemble_confidence', 0.0),
+                            'method': f"optimized_{ensemble_result.get('method', 'async_ensemble')}",
+                            'models_used': ensemble_result.get('models_used', []),
+                            'individual_results': ensemble_result.get('individual_results', {}),
+                            'zero_shot_manager_used': True,
+                            'zero_shot_labels_info': ensemble_result.get('zero_shot_labels_info', {}),
+                            'needs_response': ensemble_result.get('ensemble_score', 0.0) >= 0.25,
+                            'requires_staff_review': ensemble_result.get('ensemble_score', 0.0) >= 0.45
+                        }
+                        
+                        # Apply crisis thresholds
+                        crisis_score = optimized_result['crisis_score']
+                        optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score)
+                    
+                    # Apply learning if available
+                    if self.learning_system_manager:
+                        try:
+                            learning_result = self.learning_system_manager.apply_learning_adjustments(
+                                optimized_result, user_id, channel_id
+                            )
+                            optimized_result.update({
+                                'learning_adjusted_score': learning_result.get('adjusted_score', optimized_result.get('crisis_score', 0.0)),
+                                'learning_metadata': learning_result.get('metadata', {}),
+                                'learning_applied': True
+                            })
+                        except Exception as e:
+                            logger.warning(f"Learning adjustment failed: {e}")
+                            optimized_result['learning_applied'] = False
+                    else:
+                        optimized_result['learning_applied'] = False
+                    
+                    processing_time = (time.time() - start_time) * 1000
+                    optimized_result['api_processing_time'] = processing_time
+                    
+                    # Add minimal tracking info only
+                    return self.tracking_helper.finalize_tracking(tracking, optimized_result)
+                    
+                except Exception as e:
+                    logger.error(f"ZeroShot-optimized analysis failed: {e}")
+                    # Return simple fallback without complex tracking
+                    return {
+                        "crisis_score": 0.5,
+                        "crisis_level": "medium",
+                        "confidence_score": 0.0,
+                        "method": "emergency_fallback",
+                        "needs_response": True,
+                        "requires_staff_review": True,
+                        "error": str(e),
+                        "zero_shot_manager_used": False,
+                        "analysis_execution_tracking": {
+                            "tracking_enabled": False,
+                            "total_processing_time_ms": (time.time() - time.time()) * 1000
+                        }
+                    }
+            
+            # Full tracking enabled - proceed with detailed tracking
+            logger.info(f"Phase 4a Step 2: Starting comprehensive crisis analysis for user {user_id} in channel {channel_id}")
+            
+            try:
+                # Refresh caches using helper
+                self.context_helper.refresh_feature_cache()
+                self.context_helper.refresh_performance_cache()
+                
+                # Check if ensemble is enabled by feature flag
+                ensemble_enabled = self._feature_cache.get('ensemble_enabled', True)
+                
+                if ensemble_enabled:
+                    logger.debug("Using performance-optimized analysis with tracking")
+                    
+                    # STEP 1: Zero-Shot AI Models (PRIMARY CLASSIFICATION)
+                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "started")
+                    try:
+                        ensemble_result = await self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
+                        self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "completed", {
+                            "method": ensemble_result.get("method", "unknown"),
+                            "models_used": ensemble_result.get("models_used", []),
+                            "individual_scores": ensemble_result.get("individual_results", {}),
+                            "ensemble_confidence": ensemble_result.get("confidence_score", 0.0),
+                            "ai_classification_successful": True,
+                            "zero_shot_labels_info": ensemble_result.get("zero_shot_labels_info", {})
+                        })
+                        logger.debug("Step 1: Zero-shot AI analysis completed successfully")
+                        
+                    except Exception as e:
+                        logger.warning(f"Step 1: Zero-shot AI analysis failed: {e}")
+                        self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "failed", error=e)
+                        tracking["fallback_scenarios"]["ai_models_failed"] = True
+                        ensemble_result = {"crisis_score": 0.0, "confidence_score": 0.0, "method": "ai_fallback"}
+                    
+                    # STEP 2: Pattern Enhancement (CONTEXTUAL ANALYSIS)
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
+                    try:
+                        pattern_result = await self.tracking_helper.execute_pattern_enhancement(message, ensemble_result)
+                        self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
+                            "patterns_matched": pattern_result.get("patterns_found", []),
+                            "pattern_categories": pattern_result.get("detected_categories", []),
+                            "enhancement_applied": pattern_result.get("enhancement_applied", False),
+                            "confidence_boost": pattern_result.get("confidence_boost", 0.0),
+                            "pattern_analysis_successful": True
+                        })
+                        logger.debug("Step 2: Pattern enhancement completed successfully")
+                        
+                    except Exception as e:
+                        logger.warning(f"Step 2: Pattern enhancement failed: {e}")
+                        self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
+                        pattern_result = {"enhancement_applied": False}
+                    
+                    # STEP 3: Learning System Adjustments (ADAPTIVE LEARNING)
+                    self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "started")
+                    try:
+                        if self.learning_system_manager:
+                            learning_result = await self.tracking_helper.execute_learning_adjustments(ensemble_result, pattern_result, user_id, channel_id)
+                            self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
+                                "threshold_adjustments": learning_result.get("adjustments", {}),
+                                "confidence_modifications": learning_result.get("confidence_delta", 0.0),
+                                "learning_metadata": learning_result.get("metadata", {}),
+                                "learning_applied": True
+                            })
+                            logger.debug("Step 3: Learning adjustments applied successfully")
+                        else:
+                            self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
+                                "learning_applied": False,
+                                "reason": "LearningSystemManager not available"
+                            })
+                            logger.debug("Step 3: Learning system not available - skipped")
+                            learning_result = {"learning_applied": False}
+                            
+                    except Exception as e:
+                        logger.warning(f"Step 3: Learning adjustments failed: {e}")
+                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "failed", error=e)
+                        learning_result = {"learning_applied": False}
+                    
+                    # Combine results
+                    final_result = self.tracking_helper.combine_analysis_results(ensemble_result, pattern_result, learning_result)
+                    
+                    # Mark performance optimization
+                    if "performance_metrics" in tracking:
+                        tracking["performance_metrics"]["optimization_applied"] = True
+                    
+                else:
+                    logger.debug("Ensemble analysis disabled - using pattern-only fallback")
+                    if "fallback_scenarios" in tracking:
+                        tracking["fallback_scenarios"]["pattern_only_used"] = True
+                    
+                    # Pattern-only analysis
+                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
+                    try:
+                        final_result = await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, time.time())
+                        self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
+                            "method": "pattern_only_fallback",
+                            "patterns_analysis_successful": True
                         })
                     except Exception as e:
-                        logger.warning(f"Learning adjustment failed: {e}")
-                        optimized_result['learning_applied'] = False
-                else:
-                    optimized_result['learning_applied'] = False
+                        self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
+                        raise
                 
-                processing_time = (time.time() - start_time) * 1000
-                optimized_result['api_processing_time'] = processing_time
+                # Finalize tracking and add to result
+                final_result = self.tracking_helper.finalize_tracking(tracking, final_result)
                 
-                # Add minimal tracking info only
-                return self.tracking_helper.finalize_tracking(tracking, optimized_result)
+                total_time = final_result.get("tracking_summary", {}).get("total_processing_time_ms", 0)
+                logger.info(f"Phase 4a Step 2: Crisis analysis completed in {total_time:.1f}ms")
                 
+                return final_result
+                    
             except Exception as e:
-                logger.error(f"Optimized analysis failed: {e}")
-                # Return simple fallback without complex tracking
-                return {
+                logger.error(f"Phase 4a Step 2: Crisis analysis failed: {e}")
+                if "fallback_scenarios" in tracking:
+                    tracking["fallback_scenarios"]["emergency_fallback"] = True
+                
+                # Emergency fallback with tracking
+                emergency_result = {
                     "crisis_score": 0.5,
                     "crisis_level": "medium",
                     "confidence_score": 0.0,
@@ -198,141 +374,13 @@ class CrisisAnalyzer:
                     "needs_response": True,
                     "requires_staff_review": True,
                     "error": str(e),
-                    "analysis_execution_tracking": {
-                        "tracking_enabled": False,
-                        "total_processing_time_ms": (time.time() - time.time()) * 1000
-                    }
+                    "message": message,
+                    "user_id": user_id,
+                    "channel_id": channel_id,
+                    "zero_shot_manager_used": False
                 }
-        
-        # Full tracking enabled - proceed with detailed tracking
-        logger.info(f"Phase 4a Step 2: Starting comprehensive crisis analysis for user {user_id} in channel {channel_id}")
-        
-        try:
-            # Refresh caches using helper
-            self.context_helper.refresh_feature_cache()
-            self.context_helper.refresh_performance_cache()
-            
-            # Check if ensemble is enabled by feature flag
-            ensemble_enabled = self._feature_cache.get('ensemble_enabled', True)
-            
-            if ensemble_enabled:
-                logger.debug("Using performance-optimized analysis with tracking")
                 
-                # STEP 1: Zero-Shot AI Models (PRIMARY CLASSIFICATION)
-                self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "started")
-                try:
-                    ensemble_result = await self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
-                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "completed", {
-                        "method": ensemble_result.get("method", "unknown"),
-                        "models_used": ensemble_result.get("models_used", []),
-                        "individual_scores": ensemble_result.get("individual_results", {}),
-                        "ensemble_confidence": ensemble_result.get("confidence_score", 0.0),
-                        "ai_classification_successful": True,
-                        "zero_shot_labels_info": ensemble_result.get("zero_shot_labels_info", {})
-                    })
-                    logger.debug("Step 1: Zero-shot AI analysis completed successfully")
-                    
-                except Exception as e:
-                    logger.warning(f"Step 1: Zero-shot AI analysis failed: {e}")
-                    self.tracking_helper.update_tracking_step(tracking, "step_1_zero_shot_ai", "failed", error=e)
-                    tracking["fallback_scenarios"]["ai_models_failed"] = True
-                    ensemble_result = {"crisis_score": 0.0, "confidence_score": 0.0, "method": "ai_fallback"}
-                
-                # STEP 2: Pattern Enhancement (CONTEXTUAL ANALYSIS)
-                self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
-                try:
-                    pattern_result = await self.tracking_helper.execute_pattern_enhancement(message, ensemble_result)
-                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
-                        "patterns_matched": pattern_result.get("patterns_found", []),
-                        "pattern_categories": pattern_result.get("detected_categories", []),
-                        "enhancement_applied": pattern_result.get("enhancement_applied", False),
-                        "confidence_boost": pattern_result.get("confidence_boost", 0.0),
-                        "pattern_analysis_successful": True
-                    })
-                    logger.debug("Step 2: Pattern enhancement completed successfully")
-                    
-                except Exception as e:
-                    logger.warning(f"Step 2: Pattern enhancement failed: {e}")
-                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
-                    pattern_result = {"enhancement_applied": False}
-                
-                # STEP 3: Learning System Adjustments (ADAPTIVE LEARNING)
-                self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "started")
-                try:
-                    if self.learning_system_manager:
-                        learning_result = await self.tracking_helper.execute_learning_adjustments(ensemble_result, pattern_result, user_id, channel_id)
-                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
-                            "threshold_adjustments": learning_result.get("adjustments", {}),
-                            "confidence_modifications": learning_result.get("confidence_delta", 0.0),
-                            "learning_metadata": learning_result.get("metadata", {}),
-                            "learning_applied": True
-                        })
-                        logger.debug("Step 3: Learning adjustments applied successfully")
-                    else:
-                        self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "completed", {
-                            "learning_applied": False,
-                            "reason": "LearningSystemManager not available"
-                        })
-                        logger.debug("Step 3: Learning system not available - skipped")
-                        learning_result = {"learning_applied": False}
-                        
-                except Exception as e:
-                    logger.warning(f"Step 3: Learning adjustments failed: {e}")
-                    self.tracking_helper.update_tracking_step(tracking, "step_3_learning_adjustments", "failed", error=e)
-                    learning_result = {"learning_applied": False}
-                
-                # Combine results
-                final_result = self.tracking_helper.combine_analysis_results(ensemble_result, pattern_result, learning_result)
-                
-                # Mark performance optimization
-                if "performance_metrics" in tracking:
-                    tracking["performance_metrics"]["optimization_applied"] = True
-                
-            else:
-                logger.debug("Ensemble analysis disabled - using pattern-only fallback")
-                if "fallback_scenarios" in tracking:
-                    tracking["fallback_scenarios"]["pattern_only_used"] = True
-                
-                # Pattern-only analysis
-                self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "started")
-                try:
-                    final_result = await self.pattern_helper.basic_crisis_analysis(message, user_id, channel_id, time.time())
-                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "completed", {
-                        "method": "pattern_only_fallback",
-                        "patterns_analysis_successful": True
-                    })
-                except Exception as e:
-                    self.tracking_helper.update_tracking_step(tracking, "step_2_pattern_enhancement", "failed", error=e)
-                    raise
-            
-            # Finalize tracking and add to result
-            final_result = self.tracking_helper.finalize_tracking(tracking, final_result)
-            
-            total_time = final_result.get("tracking_summary", {}).get("total_processing_time_ms", 0)
-            logger.info(f"Phase 4a Step 2: Crisis analysis completed in {total_time:.1f}ms")
-            
-            return final_result
-                
-        except Exception as e:
-            logger.error(f"Phase 4a Step 2: Crisis analysis failed: {e}")
-            if "fallback_scenarios" in tracking:
-                tracking["fallback_scenarios"]["emergency_fallback"] = True
-            
-            # Emergency fallback with tracking
-            emergency_result = {
-                "crisis_score": 0.5,
-                "crisis_level": "medium",
-                "confidence_score": 0.0,
-                "method": "emergency_fallback",
-                "needs_response": True,
-                "requires_staff_review": True,
-                "error": str(e),
-                "message": message,
-                "user_id": user_id,
-                "channel_id": channel_id
-            }
-            
-            return self.tracking_helper.finalize_tracking(tracking, emergency_result)
+                return self.tracking_helper.finalize_tracking(tracking, emergency_result)
 
     async def analyze_message(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """
