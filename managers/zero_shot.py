@@ -427,7 +427,7 @@ class ZeroShotManager:
                 'track_performance': settings.get('track_performance', False),
                 'hypothesis_template': settings.get('hypothesis_template', 'This text expresses {}.'),
                 'multi_label': settings.get('multi_label', False),
-                'confidence_threshold': max(0.0, min(1.0, float(settings.get('confidence_threshold', 0.5)))),
+                'confidence_threshold': max(0.0, min(1.0, float(settings.get('confidence_threshold', 0.25)))),
                 'max_labels': max(1, min(10, int(settings.get('max_labels', 5)))),
                 'normalize_scores': settings.get('normalize_scores', True)
             }
