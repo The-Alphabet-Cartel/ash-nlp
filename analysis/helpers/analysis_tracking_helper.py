@@ -233,9 +233,9 @@ class AnalysisTrackingHelper:
                     "confidence_score": result.get("ensemble_confidence", 0.0),
                     "method": result.get("method", "async_ensemble"),
                     "models_used": result.get("models_used", 0),
-#                    "individual_results": result.get("individual_results", {}),
+                    "individual_results": result.get("individual_results", {}),
                     "zero_shot_manager_used": result.get("zero_shot_manager_used", False),
-                    "zero_shot_labels_info": zero_shot_labels_info
+#                    "zero_shot_labels_info": zero_shot_labels_info
                 }
                 
             except Exception as e:
