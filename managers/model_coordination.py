@@ -924,6 +924,7 @@ class ModelCoordinationManager:
     def _process_classification_result(self, result: Dict, labels: List[str]) -> float:
         """
         PHASE 3: Process zero-shot classification result into crisis score
+        Enhanced with configurable score normalization for proper crisis scale utilization
         
         Args:
             result: Raw result from zero-shot classifier
@@ -944,55 +945,165 @@ class ModelCoordinationManager:
                 logger.warning(f"⚠️ Score/label mismatch in classification result")
                 return 0.0
             
-            # Calculate weighted crisis score based on label severity
-            # Labels are arranged from highest crisis (index 0) to lowest crisis (last index)
-            crisis_score = 0.0
-            
             # DEBUG: Log the transformers result structure for verification
             logger.debug(f"🔍 Transformers result - labels: {predicted_labels}")
             logger.debug(f"🔍 Transformers result - scores: {[f'{s:.3f}' for s in scores]}")
             logger.debug(f"🔍 Original input labels: {labels}")
 
-            # FIXED: Use the highest scoring label as primary crisis indicator
-            # The first label in predicted_labels has the highest confidence
-            if predicted_labels and scores:
-                # Get the highest confidence score and its corresponding label
-                top_label = predicted_labels[0]
-                top_score = scores[0]
-                
-                # Find where this label was positioned in our original severity-ordered labels
-                try:
-                    original_index = labels.index(top_label)
-                    # Convert index to severity weight (0 = highest crisis, last = lowest crisis)
-                    severity_weight = 1.0 - (original_index / (len(labels) - 1)) if len(labels) > 1 else 1.0
-                    
-                    # Calculate crisis score based on confidence and severity position
-                    crisis_score = top_score * severity_weight
-                    
-                    logger.debug(f"📊 Top prediction: {top_label} (score={top_score:.3f})")
-                    logger.debug(f"📊 Original severity index: {original_index}/{len(labels)-1}")
-                    logger.debug(f"📊 Severity weight: {severity_weight:.3f}")
-                    logger.debug(f"📊 Crisis score: {crisis_score:.3f}")
-                    
-                except ValueError:
-                    logger.warning(f"⚠️ Top predicted label '{top_label}' not found in original labels")
-                    # Fallback: use raw confidence score
-                    crisis_score = top_score
-                    logger.debug(f"📊 Using fallback score: {crisis_score:.3f}")
-                    
-            else:
+            # Get the highest confidence score and its corresponding label
+            if not predicted_labels or not scores:
                 logger.warning("⚠️ No predictions returned from transformers")
-                crisis_score = 0.0
+                return 0.0
+                
+            top_label = predicted_labels[0]
+            top_score = scores[0]
             
-            # Normalize the score to 0-1 range
-            crisis_score = max(0.0, min(1.0, crisis_score))
+            # Find where this label was positioned in our original severity-ordered labels
+            try:
+                original_index = labels.index(top_label)
+                # Convert index to severity weight (0 = highest crisis, last = lowest crisis)
+                severity_weight = 1.0 - (original_index / (len(labels) - 1)) if len(labels) > 1 else 1.0
+                
+                # Calculate base crisis score based on confidence and severity position
+                base_crisis_score = top_score * severity_weight
+                
+                logger.debug(f"📊 Top prediction: {top_label} (score={top_score:.3f})")
+                logger.debug(f"📊 Original severity index: {original_index}/{len(labels)-1}")
+                logger.debug(f"📊 Severity weight: {severity_weight:.3f}")
+                logger.debug(f"📊 Crisis score: {base_crisis_score:.3f}")
+                
+            except ValueError:
+                logger.warning(f"⚠️ Top predicted label '{top_label}' not found in original labels")
+                # Fallback: use raw confidence score
+                base_crisis_score = top_score
+                severity_weight = 1.0
+                original_index = 0
+                logger.debug(f"📊 Using fallback score: {base_crisis_score:.3f}")
             
-            logger.debug(f"📊 Final crisis score: {crisis_score:.3f}")
-            return crisis_score
+            # Apply score normalization if enabled
+            final_crisis_score = self._apply_score_normalization(
+                base_crisis_score, 
+                severity_weight, 
+                original_index, 
+                len(labels)
+            )
+            
+            # Ensure final score is within valid range
+            final_crisis_score = max(0.0, min(1.0, final_crisis_score))
+            
+            logger.debug(f"📊 Final crisis score: {final_crisis_score:.3f}")
+            return final_crisis_score
             
         except Exception as e:
             logger.error(f"❌ Classification result processing failed: {e}")
             return 0.0
+    
+    def _apply_score_normalization(self, base_score: float, severity_weight: float, 
+                                 severity_index: int, total_labels: int) -> float:
+        """
+        Apply score normalization to utilize the full 0.001-1.000 crisis detection scale
+        
+        This method addresses the issue where transformer models naturally output
+        conservative confidence scores (typically max ~0.65) but the crisis detection
+        system expects a full 0.001-1.000 scale for proper threshold classification.
+        
+        Args:
+            base_score: Raw crisis score from transformer confidence * severity weight
+            severity_weight: Severity positioning weight (1.0 = highest crisis, 0.0 = lowest)
+            severity_index: Index position in severity-ordered labels (0 = most severe)
+            total_labels: Total number of labels in the classification set
+            
+        Returns:
+            Normalized crisis score utilizing the full detection scale
+        """
+        try:
+            # Check if score normalization is enabled
+            normalize_enabled = self._get_zero_shot_normalize_setting()
+            
+            if not normalize_enabled:
+                logger.debug(f"📊 Score normalization disabled, using raw score: {base_score:.3f}")
+                return base_score
+            
+            # Apply normalization scaling based on severity tier
+            # High-severity labels (top 25% of label positions) get aggressive scaling
+            # Medium-severity labels (middle 50%) get moderate scaling  
+            # Low-severity labels (bottom 25%) get conservative scaling
+            
+            severity_percentile = severity_index / (total_labels - 1) if total_labels > 1 else 0.0
+            
+            if severity_percentile <= 0.25:  # High-severity tier (most critical labels)
+                # Scale to utilize 0.400-1.000 range for high-severity classifications
+                # Minimum boost ensures crisis detection even for lower transformer confidence
+                min_scaled_score = 0.400
+                max_scaled_score = 1.000
+                # Amplification factor for high-severity labels
+                amplification = 1.8
+                
+            elif severity_percentile <= 0.75:  # Medium-severity tier
+                # Scale to utilize 0.200-0.700 range for medium-severity classifications
+                min_scaled_score = 0.200
+                max_scaled_score = 0.700
+                amplification = 1.4
+                
+            else:  # Low-severity tier (least critical labels)
+                # Scale to utilize 0.001-0.400 range for low-severity classifications
+                min_scaled_score = 0.001
+                max_scaled_score = 0.400
+                amplification = 1.0
+            
+            # Apply amplification to base score
+            amplified_score = min(1.0, base_score * amplification)
+            
+            # Scale to the appropriate range for this severity tier
+            range_span = max_scaled_score - min_scaled_score
+            normalized_score = min_scaled_score + (amplified_score * range_span)
+            
+            # Additional boost for very high confidence on high-severity labels
+            if severity_percentile <= 0.25 and base_score >= 0.6:
+                # Extra boost for high-confidence crisis classifications
+                confidence_boost = (base_score - 0.6) * 0.5
+                normalized_score = min(1.0, normalized_score + confidence_boost)
+            
+            logger.debug(f"📊 Score normalization applied:")
+            logger.debug(f"   Severity percentile: {severity_percentile:.2f}")
+            logger.debug(f"   Base score: {base_score:.3f}")
+            logger.debug(f"   Amplification: {amplification:.1f}")
+            logger.debug(f"   Amplified score: {amplified_score:.3f}")
+            logger.debug(f"   Target range: {min_scaled_score:.3f}-{max_scaled_score:.3f}")
+            logger.debug(f"   Normalized score: {normalized_score:.3f}")
+            
+            return normalized_score
+            
+        except Exception as e:
+            logger.error(f"❌ Score normalization failed: {e}")
+            return base_score  # Fallback to base score if normalization fails
+    
+    def _get_zero_shot_normalize_setting(self) -> bool:
+        """
+        Get the NLP_ZERO_SHOT_NORMALIZE_SCORES setting from configuration
+        
+        Returns:
+            True if score normalization is enabled, False otherwise
+        """
+        try:
+            # Check if we have access to the ZeroShotManager configuration through config_manager
+            zero_shot_settings = self.config_manager.get_config_section('label_config', 'zero_shot_settings')
+            if zero_shot_settings:
+                normalize_setting = zero_shot_settings.get('normalize_scores', True)
+                logger.debug(f"🔧 Zero-shot normalize_scores setting: {normalize_setting}")
+                return bool(normalize_setting)
+            
+            # Fallback: check environment variable directly
+            import os
+            env_setting = os.getenv('NLP_ZERO_SHOT_NORMALIZE_SCORES', 'true').lower()
+            normalize_enabled = env_setting in ['true', '1', 'yes', 'on']
+            logger.debug(f"🔧 Zero-shot normalize_scores from ENV: {normalize_enabled}")
+            return normalize_enabled
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not get normalize_scores setting: {e}")
+            # Default to enabled for better crisis detection
+            return True
     
     def _perform_ensemble_voting(self, model_results: Dict[str, Dict]) -> Dict[str, float]:
         """
