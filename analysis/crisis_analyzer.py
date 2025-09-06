@@ -155,60 +155,21 @@ class CrisisAnalyzer:
             # Initialize tracking
             tracking = self.tracking_helper.init_analysis_tracking(message, user_id, channel_id)
             
-            # Check if tracking is actually enabled - if not, use original optimized path
+            # Check if tracking is actually enabled - if not, use optimized path with same ZeroShot analysis
             if not self.tracking_helper.enable_tracking:
-                logger.debug("Tracking disabled - using ZeroShot-optimized analysis path")
+                logger.debug("Tracking disabled - using ZeroShot analysis without detailed tracking")
                 try:
-                    # Use ZeroShot-compatible optimized path
+                    # FIXED: Use the same ZeroShot analysis path for both tracking enabled/disabled
                     start_time = time.time()
                     
-                    # FIXED: Use ModelCoordinationManager with ZeroShotManager (performance-optimized but ZeroShot-compliant)
-                    if self.model_coordination_manager and hasattr(self.model_coordination_manager, 'classify_sync_ensemble'):
-                        # Use synchronous ensemble for performance while maintaining ZeroShot compliance
-                        ensemble_result = self.model_coordination_manager.classify_sync_ensemble(
-                            message, self.zero_shot_manager
-                        )
-                        
-                        # Convert to standard format
-                        optimized_result = {
-                            'crisis_score': ensemble_result.get('score', 0.0),
-                            'confidence_score': ensemble_result.get('confidence', 0.0),
-                            'method': f"optimized_{ensemble_result.get('method', 'sync_ensemble')}",
-                            'models_used': ensemble_result.get('models_used', []),
-                            'individual_results': ensemble_result.get('individual_results', {}),
-                            'zero_shot_manager_used': True,
-                            'zero_shot_labels_info': ensemble_result.get('zero_shot_labels_info', {}),
-                            'ensemble_mode': ensemble_result.get('ensemble_mode', 'unknown'),
-                            'needs_response': ensemble_result.get('score', 0.0) >= 0.25,
-                            'requires_staff_review': ensemble_result.get('score', 0.0) >= 0.45
-                        }
-                        
-                        # Apply crisis thresholds
-                        crisis_score = optimized_result['crisis_score']
-                        optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score)
-                        
-                    else:
-                        # Fallback to async method if sync not available
-                        logger.debug("Sync ensemble not available, using async method")
-                        ensemble_result = await self.model_coordination_manager.classify_with_ensemble(
-                            message, self.zero_shot_manager
-                        )
-                        
-                        optimized_result = {
-                            'crisis_score': ensemble_result.get('ensemble_score', 0.0),
-                            'confidence_score': ensemble_result.get('ensemble_confidence', 0.0),
-                            'method': f"optimized_{ensemble_result.get('method', 'async_ensemble')}",
-                            'models_used': ensemble_result.get('models_used', []),
-                            'individual_results': ensemble_result.get('individual_results', {}),
-                            'zero_shot_manager_used': True,
-                            'zero_shot_labels_info': ensemble_result.get('zero_shot_labels_info', {}),
-                            'needs_response': ensemble_result.get('ensemble_score', 0.0) >= 0.25,
-                            'requires_staff_review': ensemble_result.get('ensemble_score', 0.0) >= 0.45
-                        }
-                        
-                        # Apply crisis thresholds
-                        crisis_score = optimized_result['crisis_score']
-                        optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score)
+                    # Use the same execute_zero_shot_analysis method that tracking uses
+                    optimized_result = await self.tracking_helper.execute_zero_shot_analysis(message, user_id, channel_id)
+                    
+                    # Apply crisis thresholds to the ZeroShot result
+                    crisis_score = optimized_result.get('crisis_score', 0.0)
+                    optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score)
+                    optimized_result['needs_response'] = crisis_score >= 0.25
+                    optimized_result['requires_staff_review'] = crisis_score >= 0.45
                     
                     # Apply learning if available
                     if self.learning_system_manager:
@@ -234,7 +195,7 @@ class CrisisAnalyzer:
                     return self.tracking_helper.finalize_tracking(tracking, optimized_result)
                     
                 except Exception as e:
-                    logger.error(f"ZeroShot-optimized analysis failed: {e}")
+                    logger.error(f"ZeroShot analysis failed (tracking disabled): {e}")
                     # Return simple fallback without complex tracking
                     return {
                         "crisis_score": 0.5,
