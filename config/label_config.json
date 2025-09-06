@@ -207,7 +207,7 @@
     "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
     "hypothesis_template": "${NLP_ZERO_SHOT_HYPOTHESIS_TEMPLATE}",
     "multi_label": false,
-    "confidence_threshold": 0.3,
+    "confidence_threshold": 0.5,
     "max_labels": 5,
     "normalize_scores": true,
     "defaults": {
