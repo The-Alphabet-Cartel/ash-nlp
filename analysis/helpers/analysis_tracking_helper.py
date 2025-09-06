@@ -277,7 +277,7 @@ class AnalysisTrackingHelper:
                 "total_label_categories": len(all_labels),
                 "total_labels": sum(len(labels) for labels in all_labels.values()),
                 "hypothesis_template": zero_shot_settings.get("hypothesis_template", "This text expresses {}."),
-                "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.5),
+                "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.25),
                 "multi_label": zero_shot_settings.get("multi_label", False)
             }
             
