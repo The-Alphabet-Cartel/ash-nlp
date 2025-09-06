@@ -121,7 +121,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             
             # Map crisis_score -> confidence_score for API compatibility
             crisis_level = analysis_results.get('crisis_level', 'none')
-            confidence_score = analysis_results.get('crisis_score', 0.0)
+            confidence_score = analysis_results.get('confidence_score', 0.0)
             
             # Enhanced fallback to top-level keys for backward compatibility
             if not analysis_results:
