@@ -355,7 +355,6 @@ class ZeroShotManager:
                 'phase': '3e Sub-step 5.5 Task 5',
                 'configuration_format': 'enhanced',
                 'get_config_section_patterns': 'implemented',
-                'phase_3e_cleanup': 'complete',
                 'unified_config_manager': 'operational',
                 'zero_shot_settings': {
                     'hypothesis_template': self.zero_shot_settings.get('hypothesis_template', 'This text expresses {}.'),
@@ -399,8 +398,7 @@ class ZeroShotManager:
                 'get_config_section_patterns': 'implemented',
                 'enhanced_error_handling': True,
                 'configuration_source': 'json_with_env_overrides',
-                'initialization_status': 'complete',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'complete'
             }
             
         except Exception as e:
@@ -409,8 +407,7 @@ class ZeroShotManager:
                 'manager_version': 'v3.1e-5.5-5',
                 'phase': '3e Sub-step 5.5 Task 5',
                 'error': str(e),
-                'initialization_status': 'error',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'error'
             }
     
     def activate_profile(self, profile_name: str) -> bool:
@@ -493,8 +490,7 @@ class ZeroShotManager:
                 'valid': True,
                 'warnings': [],
                 'errors': [],
-                'configuration_status': 'valid',
-                'phase_3e_compliant': True
+                'configuration_status': 'valid'
             }
             
             # Validate available label sets
@@ -532,12 +528,11 @@ class ZeroShotManager:
                 'valid': False,
                 'warnings': [],
                 'errors': [f"Validation error: {str(e)}"],
-                'configuration_status': 'error',
-                'phase_3e_compliant': False
+                'configuration_status': 'error'
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_zero_shot_manager(unified_config_manager) -> ZeroShotManager:

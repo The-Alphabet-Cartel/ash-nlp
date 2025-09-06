@@ -1,4 +1,4 @@
-# ash-nlp/__init__.py
+CLEAN ARCHITECTURE# ash-nlp/__init__.py
 """
 Ash NLP Service for Ash NLP Service
 FILE VERSION: v3.1-3d-6-2
@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # ============================================================================
-# CLEAN V3.1 ARCHITECTURE IMPORTS - Step 9.8 Complete
+# CLEAN ARCHITECTURE
 # ============================================================================
 
 # STEP 9.8: Import UnifiedConfigManager instead of ConfigManager

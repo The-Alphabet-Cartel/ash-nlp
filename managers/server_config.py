@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Centralized Server Configuration Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3e, Sub-step 5.5, Task 5 - ServerConfigManager Standard Cleanup
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -389,15 +389,14 @@ class ServerConfigManager:
                 'deployment_profiles': self.get_deployment_profiles(),
                 'metadata': {
                     'phase': '3e-5.5',
-                    'architecture': 'clean_v3.1e_unified_config',
+                    'architecture': 'clean',
                     'configuration_version': '3e.5.5',
                     'consolidation_complete': True,
                     'v31_compliant': True,
                     'get_config_section_patterns': 'implemented',
                     'unified_config_manager': True,
                     'direct_os_getenv_calls': 'eliminated',
-                    'enhanced_error_handling': True,
-                    'phase_3e_cleanup': 'complete'
+                    'enhanced_error_handling': True
                 }
             }
             
@@ -422,8 +421,6 @@ class ServerConfigManager:
             'warnings': [],
             'errors': [],
             'consolidation_status': 'complete',
-            'v31_compliant': True,
-            'phase_3e_compliant': True,
             'get_config_section_patterns': 'implemented',
             'unified_config_manager': True
         }
@@ -485,8 +482,6 @@ class ServerConfigManager:
             performance = self.get_performance_settings()
             
             return {
-                'manager_version': 'v3.1e-5.5-2',
-                'phase': '3e Sub-step 5.5 Task 5',
                 'server_host': network.get('host', 'unknown'),
                 'server_port': network.get('port', 'unknown'),
                 'debug_mode': application.get('debug_mode', False),
@@ -496,22 +491,18 @@ class ServerConfigManager:
                 'ssl_enabled': network.get('enable_ssl', False),
                 'configuration_source': 'json_with_env_overrides',
                 'validation_status': 'validated',
-                'initialization_status': 'complete',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'complete'
             }
             
         except Exception as e:
             logger.error(f"Error generating configuration summary: {e}")
             return {
-                'manager_version': 'v3.1e-5.5-2',
-                'phase': '3e Sub-step 5.5 Task 5',
                 'error': str(e),
-                'initialization_status': 'error',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'error'
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_server_config_manager(unified_config_manager) -> ServerConfigManager:

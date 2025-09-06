@@ -58,7 +58,7 @@ class UnifiedConfigManager:
     - Schema validation and type conversion
     - Centralized environment variable access
     
-    Clean v3.1 Architecture:
+    Clean Architecture:
     - Factory function pattern  
     - Dependency injection support
     - Fail-fast validation
@@ -958,7 +958,7 @@ class UnifiedConfigManager:
             return 0
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_unified_config_manager(config_dir: str = "/app/config") -> UnifiedConfigManager:

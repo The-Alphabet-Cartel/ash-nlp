@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Crisis Pattern Manager for Ash NLP Service - OPTIMIZED
 ---
-FILE VERSION: v3.1-3e-6-3
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3e Sub-step 5.3 - PatternDetectionManager cleanup + optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -192,7 +192,7 @@ class PatternDetectionManager:
                             'context_required': context_required,
                             'confidence': min(weight + 0.1, 1.0),  # Slight confidence boost for matches
                             'category_description': category_description,
-                            'matched_via': 'enhanced_patterns_v3.1'
+                            'matched_via': 'enhanced_patterns'
                         }
                         
                         patterns_found.append(pattern_result)
@@ -352,8 +352,7 @@ class PatternDetectionManager:
                 'enhanced_boosts': len([w for w in weights_applied if w['type'] == 'enhanced_crisis_boost']),
                 'source': 'existing_environment_variables',
                 'uses_new_env_vars': False,
-                'reuses_existing_infrastructure': True,
-                'phase_3e_compliant': True
+                'reuses_existing_infrastructure': True
             }
             
             if total_adjustment != 0:
@@ -395,8 +394,7 @@ class PatternDetectionManager:
                     'confidence': pattern.get('confidence', 0.7),
                     'auto_escalate': pattern.get('auto_escalate', False),
                     'matched_text': pattern.get('matched_text', ''),
-                    'pattern_type': pattern.get('pattern_type', 'enhanced'),
-                    'phase_3e_updated': True
+                    'pattern_type': pattern.get('pattern_type', 'enhanced')
                 })
             
             # Determine highest urgency
@@ -425,8 +423,7 @@ class PatternDetectionManager:
                 'confidence_score': enhanced_analysis.get('confidence_score', 0.0),
                 'safety_flags': safety_flags,
                 'critical_patterns_count': len(safety_flags.get('critical_patterns_detected', [])),
-                'source': 'analyze_enhanced_patterns_v3.1_phase_3e',
-                'phase_3e_migration_complete': True
+                'source': 'analyze_enhanced_patterns'
             }
             
             if matches:
@@ -643,8 +640,7 @@ class PatternDetectionManager:
                             'urgency': pattern.get('urgency', 'medium'),
                             'auto_escalate': pattern.get('auto_escalate', False),
                             'weight': pattern.get('weight', 0.7),
-                            'details': pattern,
-                            'phase_3e_analysis': True
+                            'details': pattern
                         }
                         analysis_result['patterns_triggered'].append(pattern_data)
                         
@@ -679,8 +675,7 @@ class PatternDetectionManager:
                             'pattern_type': 'community',
                             'crisis_level': pattern.get('crisis_level', 'low'),
                             'confidence': pattern.get('confidence', 0.5),
-                            'details': pattern,
-                            'phase_3e_analysis': True
+                            'details': pattern
                         })
                 analysis_result['details']['community_patterns'] = community_patterns
             except Exception as e:
@@ -697,8 +692,7 @@ class PatternDetectionManager:
                             'pattern_type': 'context_phrase',
                             'crisis_level': phrase.get('crisis_level', 'low'),
                             'confidence': phrase.get('confidence', 0.5),
-                            'details': phrase,
-                            'phase_3e_analysis': True
+                            'details': phrase
                         })
                 analysis_result['details']['context_phrases'] = context_phrases
             except Exception as e:
@@ -716,8 +710,7 @@ class PatternDetectionManager:
                             'crisis_level': indicator.get('crisis_level', 'medium'),
                             'confidence': indicator.get('confidence', 0.6),
                             'urgency_multiplier': indicator.get('urgency_multiplier', 1.0),
-                            'details': indicator,
-                            'phase_3e_analysis': True
+                            'details': indicator
                         }
                         analysis_result['patterns_triggered'].append(pattern_data)
                         
@@ -766,12 +759,8 @@ class PatternDetectionManager:
                     'analysis_timestamp': time.time(),
                     'analysis_date': datetime.now().isoformat(),
                     'methods_used': ['enhanced_patterns', 'community_patterns', 'context_phrases', 'temporal_indicators'],
-                    'manager_version': 'v3.1-3e-5.3-optimized-1',
-                    'safety_analysis_version': 'v3.1_phase_3e',
-                    'v3_1_features_used': True,
                     'context_consolidation': True,
                     'community_pattern_consolidation': True,
-                    'phase_3e_migration_complete': True,
                     'optimized_architecture': True
                 }
             })
@@ -817,8 +806,6 @@ class PatternDetectionManager:
                     'channel_id': channel_id,
                     'analysis_timestamp': time.time(),
                     'error_occurred': True,
-                    'manager_version': 'v3.1-3e-5.3-optimized-1',
-                    'phase_3e_migration_complete': True,
                     'optimized_architecture': True
                 }
             }
@@ -870,21 +857,6 @@ class PatternDetectionManager:
                     'target_line_count': '~790 lines',
                     'helper_file': 'pattern_detection_helpers.py'
                 },
-                'phase_3e_status': {
-                    'sub_step': '5.3',
-                    'migration_complete': True,
-                    'methods_migrated': 5,
-                    'migration_handler': 'consolidated',
-                    'shared_utilities_integration': True,
-                    'learning_system_integration': True,
-                    'helper_methods_extracted': True
-                },
-                'v3_1_compliance': {
-                    'json_version': metadata.get('configuration_version', 'unknown'),
-                    'compliance_status': metadata.get('compliance', 'unknown'),
-                    'metadata_available': bool(metadata),
-                    'safety_features_enabled': True
-                },
                 'consolidation_status': {
                     'context_consolidation_active': has_consolidated_context,
                     'legacy_context_files_present': has_legacy_context_files,
@@ -913,20 +885,17 @@ class PatternDetectionManager:
                         'patterns_context'
                     ],
                 },
-                'phase_3e_consolidated_migration_handler': {
-                    'validate_pattern_structure': 'SharedUtilitiesManager.validate_data_structure()',
-                    'format_pattern_output': 'SharedUtilitiesManager.format_response_data()',
-                    'log_pattern_performance': 'SharedUtilitiesManager.log_performance_metric()',
-                    'update_pattern_from_feedback': 'LearningSystemManager.update_patterns_from_feedback()',
-                    'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()'
-                },
+                'validate_pattern_structure': 'SharedUtilitiesManager.validate_data_structure()',
+                'format_pattern_output': 'SharedUtilitiesManager.format_response_data()',
+                'log_pattern_performance': 'SharedUtilitiesManager.log_performance_metric()',
+                'update_pattern_from_feedback': 'LearningSystemManager.update_patterns_from_feedback()',
+                'evaluate_pattern_effectiveness': 'LearningSystemManager.evaluate_pattern_performance()',
                 'safety_features': {
                     'immediate_intervention_detection': True,
                     'auto_escalation_support': True,
                     'emergency_response_triggers': True,
                     'critical_pattern_monitoring': True,
                     'community_pattern_integration': True,
-                    'phase_3e_enhanced_safety': True,
                     'optimized_performance': True
                 }
             }
@@ -940,7 +909,7 @@ class PatternDetectionManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_pattern_detection_manager(config_manager: UnifiedConfigManager) -> PatternDetectionManager:

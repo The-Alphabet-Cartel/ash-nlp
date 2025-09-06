@@ -349,8 +349,7 @@ class PydanticManager:
                     }
                 },
                 'initialization_status': self.is_initialized(),
-                'enhanced_error_handling': True,
-                'phase_3e_cleanup': 'complete'
+                'enhanced_error_handling': True
             }
             
         except Exception as e:
@@ -382,7 +381,6 @@ class PydanticManager:
                 'config_dict_enabled': True,
                 'protected_namespaces_configured': True,
                 'initialization_status': 'complete',
-                'cleanup_status': 'phase_3e_complete',
                 'error_handling': 'enhanced',
                 'model_validation': 'available'
             }
@@ -393,8 +391,7 @@ class PydanticManager:
                 'manager_version': 'v3.1e-5.5-6',
                 'phase': '3e Sub-step 5.5 Task 5',
                 'error': str(e),
-                'initialization_status': 'error',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'error'
             }
     
     def validate_all_models(self) -> Dict[str, Any]:
@@ -445,7 +442,7 @@ class PydanticManager:
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_pydantic_manager(config_manager) -> PydanticManager:

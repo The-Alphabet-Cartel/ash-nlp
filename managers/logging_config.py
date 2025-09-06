@@ -464,8 +464,7 @@ class LoggingConfigManager:
                 'console_output_enabled': self.is_console_output_enabled(),
                 'file_output_enabled': self.is_file_output_enabled(),
                 'unified_config_manager': True,
-                'enhanced_error_handling': True,
-                'phase_3e_cleanup': 'complete'
+                'enhanced_error_handling': True
             }
         except Exception as e:
             logger.error(f"Error getting logging status: {e}")
@@ -497,8 +496,7 @@ class LoggingConfigManager:
                 'crisis_detection_logging': self.should_log_crisis_detection(),
                 'total_settings_categories': len(all_settings),
                 'configuration_source': 'json_with_env_overrides',
-                'initialization_status': 'complete',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'complete'
             }
             
         except Exception as e:
@@ -507,12 +505,11 @@ class LoggingConfigManager:
                 'manager_version': 'v3.1e-5.5-4',
                 'phase': '3e Sub-step 5.5 Task 5',
                 'error': str(e),
-                'initialization_status': 'error',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'error'
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_logging_config_manager(unified_config_manager) -> LoggingConfigManager:

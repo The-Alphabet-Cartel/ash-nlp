@@ -301,7 +301,7 @@ class StorageConfigManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_storage_config_manager(config_manager) -> StorageConfigManager:

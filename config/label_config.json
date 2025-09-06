@@ -60,6 +60,41 @@
         "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
       ]
     },
+    "lgbtqia": {
+      "description": "LGBTQIA+ community-specific crisis detection labels targeting identity, family, discrimination, and transition-related stressors specific to The Alphabet Cartel Discord community",
+      "depression": [
+        "person actively expressing suicidal thoughts related to LGBTQIA+ identity rejection, family disowning, or conversion therapy trauma",
+        "person stating they want to die because of being LGBTQIA+, religious shame, or complete family abandonment after coming out",
+        "person describing specific suicide plans due to discrimination, transition barriers, or feeling trapped in unsupportive environment",
+        "person expressing complete hopelessness about ever being accepted for their LGBTQIA+ identity or finding community belonging",
+        "person stating they are beyond help due to internalized homophobia, transphobia, or religious trauma about their identity",
+        "person describing feeling trapped by family rejection, discrimination, or inability to live authentically as LGBTQIA+ person",
+        "person describing active self-harm related to dysphoria, identity shame, or LGBTQIA+ rejection experiences",
+        "person expressing desire to hurt themselves due to deadnaming, misgendering, or identity invalidation",
+        "person showing severe depression with major breakdown due to transition denial, community rejection, or family abandonment",
+        "person experiencing moderate depression from ongoing discrimination, family tension, or transition challenges while maintaining some function",
+        "person expressing emotional difficulty from identity questioning, mild family conflict, or minor discrimination experiences but still coping",
+        "person describing temporary depression from coming out stress, transition timeline concerns, or community adjustment challenges",
+        "person showing stable mental health with normal identity development and healthy LGBTQIA+ identity integration",
+        "person demonstrating positive mental health, strong LGBTQIA+ identity affirmation, and helping others in community"
+      ],
+      "sentiment": [
+        "person expressing devastating emotional pain from family rejection, hate crimes, or severe LGBTQIA+ identity crisis",
+        "person showing intense negative emotions from discrimination, transition barriers, or religious trauma about their identity",
+        "person expressing moderate negative feelings from identity questioning, mild family conflict, or manageable discrimination experiences",
+        "person displaying neutral emotional state during normal LGBTQIA+ identity exploration or typical community interactions",
+        "person showing positive emotions from family acceptance, successful transition milestones, or community belonging experiences",
+        "person expressing intense joy from identity affirmation, pride celebration, or strong chosen family connections"
+      ],
+      "emotional_distress": [
+        "person in complete emotional crisis from family disowning, conversion therapy, or severe identity-related trauma requiring immediate intervention",
+        "person experiencing severe emotional distress from major discrimination, transition denial, or religious trauma impacting daily functioning",
+        "person dealing with significant stress from identity questioning, moderate family tension, or ongoing discrimination while maintaining basic function",
+        "person handling normal LGBTQIA+ identity development stress, minor family adjustment, or typical community integration challenges with adequate coping",
+        "person experiencing normal daily stressors related to LGBTQIA+ identity with good coping and community support",
+        "person demonstrating excellent emotional resilience, strong LGBTQIA+ identity confidence, and optimal community support utilization"
+      ]
+    },
     "clinical_focused": {
       "description": "Medical and clinical terminology focused labels for professional assessment contexts",
       "depression": [
