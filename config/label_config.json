@@ -206,10 +206,10 @@
   "zero_shot_settings": {
     "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
     "hypothesis_template": "${NLP_ZERO_SHOT_HYPOTHESIS_TEMPLATE}",
-    "multi_label": false,
-    "confidence_threshold": 0.25,
-    "max_labels": 5,
-    "normalize_scores": true,
+    "multi_label": "${NLP_ZERO_SHOT_MULTI_LABEL}",
+    "confidence_threshold": "${NLP_ZERO_SHOT_CONFIDENCE_THRESHOLD}",
+    "max_labels": "${NLP_ZERO_SHOT_MAX_LABELS}",
+    "normalize_scores": "${NLP_ZERO_SHOT_NORMALIZE_SCORES}",
     "defaults": {
       "track_performance": false,
       "hypothesis_template": "This text expresses {label}",
