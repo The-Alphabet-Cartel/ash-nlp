@@ -974,73 +974,69 @@ class PerformanceOptimizedMethods:
     
     def _fast_score_combination(self, ensemble_result: Dict, pattern_result: Dict) -> float:
         """
-        ENHANCED: Fast score combination that respects pattern integration config
-        
-        Now uses CrisisThresholdManager for pattern integration weights if available
+        FIXED: Pattern integration that doesn't penalize high AI confidence when no patterns detected
         """
         try:
             ensemble_score = ensemble_result.get('score', 0.0)
             pattern_score = pattern_result.get('score', 0.0)
             
-            # Try to get pattern integration config from CrisisThresholdManager
+            # Get pattern integration config
             if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
                 try:
                     pattern_config = self.analyzer.crisis_threshold_manager.get_pattern_integration_config()
                     ensemble_weight = pattern_config.get('ensemble_weight', 0.6)
                     pattern_weight = pattern_config.get('pattern_weight', 0.4)
                     pattern_multiplier = pattern_config.get('pattern_weight_multiplier', 1.2)
-                    logger.debug(f"🔧 Using CrisisThresholdManager pattern config: ensemble={ensemble_weight}, pattern={pattern_weight}, multiplier={pattern_multiplier}")
                 except Exception as e:
                     logger.warning(f"⚠️ Pattern config from CrisisThresholdManager failed: {e}")
-                    # Fall back to cached weights
-                    weights = self._get_cached_or_runtime_config('pattern_weights')
-                    ensemble_weight = weights.get('ensemble_weight', 0.6)
-                    pattern_weight = weights.get('pattern_weight', 0.4)
-                    pattern_multiplier = 1.0
+                    ensemble_weight, pattern_weight, pattern_multiplier = 0.6, 0.4, 1.0
             else:
-                # Use cached pattern weights
-                weights = self._get_cached_or_runtime_config('pattern_weights')
-                ensemble_weight = weights.get('ensemble_weight', 0.6)
-                pattern_weight = weights.get('pattern_weight', 0.4)
-                pattern_multiplier = 1.0
-
-            # Apply pattern multiplier if significant pattern match
-            if pattern_score > 0.3:
-                adjusted_pattern_score = pattern_score * pattern_multiplier
-                logger.debug(f"🔧 Pattern score multiplied: {pattern_score:.3f} → {adjusted_pattern_score:.3f} (×{pattern_multiplier})")
-                pattern_score = min(1.0, adjusted_pattern_score)
-
-            # Normalize weights if needed
-            total_weight = ensemble_weight + pattern_weight
-            if total_weight > 0:
-                ensemble_weight /= total_weight
-                pattern_weight /= total_weight
-            else:
-                ensemble_weight, pattern_weight = 0.6, 0.4
+                ensemble_weight, pattern_weight, pattern_multiplier = 0.6, 0.4, 1.0
             
-            combined_score = (ensemble_score * ensemble_weight) + (pattern_score * pattern_weight)
-            
-            # Apply confidence boost for significant pattern matches using CrisisThresholdManager config
-            if pattern_score > 0.3:
-                if hasattr(self.analyzer, 'crisis_threshold_manager') and self.analyzer.crisis_threshold_manager:
-                    try:
-                        pattern_config = self.analyzer.crisis_threshold_manager.get_pattern_integration_config()
-                        confidence_boost = pattern_config.get('confidence_boost_limit', 0.15)
-                    except Exception:
-                        confidence_boost = 0.1
-                else:
-                    confidence_boosts = self._get_cached_or_runtime_config('confidence_boosts')
-                    confidence_boost = confidence_boosts.get('pattern_match', 0.1)
+            # FIXED LOGIC: Don't penalize high AI confidence when no patterns detected
+            if pattern_score <= 0.05:  # Essentially no patterns detected
+                # Trust the AI models completely - don't blend with empty pattern score
+                combined_score = ensemble_score
+                logger.debug(f"🔧 No patterns detected - using pure AI score: {ensemble_score:.3f}")
+                
+            elif pattern_score > 0.3:  # Significant patterns detected
+                # Apply pattern multiplier for significant matches
+                adjusted_pattern_score = min(1.0, pattern_score * pattern_multiplier)
+                
+                # Normalize weights
+                total_weight = ensemble_weight + pattern_weight
+                if total_weight > 0:
+                    ensemble_weight /= total_weight
+                    pattern_weight /= total_weight
+                
+                # Blend AI and pattern scores
+                combined_score = (ensemble_score * ensemble_weight) + (adjusted_pattern_score * pattern_weight)
+                
+                # Apply confidence boost for significant pattern matches
+                try:
+                    pattern_config = self.analyzer.crisis_threshold_manager.get_pattern_integration_config()
+                    confidence_boost = pattern_config.get('confidence_boost_limit', 0.15)
+                except Exception:
+                    confidence_boost = 0.1
                 
                 combined_score = min(1.0, combined_score + confidence_boost)
-                logger.debug(f"🔧 Applied confidence boost: +{confidence_boost:.3f}")
+                logger.debug(f"🔧 Significant patterns - blended score with boost: {combined_score:.3f}")
+                
+            else:  # Minor patterns detected (0.05 < pattern_score <= 0.3)
+                # Minimal blending - mostly trust AI, slight pattern influence
+                pattern_influence = pattern_score * 0.2  # Reduce pattern influence for minor patterns
+                combined_score = ensemble_score * 0.9 + pattern_influence
+                logger.debug(f"🔧 Minor patterns - minimal blending: {combined_score:.3f}")
             
-            logger.debug(f"🔧 Score combination: ensemble({ensemble_score:.3f}×{ensemble_weight:.2f}) + pattern({pattern_score:.3f}×{pattern_weight:.2f}) = {combined_score:.3f}")
-            return max(0.0, min(1.0, combined_score))
+            final_score = max(0.0, min(1.0, combined_score))
+            
+            logger.debug(f"🔧 Score combination: ensemble({ensemble_score:.3f}) + pattern({pattern_score:.3f}) = {final_score:.3f}")
+            return final_score
             
         except Exception as e:
             logger.error(f"❌ Fast score combination failed: {e}")
-            return max(ensemble_result.get('score', 0.0), pattern_result.get('score', 0.0))
+            # Fallback to ensemble score (trust the AI)
+            return max(0.0, min(1.0, ensemble_result.get('score', 0.0)))
     
     def _fast_threshold_application(self, score: float) -> str:
         """
