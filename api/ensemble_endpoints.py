@@ -342,7 +342,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.post("/ensemble/refresh-weights")
-    async def refresh_ensemble_weights(force_reload: bool = True):
+    async def refresh_ensemble_weights(force_reload: bool = False):
         """
         Refresh cached ensemble weights from current environment variables
         
