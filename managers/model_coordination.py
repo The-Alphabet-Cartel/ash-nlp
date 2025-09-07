@@ -612,8 +612,7 @@ class ModelCoordinationManager:
                 'method': 'sync_ensemble_error'
             }
     
-    def _classify_sync_direct(self, text: str, labels: List[str], model_type: str, 
-                            hypothesis_template: str) -> Dict[str, Any]:
+    def _classify_sync_direct(self, text: str, labels: List[str], model_type: str, hypothesis_template: str) -> Dict[str, Any]:
         """
         PHASE 3E STEP 7: Direct synchronous classification
         
