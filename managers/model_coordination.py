@@ -922,6 +922,7 @@ class ModelCoordinationManager:
     def _process_classification_result(self, result: Dict, labels: List[str]) -> Tuple[float, Dict[str, Any]]:
         """
         ENHANCED: Process zero-shot classification result into crisis score WITH raw transformer details
+        that respect the NLP_ZERO_SHOT_MAX_LABELS configuration setting
         
         Args:
             result: Raw result from zero-shot classifier
@@ -929,7 +930,7 @@ class ModelCoordinationManager:
             
         Returns:
             Tuple of (crisis_score, transformer_details) where transformer_details contains
-            all raw information for testing and debugging
+            filtered raw information respecting MAX_LABELS configuration
         """
         try:
             if not result or 'scores' not in result:
@@ -943,11 +944,19 @@ class ModelCoordinationManager:
                 logger.warning(f"⚠️ Score/label mismatch in classification result")
                 return 0.0, self._get_empty_transformer_details()
             
-            # Capture RAW transformer details for API response
+            # Get MAX_LABELS configuration setting
+            max_labels = self._get_zero_shot_max_labels_setting()
+            
+            # Apply MAX_LABELS filtering to the results for API output
+            # Keep full internal processing but limit API response
+            filtered_predicted_labels = predicted_labels[:max_labels] if predicted_labels else []
+            filtered_scores = scores[:max_labels] if scores else []
+            
+            # Capture RAW transformer details for API response (with MAX_LABELS filtering)
             raw_transformer_details = {
                 'raw_transformers_result': {
-                    'predicted_labels': predicted_labels.copy() if predicted_labels else [],
-                    'confidence_scores': [float(s) for s in scores] if scores else [],
+                    'predicted_labels': filtered_predicted_labels.copy(),
+                    'confidence_scores': [float(s) for s in filtered_scores],
                     'original_input_labels': labels.copy() if labels else [],
                     'top_prediction': {
                         'label': predicted_labels[0] if predicted_labels else None,
@@ -959,17 +968,26 @@ class ModelCoordinationManager:
                             'confidence': float(score),
                             'rank': idx + 1
                         }
-                        for idx, (label, score) in enumerate(zip(predicted_labels, scores))
-                    ] if predicted_labels and scores else [],
+                        for idx, (label, score) in enumerate(zip(filtered_predicted_labels, filtered_scores))
+                    ],
                     'model_response_metadata': {
                         'total_labels_processed': len(labels),
                         'predictions_returned': len(predicted_labels) if predicted_labels else 0,
+                        'max_labels_configured': max_labels,
+                        'predictions_shown': len(filtered_predicted_labels),
+                        'predictions_filtered': max(0, len(predicted_labels) - max_labels),
                         'score_distribution': {
                             'highest': float(max(scores)) if scores else 0.0,
                             'lowest': float(min(scores)) if scores else 0.0,
-                            'average': float(sum(scores) / len(scores)) if scores else 0.0
+                            'average': float(sum(scores) / len(scores)) if scores else 0.0,
+                            'top_n_average': float(sum(filtered_scores) / len(filtered_scores)) if filtered_scores else 0.0
                         }
                     }
+                },
+                'configuration_applied': {
+                    'max_labels_setting': max_labels,
+                    'max_labels_source': self._get_max_labels_config_source(),
+                    'filtering_applied': len(predicted_labels) > max_labels if predicted_labels else False
                 },
                 'normalization_applied': False,
                 'base_score_before_normalization': 0.0,
@@ -980,13 +998,16 @@ class ModelCoordinationManager:
             logger.debug(f"🔍 Transformers result - labels: {predicted_labels}")
             logger.debug(f"🔍 Transformers result - scores: {[f'{s:.3f}' for s in scores]}")
             logger.debug(f"🔍 Original input labels: {labels}")
+            logger.debug(f"🔍 MAX_LABELS configuration: {max_labels}")
+            logger.debug(f"🔍 Filtered to top {len(filtered_predicted_labels)} predictions for API response")
 
-            # Get the highest confidence score and its corresponding label
+            # Continue with full internal processing using ALL results (not filtered)
+            # This ensures crisis detection accuracy isn't affected by API display limits
             if not predicted_labels or not scores:
                 logger.warning("⚠️ No predictions returned from transformers")
                 return 0.0, raw_transformer_details
                 
-            top_label = predicted_labels[0]
+            top_label = predicted_labels[0]  # Use full results for crisis calculation
             top_score = scores[0]
             
             # Find where this label was positioned in our original severity-ordered labels
@@ -1004,7 +1025,8 @@ class ModelCoordinationManager:
                     'original_severity_index': original_index,
                     'total_severity_levels': len(labels),
                     'severity_weight': severity_weight,
-                    'severity_percentile': original_index / (len(labels) - 1) if len(labels) > 1 else 0.0
+                    'severity_percentile': original_index / (len(labels) - 1) if len(labels) > 1 else 0.0,
+                    'note': f'Crisis calculation uses full transformer results, API shows top {max_labels}'
                 }
                 
                 logger.debug(f"📊 Top prediction: {top_label} (score={top_score:.3f})")
@@ -1154,8 +1176,68 @@ class ModelCoordinationManager:
             }
             return base_score, error_details
 
+    def _get_zero_shot_max_labels_setting(self) -> int:
+        """
+        Get the NLP_ZERO_SHOT_MAX_LABELS setting from configuration
+        
+        Returns:
+            Maximum number of labels to show in API responses (default: 5)
+        """
+        try:
+            # Check zero-shot settings in configuration
+            zero_shot_settings = self.config_manager.get_config_section('label_config', 'zero_shot_settings')
+            if zero_shot_settings:
+                max_labels = zero_shot_settings.get('max_labels', 5)
+                # Validate and convert to int
+                max_labels = int(max_labels)
+                # Ensure reasonable bounds (1-10 as per validation rules)
+                max_labels = max(1, min(10, max_labels))
+                logger.debug(f"🔧 Zero-shot max_labels setting: {max_labels}")
+                return max_labels
+            
+            # Fallback: check environment variable directly
+            import os
+            env_setting = os.getenv('NLP_ZERO_SHOT_MAX_LABELS', '5')
+            try:
+                max_labels = int(env_setting)
+                max_labels = max(1, min(10, max_labels))  # Bounds check
+                logger.debug(f"🔧 Zero-shot max_labels from ENV: {max_labels}")
+                return max_labels
+            except ValueError:
+                logger.warning(f"⚠️ Invalid NLP_ZERO_SHOT_MAX_LABELS value '{env_setting}', using default 5")
+                return 5
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Could not get max_labels setting: {e}")
+            return 5  # Safe default
+
+    def _get_max_labels_config_source(self) -> str:
+        """
+        Determine where the max_labels setting came from for debugging
+        
+        Returns:
+            Source description for the max_labels setting
+        """
+        try:
+            # Check if it's from config file
+            zero_shot_settings = self.config_manager.get_config_section('label_config', 'zero_shot_settings')
+            if zero_shot_settings and 'max_labels' in zero_shot_settings:
+                return 'config_file_label_config.json'
+            
+            # Check if it's from environment variable
+            import os
+            if 'NLP_ZERO_SHOT_MAX_LABELS' in os.environ:
+                return 'environment_variable'
+            
+            return 'default_fallback'
+            
+        except Exception:
+            return 'unknown'
+
     def _get_empty_transformer_details(self) -> Dict[str, Any]:
-        """Return empty transformer details structure for error cases"""
+        """Return empty transformer details structure for error cases with MAX_LABELS awareness"""
+        max_labels = self._get_zero_shot_max_labels_setting()
+        
         return {
             'raw_transformers_result': {
                 'predicted_labels': [],
@@ -1166,8 +1248,16 @@ class ModelCoordinationManager:
                 'model_response_metadata': {
                     'total_labels_processed': 0,
                     'predictions_returned': 0,
-                    'score_distribution': {'highest': 0.0, 'lowest': 0.0, 'average': 0.0}
+                    'max_labels_configured': max_labels,
+                    'predictions_shown': 0,
+                    'predictions_filtered': 0,
+                    'score_distribution': {'highest': 0.0, 'lowest': 0.0, 'average': 0.0, 'top_n_average': 0.0}
                 }
+            },
+            'configuration_applied': {
+                'max_labels_setting': max_labels,
+                'max_labels_source': self._get_max_labels_config_source(),
+                'filtering_applied': False
             },
             'severity_analysis': {},
             'normalization_applied': False,
