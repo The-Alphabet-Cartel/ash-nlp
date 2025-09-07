@@ -451,9 +451,7 @@ class ModelCoordinationManager:
     # ========================================================================
     # PHASE 3: AI CLASSIFICATION METHODS - CORE IMPLEMENTATION
     # ========================================================================
-    
-    async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, 
-                                hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
+    async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
         PHASE 3: PRIMARY AI classification method for EnsembleAnalysisHelper
         
@@ -508,8 +506,8 @@ class ModelCoordinationManager:
                 lambda: classifier(text, labels)
             )
             
-            # Process result into crisis score
-            crisis_score = self._process_classification_result(result, labels)
+            # ENHANCED: Process result and capture transformer details
+            crisis_score, transformer_details = self._process_classification_result(result, labels)
             
             return {
                 'score': crisis_score,
@@ -518,12 +516,12 @@ class ModelCoordinationManager:
                 'model_type': model_type,
                 'method': 'zero_shot_classification',
                 'labels_used': len(labels),
-                'labels': labels,  # Add the actual labels
-                'hypothesis_template': hypothesis_template,  # Keep the template
-                'actual_hypotheses': actual_hypotheses,  # Add resolved hypotheses
+                'labels': labels,
+                'hypothesis_template': hypothesis_template,
                 'transformers_used': True,
                 'device': self.device,
-                'ensemble_manager': True
+                'ensemble_manager': True,
+                'transformer_details': transformer_details  # NEW: Include raw transformer info
             }
 
         except Exception as e:
@@ -655,8 +653,8 @@ class ModelCoordinationManager:
             # Direct synchronous call (no async executor)
             result = classifier(text, labels)
             
-            # Process result into crisis score
-            crisis_score = self._process_classification_result(result, labels)
+            # ENHANCED: Process result and capture transformer details
+            crisis_score, transformer_details = self._process_classification_result(result, labels)
             
             return {
                 'score': crisis_score,
@@ -667,7 +665,8 @@ class ModelCoordinationManager:
                 'labels_used': len(labels),
                 'transformers_used': True,
                 'device': self.device,
-                'sync_optimized': True
+                'sync_optimized': True,
+                'transformer_details': transformer_details  # NEW: Include raw transformer info
             }
 
         except Exception as e:
@@ -921,29 +920,62 @@ class ModelCoordinationManager:
                 logger.error(f"Could not create fallback cache directory {fallback_dir}: {e2}")
             return fallback_dir
     
-    def _process_classification_result(self, result: Dict, labels: List[str]) -> float:
+    def _process_classification_result(self, result: Dict, labels: List[str]) -> Tuple[float, Dict[str, Any]]:
         """
-        PHASE 3: Process zero-shot classification result into crisis score
-        Enhanced with configurable score normalization for proper crisis scale utilization
+        ENHANCED: Process zero-shot classification result into crisis score WITH raw transformer details
         
         Args:
             result: Raw result from zero-shot classifier
             labels: Original labels used for classification
             
         Returns:
-            Crisis score (0.0 to 1.0) where higher values indicate higher crisis levels
+            Tuple of (crisis_score, transformer_details) where transformer_details contains
+            all raw information for testing and debugging
         """
         try:
             if not result or 'scores' not in result:
                 logger.warning(f"⚠️ Invalid classification result format")
-                return 0.0
+                return 0.0, self._get_empty_transformer_details()
             
             scores = result['scores']
             predicted_labels = result.get('labels', [])
             
             if len(scores) != len(labels):
                 logger.warning(f"⚠️ Score/label mismatch in classification result")
-                return 0.0
+                return 0.0, self._get_empty_transformer_details()
+            
+            # Capture RAW transformer details for API response
+            raw_transformer_details = {
+                'raw_transformers_result': {
+                    'predicted_labels': predicted_labels.copy() if predicted_labels else [],
+                    'confidence_scores': [float(s) for s in scores] if scores else [],
+                    'original_input_labels': labels.copy() if labels else [],
+                    'top_prediction': {
+                        'label': predicted_labels[0] if predicted_labels else None,
+                        'confidence': float(scores[0]) if scores else 0.0
+                    },
+                    'all_predictions': [
+                        {
+                            'label': label,
+                            'confidence': float(score),
+                            'rank': idx + 1
+                        }
+                        for idx, (label, score) in enumerate(zip(predicted_labels, scores))
+                    ] if predicted_labels and scores else [],
+                    'model_response_metadata': {
+                        'total_labels_processed': len(labels),
+                        'predictions_returned': len(predicted_labels) if predicted_labels else 0,
+                        'score_distribution': {
+                            'highest': float(max(scores)) if scores else 0.0,
+                            'lowest': float(min(scores)) if scores else 0.0,
+                            'average': float(sum(scores) / len(scores)) if scores else 0.0
+                        }
+                    }
+                },
+                'normalization_applied': False,
+                'base_score_before_normalization': 0.0,
+                'final_score_after_normalization': 0.0
+            }
             
             # DEBUG: Log the transformers result structure for verification
             logger.debug(f"🔍 Transformers result - labels: {predicted_labels}")
@@ -953,7 +985,7 @@ class ModelCoordinationManager:
             # Get the highest confidence score and its corresponding label
             if not predicted_labels or not scores:
                 logger.warning("⚠️ No predictions returned from transformers")
-                return 0.0
+                return 0.0, raw_transformer_details
                 
             top_label = predicted_labels[0]
             top_score = scores[0]
@@ -967,6 +999,15 @@ class ModelCoordinationManager:
                 # Calculate base crisis score based on confidence and severity position
                 base_crisis_score = top_score * severity_weight
                 
+                # Update transformer details with severity analysis
+                raw_transformer_details['severity_analysis'] = {
+                    'top_predicted_label': top_label,
+                    'original_severity_index': original_index,
+                    'total_severity_levels': len(labels),
+                    'severity_weight': severity_weight,
+                    'severity_percentile': original_index / (len(labels) - 1) if len(labels) > 1 else 0.0
+                }
+                
                 logger.debug(f"📊 Top prediction: {top_label} (score={top_score:.3f})")
                 logger.debug(f"📊 Original severity index: {original_index}/{len(labels)-1}")
                 logger.debug(f"📊 Severity weight: {severity_weight:.3f}")
@@ -978,28 +1019,165 @@ class ModelCoordinationManager:
                 base_crisis_score = top_score
                 severity_weight = 1.0
                 original_index = 0
+                
+                raw_transformer_details['severity_analysis'] = {
+                    'top_predicted_label': top_label,
+                    'original_severity_index': None,
+                    'error': 'predicted_label_not_in_original_labels',
+                    'fallback_applied': True
+                }
+                
                 logger.debug(f"📊 Using fallback score: {base_crisis_score:.3f}")
             
-            # Apply score normalization if enabled
-            final_crisis_score = self._apply_score_normalization(
+            # Store base score before normalization
+            raw_transformer_details['base_score_before_normalization'] = base_crisis_score
+            
+            # Apply score normalization if enabled and capture details
+            final_crisis_score, normalization_details = self._apply_score_normalization_with_details(
                 base_crisis_score, 
                 severity_weight, 
                 original_index, 
                 len(labels)
             )
             
+            # Update transformer details with normalization information
+            raw_transformer_details.update(normalization_details)
+            raw_transformer_details['final_score_after_normalization'] = final_crisis_score
+            
             # Ensure final score is within valid range
             final_crisis_score = max(0.0, min(1.0, final_crisis_score))
             
             logger.debug(f"📊 Final crisis score: {final_crisis_score:.3f}")
-            return final_crisis_score
+            return final_crisis_score, raw_transformer_details
             
         except Exception as e:
             logger.error(f"❌ Classification result processing failed: {e}")
-            return 0.0
+            error_details = self._get_empty_transformer_details()
+            error_details['processing_error'] = str(e)
+            return 0.0, error_details
+
+    def _apply_score_normalization_with_details(self, base_score: float, severity_weight: float, severity_index: int, total_labels: int) -> Tuple[float, Dict[str, Any]]:
+        """
+        Enhanced normalization that returns both the normalized score AND detailed information
+        about the normalization process for inclusion in API responses
+        """
+        try:
+            # Check if score normalization is enabled
+            normalize_enabled = self._get_zero_shot_normalize_setting()
+            
+            normalization_details = {
+                'normalization_applied': normalize_enabled,
+                'normalization_settings': {
+                    'enabled': normalize_enabled,
+                    'source': 'NLP_ZERO_SHOT_NORMALIZE_SCORES'
+                }
+            }
+            
+            if not normalize_enabled:
+                logger.debug(f"📊 Score normalization disabled, using raw score: {base_score:.3f}")
+                normalization_details['reason'] = 'normalization_disabled'
+                return base_score, normalization_details
+            
+            # Apply normalization scaling based on severity tier
+            severity_percentile = severity_index / (total_labels - 1) if total_labels > 1 else 0.0
+            
+            if severity_percentile <= 0.25:  # High-severity tier
+                min_scaled_score = 0.400
+                max_scaled_score = 1.000
+                amplification = 1.8
+                tier = "high_severity"
+                
+            elif severity_percentile <= 0.75:  # Medium-severity tier
+                min_scaled_score = 0.200
+                max_scaled_score = 0.700
+                amplification = 1.4
+                tier = "medium_severity"
+                
+            else:  # Low-severity tier
+                min_scaled_score = 0.001
+                max_scaled_score = 0.400
+                amplification = 1.0
+                tier = "low_severity"
+            
+            # Apply amplification to base score
+            amplified_score = min(1.0, base_score * amplification)
+            
+            # Scale to the appropriate range for this severity tier
+            range_span = max_scaled_score - min_scaled_score
+            normalized_score = min_scaled_score + (amplified_score * range_span)
+            
+            # Additional boost for very high confidence on high-severity labels
+            confidence_boost = 0.0
+            if severity_percentile <= 0.25 and base_score >= 0.6:
+                confidence_boost = (base_score - 0.6) * 0.5
+                normalized_score = min(1.0, normalized_score + confidence_boost)
+            
+            # Capture detailed normalization information
+            normalization_details.update({
+                'normalization_tier': tier,
+                'severity_percentile': severity_percentile,
+                'amplification_factor': amplification,
+                'target_range': {
+                    'minimum': min_scaled_score,
+                    'maximum': max_scaled_score,
+                    'span': range_span
+                },
+                'score_progression': {
+                    'base_score': base_score,
+                    'amplified_score': amplified_score,
+                    'range_normalized_score': min_scaled_score + (amplified_score * range_span),
+                    'confidence_boost': confidence_boost,
+                    'final_normalized_score': normalized_score
+                },
+                'normalization_impact': {
+                    'original_to_final_ratio': normalized_score / base_score if base_score > 0 else 0,
+                    'absolute_change': normalized_score - base_score,
+                    'percentage_change': ((normalized_score - base_score) / base_score * 100) if base_score > 0 else 0
+                }
+            })
+            
+            logger.debug(f"📊 Score normalization applied:")
+            logger.debug(f"   Severity percentile: {severity_percentile:.2f}")
+            logger.debug(f"   Base score: {base_score:.3f}")
+            logger.debug(f"   Amplification: {amplification:.1f}")
+            logger.debug(f"   Amplified score: {amplified_score:.3f}")
+            logger.debug(f"   Target range: {min_scaled_score:.3f}-{max_scaled_score:.3f}")
+            logger.debug(f"   Normalized score: {normalized_score:.3f}")
+            
+            return normalized_score, normalization_details
+            
+        except Exception as e:
+            logger.error(f"❌ Score normalization failed: {e}")
+            error_details = {
+                'normalization_applied': False,
+                'error': str(e),
+                'fallback_used': True
+            }
+            return base_score, error_details
+
+    def _get_empty_transformer_details(self) -> Dict[str, Any]:
+        """Return empty transformer details structure for error cases"""
+        return {
+            'raw_transformers_result': {
+                'predicted_labels': [],
+                'confidence_scores': [],
+                'original_input_labels': [],
+                'top_prediction': {'label': None, 'confidence': 0.0},
+                'all_predictions': [],
+                'model_response_metadata': {
+                    'total_labels_processed': 0,
+                    'predictions_returned': 0,
+                    'score_distribution': {'highest': 0.0, 'lowest': 0.0, 'average': 0.0}
+                }
+            },
+            'severity_analysis': {},
+            'normalization_applied': False,
+            'base_score_before_normalization': 0.0,
+            'final_score_after_normalization': 0.0,
+            'error': 'no_valid_results'
+        }
     
-    def _apply_score_normalization(self, base_score: float, severity_weight: float, 
-                                 severity_index: int, total_labels: int) -> float:
+    def _apply_score_normalization(self, base_score: float, severity_weight: float, severity_index: int, total_labels: int) -> float:
         """
         Apply score normalization to utilize the full 0.001-1.000 crisis detection scale
         
