@@ -1721,56 +1721,9 @@ class ModelCoordinationManager:
     def is_weights_validation_enabled(self) -> bool:
         """Check if weight validation is enabled"""
         return self.get_validation_settings().get('ensure_weights_sum_to_one', True)
-    
-    def get_zero_shot_capabilities(self) -> Dict[str, Any]:
-        """Get information about zero-shot classification capabilities"""
-        try:
-            zero_shot_model = self._get_best_zero_shot_model()
-            
-            capabilities = {
-                'zero_shot_available': zero_shot_model is not None,
-                'zero_shot_model': zero_shot_model,
-                'semantic_pattern_matching': zero_shot_model is not None,
-                'classification_method': 'transformers_pipeline' if zero_shot_model else 'keyword_fallback',
-                'transformers_available': TRANSFORMERS_AVAILABLE,
-                'phase_3_implementation': True
-            }
-            
-            if zero_shot_model:
-                model_config = self.get_model_config(zero_shot_model)
-                capabilities['model_details'] = {
-                    'name': model_config.get('name', ''),
-                    'type': model_config.get('type', ''),
-                    'pipeline_task': model_config.get('pipeline_task', '')
-                }
-            
-            return capabilities
-            
-        except Exception as e:
-            logger.error(f"Error getting zero-shot capabilities: {e}")
-            return {'zero_shot_available': False, 'error': str(e)}
-    
-    def _get_best_zero_shot_model(self) -> Optional[str]:
-        """Find the best available zero-shot classification model"""
-        try:
-            models = self.get_model_definitions()
-            
-            for model_type, model_config in models.items():
-                pipeline_task = model_config.get('pipeline_task', '')
-                if pipeline_task == 'zero-shot-classification':
-                    return model_type
-            
-            for model_type, model_config in models.items():
-                model_name = model_config.get('name', '').lower()
-                if 'nli' in model_name or 'mnli' in model_name:
-                    return model_type
-            
-            return None
-            
-        except Exception as e:
-            logger.error(f"Error finding zero-shot model: {e}")
-            return None
-    
+    # ========================================================================
+    # MANAGER STATUS
+    # ========================================================================
     def get_manager_status(self) -> Dict[str, Any]:
         """Get comprehensive manager status"""
         try:
@@ -1825,43 +1778,9 @@ def create_model_coordination_manager(config_manager) -> ModelCoordinationManage
     return ModelCoordinationManager(config_manager)
 # ============================================================================
 
-# ============================================================================
-# BACKWARD COMPATIBILITY - Global Instance Management
-# ============================================================================
-#_model_coordination_manager = None
-
-#def get_model_coordination_manager(config_manager=None) -> ModelCoordinationManager:
-#    """
-#    Get the global model ensemble manager instance - LEGACY COMPATIBILITY
-#    
-#    Args:
-#        config_manager: UnifiedConfigManager instance (optional for compatibility)
-#        
-#    Returns:
-#        ModelCoordinationManager instance
-#    """
-#    global _model_coordination_manager
-#    
-#    if _model_coordination_manager is None:
-#        if config_manager is None:
-#            logger.info("Creating UnifiedConfigManager for ModelCoordinationManager compatibility")
-#            from managers.unified_config import create_unified_config_manager
-#            config_manager = create_unified_config_manager()
-#        
-#        _model_coordination_manager = ModelCoordinationManager(config_manager)
-#    
-#    return _model_coordination_manager
-
-#def reset_model_coordination_manager():
-#    """Reset the global manager instance - for testing"""
-#    global _model_coordination_manager
-#    _model_coordination_manager = None
-
 __all__ = [
     'ModelCoordinationManager', 
     'create_model_coordination_manager'#,
-#    'get_model_coordination_manager', 
-#    'reset_model_coordination_manager'
 ]
 
 logger.info("ModelCoordinationManager v3.1e-5.5-7-3 Phase 3 loaded - AI classification methods implemented")
