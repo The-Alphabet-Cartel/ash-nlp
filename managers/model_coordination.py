@@ -30,7 +30,7 @@ import os
 import logging
 import time
 import asyncio
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 
 # PHASE 3: Add transformers imports for actual AI classification
 try:
