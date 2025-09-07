@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Pydantic Models for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
-LAST MODIFIED: 2025-08-22
-PHASE: 3e, Sub-step 5.5, Task 5 - PydanticManager Standard Cleanup
+FILE VERSION: v3.1-3e-6-2
+LAST MODIFIED: 2025-09-07
+PHASE: 3e, Sub-step 5.5, Task 5 - PydanticManager Standard Cleanup + Crisis Score Field Addition
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -42,6 +42,7 @@ class PydanticManager:
     - Better integration with UnifiedConfigManager patterns
     - Added comprehensive model validation and summary methods
     - Enhanced factory function with better error handling
+    - ADDED: crisis_score field to CrisisResponse model for API compliance
     
     Follows the clean manager architecture established in Phase 2A with Phase 3e enhancements.
     """
@@ -102,7 +103,8 @@ class PydanticManager:
         model_config = ConfigDict(protected_namespaces=())
         
         needs_response: bool
-        crisis_level: str  # 'none', 'low', 'medium', 'high'
+        crisis_level: str  # 'none', 'low', 'medium', 'high', 'critical'
+        crisis_score: float  # ✅ FIX: Added crisis_score field (0.0-1.0)
         confidence_score: float
         detected_categories: list
         method: str
@@ -349,7 +351,8 @@ class PydanticManager:
                     }
                 },
                 'initialization_status': self.is_initialized(),
-                'enhanced_error_handling': True
+                'enhanced_error_handling': True,
+                'crisis_score_field_added': True  # ✅ FIX: Document the addition
             }
             
         except Exception as e:
@@ -382,7 +385,8 @@ class PydanticManager:
                 'protected_namespaces_configured': True,
                 'initialization_status': 'complete',
                 'error_handling': 'enhanced',
-                'model_validation': 'available'
+                'model_validation': 'available',
+                'crisis_score_field_available': True  # ✅ FIX: Document field availability
             }
             
         except Exception as e:
@@ -519,9 +523,15 @@ if __name__ == "__main__":
         core_models = manager.get_core_models()
         print(f"Core Models: {list(core_models.keys())}")
         
-        # Test model validation
-        validation = manager.validate_model_structure('MessageRequest')
-        print(f"MessageRequest Validation: {validation}")
+        # Test CrisisResponse model validation (should now include crisis_score)
+        validation = manager.validate_model_structure('CrisisResponse')
+        print(f"CrisisResponse Validation: {validation}")
+        
+        # Check if crisis_score field is present
+        if 'crisis_score' in validation.get('fields', {}):
+            print("✅ crisis_score field successfully added to CrisisResponse model!")
+        else:
+            print("❌ crisis_score field still missing from CrisisResponse model")
         
         # Test comprehensive validation
         all_validation = manager.validate_all_models()
@@ -537,4 +547,4 @@ if __name__ == "__main__":
         print(f"Testing failed: {e}")
         raise
 
-logger.info("PydanticManager v3.1e-5.5-6 loaded - Phase 3e Sub-step 5.5 cleanup complete with enhanced patterns")
+logger.info("PydanticManager v3.1e-5.5-6 loaded - Phase 3e Sub-step 5.5 cleanup complete with enhanced patterns + crisis_score field")
