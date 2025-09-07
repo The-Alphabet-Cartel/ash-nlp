@@ -127,6 +127,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             if not analysis_results:
                 logger.debug("Falling back to top-level keys for backward compatibility")
                 crisis_level = complete_analysis.get('crisis_level', 'none')
+                crisis_score = complete_analysis.get('crisis_score', 0.0)
                 confidence_score = complete_analysis.get('confidence_score', 0.0)
             
             # Validate extracted values
@@ -145,6 +146,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 response = models['CrisisResponse'](
                     needs_response=complete_analysis.get('needs_response', False),
                     crisis_level=crisis_level,
+                    crisis_score=crisis_score,
                     confidence_score=confidence_score,
                     detected_categories=complete_analysis.get('detected_categories', []),
                     method=complete_analysis.get('method', 'crisis_analyzer'),
