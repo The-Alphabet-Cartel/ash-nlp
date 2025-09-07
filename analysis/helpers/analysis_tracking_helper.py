@@ -367,12 +367,12 @@ class AnalysisTrackingHelper:
             "requires_staff_review": crisis_level in ["high", "critical"],
             "method": "enhanced_three_step_analysis",
             "detected_categories": pattern_result.get("detected_categories", []),
-            "ai_model_details": {
-                "models_used": ai_result.get("models_used", []),
-                "individual_results": ai_result.get("individual_results", {}),
-                "base_confidence": base_confidence,
-                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
-            },
+#            "ai_model_details": {
+#                "models_used": ai_result.get("models_used", []),
+#                "individual_results": ai_result.get("individual_results", {}),
+#                "base_confidence": base_confidence,
+#                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
+#            },
             "pattern_analysis": {
                 "patterns_matched": pattern_result.get("patterns_found", []),
                 "enhancement_boost": pattern_boost,
