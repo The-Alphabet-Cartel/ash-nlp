@@ -1,7 +1,7 @@
 # ash-nlp/api/ensemble_endpoints.py
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+CORE PRINCIPLE: Zero-Shot AI Models â†' Pattern Enhancement â†' Crisis Classification
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. FIRST: Uses Zero-Shot AI models for primary semantic classification
@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Three Zero-Shot Model Ensemble API Endpoints for Ash NLP Service
 ---
-FILE VERSION: v3.1-4b-1
-LAST MODIFIED: 2025-08-30
-PHASE: 3e, Step 5.6 - Integration Testing Updates
+FILE VERSION: v3.1-4b-2
+LAST MODIFIED: 2025-09-07
+PHASE: 3e, Step 5.6 - Integration Testing Updates + Crisis Score Fix
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -119,7 +119,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             # Extract from nested analysis_results structure with enhanced validation
             analysis_results = complete_analysis.get('analysis_results', {})
             
-            # Map crisis_score -> confidence_score for API compatibility
+            # Extract crisis_score, crisis_level, and confidence_score
             crisis_level = analysis_results.get('crisis_level', 'none')
             crisis_score = analysis_results.get('crisis_score', 0.0)  # ✅ FIX: Extract crisis_score
             confidence_score = analysis_results.get('confidence_score', 0.0)
@@ -139,12 +139,12 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             if not isinstance(crisis_score, (int, float)) or crisis_score < 0 or crisis_score > 1:
                 logger.warning(f"Invalid crisis_score '{crisis_score}', using 0.0")
                 crisis_score = 0.0  # ✅ FIX: Validate crisis_score
-
+                
             if not isinstance(confidence_score, (int, float)) or confidence_score < 0 or confidence_score > 1:
                 logger.warning(f"Invalid confidence_score '{confidence_score}', using 0.0")
                 confidence_score = 0.0
             
-            logger.debug(f"Extracted crisis_level={crisis_level}, confidence_score={confidence_score}")
+            logger.debug(f"Extracted crisis_level={crisis_level}, crisis_score={crisis_score:.3f}, confidence_score={confidence_score:.3f}")
             logger.debug(f"Analysis structure: has_analysis_results={bool(analysis_results)}")
             
             try:
@@ -181,9 +181,9 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             method = complete_analysis.get('method', 'unknown')
             feature_flags = complete_analysis.get('feature_flags_applied', {})
             
-            logger.debug(f"Clean Architecture Result: {crisis_level} (conf: {confidence_score:.3f}) via {method}")
+            logger.debug(f"Clean Architecture Result: {crisis_level} (crisis_score: {crisis_score:.3f}, conf: {confidence_score:.3f}) via {method}")
             logger.debug(f"Feature flags applied: {feature_flags}")
-            logger.info(f"API response extraction successful with validation")
+            logger.info(f"API response extraction successful with validation - crisis_score field included")
             
             return response
             
