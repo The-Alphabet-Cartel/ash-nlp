@@ -25,6 +25,7 @@ STRATEGY: Replace performance-critical methods with streamlined versions
 import logging
 import time
 import asyncio
+import os
 from typing import Dict, Any, List, Optional
 
 logger = logging.getLogger(__name__)
