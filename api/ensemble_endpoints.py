@@ -121,14 +121,14 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             
             # Map crisis_score -> confidence_score for API compatibility
             crisis_level = analysis_results.get('crisis_level', 'none')
-            crisis_score = analysis_results.get('crisis_score', 0.0)
+            crisis_score = analysis_results.get('crisis_score', 0.0)  # ✅ FIX: Extract crisis_score
             confidence_score = analysis_results.get('confidence_score', 0.0)
             
             # Enhanced fallback to top-level keys for backward compatibility
             if not analysis_results:
                 logger.debug("Falling back to top-level keys for backward compatibility")
                 crisis_level = complete_analysis.get('crisis_level', 'none')
-                crisis_score = complete_analysis.get('crisis_score', 0.0)
+                crisis_score = complete_analysis.get('crisis_score', 0.0)  # ✅ FIX: Fallback for crisis_score
                 confidence_score = complete_analysis.get('confidence_score', 0.0)
             
             # Validate extracted values
@@ -136,6 +136,10 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 logger.warning(f"Invalid crisis_level '{crisis_level}', using 'none'")
                 crisis_level = 'none'
                 
+            if not isinstance(crisis_score, (int, float)) or crisis_score < 0 or crisis_score > 1:
+                logger.warning(f"Invalid crisis_score '{crisis_score}', using 0.0")
+                crisis_score = 0.0  # ✅ FIX: Validate crisis_score
+
             if not isinstance(confidence_score, (int, float)) or confidence_score < 0 or confidence_score > 1:
                 logger.warning(f"Invalid confidence_score '{confidence_score}', using 0.0")
                 confidence_score = 0.0
@@ -147,7 +151,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 response = models['CrisisResponse'](
                     needs_response=complete_analysis.get('needs_response', False),
                     crisis_level=crisis_level,
-                    crisis_score=crisis_score,
+                    crisis_score=crisis_score,  # ✅ FIX: Pass crisis_score to response model
                     confidence_score=confidence_score,
                     detected_categories=complete_analysis.get('detected_categories', []),
                     method=complete_analysis.get('method', 'crisis_analyzer'),
@@ -195,6 +199,7 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 return models['CrisisResponse'](
                     needs_response=False,
                     crisis_level='none',
+                    crisis_score=0.0,  # ✅ FIX: Include crisis_score in error response
                     confidence_score=0.0,
                     detected_categories=[],
                     method='error_clean_architecture',
