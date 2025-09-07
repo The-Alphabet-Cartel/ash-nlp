@@ -91,7 +91,6 @@ class ModelCoordinationManager:
     # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
     # ========================================================================
-    
     async def preload_models(self):
         """
         Preload all configured models during container startup
@@ -315,7 +314,11 @@ class ModelCoordinationManager:
             }
         except Exception as e:
             return {'error': str(e), 'preload_complete': False}
+    # ========================================================================
             
+    # ========================================================================
+    # LOAD THE SYSTEM
+    # ========================================================================
     def _load_and_validate_configuration(self):
         """Load and validate model ensemble configuration using enhanced patterns"""
         try:
@@ -447,9 +450,10 @@ class ModelCoordinationManager:
         except Exception as e:
             logger.error(f"Configuration validation failed: {e}")
             return False
+    # ========================================================================
     
     # ========================================================================
-    # PHASE 3: AI CLASSIFICATION METHODS - CORE IMPLEMENTATION
+    # AI CLASSIFICATION METHODS - CORE IMPLEMENTATION
     # ========================================================================
     async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
@@ -918,7 +922,11 @@ class ModelCoordinationManager:
             except Exception as e2:
                 logger.error(f"Could not create fallback cache directory {fallback_dir}: {e2}")
             return fallback_dir
+    # ========================================================================
     
+    # ========================================================================
+    # PROCESS CLASSIFICATION METHODS
+    # ========================================================================
     def _process_classification_result(self, result: Dict, labels: List[str]) -> Tuple[float, Dict[str, Any]]:
         """
         ENHANCED: Process zero-shot classification result into crisis score WITH raw transformer details
@@ -1371,7 +1379,11 @@ class ModelCoordinationManager:
             logger.warning(f"⚠️ Could not get normalize_scores setting: {e}")
             # Default to enabled for better crisis detection
             return True
+    # ========================================================================
     
+    # ========================================================================
+    # ENSEMBLE VOTING METHODS
+    # ========================================================================
     def _perform_ensemble_voting(self, model_results: Dict[str, Dict]) -> Dict[str, float]:
         """
         PHASE 3: Perform ensemble voting on multiple model results
@@ -1522,11 +1534,11 @@ class ModelCoordinationManager:
             "medium crisis level", 
             "low crisis level"
         ])
-    
-    # ========================================================================
-    # EXISTING CONFIGURATION METHODS (Keep unchanged)
     # ========================================================================
     
+    # ========================================================================
+    # GET METHODS
+    # ========================================================================
     def get_model_definitions(self) -> Dict[str, Any]:
         """Get all model definitions"""
         return self.config.get('models', {})
@@ -1598,7 +1610,15 @@ class ModelCoordinationManager:
     def get_inference_threads(self) -> int:
         """Get inference thread count"""
         return self.get_hardware_settings().get('inference_threads', 16)
+
+    def get_validation_settings(self) -> Dict[str, Any]:
+        """Get validation settings"""
+        return self.config.get('validation', {})
+    # ========================================================================
     
+    # ========================================================================
+    # MODEL INFO
+    # ========================================================================
     def models_loaded(self) -> bool:
         """Check if models are configured and ready for analysis"""
         try:
@@ -1698,10 +1718,6 @@ class ModelCoordinationManager:
                 'ready_for_analysis': False
             }
     
-    def get_validation_settings(self) -> Dict[str, Any]:
-        """Get validation settings"""
-        return self.config.get('validation', {})
-    
     def is_weights_validation_enabled(self) -> bool:
         """Check if weight validation is enabled"""
         return self.get_validation_settings().get('ensure_weights_sum_to_one', True)
@@ -1791,12 +1807,11 @@ class ModelCoordinationManager:
                 'status': 'error',
                 'error': str(e)
             }
-
+    # ============================================================================
 
 # ============================================================================
 # FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
-
 def create_model_coordination_manager(config_manager) -> ModelCoordinationManager:
     """
     Factory function to create ModelCoordinationManager instance
@@ -1808,45 +1823,45 @@ def create_model_coordination_manager(config_manager) -> ModelCoordinationManage
         ModelCoordinationManager instance
     """
     return ModelCoordinationManager(config_manager)
+# ============================================================================
 
 # ============================================================================
 # BACKWARD COMPATIBILITY - Global Instance Management
 # ============================================================================
+#_model_coordination_manager = None
 
-_model_coordination_manager = None
+#def get_model_coordination_manager(config_manager=None) -> ModelCoordinationManager:
+#    """
+#    Get the global model ensemble manager instance - LEGACY COMPATIBILITY
+#    
+#    Args:
+#        config_manager: UnifiedConfigManager instance (optional for compatibility)
+#        
+#    Returns:
+#        ModelCoordinationManager instance
+#    """
+#    global _model_coordination_manager
+#    
+#    if _model_coordination_manager is None:
+#        if config_manager is None:
+#            logger.info("Creating UnifiedConfigManager for ModelCoordinationManager compatibility")
+#            from managers.unified_config import create_unified_config_manager
+#            config_manager = create_unified_config_manager()
+#        
+#        _model_coordination_manager = ModelCoordinationManager(config_manager)
+#    
+#    return _model_coordination_manager
 
-def get_model_coordination_manager(config_manager=None) -> ModelCoordinationManager:
-    """
-    Get the global model ensemble manager instance - LEGACY COMPATIBILITY
-    
-    Args:
-        config_manager: UnifiedConfigManager instance (optional for compatibility)
-        
-    Returns:
-        ModelCoordinationManager instance
-    """
-    global _model_coordination_manager
-    
-    if _model_coordination_manager is None:
-        if config_manager is None:
-            logger.info("Creating UnifiedConfigManager for ModelCoordinationManager compatibility")
-            from managers.unified_config import create_unified_config_manager
-            config_manager = create_unified_config_manager()
-        
-        _model_coordination_manager = ModelCoordinationManager(config_manager)
-    
-    return _model_coordination_manager
-
-def reset_model_coordination_manager():
-    """Reset the global manager instance - for testing"""
-    global _model_coordination_manager
-    _model_coordination_manager = None
+#def reset_model_coordination_manager():
+#    """Reset the global manager instance - for testing"""
+#    global _model_coordination_manager
+#    _model_coordination_manager = None
 
 __all__ = [
     'ModelCoordinationManager', 
-    'create_model_coordination_manager',
-    'get_model_coordination_manager', 
-    'reset_model_coordination_manager'
+    'create_model_coordination_manager'#,
+#    'get_model_coordination_manager', 
+#    'reset_model_coordination_manager'
 ]
 
 logger.info("ModelCoordinationManager v3.1e-5.5-7-3 Phase 3 loaded - AI classification methods implemented")
