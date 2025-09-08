@@ -513,10 +513,43 @@ class CrisisAnalyzer:
         """
         Get algorithm parameters (consolidated from AnalysisConfigManager)
         MAINTAINED: Core configuration method kept in main class
+        
+        ENHANCEMENT: Now checks performance optimizer cache FIRST for dynamically set weights
+        This ensures weights set via /ensemble/set-weights endpoint are actually used
         """
         try:
+            # PRIORITY 1: Check performance optimizer cache for dynamically set weights
+            if (hasattr(self, 'performance_optimizer') and 
+                self.performance_optimizer and 
+                hasattr(self.performance_optimizer, '_cached_model_weights') and
+                self.performance_optimizer._cached_model_weights):
+                
+                cached_weights = self.performance_optimizer._cached_model_weights
+                cached_mode = getattr(self.performance_optimizer, '_cached_ensemble_mode', 'weighted')
+                
+                logger.debug(f"🎯 Using cached weights from performance optimizer: {cached_weights}")
+                
+                # Convert dict weights to list format [depression, sentiment, distress]
+                weights_list = [
+                    cached_weights.get('depression', 0.4),
+                    cached_weights.get('sentiment', 0.3), 
+                    cached_weights.get('emotional_distress', 0.3)
+                ]
+                
+                # Return with cached weights prioritized
+                return {
+                    'ensemble_weights': weights_list,
+                    'ensemble_mode': cached_mode,
+                    'score_normalization': 'sigmoid',
+                    'threshold_adaptation': True,
+                    'learning_rate': 0.01,
+                    'confidence_threshold': 0.25,
+                    'weights_source': 'performance_optimizer_cache'
+                }
+            
+            # PRIORITY 2: Fall back to configuration-based weights
             if self.shared_utilities_manager:
-                return self.shared_utilities_manager.get_config_section_safely(
+                config_params = self.shared_utilities_manager.get_config_section_safely(
                     'analysis_config', 'algorithm_parameters', {
                         'ensemble_weights': [0.4, 0.3, 0.3],
                         'score_normalization': 'sigmoid',
@@ -525,8 +558,14 @@ class CrisisAnalyzer:
                         'confidence_threshold': 0.25
                     }
                 )
+                config_params['weights_source'] = 'configuration'
+                return config_params
+                
             elif self.analysis_config_manager:
-                return self.analysis_config_manager.get_algorithm_parameters()
+                config_params = self.analysis_config_manager.get_algorithm_parameters()
+                config_params['weights_source'] = 'analysis_config_manager'
+                return config_params
+                
             else:
                 logger.warning("No config manager available - using default algorithm parameters")
                 return {
@@ -534,12 +573,18 @@ class CrisisAnalyzer:
                     'score_normalization': 'sigmoid',
                     'threshold_adaptation': True,
                     'learning_rate': 0.01,
-                    'confidence_threshold': 0.25
+                    'confidence_threshold': 0.25,
+                    'weights_source': 'fallback_defaults'
                 }
+                
         except Exception as e:
             return self._safe_analysis_execution(
                 "get_analysis_algorithm_parameters",
-                lambda: {'ensemble_weights': [0.4, 0.3, 0.3], 'score_normalization': 'sigmoid'}
+                lambda: {
+                    'ensemble_weights': [0.4, 0.3, 0.3], 
+                    'score_normalization': 'sigmoid',
+                    'weights_source': 'error_fallback'
+                }
             )
 
     # ========================================================================
