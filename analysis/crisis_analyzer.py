@@ -522,10 +522,10 @@ class CrisisAnalyzer:
             if (hasattr(self, 'performance_optimizer') and 
                 self.performance_optimizer and 
                 hasattr(self.performance_optimizer, '_cached_model_weights') and
-                self.performance_optimizer._cached_model_weights):
+                hasattr(self.performance_optimizer, '_cached_model_weights')):
                 
                 cached_weights = self.performance_optimizer._cached_model_weights
-                cached_mode = getattr(self.performance_optimizer, '_cached_ensemble_mode', 'weighted')
+                cached_mode = self.performance_optimizer._cached_ensemble_mode
                 
                 logger.debug(f"🎯 Using cached weights from performance optimizer: {cached_weights}")
                 
