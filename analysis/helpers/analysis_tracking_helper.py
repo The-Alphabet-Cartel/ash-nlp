@@ -342,7 +342,7 @@ class AnalysisTrackingHelper:
             logger.error(f"Learning adjustments failed: {e}")
             raise
 
-    def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], learning_result: Dict[str, Any]) -> Dict[str, Any]:
+    def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], learning_result: Dict[str, Any], mode: Optional[str] = None) -> Dict[str, Any]:
         """Combine results from all analysis steps with enhanced tracking"""
         # Base score from AI models
         base_score = ai_result.get("crisis_score", 0.0)
@@ -356,7 +356,7 @@ class AnalysisTrackingHelper:
         final_score = learning_result.get("adjusted_score", base_score)
         
         # Determine crisis level
-        crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score)
+        crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score, mode)
         
         return {
             "crisis_score": final_score,
