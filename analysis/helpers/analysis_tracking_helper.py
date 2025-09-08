@@ -368,6 +368,11 @@ class AnalysisTrackingHelper:
                             start_time=time.time()
                         )
                         
+                        # Add this right after the weighted_result = self.crisis_analyzer.scoring_helper.combine_analysis_results(...) call
+                        logger.debug(f"🔍 ScoringCalculationHelper returned: {weighted_result.get('crisis_score', 'missing')}")
+                        logger.debug(f"🔍 ScoringCalculationHelper confidence: {weighted_result.get('confidence_score', 'missing')}")
+                        logger.debug(f"🔍 Original AI result score: {ai_result.get('crisis_score', 'missing')}")
+
                         # Extract the properly weighted score
                         base_score = weighted_result.get("crisis_score", ai_result.get("crisis_score", 0.0))
                         base_confidence = weighted_result.get("confidence_score", ai_result.get("confidence_score", 0.0))
