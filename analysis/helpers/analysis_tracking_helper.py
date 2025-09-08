@@ -342,8 +342,7 @@ class AnalysisTrackingHelper:
             logger.error(f"Learning adjustments failed: {e}")
             raise
 
-    def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], 
-                                learning_result: Dict[str, Any]) -> Dict[str, Any]:
+    def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], learning_result: Dict[str, Any]) -> Dict[str, Any]:
         """Combine results from all analysis steps with enhanced tracking"""
         # Base score from AI models
         base_score = ai_result.get("crisis_score", 0.0)
