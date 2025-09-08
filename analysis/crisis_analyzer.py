@@ -167,7 +167,7 @@ class CrisisAnalyzer:
                     
                     # Apply crisis thresholds to the ZeroShot result
                     crisis_score = optimized_result.get('crisis_score', 0.0)
-                    optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score)
+                    optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score, 'weighted')
                     optimized_result['needs_response'] = crisis_score >= 0.25
                     optimized_result['requires_staff_review'] = crisis_score >= 0.45
                     
