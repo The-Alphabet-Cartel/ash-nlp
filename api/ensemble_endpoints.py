@@ -353,6 +353,33 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 logger.info(f"   Old mode: {old_mode}")
                 logger.info(f"   New mode: {ensemble_mode}")
                 
+                # CRITICAL DEBUG: Check other sources of ensemble mode
+                logger.info("🔍 MODE DEBUG - Checking all sources:")
+                
+                # Check model coordination manager
+                if hasattr(crisis_analyzer, 'model_coordination_manager') and crisis_analyzer.model_coordination_manager:
+                    try:
+                        manager_mode = crisis_analyzer.model_coordination_manager.get_ensemble_mode()
+                        logger.info(f"🔍   ModelCoordinationManager mode: {manager_mode}")
+                    except Exception as e:
+                        logger.info(f"🔍   ModelCoordinationManager mode ERROR: {e}")
+                
+                # Check crisis threshold manager  
+                if hasattr(crisis_analyzer, 'crisis_threshold_manager') and crisis_analyzer.crisis_threshold_manager:
+                    try:
+                        # This might be where the hardcoded consensus is coming from
+                        if hasattr(crisis_analyzer.crisis_threshold_manager, 'get_ensemble_mode'):
+                            threshold_mode = crisis_analyzer.crisis_threshold_manager.get_ensemble_mode()
+                            logger.info(f"🔍   CrisisThresholdManager mode: {threshold_mode}")
+                        else:
+                            logger.info(f"🔍   CrisisThresholdManager has no get_ensemble_mode method")
+                    except Exception as e:
+                        logger.info(f"🔍   CrisisThresholdManager mode ERROR: {e}")
+                
+                # Check performance optimizer cache
+                perf_mode = getattr(crisis_analyzer.performance_optimizer, '_cached_ensemble_mode', 'NOT_SET')
+                logger.info(f"🔍   PerformanceOptimizer cached mode: {perf_mode}")
+                
             # Success logging for observational troubleshooting
             logger.info(f"✅ Ensemble weights successfully set:")
             logger.info(f"   Depression: {depression_weight:.3f}")
