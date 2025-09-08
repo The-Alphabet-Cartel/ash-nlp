@@ -343,47 +343,96 @@ class AnalysisTrackingHelper:
             raise
 
     def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], 
-                                learning_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Combine results from all analysis steps with enhanced tracking"""
-        # Base score from AI models
-        base_score = ai_result.get("crisis_score", 0.0)
-        base_confidence = ai_result.get("confidence_score", 0.0)
-        
-        # Apply pattern enhancement
-        pattern_boost = pattern_result.get("confidence_boost", 0.0)
-        enhanced_confidence = min(1.0, base_confidence + pattern_boost)
-        
-        # Apply learning adjustments
-        final_score = learning_result.get("adjusted_score", base_score)
-        
-        # Determine crisis level
-        crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score)
-        
-        return {
-            "crisis_score": final_score,
-            "confidence_score": enhanced_confidence,
-            "crisis_level": crisis_level,
-            "needs_response": crisis_level in ["medium", "high", "critical"],
-            "requires_staff_review": crisis_level in ["high", "critical"],
-            "method": "enhanced_three_step_analysis",
-            "detected_categories": pattern_result.get("detected_categories", []),
-#            "ai_model_details": {
-#                "models_used": ai_result.get("models_used", []),
-#                "individual_results": ai_result.get("individual_results", {}),
-#                "base_confidence": base_confidence,
-#                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
-#            },
-            "pattern_analysis": {
-                "patterns_matched": pattern_result.get("patterns_found", []),
-                "enhancement_boost": pattern_boost,
-                "pattern_confidence": pattern_result.get("pattern_confidence", 0.0)
-            },
-            "learning_adjustments": {
-                "applied": learning_result.get("learning_applied", False),
-                "score_adjustment": final_score - base_score,
-                "metadata": learning_result.get("metadata", {})
+                                    learning_result: Dict[str, Any]) -> Dict[str, Any]:
+            """
+            Combine results from all analysis steps with enhanced tracking
+            
+            ✅ FIX: Now properly uses ensemble weights from ScoringCalculationHelper
+            instead of just taking raw AI result scores
+            """
+            # ✅ FIX: Use ScoringCalculationHelper for proper ensemble weighting
+            if hasattr(self.crisis_analyzer, 'scoring_helper'):
+                try:
+                    # Get individual model results for proper weighting
+                    individual_results = ai_result.get("individual_results", {})
+                    
+                    if individual_results:
+                        # Use ScoringCalculationHelper with proper ensemble weights
+                        weighted_result = self.crisis_analyzer.scoring_helper.combine_analysis_results(
+                            message="", # Not used in scoring calculation
+                            user_id="", # Not used in scoring calculation
+                            channel_id="", # Not used in scoring calculation
+                            model_results=individual_results,
+                            pattern_analysis=pattern_result,
+                            context_analysis={},
+                            start_time=time.time()
+                        )
+                        
+                        # Extract the properly weighted score
+                        base_score = weighted_result.get("crisis_score", ai_result.get("crisis_score", 0.0))
+                        base_confidence = weighted_result.get("confidence_score", ai_result.get("confidence_score", 0.0))
+                        
+                        logger.debug(f"✅ Using weighted ensemble score: {base_score:.3f} (from ScoringCalculationHelper)")
+                    else:
+                        # Fallback if no individual results available
+                        base_score = ai_result.get("crisis_score", 0.0)
+                        base_confidence = ai_result.get("confidence_score", 0.0)
+                        logger.warning("⚠️ No individual results available, using raw AI score")
+                        
+                except Exception as e:
+                    logger.error(f"❌ ScoringCalculationHelper failed, using fallback: {e}")
+                    # Fallback to original logic
+                    base_score = ai_result.get("crisis_score", 0.0)
+                    base_confidence = ai_result.get("confidence_score", 0.0)
+            else:
+                # Fallback if no scoring helper available
+                logger.warning("❌ ScoringCalculationHelper not available, using raw AI score")
+                base_score = ai_result.get("crisis_score", 0.0)
+                base_confidence = ai_result.get("confidence_score", 0.0)
+            
+            # Apply pattern enhancement
+            pattern_boost = pattern_result.get("confidence_boost", 0.0)
+            enhanced_confidence = min(1.0, base_confidence + pattern_boost)
+            
+            # Apply learning adjustments
+            final_score = learning_result.get("adjusted_score", base_score)
+            
+            # Determine crisis level
+            crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score)
+            
+            return {
+                "crisis_score": final_score,
+                "confidence_score": enhanced_confidence,
+                "crisis_level": crisis_level,
+                "needs_response": crisis_level in ["medium", "high", "critical"],
+                "requires_staff_review": crisis_level in ["high", "critical"],
+                "method": "enhanced_three_step_analysis",
+                "detected_categories": pattern_result.get("detected_categories", []),
+                "pattern_analysis": {
+                    "patterns_matched": pattern_result.get("patterns_found", []),
+                    "enhancement_boost": pattern_boost,
+                    "pattern_confidence": pattern_result.get("pattern_confidence", 0.0)
+                },
+                "learning_adjustments": {
+                    "applied": learning_result.get("learning_applied", False),
+                    "score_adjustment": final_score - base_score,
+                    "metadata": learning_result.get("metadata", {})
+                },
+                # ✅ ADD: Include analysis_results structure for API compatibility
+                "analysis_results": {
+                    "crisis_score": final_score,
+                    "crisis_level": crisis_level,
+                    "confidence_score": enhanced_confidence,
+                    "model_results": ai_result.get("individual_results", {}),
+                    "pattern_analysis": pattern_result,
+                    "context_analysis": {},
+                    "analysis_metadata": {
+                        "ensemble_weights_used": True,
+                        "scoring_helper_used": hasattr(self.crisis_analyzer, 'scoring_helper'),
+                        "weighted_calculation": bool(ai_result.get("individual_results", {}))
+                    }
+                }
             }
-        }
 
 # ============================================================================
 # FACTORY FUNCTION
