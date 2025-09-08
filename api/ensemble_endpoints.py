@@ -124,6 +124,12 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             crisis_score = analysis_results.get('crisis_score', 0.0)  # ✅ FIX: Extract crisis_score
             confidence_score = analysis_results.get('confidence_score', 0.0)
             
+            # Debug logging
+            logger.debug(f"complete_analysis keys: {list(complete_analysis.keys())}")
+            logger.debug(f"analysis_results keys: {list(analysis_results.keys())}")
+            logger.debug(f"complete_analysis crisis_score: {complete_analysis.get('crisis_score', 'missing')}")
+            logger.debug(f"analysis_results crisis_score: {analysis_results.get('crisis_score', 'missing')}")
+
             # Enhanced fallback to top-level keys for backward compatibility
             if not analysis_results:
                 logger.debug("Falling back to top-level keys for backward compatibility")
