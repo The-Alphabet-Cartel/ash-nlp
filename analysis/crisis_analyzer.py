@@ -167,7 +167,7 @@ class CrisisAnalyzer:
                     
                     # Apply crisis thresholds to the ZeroShot result
                     crisis_score = optimized_result.get('crisis_score', 0.0)
-                    optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score, 'weighted')
+                    optimized_result['crisis_level'] = self.apply_crisis_thresholds(crisis_score, self.performance_optimizer._cached_ensemble_mode)
                     optimized_result['needs_response'] = crisis_score >= 0.25
                     optimized_result['requires_staff_review'] = crisis_score >= 0.45
                     
@@ -290,7 +290,7 @@ class CrisisAnalyzer:
                         learning_result = {"learning_applied": False}
                     
                     # Combine results
-                    final_result = self.tracking_helper.combine_analysis_results(ensemble_result, pattern_result, learning_result)
+                    final_result = self.tracking_helper.combine_analysis_results(ensemble_result, pattern_result, learning_result, self.performance_optimizer._cached_ensemble_mode)
                     
                     # Mark performance optimization
                     if "performance_metrics" in tracking:
