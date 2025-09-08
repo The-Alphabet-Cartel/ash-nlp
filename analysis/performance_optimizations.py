@@ -442,10 +442,30 @@ class PerformanceOptimizedMethods:
         """
         Get current model weights with cache-busting
         
+        ENHANCEMENT: Now checks performance optimizer cache FIRST for dynamically set weights
+        This ensures weights set via /ensemble/set-weights endpoint are actually used
+        
         This method bypasses cache and gets fresh weights from config
         Use this for weight optimization testing where weights change frequently
         """
         try:
+            # PRIORITY 1: Check our own cache for dynamically set weights
+            if (hasattr(self, '_cached_model_weights') and 
+                self._cached_model_weights and 
+                isinstance(self._cached_model_weights, dict) and
+                len(self._cached_model_weights) > 0):
+                
+                # Validate that cache has the expected structure
+                expected_keys = {'depression', 'sentiment', 'emotional_distress'}
+                cache_keys = set(self._cached_model_weights.keys())
+                
+                if expected_keys.issubset(cache_keys):
+                    logger.debug(f"🎯 Using cached weights from performance optimizer: {self._cached_model_weights}")
+                    return self._cached_model_weights.copy()
+                else:
+                    logger.warning(f"⚠️ Cached weights have unexpected structure: {self._cached_model_weights}")
+            
+            # PRIORITY 2: Fall back to model coordination manager
             if self.analyzer.model_coordination_manager:
                 # Get fresh weights directly from manager (bypasses cache)
                 current_weights = self.analyzer.model_coordination_manager.get_normalized_weights()
@@ -461,46 +481,60 @@ class PerformanceOptimizedMethods:
                     
                 return current_weights
             else:
+                logger.warning("No model coordination manager available - using cached weights")
                 return self._cached_model_weights
                 
         except Exception as e:
             logger.error(f"Failed to get current model weights: {e}")
-            return self._cached_model_weights
+            # Safe fallback
+            if hasattr(self, '_cached_model_weights') and self._cached_model_weights:
+                return self._cached_model_weights
+            else:
+                return {'depression': 0.4, 'sentiment': 0.3, 'emotional_distress': 0.3}
 
     def _direct_ensemble_classification_with_fresh_weights(self, message: str) -> Dict[str, Any]:
         """
-        Modified version that uses fresh weights for each classification
+        Modified version for weight testing scenarios
         
-        Use this version during weight optimization to ensure changes are detected
+        Use this version during weight optimization to ensure dynamically set weights are used.
+        This method uses the SAME cache-priority logic as the main method, ensuring that
+        weights set via /ensemble/set-weights endpoint are properly applied during testing.
         """
         try:
             if not self.analyzer.model_coordination_manager:
                 return {'score': 0.0, 'confidence': 0.0, 'method': 'no_model_manager'}
             
-            # Get CURRENT weights (not cached) - THIS IS THE KEY CHANGE
+            # Use our cache-priority weight retrieval (same as main method)
+            # This ensures weights set via /ensemble/set-weights are used for testing
             current_model_weights = self._get_current_model_weights()
-            current_ensemble_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
+            current_ensemble_mode = self._cached_ensemble_mode
+            
+            logger.debug(f"🧪 Testing with weights: {current_model_weights}")
+            logger.debug(f"🧪 Testing with mode: {current_ensemble_mode}")
             
             # Direct synchronous classification calls
             model_results = {}
             
-            # Use FRESH model weights
+            # Use current model weights (which prioritizes cache from endpoint)
             for model_type, weight in current_model_weights.items():
                 try:
                     result = self._classify_sync_direct(message, model_type)
                     model_results[model_type] = {
                         'score': result.get('score', 0.0),
                         'confidence': result.get('confidence', 0.0),
-                        'weight': weight  # Fresh weight, not cached
+                        'weight': weight  # Weight from cache (set via endpoint)
                     }
+                    logger.debug(f"🧪 Test - Model {model_type}: score={result.get('score', 0.0):.3f}, weight={weight:.3f}")
                 except Exception as e:
                     logger.warning(f"Model {model_type} failed: {e}")
                     model_results[model_type] = {'score': 0.0, 'confidence': 0.0, 'weight': weight}
             
-            # Direct ensemble voting using CURRENT mode and weights
+            # Direct ensemble voting using current mode and weights
             ensemble_score = self._fast_ensemble_voting(model_results, current_ensemble_mode)
             
-            method_name = f"optimized_{current_ensemble_mode}_ensemble_fresh_weights"
+            method_name = f"optimized_{current_ensemble_mode}_ensemble_testing"
+            
+            logger.debug(f"🧪 Testing result: {ensemble_score:.3f} (mode: {current_ensemble_mode})")
             
             return {
                 'score': ensemble_score,
@@ -508,12 +542,13 @@ class PerformanceOptimizedMethods:
                 'individual_results': model_results,
                 'ensemble_mode': current_ensemble_mode,
                 'method': method_name,
-                'weights_used': current_model_weights  # Include for debugging
+                'weights_used': current_model_weights,  # Include for debugging
+                'weights_source': 'cache_priority_testing'  # Indicate this used cache-priority logic
             }
             
         except Exception as e:
-            logger.error(f"Direct ensemble classification with fresh weights failed: {e}")
-            return {'score': 0.0, 'confidence': 0.0, 'method': 'fresh_weights_error', 'error': str(e)}
+            logger.error(f"Direct ensemble classification for testing failed: {e}")
+            return {'score': 0.0, 'confidence': 0.0, 'method': 'testing_error', 'error': str(e)}
     # ========================================================================
     # ========================================================================
 
@@ -573,17 +608,25 @@ class PerformanceOptimizedMethods:
         Direct ensemble classification without helper delegation (~18ms improvement)
         Synchronous implementation to eliminate async/sync conversion overhead (~22ms)
         
+        ENHANCED: Now shows which weights are being used for troubleshooting
         FIXED: Now properly reports the actual ensemble method being used
         """
         try:
             if not self.analyzer.model_coordination_manager:
                 return {'score': 0.0, 'confidence': 0.0, 'method': 'no_model_manager'}
             
+            # Get current weights (this now checks cache first)
+            current_weights = self._get_current_model_weights()
+            
+            # Enhanced debug logging for weight troubleshooting
+            logger.debug(f"🎯 _direct_ensemble_classification using weights: {current_weights}")
+            logger.debug(f"🎯 _direct_ensemble_classification using mode: {self._cached_ensemble_mode}")
+            
             # Direct synchronous classification calls
             model_results = {}
             
             # Use cached model weights and ensemble mode
-            for model_type, weight in self._cached_model_weights.items():
+            for model_type, weight in current_weights.items():
                 try:
                     # CRITICAL: Use synchronous model coordination method
                     result = self._classify_sync_direct(message, model_type)
@@ -592,12 +635,16 @@ class PerformanceOptimizedMethods:
                         'confidence': result.get('confidence', 0.0),
                         'weight': weight
                     }
+                    logger.debug(f"🎯 Model {model_type}: score={result.get('score', 0.0):.3f}, weight={weight:.3f}")
                 except Exception as e:
                     logger.warning(f"⚠️ Model {model_type} failed: {e}")
                     model_results[model_type] = {'score': 0.0, 'confidence': 0.0, 'weight': weight}
             
             # Direct ensemble voting using cached mode
             ensemble_score = self._fast_ensemble_voting(model_results, self._cached_ensemble_mode)
+            
+            # Enhanced logging to show final calculation
+            logger.debug(f"🎯 Ensemble voting result: {ensemble_score:.3f} (mode: {self._cached_ensemble_mode})")
             
             # FIXED: Report the actual ensemble method being used
             method_name = f"optimized_{self._cached_ensemble_mode}_ensemble"
@@ -607,7 +654,8 @@ class PerformanceOptimizedMethods:
                 'confidence': min(0.9, ensemble_score + 0.1),
                 'individual_results': model_results,
                 'ensemble_mode': self._cached_ensemble_mode,  # This was already correct
-                'method': method_name  # FIXED: Now shows the actual method
+                'method': method_name,  # FIXED: Now shows the actual method
+                'weights_used': current_weights  # For debugging
             }
             
         except Exception as e:
