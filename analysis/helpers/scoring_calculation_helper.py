@@ -11,19 +11,12 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Scoring Calculation Helper for CrisisAnalyzer
 ---
-FILE VERSION: v3.1-3e-6-3
+FILE VERSION: v3.1-3e-6-2
 CREATED: 2025-08-22
 PHASE: 3e Sub-step 5.5-6 - CrisisAnalyzer Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-FIX: Ensemble weights now properly applied in combine_analysis_results()
-- Replaced hardcoded 0.33 equal weights with actual model weights from environment variables
-- Added proper model name to weight key mapping
-- Uses ModelCoordinationManager.get_normalized_weights() for proper weighting
-- Added comprehensive logging for weight debugging
-- Maintains fallback to equal weights if model manager unavailable
 """
 
 import logging
@@ -50,6 +43,7 @@ class ScoringCalculationHelper:
     # ========================================================================
     # CONSOLIDATED SCORING FUNCTIONS (Migrated from CrisisAnalyzer)
     # ========================================================================
+    
     def extract_depression_score(self, message: str, sentiment_model=None,
         analysis_config_manager=None, context=None,
         pattern_detection_manager=None) -> Tuple[float, List[str]]:
@@ -283,72 +277,26 @@ class ScoringCalculationHelper:
             return {'negative': 0.0, 'positive': 0.0}
     
     # ========================================================================
-    # RESULTS COMBINATION AND SCORING - **FIXED ENSEMBLE WEIGHTING**
+    # RESULTS COMBINATION AND SCORING
     # ========================================================================
+    
     def combine_analysis_results(self, message: str, user_id: str, channel_id: str, model_results: Dict, pattern_analysis: Dict, context_analysis: Dict, start_time: float) -> Dict:
         """
         Combine all analysis results with context integration
         Migrated from: CrisisAnalyzer._combine_analysis_results()
-        
-        ✅ FIX: Now properly uses ensemble weights from ModelCoordinationManager
-        instead of hardcoded equal weights (0.33 each)
         """
         
-        # ✅ FIX: Check if model_results already contains weighted ensemble score
-        if 'ensemble_meta' in model_results:
-            # Use the ensemble result that was already properly weighted
-            ensemble_score = model_results['ensemble_meta'].get('ensemble_score', 0.0)
-            base_score = ensemble_score
-            model_scores = {}
-            logger.debug(f"✅ Using pre-calculated weighted ensemble score: {base_score:.3f}")
-        else:
-            # ✅ FIX: Get actual model weights from ModelCoordinationManager
-            base_score = 0.0
-            model_scores = {}
-            
-            # Get the model weights from the configuration manager
-            if self.crisis_analyzer.model_coordination_manager:
-                try:
-                    model_weights = self.crisis_analyzer.model_coordination_manager.get_normalized_weights()
-                    logger.debug(f"✅ Using model weights from ModelCoordinationManager: {model_weights}")
-                    
-                    # Apply proper weighting based on model type
-                    for model_name, result in model_results.items():
-                        if isinstance(result, dict) and 'score' in result:
-                            score = float(result['score'])
-                            model_scores[model_name] = score
-                            
-                            # Map model names to weight keys
-                            weight_key = self._get_weight_key_for_model(model_name)
-                            weight = model_weights.get(weight_key, 0.0)
-                            
-                            weighted_contribution = score * weight
-                            base_score += weighted_contribution
-                            
-                            logger.debug(f"✅ Model {model_name} -> {weight_key}: score={score:.3f}, weight={weight:.3f}, contribution={weighted_contribution:.3f}")
-                    
-                    logger.debug(f"✅ Total weighted base score: {base_score:.3f}")
-                        
-                except Exception as e:
-                    logger.error(f"❌ Failed to get model weights, falling back to equal weighting: {e}")
-                    # Fallback to equal weighting if weights unavailable
-                    for model_name, result in model_results.items():
-                        if isinstance(result, dict) and 'score' in result:
-                            score = float(result['score'])
-                            model_scores[model_name] = score
-                            base_score += score * 0.33  # Equal weighting fallback
-                    logger.debug(f"⚠️ Using equal weight fallback, base score: {base_score:.3f}")
-            else:
-                logger.warning("❌ ModelCoordinationManager not available, using equal weights")
-                # Fallback when no model manager available
-                for model_name, result in model_results.items():
-                    if isinstance(result, dict) and 'score' in result:
-                        score = float(result['score'])
-                        model_scores[model_name] = score
-                        base_score += score * 0.33  # Equal weighting fallback
-                logger.debug(f"⚠️ No model manager, equal weight fallback, base score: {base_score:.3f}")
+        # Calculate base scores from models
+        base_score = 0.0
+        model_scores = {}
         
-        # Apply context adjustments if available (existing logic unchanged)
+        for model_name, result in model_results.items():
+            if isinstance(result, dict) and 'score' in result:
+                score = float(result['score'])
+                model_scores[model_name] = score
+                base_score += score * 0.33  # Equal weighting for now
+        
+        # Apply context adjustments if available
         if context_analysis and context_analysis.get('context_manager_status') == 'available':
             context_signals = context_analysis.get('context_signals', {})
             
@@ -367,7 +315,7 @@ class ScoringCalculationHelper:
             
             logger.debug(f"Applied context boost: +{context_boost:.3f}")
         
-        # Apply pattern adjustments (existing logic unchanged)
+        # Apply pattern adjustments (existing logic)
         if pattern_analysis and pattern_analysis.get('total_patterns', 0) > 0:
             pattern_boost = min(0.25, pattern_analysis['total_patterns'] * 0.05)
             base_score += pattern_boost
@@ -386,12 +334,11 @@ class ScoringCalculationHelper:
             'channel_id': channel_id,
             'needs_response': crisis_level != 'none',
             'crisis_level': crisis_level,
-            'crisis_score': final_score,  # ✅ ADD THIS LINE
             'confidence_score': final_score,
             'detected_categories': self._extract_categories(pattern_analysis),
             'method': 'enhanced_crisis_analyzer',
             'analysis_results': {
-                'crisis_score': final_score,  # ✅ This is the key field that now respects weights!
+                'crisis_score': final_score,
                 'crisis_level': crisis_level,
                 'model_results': model_results,
                 'pattern_analysis': pattern_analysis or {},
@@ -400,15 +347,14 @@ class ScoringCalculationHelper:
                 'analysis_metadata': {
                     'processing_time': time.time() - start_time,
                     'timestamp': time.time(),
-                    'analysis_version': 'v3.1-3e-5.5-6-weights-fixed',
+                    'analysis_version': 'v3.1-3e-5.5-6',
                     'features_used': {
                         'ensemble_analysis': bool(model_results),
                         'pattern_analysis': bool(pattern_analysis),
                         'context_analysis': bool(context_analysis),
                         'context_manager_available': context_analysis.get('context_manager_status') == 'available',
                         'learning_enhanced': bool(self.crisis_analyzer.learning_system_manager),
-                        'shared_utilities': bool(self.crisis_analyzer.shared_utilities_manager),
-                        'weighted_ensemble_used': 'ensemble_meta' in model_results or bool(self.crisis_analyzer.model_coordination_manager)
+                        'shared_utilities': bool(self.crisis_analyzer.shared_utilities_manager)
                     }
                 }
             },
@@ -422,26 +368,6 @@ class ScoringCalculationHelper:
         logger.debug(f"Response structure keys: {list(response.keys())}")
 
         return response
-
-    def _get_weight_key_for_model(self, model_name: str) -> str:
-        """
-        Map model names to weight configuration keys
-        
-        Args:
-            model_name: The model name (e.g., 'depression', 'sentiment', 'emotional_distress')
-            
-        Returns:
-            The corresponding weight key for the model
-        """
-        # Map model names to weight keys as defined in config
-        weight_mapping = {
-            'depression': 'depression',
-            'sentiment': 'sentiment', 
-            'distress': 'emotional_distress',
-            'emotional_distress': 'emotional_distress'
-        }
-        
-        return weight_mapping.get(model_name, model_name)
 
     def _extract_categories(self, pattern_analysis: Dict) -> List[str]:
         """
@@ -468,6 +394,7 @@ class ScoringCalculationHelper:
     # ========================================================================
     # ENSEMBLE SCORING METHODS
     # ========================================================================
+    
     def combine_ensemble_model_results(self, model_results: List[Dict]) -> Dict[str, Any]:
         """
         Combine multiple model results
