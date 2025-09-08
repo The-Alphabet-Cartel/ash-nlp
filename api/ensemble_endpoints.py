@@ -336,6 +336,9 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
             
             # Update performance optimizer directly
             if hasattr(crisis_analyzer, 'performance_optimizer'):
+                old_weights = getattr(crisis_analyzer.performance_optimizer, '_cached_model_weights', {})
+                old_mode = getattr(crisis_analyzer.performance_optimizer, '_cached_ensemble_mode', 'unknown')
+                
                 crisis_analyzer.performance_optimizer._cached_model_weights = {
                     'depression': depression_weight,
                     'sentiment': sentiment_weight,
@@ -343,6 +346,21 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                 }
                 crisis_analyzer.performance_optimizer._cached_ensemble_mode = ensemble_mode
                 
+                # Enhanced logging for debugging
+                logger.info("🎯 Weights updated via /ensemble/set-weights endpoint:")
+                logger.info(f"   Old weights: {old_weights}")
+                logger.info(f"   New weights: {crisis_analyzer.performance_optimizer._cached_model_weights}")
+                logger.info(f"   Old mode: {old_mode}")
+                logger.info(f"   New mode: {ensemble_mode}")
+                
+            # Success logging for observational troubleshooting
+            logger.info(f"✅ Ensemble weights successfully set:")
+            logger.info(f"   Depression: {depression_weight:.3f}")
+            logger.info(f"   Sentiment: {sentiment_weight:.3f}")
+            logger.info(f"   Emotional Distress: {distress_weight:.3f}")
+            logger.info(f"   Ensemble Mode: {ensemble_mode}")
+            logger.info(f"   Cache Updated: {hasattr(crisis_analyzer, 'performance_optimizer')}")
+            
             return {
                 'status': 'success',
                 'weights': {
@@ -350,9 +368,12 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     'sentiment': sentiment_weight,
                     'emotional_distress': distress_weight
                 },
-                'ensemble_mode': ensemble_mode
+                'ensemble_mode': ensemble_mode,
+                'cache_updated': hasattr(crisis_analyzer, 'performance_optimizer'),
+                'message': 'Weights set successfully - will be used for next classifications'
             }
         except Exception as e:
+            logger.error(f"Failed to set weights: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.post("/ensemble/refresh-weights")
