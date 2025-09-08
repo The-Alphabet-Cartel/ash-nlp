@@ -386,7 +386,7 @@ class PerformanceOptimizedMethods:
             depression_weight = float(os.getenv('NLP_MODEL_DEPRESSION_WEIGHT', '0.4'))
             sentiment_weight = float(os.getenv('NLP_MODEL_SENTIMENT_WEIGHT', '0.3'))
             distress_weight = float(os.getenv('NLP_MODEL_DISTRESS_WEIGHT', '0.3'))
-            ensemble_mode = os.getenv('NLP_ENSEMBLE_MODE', 'majority')
+            ensemble_mode = os.getenv('NLP_ENSEMBLE_MODE', 'weighted')
             
             # Normalize weights
             total_weight = depression_weight + sentiment_weight + distress_weight
