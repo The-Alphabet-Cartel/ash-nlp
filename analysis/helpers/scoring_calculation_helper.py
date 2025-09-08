@@ -386,6 +386,7 @@ class ScoringCalculationHelper:
             'channel_id': channel_id,
             'needs_response': crisis_level != 'none',
             'crisis_level': crisis_level,
+            'crisis_score': final_score,  # ✅ ADD THIS LINE
             'confidence_score': final_score,
             'detected_categories': self._extract_categories(pattern_analysis),
             'method': 'enhanced_crisis_analyzer',
