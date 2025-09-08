@@ -622,6 +622,25 @@ class PerformanceOptimizedMethods:
             logger.debug(f"🎯 _direct_ensemble_classification using weights: {current_weights}")
             logger.debug(f"🎯 _direct_ensemble_classification using mode: {self._cached_ensemble_mode}")
             
+            # CRITICAL DEBUG: Check where ensemble mode comes from
+            cached_mode = getattr(self, '_cached_ensemble_mode', 'NOT_SET')
+            manager_mode = None
+            try:
+                manager_mode = self.analyzer.model_coordination_manager.get_ensemble_mode()
+            except:
+                manager_mode = 'ERROR_GETTING_MODE'
+            
+            # Enhanced debug logging for weight AND MODE troubleshooting
+            logger.info(f"🎯 ENSEMBLE MODE DEBUG:")
+            logger.info(f"🎯   Cached mode: {cached_mode}")
+            logger.info(f"🎯   Manager mode: {manager_mode}")
+            logger.info(f"🎯   Using weights: {current_weights}")
+            
+            # Use the cached mode (which should be set by the endpoint)
+            ensemble_mode_to_use = cached_mode if cached_mode != 'NOT_SET' else manager_mode
+            
+            logger.info(f"🎯   Final mode decision: {ensemble_mode_to_use}")
+
             # Direct synchronous classification calls
             model_results = {}
             
