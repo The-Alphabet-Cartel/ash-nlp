@@ -76,7 +76,7 @@ class ModelCoordinationManager:
             raise ValueError("UnifiedConfigManager is required for ModelCoordinationManager")
         
         self.config_manager = config_manager
-        self.crisis_analyzer = create_crisis_analyzer(config_manager)
+        self.crisis_analyzer = create_crisis_analyzer(config_manager, self)
         self.performance_optimizer = integrate_performance_optimizations(self.crisis_analyzer)
         
         # PHASE 3: Add model pipeline cache and loading management
