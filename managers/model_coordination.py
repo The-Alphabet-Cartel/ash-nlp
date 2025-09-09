@@ -1591,18 +1591,14 @@ class ModelCoordinationManager:
         """
         Get dynamic weights from performance optimizer cache if available
         
-        This method attempts to access the performance optimizer cache through the crisis analyzer
-        to get weights that were set via the /ensemble/set-weights endpoint.
+        This method attempts to access the performance optimizer cache to get weights
+        that were set via the /ensemble/set-weights endpoint.
         
         Returns:
             Dict of dynamic weights if available, None if not available or not set
         """
         try:
-            # This is a bit of architectural gymnastics, but it works within the current system
-            # The ModelCoordinationManager doesn't have direct access to the performance optimizer,
-            # but we can try to find it through various paths
-            
-            # Method 1: Check if we have a crisis analyzer reference
+            # Method 1: Check if we have a stored reference to the crisis analyzer
             if hasattr(self, '_crisis_analyzer_ref'):
                 crisis_analyzer = self._crisis_analyzer_ref()  # Weak reference
                 if (crisis_analyzer and 
@@ -1614,36 +1610,43 @@ class ModelCoordinationManager:
                         logger.debug(f"🎯 Found dynamic weights via crisis analyzer: {cached_weights}")
                         return cached_weights
             
-            # Method 2: Check if config manager has access to the performance optimizer 
-            # (This might be set up in some configurations)
-            if hasattr(self.config_manager, 'get_performance_optimizer'):
-                try:
-                    perf_optimizer = self.config_manager.get_performance_optimizer()
-                    if (perf_optimizer and 
-                        hasattr(perf_optimizer, '_cached_model_weights') and
-                        perf_optimizer._cached_model_weights):
-                        
-                        cached_weights = perf_optimizer._cached_model_weights
-                        logger.debug(f"🎯 Found dynamic weights via config manager: {cached_weights}")
-                        return cached_weights
-                except Exception as e:
-                    logger.debug(f"Config manager performance optimizer access failed: {e}")
-            
-            # Method 3: Check if there's a global reference (some setups might have this)
-            # This is the most hacky approach but might work in some cases
+            # Method 2: Try to find the crisis analyzer through global module search
             try:
-                import sys
-                if hasattr(sys.modules.get('__main__'), 'crisis_analyzer'):
-                    main_crisis_analyzer = sys.modules['__main__'].crisis_analyzer
-                    if (hasattr(main_crisis_analyzer, 'performance_optimizer') and
-                        hasattr(main_crisis_analyzer.performance_optimizer, '_cached_model_weights')):
+                import gc
+                # Search for CrisisAnalyzer instances in memory
+                for obj in gc.get_objects():
+                    if (hasattr(obj, '__class__') and 
+                        obj.__class__.__name__ == 'CrisisAnalyzer' and
+                        hasattr(obj, 'performance_optimizer') and
+                        hasattr(obj.performance_optimizer, '_cached_model_weights')):
                         
-                        cached_weights = main_crisis_analyzer.performance_optimizer._cached_model_weights
-                        if cached_weights:
-                            logger.debug(f"🎯 Found dynamic weights via main module: {cached_weights}")
+                        cached_weights = obj.performance_optimizer._cached_model_weights
+                        if cached_weights and isinstance(cached_weights, dict) and len(cached_weights) > 0:
+                            logger.debug(f"🎯 Found dynamic weights via memory search: {cached_weights}")
                             return cached_weights
             except Exception as e:
-                logger.debug(f"Main module access failed: {e}")
+                logger.debug(f"Memory search failed: {e}")
+            
+            # Method 3: Check for global variables that might contain the crisis analyzer
+            try:
+                import sys
+                # Check main module
+                main_module = sys.modules.get('__main__')
+                if main_module:
+                    for attr_name in dir(main_module):
+                        try:
+                            attr_value = getattr(main_module, attr_name)
+                            if (hasattr(attr_value, 'performance_optimizer') and
+                                hasattr(attr_value.performance_optimizer, '_cached_model_weights')):
+                                
+                                cached_weights = attr_value.performance_optimizer._cached_model_weights
+                                if cached_weights and isinstance(cached_weights, dict):
+                                    logger.debug(f"🎯 Found dynamic weights via main.{attr_name}: {cached_weights}")
+                                    return cached_weights
+                        except Exception:
+                            continue
+            except Exception as e:
+                logger.debug(f"Global variable search failed: {e}")
             
             # No dynamic weights found
             logger.debug("🔧 No dynamic weights found, will use configuration weights")
