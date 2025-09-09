@@ -599,8 +599,8 @@ class ModelCoordinationManager:
             
             # Perform ensemble voting (synchronous)
             override_weights = None
-            if (hasattr(self.performance_optimizer, '_cached_model_weights')):
-                override_weights = self.performance_optimizer._cached_model_weights
+            if (hasattr(self.crisis_analyzer.performance_optimizer, '_cached_model_weights')):
+                override_weights = self.crisis_analyzer.performance_optimizer._cached_model_weights
                 logger.info(f"Passing dynamic weights to ModelCoordinationManager: {override_weights}")
 
             ensemble_result = self._perform_ensemble_voting(model_results, override_weights)
@@ -1424,15 +1424,15 @@ class ModelCoordinationManager:
                 if isinstance(result, dict) and 'score' in result:
                     score = result.get('score', 0.0)
                     confidence = result.get('confidence', 0.0)
-#                    weight = self.get_model_weight(model_type)
-#                    logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
+                    weight = self.get_normalized_weights()
+                    logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
                 # ENHANCEMENT: Use override weights if provided
-                    if override_weights and model_type in override_weights:
-                        weight = override_weights[model_type]
-                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
-                    else:
-                        weight = self.get_model_weight(model_type)
-                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
+#                    if override_weights and model_type in override_weights:
+#                        weight = override_weights[model_type]
+#                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
+#                    else:
+#                        weight = self.get_model_weight(model_type)
+#                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
                             
                     valid_results.append({
                         'score': score,
