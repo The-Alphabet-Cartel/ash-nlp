@@ -143,7 +143,7 @@ class CrisisAnalyzer:
             logger.warning("   ZeroShotManager not provided - using fallback labels")
 
     # ========================================================================
-    # ENHANCED MAIN ANALYSIS METHODS - Phase 4a Step 2
+    # ENHANCED MAIN ANALYSIS METHODS
     # ========================================================================
     async def analyze_crisis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
             """
