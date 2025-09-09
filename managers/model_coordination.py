@@ -1394,6 +1394,7 @@ class ModelCoordinationManager:
         Returns:
             Ensemble score and confidence
         """
+        logger.info("WEIGHT DEBUG: ModelCoordinationManager voting called!")
         try:
             ensemble_mode = self.get_ensemble_mode()
             valid_results = []
@@ -1404,7 +1405,8 @@ class ModelCoordinationManager:
                     score = result.get('score', 0.0)
                     confidence = result.get('confidence', 0.0)
                     weight = self.get_model_weight(model_type)
-                    
+                    logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
+                            
                     valid_results.append({
                         'score': score,
                         'confidence': confidence,
