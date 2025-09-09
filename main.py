@@ -48,6 +48,7 @@ from managers.storage_config import create_storage_config_manager
 from managers.crisis_threshold import create_crisis_threshold_manager
 from managers.zero_shot import create_zero_shot_manager
 from managers.context_analysis import create_context_analysis_manager
+from analysis.performance_optimizations import integrate_performance_optimizations
 
 # Analysis Components
 from analysis import create_crisis_analyzer
@@ -306,6 +307,18 @@ def initialize_unified_managers():
         logger.info("✅ Analysis components initialized")
         logger.info("=" * 70)
         
+        logger.info("=" * 70)
+        logger.info("🔧 Initializing performance optimizer...")
+        logger.info("=" * 70)
+        performance_optimizer = integrate_performance_optimizations(crisis_analyzer)
+        crisis_analyzer.performance_optimizer = performance_optimizer
+        performance_optimizer.analyzer = crisis_analyzer
+        if hasattr(model_coordination, 'set_crisis_analyzer_reference'):
+            model_coordination.set_crisis_analyzer_reference(crisis_analyzer)
+        logger.info("=" * 70)
+        logger.info("✅ Performance optimizer initialized...")
+        logger.info("=" * 70)
+
         # ========================================================================
         # PRELOAD THOSE BIG-ASS MODELS!
         # ========================================================================
