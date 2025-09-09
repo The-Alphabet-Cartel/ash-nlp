@@ -1395,6 +1395,11 @@ class ModelCoordinationManager:
             Ensemble score and confidence
         """
         logger.info("WEIGHT DEBUG: ModelCoordinationManager voting called!")
+        import traceback
+        logger.info("CALL TRACE: ModelCoordinationManager._perform_ensemble_voting called from:")
+        for line in traceback.format_stack()[-3:-1]:
+            logger.info(f"  {line.strip()}")
+
         try:
             ensemble_mode = self.get_ensemble_mode()
             valid_results = []
