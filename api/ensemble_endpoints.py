@@ -364,18 +364,6 @@ def add_ensemble_endpoints(app: FastAPI, crisis_analyzer, pydantic_manager, patt
                     except Exception as e:
                         logger.info(f"🔍   ModelCoordinationManager mode ERROR: {e}")
                 
-                # Check crisis threshold manager  
-                if hasattr(crisis_analyzer, 'crisis_threshold_manager') and crisis_analyzer.crisis_threshold_manager:
-                    try:
-                        # This might be where the hardcoded consensus is coming from
-                        if hasattr(crisis_analyzer.crisis_threshold_manager, 'get_ensemble_mode'):
-                            threshold_mode = crisis_analyzer.crisis_threshold_manager.get_ensemble_mode()
-                            logger.info(f"🔍   CrisisThresholdManager mode: {threshold_mode}")
-                        else:
-                            logger.info(f"🔍   CrisisThresholdManager has no get_ensemble_mode method")
-                    except Exception as e:
-                        logger.info(f"🔍   CrisisThresholdManager mode ERROR: {e}")
-                
                 # Check performance optimizer cache
                 perf_mode = getattr(crisis_analyzer.performance_optimizer, '_cached_ensemble_mode', 'NOT_SET')
                 logger.info(f"🔍   PerformanceOptimizer cached mode: {perf_mode}")
