@@ -214,7 +214,18 @@ class AnalysisTrackingHelper:
             # Try synchronous path first (optimized)
             try:
                 if hasattr(self.crisis_analyzer.model_coordination_manager, 'classify_sync_ensemble'):
-                    result = self.crisis_analyzer.model_coordination_manager.classify_sync_ensemble(message, self.crisis_analyzer.zero_shot_manager)
+                    # Get dynamic weights from performance optimizer if available
+                    dynamic_weights = None
+                    if (hasattr(self.crisis_analyzer, 'performance_optimizer') and 
+                        hasattr(self.crisis_analyzer.performance_optimizer, '_cached_model_weights')):
+                        dynamic_weights = self.crisis_analyzer.performance_optimizer._cached_model_weights
+
+                    result = self.crisis_analyzer.model_coordination_manager.classify_sync_ensemble(
+                        message, 
+                        self.crisis_analyzer.zero_shot_manager,
+                        override_weights=dynamic_weights
+                    )
+
                     if result:
                         return {
                             "crisis_score": result.get("ensemble_score", 0.0),
