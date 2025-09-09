@@ -71,7 +71,7 @@
       "cache_expiry_hours": "${NLP_STORAGE_CACHE_EXPIRY_HOURS}",
       "defaults": {
         "enable_model_cache": true,
-        "enable_analysis_cache": true,
+        "enable_analysis_cache": false,
         "cache_cleanup_on_startup": false,
         "model_cache_size_limit": "10GB",
         "analysis_cache_size_limit": "2GB",
