@@ -266,7 +266,7 @@ class SettingsManager:
             },
             'cache_settings': {
                 'enable_model_cache': True,
-                'enable_analysis_cache': True
+                'enable_analysis_cache': False
             },
             'status': 'fallback_configuration',
             'fallback_reason': 'resilient_operation'
@@ -323,7 +323,7 @@ class SettingsManager:
         # Fallback to individual environment variables
         return {
             'enable_model_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_MODEL_CACHE', True),
-            'enable_analysis_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_ANALYSIS_CACHE', True),
+            'enable_analysis_cache': self.unified_config.get_env_bool('NLP_STORAGE_ENABLE_ANALYSIS_CACHE', False),
             'cache_cleanup_on_startup': self.unified_config.get_env_bool('NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP', False),
             'model_cache_size_limit': self.unified_config.get_env_int('NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT', 1000),
             'analysis_cache_size_limit': self.unified_config.get_env_int('NLP_STORAGE_ANALYSIS_CACHE_SIZE_LIMIT', 500),
