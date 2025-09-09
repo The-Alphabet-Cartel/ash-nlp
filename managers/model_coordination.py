@@ -546,6 +546,12 @@ class ModelCoordinationManager:
         Returns:
             Synchronous ensemble classification results
         """
+        from analysis.crisis_analyzer import create_crisis_analyzer
+        from analysis.performance_optimizations import integrate_performance_optimizations
+
+        crisis_analyzer = create_crisis_analyzer(config_manager)
+        performance_optimizer = integrate_performance_optimizations(crisis_analyzer)
+
         try:
             model_results = {}
             models = self.get_model_definitions()
@@ -594,7 +600,12 @@ class ModelCoordinationManager:
                     }
             
             # Perform ensemble voting (synchronous)
-            ensemble_result = self._perform_ensemble_voting(model_results)
+            override_weights = None
+            if (hasattr(performance_optimizer, '_cached_model_weights')):
+                override_weights = performance_optimizer._cached_model_weights
+                logger.info(f"Passing dynamic weights to ModelCoordinationManager: {override_weights}")
+
+            ensemble_result = self._perform_ensemble_voting(model_results, override_weights)
             
             return {
                 'ensemble_score': ensemble_result['score'],
@@ -1384,7 +1395,7 @@ class ModelCoordinationManager:
     # ========================================================================
     # ENSEMBLE VOTING METHODS
     # ========================================================================
-    def _perform_ensemble_voting(self, model_results: Dict[str, Dict]) -> Dict[str, float]:
+    def _perform_ensemble_voting(self, model_results: Dict[str, Dict], override_weights: Dict[str, float] = None) -> Dict[str, float]:
         """
         PHASE 3: Perform ensemble voting on multiple model results
         
@@ -1404,13 +1415,26 @@ class ModelCoordinationManager:
             ensemble_mode = self.get_ensemble_mode()
             valid_results = []
             
+            logger.info(f"🎯 ENSEMBLE VOTING: mode={ensemble_mode}")
+            if override_weights:
+                logger.info(f"🎯 ENSEMBLE VOTING: Using override weights: {override_weights}")
+            else:
+                logger.info(f"🎯 ENSEMBLE VOTING: Using configuration weights")
+            
             # Extract valid results
             for model_type, result in model_results.items():
                 if isinstance(result, dict) and 'score' in result:
                     score = result.get('score', 0.0)
                     confidence = result.get('confidence', 0.0)
-                    weight = self.get_model_weight(model_type)
-                    logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
+#                    weight = self.get_model_weight(model_type)
+#                    logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
+                # ENHANCEMENT: Use override weights if provided
+                    if override_weights and model_type in override_weights:
+                        weight = override_weights[model_type]
+                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
+                    else:
+                        weight = self.get_model_weight(model_type)
+                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
                             
                     valid_results.append({
                         'score': score,
