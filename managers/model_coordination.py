@@ -70,6 +70,9 @@ class ModelCoordinationManager:
     Instead of EnsembleAnalysisHelper directly creating transformers pipelines
     """
     
+    # ========================================================================
+    # INITIALIZE
+    # ========================================================================
     def __init__(self, config_manager):
         """
         Initialize Model Ensemble Manager
@@ -86,7 +89,7 @@ class ModelCoordinationManager:
         self._model_cache = {}
         self._model_loading_lock = asyncio.Lock()
         
-        logger.info("ModelCoordinationManager v3.1e-5.5-7-3 Phase 3 initialized with AI classification")
+        logger.info("ModelCoordinationManager initialized with AI classification")
         
         # Load and validate configuration
         self._load_and_validate_configuration()
@@ -94,6 +97,7 @@ class ModelCoordinationManager:
         # Get device configuration for AI models
         self.device = self._get_device_config()
         logger.info(f"🔧 ModelCoordinationManager device configuration: {self.device}")
+    # ========================================================================
     
     # ========================================================================
     # PRELOAD THOSE BIG-ASS MODELS!
@@ -562,9 +566,9 @@ class ModelCoordinationManager:
             dynamic_weights = override_weights or self._get_dynamic_weights_if_available()
             
             if dynamic_weights:
-                logger.info(f"🎯 SYNC ENSEMBLE: Using dynamic weights: {dynamic_weights}")
+                logger.debug(f"🎯 SYNC ENSEMBLE: Using dynamic weights: {dynamic_weights}")
             else:
-                logger.info(f"🎯 SYNC ENSEMBLE: Using configuration weights")
+                logger.debug(f"🎯 SYNC ENSEMBLE: Using configuration weights")
             
             # Get labels from ZeroShotManager if available
             if zero_shot_manager:
@@ -1428,17 +1432,12 @@ class ModelCoordinationManager:
         Returns:
             Ensemble score and confidence
         """
-        logger.info("WEIGHT DEBUG: ModelCoordinationManager voting called!")
+        logger.debug("WEIGHT DEBUG: ModelCoordinationManager voting called!")
         if override_weights:
-            logger.info(f"🎯 WEIGHT DEBUG: Using override weights: {override_weights}")
+            logger.debug(f"🎯 WEIGHT DEBUG: Using override weights: {override_weights}")
         else:
-            logger.info(f"🎯 WEIGHT DEBUG: Using configuration weights")
+            logger.debug(f"🎯 WEIGHT DEBUG: Using configuration weights")
             
-        import traceback
-        logger.info("CALL TRACE: ModelCoordinationManager._perform_ensemble_voting called from:")
-        for line in traceback.format_stack()[-3:-1]:
-            logger.info(f"  {line.strip()}")
-
         try:
             ensemble_mode = self.get_ensemble_mode()
             valid_results = []
@@ -1452,10 +1451,10 @@ class ModelCoordinationManager:
                     # ENHANCEMENT: Use override weights if provided
                     if override_weights and model_type in override_weights:
                         weight = override_weights[model_type]
-                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
+                        logger.debug(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
                     else:
                         weight = self.get_model_weight(model_type)
-                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
+                        logger.debug(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
                             
                     valid_results.append({
                         'score': score,
