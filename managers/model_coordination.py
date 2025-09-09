@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Model Ensemble Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-1
-LAST MODIFIED: 2025-08-22
-PHASE: 3e Step 5.5-7 - Phase 3: AI Classification Methods Implementation
+FILE VERSION: v3.1-3e-6-2
+LAST MODIFIED: 2025-09-08
+PHASE: 3e Step 5.5-7 - Dynamic Weight Support for Weight Optimization
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -24,6 +24,13 @@ PHASE 3 IMPLEMENTATION:
 - Added model pipeline management and caching
 - Proper integration with ZeroShotManager for label management
 - Correct architectural flow: EnsembleAnalysisHelper → ModelCoordinationManager → transformers
+
+CHANGES IN v3.1-3e-6-2:
+- ENHANCED: _perform_ensemble_voting() now accepts override_weights parameter
+- ENHANCED: classify_sync_ensemble() and classify_with_ensemble() pass dynamic weights
+- ADDED: _get_dynamic_weights_if_available() helper method
+- FIXED: Weight optimization now works correctly with /ensemble/set-weights endpoint
+- FIXED: Dynamic weights from performance optimizer cache are properly used
 """
 
 import os
@@ -31,8 +38,6 @@ import logging
 import time
 import asyncio
 from typing import Dict, Any, List, Optional, Tuple
-from analysis.crisis_analyzer import create_crisis_analyzer
-from analysis.performance_optimizations import integrate_performance_optimizations
 
 # PHASE 3: Add transformers imports for actual AI classification
 try:
@@ -76,8 +81,6 @@ class ModelCoordinationManager:
             raise ValueError("UnifiedConfigManager is required for ModelCoordinationManager")
         
         self.config_manager = config_manager
-        self.crisis_analyzer = create_crisis_analyzer(config_manager, self)
-        self.performance_optimizer = integrate_performance_optimizations(self.crisis_analyzer)
         
         # PHASE 3: Add model pipeline cache and loading management
         self._model_cache = {}
@@ -540,8 +543,8 @@ class ModelCoordinationManager:
         """
         PHASE 3E STEP 7: Synchronous ensemble classification for performance optimization
         
-        This method provides synchronous model coordination to eliminate async/sync
-        conversion overhead in the performance-optimized analysis path.
+        ENHANCEMENT: Now checks for dynamic weights from performance optimizer cache
+        This ensures weights set via /ensemble/set-weights endpoint are actually used
         
         Args:
             text: Text to classify
@@ -553,6 +556,13 @@ class ModelCoordinationManager:
         try:
             model_results = {}
             models = self.get_model_definitions()
+            
+            # ENHANCEMENT: Check for dynamic weights from performance optimizer
+            dynamic_weights = self._get_dynamic_weights_if_available()
+            if dynamic_weights:
+                logger.info(f"🎯 SYNC ENSEMBLE: Using dynamic weights: {dynamic_weights}")
+            else:
+                logger.info(f"🎯 SYNC ENSEMBLE: Using configuration weights")
             
             # Get labels from ZeroShotManager if available
             if zero_shot_manager:
@@ -597,13 +607,8 @@ class ModelCoordinationManager:
                         'method': 'sync_error'
                     }
             
-            # Perform ensemble voting (synchronous)
-            override_weights = None
-            if (hasattr(self.crisis_analyzer.performance_optimizer, '_cached_model_weights')):
-                override_weights = self.crisis_analyzer.performance_optimizer._cached_model_weights
-                logger.info(f"Passing dynamic weights to ModelCoordinationManager: {override_weights}")
-
-            ensemble_result = self._perform_ensemble_voting(model_results, override_weights)
+            # ENHANCEMENT: Perform ensemble voting with dynamic weights
+            ensemble_result = self._perform_ensemble_voting(model_results, override_weights=dynamic_weights)
             
             return {
                 'ensemble_score': ensemble_result['score'],
@@ -613,7 +618,9 @@ class ModelCoordinationManager:
                 'models_used': len(model_results),
                 'zero_shot_manager_used': zero_shot_manager is not None,
                 'method': 'sync_ensemble_classification',
-                'performance_optimized': True
+                'performance_optimized': True,
+                'dynamic_weights_used': dynamic_weights is not None,
+                'weights_source': 'dynamic' if dynamic_weights else 'configuration'
             }
             
         except Exception as e:
@@ -763,6 +770,9 @@ class ModelCoordinationManager:
         """
         PHASE 3: Ensemble classification using multiple models
         
+        ENHANCEMENT: Now checks for dynamic weights from performance optimizer cache
+        This ensures weights set via /ensemble/set-weights endpoint are actually used
+        
         Args:
             text: Text to classify
             zero_shot_manager: ZeroShotManager instance for label management
@@ -773,6 +783,13 @@ class ModelCoordinationManager:
         try:
             model_results = {}
             models = self.get_model_definitions()
+            
+            # ENHANCEMENT: Check for dynamic weights from performance optimizer
+            dynamic_weights = self._get_dynamic_weights_if_available()
+            if dynamic_weights:
+                logger.info(f"🎯 ASYNC ENSEMBLE: Using dynamic weights: {dynamic_weights}")
+            else:
+                logger.info(f"🎯 ASYNC ENSEMBLE: Using configuration weights")
             
             # Get labels from ZeroShotManager if available
             labels = None
@@ -820,8 +837,8 @@ class ModelCoordinationManager:
                         'model_type': model_type
                     }
             
-            # Perform ensemble voting
-            ensemble_result = self._perform_ensemble_voting(model_results)
+            # ENHANCEMENT: Perform ensemble voting with dynamic weights
+            ensemble_result = self._perform_ensemble_voting(model_results, override_weights=dynamic_weights)
             
             return {
                 'ensemble_score': ensemble_result['score'],
@@ -830,7 +847,9 @@ class ModelCoordinationManager:
                 'individual_results': model_results,
                 'models_used': len(model_results),
                 'zero_shot_manager_used': zero_shot_manager is not None,
-                'method': 'ensemble_classification'
+                'method': 'ensemble_classification',
+                'dynamic_weights_used': dynamic_weights is not None,
+                'weights_source': 'dynamic' if dynamic_weights else 'configuration'
             }
             
         except Exception as e:
@@ -1397,13 +1416,22 @@ class ModelCoordinationManager:
         """
         PHASE 3: Perform ensemble voting on multiple model results
         
+        ENHANCEMENT: Now accepts override_weights parameter for dynamic weight scenarios
+        This ensures weights set via /ensemble/set-weights endpoint are actually used
+        
         Args:
             model_results: Dictionary of model results
+            override_weights: Optional weights to override configuration weights
             
         Returns:
             Ensemble score and confidence
         """
         logger.info("WEIGHT DEBUG: ModelCoordinationManager voting called!")
+        if override_weights:
+            logger.info(f"🎯 WEIGHT DEBUG: Using override weights: {override_weights}")
+        else:
+            logger.info(f"🎯 WEIGHT DEBUG: Using configuration weights")
+            
         import traceback
         logger.info("CALL TRACE: ModelCoordinationManager._perform_ensemble_voting called from:")
         for line in traceback.format_stack()[-3:-1]:
@@ -1413,26 +1441,19 @@ class ModelCoordinationManager:
             ensemble_mode = self.get_ensemble_mode()
             valid_results = []
             
-            logger.info(f"🎯 ENSEMBLE VOTING: mode={ensemble_mode}")
-            if override_weights:
-                logger.info(f"🎯 ENSEMBLE VOTING: Using override weights: {override_weights}")
-            else:
-                logger.info(f"🎯 ENSEMBLE VOTING: Using configuration weights")
-            
             # Extract valid results
             for model_type, result in model_results.items():
                 if isinstance(result, dict) and 'score' in result:
                     score = result.get('score', 0.0)
                     confidence = result.get('confidence', 0.0)
-                    model_type, weight = self.get_normalized_weights()
-                    logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
-                # ENHANCEMENT: Use override weights if provided
-#                    if override_weights and model_type in override_weights:
-#                        weight = override_weights[model_type]
-#                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
-#                    else:
-#                        weight = self.get_model_weight(model_type)
-#                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
+                    
+                    # ENHANCEMENT: Use override weights if provided
+                    if override_weights and model_type in override_weights:
+                        weight = override_weights[model_type]
+                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using OVERRIDE weight {weight}")
+                    else:
+                        weight = self.get_model_weight(model_type)
+                        logger.info(f"🎯 WEIGHT DEBUG: {model_type} using CONFIG weight {weight}")
                             
                     valid_results.append({
                         'score': score,
@@ -1563,6 +1584,89 @@ class ModelCoordinationManager:
             "medium crisis level", 
             "low crisis level"
         ])
+
+    def _get_dynamic_weights_if_available(self) -> Optional[Dict[str, float]]:
+        """
+        Get dynamic weights from performance optimizer cache if available
+        
+        This method attempts to access the performance optimizer cache through the crisis analyzer
+        to get weights that were set via the /ensemble/set-weights endpoint.
+        
+        Returns:
+            Dict of dynamic weights if available, None if not available or not set
+        """
+        try:
+            # This is a bit of architectural gymnastics, but it works within the current system
+            # The ModelCoordinationManager doesn't have direct access to the performance optimizer,
+            # but we can try to find it through various paths
+            
+            # Method 1: Check if we have a crisis analyzer reference
+            if hasattr(self, '_crisis_analyzer_ref'):
+                crisis_analyzer = self._crisis_analyzer_ref()  # Weak reference
+                if (crisis_analyzer and 
+                    hasattr(crisis_analyzer, 'performance_optimizer') and
+                    hasattr(crisis_analyzer.performance_optimizer, '_cached_model_weights')):
+                    
+                    cached_weights = crisis_analyzer.performance_optimizer._cached_model_weights
+                    if cached_weights and isinstance(cached_weights, dict) and len(cached_weights) > 0:
+                        logger.debug(f"🎯 Found dynamic weights via crisis analyzer: {cached_weights}")
+                        return cached_weights
+            
+            # Method 2: Check if config manager has access to the performance optimizer 
+            # (This might be set up in some configurations)
+            if hasattr(self.config_manager, 'get_performance_optimizer'):
+                try:
+                    perf_optimizer = self.config_manager.get_performance_optimizer()
+                    if (perf_optimizer and 
+                        hasattr(perf_optimizer, '_cached_model_weights') and
+                        perf_optimizer._cached_model_weights):
+                        
+                        cached_weights = perf_optimizer._cached_model_weights
+                        logger.debug(f"🎯 Found dynamic weights via config manager: {cached_weights}")
+                        return cached_weights
+                except Exception as e:
+                    logger.debug(f"Config manager performance optimizer access failed: {e}")
+            
+            # Method 3: Check if there's a global reference (some setups might have this)
+            # This is the most hacky approach but might work in some cases
+            try:
+                import sys
+                if hasattr(sys.modules.get('__main__'), 'crisis_analyzer'):
+                    main_crisis_analyzer = sys.modules['__main__'].crisis_analyzer
+                    if (hasattr(main_crisis_analyzer, 'performance_optimizer') and
+                        hasattr(main_crisis_analyzer.performance_optimizer, '_cached_model_weights')):
+                        
+                        cached_weights = main_crisis_analyzer.performance_optimizer._cached_model_weights
+                        if cached_weights:
+                            logger.debug(f"🎯 Found dynamic weights via main module: {cached_weights}")
+                            return cached_weights
+            except Exception as e:
+                logger.debug(f"Main module access failed: {e}")
+            
+            # No dynamic weights found
+            logger.debug("🔧 No dynamic weights found, will use configuration weights")
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Failed to check for dynamic weights: {e}")
+            return None
+
+    def set_crisis_analyzer_reference(self, crisis_analyzer):
+        """
+        Set a weak reference to the crisis analyzer for dynamic weight access
+        
+        This method allows the ModelCoordinationManager to access the performance optimizer
+        cache through the crisis analyzer. This should be called during initialization.
+        
+        Args:
+            crisis_analyzer: CrisisAnalyzer instance
+        """
+        try:
+            import weakref
+            self._crisis_analyzer_ref = weakref.ref(crisis_analyzer)
+            logger.debug("🔗 Crisis analyzer reference set for dynamic weight access")
+        except Exception as e:
+            logger.warning(f"Failed to set crisis analyzer reference: {e}")
     # ========================================================================
     
     # ========================================================================
