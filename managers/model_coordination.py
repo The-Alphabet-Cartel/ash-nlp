@@ -1424,7 +1424,7 @@ class ModelCoordinationManager:
                 if isinstance(result, dict) and 'score' in result:
                     score = result.get('score', 0.0)
                     confidence = result.get('confidence', 0.0)
-                    weight = self.get_normalized_weights()
+                    model_type, weight = self.get_normalized_weights()
                     logger.info(f"WEIGHT DEBUG: {model_type} using weight {weight}")
                 # ENHANCEMENT: Use override weights if provided
 #                    if override_weights and model_type in override_weights:
