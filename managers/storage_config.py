@@ -89,7 +89,7 @@ class StorageConfigManager:
             },
             "cache_settings": {
                 "enable_model_cache": True,
-                "enable_analysis_cache": True,
+                "enable_analysis_cache": False,
                 "cache_cleanup_on_startup": False,
                 "model_cache_size_limit": 1000,
                 "analysis_cache_size_limit": 500,
@@ -171,7 +171,7 @@ class StorageConfigManager:
                 'enable_model_cache': self.config_manager.get_env_bool('NLP_STORAGE_ENABLE_MODEL_CACHE', 
                                                                       cache_settings.get('enable_model_cache', True)),
                 'enable_analysis_cache': self.config_manager.get_env_bool('NLP_STORAGE_ENABLE_ANALYSIS_CACHE',
-                                                                         cache_settings.get('enable_analysis_cache', True)),
+                                                                         cache_settings.get('enable_analysis_cache', False)),
                 'cache_cleanup_on_startup': self.config_manager.get_env_bool('NLP_STORAGE_CACHE_CLEANUP_ON_STARTUP',
                                                                             cache_settings.get('cache_cleanup_on_startup', False)),
                 'model_cache_size_limit': self.config_manager.get_env_int('NLP_STORAGE_MODEL_CACHE_SIZE_LIMIT',
@@ -244,7 +244,7 @@ class StorageConfigManager:
     
     def is_analysis_cache_enabled(self) -> bool:
         """Check if analysis caching is enabled"""
-        return self.get_cache_settings().get('enable_analysis_cache', True)
+        return self.get_cache_settings().get('enable_analysis_cache', False)
     
     def is_automatic_backup_enabled(self) -> bool:
         """Check if automatic backup is enabled"""
@@ -274,7 +274,7 @@ class StorageConfigManager:
                 'directories_configured': len(directories),
                 'directory_names': list(directories.keys()),
                 'model_cache_enabled': cache_settings.get('enable_model_cache', True),
-                'analysis_cache_enabled': cache_settings.get('enable_analysis_cache', True),
+                'analysis_cache_enabled': cache_settings.get('enable_analysis_cache', False),
                 'automatic_backup_enabled': backup_settings.get('enable_automatic_backup', False),
                 'automatic_cleanup_enabled': cleanup_settings.get('enable_automatic_cleanup', True),
                 'configuration_source': 'storage_settings.json'
