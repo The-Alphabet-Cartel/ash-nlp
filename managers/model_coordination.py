@@ -539,16 +539,17 @@ class ModelCoordinationManager:
             logger.error(f"❌ Zero-shot classification failed for {model_type}: {e}")
             return await self._pattern_fallback_classification(text, labels, model_type)
     
-    def classify_sync_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
+    def classify_sync_ensemble(self, text: str, zero_shot_manager=None, override_weights: Dict[str, float] = None) -> Dict[str, Any]:
         """
         PHASE 3E STEP 7: Synchronous ensemble classification for performance optimization
         
-        ENHANCEMENT: Now checks for dynamic weights from performance optimizer cache
-        This ensures weights set via /ensemble/set-weights endpoint are actually used
+        ENHANCEMENT: Now accepts override_weights parameter for dynamic weight scenarios
+        This ensures weights set via /ensemble/set-weights endpoint can be passed directly
         
         Args:
             text: Text to classify
             zero_shot_manager: ZeroShotManager instance for label management
+            override_weights: Optional dynamic weights to use instead of configuration
             
         Returns:
             Synchronous ensemble classification results
@@ -557,8 +558,9 @@ class ModelCoordinationManager:
             model_results = {}
             models = self.get_model_definitions()
             
-            # ENHANCEMENT: Check for dynamic weights from performance optimizer
-            dynamic_weights = self._get_dynamic_weights_if_available()
+            # Use provided weights or try to detect dynamic weights
+            dynamic_weights = override_weights or self._get_dynamic_weights_if_available()
+            
             if dynamic_weights:
                 logger.info(f"🎯 SYNC ENSEMBLE: Using dynamic weights: {dynamic_weights}")
             else:
