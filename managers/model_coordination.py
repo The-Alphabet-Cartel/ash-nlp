@@ -31,6 +31,8 @@ import logging
 import time
 import asyncio
 from typing import Dict, Any, List, Optional, Tuple
+from analysis.crisis_analyzer import create_crisis_analyzer
+from analysis.performance_optimizations import integrate_performance_optimizations
 
 # PHASE 3: Add transformers imports for actual AI classification
 try:
@@ -74,6 +76,8 @@ class ModelCoordinationManager:
             raise ValueError("UnifiedConfigManager is required for ModelCoordinationManager")
         
         self.config_manager = config_manager
+        self.crisis_analyzer = create_crisis_analyzer(config_manager)
+        self.performance_optimizer = integrate_performance_optimizations(self.crisis_analyzer)
         
         # PHASE 3: Add model pipeline cache and loading management
         self._model_cache = {}
@@ -546,12 +550,6 @@ class ModelCoordinationManager:
         Returns:
             Synchronous ensemble classification results
         """
-        from analysis.crisis_analyzer import create_crisis_analyzer
-        from analysis.performance_optimizations import integrate_performance_optimizations
-
-        crisis_analyzer = create_crisis_analyzer(config_manager)
-        performance_optimizer = integrate_performance_optimizations(crisis_analyzer)
-
         try:
             model_results = {}
             models = self.get_model_definitions()
@@ -601,8 +599,8 @@ class ModelCoordinationManager:
             
             # Perform ensemble voting (synchronous)
             override_weights = None
-            if (hasattr(performance_optimizer, '_cached_model_weights')):
-                override_weights = performance_optimizer._cached_model_weights
+            if (hasattr(self.performance_optimizer, '_cached_model_weights')):
+                override_weights = self.performance_optimizer._cached_model_weights
                 logger.info(f"Passing dynamic weights to ModelCoordinationManager: {override_weights}")
 
             ensemble_result = self._perform_ensemble_voting(model_results, override_weights)
