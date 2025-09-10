@@ -130,8 +130,7 @@ class CrisisPatternHelper:
                                 'matched_pattern': term,
                                 'crisis_level': defaults.get('crisis_relevance', 'low'),
                                 'confidence': defaults.get('weight', 0.5),
-                                'weight': defaults.get('boost_factor', 1.0),
-                                'phase_3e_extraction': True
+                                'weight': defaults.get('boost_factor', 1.0)
                             })
             
             # Check for crisis patterns section (regex patterns)
@@ -162,8 +161,7 @@ class CrisisPatternHelper:
                                         'matched_pattern': pattern_text,
                                         'crisis_level': defaults.get('crisis_level', 'medium'),
                                         'confidence': defaults.get('weight', 0.8),
-                                        'weight': defaults.get('urgency', 1.0),
-                                        'phase_3e_extraction': True
+                                        'weight': defaults.get('urgency', 1.0)
                                     })
             
             # Fallback: Handle legacy structure if still present
@@ -180,8 +178,7 @@ class CrisisPatternHelper:
                                 'matched_pattern': term,
                                 'crisis_level': pattern_info.get('crisis_level', 'low'),
                                 'confidence': pattern_info.get('confidence', 0.5),
-                                'weight': pattern_info.get('weight', 1.0),
-                                'phase_3e_extraction': True
+                                'weight': pattern_info.get('weight', 1.0)
                             })
                         elif isinstance(term, dict):
                             term_text = term.get('term', term.get('word', ''))
@@ -191,8 +188,7 @@ class CrisisPatternHelper:
                                     'matched_pattern': term_text,
                                     'crisis_level': term.get('crisis_level', pattern_info.get('crisis_level', 'low')),
                                     'confidence': term.get('confidence', pattern_info.get('confidence', 0.5)),
-                                    'weight': term.get('weight', pattern_info.get('weight', 1.0)),
-                                    'phase_3e_extraction': True
+                                    'weight': term.get('weight', pattern_info.get('weight', 1.0))
                                 })
             
             return found_patterns
@@ -242,8 +238,7 @@ class CrisisPatternHelper:
                             'matched_phrase': indicator,
                             'crisis_level': context_data.get('crisis_level', context_data.get('crisis_boost', 'low')),
                             'confidence': context_data.get('confidence', 0.6),
-                            'boost_multiplier': context_data.get('boost_multiplier', context_data.get('boost_factor', 1.0)),
-                            'phase_3e_extraction': True
+                            'boost_multiplier': context_data.get('boost_multiplier', context_data.get('boost_factor', 1.0))
                         })
                     elif isinstance(indicator, dict):
                         phrase = indicator.get('phrase', indicator.get('indicator', ''))
@@ -253,8 +248,7 @@ class CrisisPatternHelper:
                                 'matched_phrase': phrase,
                                 'crisis_level': indicator.get('crisis_level', context_data.get('crisis_level', 'low')),
                                 'confidence': indicator.get('confidence', context_data.get('confidence', 0.6)),
-                                'boost_multiplier': indicator.get('boost_multiplier', context_data.get('boost_factor', 1.0)),
-                                'phase_3e_extraction': True
+                                'boost_multiplier': indicator.get('boost_multiplier', context_data.get('boost_factor', 1.0))
                             })
             
             return found_phrases
@@ -290,8 +284,7 @@ class CrisisPatternHelper:
                                 'confidence': defaults.get('weight', 0.6),
                                 'urgency_multiplier': defaults.get('boost_factor', 1.0),
                                 'time_sensitivity': defaults.get('urgency', 'normal'),
-                                'auto_escalate': defaults.get('auto_escalate', False),
-                                'phase_3e_analysis': True
+                                'auto_escalate': defaults.get('auto_escalate', False)
                             })
             
             urgency_score = 0.0
@@ -305,8 +298,7 @@ class CrisisPatternHelper:
                 'requires_immediate_attention': urgency_score > 1.5 or any(
                     ind.get('time_sensitivity') in ['immediate', 'critical'] or ind.get('auto_escalate', False)
                     for ind in found_indicators
-                ),
-                'phase_3e_analysis_complete': True
+                )
             }
             
         except Exception as e:

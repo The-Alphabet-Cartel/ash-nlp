@@ -265,7 +265,7 @@ class ContextAnalysisManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_context_analysis_manager(unified_config: UnifiedConfigManager) -> ContextAnalysisManager:

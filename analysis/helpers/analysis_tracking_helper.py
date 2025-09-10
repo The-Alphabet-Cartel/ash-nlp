@@ -214,7 +214,18 @@ class AnalysisTrackingHelper:
             # Try synchronous path first (optimized)
             try:
                 if hasattr(self.crisis_analyzer.model_coordination_manager, 'classify_sync_ensemble'):
-                    result = self.crisis_analyzer.model_coordination_manager.classify_sync_ensemble(message, self.crisis_analyzer.zero_shot_manager)
+                    # Get dynamic weights from performance optimizer if available
+                    dynamic_weights = None
+                    if (hasattr(self.crisis_analyzer, 'performance_optimizer') and 
+                        hasattr(self.crisis_analyzer.performance_optimizer, '_cached_model_weights')):
+                        dynamic_weights = self.crisis_analyzer.performance_optimizer._cached_model_weights
+
+                    result = self.crisis_analyzer.model_coordination_manager.classify_sync_ensemble(
+                        message, 
+                        self.crisis_analyzer.zero_shot_manager,
+                        override_weights=dynamic_weights
+                    )
+
                     if result:
                         return {
                             "crisis_score": result.get("ensemble_score", 0.0),
@@ -227,7 +238,7 @@ class AnalysisTrackingHelper:
                         }
                 
                 # Fallback to async path
-                result = await self.crisis_analyzer.model_coordination_manager.classify_ensemble_async(message, self.crisis_analyzer.zero_shot_manager)
+                result = await self.crisis_analyzer.model_coordination_manager.classify_with_ensemble(message, self.crisis_analyzer.zero_shot_manager)
                 return {
                     "crisis_score": result.get("ensemble_score", 0.0),
                     "confidence_score": result.get("ensemble_confidence", 0.0),
@@ -277,7 +288,7 @@ class AnalysisTrackingHelper:
                 "total_label_categories": len(all_labels),
                 "total_labels": sum(len(labels) for labels in all_labels.values()),
                 "hypothesis_template": zero_shot_settings.get("hypothesis_template", "This text expresses {}."),
-                "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.3),
+                "confidence_threshold": zero_shot_settings.get("confidence_threshold", 0.25),
                 "multi_label": zero_shot_settings.get("multi_label", False)
             }
             
@@ -342,8 +353,7 @@ class AnalysisTrackingHelper:
             logger.error(f"Learning adjustments failed: {e}")
             raise
 
-    def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], 
-                                learning_result: Dict[str, Any]) -> Dict[str, Any]:
+    def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], learning_result: Dict[str, Any], mode: Optional[str] = None) -> Dict[str, Any]:
         """Combine results from all analysis steps with enhanced tracking"""
         # Base score from AI models
         base_score = ai_result.get("crisis_score", 0.0)
@@ -357,7 +367,7 @@ class AnalysisTrackingHelper:
         final_score = learning_result.get("adjusted_score", base_score)
         
         # Determine crisis level
-        crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score)
+        crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score, mode)
         
         return {
             "crisis_score": final_score,
@@ -368,10 +378,10 @@ class AnalysisTrackingHelper:
             "method": "enhanced_three_step_analysis",
             "detected_categories": pattern_result.get("detected_categories", []),
             "ai_model_details": {
-                "models_used": ai_result.get("models_used", []),
-                "individual_results": ai_result.get("individual_results", {}),
+#                "models_used": ai_result.get("models_used", []),
+#                "individual_results": ai_result.get("individual_results", {}),
                 "base_confidence": base_confidence,
-                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
+#                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
             },
             "pattern_analysis": {
                 "patterns_matched": pattern_result.get("patterns_found", []),

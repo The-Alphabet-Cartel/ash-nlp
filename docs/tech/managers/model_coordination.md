@@ -138,7 +138,7 @@ Performs ensemble analysis without full crisis context:
 - Useful for testing and debugging
 - Returns basic ensemble results with model scores
 
-### Performance Optimization Methods (Phase 3e)
+### Performance Optimization Methods
 
 #### `classify_sync_ensemble(text: str, zero_shot_manager=None) -> Dict[str, Any]`
 **PERFORMANCE OPTIMIZED** - Synchronous ensemble classification:

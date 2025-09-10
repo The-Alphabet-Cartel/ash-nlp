@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ash-NLP Main Application Entry Point for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 PHASE: 3d, Step 10.11-3
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -48,6 +48,7 @@ from managers.storage_config import create_storage_config_manager
 from managers.crisis_threshold import create_crisis_threshold_manager
 from managers.zero_shot import create_zero_shot_manager
 from managers.context_analysis import create_context_analysis_manager
+from analysis.performance_optimizations import integrate_performance_optimizations
 
 # Analysis Components
 from analysis import create_crisis_analyzer
@@ -55,15 +56,14 @@ from analysis import create_crisis_analyzer
 # API Endpoint Registration - FIXED IMPORTS
 from api.admin_endpoints import add_admin_endpoints
 from api.ensemble_endpoints import add_ensemble_endpoints
+# ============================================================================
 
 # ============================================================================
 # UNIFIED CONFIGURATION LOGGING SETUP
 # ============================================================================
-
 def setup_unified_logging(unified_config_manager):
     """
     Setup colorlog logging with unified configuration management
-    Phase 3d Step 9: Uses UnifiedConfigManager for all logging configuration
     """
     try:
         # Get logging configuration through unified config
@@ -131,11 +131,9 @@ def setup_unified_logging(unified_config_manager):
 # ============================================================================
 # UNIFIED MANAGER INITIALIZATION
 # ============================================================================
-
 def initialize_unified_managers():
     """
     Initialize all managers using UnifiedConfigManager
-    Phase 3d Step 9: Complete unified configuration architecture
     """
     logger = logging.getLogger(__name__)
     logger.info("=" * 70)
@@ -309,9 +307,21 @@ def initialize_unified_managers():
         logger.info("✅ Analysis components initialized")
         logger.info("=" * 70)
         
-    # ========================================================================
-    # PRELOAD THOSE BIG-ASS MODELS!
-    # ========================================================================
+        logger.info("=" * 70)
+        logger.info("🔧 Initializing performance optimizer...")
+        logger.info("=" * 70)
+        performance_optimizer = integrate_performance_optimizations(crisis_analyzer)
+        crisis_analyzer.performance_optimizer = performance_optimizer
+        performance_optimizer.analyzer = crisis_analyzer
+        if hasattr(model_coordination, 'set_crisis_analyzer_reference'):
+            model_coordination.set_crisis_analyzer_reference(crisis_analyzer)
+        logger.info("=" * 70)
+        logger.info("✅ Performance optimizer initialized...")
+        logger.info("=" * 70)
+
+        # ========================================================================
+        # PRELOAD THOSE BIG-ASS MODELS!
+        # ========================================================================
         if model_coordination:
             try:
                 logger.info("=" * 70)
@@ -364,11 +374,9 @@ def initialize_unified_managers():
 # ============================================================================
 # FASTAPI APPLICATION FACTORY
 # ============================================================================
-
 def create_fastapi_app():
     """
     Create FastAPI application with unified configuration
-    Phase 3d Step 9: Complete unified configuration integration
     """
     logger = logging.getLogger(__name__)
     
@@ -381,7 +389,7 @@ def create_fastapi_app():
         # Create FastAPI app
         app = FastAPI(
             title="Ash-NLP Crisis Detection Service",
-            description="LGBTQIA+ Mental Health Crisis Detection API with Clean v3.1 Architecture",
+            description="LGBTQIA+ Mental Health Crisis Detection API with Clean Architecture",
             version="3.1d-step9",
             docs_url="/docs",
             redoc_url="/redoc"
@@ -390,7 +398,7 @@ def create_fastapi_app():
         # Add health endpoint with unified configuration status
         @app.get("/health")
         async def health_check():
-            """Enhanced health check with unified configuration status"""
+            """Health check"""
             try:
                 # Get storage status if available
                 storage_status = "available" if managers.get('storage_config') else "unavailable"
@@ -398,17 +406,15 @@ def create_fastapi_app():
                 return {
                     "status": "healthy",
                     "timestamp": time.time(),
-                    "version": "3.1d",
-                    "architecture": "clean_v3.1_unified_config",
-                    "phase_3d": "operational",
+                    "version": "3.1",
+                    "architecture": "clean",
                     "unified_config_manager": "active",
                     "managers_loaded": list(managers.keys()),
                     "total_managers": len(managers),
                     "storage_config_manager": storage_status,
                     "environment_variables": {
                         "total_managed": len(managers['unified_config'].env_config),
-                        "validation": "comprehensive_schema_validation",
-                        "direct_os_getenv_calls": "eliminated"
+                        "validation": "schema_validation"
                     },
                     "community": "The Alphabet Cartel"
                 }
@@ -417,7 +423,7 @@ def create_fastapi_app():
                 return {
                     "status": "error",
                     "error": str(e),
-                    "version": "3.1d"
+                    "version": "3.1"
                 }
         
         # Register API endpoints with manager dependencies
@@ -466,12 +472,11 @@ def create_fastapi_app():
 # ============================================================================
 # MAIN APPLICATION ENTRY POINT
 # ============================================================================
-
 if __name__ == "__main__":
     import time
     
     try:
-        print("🎉 Starting Ash-NLP Crisis Detection Service v3.1d Step 9")
+        print("🎉 Starting Ash-NLP Crisis Detection Service")
         print("🏳️‍🌈 Serving The Alphabet Cartel LGBTQIA+ Community")
         print("🏛️ Repository: https://github.com/the-alphabet-cartel/ash-nlp")
         print("💬 Discord: https://discord.gg/alphabetcartel")
@@ -531,7 +536,3 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"❌ Application startup failed: {e}")
         raise
-
-# ============================================================================
-# NO MODULE-LEVEL APP CREATION - ONLY FOR DIRECT EXECUTION
-# ============================================================================

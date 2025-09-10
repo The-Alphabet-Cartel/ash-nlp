@@ -11,8 +11,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Admin endpoints for label management and system administration for Ash NLP Service v3.1
 ---
-FILE VERSION: v3.1-3d-6-2
-LAST MODIFIED: 2025-08-22
+FILE VERSION: v3.1-4b-1
+LAST MODIFIED: 2025-08-30
 CLEAN ARCHITECTURE: v3.1 Compliant
 PHASE: 3d, Step 10.11-3
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -59,8 +59,7 @@ class LabelValidationResponse(BaseModel):
     warnings: List[str]
     stats: Dict[str, Any]
 
-def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pattern_detection_manager=None,
-                         analysis_config_manager=None, crisis_threshold_manager=None):
+def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pattern_detection_manager=None, analysis_config_manager=None, crisis_threshold_manager=None):
     """
     Setup admin endpoints with complete Phase 3c manager architecture
     
@@ -72,11 +71,6 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
         analysis_config_manager: AnalysisConfigManager instance (Phase 3b) - NEW
         crisis_threshold_manager: CrisisThresholdManager instance (Phase 3c) - NEW
     """
-    
-    # ========================================================================
-    # CLEAN V3.1 VALIDATION - No Fallbacks
-    # ========================================================================
-    
     if not model_coordination_manager:
         logger.error("❌ Model Ensemble Manager is required for admin endpoints")
         raise RuntimeError("Model Ensemble Manager required for admin endpoints")
@@ -88,9 +82,8 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     logger.info("✅ Clean v3.1: Admin endpoints using direct manager access - Phase 3c Enhanced")
     
     # ========================================================================
-    # ENHANCED ADMIN STATUS ENDPOINT - REPLACE EXISTING @app.get("/admin/status")
+    # ENHANCED ADMIN STATUS ENDPOINT
     # ========================================================================
-    
     @app.get("/admin/status")
     async def admin_status():
         """Get comprehensive admin status - Phase 3c Enhanced"""
@@ -98,12 +91,12 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             status = {
                 "admin_available": True,
                 "phase": "3c",
-                "architecture": "clean_v3.1_with_phase_3c_integration",
+                "architecture": "clean",
                 "endpoints": [
                     "/admin/status",
-                    "/admin/configuration/summary",  # New Phase 3c endpoint
-                    "/admin/thresholds/status",      # New Phase 3c endpoint
-                    "/admin/analysis/parameters",    # New Phase 3b endpoint
+                    "/admin/configuration/summary",
+                    "/admin/thresholds/status",
+                    "/admin/analysis/parameters",
                     "/admin/labels/status",
                     "/admin/labels/current",
                     "/admin/labels/list",
@@ -118,7 +111,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
                 }
             }
             
-            # Phase 3a - Crisis Pattern Manager Status
+            # Crisis Pattern Manager Status
             if pattern_detection_manager:
                 try:
                     pattern_status = pattern_detection_manager.get_status()
@@ -132,7 +125,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             else:
                 status["patterns_crisis"] = {"available": False, "note": "Crisis pattern manager not provided"}
             
-            # Phase 3b - Analysis Parameters Manager Status - NEW
+            # Analysis Parameters Manager Status - NEW
             if analysis_config_manager:
                 try:
                     all_params = analysis_config_manager.get_all_parameters()
@@ -147,7 +140,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             else:
                 status["analysis_config"] = {"available": False, "note": "Analysis parameters manager not provided"}
             
-            # Phase 3c - Threshold Mapping Manager Status - NEW
+            # Threshold Mapping Manager Status - NEW
             if crisis_threshold_manager:
                 try:
                     current_mode = crisis_threshold_manager.get_current_ensemble_mode()
@@ -168,22 +161,18 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             logger.error(f"❌ Error getting admin status: {e}")
             return {"error": str(e), "admin_available": False, "phase": "3c"}
 
-    # ========================================================================
-    # NEW Phase 3c Configuration Summary Endpoint - ADD THIS
-    # ========================================================================
-    
     @app.get("/admin/configuration/summary")
     async def configuration_summary():
         """Get complete configuration summary - Phase 3c"""
         try:
             summary = {
                 "phase": "3c",
-                "architecture": "clean_v3.1",
+                "architecture": "clean",
                 "configuration_externalized": True,
                 "components": {}
             }
             
-            # Phase 3a - Crisis Patterns
+            # Crisis Patterns
             if pattern_detection_manager:
                 try:
                     pattern_status = pattern_detection_manager.get_status()
@@ -196,7 +185,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
                 except Exception as e:
                     summary["components"]["patterns_crisis"] = {"error": str(e)}
             
-            # Phase 3b - Analysis Parameters
+            # Analysis Parameters
             if analysis_config_manager:
                 try:
                     all_params = analysis_config_manager.get_all_parameters()
@@ -209,7 +198,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
                 except Exception as e:
                     summary["components"]["analysis_config"] = {"error": str(e)}
             
-            # Phase 3c - Threshold Mapping
+            # Threshold Mapping
             if crisis_threshold_manager:
                 try:
                     current_mode = crisis_threshold_manager.get_current_ensemble_mode()
@@ -231,9 +220,8 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Configuration summary error: {str(e)}")
 
     # ========================================================================
-    # NEW Phase 3c Threshold Status Endpoint - ADD THIS
+    # Threshold Status Endpoint
     # ========================================================================
-    
     @app.get("/admin/thresholds/status")
     async def threshold_status():
         """Get detailed threshold configuration status - Phase 3c"""
@@ -264,9 +252,8 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Threshold status error: {str(e)}")
 
     # ========================================================================
-    # NEW Phase 3b Analysis Parameters Endpoint - ADD THIS
+    # Analysis Parameters Endpoint
     # ========================================================================
-    
     @app.get("/admin/analysis/parameters")
     async def analysis_config():
         """Get analysis parameters configuration - Phase 3b"""
@@ -293,9 +280,8 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Analysis parameters error: {str(e)}")
 
     # ========================================================================
-    # LABEL STATUS ENDPOINT - Clean v3.1 (Keep - This one works)
+    # LABEL STATUS ENDPOINT
     # ========================================================================
-    
     @app.get("/admin/labels/status")
     async def get_label_status():
         """Get current label configuration status - Clean v3.1 Implementation"""
@@ -319,7 +305,6 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             return {
                 "status": "healthy",
                 "architecture": "v3.1_clean",
-                "phase_2c_complete": True,
                 "current_label_set": zero_shot_status.get('current_label_set', 'unknown'),
                 "available_sets": zero_shot_status.get('available_sets', []),
                 "label_stats": zero_shot_status.get('label_stats', {}),
@@ -353,14 +338,13 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             }
 
     # ========================================================================
-    # CURRENT LABEL INFO - FIXED
+    # CURRENT LABEL INFO
     # ========================================================================
-    
     @app.get("/admin/labels/current")
     async def get_current_label_info():
         """Get information about currently active label set - FIXED"""
         try:
-            # FIXED: Use zero_shot_manager with correct method name (no await)
+            # Use zero_shot_manager with correct method name (no await)
             current_set = zero_shot_manager.get_current_label_set()
             
             # Get additional info from zero_shot_manager
@@ -383,14 +367,13 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Fixed v3.1 label info error: {str(e)}")
 
     # ========================================================================
-    # LIST ALL LABEL SETS - FIXED
+    # LIST ALL LABEL SETS
     # ========================================================================
-    
     @app.get("/admin/labels/list")
     async def list_all_label_sets():
         """List all available label sets with detailed information - FIXED"""
         try:
-            # FIXED: Use zero_shot_manager with correct method names (no await)
+            # Use zero_shot_manager with correct method names (no await)
             available_sets = zero_shot_manager.get_available_label_sets()
             current_set = zero_shot_manager.get_current_label_set()
             
@@ -420,9 +403,8 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Fixed v3.1 label listing error: {str(e)}")
 
     # ========================================================================
-    # SIMPLE LABEL SWITCHING - FIXED
+    # SIMPLE LABEL SWITCHING
     # ========================================================================
-    
     @app.post("/admin/labels/simple-switch")
     async def simple_label_switch(request: dict):
         """Simple label switching endpoint - FIXED"""
@@ -431,7 +413,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             if not label_set:
                 return {"error": "label_set required"}
             
-            # FIXED: Use zero_shot_manager (no await, correct method)
+            # Use zero_shot_manager (no await, correct method)
             try:
                 success = zero_shot_manager.switch_label_set(label_set)
                 if success:
@@ -466,14 +448,13 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             }
 
     # ========================================================================
-    # FULL LABEL SWITCHING - FIXED
+    # FULL LABEL SWITCHING
     # ========================================================================
-    
     @app.post("/admin/labels/switch", response_model=LabelSetResponse)
     async def switch_label_set(request: LabelSetSwitchRequest):
         """Switch to a different label set - FIXED"""
         try:
-            # FIXED: Use zero_shot_manager (no await, correct methods)
+            # Use zero_shot_manager (no await, correct methods)
             available_sets = zero_shot_manager.get_available_label_sets()
             if request.label_set not in available_sets:
                 raise HTTPException(
@@ -481,7 +462,7 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
                     detail=f"Invalid label set '{request.label_set}'. Available: {available_sets}"
                 )
             
-            # FIXED: Switch label set using zero_shot_manager
+            # Switch label set using zero_shot_manager
             success = zero_shot_manager.switch_label_set(request.label_set)
             if not success:
                 raise HTTPException(
@@ -513,14 +494,13 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Fixed v3.1 label switch error: {str(e)}")
 
     # ========================================================================
-    # LABEL CONFIGURATION - SIMPLIFIED (Remove get_config_info dependency)
+    # LABEL CONFIGURATION - SIMPLIFIED
     # ========================================================================
-    
     @app.get("/admin/labels/config")
     async def get_label_configuration():
         """Get comprehensive label configuration information - SIMPLIFIED"""
         try:
-            # FIXED: Build config info from available methods
+            # Build config info from available methods
             available_sets = zero_shot_manager.get_available_label_sets()
             current_set = zero_shot_manager.get_current_label_set()
             current_labels = zero_shot_manager.get_all_labels()
@@ -560,12 +540,11 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     # ========================================================================
     # LABEL VALIDATION - SIMPLIFIED
     # ========================================================================
-    
     @app.get("/admin/labels/validate")
     async def validate_label_configuration():
         """Validate current label configuration - SIMPLIFIED"""
         try:
-            # FIXED: Build validation from available methods
+            # Build validation from available methods
             current_set = zero_shot_manager.get_current_label_set()
             available_sets = zero_shot_manager.get_available_label_sets()
             current_labels = zero_shot_manager.get_all_labels()
@@ -615,12 +594,11 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     # ========================================================================
     # LABEL SET DETAILS - SIMPLIFIED
     # ========================================================================
-    
     @app.get("/admin/labels/details/{label_set_name}")
     async def get_label_set_details(label_set_name: str):
         """Get detailed information about a specific label set - SIMPLIFIED"""
         try:
-            # FIXED: Use zero_shot_manager with correct methods
+            # Use zero_shot_manager with correct methods
             available_sets = zero_shot_manager.get_available_label_sets()
             
             if label_set_name not in available_sets:
@@ -661,12 +639,11 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     # ========================================================================
     # EXPORT LABEL SET - SIMPLIFIED
     # ========================================================================
-    
     @app.get("/admin/labels/export/{label_set_name}")
     async def export_label_set(label_set_name: str):
         """Export a specific label set - SIMPLIFIED"""
         try:
-            # FIXED: Use zero_shot_manager
+            # Use zero_shot_manager
             available_sets = zero_shot_manager.get_available_label_sets()
             if label_set_name not in available_sets:
                 raise HTTPException(
@@ -702,7 +679,6 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     # ========================================================================
     # RELOAD CONFIGURATION - SIMPLIFIED 
     # ========================================================================
-    
     @app.post("/admin/labels/reload")
     async def reload_label_configuration():
         """Reload label configuration - SIMPLIFIED"""
@@ -725,9 +701,8 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
             raise HTTPException(status_code=500, detail=f"Fixed v3.1 reload error: {str(e)}")
 
     # ========================================================================
-    # ENDPOINT REGISTRATION COMPLETE - FIXED
+    # ENDPOINT REGISTRATION COMPLETE
     # ========================================================================
-    
     logger.info("🔧 Fixed v3.1: Admin endpoints registered successfully")
     logger.info("📋 Admin endpoints using correct managers and methods:")
     logger.info("   GET /admin/status - Admin system status")
@@ -739,13 +714,12 @@ def setup_admin_endpoints(app, model_coordination_manager, zero_shot_manager, pa
     logger.info("   GET /admin/labels/details/{name} - Detailed label set info")
     logger.info("   GET /admin/labels/export/{name} - Export specific label set")
     logger.info("   POST /admin/labels/reload - Configuration reload status")
-    logger.info("✅ Fixed: All admin endpoints using correct manager methods")
+    logger.info("✅ All admin endpoints using correct manager methods")
 
 # ========================================================================
-# Enhanced Admin Endpoints Function Signature
+# Admin Endpoints Function Signature
 # ========================================================================
-def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, pattern_detection_manager, 
-                       model_coordination_manager, analysis_config_manager=None, crisis_threshold_manager=None):
+def add_admin_endpoints(app, config_manager, settings_manager, zero_shot_manager, pattern_detection_manager, model_coordination_manager, analysis_config_manager=None, crisis_threshold_manager=None):
     """Add admin endpoints to FastAPI app - Phase 3c Enhanced"""
     logger.info("🔧 Adding admin endpoints with Phase 3c enhancement...")
     

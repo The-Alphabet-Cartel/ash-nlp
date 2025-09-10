@@ -1,6 +1,6 @@
 <!-- ash-nlp/docs/project_instructions.md -->
 <!--
-Ash-NLP Project Instructions for Ash-NLP Service
+Project Instructions for Ash-NLP Service
 FILE VERSION: v3.1-1
 LAST MODIFIED: 2025-08-28
 CLEAN ARCHITECTURE: v3.1 Compliant
@@ -67,6 +67,7 @@ https://github.com/the-alphabet-cartel
   - This is to ensure that we're both on the "same page" before making adjustments to the code.
 - All hyperlinks shall be in lower case in the documentation as well as when trying to search GitHub.
 - All references to The Alphabet Cartel or our discord server in documentation files shall include a link to the discord: https://discord.gg/alphabetcartel, as well as to our website: http://alphabetcartel.org.
+- This is a collaborative project, as such do not use accusatory phrasing such as "your code", or "you forgot".  Instead use the inclusive "we" and "our".
 
 ### Coding Philosophy
 - Modular Python Code

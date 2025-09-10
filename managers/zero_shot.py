@@ -355,7 +355,6 @@ class ZeroShotManager:
                 'phase': '3e Sub-step 5.5 Task 5',
                 'configuration_format': 'enhanced',
                 'get_config_section_patterns': 'implemented',
-                'phase_3e_cleanup': 'complete',
                 'unified_config_manager': 'operational',
                 'zero_shot_settings': {
                     'hypothesis_template': self.zero_shot_settings.get('hypothesis_template', 'This text expresses {}.'),
@@ -399,8 +398,7 @@ class ZeroShotManager:
                 'get_config_section_patterns': 'implemented',
                 'enhanced_error_handling': True,
                 'configuration_source': 'json_with_env_overrides',
-                'initialization_status': 'complete',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'complete'
             }
             
         except Exception as e:
@@ -409,46 +407,8 @@ class ZeroShotManager:
                 'manager_version': 'v3.1e-5.5-5',
                 'phase': '3e Sub-step 5.5 Task 5',
                 'error': str(e),
-                'initialization_status': 'error',
-                'cleanup_status': 'phase_3e_complete'
+                'initialization_status': 'error'
             }
-    
-    def activate_profile(self, profile_name: str) -> bool:
-        """
-        Activate a label profile from configuration with Phase 3e enhanced access patterns
-        
-        Args:
-            profile_name: Name of the profile to activate
-            
-        Returns:
-            Boolean indicating if profile was activated successfully
-        
-        NOT CURRENTLY USED!
-        """
-#        try:
-#            # PHASE 3E: Enhanced profile access using get_config_section patterns
-#            profiles = self.unified_config.get_config_section('label_config', 'label_profiles', {})
-#            if not profiles:
-#                # Fallback to direct access
-#                label_config = self.unified_config.get_config_section('label_config')
-#                profiles = label_config.get('label_profiles', {})
-#            
-#            if profile_name not in profiles:
-#                logger.warning(f"Profile '{profile_name}' not found")
-#                return False
-#            
-#            profile = profiles[profile_name]
-#            logger.info(f"Activating label profile: {profile_name}")
-#            
-#            # Switch to profile's label set if specified
-#            if 'label_set' in profile:
-#                return self.switch_label_set(profile['label_set'])
-#            
-#            return True
-#            
-#        except Exception as e:
-#            logger.error(f"Error activating profile '{profile_name}': {e}")
-        return False
     
     def get_zero_shot_settings(self) -> Dict[str, Any]:
         """
@@ -467,7 +427,7 @@ class ZeroShotManager:
                 'track_performance': settings.get('track_performance', False),
                 'hypothesis_template': settings.get('hypothesis_template', 'This text expresses {}.'),
                 'multi_label': settings.get('multi_label', False),
-                'confidence_threshold': max(0.0, min(1.0, float(settings.get('confidence_threshold', 0.3)))),
+                'confidence_threshold': max(0.0, min(1.0, float(settings.get('confidence_threshold', 0.25)))),
                 'max_labels': max(1, min(10, int(settings.get('max_labels', 5)))),
                 'normalize_scores': settings.get('normalize_scores', True)
             }
@@ -493,8 +453,7 @@ class ZeroShotManager:
                 'valid': True,
                 'warnings': [],
                 'errors': [],
-                'configuration_status': 'valid',
-                'phase_3e_compliant': True
+                'configuration_status': 'valid'
             }
             
             # Validate available label sets
@@ -532,12 +491,11 @@ class ZeroShotManager:
                 'valid': False,
                 'warnings': [],
                 'errors': [f"Validation error: {str(e)}"],
-                'configuration_status': 'error',
-                'phase_3e_compliant': False
+                'configuration_status': 'error'
             }
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance (Phase 3e Enhanced)
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_zero_shot_manager(unified_config_manager) -> ZeroShotManager:

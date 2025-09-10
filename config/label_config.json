@@ -17,47 +17,51 @@
     "enhanced_crisis": {
       "description": "Crisis-optimized labels for better high-risk detection, specifically targeting planning language and methodical crisis indicators",
       "depression": [
-        "person actively expressing suicidal thoughts, death wishes, or specific plans to end their life",
-        "person stating they want to die, kill themselves, or commit suicide with immediate intent",
-        "person describing specific suicide methods, plans, preparations, or final arrangements",
-        "person expressing complete hopelessness, that nothing will ever get better, or life has no meaning",
-        "person stating they are beyond help, cannot be saved, or are past the point of return",
-        "person describing feeling trapped with no way out or escape from their situation",
-        "person describing active self-harm, cutting, burning, or intentional self-injury behaviors",
-        "person expressing desire to hurt themselves or engage in reckless dangerous behaviors",
+        "person actively expressing suicidal thoughts, death wishes, specific plans to end their life, or stating they want to die, kill themselves, commit suicide with immediate intent, or describing specific suicide methods, plans, preparations, or final arrangements",
+        "person expressing complete hopelessness, that nothing will ever get better, life has no meaning, or stating they are beyond help, cannot be saved, are past the point of return, or describing feeling trapped with no way out or escape from their situation",
+        "person describing active self-harm, cutting, burning, intentional self-injury behaviors, or expressing desire to hurt themselves or engage in reckless dangerous behaviors",
         "person showing severe depression with major breakdown and inability to function daily",
-        "person experiencing moderate depression, significant sadness, but maintaining some daily functioning",
-        "person expressing emotional difficulty, low mood, or distress but still coping with life",
+        "person experiencing moderate depression, significant sadness, but maintaining some daily functioning, or expressing emotional difficulty, low mood, or distress but still coping with life",
         "person describing temporary depression, bad periods, or situational emotional struggles",
-        "person showing stable mental health with normal emotional ups and downs and healthy coping",
-        "person demonstrating positive mental health, emotional resilience, and psychological wellbeing"
+        "person showing stable mental health with normal emotional ups and downs and healthy coping, or demonstrating positive mental health, emotional resilience, and psychological wellbeing"
       ],
       "sentiment": [
-        "person expressing devastating emotional pain, complete despair, or overwhelming hopelessness with crisis-level intensity",
-        "person showing intense destructive emotions, uncontrollable rage, or violent emotional breakdown",
-        "person displaying emotional devastation, crushing sadness, or complete psychological collapse",
-        "person expressing significant emotional pain, deep sadness, intense fear, anxiety, or distressing emotions",
-        "person showing frustration, anger, disappointment, worry, or moderate negative emotional states",
-        "person displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
-        "person expressing neutral emotions, balanced feelings, or stable emotional state without extremes",
-        "person showing factual communication, casual conversation, or emotionally neutral expressions",
-        "person expressing contentment, satisfaction, mild happiness, gratitude, or positive emotions",
-        "person showing hope, optimism, appreciation, joy, or constructive positive emotional states",
+        "person expressing devastating emotional pain, complete despair, overwhelming hopelessness with crisis-level intensity, or showing intense destructive emotions, uncontrollable rage, violent emotional breakdown, or displaying emotional devastation, crushing sadness, or complete psychological collapse",
+        "person expressing significant emotional pain, deep sadness, intense fear, anxiety, distressing emotions, or showing frustration, anger, disappointment, worry, moderate negative emotional states, or displaying emotional struggle, difficulty coping, or ongoing negative emotional experiences",
+        "person expressing neutral emotions, balanced feelings, stable emotional state without extremes, or showing factual communication, casual conversation, or emotionally neutral expressions",
+        "person expressing contentment, satisfaction, mild happiness, gratitude, positive emotions, or showing hope, optimism, appreciation, joy, or constructive positive emotional states",
         "person expressing intense joy, excitement, euphoria, overwhelming happiness, or peak positive emotional highs"
       ],
       "emotional_distress": [
-        "person in acute psychological crisis, mental health emergency, completely unable to cope or function",
-        "person experiencing emotional breakdown, psychological emergency, or complete loss of emotional control",
-        "person showing total inability to manage emotions, daily life, or basic functioning",
-        "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities",
-        "person showing serious emotional distress that significantly impairs work, relationships, or functioning",
-        "person displaying major emotional strain affecting multiple important life areas",
-        "person experiencing moderate emotional distress with some difficulty managing daily activities",
-        "person showing emotional challenges, stress, or strain but maintaining basic life functioning",
-        "person displaying concerning emotional difficulty that interferes with some normal activities",
-        "person handling typical life stress with adequate emotional regulation and healthy coping strategies",
-        "person experiencing normal daily stressors but managing them appropriately with good coping",
+        "person in acute psychological crisis, mental health emergency, completely unable to cope or function, or experiencing emotional breakdown, psychological emergency, complete loss of emotional control, or showing total inability to manage emotions, daily life, or basic functioning",
+        "person experiencing severe emotional overwhelm with major difficulty managing daily life and responsibilities, or showing serious emotional distress that significantly impairs work, relationships, or functioning, or displaying major emotional strain affecting multiple important life areas",
+        "person experiencing moderate emotional distress with some difficulty managing daily activities, or showing emotional challenges, stress, or strain but maintaining basic life functioning, or displaying concerning emotional difficulty that interferes with some normal activities",
+        "person handling typical life stress with adequate emotional regulation and healthy coping strategies, or experiencing normal daily stressors but managing them appropriately with good coping",
         "person demonstrating excellent emotional resilience, optimal coping skills, and strong psychological wellbeing"
+      ]
+    },
+    "lgbtqia": {
+      "description": "LGBTQIA+ community-specific crisis detection labels targeting identity, family, discrimination, and transition-related stressors specific to The Alphabet Cartel Discord community",
+      "depression": [
+        "person actively expressing suicidal thoughts related to LGBTQIA+ identity rejection, family disowning, conversion therapy trauma, or stating they want to die because of being LGBTQIA+, religious shame, complete family abandonment after coming out, or describing specific suicide plans due to discrimination, transition barriers, or feeling trapped in unsupportive environment",
+        "person expressing complete hopelessness about ever being accepted for their LGBTQIA+ identity, finding community belonging, or stating they are beyond help due to internalized homophobia, transphobia, religious trauma about their identity, or describing feeling trapped by family rejection, discrimination, or inability to live authentically as LGBTQIA+ person",
+        "person describing active self-harm related to dysphoria, identity shame, LGBTQIA+ rejection experiences, or expressing desire to hurt themselves due to deadnaming, misgendering, or identity invalidation",
+        "person showing severe depression with major breakdown due to transition denial, community rejection, or family abandonment",
+        "person experiencing moderate depression from ongoing discrimination, family tension, transition challenges while maintaining some function, or expressing emotional difficulty from identity questioning, mild family conflict, or minor discrimination experiences but still coping",
+        "person describing temporary depression from coming out stress, transition timeline concerns, or community adjustment challenges",
+        "person showing stable mental health with normal identity development, healthy LGBTQIA+ identity integration, or demonstrating positive mental health, strong LGBTQIA+ identity affirmation, and helping others in community"
+      ],
+      "sentiment": [
+        "person expressing devastating emotional pain from family rejection, hate crimes, severe LGBTQIA+ identity crisis, or showing intense negative emotions from discrimination, transition barriers, or religious trauma about their identity",
+        "person expressing moderate negative feelings from identity questioning, mild family conflict, or manageable discrimination experiences",
+        "person displaying neutral emotional state during normal LGBTQIA+ identity exploration or typical community interactions",
+        "person showing positive emotions from family acceptance, successful transition milestones, community belonging experiences, or expressing intense joy from identity affirmation, pride celebration, or strong chosen family connections"
+      ],
+      "emotional_distress": [
+        "person in complete emotional crisis from family disowning, conversion therapy, severe identity-related trauma requiring immediate intervention, or experiencing severe emotional distress from major discrimination, transition denial, or religious trauma impacting daily functioning",
+        "person dealing with significant stress from identity questioning, moderate family tension, or ongoing discrimination while maintaining basic function",
+        "person handling normal LGBTQIA+ identity development stress, minor family adjustment, or typical community integration challenges with adequate coping",
+        "person experiencing normal daily stressors related to LGBTQIA+ identity with good coping and community support, or demonstrating excellent emotional resilience, strong LGBTQIA+ identity confidence, and optimal community support utilization"
       ]
     },
     "clinical_focused": {
@@ -171,15 +175,15 @@
   "zero_shot_settings": {
     "track_performance": "${NLP_ZERO_SHOT_TRACK_LABEL_PERFORMANCE}",
     "hypothesis_template": "${NLP_ZERO_SHOT_HYPOTHESIS_TEMPLATE}",
-    "multi_label": false,
-    "confidence_threshold": 0.3,
-    "max_labels": 5,
-    "normalize_scores": true,
+    "multi_label": "${NLP_ZERO_SHOT_MULTI_LABEL}",
+    "confidence_threshold": "${NLP_ZERO_SHOT_CONFIDENCE_THRESHOLD}",
+    "max_labels": "${NLP_ZERO_SHOT_MAX_LABELS}",
+    "normalize_scores": "${NLP_ZERO_SHOT_NORMALIZE_SCORES}",
     "defaults": {
       "track_performance": false,
       "hypothesis_template": "This text expresses {label}",
       "multi_label": false,
-      "confidence_threshold": 0.3,
+      "confidence_threshold": 0.25,
       "max_labels": 5,
       "normalize_scores": true
     },

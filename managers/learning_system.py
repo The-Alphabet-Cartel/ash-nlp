@@ -628,6 +628,8 @@ class LearningSystemManager:
         """
         Apply learning adjustments to analysis results
         
+        FIXED: Severity multipliers now correctly BOOST scores for obvious crises
+        
         Args:
             base_result: Base analysis result to adjust
             user_id: User identifier for context
@@ -647,40 +649,66 @@ class LearningSystemManager:
             original_score = base_result.get('crisis_score', 0.0)
             crisis_level = base_result.get('crisis_level', 'none')
             
-            # Apply basic learning adjustments
-            adjustment_factor = 1.0
+            # Start with original score
+            adjusted_score = original_score
             adjustments = {}
             
             # Get learning parameters
             params = self.get_learning_parameters()
             learning_rate = params.get('learning_rate', 0.01)
             
-            # Apply historical adjustments if available
+            # 1. Apply historical adjustments (based on past feedback)
+            historical_adjustment = 0.0
             if hasattr(self, '_adjustment_history') and self._adjustment_history:
                 recent_adjustments = self._adjustment_history[-10:]  # Last 10 adjustments
                 avg_adjustment = sum(adj.get('adjustment_amount', 0) for adj in recent_adjustments) / len(recent_adjustments)
-                adjustment_factor += avg_adjustment * learning_rate
-                adjustments['historical_adjustment'] = avg_adjustment
+                historical_adjustment = avg_adjustment * learning_rate
+                adjusted_score += historical_adjustment
+                adjustments['historical_adjustment'] = historical_adjustment
             
-            # Apply severity-based adjustments
+            # 2. Apply severity-based confidence BOOST (FIXED LOGIC)
             severity_multipliers = params.get('severity_multipliers', {})
-            if crisis_level in ['critical', 'high']:
-                multiplier = severity_multipliers.get('high_severity', 1.0)
-                adjustment_factor *= multiplier
-                adjustments['severity_adjustment'] = multiplier
+            severity_boost = 0.0
             
-            # Calculate final adjusted score
-            adjusted_score = max(0.0, min(1.0, original_score * adjustment_factor))
+            if crisis_level in ['high', 'critical']:
+                # HIGH SEVERITY: Apply confidence boost for obvious crises
+                multiplier = severity_multipliers.get('high_severity', 3.0)
+                # Convert multiplier to additive boost: (multiplier - 1.0) * base_confidence
+                severity_boost = (multiplier - 1.0) * min(0.3, original_score)  # Cap boost at 0.6
+                adjusted_score += severity_boost
+                adjustments['severity_boost'] = severity_boost
+                adjustments['severity_multiplier_applied'] = multiplier
+                
+            elif crisis_level == 'medium':
+                multiplier = severity_multipliers.get('medium_severity', 2.0)
+                severity_boost = (multiplier - 1.0) * min(0.2, original_score)  # Cap boost at 0.4
+                adjusted_score += severity_boost
+                adjustments['severity_boost'] = severity_boost
+                adjustments['severity_multiplier_applied'] = multiplier
+                
+            # 3. Apply bounds (ensure 0.0 <= adjusted_score <= 1.0)
+            final_score = max(0.0, min(1.0, adjusted_score))
+            
+            # Calculate total adjustment factor for metadata
+            if original_score > 0:
+                total_factor = final_score / original_score
+            else:
+                total_factor = 1.0
+            
+            self.logger.debug(f"Learning adjustments applied: {original_score:.3f} → {final_score:.3f} "
+                             f"(historical: {historical_adjustment:+.3f}, severity: {severity_boost:+.3f})")
             
             return {
-                'adjusted_score': adjusted_score,
+                'adjusted_score': final_score,
                 'adjustments': adjustments,
                 'metadata': {
                     'original_score': original_score,
-                    'adjustment_factor': adjustment_factor,
+                    'adjustment_factor': total_factor,
                     'learning_enabled': True,
                     'user_id': user_id,
-                    'channel_id': channel_id
+                    'channel_id': channel_id,
+                    'crisis_level': crisis_level,
+                    'total_boost_applied': final_score - original_score
                 }
             }
             
@@ -1042,7 +1070,7 @@ class LearningSystemManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_learning_system_manager(unified_config: UnifiedConfigManager = None, 

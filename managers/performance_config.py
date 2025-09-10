@@ -379,7 +379,7 @@ class PerformanceConfigManager:
 
 
 # ============================================================================
-# FACTORY FUNCTION - Clean v3.1 Architecture Compliance
+# FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
 def create_performance_config_manager(config_manager) -> PerformanceConfigManager:

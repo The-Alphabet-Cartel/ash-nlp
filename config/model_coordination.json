@@ -72,7 +72,7 @@
         },
         "weight": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.001, 1.000],
           "description": "Model weight in ensemble (should sum to 1.0 across all models)"
         },
         "type": {
@@ -103,7 +103,7 @@
         },
         "weight": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.001, 1.000],
           "description": "Model weight in ensemble (should sum to 1.0 across all models)"
         },
         "type": {
@@ -134,7 +134,7 @@
         },
         "weight": {
           "type": "float",
-          "range": [0.0, 1.0],
+          "range": [0.001, 1.000],
           "description": "Model weight in ensemble (should sum to 1.0 across all models)"
         },
         "type": {
@@ -189,7 +189,7 @@
       },
       "confidence_threshold": {
         "type": "float",
-        "range": [0.0, 1.0],
+        "range": [0.001, 1.000],
         "description": "Minimum confidence for ensemble decisions"
       },
       "cache_dir": {
