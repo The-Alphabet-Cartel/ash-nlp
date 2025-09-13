@@ -214,7 +214,7 @@ class PerformanceOptimizedMethods:
         self._cached_pattern_weights = {}
         self._cached_confidence_boosts = {}
         self._cached_model_weights = {}
-        self._cached_ensemble_mode = 'majority'
+        self._cached_ensemble_mode = 'weighted'
         
         logger.debug("Configured for runtime configuration access - no degradation in functionality")
     
