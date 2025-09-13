@@ -183,10 +183,10 @@ class CrisisThresholdManager:
             
             # Adjust thresholds to be more sensitive for crisis detection
             # Scale down the thresholds by 30% for better detection
-            adjusted_critical = critical_threshold * 0.6   # 0.7 * 0.6 = 0.42
-            adjusted_high = high_threshold * 0.7   # 0.5 * 0.7 = 0.35
-            adjusted_medium = medium_threshold * 0.8  # 0.3 * 0.8 = 0.24
-            adjusted_low = low_threshold * 0.9     # 0.15 * 0.9 = 0.135
+            adjusted_critical = critical_threshold #* 0.6   # 0.7 * 0.6 = 0.42
+            adjusted_high = high_threshold #* 0.7   # 0.5 * 0.7 = 0.35
+            adjusted_medium = medium_threshold #* 0.8  # 0.3 * 0.8 = 0.24
+            adjusted_low = low_threshold #* 0.9     # 0.15 * 0.9 = 0.135
             
             logger.debug(f"🎯 Adjusted thresholds for {mode}: critical={adjusted_critical:.3f}, high={adjusted_high:.3f}, medium={adjusted_medium:.3f}, low={adjusted_low:.3f}")
             
