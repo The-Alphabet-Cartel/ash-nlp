@@ -534,13 +534,13 @@ class ClassificationHelper:
             if severity_percentile <= 0.20:  # High-severity tier
                 min_scaled_score = 0.400
                 max_scaled_score = 0.800
-                amplification = 2.0
+                amplification = 1.8
                 tier = "high_severity"
                 
             elif severity_percentile <= 0.80:  # Medium-severity tier
                 min_scaled_score = 0.200
                 max_scaled_score = 0.600
-                amplification = 1.5
+                amplification = 1.4
                 tier = "medium_severity"
                 
             else:  # Low-severity tier
