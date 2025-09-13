@@ -563,9 +563,7 @@ class CrisisThresholdManager:
                 'on_disagreement': True
             }
     
-    def is_staff_review_required(self, crisis_level: str, confidence: float, 
-                                     has_model_disagreement: bool = False, 
-                                     has_gap_detection: bool = False) -> bool:
+    def is_staff_review_required(self, crisis_level: str, confidence: float, has_model_disagreement: bool = False, has_gap_detection: bool = False) -> bool:
         """
         Determine if staff review is required based on crisis level, confidence, and conditions
         FIXED: Added type safety for threshold values to prevent string/float arithmetic errors
