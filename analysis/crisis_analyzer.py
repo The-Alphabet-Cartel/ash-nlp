@@ -361,7 +361,6 @@ class CrisisAnalyzer:
     # ========================================================================
     # PHASE 3E STEP 4.2: CONSOLIDATED ANALYSIS METHODS (Maintained)
     # ========================================================================
-    
     def get_analysis_crisis_thresholds(self, mode: str = 'consensus') -> Dict[str, float]:
         """
         Get crisis thresholds for analysis (consolidated from AnalysisConfigManager)
@@ -590,7 +589,6 @@ class CrisisAnalyzer:
     # ========================================================================
     # CONSOLIDATED THRESHOLD METHODS (Maintained)
     # ========================================================================
-    
     def apply_crisis_thresholds(self, confidence: float, mode: str = 'consensus') -> str:
         """
         Apply thresholds to determine crisis level (consolidated from CrisisThresholdManager)
