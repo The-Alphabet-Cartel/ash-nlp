@@ -531,7 +531,7 @@ class ClassificationHelper:
             # Apply normalization scaling based on severity tier
             severity_percentile = severity_index / (total_labels - 1) if total_labels > 1 else 0.0
             
-            if severity_percentile <= 0.20:  # High-severity tier
+            if severity_percentile <= 0.25:  # High-severity tier
                 min_scaled_score = 0.400
                 max_scaled_score = 0.800
                 amplification = 1.8
