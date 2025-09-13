@@ -165,7 +165,7 @@ class CrisisThresholdManager:
             ensemble_thresholds = self.get_ensemble_thresholds_for_mode(mode)
             
             # Determine crisis level based on score and thresholds
-            critical_threshold = ensemble_thresholds.get('high', 0.7)
+            critical_threshold = ensemble_thresholds.get('critical', 0.7)
             high_threshold = ensemble_thresholds.get('high', 0.5)
             medium_threshold = ensemble_thresholds.get('medium', 0.3)
             low_threshold = ensemble_thresholds.get('low', 0.15)
