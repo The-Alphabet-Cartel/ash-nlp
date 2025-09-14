@@ -45,6 +45,9 @@ class CrisisPatternHelper:
     - Safe type conversion utilities
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, config_manager: UnifiedConfigManager):
         """
         Initialize helper with configuration manager
@@ -54,11 +57,11 @@ class CrisisPatternHelper:
         """
         self.config_manager = config_manager
         logger.debug("CrisisPatternHelper initialized")
+    # ============================================================================
 
     # ========================================================================
     # SAFE TYPE CONVERSION UTILITIES
     # ========================================================================
-
     def safe_get_int(self, data: dict, key: str, default: int) -> int:
         """Safely get integer value, handling environment variable placeholders"""
         try:
@@ -96,11 +99,11 @@ class CrisisPatternHelper:
         except (ValueError, TypeError):
             logger.warning(f"Could not convert '{key}' to bool, using default {default}")
             return default
+    # ============================================================================
 
     # ========================================================================
     # PATTERN EXTRACTION METHODS
     # ========================================================================
-
     def extract_community_patterns(self, message: str, patterns_cache: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Extract community-specific patterns from message - Updated for v3.1 consolidated format"""
         found_patterns = []
@@ -304,12 +307,11 @@ class CrisisPatternHelper:
         except Exception as e:
             logger.error(f"Error analyzing temporal indicators: {e}")
             return {'found_indicators': [], 'urgency_score': 0.0}
-
+    # ============================================================================
 
 # ============================================================================
 # FACTORY FUNCTION
 # ============================================================================
-
 def create_pattern_detection_helper(config_manager: UnifiedConfigManager) -> CrisisPatternHelper:
     """
     Factory function to create CrisisPatternHelper instance
@@ -321,7 +323,12 @@ def create_pattern_detection_helper(config_manager: UnifiedConfigManager) -> Cri
         CrisisPatternHelper instance
     """
     return CrisisPatternHelper(config_manager)
+# ============================================================================
 
+# ============================================================================
+# FACTORY FUNCTIONS
+# ============================================================================
 __all__ = ['CrisisPatternHelper', 'create_pattern_detection_helper']
 
-logger.debug("✅ CrisisPatternHelper v3.1-3e-5.3 loaded - Helper methods for PatternDetectionManager")
+logger.debug("✅ CrisisPatternHelper loaded - Helper methods for PatternDetectionManager")
+# ============================================================================
