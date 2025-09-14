@@ -27,6 +27,9 @@ from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
+# ============================================================================
+# DATA CLASSES
+# ============================================================================
 @dataclass
 class VariableSchema:
     """Schema definition for environment variable validation"""
@@ -38,6 +41,9 @@ class VariableSchema:
     required: bool = False
     description: str = ""
 
+# ============================================================================
+# MANAGER CLASS
+# ============================================================================
 class UnifiedConfigSchemaHelper:
     """
     Helper class for managing UnifiedConfigManager schema initialization and validation
@@ -46,6 +52,9 @@ class UnifiedConfigSchemaHelper:
     to reduce file size while maintaining all functionality.
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, config_dir: Path, config_files: Dict[str, str]):
         """
         Initialize schema helper
@@ -84,7 +93,11 @@ class UnifiedConfigSchemaHelper:
         
         logger.info(f"Initialized {len(schemas)} schemas ({core_count} core + {json_count} JSON-driven)")
         return schemas
+    # ============================================================================
     
+    # ============================================================================
+    # SCHEMA SETUP
+    # ============================================================================
     def get_essential_core_schemas(self) -> Dict[str, VariableSchema]:
         """
         Essential core schemas needed for system startup (Python-defined)
@@ -143,7 +156,11 @@ class UnifiedConfigSchemaHelper:
     def count_core_schemas(self) -> int:
         """Helper method to count core schemas for logging"""
         return len(self.get_essential_core_schemas())
+    # ============================================================================
     
+    # ============================================================================
+    # LOAD JSON
+    # ============================================================================
     def load_json_validation_schemas(self) -> Dict[str, VariableSchema]:
         """
         Load validation schemas dynamically from JSON configuration files
@@ -303,8 +320,11 @@ class UnifiedConfigSchemaHelper:
             required=required,  # Always False for JSON-based schemas
             description=description
         )
+    # ============================================================================
 
-
+# ============================================================================
+# FACTORY FUNCTION
+# ============================================================================
 def create_schema_helper(config_dir: Path, config_files: Dict[str, str]) -> UnifiedConfigSchemaHelper:
     """
     Factory function to create UnifiedConfigSchemaHelper instance
@@ -317,6 +337,13 @@ def create_schema_helper(config_dir: Path, config_files: Dict[str, str]) -> Unif
         UnifiedConfigSchemaHelper instance
     """
     return UnifiedConfigSchemaHelper(config_dir, config_files)
+# ============================================================================
 
-# Export the VariableSchema dataclass and helper class
-__all__ = ['VariableSchema', 'UnifiedConfigSchemaHelper', 'create_schema_helper']
+# ============================================================================
+# PUBLIC FUNCTIONS
+# ============================================================================
+__all__ = [
+    'VariableSchema',
+    'UnifiedConfigSchemaHelper',
+    'create_schema_helper'
+]
