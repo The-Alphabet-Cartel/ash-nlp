@@ -52,6 +52,9 @@ class ModelPipelineHelper:
     - Container startup optimization
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, config_manager, model_coordination_manager):
         """
         Initialize Model Pipeline Helper
@@ -99,7 +102,131 @@ class ModelPipelineHelper:
         except Exception as e:
             logger.warning(f"Device config detection failed: {e}, using CPU")
             return 'cpu'
+    # ============================================================================
     
+    # ============================================================================
+    # SETUP
+    # ============================================================================
+    async def get_or_load_pipeline(self, model_name: str):
+        """
+        Load or get cached zero-shot classification pipeline
+        
+        Args:
+            model_name: Hugging Face model name
+            
+        Returns:
+            Zero-shot classification pipeline or None if loading fails
+        """
+        if not TRANSFORMERS_AVAILABLE:
+            return None
+            
+        async with self._model_loading_lock:
+            # Check cache first
+            if model_name in self._model_cache:
+                logger.debug(f"📦 Using cached model: {model_name}")
+                return self._model_cache[model_name]
+            
+            try:
+                logger.info(f"🔥 Loading zero-shot model: {model_name}")
+                
+                # Get cache directory
+                cache_dir = self.get_model_cache_dir()
+                
+                # Create pipeline with proper configuration
+                classifier = pipeline(
+                    "zero-shot-classification",
+                    model=model_name,
+                    device=0 if self.device == 'cuda' else -1,
+                    cache_dir=cache_dir,
+                    return_all_scores=True
+                )
+                
+                # Cache the pipeline
+                self._model_cache[model_name] = classifier
+                
+                logger.info(f"✅ Model loaded successfully: {model_name}")
+                return classifier
+                
+            except Exception as e:
+                logger.error(f"❌ Failed to load model {model_name}: {e}")
+                return None
+
+    def get_cached_pipeline_sync(self, model_name: str):
+        """
+        Get cached pipeline synchronously (no async lock)
+        Returns cached pipeline or None if not available
+        """
+        if not TRANSFORMERS_AVAILABLE:
+            return None
+            
+        # Check cache first (no async lock for performance)
+        if model_name in self._model_cache:
+            logger.debug(f"Using cached model synchronously: {model_name}")
+            return self._model_cache[model_name]
+        
+        # If not cached, return None to fall back to pattern matching
+        # This avoids loading models during performance-critical analysis
+        logger.debug(f"Model {model_name} not cached, using pattern fallback")
+        return None
+
+    def get_model_cache_dir(self) -> str:
+        """Get model cache directory from configuration"""
+        try:
+            # First check individual model cache directories
+            models = self.model_manager.get_model_definitions()
+            if models:
+                # Use cache_dir from any model (they should all be the same)
+                for model_type, model_config in models.items():
+                    cache_dir = model_config.get('cache_dir')
+                    if cache_dir and cache_dir.strip():
+                        os.makedirs(cache_dir, exist_ok=True)
+                        logger.debug(f"Using model cache directory: {cache_dir}")
+                        return cache_dir
+            
+            # Check ensemble_config cache_dir
+            try:
+                cache_dir = self.config_manager.get_config_section('model_coordination', 'ensemble_config.cache_dir')
+                if cache_dir and cache_dir.strip():
+                    os.makedirs(cache_dir, exist_ok=True)
+                    logger.debug(f"Using ensemble config cache directory: {cache_dir}")
+                    return cache_dir
+            except Exception as e:
+                logger.debug(f"Ensemble config cache dir access failed: {e}")
+            
+            # Check hardware_settings cache_dir
+            cache_dir = self.config_manager.get_config_section('model_coordination', 'hardware_settings.cache_dir')
+            if cache_dir and cache_dir.strip():
+                os.makedirs(cache_dir, exist_ok=True)
+                logger.debug(f"Using hardware settings cache directory: {cache_dir}")
+                return cache_dir
+            
+            # Final fallback
+            fallback_dir = './models/cache/'
+            os.makedirs(fallback_dir, exist_ok=True)
+            logger.warning(f"Using fallback cache directory: {fallback_dir}")
+            return fallback_dir
+            
+        except Exception as e:
+            logger.warning(f"Cache dir config failed: {e}")
+            fallback_dir = './models/cache/'
+            try:
+                os.makedirs(fallback_dir, exist_ok=True)
+            except Exception as e2:
+                logger.error(f"Could not create fallback cache directory {fallback_dir}: {e2}")
+            return fallback_dir
+
+    def get_cached_models(self) -> Dict[str, Any]:
+        """Get information about cached models"""
+        return {
+            'cached_count': len(self._model_cache),
+            'cached_models': list(self._model_cache.keys()),
+            'cache_available': bool(self._model_cache)
+        }
+    # ============================================================================
+
+    # ============================================================================
+    # PRELOAD THOSE BIG ASS MODELS!
+    # ============================================================================
     async def preload_models(self):
         """
         Preload all configured models during container startup
@@ -145,6 +272,27 @@ class ModelPipelineHelper:
         except Exception as e:
             logger.error(f"Model preloading failed: {e}")
 
+    def get_preload_status(self) -> Dict[str, Any]:
+        """Get status of model preloading for health checks"""
+        try:
+            models = self.model_manager.get_model_definitions()
+            total_models = len(models)
+            loaded_models = len(self._model_cache)
+            
+            return {
+                'total_models_configured': total_models,
+                'models_loaded': loaded_models,
+                'preload_complete': loaded_models == total_models,
+                'cached_model_names': list(self._model_cache.keys()),
+                'transformers_available': TRANSFORMERS_AVAILABLE
+            }
+        except Exception as e:
+            return {'error': str(e), 'preload_complete': False}
+    # ============================================================================
+
+    # ============================================================================
+    # WARMUP THE PIPELINE
+    # ============================================================================
     async def _warmup_analysis_pipeline(self):
         """
         Warmup the complete analysis pipeline to eliminate cold start penalty
@@ -306,142 +454,10 @@ class ModelPipelineHelper:
                 'pipeline_warmed': False,
                 'ready_for_production': False
             }
-
-    def get_preload_status(self) -> Dict[str, Any]:
-        """Get status of model preloading for health checks"""
-        try:
-            models = self.model_manager.get_model_definitions()
-            total_models = len(models)
-            loaded_models = len(self._model_cache)
-            
-            return {
-                'total_models_configured': total_models,
-                'models_loaded': loaded_models,
-                'preload_complete': loaded_models == total_models,
-                'cached_model_names': list(self._model_cache.keys()),
-                'transformers_available': TRANSFORMERS_AVAILABLE
-            }
-        except Exception as e:
-            return {'error': str(e), 'preload_complete': False}
-
-    async def get_or_load_pipeline(self, model_name: str):
-        """
-        Load or get cached zero-shot classification pipeline
-        
-        Args:
-            model_name: Hugging Face model name
-            
-        Returns:
-            Zero-shot classification pipeline or None if loading fails
-        """
-        if not TRANSFORMERS_AVAILABLE:
-            return None
-            
-        async with self._model_loading_lock:
-            # Check cache first
-            if model_name in self._model_cache:
-                logger.debug(f"📦 Using cached model: {model_name}")
-                return self._model_cache[model_name]
-            
-            try:
-                logger.info(f"🔥 Loading zero-shot model: {model_name}")
-                
-                # Get cache directory
-                cache_dir = self.get_model_cache_dir()
-                
-                # Create pipeline with proper configuration
-                classifier = pipeline(
-                    "zero-shot-classification",
-                    model=model_name,
-                    device=0 if self.device == 'cuda' else -1,
-                    cache_dir=cache_dir,
-                    return_all_scores=True
-                )
-                
-                # Cache the pipeline
-                self._model_cache[model_name] = classifier
-                
-                logger.info(f"✅ Model loaded successfully: {model_name}")
-                return classifier
-                
-            except Exception as e:
-                logger.error(f"❌ Failed to load model {model_name}: {e}")
-                return None
-
-    def get_cached_pipeline_sync(self, model_name: str):
-        """
-        Get cached pipeline synchronously (no async lock)
-        Returns cached pipeline or None if not available
-        """
-        if not TRANSFORMERS_AVAILABLE:
-            return None
-            
-        # Check cache first (no async lock for performance)
-        if model_name in self._model_cache:
-            logger.debug(f"Using cached model synchronously: {model_name}")
-            return self._model_cache[model_name]
-        
-        # If not cached, return None to fall back to pattern matching
-        # This avoids loading models during performance-critical analysis
-        logger.debug(f"Model {model_name} not cached, using pattern fallback")
-        return None
-
-    def get_model_cache_dir(self) -> str:
-        """Get model cache directory from configuration"""
-        try:
-            # First check individual model cache directories
-            models = self.model_manager.get_model_definitions()
-            if models:
-                # Use cache_dir from any model (they should all be the same)
-                for model_type, model_config in models.items():
-                    cache_dir = model_config.get('cache_dir')
-                    if cache_dir and cache_dir.strip():
-                        os.makedirs(cache_dir, exist_ok=True)
-                        logger.debug(f"Using model cache directory: {cache_dir}")
-                        return cache_dir
-            
-            # Check ensemble_config cache_dir
-            try:
-                cache_dir = self.config_manager.get_config_section('model_coordination', 'ensemble_config.cache_dir')
-                if cache_dir and cache_dir.strip():
-                    os.makedirs(cache_dir, exist_ok=True)
-                    logger.debug(f"Using ensemble config cache directory: {cache_dir}")
-                    return cache_dir
-            except Exception as e:
-                logger.debug(f"Ensemble config cache dir access failed: {e}")
-            
-            # Check hardware_settings cache_dir
-            cache_dir = self.config_manager.get_config_section('model_coordination', 'hardware_settings.cache_dir')
-            if cache_dir and cache_dir.strip():
-                os.makedirs(cache_dir, exist_ok=True)
-                logger.debug(f"Using hardware settings cache directory: {cache_dir}")
-                return cache_dir
-            
-            # Final fallback
-            fallback_dir = './models/cache/'
-            os.makedirs(fallback_dir, exist_ok=True)
-            logger.warning(f"Using fallback cache directory: {fallback_dir}")
-            return fallback_dir
-            
-        except Exception as e:
-            logger.warning(f"Cache dir config failed: {e}")
-            fallback_dir = './models/cache/'
-            try:
-                os.makedirs(fallback_dir, exist_ok=True)
-            except Exception as e2:
-                logger.error(f"Could not create fallback cache directory {fallback_dir}: {e2}")
-            return fallback_dir
-
-    def get_cached_models(self) -> Dict[str, Any]:
-        """Get information about cached models"""
-        return {
-            'cached_count': len(self._model_cache),
-            'cached_models': list(self._model_cache.keys()),
-            'cache_available': bool(self._model_cache)
-        }
+    # ============================================================================
 
 # ============================================================================
-# FACTORY FUNCTION - Clean Architecture Compliance
+# FACTORY FUNCTION
 # ============================================================================
 def create_model_pipeline_helper(config_manager, model_coordination_manager) -> ModelPipelineHelper:
     """
@@ -457,9 +473,13 @@ def create_model_pipeline_helper(config_manager, model_coordination_manager) -> 
     return ModelPipelineHelper(config_manager, model_coordination_manager)
 # ============================================================================
 
+# ============================================================================
+# PUBLIC FUNCTIONS
+# ============================================================================
 __all__ = [
     'ModelPipelineHelper',
     'create_model_pipeline_helper'
 ]
 
-logger.info("ModelPipelineHelper v3.1-3e-7-1 loaded - Model pipeline management functionality")
+logger.info("ModelPipelineHelper loaded - Model pipeline management functionality")
+# ============================================================================
