@@ -51,6 +51,9 @@ class ClassificationHelper:
     - Pattern-based fallback classification
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, config_manager, model_coordination_manager, pipeline_helper):
         """
         Initialize Classification Helper
@@ -72,7 +75,11 @@ class ClassificationHelper:
         self.pipeline_helper = pipeline_helper
         
         logger.info("ClassificationHelper initialized for AI classification")
+    # ============================================================================
 
+    # ============================================================================
+    # CALSSIFICATIONS
+    # ============================================================================
     async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
         PRIMARY AI classification method for EnsembleAnalysisHelper
@@ -604,7 +611,11 @@ class ClassificationHelper:
                 'fallback_used': True
             }
             return base_score, error_details
+    # ============================================================================
 
+    # ============================================================================
+    # HELPERS
+    # ============================================================================
     def _get_zero_shot_max_labels_setting(self) -> int:
         """
         Get the NLP_ZERO_SHOT_MAX_LABELS setting from configuration
@@ -788,6 +799,7 @@ class ClassificationHelper:
             "medium crisis level", 
             "low crisis level"
         ])
+    # ============================================================================
 
 # ============================================================================
 # FACTORY FUNCTION - Clean Architecture Compliance
@@ -807,9 +819,13 @@ def create_classification_helper(config_manager, model_coordination_manager, pip
     return ClassificationHelper(config_manager, model_coordination_manager, pipeline_helper)
 # ============================================================================
 
+# ============================================================================
+# PUBLIC FUNCTIONS
+# ============================================================================
 __all__ = [
     'ClassificationHelper',
     'create_classification_helper'
 ]
 
-logger.info("ClassificationHelper v3.1-3e-7-1 loaded - AI classification and result processing functionality")
+logger.info("ClassificationHelper loaded - AI classification and result processing functionality")
+# ============================================================================
