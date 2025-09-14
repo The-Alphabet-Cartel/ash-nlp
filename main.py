@@ -127,6 +127,7 @@ def setup_unified_logging(unified_config_manager):
         logging.basicConfig(level=logging.INFO)
         logging.error(f"❌ Failed to setup unified logging: {e}")
         logging.info("🔄 Using fallback basic logging configuration")
+# ============================================================================
 
 # ============================================================================
 # UNIFIED MANAGER INITIALIZATION
@@ -318,6 +319,7 @@ def initialize_unified_managers():
         logger.info("=" * 70)
         logger.info("✅ Performance optimizer initialized...")
         logger.info("=" * 70)
+        # ============================================================================
 
         # ========================================================================
         # PRELOAD THOSE BIG-ASS MODELS!
@@ -370,6 +372,7 @@ def initialize_unified_managers():
     except Exception as e:
         logger.error(f"❌ Manager initialization failed: {e}")
         raise
+# ============================================================================
 
 # ============================================================================
 # FASTAPI APPLICATION FACTORY
@@ -468,6 +471,7 @@ def create_fastapi_app():
     except Exception as e:
         logger.error(f"❌ FastAPI application creation failed: {e}")
         raise
+# ============================================================================
 
 # ============================================================================
 # MAIN APPLICATION ENTRY POINT
@@ -536,3 +540,4 @@ if __name__ == "__main__":
     except Exception as e:
         logger.error(f"❌ Application startup failed: {e}")
         raise
+# ============================================================================
