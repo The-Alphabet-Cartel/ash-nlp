@@ -37,6 +37,9 @@ class EnsembleVotingHelper:
     - Crisis analyzer reference management
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, config_manager, model_coordination_manager, classification_helper):
         """
         Initialize Ensemble Voting Helper
@@ -59,6 +62,9 @@ class EnsembleVotingHelper:
         
         logger.info("EnsembleVotingHelper initialized for ensemble voting and weight management")
 
+    # ============================================================================
+    # CLASSIFICATIONS
+    # ============================================================================
     async def classify_with_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
         """
         Ensemble classification using multiple models
@@ -150,7 +156,11 @@ class EnsembleVotingHelper:
                 'error': str(e),
                 'method': 'ensemble_classification_error'
             }
+    # ============================================================================
 
+    # ============================================================================
+    # VOTING
+    # ============================================================================
     def _perform_ensemble_voting(self, model_results: Dict[str, Dict], override_weights: Dict[str, float] = None) -> Dict[str, float]:
         """
         Perform ensemble voting on multiple model results
@@ -248,7 +258,11 @@ class EnsembleVotingHelper:
         
         avg_score = sum(scores) / len(scores)
         return {'score': avg_score, 'confidence': consensus_confidence}
+    # ============================================================================
 
+    # ============================================================================
+    # HELPERS
+    # ============================================================================
     def _get_dynamic_weights_if_available(self) -> Optional[Dict[str, float]]:
         """
         Get dynamic weights from performance optimizer cache if available
@@ -334,6 +348,7 @@ class EnsembleVotingHelper:
             logger.debug("🔗 Crisis analyzer reference set for dynamic weight access")
         except Exception as e:
             logger.warning(f"Failed to set crisis analyzer reference: {e}")
+    # ============================================================================
 
 # ============================================================================
 # FACTORY FUNCTION - Clean Architecture Compliance
@@ -353,9 +368,13 @@ def create_ensemble_voting_helper(config_manager, model_coordination_manager, cl
     return EnsembleVotingHelper(config_manager, model_coordination_manager, classification_helper)
 # ============================================================================
 
+# ============================================================================
+# PUBLIC FUNCTIONS
+# ============================================================================
 __all__ = [
     'EnsembleVotingHelper',
     'create_ensemble_voting_helper'
 ]
 
-logger.info("EnsembleVotingHelper v3.1-3e-7-1 loaded - Ensemble voting and weight management functionality")
+logger.info("EnsembleVotingHelper loaded - Ensemble voting and weight management functionality")
+# ============================================================================
