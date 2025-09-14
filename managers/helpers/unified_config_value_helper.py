@@ -34,6 +34,9 @@ class UnifiedConfigValueHelper:
     to reduce file size while maintaining all functionality.
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, variable_schemas: Dict[str, Any]):
         """
         Initialize value helper
@@ -43,7 +46,11 @@ class UnifiedConfigValueHelper:
         """
         self.variable_schemas = variable_schemas
         self.env_override_pattern = re.compile(r'\$\{([^}]+)\}')
+    # ============================================================================
     
+    # ============================================================================
+    # CONVERSIONS
+    # ============================================================================
     def convert_value_type(self, env_var: str, value: str) -> str:
         """
         Convert string value to appropriate type for substitution
@@ -107,7 +114,11 @@ class UnifiedConfigValueHelper:
         else:
             # Return non-string values as-is
             return value
+    # ============================================================================
     
+    # ============================================================================
+    # GET VALUES
+    # ============================================================================
     def find_default_value(self, env_var: str, defaults_context: Dict[str, Any]) -> Any:
         """
         Find default value for environment variable in JSON defaults context
@@ -255,7 +266,11 @@ class UnifiedConfigValueHelper:
         else:
             # Return primitive values as-is
             return value
+    # ============================================================================
     
+    # ============================================================================
+    # FALLBACKS
+    # ============================================================================
     def apply_defaults_fallback(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
         Legacy defaults fallback - now mostly redundant
@@ -311,8 +326,11 @@ class UnifiedConfigValueHelper:
                 result[key] = value
         
         return result
+    # ============================================================================
 
-
+# ============================================================================
+# FACTORY FUNCTIONS
+# ============================================================================
 def create_value_helper(variable_schemas: Dict[str, Any]) -> UnifiedConfigValueHelper:
     """
     Factory function to create UnifiedConfigValueHelper instance
@@ -324,6 +342,13 @@ def create_value_helper(variable_schemas: Dict[str, Any]) -> UnifiedConfigValueH
         UnifiedConfigValueHelper instance
     """
     return UnifiedConfigValueHelper(variable_schemas)
+# ============================================================================
 
-# Export the helper class
-__all__ = ['UnifiedConfigValueHelper', 'create_value_helper']
+# ============================================================================
+# PUBLIC FUNCTIONS
+# ============================================================================
+__all__ = [
+    'UnifiedConfigValueHelper',
+    'create_value_helper'
+]
+# ============================================================================
