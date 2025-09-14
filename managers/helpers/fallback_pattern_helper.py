@@ -37,6 +37,9 @@ class FallbackPatternHelper:
     - Fallback label generation
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, config_manager, model_coordination_manager):
         """
         Initialize Fallback Pattern Helper
@@ -114,31 +117,11 @@ class FallbackPatternHelper:
         except Exception as e:
             logger.warning(f"Error loading model-specific patterns: {e}")
             return {}
+    # ============================================================================
 
-    def _get_default_model_patterns(self, model_type: str) -> List[str]:
-        """Get default patterns for a specific model type"""
-        default_patterns = {
-            'depression': [
-                'suicide', 'suicidal', 'hopeless', 'worthless', 'depression',
-                'kill myself', 'end my life', 'want to die', 'can\'t go on',
-                'nothing matters', 'empty inside', 'numb', 'broken'
-            ],
-            'sentiment': [
-                'hate', 'angry', 'furious', 'terrible', 'awful', 'worst',
-                'disgusting', 'horrible', 'devastating', 'tragic', 'miserable',
-                'depressed', 'sad', 'heartbroken', 'disappointed'
-            ],
-            'emotional_distress': [
-                'crisis', 'breakdown', 'panic', 'overwhelmed', 'distress',
-                'emergency', 'can\'t cope', 'falling apart', 'losing it',
-                'stressed out', 'anxiety', 'anxious', 'scared', 'terrified'
-            ]
-        }
-        
-        return default_patterns.get(model_type, [
-            'crisis', 'help', 'emergency', 'urgent', 'desperate'
-        ])
-
+    # ============================================================================
+    # FALLBACK
+    # ============================================================================
     async def pattern_fallback_classification(self, text: str, labels: List[str], model_type: str) -> Dict[str, Any]:
         """
         Pattern-based fallback when transformers unavailable
@@ -190,6 +173,85 @@ class FallbackPatternHelper:
                 'model_type': model_type,
                 'method': 'pattern_fallback_error'
             }
+
+    def get_fallback_labels(self, model_type: str) -> List[str]:
+        """Get fallback labels for a model type"""
+        fallback_labels = {
+            'depression': [
+                "person expressing suicidal thoughts or plans",
+                "person showing severe depression symptoms",
+                "person experiencing moderate depression",
+                "person feeling emotionally stable"
+            ],
+            'sentiment': [
+                "extreme negative sentiment with crisis indicators",
+                "moderate negative sentiment", 
+                "neutral emotional expression",
+                "positive emotional expression"
+            ],
+            'emotional_distress': [
+                "person in acute psychological crisis",
+                "person experiencing severe emotional distress",
+                "person showing moderate distress signs",
+                "person demonstrating emotional resilience"
+            ]
+        }
+        
+        return fallback_labels.get(model_type, [
+            "high crisis level detected",
+            "moderate crisis level detected",
+            "low crisis level detected",
+            "no crisis indicators detected"
+        ])
+
+    def get_pattern_info(self) -> Dict[str, Any]:
+        """Get information about loaded patterns for diagnostics"""
+        try:
+            return {
+                'general_crisis_keywords': len(self._crisis_keywords),
+                'model_specific_patterns': {
+                    model_type: len(patterns) 
+                    for model_type, patterns in self._model_specific_patterns.items()
+                },
+                'total_patterns_loaded': len(self._crisis_keywords) + sum(
+                    len(patterns) for patterns in self._model_specific_patterns.values()
+                ),
+                'available_model_types': list(self._model_specific_patterns.keys()),
+                'pattern_source': 'configuration' if self._model_specific_patterns else 'defaults'
+            }
+        except Exception as e:
+            return {
+                'error': str(e),
+                'pattern_source': 'unknown'
+            }
+    # ============================================================================
+
+    # ============================================================================
+    # HELPERS
+    # ============================================================================
+    def _get_default_model_patterns(self, model_type: str) -> List[str]:
+        """Get default patterns for a specific model type"""
+        default_patterns = {
+            'depression': [
+                'suicide', 'suicidal', 'hopeless', 'worthless', 'depression',
+                'kill myself', 'end my life', 'want to die', 'can\'t go on',
+                'nothing matters', 'empty inside', 'numb', 'broken'
+            ],
+            'sentiment': [
+                'hate', 'angry', 'furious', 'terrible', 'awful', 'worst',
+                'disgusting', 'horrible', 'devastating', 'tragic', 'miserable',
+                'depressed', 'sad', 'heartbroken', 'disappointed'
+            ],
+            'emotional_distress': [
+                'crisis', 'breakdown', 'panic', 'overwhelmed', 'distress',
+                'emergency', 'can\'t cope', 'falling apart', 'losing it',
+                'stressed out', 'anxiety', 'anxious', 'scared', 'terrified'
+            ]
+        }
+        
+        return default_patterns.get(model_type, [
+            'crisis', 'help', 'emergency', 'urgent', 'desperate'
+        ])
 
     def _calculate_pattern_score(self, text: str, keywords: List[str]) -> float:
         """
@@ -284,57 +346,7 @@ class FallbackPatternHelper:
         except Exception as e:
             logger.error(f"Keyword matching failed: {e}")
             return []
-
-    def get_fallback_labels(self, model_type: str) -> List[str]:
-        """Get fallback labels for a model type"""
-        fallback_labels = {
-            'depression': [
-                "person expressing suicidal thoughts or plans",
-                "person showing severe depression symptoms",
-                "person experiencing moderate depression",
-                "person feeling emotionally stable"
-            ],
-            'sentiment': [
-                "extreme negative sentiment with crisis indicators",
-                "moderate negative sentiment", 
-                "neutral emotional expression",
-                "positive emotional expression"
-            ],
-            'emotional_distress': [
-                "person in acute psychological crisis",
-                "person experiencing severe emotional distress",
-                "person showing moderate distress signs",
-                "person demonstrating emotional resilience"
-            ]
-        }
-        
-        return fallback_labels.get(model_type, [
-            "high crisis level detected",
-            "moderate crisis level detected",
-            "low crisis level detected",
-            "no crisis indicators detected"
-        ])
-
-    def get_pattern_info(self) -> Dict[str, Any]:
-        """Get information about loaded patterns for diagnostics"""
-        try:
-            return {
-                'general_crisis_keywords': len(self._crisis_keywords),
-                'model_specific_patterns': {
-                    model_type: len(patterns) 
-                    for model_type, patterns in self._model_specific_patterns.items()
-                },
-                'total_patterns_loaded': len(self._crisis_keywords) + sum(
-                    len(patterns) for patterns in self._model_specific_patterns.values()
-                ),
-                'available_model_types': list(self._model_specific_patterns.keys()),
-                'pattern_source': 'configuration' if self._model_specific_patterns else 'defaults'
-            }
-        except Exception as e:
-            return {
-                'error': str(e),
-                'pattern_source': 'unknown'
-            }
+    # ============================================================================
 
 # ============================================================================
 # FACTORY FUNCTION - Clean Architecture Compliance
@@ -353,9 +365,13 @@ def create_fallback_pattern_helper(config_manager, model_coordination_manager) -
     return FallbackPatternHelper(config_manager, model_coordination_manager)
 # ============================================================================
 
+# ============================================================================
+# PUBLIC FUNCTIONS
+# ============================================================================
 __all__ = [
     'FallbackPatternHelper',
     'create_fallback_pattern_helper'
 ]
 
-logger.info("FallbackPatternHelper v3.1-3e-7-1 loaded - Pattern-based fallback classification functionality")
+logger.info("FallbackPatternHelper loaded - Pattern-based fallback classification functionality")
+# ============================================================================
