@@ -33,7 +33,7 @@ COPY --chown=nlp:nlp . .
 
 # Set proper permissions on working directories
 RUN chmod -R 755 /app && \
-    chmod -R 775 ./logs ./data ./learning_data ./cache ./tmp ./backups ./models
+    chmod -R 775 ./backups ./cache ./data ./logs
 
 # Switch to non-root user
 USER nlp

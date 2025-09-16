@@ -201,14 +201,14 @@ class ModelPipelineHelper:
                 return cache_dir
             
             # Final fallback
-            fallback_dir = './models/cache/'
+            fallback_dir = './cache/models/'
             os.makedirs(fallback_dir, exist_ok=True)
             logger.warning(f"Using fallback cache directory: {fallback_dir}")
             return fallback_dir
             
         except Exception as e:
             logger.warning(f"Cache dir config failed: {e}")
-            fallback_dir = './models/cache/'
+            fallback_dir = './cache/models/'
             try:
                 os.makedirs(fallback_dir, exist_ok=True)
             except Exception as e2:

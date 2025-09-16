@@ -113,7 +113,7 @@ class LearningSystemManager:
             'min_confidence_adjustment': 0.05,
             'max_confidence_adjustment': 0.30,
             'max_adjustments_per_day': 50,
-            'persistence_file': './learning_data/adjustments.json',
+            'persistence_file': './data/learning/adjustments.json',
             'feedback_weight': 0.1,
             'min_samples': 5,
             'adjustment_limit': 0.05,
@@ -183,7 +183,7 @@ class LearningSystemManager:
                     param_name='max_adjustments_per_day'
                 ),
                 'persistence_file': learning_config.get('persistence_file', 
-                                                       defaults.get('persistence_file', './learning_data/adjustments.json')),
+                                                       defaults.get('persistence_file', './data/learning/adjustments.json')),
                 'feedback_weight': self.shared_utils.safe_float_convert(
                     learning_config.get('feedback_weight', defaults.get('feedback_weight', 0.1)),
                     default=0.1,

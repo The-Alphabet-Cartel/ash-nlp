@@ -81,9 +81,9 @@ class StorageConfigManager:
         return {
             "directories": {
                 "data_directory": "./data",
-                "models_directory": "./models/cache", 
+                "models_directory": "./cache/models", 
                 "logs_directory": "./logs",
-                "learning_directory": "./learning_data",
+                "learning_directory": "./data/learning",
                 "cache_directory": "./cache",
                 "backup_directory": "./backups"
             },
@@ -140,7 +140,7 @@ class StorageConfigManager:
     
     def get_models_directory(self) -> str:
         """Get models directory path"""
-        return self.get_directories().get('models_directory', './models/cache')
+        return self.get_directories().get('models_directory', './cache/models')
     
     def get_logs_directory(self) -> str:
         """Get logs directory path"""
@@ -156,7 +156,7 @@ class StorageConfigManager:
     
     def get_learning_directory(self) -> str:
         """Get learning data directory path"""
-        return self.get_directories().get('learning_directory', './learning_data')
+        return self.get_directories().get('learning_directory', './data/learning')
     
     # ========================================================================
     # CONSOLIDATED SETTINGS ACCESS

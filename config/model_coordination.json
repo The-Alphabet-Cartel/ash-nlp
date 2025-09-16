@@ -42,7 +42,7 @@
         "weight": 0.4,
         "type": "zero-shot-classification",
         "pipeline_task": "zero-shot-classification",
-        "cache_dir": "./models/cache",
+        "cache_dir": "./cache/models",
         "enabled": true
       },
       "sentiment": {
@@ -50,7 +50,7 @@
         "weight": 0.3,
         "type": "zero-shot-classification",
         "pipeline_task": "zero-shot-classification",
-        "cache_dir": "./models/cache",
+        "cache_dir": "./cache/models",
         "enabled": true
       },
       "emotional_distress": {
@@ -58,7 +58,7 @@
         "weight": 0.3,
         "type": "zero-shot-classification",
         "pipeline_task": "zero-shot-classification",
-        "cache_dir": "./models/cache",
+        "cache_dir": "./cache/models",
         "enabled": true
       }
     },
@@ -170,7 +170,7 @@
       "require_all_models": true,
       "fallback_mode": "consensus",
       "confidence_threshold": 0.7,
-      "cache_dir": "./models/cache"
+      "cache_dir": "./cache/models"
     },
     "validation": {
       "mode": {
@@ -212,7 +212,7 @@
       "load_in_8bit": false,
       "load_in_4bit": false,
       "model_precision": "float16",
-      "cache_dir": "./models/cache"
+      "cache_dir": "./cache/models"
     },
     "validation": {
       "device": {

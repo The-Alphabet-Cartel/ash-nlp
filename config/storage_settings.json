@@ -23,9 +23,9 @@
       "backup_directory": "${NLP_STORAGE_BACKUP_DIR}",
       "defaults": {
         "data_directory": "./data",
-        "models_directory": "./models/cache",
+        "models_directory": "./cache/models",
         "logs_directory": "./logs",
-        "learning_directory": "./learning_data",
+        "learning_directory": "./data/learning",
         "cache_directory": "./cache",
         "backup_directory": "./backups"
       },

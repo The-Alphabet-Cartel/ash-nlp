@@ -750,14 +750,14 @@ class UnifiedConfigManager:
             return {
                 'device': self.get_config_section('model_coordination', 'hardware_settings.device', 'auto'),
                 'precision': self.get_config_section('model_coordination', 'hardware_settings.model_precision', 'float16'),
-                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './models/cache')
+                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './cache/models')
             }
         except Exception as e:
             logger.error(f"Error getting hardware configuration: {e}")
             return {
                 'device': 'auto',
                 'precision': 'float16',
-                'cache_directory': './models/cache'
+                'cache_directory': './cache/models'
             }
 
     def get_model_configuration(self) -> Dict[str, Any]:
@@ -771,7 +771,7 @@ class UnifiedConfigManager:
                 'emotional_distress_model': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.emotional_distress.name', 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'),
                 'emotional_distress_weight': self.get_config_section('model_coordination', 'ensemble_models.model_definitions.emotional_distress.weight', 0.3),
                 'ensemble_mode': self.get_config_section('model_coordination', 'ensemble_config.mode', 'majority'),
-                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './models/cache'),
+                'cache_directory': self.get_config_section('model_coordination', 'hardware_settings.cache_dir', './cache/models'),
                 'huggingface_token': self.get_env('GLOBAL_HUGGINGFACE_TOKEN', None)
             }
         except Exception as e:
@@ -784,7 +784,7 @@ class UnifiedConfigManager:
                 'emotional_distress_model': 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli',
                 'emotional_distress_weight': 0.3,
                 'ensemble_mode': 'consensus',
-                'cache_directory': './models/cache',
+                'cache_directory': './cache/models',
                 'huggingface_token': None
             }
     
@@ -812,7 +812,7 @@ class UnifiedConfigManager:
                 'cache_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.cache_directory', './cache'),
                 'log_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.logs_directory', './logs'),
                 'backup_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.backup_directory', './backups'),
-                'models_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.models_directory', './models/cache'),
+                'models_directory': self.get_config_section('storage_settings', 'storage_configuration.directories.models_directory', './cache/models'),
                 'log_file': self.get_config_section('logging_settings', 'global_settings.log_file', 'nlp_service.log')
             }
         except Exception as e:
@@ -822,7 +822,7 @@ class UnifiedConfigManager:
                 'cache_directory': './cache',
                 'log_directory': './logs',
                 'backup_directory': './backups',
-                'models_directory': './models/cache',
+                'models_directory': './cache/models',
                 'log_file': 'nlp_service.log'
             }
     

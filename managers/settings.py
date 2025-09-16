@@ -262,7 +262,7 @@ class SettingsManager:
                 'cache_directory': './cache',
                 'logs_directory': './logs',
                 'backup_directory': './backups',
-                'models_directory': './models/cache'
+                'models_directory': './cache/models'
             },
             'cache_settings': {
                 'enable_model_cache': True,
@@ -297,8 +297,8 @@ class SettingsManager:
             'cache_directory': self.unified_config.get_env('NLP_STORAGE_CACHE_DIRECTORY', './cache'),
             'logs_directory': self.unified_config.get_env('NLP_STORAGE_LOG_DIRECTORY', './logs'),
             'backup_directory': self.unified_config.get_env('NLP_STORAGE_BACKUP_DIRECTORY', './backups'),
-            'models_directory': self.unified_config.get_env('NLP_STORAGE_MODELS_DIR', './models/cache'),
-            'learning_directory': self.unified_config.get_env('NLP_STORAGE_LEARNING_DIRECTORY', './learning_data')
+            'models_directory': self.unified_config.get_env('NLP_STORAGE_MODELS_DIR', './cache/models'),
+            'learning_directory': self.unified_config.get_env('NLP_STORAGE_LEARNING_DIRECTORY', './data/learning')
         }
 
     def get_cache_settings(self) -> Dict[str, Any]:

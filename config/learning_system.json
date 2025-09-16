@@ -46,7 +46,7 @@
       "min_confidence_adjustment": 0.05,
       "max_confidence_adjustment": 0.30,
       "max_adjustments_per_day": 50,
-      "persistence_file": "./learning_data/adjustments.json",
+      "persistence_file": "./data/learning/adjustments.json",
       "feedback_weight": 0.1,
       "min_samples": 5,
       "adjustment_limit": 0.05,

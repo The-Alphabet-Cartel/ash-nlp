@@ -64,11 +64,10 @@ def create_storage_config_manager(unified_config: UnifiedConfigManager) -> Stora
 ```json
 {
     "base_paths": {
-        "data_directory": "data/",
-        "cache_directory": "cache/",
         "backup_directory": "backups/",
-        "logs_directory": "logs/",
-        "models_directory": "models/"
+        "cache_directory": "cache/",
+        "data_directory": "data/",
+        "logs_directory": "logs/"
     },
     "data_storage": {
         "analysis_results": {
@@ -77,17 +76,17 @@ def create_storage_config_manager(unified_config: UnifiedConfigManager) -> Stora
             "compression": true,
             "retention_days": 90
         },
-        "learning_data": {
-            "path": "data/learning/",
-            "format": "json",
-            "compression": true,
-            "retention_days": 365
-        },
         "community_patterns": {
             "path": "data/patterns/",
             "format": "json",
             "compression": false,
             "retention_days": -1
+        },
+        "learning_data": {
+            "path": "data/learning/",
+            "format": "json",
+            "compression": true,
+            "retention_days": 365
         }
     },
     "cache_storage": {
@@ -118,11 +117,11 @@ def create_storage_config_manager(unified_config: UnifiedConfigManager) -> Stora
 ```
 
 ### Environment Variable Overrides
-- `ASH_DATA_DIRECTORY` - Override base data directory path
-- `ASH_CACHE_DIRECTORY` - Override cache directory path
-- `ASH_BACKUP_ENABLED` - Override backup system enablement
-- `ASH_BACKUP_INTERVAL_HOURS` - Override backup frequency
-- `ASH_CACHE_MAX_SIZE_MB` - Override cache size limits
+- `NLP_DATA_DIRECTORY` - Override base data directory path
+- `NLP_CACHE_DIRECTORY` - Override cache directory path
+- `NLP_BACKUP_ENABLED` - Override backup system enablement
+- `NLP_BACKUP_INTERVAL_HOURS` - Override backup frequency
+- `NLP_CACHE_MAX_SIZE_MB` - Override cache size limits
 
 ---
 
@@ -138,14 +137,15 @@ ash-nlp/
 ├── cache/                   # Performance caching
 │   ├── analysis/            # Analysis result cache
 │   ├── models/              # AI model cache
+│   |   └── offload/         # Hardware offload cache
 │   └── patterns/            # Pattern matching cache
 ├── backups/                 # Automated backups
 │   ├── daily/               # Daily backup snapshots
-│   └── weekly/              # Weekly backup archives
+│   ├── weekly/              # Weekly backup archives
+│   ├── monthly/             # Monthly backup archives
+│   └── yearly/              # Yearly backup archives
 ├── logs/                    # System and analysis logs
 └── models/                  # AI model storage
-    ├── zero_shot/           # Zero-shot classification models
-    └── embeddings/          # Text embedding models
 ```
 
 ### File System Integration
