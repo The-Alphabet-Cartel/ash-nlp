@@ -265,7 +265,8 @@ except Exception as e:
       "*setting_name": {
         "type": "integer | boolean | list | float | string",
         "range": [min, max],
-        "allowed_values": ["*value1*", "*value2*", "*value3*", ...]
+        "allowed_values": ["*value1*", "*value2*", "*value3*", ...],
+        "required": true | false
       }
     }
   },
