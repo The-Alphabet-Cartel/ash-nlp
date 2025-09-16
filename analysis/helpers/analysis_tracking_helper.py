@@ -310,7 +310,7 @@ class AnalysisTrackingHelper:
                 # Calculate enhancement boost
                 ai_confidence = ai_result.get("confidence_score", 0.0)
                 patterns_found = pattern_result.get("patterns_found", [])
-                confidence_boost = len(patterns_found) * 0.05  # 5% boost per pattern found
+                confidence_boost = len(patterns_found) * self.crisis_analyzer.unified_config_manager.get_config_section('analysis_config', 'confidence_boost.pattern_confidence_boost', 0.10) # 10% boost or configured boost per pattern found
                 
                 return {
                     "patterns_found": patterns_found,
