@@ -112,23 +112,23 @@
     },
     "validation": {
       "high_confidence_boost": {
-        "range": [-1.000, 1.000],
+        "range": [0.001, 1.000],
         "type": "float"
       },
       "medium_confidence_boost": {
-        "range": [-1.000, 1.000],
+        "range": [0.001, 1.000],
         "type": "float"
       },
       "low_confidence_boost": {
-        "range": [-1.000, 1.000],
+        "range": [0.001, 1.000],
         "type": "float"
       },
       "pattern_confidence_boost": {
-        "range": [-1.000, 1.000],
+        "range": [0.001, 1.000],
         "type": "float"
       },
       "model_confidence_boost": {
-        "range": [-1.000, 1.000],
+        "range": [0.001, 1.000],
         "type": "float"
       }
     }
