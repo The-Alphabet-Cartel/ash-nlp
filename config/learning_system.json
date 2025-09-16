@@ -10,19 +10,10 @@
     "consolidation_source": "learning_parameters.json + learning_settings.json",
     "status": "future_ready",
     "managers": ["AnalysisConfigManager", "LearningSystem"],
-    "environment_overrides": {
-      "description": "All learning settings support environment variable overrides",
-      "pattern": "${NLP_LEARNING_*CATEGORY*_*SETTING*}",
-      "examples": [
-        "GLOBAL_LEARNING_SYSTEM_ENABLED",
-        "NLP_ANALYSIS_LEARNING_RATE",
-        "NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT"
-      ]
-    }
   },
 
   "learning_configuration": {
-    "description": "Phase 3d Step 4 - Learning system parameters for adaptive threshold adjustment",
+    "description": "Learning system parameters for adaptive threshold adjustment",
     "enabled": "${GLOBAL_LEARNING_SYSTEM_ENABLED}",
     "learning_rate": "${NLP_ANALYSIS_LEARNING_RATE}",
     "min_confidence_adjustment": "${NLP_ANALYSIS_LEARNING_MIN_CONFIDENCE_ADJUSTMENT}",
