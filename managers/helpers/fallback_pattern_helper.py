@@ -168,34 +168,154 @@ class FallbackPatternHelper:
         return cleaned_keywords
 
     def _load_model_specific_patterns(self) -> Dict[str, List[str]]:
-        """Load model-specific pattern keywords"""
+        """Load model-specific pattern keywords from configuration files"""
         try:
-            # Try to get model-specific patterns from configuration
             model_patterns = {}
             
+            # Get available model definitions
             models = self.model_manager.get_model_definitions()
+            
+            # Define pattern configuration files to search
+            pattern_config_files = [
+                'patterns_burden',
+                'patterns_community', 
+                'patterns_context',
+                'patterns_idiom',
+                'patterns_temporal',
+                'patterns_crisis'
+            ]
+            
+            # For each model type, create specific pattern sets
             for model_type in models.keys():
                 try:
-                    # Check if there are specific patterns for this model type
-                    pattern_key = f'{model_type}_patterns'
-                    pattern_config = self.config_manager.get_config_section('pattern_detection', pattern_key)
+                    model_specific_keywords = []
                     
-                    if pattern_config and isinstance(pattern_config, list):
-                        model_patterns[model_type] = pattern_config
-                        logger.debug(f"Loaded {len(pattern_config)} patterns for {model_type}")
-                        continue
+                    # Load patterns from each configuration file and filter by model type
+                    for config_name in pattern_config_files:
+                        try:
+                            pattern_config = self.config_manager.get_config_section(config_name)
+                            
+                            if pattern_config and 'patterns' in pattern_config:
+                                keywords_from_config = self._extract_model_specific_keywords(
+                                    pattern_config['patterns'], 
+                                    model_type, 
+                                    config_name
+                                )
+                                model_specific_keywords.extend(keywords_from_config)
+                                
+                        except Exception as e:
+                            logger.debug(f"Could not load {config_name} for {model_type}: {e}")
+                            continue
+                    
+                    # Remove duplicates and add to model patterns
+                    if model_specific_keywords:
+                        unique_keywords = list(dict.fromkeys(model_specific_keywords))
+                        model_patterns[model_type] = unique_keywords
+                        logger.debug(f"Loaded {len(unique_keywords)} specific patterns for {model_type}")
+                    else:
+                        # Use default patterns based on model type
+                        model_patterns[model_type] = self._get_default_model_patterns(model_type)
+                        logger.debug(f"Using default patterns for {model_type}")
                         
                 except Exception as e:
                     logger.debug(f"No specific patterns found for {model_type}: {e}")
-                
-                # Use default patterns based on model type
-                model_patterns[model_type] = self._get_default_model_patterns(model_type)
+                    # Use default patterns based on model type
+                    model_patterns[model_type] = self._get_default_model_patterns(model_type)
             
+            logger.info(f"Loaded model-specific patterns for {len(model_patterns)} model types")
             return model_patterns
             
         except Exception as e:
             logger.warning(f"Error loading model-specific patterns: {e}")
             return {}
+
+    def _extract_model_specific_keywords(self, patterns_section: Dict[str, Any], model_type: str, config_name: str) -> List[str]:
+        """
+        Extract keywords relevant to a specific model type from pattern configuration
+        
+        Args:
+            patterns_section: The 'patterns' section from a configuration file
+            model_type: The model type to extract patterns for (e.g., 'depression', 'sentiment', 'emotional_distress')
+            config_name: Name of the configuration file for logging
+            
+        Returns:
+            List of keywords relevant to the model type
+        """
+        keywords = []
+        
+        try:
+            # Define model type mappings to pattern categories
+            model_pattern_mappings = {
+                'depression': {
+                    'relevant_categories': [
+                        'existential_burden', 'overwhelming_responsibility', 'emotional_burden',
+                        'depression', 'suicidal', 'hopelessness', 'crisis', 'immediate'
+                    ],
+                    'boost_keywords': ['suicide', 'suicidal', 'hopeless', 'worthless', 'depression', 'kill myself']
+                },
+                'sentiment': {
+                    'relevant_categories': [
+                        'negative_sentiment', 'emotional_burden', 'discrimination', 'hate',
+                        'angry', 'furious', 'terrible', 'awful'
+                    ],
+                    'boost_keywords': ['hate', 'angry', 'furious', 'terrible', 'awful', 'worst', 'disgusting']
+                },
+                'emotional_distress': {
+                    'relevant_categories': [
+                        'crisis', 'emotional_burden', 'caregiver_burden', 'immediate', 'recent',
+                        'panic', 'overwhelmed', 'distress', 'emergency'
+                    ],
+                    'boost_keywords': ['crisis', 'breakdown', 'panic', 'overwhelmed', 'distress', 'emergency']
+                }
+            }
+            
+            # Get relevant mappings for this model type
+            model_mapping = model_pattern_mappings.get(model_type, {
+                'relevant_categories': [],
+                'boost_keywords': ['crisis', 'help', 'emergency', 'urgent', 'desperate']
+            })
+            
+            if isinstance(patterns_section, dict):
+                for pattern_category, pattern_data in patterns_section.items():
+                    # Check if this category is relevant for the model type
+                    is_relevant = (
+                        any(keyword in pattern_category.lower() for keyword in model_mapping['relevant_categories']) or
+                        pattern_category.lower() in model_mapping['relevant_categories']
+                    )
+                    
+                    if is_relevant and isinstance(pattern_data, dict):
+                        # Extract keywords from relevant pattern categories
+                        for key in ['expressions', 'indicators', 'keywords', 'patterns']:
+                            if key in pattern_data and isinstance(pattern_data[key], list):
+                                keywords.extend(pattern_data[key])
+                        
+                        # Handle nested pattern structures
+                        if 'patterns' in pattern_data and isinstance(pattern_data['patterns'], list):
+                            for pattern_item in pattern_data['patterns']:
+                                if isinstance(pattern_item, dict) and 'pattern' in pattern_item:
+                                    # Extract from regex patterns
+                                    pattern_text = pattern_item['pattern']
+                                    if isinstance(pattern_text, str):
+                                        cleaned_pattern = pattern_text.replace('(', '').replace(')', '').replace('|', ' ')
+                                        keywords.extend(cleaned_pattern.split())
+                                elif isinstance(pattern_item, str):
+                                    keywords.append(pattern_item)
+            
+            # Always include boost keywords for this model type
+            keywords.extend(model_mapping['boost_keywords'])
+            
+            # Clean and filter keywords
+            cleaned_keywords = []
+            for keyword in keywords:
+                if isinstance(keyword, str) and len(keyword.strip()) > 2:
+                    cleaned_keywords.append(keyword.strip().lower())
+            
+            logger.debug(f"Extracted {len(cleaned_keywords)} keywords for {model_type} from {config_name}")
+            return cleaned_keywords
+            
+        except Exception as e:
+            logger.debug(f"Error extracting {model_type} keywords from {config_name}: {e}")
+            return []
     # ============================================================================
 
     # ============================================================================
