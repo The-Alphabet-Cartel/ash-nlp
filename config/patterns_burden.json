@@ -38,7 +38,6 @@
 
   "patterns": {
     "description": "Crisis burden patterns using smart defaults and existing infrastructure",
-
     "overwhelming_responsibility": {
       "description": "Expressions of crushing responsibility and obligation",
       "weight_multiplier": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
