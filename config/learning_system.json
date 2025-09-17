@@ -9,7 +9,7 @@
     "compliance": "Clean Architecture v3.1 Standards",
     "consolidation_source": "learning_parameters.json + learning_settings.json",
     "status": "future_ready",
-    "managers": ["AnalysisConfigManager", "LearningSystem"],
+    "managers": ["AnalysisConfigManager", "LearningSystem"]
   },
 
   "learning_configuration": {
