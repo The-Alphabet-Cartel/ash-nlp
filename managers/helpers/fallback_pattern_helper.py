@@ -63,22 +63,51 @@ class FallbackPatternHelper:
         logger.info("FallbackPatternHelper initialized for pattern-based classification")
 
     def _load_crisis_keywords(self) -> List[str]:
-        """Load general crisis detection keywords from configuration"""
+        """Load general crisis detection keywords from all pattern configuration files"""
         try:
-            # Try to get crisis keywords from pattern detection configuration
-            pattern_config = self.config_manager.get_config_section('pattern_detection')
-            if pattern_config and 'crisis_keywords' in pattern_config:
-                keywords = pattern_config['crisis_keywords']
-                if isinstance(keywords, list):
-                    logger.debug(f"Loaded {len(keywords)} crisis keywords from configuration")
-                    return keywords
+            all_keywords = []
             
-            # Fallback to default crisis keywords
+            # Define the pattern configuration files to load from
+            pattern_config_files = [
+                'patterns_burden',
+                'patterns_community', 
+                'patterns_context',
+                'patterns_crisis',
+                'patterns_idiom',
+                'patterns_temporal',
+            ]
+            
+            # Load patterns from each configuration file
+            for config_name in pattern_config_files:
+                try:
+                    pattern_config = self.config_manager.get_config_section(config_name)
+                    
+                    if pattern_config and 'patterns' in pattern_config:
+                        patterns_section = pattern_config['patterns']
+                        keywords_from_config = self._extract_keywords_from_patterns(patterns_section, config_name)
+                        all_keywords.extend(keywords_from_config)
+                        logger.debug(f"Loaded {len(keywords_from_config)} keywords from {config_name}")
+                        
+                except Exception as e:
+                    logger.debug(f"Could not load patterns from {config_name}: {e}")
+                    continue
+            
+            # Remove duplicates while preserving order
+            unique_keywords = list(dict.fromkeys(all_keywords))
+            
+            if unique_keywords:
+                logger.debug(f"Loaded {len(unique_keywords)} unique crisis keywords from configuration files")
+                return unique_keywords
+            
+            # Fallback to default crisis keywords if no patterns loaded
             default_keywords = [
                 'suicide', 'suicidal', 'kill myself', 'end it all', 'hopeless', 
                 'helpless', 'worthless', 'crisis', 'breakdown', 'panic attack',
                 'overwhelmed', 'can\'t cope', 'giving up', 'want to die',
-                'self harm', 'cutting', 'hurt myself', 'emergency'
+                'self harm', 'cutting', 'hurt myself', 'emergency',
+                'burden', 'drowning in debt', 'can\'t afford', 'financial stress',
+                'too much responsibility', 'everyone depends on me', 'right now',
+                'immediately', 'urgent', 'hate crime', 'discrimination'
             ]
             
             logger.debug(f"Using default crisis keywords: {len(default_keywords)} keywords")
@@ -87,6 +116,56 @@ class FallbackPatternHelper:
         except Exception as e:
             logger.warning(f"Error loading crisis keywords: {e}")
             return ['crisis', 'help', 'emergency', 'suicide', 'hopeless']
+
+    def _extract_keywords_from_patterns(self, patterns_section: Dict[str, Any], config_name: str) -> List[str]:
+        """
+        Extract keywords from a patterns section of a configuration file
+        
+        Args:
+            patterns_section: The 'patterns' section from a configuration file
+            config_name: Name of the configuration file for logging
+            
+        Returns:
+            List of extracted keywords
+        """
+        keywords = []
+        
+        try:
+            if isinstance(patterns_section, dict):
+                for pattern_category, pattern_data in patterns_section.items():
+                    if isinstance(pattern_data, dict):
+                        # Look for expressions, indicators, or keywords arrays
+                        for key in ['expressions', 'indicators', 'keywords', 'patterns']:
+                            if key in pattern_data and isinstance(pattern_data[key], list):
+                                keywords.extend(pattern_data[key])
+                        
+                        # Handle nested pattern structures
+                        if 'patterns' in pattern_data and isinstance(pattern_data['patterns'], list):
+                            for pattern_item in pattern_data['patterns']:
+                                if isinstance(pattern_item, dict) and 'pattern' in pattern_item:
+                                    # Extract from regex patterns (remove regex characters for simple matching)
+                                    pattern_text = pattern_item['pattern']
+                                    if isinstance(pattern_text, str):
+                                        # Simple extraction - remove common regex characters
+                                        cleaned_pattern = pattern_text.replace('(', '').replace(')', '').replace('|', ' ')
+                                        keywords.extend(cleaned_pattern.split())
+                                elif isinstance(pattern_item, str):
+                                    keywords.append(pattern_item)
+                                    
+            elif isinstance(patterns_section, list):
+                # Handle pattern sections that are direct lists
+                keywords.extend(patterns_section)
+                
+        except Exception as e:
+            logger.debug(f"Error extracting keywords from {config_name} patterns section: {e}")
+        
+        # Clean and filter keywords
+        cleaned_keywords = []
+        for keyword in keywords:
+            if isinstance(keyword, str) and len(keyword.strip()) > 2:
+                cleaned_keywords.append(keyword.strip().lower())
+        
+        return cleaned_keywords
 
     def _load_model_specific_patterns(self) -> Dict[str, List[str]]:
         """Load model-specific pattern keywords"""
