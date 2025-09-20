@@ -188,7 +188,7 @@ from analysis.performance_optimizations import *
 
 ### **Key Context to Maintain**:
 - Temporal boost factors must be applied to final crisis scores
-- Performance optimization targets must be maintained (≤500ms)
+- Performance optimization targets must be maintained (≤300ms)
 - Clean Architecture Charter compliance is mandatory
 - This is life-saving crisis detection functionality
 
