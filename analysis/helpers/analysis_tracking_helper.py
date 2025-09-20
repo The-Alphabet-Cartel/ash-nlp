@@ -34,6 +34,9 @@ class AnalysisTrackingHelper:
     cluttering the main CrisisAnalyzer class.
     """
     
+    # ============================================================================
+    # INITIALIZE
+    # ============================================================================
     def __init__(self, crisis_analyzer):
         """
         Initialize tracking helper with CrisisAnalyzer instance
@@ -115,10 +118,12 @@ class AnalysisTrackingHelper:
                 "optimization_applied": False
             }
         }
+    # ============================================================================
 
-    def update_tracking_step(self, tracking: Dict[str, Any], step_name: str, 
-                           status: str, data: Dict[str, Any] = None, 
-                           error: Exception = None) -> None:
+    # ============================================================================
+    # TRACKING
+    # ============================================================================
+    def update_tracking_step(self, tracking: Dict[str, Any], step_name: str, status: str, data: Dict[str, Any] = None, error: Exception = None) -> None:
         """Update tracking information for a specific analysis step"""
         if not self.enable_tracking or step_name not in tracking:
             return
@@ -204,7 +209,11 @@ class AnalysisTrackingHelper:
         final_result["tracking_summary"] = tracking_summary
         
         return final_result
+    # ============================================================================
 
+    # ============================================================================
+    # ANALYSIS
+    # ============================================================================
     async def execute_zero_shot_analysis(self, message: str, user_id: str, channel_id: str) -> Dict[str, Any]:
         """Execute zero-shot AI model analysis (Step 1) with tracking"""
         if self.crisis_analyzer.model_coordination_manager:
@@ -299,7 +308,11 @@ class AnalysisTrackingHelper:
                 "error": str(e),
                 "reason": "Failed to retrieve label information"
             }
+    # ============================================================================
 
+    # ============================================================================
+    # EXECUTE!
+    # ============================================================================
     async def execute_pattern_enhancement(self, message: str, ai_result: Dict[str, Any]) -> Dict[str, Any]:
         """Execute pattern analysis enhancement (Step 2) with tracking"""
         if self.crisis_analyzer.pattern_detection_manager:
@@ -332,8 +345,7 @@ class AnalysisTrackingHelper:
                 "reason": "PatternDetectionManager not available"
             }
 
-    async def execute_learning_adjustments(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], 
-                                          user_id: str, channel_id: str) -> Dict[str, Any]:
+    async def execute_learning_adjustments(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], user_id: str, channel_id: str) -> Dict[str, Any]:
         """Execute learning system adjustments (Step 3) with tracking"""
         try:
             combined_result = {**ai_result, **pattern_result}
@@ -352,7 +364,11 @@ class AnalysisTrackingHelper:
         except Exception as e:
             logger.error(f"Learning adjustments failed: {e}")
             raise
+    # ============================================================================
 
+    # ============================================================================
+    # COMBINE IT ALL!
+    # ============================================================================
     def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], learning_result: Dict[str, Any], mode: Optional[str] = None) -> Dict[str, Any]:
         """
         UPDATED: Combine results from all analysis steps with temporal adjustment integration
@@ -436,7 +452,11 @@ class AnalysisTrackingHelper:
                 "final_with_temporal": final_score
             }
         }
+    # ============================================================================
 
+    # ============================================================================
+    # HELPERS
+    # ============================================================================
     def _extract_temporal_factors_from_pattern_result(self, pattern_result: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
         NEW METHOD: Extract temporal factors from pattern analysis results
@@ -616,6 +636,7 @@ class AnalysisTrackingHelper:
         except Exception as e:
             logger.warning(f"Failed to get temporal boost configuration: {e}")
             return 0.50  # Safe default
+    # ============================================================================
 
 # ============================================================================
 # FACTORY FUNCTION
