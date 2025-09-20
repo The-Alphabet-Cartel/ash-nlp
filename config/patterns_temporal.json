@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v3.1-3d-6-1",
+    "file_version": "v3.1-2-1",
     "last_modified": "2025-08-22",
     "clean_architecture": "v3.1 Compliant",
     "configuration_version": "3d.10.10",
@@ -23,16 +23,27 @@
       "staff_notification_required": true
     },
     "validation": {
-      "enabled": {"type": "boolean", "required": true},
-      "priority_level": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-      "escalation_enabled": {"type": "boolean", "required": true},
-      "staff_notification_required": {"type": "boolean", "required": true}
+      "enabled": {
+        "type": "boolean",
+        "required": true
+      },
+      "priority_level": {
+        "type": "string",
+        "enum": ["low", "medium", "high", "critical"]
+      },
+      "escalation_enabled": {
+        "type": "boolean",
+        "required": true
+      },
+      "staff_notification_required": {
+        "type": "boolean",
+        "required": true
+      }
     }
   },
 
   "patterns": {
     "description": "Temporal indicator patterns organized by urgency and time sensitivity",
-
     "immediate": {
       "description": "Immediate temporal indicators requiring urgent response",
       "crisis_boost": "${NLP_TEMPORAL_IMMEDIATE_CRISIS_BOOST}",
@@ -50,16 +61,35 @@
         "staff_alert": true
       },
       "validation": {
-        "crisis_boost": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-        "boost_factor": {"type": "float", "range": [0.0, 1.0]},
-        "escalation_level": {"type": "string", "enum": ["low", "medium", "high", "immediate", "critical"]},
-        "weight": {"type": "float", "range": [0.0, 2.0]},
-        "auto_escalate": {"type": "boolean", "required": true},
-        "staff_alert": {"type": "boolean", "required": true}
+        "crisis_boost": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "boost_factor": {
+          "type": "float",
+          "range": [0.0, 1.0]
+        },
+        "escalation_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "immediate", "critical"]
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 2.0]
+        },
+        "auto_escalate": {
+          "type": "boolean",
+          "required": true
+        },
+        "staff_alert": {
+          "type": "boolean",
+          "required": true
+        }
       },
       "indicators": [
         "right now", "immediately", "urgent", "asap", "tonight", 
-        "this moment", "can't wait", "need help now", "happening now", "right away"
+        "this moment", "can't wait", "need help now", "happening now",
+        "right away"
       ]
     },
 
@@ -80,16 +110,35 @@
         "staff_alert": false
       },
       "validation": {
-        "crisis_boost": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-        "boost_factor": {"type": "float", "range": [0.0, 1.0]},
-        "escalation_level": {"type": "string", "enum": ["low", "medium", "high", "immediate", "critical"]},
-        "weight": {"type": "float", "range": [0.0, 2.0]},
-        "auto_escalate": {"type": "boolean", "required": true},
-        "staff_alert": {"type": "boolean", "required": true}
+        "crisis_boost": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "boost_factor": {
+          "type": "float",
+          "range": [0.0, 1.0]
+        },
+        "escalation_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "immediate", "critical"]
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 2.0]
+        },
+        "auto_escalate": {
+          "type": "boolean",
+          "required": true
+        },
+        "staff_alert": {
+          "type": "boolean",
+          "required": true
+        }
       },
       "indicators": [
-        "today", "yesterday", "lately", "recently", "this week", 
-        "past few days", "since yesterday", "all day", "this morning", "this afternoon"
+        "today", "yesterday", "lately", "recently", "this week",
+        "past few days", "since yesterday", "all day", "this morning",
+        "this afternoon"
       ]
     },
 
@@ -110,12 +159,30 @@
         "staff_alert": true
       },
       "validation": {
-        "crisis_boost": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-        "boost_factor": {"type": "float", "range": [0.0, 1.0]},
-        "escalation_level": {"type": "string", "enum": ["low", "medium", "high", "immediate", "critical"]},
-        "weight": {"type": "float", "range": [0.0, 2.0]},
-        "auto_escalate": {"type": "boolean", "required": true},
-        "staff_alert": {"type": "boolean", "required": true}
+        "crisis_boost": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "boost_factor": {
+          "type": "float",
+          "range": [0.0, 1.0]
+        },
+        "escalation_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "immediate", "critical"]
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 2.0]
+        },
+        "auto_escalate": {
+          "type": "boolean",
+          "required": true
+        },
+        "staff_alert": {
+          "type": "boolean",
+          "required": true
+        }
       },
       "indicators": [
         "always", "constantly", "every day", "all the time", "never stops", 
@@ -140,16 +207,35 @@
         "staff_alert": true
       },
       "validation": {
-        "crisis_boost": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-        "boost_factor": {"type": "float", "range": [0.0, 1.0]},
-        "escalation_level": {"type": "string", "enum": ["low", "medium", "high", "immediate", "critical"]},
-        "weight": {"type": "float", "range": [0.0, 2.0]},
-        "auto_escalate": {"type": "boolean", "required": true},
-        "staff_alert": {"type": "boolean", "required": true}
+        "crisis_boost": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "boost_factor": {
+          "type": "float",
+          "range": [0.0, 1.0]
+        },
+        "escalation_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "immediate", "critical"]
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 2.0]
+        },
+        "auto_escalate": {
+          "type": "boolean",
+          "required": true
+        },
+        "staff_alert": {
+          "type": "boolean",
+          "required": true
+        }
       },
       "indicators": [
         "no future", "never get better", "no point", "give up", "hopeless", 
-        "no tomorrow", "nothing to live for", "forever", "never ending", "permanent"
+        "no tomorrow", "nothing to live for", "forever", "never ending",
+        "permanent"
       ]
     },
 
@@ -170,16 +256,35 @@
         "staff_alert": true
       },
       "validation": {
-        "crisis_boost": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
-        "boost_factor": {"type": "float", "range": [0.0, 1.0]},
-        "escalation_level": {"type": "string", "enum": ["low", "medium", "high", "immediate", "critical"]},
-        "weight": {"type": "float", "range": [0.0, 2.0]},
-        "auto_escalate": {"type": "boolean", "required": true},
-        "staff_alert": {"type": "boolean", "required": true}
+        "crisis_boost": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "boost_factor": {
+          "type": "float",
+          "range": [0.0, 1.0]
+        },
+        "escalation_level": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "immediate", "critical"]
+        },
+        "weight": {
+          "type": "float",
+          "range": [0.0, 2.0]
+        },
+        "auto_escalate": {
+          "type": "boolean",
+          "required": true
+        },
+        "staff_alert": {
+          "type": "boolean",
+          "required": true
+        }
       },
       "indicators": [
-        "getting worse", "escalating", "more frequent", "increasing", "spiraling", 
-        "deteriorating", "declining", "worsening", "intensifying", "accelerating"
+        "getting worse", "escalating", "more frequent", "increasing",
+        "spiraling", "deteriorating", "declining", "worsening", "intensifying",
+        "accelerating"
       ]
     }
   },
@@ -199,11 +304,26 @@
       "max_temporal_boost": 0.50
     },
     "validation": {
-      "immediate_patterns": {"type": "array", "required": true},
-      "staff_notification_patterns": {"type": "array", "required": true},
-      "auto_escalation_threshold": {"type": "float", "range": [0.0, 1.0]},
-      "multiple_temporal_indicators": {"type": "string", "enum": ["cumulative_boost", "strongest_boost", "average_boost"]},
-      "max_temporal_boost": {"type": "float", "range": [0.0, 1.0]}
+      "immediate_patterns": {
+        "type": "list",
+        "required": true
+      },
+      "staff_notification_patterns": {
+        "type": "list",
+        "required": true
+      },
+      "auto_escalation_threshold": {
+        "type": "float",
+        "range": [0.0, 1.0]
+      },
+      "multiple_temporal_indicators": {
+        "type": "string",
+        "enum": ["cumulative_boost", "strongest_boost", "average_boost"]
+      },
+      "max_temporal_boost": {
+        "type": "float",
+        "range": [0.0, 1.0]
+      }
     }
   },
 
@@ -222,11 +342,26 @@
       "fallback_behavior": "no_boost"
     },
     "validation": {
-      "context_window_words": {"type": "integer", "range": [1, 50]},
-      "require_crisis_context": {"type": "boolean", "required": true},
-      "negation_check": {"type": "boolean", "required": true},
-      "multiple_matches": {"type": "string", "enum": ["apply_strongest_boost", "cumulative", "average"]},
-      "fallback_behavior": {"type": "string", "enum": ["no_boost", "minimal_boost", "safe_default"]}
+      "context_window_words": {
+        "type": "integer",
+        "range": [1, 50]
+      },
+      "require_crisis_context": {
+        "type": "boolean",
+        "required": true
+      },
+      "negation_check": {
+        "type": "boolean",
+        "required": true
+      },
+      "multiple_matches": {
+        "type": "string",
+        "enum": ["apply_strongest_boost", "cumulative", "average"]
+      },
+      "fallback_behavior": {
+        "type": "string",
+        "enum": ["no_boost", "minimal_boost", "safe_default"]
+      }
     }
   },
 
