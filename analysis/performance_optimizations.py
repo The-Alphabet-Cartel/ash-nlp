@@ -18,7 +18,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-PURPOSE: Close 79ms performance gap (579.2ms → 500ms target)
+PURPOSE: <=300ms target
 STRATEGY: Replace performance-critical methods with streamlined versions
 """
 
