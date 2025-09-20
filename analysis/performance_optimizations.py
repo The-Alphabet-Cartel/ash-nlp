@@ -1808,6 +1808,7 @@ class PerformanceOptimizedMethods:
             
             # Try to get from existing extraction method
             try:
+                logger.debug("Standard temporal factor attempt ...")
                 extracted_factors = self._extract_temporal_factors({}, pattern_result, message)
                 if extracted_factors:
                     temporal_factors.extend(extracted_factors)
@@ -1817,6 +1818,7 @@ class PerformanceOptimizedMethods:
             # If no factors found, try direct pattern result examination
             if not temporal_factors:
                 try:
+                    logger.debug("Direct pattern temporal factor attempt ...")
                     # Check pattern result details for temporal information
                     details = pattern_result.get('details', {})
                     temporal_analysis = details.get('temporal_analysis', {})
@@ -1837,6 +1839,7 @@ class PerformanceOptimizedMethods:
             # If still no factors, try direct pattern detection manager call
             if not temporal_factors and hasattr(self.analyzer, 'pattern_detection_manager'):
                 try:
+                    logger.debug("Pattern detection manager attempt ...")
                     temporal_analysis = self.analyzer.pattern_detection_manager.analyze_temporal_indicators(message)
                     
                     if temporal_analysis and 'found_indicators' in temporal_analysis:
