@@ -136,7 +136,7 @@
         }
       },
       "indicators": [
-        "today", "yesterday", "lately", "recently", "this week",
+        "yesterday", "lately", "recently", "this week",
         "past few days", "since yesterday", "all day", "this morning",
         "this afternoon"
       ]
