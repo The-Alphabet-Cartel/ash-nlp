@@ -354,21 +354,53 @@ class AnalysisTrackingHelper:
             raise
 
     def combine_analysis_results(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], learning_result: Dict[str, Any], mode: Optional[str] = None) -> Dict[str, Any]:
-        """Combine results from all analysis steps with enhanced tracking"""
-        # Base score from AI models
+        """
+        UPDATED: Combine results from all analysis steps with temporal adjustment integration
+        
+        CHANGES:
+        1. Maintains existing AI + pattern + learning combination logic
+        2. ADDS temporal adjustment application after learning adjustments
+        3. Ensures temporal indicators boost crisis scores appropriately
+        4. Includes comprehensive temporal analysis tracking
+        """
+        # Base score from AI models (existing logic preserved)
         base_score = ai_result.get("crisis_score", 0.0)
         base_confidence = ai_result.get("confidence_score", 0.0)
         
-        # Apply pattern enhancement
+        # Apply pattern enhancement (existing logic preserved)
         pattern_boost = pattern_result.get("confidence_boost", 0.0)
         enhanced_confidence = min(1.0, base_confidence + pattern_boost)
         
-        # Apply learning adjustments
-        final_score = learning_result.get("adjusted_score", base_score)
+        # Apply learning adjustments (existing logic preserved)
+        learning_adjusted_score = learning_result.get("adjusted_score", base_score)
         
-        # Determine crisis level
+        # NEW: Apply temporal adjustments to the learning-adjusted score
+        try:
+            temporal_factors = self._extract_temporal_factors_from_pattern_result(pattern_result)
+            final_score, temporal_details = self._apply_temporal_adjustments(
+                learning_adjusted_score, temporal_factors
+            )
+            
+            if temporal_details.get('temporal_boost_applied', False):
+                logger.info(f"🕐 Temporal adjustment applied: {learning_adjusted_score:.3f} → {final_score:.3f} "
+                          f"(boost: +{temporal_details.get('total_temporal_boost', 0.0):.3f})")
+            else:
+                final_score = learning_adjusted_score
+                logger.debug("🕐 No temporal factors - no temporal adjustment")
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Temporal adjustment failed: {e}")
+            final_score = learning_adjusted_score  # Resilient fallback
+            temporal_details = {
+                'temporal_boost_applied': False,
+                'error': str(e),
+                'final_score': learning_adjusted_score
+            }
+        
+        # Determine crisis level using final score (existing logic preserved)
         crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score, mode)
         
+        # Build comprehensive result with temporal analysis (enhanced)
         return {
             "crisis_score": final_score,
             "confidence_score": enhanced_confidence,
@@ -378,10 +410,10 @@ class AnalysisTrackingHelper:
             "method": "enhanced_three_step_analysis",
             "detected_categories": pattern_result.get("detected_categories", []),
             "ai_model_details": {
-#                "models_used": ai_result.get("models_used", []),
-#                "individual_results": ai_result.get("individual_results", {}),
                 "base_confidence": base_confidence,
-#                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
+                "models_used": ai_result.get("models_used", 0),
+                "individual_results": ai_result.get("individual_results", {}),
+                "zero_shot_labels_info": ai_result.get("zero_shot_labels_info", {})
             },
             "pattern_analysis": {
                 "patterns_matched": pattern_result.get("patterns_found", []),
@@ -390,15 +422,204 @@ class AnalysisTrackingHelper:
             },
             "learning_adjustments": {
                 "applied": learning_result.get("learning_applied", False),
-                "score_adjustment": final_score - base_score,
+                "score_adjustment": learning_adjusted_score - base_score,
                 "metadata": learning_result.get("metadata", {})
+            },
+            "temporal_analysis": temporal_details if 'temporal_details' in locals() else {
+                'temporal_boost_applied': False,
+                'final_score': final_score
+            },
+            "score_progression": {
+                "base_ai_score": base_score,
+                "after_pattern_boost": base_score + pattern_boost,
+                "after_learning_adjustment": learning_adjusted_score,
+                "final_with_temporal": final_score
             }
         }
+
+    def _extract_temporal_factors_from_pattern_result(self, pattern_result: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """
+        NEW METHOD: Extract temporal factors from pattern analysis results
+        
+        Args:
+            pattern_result: Pattern analysis results from pattern detection
+            
+        Returns:
+            List of temporal factors with boost information
+        """
+        try:
+            temporal_factors = []
+            
+            # Check for temporal analysis in pattern result details
+            if pattern_result:
+                # Look for temporal analysis
+                temporal_analysis = pattern_result.get('temporal_analysis', {})
+                if temporal_analysis and 'found_indicators' in temporal_analysis:
+                    for indicator in temporal_analysis['found_indicators']:
+                        temporal_factors.append({
+                            'indicator_type': indicator.get('indicator_type', 'unknown'),
+                            'boost_factor': indicator.get('boost_factor', 0.0),
+                            'crisis_boost': indicator.get('crisis_boost', 0.0),
+                            'urgency_score': indicator.get('urgency_score', 0.0),
+                            'matched_phrase': indicator.get('matched_phrase', ''),
+                            'temporal_category': indicator.get('temporal_category', 'general')
+                        })
+                
+                # Check pattern matches for temporal patterns
+                patterns_found = pattern_result.get('patterns_found', [])
+                for pattern in patterns_found:
+                    if isinstance(pattern, dict):
+                        pattern_group = pattern.get('pattern_group', '')
+                        if 'temporal' in pattern_group.lower() or pattern.get('temporal_indicator', False):
+                            temporal_factors.append({
+                                'indicator_type': pattern_group,
+                                'boost_factor': pattern.get('boost_factor', 0.0),
+                                'crisis_boost': pattern.get('crisis_level', 'none'),
+                                'urgency_score': pattern.get('urgency_score', 0.0),
+                                'matched_phrase': pattern.get('matched_text', pattern.get('pattern_name', '')),
+                                'temporal_category': 'pattern_match'
+                            })
+            
+            logger.debug(f"🕐 Extracted {len(temporal_factors)} temporal factors from pattern result")
+            return temporal_factors
+            
+        except Exception as e:
+            logger.error(f"Failed to extract temporal factors from pattern result: {e}")
+            return []
+
+    def _apply_temporal_adjustments(self, base_score: float, temporal_factors: List[Dict[str, Any]]) -> Tuple[float, Dict[str, Any]]:
+        """
+        NEW METHOD: Apply temporal boost factors to crisis scores
+        
+        Args:
+            base_score: Base crisis score before temporal adjustments
+            temporal_factors: List of temporal factors extracted from pattern analysis
+            
+        Returns:
+            Tuple of (adjusted_score, temporal_analysis_details)
+        """
+        try:
+            temporal_details = {
+                'temporal_boost_applied': False,
+                'temporal_factors_found': [],
+                'total_temporal_boost': 0.0,
+                'original_score': base_score,
+                'final_score': base_score
+            }
+            
+            if not temporal_factors:
+                logger.debug("No temporal factors found - no temporal adjustment applied")
+                return base_score, temporal_details
+            
+            # Process temporal factors and calculate boost
+            max_boost = 0.0
+            applied_indicators = []
+            
+            for factor in temporal_factors:
+                try:
+                    # Extract boost value
+                    boost_factor = factor.get('boost_factor', 0.0)
+                    crisis_boost = factor.get('crisis_boost', 0.0)
+                    urgency_score = factor.get('urgency_score', 0.0)
+                    indicator_type = factor.get('indicator_type', 'unknown')
+                    matched_phrase = factor.get('matched_phrase', '')
+                    
+                    # Convert string levels to numeric boosts
+                    if isinstance(crisis_boost, str):
+                        crisis_boost = self._convert_crisis_level_to_boost(crisis_boost)
+                    
+                    # Use the highest available boost value
+                    effective_boost = max(boost_factor, crisis_boost, urgency_score)
+                    
+                    if effective_boost > 0:
+                        max_boost = max(max_boost, effective_boost)
+                        applied_indicators.append({
+                            'type': indicator_type,
+                            'phrase': matched_phrase,
+                            'boost': effective_boost
+                        })
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to process temporal factor {factor}: {e}")
+                    continue
+            
+            # Apply temporal boost configuration limits
+            try:
+                # Get max temporal boost from configuration
+                max_temporal_boost = self._get_max_temporal_boost_from_config()
+                capped_boost = min(max_boost, max_temporal_boost)
+            except Exception:
+                capped_boost = min(max_boost, 0.50)  # Safe default cap
+            
+            # Apply temporal adjustment
+            if capped_boost > 0:
+                adjusted_score = min(1.0, base_score + capped_boost)
+                
+                # Update temporal details
+                temporal_details.update({
+                    'temporal_boost_applied': True,
+                    'temporal_factors_found': applied_indicators,
+                    'total_temporal_boost': capped_boost,
+                    'final_score': adjusted_score
+                })
+                
+                for indicator in applied_indicators:
+                    logger.debug(f"   📍 {indicator['type']}: +{indicator['boost']:.3f} '{indicator['phrase']}'")
+                
+                return adjusted_score, temporal_details
+            
+            return base_score, temporal_details
+            
+        except Exception as e:
+            logger.error(f"❌ Temporal adjustment failed: {e}")
+            # Resilient fallback per Clean Architecture Charter Rule #5
+            temporal_details['error'] = str(e)
+            return base_score, temporal_details
+
+    def _convert_crisis_level_to_boost(self, crisis_level: str) -> float:
+        """
+        NEW METHOD: Convert crisis level string to numeric boost factor
+        
+        Args:
+            crisis_level: Crisis level string ('low', 'medium', 'high', 'critical')
+            
+        Returns:
+            Numeric boost factor
+        """
+        level_mapping = {
+            'critical': 0.40,
+            'high': 0.30,
+            'medium': 0.20,
+            'low': 0.10,
+            'none': 0.0
+        }
+        return level_mapping.get(crisis_level.lower(), 0.0)
+
+    def _get_max_temporal_boost_from_config(self) -> float:
+        """
+        NEW METHOD: Get maximum temporal boost limit from configuration
+        
+        Returns:
+            Maximum temporal boost value
+        """
+        try:
+            # Try to get from UnifiedConfigManager
+            if hasattr(self.crisis_analyzer, 'unified_config_manager'):
+                temporal_config = self.crisis_analyzer.unified_config_manager.get_patterns_crisis('patterns_temporal')
+                if temporal_config:
+                    escalation_rules = temporal_config.get('escalation_rules', {})
+                    return float(escalation_rules.get('max_temporal_boost', 0.50))
+            
+            # Fallback to safe default
+            return 0.50
+            
+        except Exception as e:
+            logger.warning(f"Failed to get temporal boost configuration: {e}")
+            return 0.50  # Safe default
 
 # ============================================================================
 # FACTORY FUNCTION
 # ============================================================================
-
 def create_analysis_tracking_helper(crisis_analyzer) -> AnalysisTrackingHelper:
     """
     Factory function for AnalysisTrackingHelper
