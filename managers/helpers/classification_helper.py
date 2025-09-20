@@ -11,14 +11,15 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 AI Classification and Result Processing Helper for Ash-NLP Service
 ---
-FILE VERSION: v3.1-3e-7-1
-LAST MODIFIED: 2025-09-09
-PHASE: 3e Step 7 - Model Coordination Refactoring
+FILE VERSION: v3.1-3e-8-1
+LAST MODIFIED: 2025-09-19
+PHASE: 3e Step 8 - Enhanced Positive/Negative Label Polarity Detection
 CLEAN ARCHITECTURE: v3.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-PURPOSE: Handle AI classification methods and result processing
+PURPOSE: Handle AI classification methods and result processing with explicit positive/negative label polarity
+ENHANCEMENT: Added explicit positive/negative label classification to improve crisis scoring accuracy
 """
 
 import asyncio
@@ -41,15 +42,42 @@ logger = logging.getLogger(__name__)
 
 class ClassificationHelper:
     """
-    AI Classification and Result Processing Helper
+    AI Classification and Result Processing Helper with Enhanced Polarity Detection
     
     Handles:
     - Zero-shot classification methods
     - Synchronous ensemble classification
-    - Classification result processing
-    - Score normalization
+    - Classification result processing with explicit positive/negative label polarity
+    - Score normalization with polarity-aware calculations
     - Pattern-based fallback classification
+    
+    ENHANCEMENT: Added explicit positive/negative label classification to improve crisis scoring
     """
+    
+    # ============================================================================
+    # POSITIVE/NEGATIVE LABEL KEYWORDS - NEW FEATURE
+    # ============================================================================
+
+    # Keywords that indicate POSITIVE mental health states (should result in LOW crisis scores)
+    POSITIVE_KEYWORDS = {
+        'wellbeing', 'healthy', 'stable', 'resilient', 'resilience', 'optimal', 'excellent',
+        'strong', 'good', 'normal', 'positive', 'happy', 'happiness', 'joy', 'joyful',
+        'content', 'contentment', 'satisfaction', 'gratitude', 'hope', 'hopeful',
+        'optimism', 'optimistic', 'euphoria', 'enthusiasm', 'energetic', 'energy',
+        'coping', 'managing', 'functioning', 'balanced', 'calm', 'peaceful',
+        'confident', 'motivated', 'thriving', 'flourishing', 'radiating'
+    }
+    
+    # Keywords that indicate NEGATIVE/CRISIS mental health states (should result in HIGH crisis scores)
+    CRISIS_KEYWORDS = {
+        'suicidal', 'suicide', 'kill', 'death', 'die', 'dying', 'hopeless', 'hopelessness',
+        'despair', 'devastation', 'devastating', 'crisis', 'emergency', 'breakdown',
+        'collapse', 'overwhelm', 'overwhelming', 'acute', 'severe', 'intense',
+        'destructive', 'uncontrollable', 'violent', 'crushing', 'complete',
+        'unable', 'dysfunction', 'impaired', 'distress', 'pain', 'suffering',
+        'panic', 'anxiety', 'depression', 'sadness', 'fear', 'anger', 'rage',
+        'trapped', 'escape', 'helpless', 'worthless', 'self-harm', 'harm'
+    }
     
     # ============================================================================
     # INITIALIZE
@@ -74,18 +102,166 @@ class ClassificationHelper:
         self.model_manager = model_coordination_manager
         self.pipeline_helper = pipeline_helper
         
-        logger.info("ClassificationHelper initialized for AI classification")
+        logger.info("ClassificationHelper initialized for AI classification with polarity detection")
     # ============================================================================
 
     # ============================================================================
-    # CALSSIFICATIONS
+    # ENHANCED LABEL POLARITY DETECTION - NEW METHODS
+    # ============================================================================
+    
+    def _classify_label_polarity(self, label: str) -> str:
+        """
+        Classify a label as positive, negative, or neutral based on keyword analysis
+        
+        Args:
+            label: The label text to classify
+            
+        Returns:
+            'positive', 'negative', or 'neutral'
+        """
+        try:
+            label_lower = label.lower()
+            
+            # Count positive vs negative keywords
+            positive_count = sum(1 for keyword in self.POSITIVE_KEYWORDS if keyword in label_lower)
+            negative_count = sum(1 for keyword in self.CRISIS_KEYWORDS if keyword in label_lower)
+            
+            logger.debug(f"🔍 Label polarity analysis: '{label[:50]}...' - pos:{positive_count}, neg:{negative_count}")
+            
+            # Determine polarity based on keyword dominance
+            if negative_count > positive_count:
+                return 'negative'
+            elif positive_count > negative_count:
+                return 'positive'
+            else:
+                # If equal or no keywords, use heuristic based on label content
+                return self._heuristic_polarity_classification(label_lower)
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Label polarity classification failed: {e}")
+            return 'neutral'
+    
+    def _heuristic_polarity_classification(self, label_lower: str) -> str:
+        """
+        Fallback heuristic classification when keyword counts are equal
+        
+        Args:
+            label_lower: Lowercase label text
+            
+        Returns:
+            'positive', 'negative', or 'neutral'
+        """
+        # Additional heuristics for edge cases
+        positive_phrases = ['optimal', 'excellent', 'strong', 'healthy', 'stable', 'good', 'normal']
+        negative_phrases = ['crisis', 'severe', 'acute', 'unable', 'breakdown', 'emergency', 'distress']
+        
+        for phrase in negative_phrases:
+            if phrase in label_lower:
+                return 'negative'
+                
+        for phrase in positive_phrases:
+            if phrase in label_lower:
+                return 'positive'
+                
+        # Default to neutral if no clear indicators
+        return 'neutral'
+    
+    def _calculate_polarity_aware_crisis_score(self, top_score: float, label_polarity: str, severity_weight: float) -> Tuple[float, Dict[str, Any]]:
+        """
+        Calculate crisis score with explicit polarity awareness
+        
+        Args:
+            top_score: Raw confidence score from transformer
+            label_polarity: 'positive', 'negative', or 'neutral'
+            severity_weight: Traditional severity weight based on label position
+            
+        Returns:
+            Tuple of (crisis_score, polarity_analysis)
+        """
+        try:
+            polarity_analysis = {
+                'label_polarity': label_polarity,
+                'original_confidence': top_score,
+                'severity_weight': severity_weight,
+                'polarity_adjustment_applied': False,
+                'polarity_logic': 'standard'
+            }
+            
+            if label_polarity == 'positive':
+                # HIGH confidence on positive labels should result in LOW crisis scores
+                # Invert the relationship: higher confidence = lower crisis
+                crisis_score = (1.0 - top_score) * 0.2  # Cap positive labels at 0.2 crisis score
+                polarity_analysis.update({
+                    'polarity_adjustment_applied': True,
+                    'polarity_logic': 'inverted_for_positive',
+                    'calculation': f'(1.0 - {top_score:.3f}) * 0.2 = {crisis_score:.3f}'
+                })
+                logger.debug(f"🟢 POSITIVE label: inverted scoring {top_score:.3f} → {crisis_score:.3f}")
+                
+            elif label_polarity == 'negative':
+                # HIGH confidence on negative labels should result in HIGH crisis scores
+                # Use traditional calculation: confidence * severity_weight
+                crisis_score = top_score * severity_weight
+                polarity_analysis.update({
+                    'polarity_logic': 'standard_for_negative',
+                    'calculation': f'{top_score:.3f} * {severity_weight:.3f} = {crisis_score:.3f}'
+                })
+                logger.debug(f"🔴 NEGATIVE label: standard scoring {top_score:.3f} → {crisis_score:.3f}")
+                
+            else:  # neutral
+                # For neutral labels, use traditional calculation but with reduced impact
+                crisis_score = top_score * severity_weight * 0.7  # Reduce impact by 30%
+                polarity_analysis.update({
+                    'polarity_logic': 'reduced_for_neutral',
+                    'calculation': f'{top_score:.3f} * {severity_weight:.3f} * 0.7 = {crisis_score:.3f}'
+                })
+                logger.debug(f"🟡 NEUTRAL label: reduced scoring {top_score:.3f} → {crisis_score:.3f}")
+            
+            return crisis_score, polarity_analysis
+            
+        except Exception as e:
+            logger.error(f"❌ Polarity-aware crisis calculation failed: {e}")
+            # Fallback to traditional calculation
+            fallback_score = top_score * severity_weight
+            return fallback_score, {
+                'label_polarity': 'error',
+                'fallback_applied': True,
+                'error': str(e),
+                'calculation': f'fallback: {top_score:.3f} * {severity_weight:.3f} = {fallback_score:.3f}'
+            }
+
+    def _check_polarity_detection_enabled(self) -> bool:
+        """
+        Check if polarity detection is enabled in configuration
+        
+        Returns:
+            True if polarity detection is enabled, False otherwise
+        """
+        try:
+            # Check configuration setting
+            zero_shot_settings = self.config_manager.get_config_section('label_config', 'zero_shot_settings')
+            if zero_shot_settings:
+                enabled = zero_shot_settings.get('enable_polarity_detection', True)
+                return bool(enabled)
+            
+            # Fallback to environment variable
+            import os
+            env_setting = os.getenv('NLP_ZERO_SHOT_ENABLE_POLARITY_DETECTION', 'true').lower()
+            return env_setting in ['true', '1', 'yes', 'on']
+            
+        except Exception as e:
+            logger.warning(f"⚠️ Could not check polarity detection setting: {e}")
+            return True  # Default to enabled
+
+    # ============================================================================
+    # CALSSIFICATIONS - ENHANCED WITH POLARITY AWARENESS
     # ============================================================================
     async def classify_with_zero_shot(self, text: str, labels: List[str], model_type: str, hypothesis_template: str = "This text expresses {}.") -> Dict[str, Any]:
         """
-        PRIMARY AI classification method for EnsembleAnalysisHelper
+        PRIMARY AI classification method for EnsembleAnalysisHelper with enhanced polarity detection
         
-        This method performs actual zero-shot classification using transformers models.
-        EnsembleAnalysisHelper should call this instead of creating pipelines directly.
+        This method performs actual zero-shot classification using transformers models with
+        explicit positive/negative label polarity detection for improved crisis scoring.
         
         Args:
             text: Text to classify
@@ -94,7 +270,7 @@ class ClassificationHelper:
             hypothesis_template: Template for hypothesis generation
             
         Returns:
-            Classification result with score, confidence, and metadata
+            Classification result with score, confidence, metadata, and polarity analysis
         """
         try:
             if not TRANSFORMERS_AVAILABLE:
@@ -135,8 +311,14 @@ class ClassificationHelper:
                 lambda: classifier(text, labels)
             )
             
-            # Process result and capture transformer details
-            crisis_score, transformer_details = self._process_classification_result(result, labels)
+            # Check if polarity detection is enabled
+            polarity_enabled = self._check_polarity_detection_enabled()
+            
+            # Process result with or without polarity awareness
+            if polarity_enabled:
+                crisis_score, transformer_details = self._process_classification_result_with_polarity(result, labels)
+            else:
+                crisis_score, transformer_details = self._process_classification_result(result, labels)
             
             return {
                 'score': crisis_score,
@@ -150,7 +332,8 @@ class ClassificationHelper:
                 'transformers_used': True,
                 'device': self.pipeline_helper.device,
                 'ensemble_manager': True,
-                'transformer_details': transformer_details
+                'transformer_details': transformer_details,
+                'polarity_enhanced': polarity_enabled  # NEW: Indicates polarity enhancement status
             }
 
         except Exception as e:
@@ -243,7 +426,7 @@ class ClassificationHelper:
 
     def _classify_sync_direct(self, text: str, labels: List[str], model_type: str, hypothesis_template: str) -> Dict[str, Any]:
         """
-        Direct synchronous classification
+        Direct synchronous classification with polarity awareness
         
         Eliminates async overhead by using synchronous model inference.
         Falls back to pattern matching if transformers unavailable.
@@ -255,7 +438,7 @@ class ClassificationHelper:
             hypothesis_template: Template for hypothesis generation
             
         Returns:
-            Synchronous classification result
+            Synchronous classification result with polarity analysis
         """
         try:
             if not TRANSFORMERS_AVAILABLE:
@@ -281,8 +464,14 @@ class ClassificationHelper:
             # Direct synchronous call (no async executor)
             result = classifier(text, labels)
             
-            # Process result and capture transformer details
-            crisis_score, transformer_details = self._process_classification_result(result, labels)
+            # Check if polarity detection is enabled
+            polarity_enabled = self._check_polarity_detection_enabled()
+            
+            # Process result with or without polarity awareness
+            if polarity_enabled:
+                crisis_score, transformer_details = self._process_classification_result_with_polarity(result, labels)
+            else:
+                crisis_score, transformer_details = self._process_classification_result(result, labels)
             
             return {
                 'score': crisis_score,
@@ -294,7 +483,8 @@ class ClassificationHelper:
                 'transformers_used': True,
                 'device': self.pipeline_helper.device,
                 'sync_optimized': True,
-                'transformer_details': transformer_details
+                'transformer_details': transformer_details,
+                'polarity_enhanced': polarity_enabled
             }
 
         except Exception as e:
@@ -357,10 +547,168 @@ class ClassificationHelper:
                 'method': 'sync_pattern_error'
             }
 
+    def _process_classification_result_with_polarity(self, result: Dict, labels: List[str]) -> Tuple[float, Dict[str, Any]]:
+        """
+        Enhanced version of _process_classification_result with explicit polarity detection
+        
+        Args:
+            result: Raw result from zero-shot classifier
+            labels: Original labels used for classification
+            
+        Returns:
+            Tuple of (crisis_score, transformer_details) with polarity analysis
+        """
+        try:
+            if not result or 'scores' not in result:
+                logger.warning(f"⚠️ Invalid classification result format")
+                return 0.0, self._get_empty_transformer_details()
+            
+            scores = result['scores']
+            predicted_labels = result.get('labels', [])
+            
+            if len(scores) != len(labels):
+                logger.warning(f"⚠️ Score/label mismatch in classification result")
+                return 0.0, self._get_empty_transformer_details()
+            
+            # Get MAX_LABELS configuration setting
+            max_labels = self._get_zero_shot_max_labels_setting()
+            
+            # Apply MAX_LABELS filtering to the results for API output
+            filtered_predicted_labels = predicted_labels[:max_labels] if predicted_labels else []
+            filtered_scores = scores[:max_labels] if scores else []
+            
+            # Capture RAW transformer details for API response (with MAX_LABELS filtering)
+            raw_transformer_details = {
+                'raw_transformers_result': {
+                    'predicted_labels': filtered_predicted_labels.copy(),
+                    'confidence_scores': [float(s) for s in filtered_scores],
+                    'original_input_labels': labels.copy() if labels else [],
+                    'top_prediction': {
+                        'label': predicted_labels[0] if predicted_labels else None,
+                        'confidence': float(scores[0]) if scores else 0.0
+                    },
+                    'all_predictions': [
+                        {
+                            'label': label,
+                            'confidence': float(score),
+                            'rank': idx + 1
+                        }
+                        for idx, (label, score) in enumerate(zip(filtered_predicted_labels, filtered_scores))
+                    ],
+                    'model_response_metadata': {
+                        'total_labels_processed': len(labels),
+                        'predictions_returned': len(predicted_labels) if predicted_labels else 0,
+                        'max_labels_configured': max_labels,
+                        'predictions_shown': len(filtered_predicted_labels),
+                        'predictions_filtered': max(0, len(predicted_labels) - max_labels),
+                        'score_distribution': {
+                            'highest': float(max(scores)) if scores else 0.0,
+                            'lowest': float(min(scores)) if scores else 0.0,
+                            'average': float(sum(scores) / len(scores)) if scores else 0.0,
+                            'top_n_average': float(sum(filtered_scores) / len(filtered_scores)) if filtered_scores else 0.0
+                        }
+                    }
+                },
+                'configuration_applied': {
+                    'max_labels_setting': max_labels,
+                    'max_labels_source': self._get_max_labels_config_source(),
+                    'filtering_applied': len(predicted_labels) > max_labels if predicted_labels else False
+                },
+                'normalization_applied': False,
+                'base_score_before_normalization': 0.0,
+                'final_score_after_normalization': 0.0,
+                'polarity_enhanced': True  # NEW: Mark as polarity-enhanced
+            }
+            
+            # Process with full results (not filtered)
+            if not predicted_labels or not scores:
+                logger.warning("⚠️ No predictions returned from transformers")
+                return 0.0, raw_transformer_details
+                
+            top_label = predicted_labels[0]  
+            top_score = scores[0]
+            
+            # NEW: Classify label polarity
+            label_polarity = self._classify_label_polarity(top_label)
+            
+            # Find traditional severity information
+            try:
+                original_index = labels.index(top_label)
+                severity_weight = 1.0 - (original_index / (len(labels) - 1)) if len(labels) > 1 else 1.0
+                
+                # NEW: Calculate crisis score with polarity awareness
+                base_crisis_score, polarity_analysis = self._calculate_polarity_aware_crisis_score(
+                    top_score, label_polarity, severity_weight
+                )
+                
+                # Update transformer details with enhanced analysis
+                raw_transformer_details['severity_analysis'] = {
+                    'top_predicted_label': top_label,
+                    'original_severity_index': original_index,
+                    'total_severity_levels': len(labels),
+                    'severity_weight': severity_weight,
+                    'severity_percentile': original_index / (len(labels) - 1) if len(labels) > 1 else 0.0,
+                    'note': f'Crisis calculation uses polarity-aware scoring with {label_polarity} label'
+                }
+                
+                # NEW: Add polarity analysis to transformer details
+                raw_transformer_details['polarity_analysis'] = polarity_analysis
+                
+                logger.debug(f"📊 Enhanced scoring: {top_label[:50]}... → polarity:{label_polarity} → score:{base_crisis_score:.3f}")
+                
+            except ValueError:
+                logger.warning(f"⚠️ Top predicted label '{top_label}' not found in original labels")
+                # Fallback with polarity awareness
+                label_polarity = self._classify_label_polarity(top_label)
+                base_crisis_score, polarity_analysis = self._calculate_polarity_aware_crisis_score(
+                    top_score, label_polarity, 1.0
+                )
+                
+                raw_transformer_details['severity_analysis'] = {
+                    'top_predicted_label': top_label,
+                    'original_severity_index': None,
+                    'error': 'predicted_label_not_in_original_labels',
+                    'fallback_applied': True,
+                    'polarity_fallback_used': True
+                }
+                raw_transformer_details['polarity_analysis'] = polarity_analysis
+                
+                logger.debug(f"📊 Fallback polarity scoring: {label_polarity} → {base_crisis_score:.3f}")
+            
+            # Store base score before normalization
+            raw_transformer_details['base_score_before_normalization'] = base_crisis_score
+            
+            # Apply score normalization if enabled (existing logic, but with polarity-aware base score)
+            final_crisis_score, normalization_details = self._apply_score_normalization_with_details(
+                base_crisis_score, 
+                severity_weight if 'severity_weight' in locals() else 1.0, 
+                original_index if 'original_index' in locals() else 0, 
+                len(labels)
+            )
+            
+            # Update transformer details with normalization information
+            raw_transformer_details.update(normalization_details)
+            raw_transformer_details['final_score_after_normalization'] = final_crisis_score
+            
+            # Ensure final score is within valid range
+            final_crisis_score = max(0.0, min(1.0, final_crisis_score))
+            
+            logger.debug(f"📊 Final polarity-aware crisis score: {final_crisis_score:.3f}")
+            return final_crisis_score, raw_transformer_details
+            
+        except Exception as e:
+            logger.error(f"❌ Enhanced classification result processing failed: {e}")
+            error_details = self._get_empty_transformer_details()
+            error_details['processing_error'] = str(e)
+            error_details['polarity_enhanced'] = False
+            return 0.0, error_details
+
     def _process_classification_result(self, result: Dict, labels: List[str]) -> Tuple[float, Dict[str, Any]]:
         """
         Process zero-shot classification result into crisis score WITH raw transformer details
         that respect the NLP_ZERO_SHOT_MAX_LABELS configuration setting
+        
+        ORIGINAL METHOD: Used when polarity detection is disabled
         
         Args:
             result: Raw result from zero-shot classifier
@@ -814,7 +1162,7 @@ def create_classification_helper(config_manager, model_coordination_manager, pip
         pipeline_helper: ModelPipelineHelper instance
         
     Returns:
-        ClassificationHelper instance
+        ClassificationHelper instance with enhanced polarity detection
     """
     return ClassificationHelper(config_manager, model_coordination_manager, pipeline_helper)
 # ============================================================================
@@ -827,5 +1175,5 @@ __all__ = [
     'create_classification_helper'
 ]
 
-logger.info("ClassificationHelper loaded - AI classification and result processing functionality")
+logger.info("Enhanced ClassificationHelper loaded - AI classification with positive/negative polarity detection")
 # ============================================================================
