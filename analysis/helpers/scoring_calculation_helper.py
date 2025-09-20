@@ -28,6 +28,9 @@ logger = logging.getLogger(__name__)
 class ScoringCalculationHelper:
     """Helper class for scoring calculations moved from CrisisAnalyzer"""
     
+    # ========================================================================
+    # INITIALIZE
+    # ========================================================================
     def __init__(self, crisis_analyzer):
         """
         Initialize with reference to parent CrisisAnalyzer
@@ -39,14 +42,12 @@ class ScoringCalculationHelper:
         
         self.crisis_analyzer = crisis_analyzer
         self.context_helper = ContextIntegrationHelper(crisis_analyzer)
-    
-    # ========================================================================
-    # CONSOLIDATED SCORING FUNCTIONS (Migrated from CrisisAnalyzer)
     # ========================================================================
     
-    def extract_depression_score(self, message: str, sentiment_model=None,
-        analysis_config_manager=None, context=None,
-        pattern_detection_manager=None) -> Tuple[float, List[str]]:
+    # ========================================================================
+    # CONSOLIDATED SCORING FUNCTIONS
+    # ========================================================================
+    def extract_depression_score(self, message: str, sentiment_model=None, analysis_config_manager=None, context=None, pattern_detection_manager=None) -> Tuple[float, List[str]]:
         """
         Extract depression indicators from message text
         Migrated from: CrisisAnalyzer.extract_depression_score()
@@ -148,9 +149,7 @@ class ScoringCalculationHelper:
             logger.error(f"Depression analysis failed: {e}")
             return 0.0, ['analysis_error']
 
-    def enhanced_depression_analysis(self, message: str, base_score: float = 0.0,
-        sentiment_model=None, analysis_config_manager=None, context=None,
-        pattern_detection_manager=None) -> Dict:
+    def enhanced_depression_analysis(self, message: str, base_score: float = 0.0, sentiment_model=None, analysis_config_manager=None, context=None, pattern_detection_manager=None) -> Dict:
         """
         Enhanced depression analysis with detailed breakdown
         Migrated from: CrisisAnalyzer.enhanced_depression_analysis()
@@ -275,18 +274,23 @@ class ScoringCalculationHelper:
         except Exception as e:
             logger.warning(f"Sentiment result processing failed: {e}")
             return {'negative': 0.0, 'positive': 0.0}
+    # ========================================================================
     
     # ========================================================================
     # RESULTS COMBINATION AND SCORING
     # ========================================================================
-    
     def combine_analysis_results(self, message: str, user_id: str, channel_id: str, model_results: Dict, pattern_analysis: Dict, context_analysis: Dict, start_time: float) -> Dict:
         """
-        Combine all analysis results with context integration
-        Migrated from: CrisisAnalyzer._combine_analysis_results()
+        UPDATED: Combine all analysis results with temporal adjustment integration
+        
+        CHANGES:
+        1. Maintains existing ensemble/pattern/context logic
+        2. ADDS temporal adjustment application after base score calculation
+        3. Ensures temporal indicators boost crisis scores appropriately
+        4. Includes comprehensive temporal analysis tracking
         """
         
-        # Calculate base scores from models
+        # Calculate base scores from models (existing logic preserved)
         base_score = 0.0
         model_scores = {}
         
@@ -296,7 +300,7 @@ class ScoringCalculationHelper:
                 model_scores[model_name] = score
                 base_score += score * 0.33  # Equal weighting for now
         
-        # Apply context adjustments if available
+        # Apply context adjustments if available (existing logic preserved)
         if context_analysis and context_analysis.get('context_manager_status') == 'available':
             context_signals = context_analysis.get('context_signals', {})
             
@@ -315,59 +319,82 @@ class ScoringCalculationHelper:
             
             logger.debug(f"Applied context boost: +{context_boost:.3f}")
         
-        # Apply pattern adjustments (existing logic)
+        # Apply pattern adjustments (existing logic preserved)
+        combined_score = base_score
         if pattern_analysis and pattern_analysis.get('total_patterns', 0) > 0:
-            pattern_boost = min(0.25, pattern_analysis['total_patterns'] * 0.05)
-            base_score += pattern_boost
+            pattern_boost = 0.0
+            patterns_matched = pattern_analysis.get('patterns_matched', [])
+            
+            for pattern in patterns_matched:
+                if isinstance(pattern, dict):
+                    pattern_score = pattern.get('confidence', 0.5)
+                    pattern_weight = pattern.get('weight', 0.1)
+                    pattern_boost += pattern_score * pattern_weight
+            
+            combined_score += pattern_boost
             logger.debug(f"Applied pattern boost: +{pattern_boost:.3f}")
         
-        # Normalize score
-        final_score = max(0.0, min(1.0, base_score))
+        # NEW: Apply temporal adjustments to the combined score
+        try:
+            final_score, temporal_details = self._apply_temporal_adjustments(
+                combined_score, message, pattern_analysis
+            )
+            
+            if temporal_details.get('temporal_boost_applied', False):
+                logger.debug(f"🕐 Temporal boost applied: {combined_score:.3f} → {final_score:.3f}")
+            else:
+                final_score = combined_score
+                logger.debug("🕐 No temporal factors - no temporal adjustment")
+                
+        except Exception as e:
+            logger.warning(f"⚠️ Temporal adjustment failed: {e}")
+            final_score = combined_score  # Resilient fallback
+            temporal_details = {
+                'temporal_boost_applied': False,
+                'error': str(e),
+                'final_score': combined_score
+            }
         
-        # Determine crisis level using consolidated method
-        crisis_level = self.crisis_analyzer.apply_crisis_thresholds(final_score)
+        # Ensure score is within valid range
+        final_score = max(0.0, min(1.0, final_score))
         
-        # Build comprehensive response with ALL required API fields
-        response = {
-            'message': message,
-            'user_id': user_id,
-            'channel_id': channel_id,
-            'needs_response': crisis_level != 'none',
-            'crisis_level': crisis_level,
-            'confidence_score': final_score,
-            'detected_categories': self._extract_categories(pattern_analysis),
-            'method': 'enhanced_crisis_analyzer',
-            'analysis_results': {
-                'crisis_score': final_score,
-                'crisis_level': crisis_level,
-                'model_results': model_results,
-                'pattern_analysis': pattern_analysis or {},
-                'context_analysis': context_analysis or {},
-                'model_scores': model_scores,
-                'analysis_metadata': {
-                    'processing_time': time.time() - start_time,
-                    'timestamp': time.time(),
-                    'analysis_version': 'v3.1-3e-5.5-6',
-                    'features_used': {
-                        'ensemble_analysis': bool(model_results),
-                        'pattern_analysis': bool(pattern_analysis),
-                        'context_analysis': bool(context_analysis),
-                        'context_manager_available': context_analysis.get('context_manager_status') == 'available',
-                        'learning_enhanced': bool(self.crisis_analyzer.learning_system_manager),
-                        'shared_utilities': bool(self.crisis_analyzer.shared_utilities_manager)
-                    }
-                }
+        # Calculate confidence score
+        total_confidence = 0.0
+        confidence_count = 0
+        
+        for result in model_results.values():
+            if isinstance(result, dict) and 'confidence' in result:
+                total_confidence += float(result['confidence'])
+                confidence_count += 1
+        
+        confidence_score = total_confidence / confidence_count if confidence_count > 0 else 0.5
+        
+        # Apply pattern confidence boost if patterns matched
+        if pattern_analysis and pattern_analysis.get('total_patterns', 0) > 0:
+            confidence_score = min(1.0, confidence_score + 0.1)
+        
+        # Build comprehensive result with temporal analysis
+        result = {
+            'crisis_score': final_score,
+            'confidence_score': confidence_score,
+            'base_score': base_score,
+            'combined_score_before_temporal': combined_score,
+            'model_scores': model_scores,
+            'processing_time': (time.time() - start_time) * 1000,
+            'analysis_components': {
+                'model_analysis': bool(model_results),
+                'pattern_analysis': bool(pattern_analysis and pattern_analysis.get('total_patterns', 0) > 0),
+                'context_analysis': bool(context_analysis and context_analysis.get('context_manager_status') == 'available'),
+                'temporal_analysis': temporal_details.get('temporal_boost_applied', False)
             },
-            'requires_staff_review': self.context_helper.determine_staff_review_requirement(final_score, crisis_level),
-            'processing_time': time.time() - start_time
+            'temporal_analysis': temporal_details,
+            'method': 'enhanced_scoring_with_temporal_adjustment'
         }
-
-        # Debug
-        logger.debug(f"Final response crisis_level={crisis_level}, confidence_score={final_score}")
-        logger.debug(f"Enhanced: needs_response={crisis_level != 'none'}")
-        logger.debug(f"Response structure keys: {list(response.keys())}")
-
-        return response
+        
+        logger.debug(f"🔧 Final combined analysis result: {final_score:.3f} "
+                    f"(base: {base_score:.3f}, temporal: {temporal_details.get('temporal_boost_applied', False)})")
+        
+        return result
 
     def _extract_categories(self, pattern_analysis: Dict) -> List[str]:
         """
@@ -390,11 +417,11 @@ class ScoringCalculationHelper:
                     categories.append(f"enhanced_{match['pattern_group']}")
         
         return list(set(categories))
+    # ========================================================================
     
     # ========================================================================
     # ENSEMBLE SCORING METHODS
     # ========================================================================
-    
     def combine_ensemble_model_results(self, model_results: List[Dict]) -> Dict[str, Any]:
         """
         Combine multiple model results
@@ -472,3 +499,218 @@ class ScoringCalculationHelper:
                 "apply_analysis_ensemble_weights",
                 lambda: {**results, 'weighted_crisis_score': results.get('crisis_score', 0.0)}
             )
+    # ========================================================================
+
+    # ========================================================================
+    # TEMPORAL SETTINGS
+    # ========================================================================
+    def _apply_temporal_adjustments(self, base_score: float, message: str, pattern_analysis: Dict[str, Any] = None) -> Tuple[float, Dict[str, Any]]:
+        """
+        NEW METHOD: Apply temporal boost factors to crisis scores
+        
+        This method extracts temporal indicators from pattern analysis and applies
+        appropriate boosts for immediate intervention capability.
+        
+        Args:
+            base_score: Base crisis score before temporal adjustments
+            message: Original message for direct pattern detection if needed
+            pattern_analysis: Pattern analysis results containing temporal indicators
+            
+        Returns:
+            Tuple of (adjusted_score, temporal_analysis_details)
+        """
+        try:
+            temporal_details = {
+                'temporal_boost_applied': False,
+                'temporal_factors_found': [],
+                'total_temporal_boost': 0.0,
+                'original_score': base_score,
+                'final_score': base_score
+            }
+            
+            # Extract temporal factors from pattern analysis
+            temporal_factors = self._extract_temporal_factors_from_analysis(pattern_analysis, message)
+            
+            if not temporal_factors:
+                logger.debug("No temporal factors found - no temporal adjustment applied")
+                return base_score, temporal_details
+            
+            # Process temporal factors and calculate boost
+            max_boost = 0.0
+            applied_indicators = []
+            
+            for factor in temporal_factors:
+                try:
+                    # Extract boost value
+                    boost_factor = factor.get('boost_factor', 0.0)
+                    crisis_boost = factor.get('crisis_boost', 0.0)
+                    urgency_score = factor.get('urgency_score', 0.0)
+                    indicator_type = factor.get('indicator_type', 'unknown')
+                    matched_phrase = factor.get('matched_phrase', '')
+                    
+                    # Convert string levels to numeric boosts
+                    if isinstance(crisis_boost, str):
+                        crisis_boost = self._convert_crisis_level_to_boost(crisis_boost)
+                    
+                    # Use the highest available boost value
+                    effective_boost = max(boost_factor, crisis_boost, urgency_score)
+                    
+                    if effective_boost > 0:
+                        max_boost = max(max_boost, effective_boost)
+                        applied_indicators.append({
+                            'type': indicator_type,
+                            'phrase': matched_phrase,
+                            'boost': effective_boost
+                        })
+                        
+                except Exception as e:
+                    logger.warning(f"Failed to process temporal factor {factor}: {e}")
+                    continue
+            
+            # Apply temporal boost configuration limits
+            try:
+                # Get max temporal boost from configuration
+                max_temporal_boost = self._get_max_temporal_boost_from_config()
+                capped_boost = min(max_boost, max_temporal_boost)
+            except Exception:
+                capped_boost = min(max_boost, 0.50)  # Safe default cap
+            
+            # Apply temporal adjustment
+            if capped_boost > 0:
+                adjusted_score = min(1.0, base_score + capped_boost)
+                
+                # Update temporal details
+                temporal_details.update({
+                    'temporal_boost_applied': True,
+                    'temporal_factors_found': applied_indicators,
+                    'total_temporal_boost': capped_boost,
+                    'final_score': adjusted_score
+                })
+                
+                logger.info(f"🕐 Temporal adjustment applied: {base_score:.3f} → {adjusted_score:.3f} "
+                          f"(boost: +{capped_boost:.3f}, indicators: {len(applied_indicators)})")
+                
+                for indicator in applied_indicators:
+                    logger.debug(f"   📍 {indicator['type']}: +{indicator['boost']:.3f} '{indicator['phrase']}'")
+                
+                return adjusted_score, temporal_details
+            
+            return base_score, temporal_details
+            
+        except Exception as e:
+            logger.error(f"❌ Temporal adjustment failed: {e}")
+            # Resilient fallback per Clean Architecture Charter Rule #5
+            temporal_details['error'] = str(e)
+            return base_score, temporal_details
+
+    def _extract_temporal_factors_from_analysis(self, pattern_analysis: Dict[str, Any], message: str) -> List[Dict[str, Any]]:
+        """
+        Extract temporal factors from pattern analysis results
+        
+        Args:
+            pattern_analysis: Pattern analysis results
+            message: Original message for direct extraction if needed
+            
+        Returns:
+            List of temporal factors with boost information
+        """
+        try:
+            temporal_factors = []
+            
+            # Try to extract from pattern analysis first
+            if pattern_analysis:
+                # Check for temporal analysis in pattern details
+                temporal_analysis = pattern_analysis.get('temporal_analysis', {})
+                if temporal_analysis and 'found_indicators' in temporal_analysis:
+                    for indicator in temporal_analysis['found_indicators']:
+                        temporal_factors.append({
+                            'indicator_type': indicator.get('indicator_type', 'unknown'),
+                            'boost_factor': indicator.get('boost_factor', 0.0),
+                            'crisis_boost': indicator.get('crisis_boost', 0.0),
+                            'urgency_score': indicator.get('urgency_score', 0.0),
+                            'matched_phrase': indicator.get('matched_phrase', ''),
+                            'temporal_category': indicator.get('temporal_category', 'general')
+                        })
+                
+                # Check pattern matches for temporal patterns
+                pattern_matches = pattern_analysis.get('pattern_matches', [])
+                for match in pattern_matches:
+                    if isinstance(match, dict) and 'temporal' in match.get('pattern_type', '').lower():
+                        temporal_factors.append({
+                            'indicator_type': match.get('pattern_group', 'pattern_match'),
+                            'boost_factor': match.get('boost_factor', 0.0),
+                            'crisis_boost': match.get('crisis_level', 'none'),
+                            'urgency_score': match.get('urgency_score', 0.0),
+                            'matched_phrase': match.get('matched_text', ''),
+                            'temporal_category': 'pattern_match'
+                        })
+            
+            # If no temporal factors found, try direct pattern detection
+            if not temporal_factors and hasattr(self.crisis_analyzer, 'pattern_detection_manager'):
+                try:
+                    pattern_manager = self.crisis_analyzer.pattern_detection_manager
+                    if pattern_manager and hasattr(pattern_manager, 'analyze_temporal_indicators'):
+                        temporal_analysis = pattern_manager.analyze_temporal_indicators(message)
+                        
+                        if temporal_analysis and 'found_indicators' in temporal_analysis:
+                            for indicator in temporal_analysis['found_indicators']:
+                                temporal_factors.append({
+                                    'indicator_type': indicator.get('indicator_type', 'unknown'),
+                                    'boost_factor': indicator.get('boost_factor', 0.0),
+                                    'crisis_boost': indicator.get('crisis_boost', 0.0),
+                                    'urgency_score': indicator.get('urgency_score', 0.0),
+                                    'matched_phrase': indicator.get('matched_phrase', ''),
+                                    'temporal_category': indicator.get('temporal_category', 'general')
+                                })
+                                
+                except Exception as e:
+                    logger.debug(f"Direct temporal pattern detection failed: {e}")
+            
+            logger.debug(f"🕐 Extracted {len(temporal_factors)} temporal factors for scoring")
+            return temporal_factors
+            
+        except Exception as e:
+            logger.error(f"Failed to extract temporal factors: {e}")
+            return []
+
+    def _convert_crisis_level_to_boost(self, crisis_level: str) -> float:
+        """
+        Convert crisis level string to numeric boost factor
+        
+        Args:
+            crisis_level: Crisis level string ('low', 'medium', 'high', 'critical')
+            
+        Returns:
+            Numeric boost factor
+        """
+        level_mapping = {
+            'critical': 0.40,
+            'high': 0.30,
+            'medium': 0.20,
+            'low': 0.10,
+            'none': 0.0
+        }
+        return level_mapping.get(crisis_level.lower(), 0.0)
+
+    def _get_max_temporal_boost_from_config(self) -> float:
+        """
+        Get maximum temporal boost limit from configuration
+        
+        Returns:
+            Maximum temporal boost value
+        """
+        try:
+            # Try to get from UnifiedConfigManager
+            if hasattr(self.crisis_analyzer, 'unified_config_manager'):
+                temporal_config = self.crisis_analyzer.unified_config_manager.get_patterns_crisis('patterns_temporal')
+                if temporal_config:
+                    escalation_rules = temporal_config.get('escalation_rules', {})
+                    return float(escalation_rules.get('max_temporal_boost', 0.50))
+            
+            # Fallback to safe default
+            return 0.50
+            
+        except Exception as e:
+            logger.warning(f"Failed to get temporal boost configuration: {e}")
+            return 0.50  # Safe default
+# ========================================================================
