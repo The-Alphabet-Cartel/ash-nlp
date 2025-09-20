@@ -305,11 +305,11 @@
     },
     "validation": {
       "immediate_patterns": {
-        "type": "list",
+        "type": "array",
         "required": true
       },
       "staff_notification_patterns": {
-        "type": "list",
+        "type": "array",
         "required": true
       },
       "auto_escalation_threshold": {
