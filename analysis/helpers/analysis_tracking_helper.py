@@ -314,36 +314,76 @@ class AnalysisTrackingHelper:
     # EXECUTE!
     # ============================================================================
     async def execute_pattern_enhancement(self, message: str, ai_result: Dict[str, Any]) -> Dict[str, Any]:
-        """Execute pattern analysis enhancement (Step 2) with tracking"""
-        if self.crisis_analyzer.pattern_detection_manager:
-            try:
-                # Get enhanced patterns
-                pattern_result = self.crisis_analyzer.pattern_detection_manager.analyze_enhanced_patterns(message)
+        """
+        FIXED: Execute pattern enhancement analysis (Step 2) with proper temporal data inclusion
+        
+        CHANGES MADE:
+        1. Ensures temporal analysis results are included in pattern_result
+        2. Properly structures temporal data for _extract_temporal_factors_from_pattern_result
+        3. Maintains backward compatibility with existing pattern analysis
+        """
+        try:
+            start_time = time.time()
+            
+            # Get pattern analysis from PatternDetectionManager
+            pattern_analysis = self.crisis_analyzer.pattern_detection_manager.analyze_enhanced_patterns(message)
+            
+            # CRITICAL FIX: Ensure temporal analysis is properly included
+            temporal_analysis = {}
+            if hasattr(self.crisis_analyzer.pattern_detection_manager, 'analyze_temporal_indicators'):
+                try:
+                    temporal_analysis = self.crisis_analyzer.pattern_detection_manager.analyze_temporal_indicators(message)
+                    logger.debug(f"🕐 Temporal analysis extracted: {len(temporal_analysis.get('found_indicators', []))} indicators")
+                except Exception as e:
+                    logger.warning(f"⚠️ Temporal analysis extraction failed: {e}")
+                    temporal_analysis = {'found_indicators': [], 'urgency_score': 0.0}
+            
+            # Build comprehensive pattern result with temporal data
+            pattern_result = {
+                'patterns_found': pattern_analysis.get('patterns_triggered', []),
+                'detected_categories': pattern_analysis.get('detected_categories', []),
+                'enhancement_applied': len(pattern_analysis.get('patterns_triggered', [])) > 0,
+                'confidence_boost': pattern_analysis.get('confidence_boost', 0.0),
+                'pattern_confidence': pattern_analysis.get('pattern_confidence', 0.0),
+                'details': pattern_analysis.get('details', {}),
                 
-                # Calculate enhancement boost
-                ai_confidence = ai_result.get("confidence_score", 0.0)
-                patterns_found = pattern_result.get("patterns_found", [])
-                confidence_boost = len(patterns_found) * self.crisis_analyzer.unified_config_manager.get_config_section('analysis_config', 'confidence_boost.pattern_confidence_boost', 0.10) # 10% boost or configured boost per pattern found
+                # CRITICAL FIX: Include temporal analysis at the top level
+                'temporal_analysis': temporal_analysis,
                 
-                return {
-                    "patterns_found": patterns_found,
-                    "pattern_confidence": pattern_result.get("confidence_score", 0.0),
-                    "detected_categories": [p.get("category", "unknown") for p in patterns_found],
-                    "enhancement_applied": len(patterns_found) > 0,
-                    "confidence_boost": confidence_boost,
-                    "enhanced_confidence": min(1.0, ai_confidence + confidence_boost)
+                # ALSO include in details for backward compatibility
+                'details': {
+                    **pattern_analysis.get('details', {}),
+                    'temporal_analysis': temporal_analysis
                 }
-                
-            except Exception as e:
-                logger.error(f"Pattern analysis failed: {e}")
-                raise
-        else:
-            return {
-                "patterns_found": [],
-                "enhancement_applied": False,
-                "confidence_boost": 0.0,
-                "reason": "PatternDetectionManager not available"
             }
+            
+            # ADDITIONAL FIX: Convert temporal indicators to the format expected by extraction
+            temporal_factors = []
+            for indicator in temporal_analysis.get('found_indicators', []):
+                temporal_factors.append({
+                    'indicator_type': indicator.get('indicator_type', 'unknown'),
+                    'boost_factor': indicator.get('boost_factor', 0.0),
+                    'crisis_boost': indicator.get('crisis_boost', 0.0),
+                    'urgency_score': indicator.get('urgency_score', 0.0),
+                    'matched_phrase': indicator.get('matched_phrase', ''),
+                    'temporal_category': indicator.get('temporal_category', 'general')
+                })
+            
+            # Include temporal factors directly in pattern result for easier extraction
+            pattern_result['temporal_factors'] = temporal_factors
+            
+            processing_time = (time.time() - start_time) * 1000
+            pattern_result['processing_time_ms'] = processing_time
+            
+            logger.debug(f"Pattern enhancement completed with temporal data: "
+                        f"{len(pattern_result['patterns_found'])} patterns, "
+                        f"{len(temporal_factors)} temporal factors")
+            
+            return pattern_result
+            
+        except Exception as e:
+            logger.error(f"Pattern enhancement execution failed: {e}")
+            raise
 
     async def execute_learning_adjustments(self, ai_result: Dict[str, Any], pattern_result: Dict[str, Any], user_id: str, channel_id: str) -> Dict[str, Any]:
         """Execute learning system adjustments (Step 3) with tracking"""
@@ -459,48 +499,80 @@ class AnalysisTrackingHelper:
     # ============================================================================
     def _extract_temporal_factors_from_pattern_result(self, pattern_result: Dict[str, Any]) -> List[Dict[str, Any]]:
         """
-        NEW METHOD: Extract temporal factors from pattern analysis results
+        FIXED: Extract temporal factors from pattern analysis results
         
-        Args:
-            pattern_result: Pattern analysis results from pattern detection
-            
-        Returns:
-            List of temporal factors with boost information
+        CHANGES MADE:
+        1. Check multiple locations for temporal data (top-level, details, temporal_factors)
+        2. Handle different temporal data structures
+        3. Provide fallback extraction from pattern matches
         """
         try:
             temporal_factors = []
             
-            # Check for temporal analysis in pattern result details
-            if pattern_result:
-                # Look for temporal analysis
-                temporal_analysis = pattern_result.get('temporal_analysis', {})
-                if temporal_analysis and 'found_indicators' in temporal_analysis:
-                    for indicator in temporal_analysis['found_indicators']:
-                        temporal_factors.append({
-                            'indicator_type': indicator.get('indicator_type', 'unknown'),
-                            'boost_factor': indicator.get('boost_factor', 0.0),
-                            'crisis_boost': indicator.get('crisis_boost', 0.0),
-                            'urgency_score': indicator.get('urgency_score', 0.0),
-                            'matched_phrase': indicator.get('matched_phrase', ''),
-                            'temporal_category': indicator.get('temporal_category', 'general')
-                        })
-                
-                # Check pattern matches for temporal patterns
+            # METHOD 1: Check for direct temporal_factors (new structure)
+            if 'temporal_factors' in pattern_result:
+                temporal_factors.extend(pattern_result['temporal_factors'])
+                logger.debug(f"🕐 Found {len(temporal_factors)} temporal factors from direct structure")
+            
+            # METHOD 2: Check temporal_analysis at top level
+            elif 'temporal_analysis' in pattern_result:
+                temporal_analysis = pattern_result['temporal_analysis']
+                for indicator in temporal_analysis.get('found_indicators', []):
+                    temporal_factors.append({
+                        'indicator_type': indicator.get('indicator_type', 'unknown'),
+                        'boost_factor': indicator.get('boost_factor', 0.0),
+                        'crisis_boost': indicator.get('crisis_boost', 0.0),
+                        'urgency_score': indicator.get('urgency_score', 0.0),
+                        'matched_phrase': indicator.get('matched_phrase', ''),
+                        'temporal_category': indicator.get('temporal_category', 'general')
+                    })
+                logger.debug(f"🕐 Found {len(temporal_factors)} temporal factors from temporal_analysis")
+            
+            # METHOD 3: Check details.temporal_analysis (fallback)
+            elif pattern_result.get('details', {}).get('temporal_analysis'):
+                temporal_analysis = pattern_result['details']['temporal_analysis']
+                for indicator in temporal_analysis.get('found_indicators', []):
+                    temporal_factors.append({
+                        'indicator_type': indicator.get('indicator_type', 'unknown'),
+                        'boost_factor': indicator.get('boost_factor', 0.0),
+                        'crisis_boost': indicator.get('crisis_boost', 0.0),
+                        'urgency_score': indicator.get('urgency_score', 0.0),
+                        'matched_phrase': indicator.get('matched_phrase', ''),
+                        'temporal_category': indicator.get('temporal_category', 'general')
+                    })
+                logger.debug(f"🕐 Found {len(temporal_factors)} temporal factors from details")
+            
+            # METHOD 4: Check pattern matches for temporal patterns (last resort)
+            else:
                 patterns_found = pattern_result.get('patterns_found', [])
                 for pattern in patterns_found:
                     if isinstance(pattern, dict):
-                        pattern_group = pattern.get('pattern_group', '')
-                        if 'temporal' in pattern_group.lower() or pattern.get('temporal_indicator', False):
+                        pattern_name = pattern.get('pattern_name', '').lower()
+                        pattern_group = pattern.get('pattern_group', '').lower()
+                        
+                        # Check if this pattern indicates temporal urgency
+                        if any(keyword in pattern_name or keyword in pattern_group 
+                               for keyword in ['temporal', 'urgent', 'immediate', 'tonight', 'now', 'time']):
                             temporal_factors.append({
-                                'indicator_type': pattern_group,
-                                'boost_factor': pattern.get('boost_factor', 0.0),
+                                'indicator_type': pattern.get('pattern_group', 'unknown'),
+                                'boost_factor': pattern.get('weight', 0.0),
                                 'crisis_boost': pattern.get('crisis_level', 'none'),
-                                'urgency_score': pattern.get('urgency_score', 0.0),
+                                'urgency_score': pattern.get('confidence', 0.0),
                                 'matched_phrase': pattern.get('matched_text', pattern.get('pattern_name', '')),
-                                'temporal_category': 'pattern_match'
+                                'temporal_category': 'pattern_inferred'
                             })
+                
+                if temporal_factors:
+                    logger.debug(f"🕐 Inferred {len(temporal_factors)} temporal factors from pattern matches")
             
-            logger.debug(f"🕐 Extracted {len(temporal_factors)} temporal factors from pattern result")
+            # Log results
+            if temporal_factors:
+                logger.info(f"🕐 Extracted {len(temporal_factors)} temporal factors for boost calculation")
+                for factor in temporal_factors:
+                    logger.debug(f"🕐   - {factor['indicator_type']}: boost={factor['boost_factor']:.3f}, phrase='{factor['matched_phrase']}'")
+            else:
+                logger.debug("🕐 No temporal factors found in pattern result")
+            
             return temporal_factors
             
         except Exception as e:
