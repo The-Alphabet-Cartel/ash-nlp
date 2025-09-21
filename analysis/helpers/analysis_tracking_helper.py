@@ -581,14 +581,13 @@ class AnalysisTrackingHelper:
 
     def _apply_temporal_adjustments(self, base_score: float, temporal_factors: List[Dict[str, Any]]) -> Tuple[float, Dict[str, Any]]:
         """
-        NEW METHOD: Apply temporal boost factors to crisis scores
+        FIXED: Apply temporal boost factors to crisis scores with proper configuration lookup
         
-        Args:
-            base_score: Base crisis score before temporal adjustments
-            temporal_factors: List of temporal factors extracted from pattern analysis
-            
-        Returns:
-            Tuple of (adjusted_score, temporal_analysis_details)
+        CHANGES MADE:
+        1. Looks up boost factors from configuration when temporal factors have 0.0 boost
+        2. Maps indicator types to configured boost values
+        3. Handles fallback scenarios gracefully
+        4. Applies proper temporal boost caps
         """
         try:
             temporal_details = {
@@ -600,8 +599,11 @@ class AnalysisTrackingHelper:
             }
             
             if not temporal_factors:
-                logger.debug("No temporal factors found - no temporal adjustment applied")
+                logger.debug("🕐 No temporal factors found - no temporal adjustment applied")
                 return base_score, temporal_details
+            
+            # Get temporal configuration for boost factor lookup
+            temporal_config = self._get_temporal_boost_configuration()
             
             # Process temporal factors and calculate boost
             max_boost = 0.0
@@ -609,12 +611,19 @@ class AnalysisTrackingHelper:
             
             for factor in temporal_factors:
                 try:
-                    # Extract boost value
+                    # Extract current boost values
                     boost_factor = factor.get('boost_factor', 0.0)
                     crisis_boost = factor.get('crisis_boost', 0.0)
                     urgency_score = factor.get('urgency_score', 0.0)
                     indicator_type = factor.get('indicator_type', 'unknown')
                     matched_phrase = factor.get('matched_phrase', '')
+                    
+                    # CRITICAL FIX: If all boost values are 0, look up from configuration
+                    if boost_factor == 0.0 and crisis_boost == 0.0 and urgency_score == 0.0:
+                        config_boost = self._get_boost_factor_for_indicator_type(indicator_type, temporal_config)
+                        if config_boost > 0:
+                            boost_factor = config_boost
+                            logger.debug(f"🕐 Applied config boost for {indicator_type}: {config_boost:.3f}")
                     
                     # Convert string levels to numeric boosts
                     if isinstance(crisis_boost, str):
@@ -630,6 +639,7 @@ class AnalysisTrackingHelper:
                             'phrase': matched_phrase,
                             'boost': effective_boost
                         })
+                        logger.debug(f"🕐 Temporal factor: {indicator_type} = {effective_boost:.3f} ('{matched_phrase}')")
                         
                 except Exception as e:
                     logger.warning(f"Failed to process temporal factor {factor}: {e}")
@@ -637,8 +647,7 @@ class AnalysisTrackingHelper:
             
             # Apply temporal boost configuration limits
             try:
-                # Get max temporal boost from configuration
-                max_temporal_boost = self._get_max_temporal_boost_from_config()
+                max_temporal_boost = temporal_config.get('max_temporal_boost', 0.50)
                 capped_boost = min(max_boost, max_temporal_boost)
             except Exception:
                 capped_boost = min(max_boost, 0.50)  # Safe default cap
@@ -655,18 +664,128 @@ class AnalysisTrackingHelper:
                     'final_score': adjusted_score
                 })
                 
+                logger.info(f"🕐 TEMPORAL BOOST APPLIED: {base_score:.3f} → {adjusted_score:.3f} (+{capped_boost:.3f})")
                 for indicator in applied_indicators:
-                    logger.debug(f"   📍 {indicator['type']}: +{indicator['boost']:.3f} '{indicator['phrase']}'")
+                    logger.debug(f"🕐   - {indicator['type']}: +{indicator['boost']:.3f} '{indicator['phrase']}'")
                 
                 return adjusted_score, temporal_details
+            else:
+                logger.debug("🕐 No effective temporal boost - no adjustment applied")
             
             return base_score, temporal_details
             
         except Exception as e:
-            logger.error(f"❌ Temporal adjustment failed: {e}")
+            logger.error(f"⚠️ Temporal adjustment failed: {e}")
             # Resilient fallback per Clean Architecture Charter Rule #5
             temporal_details['error'] = str(e)
             return base_score, temporal_details
+
+    def _get_boost_factor_for_indicator_type(self, indicator_type: str, temporal_config: Dict[str, Any]) -> float:
+        """
+        NEW METHOD: Get boost factor for specific indicator type from configuration
+        
+        Args:
+            indicator_type: Type of temporal indicator ('immediate', 'future_fear', etc.)
+            temporal_config: Temporal configuration dictionary
+            
+        Returns:
+            Boost factor value for the indicator type
+        """
+        try:
+            # Map indicator types to configuration keys
+            indicator_mapping = {
+                'immediate': 'immediate_boost_factor',
+                'future_fear': 'future_fear_boost_factor', 
+                'ongoing': 'ongoing_boost_factor',
+                'recent': 'recent_boost_factor',
+                'escalation': 'escalation_boost_factor'
+            }
+            
+            config_key = indicator_mapping.get(indicator_type.lower())
+            if config_key and config_key in temporal_config:
+                boost_value = temporal_config[config_key]
+                logger.debug(f"🕐 Found config boost for {indicator_type}: {boost_value}")
+                return float(boost_value)
+            
+            # Fallback: try direct key lookup
+            direct_key = f"{indicator_type.lower()}_boost_factor"
+            if direct_key in temporal_config:
+                boost_value = temporal_config[direct_key]
+                logger.debug(f"🕐 Found direct config boost for {indicator_type}: {boost_value}")
+                return float(boost_value)
+            
+            logger.debug(f"🕐 No config boost found for indicator type: {indicator_type}")
+            return 0.0
+            
+        except Exception as e:
+            logger.warning(f"Failed to get boost factor for {indicator_type}: {e}")
+            return 0.0
+
+    def _get_temporal_boost_configuration(self) -> Dict[str, Any]:
+        """
+        NEW METHOD: Get temporal boost configuration from patterns_temporal or environment variables
+        
+        Returns:
+            Dictionary containing temporal boost configuration
+        """
+        try:
+            temporal_config = {}
+            
+            # Try to get from UnifiedConfigManager patterns_temporal
+            if hasattr(self.crisis_analyzer, 'unified_config_manager'):
+                try:
+                    patterns_temporal = self.crisis_analyzer.unified_config_manager.get_patterns_crisis('patterns_temporal')
+                    if patterns_temporal:
+                        # Extract escalation rules which contain the boost factors
+                        escalation_rules = patterns_temporal.get('escalation_rules', {})
+                        temporal_config.update(escalation_rules)
+                        logger.debug(f"🕐 Loaded temporal config from patterns_temporal: {len(temporal_config)} settings")
+                except Exception as e:
+                    logger.debug(f"Failed to load patterns_temporal: {e}")
+            
+            # Fallback: Get from environment variables (these override JSON config)
+            env_mapping = {
+                'immediate_boost_factor': 'NLP_TEMPORAL_IMMEDIATE_BOOST_FACTOR',
+                'future_fear_boost_factor': 'NLP_TEMPORAL_FUTURE_FEAR_BOOST_FACTOR',
+                'ongoing_boost_factor': 'NLP_TEMPORAL_ONGOING_BOOST_FACTOR',
+                'recent_boost_factor': 'NLP_TEMPORAL_RECENT_BOOST_FACTOR',
+                'escalation_boost_factor': 'NLP_TEMPORAL_ESCALATION_BOOST_FACTOR',
+                'max_temporal_boost': 'NLP_TEMPORAL_MAX_BOOST'
+            }
+            
+            import os
+            for config_key, env_key in env_mapping.items():
+                env_value = os.getenv(env_key)
+                if env_value:
+                    try:
+                        temporal_config[config_key] = float(env_value)
+                        logger.debug(f"🕐 Loaded from env: {config_key} = {env_value}")
+                    except ValueError:
+                        logger.warning(f"Invalid env value for {env_key}: {env_value}")
+            
+            # Provide safe defaults if nothing found
+            if not temporal_config:
+                temporal_config = {
+                    'immediate_boost_factor': 0.35,
+                    'future_fear_boost_factor': 0.40,
+                    'ongoing_boost_factor': 0.30,
+                    'recent_boost_factor': 0.20,
+                    'escalation_boost_factor': 0.25,
+                    'max_temporal_boost': 0.50
+                }
+                logger.debug("🕐 Using fallback temporal configuration")
+            
+            return temporal_config
+            
+        except Exception as e:
+            logger.error(f"Failed to get temporal boost configuration: {e}")
+            # Return safe defaults
+            return {
+                'immediate_boost_factor': 0.35,
+                'future_fear_boost_factor': 0.40,
+                'ongoing_boost_factor': 0.30,
+                'max_temporal_boost': 0.50
+            }
 
     def _convert_crisis_level_to_boost(self, crisis_level: str) -> float:
         """
