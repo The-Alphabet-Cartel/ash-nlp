@@ -1,0 +1,72 @@
+# Ash-NLP Testing Suite - Docker Ignore
+# FILE VERSION: v5.0
+# LAST MODIFIED: 2025-12-30
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (except README files we need)
+docs/
+*.md
+!testing/README.md
+!README.md
+
+# Test outputs and cache
+testing/reports/output/*
+testing/cache/*
+*.log
+logs/*
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Environment files (use docker-compose env_file instead)
+.env
+.env.*
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Large model files (download in container)
+*.bin
+*.pt
+*.pth
+*.safetensors
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp

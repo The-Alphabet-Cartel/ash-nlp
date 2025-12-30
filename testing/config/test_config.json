@@ -1,0 +1,86 @@
+{
+	"_metadata": {
+		"file_version": "v5.0",
+		"last_modified": "2025-12-30",
+		"description": "Testing framework configuration for Ash-NLP v5.0",
+		"clean_architecture": "v5.0 Compliant"
+	},
+
+	"test_execution": {
+		"device": "${TEST_DEVICE}",
+		"batch_size": "${TEST_BATCH_SIZE}",
+		"timeout_seconds": "${TEST_TIMEOUT}",
+		"parallel_tests": "${TEST_PARALLEL}",
+		"verbose_output": "${TEST_VERBOSE}"
+	},
+
+	"metrics": {
+		"accuracy_threshold": "${TEST_ACCURACY_THRESHOLD}",
+		"precision_threshold": "${TEST_PRECISION_THRESHOLD}",
+		"recall_threshold": "${TEST_RECALL_THRESHOLD}",
+		"f1_threshold": "${TEST_F1_THRESHOLD}",
+		"latency_threshold_ms": "${TEST_LATENCY_THRESHOLD}",
+		"vram_threshold_mb": "${TEST_VRAM_THRESHOLD}"
+	},
+
+	"test_datasets": {
+		"crisis_examples": "${TEST_DATASET_CRISIS}",
+		"safe_examples": "${TEST_DATASET_SAFE}",
+		"edge_cases": "${TEST_DATASET_EDGE}",
+		"lgbtqia_specific": "${TEST_DATASET_LGBTQIA}",
+		"escalation_patterns": "${TEST_DATASET_ESCALATION}"
+	},
+
+	"model_comparison": {
+		"baseline_model": "${TEST_BASELINE_MODEL}",
+		"comparison_metrics": [
+			"accuracy",
+			"precision",
+			"recall",
+			"f1_score",
+			"latency_ms",
+			"vram_mb"
+		]
+	},
+
+	"reporting": {
+		"output_directory": "${TEST_REPORT_OUTPUT_DIR}",
+		"generate_html": "${TEST_GENERATE_HTML}",
+		"generate_json": "${TEST_GENERATE_JSON}",
+		"save_charts": "${TEST_SAVE_CHARTS}"
+	},
+
+	"defaults": {
+		"test_execution": {
+			"device": "cuda",
+			"batch_size": 8,
+			"timeout_seconds": 30,
+			"parallel_tests": false,
+			"verbose_output": true
+		},
+		"metrics": {
+			"accuracy_threshold": 0.85,
+			"precision_threshold": 0.8,
+			"recall_threshold": 0.85,
+			"f1_threshold": 0.82,
+			"latency_threshold_ms": 5000,
+			"vram_threshold_mb": 2000
+		},
+		"test_datasets": {
+			"crisis_examples": "testing/test_datasets/crisis_examples.json",
+			"safe_examples": "testing/test_datasets/safe_examples.json",
+			"edge_cases": "testing/test_datasets/edge_cases.json",
+			"lgbtqia_specific": "testing/test_datasets/lgbtqia_specific.json",
+			"escalation_patterns": "testing/test_datasets/escalation_patterns.json"
+		},
+		"model_comparison": {
+			"baseline_model": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0"
+		},
+		"reporting": {
+			"output_directory": "testing/reports/output",
+			"generate_html": true,
+			"generate_json": true,
+			"save_charts": true
+		}
+	}
+}
