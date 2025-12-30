@@ -1,0 +1,924 @@
+{
+	"_metadata": {
+		"file_version": "v3.1-3d-6-1",
+		"last_modified": "2025-08-22",
+		"clean_architecture": "v3.1 Compliant",
+		"configuration_version": "3d.1",
+		"description": "Crisis burden patterns - COMPLETELY SIMPLIFIED in Step 10.10 with 100% infrastructure reuse",
+		"compliance": "Clean Architecture v3.1 Standards + Rule #7 PERFECTION",
+		"pattern_count": 30,
+		"manager_integration": "pattern_detection.py",
+		"environment_overrides": {
+			"enabled": "${NLP_FEATURE_PATTERN_ANALYSIS}",
+			"burden_weight": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
+			"enhanced_crisis": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}"
+		}
+	},
+
+	"patterns": {
+		"description": "Crisis burden patterns using smart defaults and existing infrastructure",
+		"overwhelming_responsibility": {
+			"description": "Expressions of crushing responsibility and obligation",
+			"weight_multiplier": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
+			"defaults": {
+				"crisis_level": "medium",
+				"weight": 0.75,
+				"context_required": false,
+				"urgency": "medium"
+			},
+			"expressions": [
+				"too much responsibility",
+				"burden on everyone",
+				"everyone depends on me",
+				"can't let them down",
+				"all on my shoulders",
+				"have to be strong",
+				"everyone's counting on me",
+				"can't disappoint",
+				"weight of responsibility",
+				"have to hold it together"
+			]
+		},
+
+		"financial_burden": {
+			"description": "Expressions of overwhelming financial stress and pressure",
+			"enhanced_weight": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}",
+			"defaults": {
+				"crisis_level": "high",
+				"weight": 0.8,
+				"context_required": true,
+				"urgency": "high"
+			},
+			"expressions": [
+				"can't afford",
+				"drowning in debt",
+				"bills piling up",
+				"money running out",
+				"financial stress",
+				"can't make ends meet",
+				"going broke",
+				"bankruptcy",
+				"losing everything",
+				"financial ruin"
+			]
+		},
+
+		"caregiver_burden": {
+			"description": "Expressions of overwhelming caregiving responsibilities",
+			"weight_multiplier": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
+			"defaults": {
+				"crisis_level": "medium",
+				"weight": 0.7,
+				"context_required": true,
+				"urgency": "medium"
+			},
+			"expressions": [
+				"caring for everyone",
+				"no time for myself",
+				"exhausted from caregiving",
+				"need to take care of",
+				"everyone needs me",
+				"can't take a break",
+				"burnout from caring",
+				"giving everything",
+				"nothing left to give",
+				"caregiver fatigue"
+			]
+		},
+
+		"emotional_burden": {
+			"description": "Expressions of carrying emotional weight for others",
+			"weight_multiplier": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
+			"defaults": {
+				"crisis_level": "medium",
+				"weight": 0.65,
+				"context_required": false,
+				"urgency": "medium"
+			},
+			"expressions": [
+				"emotional support for everyone",
+				"absorbing everyone's pain",
+				"carrying their problems",
+				"their emotions are mine",
+				"feel everything",
+				"emotional sponge",
+				"taking on their stress",
+				"everyone's therapist",
+				"holding space for everyone",
+				"emotionally drained"
+			]
+		},
+
+		"academic_work_burden": {
+			"description": "Expressions of overwhelming academic or work pressure",
+			"weight_multiplier": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
+			"defaults": {
+				"crisis_level": "medium",
+				"weight": 0.6,
+				"context_required": true,
+				"urgency": "low"
+			},
+			"expressions": [
+				"drowning in assignments",
+				"too much work",
+				"overwhelming workload",
+				"pressure to succeed",
+				"academic stress",
+				"failing everything",
+				"can't keep up",
+				"deadlines crushing me",
+				"work consuming my life",
+				"perfectionist pressure"
+			]
+		},
+
+		"existential_burden": {
+			"description": "Expressions of overwhelming existential or life responsibility",
+			"enhanced_weight": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}",
+			"defaults": {
+				"crisis_level": "high",
+				"weight": 0.85,
+				"context_required": true,
+				"urgency": "high"
+			},
+			"expressions": [
+				"burden of existence",
+				"why do I exist",
+				"life is too heavy",
+				"can't handle life",
+				"existence is exhausting",
+				"too much to bear",
+				"life overwhelming",
+				"weight of living",
+				"burden of being alive",
+				"existence feels pointless"
+			]
+		}
+	},
+
+	"patterns_crisis": {
+		"family_acceptance_crisis": {
+			"description": "Patterns indicating family acceptance issues",
+			"patterns": [
+				{
+					"pattern": "(family|parents) (kicked me out|disowned|cut me off)",
+					"type": "regex",
+					"weight": "${NLP_CONFIG_LGBTQIA_WEIGHT_MULTIPLIER}"
+				},
+				{
+					"pattern": "(coming out|told) (family|parents) (disaster|wrong|bad)",
+					"type": "regex",
+					"weight": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}"
+				}
+			],
+			"defaults": {
+				"crisis_level": "high",
+				"weight": 1.0,
+				"urgency": "high"
+			},
+			"validation": {
+				"crisis_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"weight": { "type": "float", "range": [0.0, 2.0] }
+			}
+		},
+
+		"identity_crisis": {
+			"description": "Patterns indicating identity confusion and internal struggles",
+			"patterns": [
+				{
+					"pattern": "(gender|trans|gay|lesbian|bi) (panic|crisis|confusion)",
+					"type": "regex",
+					"weight": "${NLP_IDENTITY_PANIC_WEIGHT}"
+				},
+				{
+					"pattern": "questioning (my|myself|everything)",
+					"type": "regex",
+					"weight": "${NLP_QUESTIONING_WEIGHT}"
+				}
+			],
+			"defaults": {
+				"crisis_level": "medium",
+				"weight": 0.8,
+				"urgency": "medium"
+			},
+			"validation": {
+				"crisis_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"weight": { "type": "float", "range": [0.0, 2.0] }
+			}
+		},
+
+		"discrimination_safety": {
+			"description": "Patterns indicating safety concerns and discrimination",
+			"patterns": [
+				{
+					"pattern": "(hate crime|discrimination|harassment)",
+					"type": "regex",
+					"weight": "${NLP_HATE_CRIME_WEIGHT}"
+				},
+				{
+					"pattern": "(conversion therapy|pray away|religious trauma)",
+					"type": "regex",
+					"weight": "${NLP_CONVERSION_THERAPY_WEIGHT}"
+				}
+			],
+			"defaults": {
+				"crisis_level": "high",
+				"weight": 1.0,
+				"urgency": "high"
+			},
+			"validation": {
+				"crisis_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"weight": { "type": "float", "range": [0.0, 2.0] }
+			}
+		}
+	},
+
+	"patterns_temporal": {
+		"description": "Temporal indicator patterns organized by urgency and time sensitivity",
+		"immediate": {
+			"description": "Immediate temporal indicators requiring urgent response",
+			"crisis_boost": "${NLP_TEMPORAL_IMMEDIATE_CRISIS_BOOST}",
+			"boost_factor": "${NLP_TEMPORAL_IMMEDIATE_BOOST_FACTOR}",
+			"escalation_level": "${NLP_TEMPORAL_IMMEDIATE_ESCALATION_LEVEL}",
+			"weight": "${NLP_TEMPORAL_IMMEDIATE_WEIGHT}",
+			"auto_escalate": "${NLP_TEMPORAL_IMMEDIATE_AUTO_ESCALATE}",
+			"staff_alert": "${NLP_TEMPORAL_IMMEDIATE_STAFF_ALERT}",
+			"defaults": {
+				"crisis_boost": "critical",
+				"boost_factor": 0.35,
+				"escalation_level": "immediate",
+				"weight": 1.0,
+				"auto_escalate": true,
+				"staff_alert": true
+			},
+			"validation": {
+				"crisis_boost": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"boost_factor": {
+					"type": "float",
+					"range": [0.0, 1.0]
+				},
+				"escalation_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "immediate", "critical"]
+				},
+				"weight": {
+					"type": "float",
+					"range": [0.0, 2.0]
+				},
+				"auto_escalate": {
+					"type": "boolean",
+					"required": true
+				},
+				"staff_alert": {
+					"type": "boolean",
+					"required": true
+				}
+			},
+			"indicators": [
+				"right now",
+				"immediately",
+				"urgent",
+				"asap",
+				"tonight",
+				"this moment",
+				"can't wait",
+				"need help now",
+				"happening now",
+				"right away",
+				"today"
+			]
+		},
+
+		"recent": {
+			"description": "Recent temporal indicators showing current distress",
+			"crisis_boost": "${NLP_TEMPORAL_RECENT_CRISIS_BOOST}",
+			"boost_factor": "${NLP_TEMPORAL_RECENT_BOOST_FACTOR}",
+			"escalation_level": "${NLP_TEMPORAL_RECENT_ESCALATION_LEVEL}",
+			"weight": "${NLP_TEMPORAL_RECENT_WEIGHT}",
+			"auto_escalate": "${NLP_TEMPORAL_RECENT_AUTO_ESCALATE}",
+			"staff_alert": "${NLP_TEMPORAL_RECENT_STAFF_ALERT}",
+			"defaults": {
+				"crisis_boost": "medium",
+				"boost_factor": 0.2,
+				"escalation_level": "high",
+				"weight": 0.8,
+				"auto_escalate": false,
+				"staff_alert": false
+			},
+			"validation": {
+				"crisis_boost": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"boost_factor": {
+					"type": "float",
+					"range": [0.0, 1.0]
+				},
+				"escalation_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "immediate", "critical"]
+				},
+				"weight": {
+					"type": "float",
+					"range": [0.0, 2.0]
+				},
+				"auto_escalate": {
+					"type": "boolean",
+					"required": true
+				},
+				"staff_alert": {
+					"type": "boolean",
+					"required": true
+				}
+			},
+			"indicators": [
+				"yesterday",
+				"lately",
+				"recently",
+				"this week",
+				"past few days",
+				"since yesterday",
+				"all day",
+				"this morning",
+				"this afternoon"
+			]
+		},
+
+		"ongoing": {
+			"description": "Ongoing temporal patterns indicating persistent crisis",
+			"crisis_boost": "${NLP_TEMPORAL_ONGOING_CRISIS_BOOST}",
+			"boost_factor": "${NLP_TEMPORAL_ONGOING_BOOST_FACTOR}",
+			"escalation_level": "${NLP_TEMPORAL_ONGOING_ESCALATION_LEVEL}",
+			"weight": "${NLP_TEMPORAL_ONGOING_WEIGHT}",
+			"auto_escalate": "${NLP_TEMPORAL_ONGOING_AUTO_ESCALATE}",
+			"staff_alert": "${NLP_TEMPORAL_ONGOING_STAFF_ALERT}",
+			"defaults": {
+				"crisis_boost": "high",
+				"boost_factor": 0.3,
+				"escalation_level": "high",
+				"weight": 0.9,
+				"auto_escalate": true,
+				"staff_alert": true
+			},
+			"validation": {
+				"crisis_boost": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"boost_factor": {
+					"type": "float",
+					"range": [0.0, 1.0]
+				},
+				"escalation_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "immediate", "critical"]
+				},
+				"weight": {
+					"type": "float",
+					"range": [0.0, 2.0]
+				},
+				"auto_escalate": {
+					"type": "boolean",
+					"required": true
+				},
+				"staff_alert": {
+					"type": "boolean",
+					"required": true
+				}
+			},
+			"indicators": [
+				"always",
+				"constantly",
+				"every day",
+				"all the time",
+				"never stops",
+				"continuously",
+				"non-stop",
+				"24/7",
+				"every night",
+				"chronic"
+			]
+		},
+
+		"future_fear": {
+			"description": "Future-oriented hopelessness indicating severe crisis risk",
+			"crisis_boost": "${NLP_TEMPORAL_FUTURE_FEAR_CRISIS_BOOST}",
+			"boost_factor": "${NLP_TEMPORAL_FUTURE_FEAR_BOOST_FACTOR}",
+			"escalation_level": "${NLP_TEMPORAL_FUTURE_FEAR_ESCALATION_LEVEL}",
+			"weight": "${NLP_TEMPORAL_FUTURE_FEAR_WEIGHT}",
+			"auto_escalate": "${NLP_TEMPORAL_FUTURE_FEAR_AUTO_ESCALATE}",
+			"staff_alert": "${NLP_TEMPORAL_FUTURE_FEAR_STAFF_ALERT}",
+			"defaults": {
+				"crisis_boost": "critical",
+				"boost_factor": 0.4,
+				"escalation_level": "critical",
+				"weight": 1.2,
+				"auto_escalate": true,
+				"staff_alert": true
+			},
+			"validation": {
+				"crisis_boost": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"boost_factor": {
+					"type": "float",
+					"range": [0.0, 1.0]
+				},
+				"escalation_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "immediate", "critical"]
+				},
+				"weight": {
+					"type": "float",
+					"range": [0.0, 2.0]
+				},
+				"auto_escalate": {
+					"type": "boolean",
+					"required": true
+				},
+				"staff_alert": {
+					"type": "boolean",
+					"required": true
+				}
+			},
+			"indicators": [
+				"no future",
+				"never get better",
+				"no point",
+				"give up",
+				"hopeless",
+				"no tomorrow",
+				"nothing to live for",
+				"forever",
+				"never ending",
+				"permanent"
+			]
+		},
+
+		"escalation_timeline": {
+			"description": "Timeline-based escalation patterns indicating worsening crisis",
+			"crisis_boost": "${NLP_TEMPORAL_ESCALATION_CRISIS_BOOST}",
+			"boost_factor": "${NLP_TEMPORAL_ESCALATION_BOOST_FACTOR}",
+			"escalation_level": "${NLP_TEMPORAL_ESCALATION_ESCALATION_LEVEL}",
+			"weight": "${NLP_TEMPORAL_ESCALATION_WEIGHT}",
+			"auto_escalate": "${NLP_TEMPORAL_ESCALATION_AUTO_ESCALATE}",
+			"staff_alert": "${NLP_TEMPORAL_ESCALATION_STAFF_ALERT}",
+			"defaults": {
+				"crisis_boost": "high",
+				"boost_factor": 0.25,
+				"escalation_level": "high",
+				"weight": 0.85,
+				"auto_escalate": true,
+				"staff_alert": true
+			},
+			"validation": {
+				"crisis_boost": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "critical"]
+				},
+				"boost_factor": {
+					"type": "float",
+					"range": [0.0, 1.0]
+				},
+				"escalation_level": {
+					"type": "string",
+					"enum": ["low", "medium", "high", "immediate", "critical"]
+				},
+				"weight": {
+					"type": "float",
+					"range": [0.0, 2.0]
+				},
+				"auto_escalate": {
+					"type": "boolean",
+					"required": true
+				},
+				"staff_alert": {
+					"type": "boolean",
+					"required": true
+				}
+			},
+			"indicators": [
+				"getting worse",
+				"escalating",
+				"more frequent",
+				"increasing",
+				"spiraling",
+				"deteriorating",
+				"declining",
+				"worsening",
+				"intensifying",
+				"accelerating"
+			]
+		}
+	},
+
+	"patterns_crisis_amplification": {
+		"description": "Patterns that amplify crisis detection using existing infrastructure",
+		"temporal_urgency": {
+			"description": "Indicators of immediate temporal urgency requiring quick response",
+			"boost_factor": "${NLP_ANALYSIS_CONTEXT_BOOST_WEIGHT}",
+			"defaults": {
+				"boost_factor": 1.5
+			},
+			"validation": {
+				"boost_factor": { "type": "float", "range": [0.0, 3.0] }
+			},
+			"indicators": [
+				"right now",
+				"tonight",
+				"today",
+				"immediately",
+				"urgent",
+				"asap",
+				"can't wait",
+				"need help now",
+				"this moment",
+				"right away"
+			]
+		},
+
+		"intensity_amplifiers": {
+			"description": "Words that amplify the intensity of crisis expressions",
+			"weight": "${NLP_CONFIG_BURDEN_WEIGHT_MULTIPLIER}",
+			"defaults": {
+				"weight": 1.2
+			},
+			"validation": {
+				"weight": { "type": "float", "range": [0.0, 2.0] }
+			},
+			"indicators": [
+				"extremely",
+				"incredibly",
+				"absolutely",
+				"completely",
+				"totally",
+				"utterly",
+				"intensely",
+				"overwhelmingly",
+				"desperately",
+				"severely"
+			]
+		},
+
+		"social_isolation": {
+			"description": "Indicators of social isolation and lack of support",
+			"weight": "${NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER}",
+			"defaults": {
+				"weight": 1.0
+			},
+			"validation": {
+				"weight": { "type": "float", "range": [0.0, 2.0] }
+			},
+			"indicators": [
+				"no one",
+				"nobody",
+				"alone",
+				"isolated",
+				"abandoned",
+				"no friends",
+				"no family",
+				"all by myself",
+				"have nobody",
+				"completely alone"
+			]
+		},
+
+		"hopelessness_context": {
+			"description": "Context indicators that suggest profound hopelessness",
+			"enhanced_weight": "${NLP_CONFIG_ENHANCED_CRISIS_WEIGHT}",
+			"defaults": {
+				"enhanced_weight": 1.2
+			},
+			"validation": {
+				"enhanced_weight": { "type": "float", "range": [0.0, 2.0] }
+			},
+			"indicators": [
+				"no point",
+				"nothing matters",
+				"no hope",
+				"can't go on",
+				"give up",
+				"no future",
+				"pointless",
+				"meaningless",
+				"no way out",
+				"trapped forever"
+			]
+		}
+	},
+
+	"patterns_positive": {
+		"description": "Patterns that reduce crisis likelihood when positive contexts are enabled",
+		"support_seeking": {
+			"description": "Indicators that someone is actively seeking support",
+			"defaults": {
+				"enabled": true,
+				"reduction_factor": -0.1
+			},
+			"indicators": [
+				"looking for help",
+				"need support",
+				"talking to someone",
+				"seeing therapist",
+				"calling hotline",
+				"reaching out",
+				"asking for advice",
+				"need guidance"
+			]
+		},
+
+		"self_care": {
+			"description": "Indicators of active self-care and coping strategies",
+			"defaults": {
+				"enabled": true,
+				"reduction_factor": -0.05
+			},
+			"indicators": [
+				"taking care of myself",
+				"practicing mindfulness",
+				"exercising",
+				"meditation",
+				"healthy coping",
+				"self-care routine",
+				"getting sleep",
+				"eating well"
+			]
+		},
+
+		"future_planning": {
+			"description": "Indicators of positive future planning and hope",
+			"defaults": {
+				"enabled": true,
+				"reduction_factor": -0.15
+			},
+			"indicators": [
+				"planning for",
+				"looking forward",
+				"excited about",
+				"working towards",
+				"goals for",
+				"next week",
+				"next month",
+				"future plans",
+				"getting better"
+			]
+		}
+	},
+
+	"metaphors": {
+		"drowning_metaphors": {
+			"description": "Metaphors expressing feeling overwhelmed or drowning",
+			"idioms": [
+				"drowning in",
+				"in over my head",
+				"sinking fast",
+				"going under",
+				"can't keep my head above water",
+				"feel like I'm drowning",
+				"underwater",
+				"gasping for air",
+				"treading water",
+				"swept away"
+			]
+		},
+
+		"breaking_metaphors": {
+			"description": "Metaphors expressing psychological breaking or shattering",
+			"idioms": [
+				"falling apart",
+				"breaking down",
+				"cracking up",
+				"coming undone",
+				"shattered",
+				"broken inside",
+				"pieces of myself",
+				"falling to pieces",
+				"crumbling",
+				"at my breaking point"
+			]
+		},
+
+		"darkness_metaphors": {
+			"description": "Metaphors expressing darkness, emptiness, or void",
+			"idioms": [
+				"in a dark place",
+				"black hole",
+				"void inside",
+				"empty shell",
+				"darkness consuming me",
+				"lost in darkness",
+				"can't see the light",
+				"tunnel with no end",
+				"abyss",
+				"bottomless pit"
+			]
+		},
+
+		"trapped_metaphors": {
+			"description": "Metaphors expressing feeling trapped or imprisoned",
+			"idioms": [
+				"trapped in a cage",
+				"prison of my mind",
+				"can't escape",
+				"stuck in a box",
+				"walls closing in",
+				"no way out",
+				"locked inside",
+				"confined",
+				"restrained",
+				"held captive"
+			]
+		},
+
+		"weight_metaphors": {
+			"description": "Metaphors expressing heavy emotional burden",
+			"idioms": [
+				"weight of the world",
+				"crushing burden",
+				"heavy heart",
+				"carrying too much",
+				"burden on my shoulders",
+				"weighing me down",
+				"heavy load",
+				"can't bear it",
+				"weight pressing down",
+				"suffocating under pressure"
+			]
+		},
+
+		"emptiness_metaphors": {
+			"description": "Metaphors expressing emotional emptiness or void",
+			"idioms": [
+				"empty inside",
+				"hollow feeling",
+				"void in my chest",
+				"nothing left",
+				"emotionally drained",
+				"vacant",
+				"stripped bare",
+				"running on empty",
+				"soul sucked out",
+				"feeling vacant"
+			]
+		},
+
+		"storm_metaphors": {
+			"description": "Metaphors expressing internal turmoil and chaos",
+			"idioms": [
+				"storm inside me",
+				"emotional hurricane",
+				"tornado of feelings",
+				"chaos in my head",
+				"tempest in my mind",
+				"raging storm",
+				"whirlwind of emotions",
+				"thunder in my chest",
+				"lightning in my thoughts",
+				"eye of the storm"
+			]
+		}
+	},
+
+	"vocabulary": {
+		"identity_vocabulary": {
+			"description": "LGBTQIA+ identity terms that provide context for crisis detection",
+			"boost_factor": "${NLP_IDENTITY_BOOST_FACTOR}",
+			"defaults": {
+				"enabled": true,
+				"boost_factor": 0.05,
+				"context_required": false,
+				"weight": 0.7,
+				"crisis_relevance": "medium"
+			},
+			"validation": {
+				"boost_factor": { "type": "float", "range": [0.0, 1.0] }
+			},
+			"terms": [
+				"trans",
+				"transgender",
+				"gay",
+				"lesbian",
+				"bisexual",
+				"pansexual",
+				"asexual",
+				"queer",
+				"enby",
+				"nonbinary",
+				"genderfluid",
+				"agender",
+				"demisexual",
+				"aromantic",
+				"genderqueer",
+				"two-spirit",
+				"questioning"
+			]
+		},
+
+		"experience_vocabulary": {
+			"description": "Terms describing LGBTQIA+ experiences that may indicate stress or crisis",
+			"boost_factor": "${NLP_EXPERIENCE_BOOST_FACTOR}",
+			"defaults": {
+				"enabled": true,
+				"boost_factor": 0.08,
+				"context_required": true,
+				"weight": 0.9,
+				"crisis_relevance": "high"
+			},
+			"validation": {
+				"boost_factor": { "type": "float", "range": [0.0, 1.0] }
+			},
+			"terms": [
+				"coming out",
+				"dysphoria",
+				"euphoria",
+				"transition",
+				"deadname",
+				"chosen name",
+				"passing",
+				"binding",
+				"misgendered",
+				"outed",
+				"closeted",
+				"questioning",
+				"egg crack",
+				"voice training"
+			]
+		},
+
+		"community_support_vocabulary": {
+			"description": "Positive community terms that may reduce crisis likelihood",
+			"boost_factor": "${NLP_COMMUNITY_SUPPORT_BOOST}",
+			"defaults": {
+				"enabled": true,
+				"boost_factor": -0.02,
+				"modifier": "positive",
+				"weight": 0.5,
+				"context_required": false,
+				"crisis_impact": "reduces"
+			},
+			"validation": {
+				"boost_factor": { "type": "float", "range": [-1.0, 0.0] }
+			},
+			"terms": [
+				"chosen family",
+				"found family",
+				"pride",
+				"ally",
+				"safe space",
+				"visibility",
+				"representation",
+				"community support",
+				"lgbtq center",
+				"pride month",
+				"support group",
+				"acceptance",
+				"affirming care"
+			]
+		},
+
+		"struggle_vocabulary": {
+			"description": "Terms indicating LGBTQIA+-specific struggles requiring immediate attention",
+			"boost_factor": "${NLP_STRUGGLE_BOOST_FACTOR}",
+			"defaults": {
+				"enabled": true,
+				"boost_factor": 0.15,
+				"escalation_required": true,
+				"weight": 1.0,
+				"context_required": true,
+				"crisis_relevance": "very_high"
+			},
+			"validation": {
+				"boost_factor": { "type": "float", "range": [0.0, 1.0] }
+			},
+			"terms": [
+				"internalized homophobia",
+				"internalized transphobia",
+				"religious trauma",
+				"conversion therapy",
+				"forced therapy",
+				"pray away",
+				"religious shame",
+				"family disowned",
+				"kicked out",
+				"homeless shelter",
+				"couch surfing",
+				"no support",
+				"completely alone",
+				"everyone against me"
+			]
+		}
+	}
+}

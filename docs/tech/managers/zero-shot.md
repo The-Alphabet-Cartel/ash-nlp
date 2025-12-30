@@ -1,31 +1,30 @@
 <!-- ash-nlp/docs/tech/managers/zero_shot.md -->
 <!--
 Zero Shot Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Zero Shot Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
 # ZeroShotManager Documentation
 
-The ZeroShotManager handles zero-shot classification AI model management and coordination for the Ash-NLP crisis detection system, implementing the primary semantic analysis component of the crisis detection pipeline as defined in the Core System Vision.
+The **ZeroShotManager** handles zero-shot classification AI model management and coordination for the Ash-NLP crisis detection system, implementing the primary semantic analysis component of the crisis detection pipeline as defined in the Core System Vision.
 
 ---
 
 ## Overview
 
-ZeroShotManager provides centralized management of zero-shot classification models, implementing the **FIRST** component of Ash-NLP's crisis detection approach: "Uses Zero-Shot AI models for primary semantic classification." This manager coordinates AI model loading, inference, and optimization for rapid crisis detection.
+**ZeroShotManager** provides centralized management of zero-shot classification models, implementing the **FIRST** component of Ash-NLP's crisis detection approach: "Uses Zero-Shot AI models for primary semantic classification." This manager coordinates AI model loading, inference, and optimization for rapid crisis detection.
 
 ### Core Responsibilities
 - **Zero-shot model management** - Loading, initialization, and lifecycle management of AI classification models
@@ -272,3 +271,9 @@ def classify_crisis_message(message: str) -> dict:
 - **Model lifecycle management** - Proper loading, caching, and cleanup of AI models
 - **Concurrent access control** - Safe concurrent access to AI models within resource limits
 - **Performance profiling** - Regular profiling of inference performance and optimization opportunities
+
+---
+
+*Zero Shot Manager Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈

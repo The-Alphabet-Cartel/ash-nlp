@@ -1,31 +1,30 @@
-<!-- ash-nlp/docs/tech/managers/settings.md -->
+<!-- ash-nlp/docs/tech/managers/settings_config.md -->
 <!--
 Settings Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Settings Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
-# SettingsManager Documentation
+# SettingsConfigManager Documentation
 
-The SettingsManager handles general application settings and system-wide configuration for the Ash-NLP crisis detection system, providing centralized management of core operational parameters.
+The SettingsConfigManager handles general application settings and system-wide configuration for the Ash-NLP crisis detection system, providing centralized management of core operational parameters.
 
 ---
 
 ## Overview
 
-SettingsManager provides centralized management of application-wide settings, system defaults, and operational parameters that don't fit into specialized configuration managers, ensuring consistent system behavior across all components.
+SettingsConfigManager provides centralized management of application-wide settings, system defaults, and operational parameters that don't fit into specialized configuration managers, ensuring consistent system behavior across all components.
 
 ### Core Responsibilities
 - **Application-wide settings management** - Core system settings and operational defaults
@@ -45,7 +44,7 @@ SettingsManager provides centralized management of application-wide settings, sy
 
 ### Factory Function
 ```python
-def create_settings_manager(unified_config: UnifiedConfigManager) -> SettingsManager
+def create_settings_config_manager(unified_config: UnifiedConfigManager) -> SettingsConfigManager
 ```
 
 ### Core Methods
@@ -191,16 +190,6 @@ def create_settings_manager(unified_config: UnifiedConfigManager) -> SettingsMan
 
 ---
 
-## Testing and Validation
+*Settings Configuration Manager Guide for Ash-NLP v5.0*
 
-### Configuration Testing
-- **Setting validation testing** - Ensures all settings are properly validated
-- **Default value testing** - Validates default values are appropriate and functional
-- **Environment override testing** - Tests environment variable precedence
-- **Type conversion testing** - Validates setting type handling
-
-### Integration Testing
-- **Manager interaction testing** - Validates settings integration across all managers
-- **Dynamic update testing** - Tests runtime setting updates and change propagation
-- **Community feature testing** - Tests LGBTQIA+ community specific settings
-- **Crisis response testing** - Validates crisis-related setting functionality
+**Built with care for chosen family** 🏳️‍🌈

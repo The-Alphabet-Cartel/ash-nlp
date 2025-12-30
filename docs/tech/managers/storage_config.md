@@ -1,25 +1,24 @@
 <!-- ash-nlp/docs/tech/managers/storage_config.md -->
 <!--
 Storage Config Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Storage Config Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
 # StorageConfigManager Documentation
 
-The StorageConfigManager handles storage and file system configuration for the Ash-NLP crisis detection system, managing data storage, backup systems, and file organization across the Debian 12 Linux server infrastructure.
+The **StorageConfigManager** handles storage and file system configuration for the Ash-NLP crisis detection system, managing data storage, backup systems, and file organization across the Debian 12 Linux server infrastructure.
 
 ---
 
@@ -132,13 +131,10 @@ def create_storage_config_manager(unified_config: UnifiedConfigManager) -> Stora
 ash-nlp/
 ├── data/                     # Primary data storage
 │   ├── analysis/            # Crisis analysis results
-│   ├── learning/            # Learning system data
 │   └── patterns/            # Community pattern data
 ├── cache/                   # Performance caching
-│   ├── analysis/            # Analysis result cache
 │   ├── models/              # AI model cache
 │   |   └── offload/         # Hardware offload cache
-│   └── patterns/            # Pattern matching cache
 ├── backups/                 # Automated backups
 │   ├── daily/               # Daily backup snapshots
 │   ├── weekly/              # Weekly backup archives
@@ -163,12 +159,6 @@ ash-nlp/
 - **Community interaction logs** - LGBTQIA+ Discord community interaction data
 - **Performance metrics** - Storage of system performance and response time data
 - **Error and incident data** - Storage of system errors and crisis response incidents
-
-### Learning System Data
-- **Training data** - Storage of learning system training and validation data
-- **Model improvement data** - Data used for continuous model improvement
-- **Community feedback** - Storage of community feedback for system enhancement
-- **Pattern evolution** - Historical data showing pattern recognition improvements
 
 ### Privacy and Security
 - **Data encryption** - Encryption of sensitive community data at rest
@@ -197,10 +187,7 @@ ash-nlp/
 ## Performance Optimization
 
 ### Cache Management
-- **Analysis result caching** - Fast retrieval of previous analysis results
 - **Model output caching** - Caching of AI model outputs for similar inputs
-- **Pattern matching caching** - Efficient caching of community pattern detection results
-- **Configuration caching** - Storage configuration caching for reduced I/O overhead
 
 ### Storage Performance
 - **SSD optimization** - Configuration optimized for SSD storage performance
@@ -253,3 +240,9 @@ ash-nlp/
 - **Performance testing** - Validates storage performance under load
 - **Recovery testing** - Tests disaster recovery procedures and data integrity
 - **Cross-platform testing** - Ensures storage works across different environments
+
+---
+
+*Storage Configuration Manager Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈

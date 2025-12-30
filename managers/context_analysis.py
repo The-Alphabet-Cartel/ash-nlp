@@ -1,23 +1,20 @@
 # ash-nlp/managers/context_analysis.py
 """
+Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
+CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. FIRST: Uses Zero-Shot AI models for primary semantic classification
-2. SECOND: Enhances AI results with contextual pattern analysis  
-3. FALLBACK: Uses pattern-only classification if AI models fail
-4. PURPOSE: Detect crisis messages in Discord community communications
+2. SECOND: Enhances AI results with contextual pattern analysis
+3. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 Context Pattern Manager for Ash NLP Service
 ---
-FILE VERSION: v3.1-3e-6-2
-LAST MODIFIED: 2025-08-22
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-SAFETY NOTICE: This manager provides context analysis for crisis detection patterns.
-Context signals help determine the severity and urgency of mental health crisis situations.
 """
 
 import logging
@@ -30,21 +27,22 @@ from managers.unified_config import UnifiedConfigManager
 
 logger = logging.getLogger(__name__)
 
+
 class ContextAnalysisManager:
     """
     Context Pattern Manager for semantic and contextual analysis of crisis messages
-    
+
     Features:
     - Enhanced context analysis with crisis pattern integration
     - Negation detection for sentiment interpretation
     - Context signal processing for crisis detection
     - v3.1 JSON configuration compatibility with existing environment variables
     - Production-ready error handling and resilience
-    
+
     This manager consolidates core context analysis functionality while delegating
     utility methods to SharedUtilitiesManager and analysis methods to CrisisAnalyzer
     for better architecture compliance and reduced duplication.
-    
+
     Integration:
     - Works with PatternDetectionManager for enhanced pattern detection
     - Integrates with CrisisAnalyzer for comprehensive message analysis
@@ -54,7 +52,7 @@ class ContextAnalysisManager:
     def __init__(self, unified_config: UnifiedConfigManager):
         """
         Initialize Context Pattern Manager with dependency injection
-        
+
         Args:
             unified_config: UnifiedConfigManager instance for configuration loading
         """
@@ -62,17 +60,17 @@ class ContextAnalysisManager:
         self.context_config = {}
         self.analysis_params = {}
         self.initialization_time = time.time()
-        
+
         # Basic negation patterns (will be enhanced with config)
         self.basic_negation_patterns = [
-            r'\b(not?|no|never|neither|nor|can\'t|cannot|won\'t|wouldn\'t|shouldn\'t|couldn\'t|don\'t|doesn\'t|didn\'t|isn\'t|aren\'t|wasn\'t|weren\'t)\b',
-            r'\b(barely|hardly|scarcely|seldom|rarely)\b',
-            r'\b(without|lacking|missing|absent)\b'
+            r"\b(not?|no|never|neither|nor|can\'t|cannot|won\'t|wouldn\'t|shouldn\'t|couldn\'t|don\'t|doesn\'t|didn\'t|isn\'t|aren\'t|wasn\'t|weren\'t)\b",
+            r"\b(barely|hardly|scarcely|seldom|rarely)\b",
+            r"\b(without|lacking|missing|absent)\b",
         ]
-        
+
         # Load configuration during initialization
         self._load_configuration()
-        
+
         logger.info("ContextAnalysisManager v3.1-3e-5.4-1 initialized successfully")
 
     def _load_configuration(self) -> None:
@@ -81,26 +79,34 @@ class ContextAnalysisManager:
         try:
             # Load context patterns configuration
             logger.debug("📋 Loading Context Patterns...")
-            self.context_config = self.unified_config.get_patterns_crisis('patterns_context')
+            self.context_config = self.unified_config.get_patterns_crisis(
+                "patterns_context"
+            )
             if not self.context_config:
-                logger.warning("⚠️ Context patterns configuration not found, using safe defaults")
+                logger.warning(
+                    "⚠️ Context patterns configuration not found, using safe defaults"
+                )
                 self.context_config = self._get_safe_context_defaults()
             else:
                 logger.debug("✅ Context Patterns Loaded.")
-            
+
             # Load analysis parameters using get_config_section
             try:
                 logger.debug("📋 Loading Analysis Parameters...")
-                self.analysis_params = self.unified_config.get_config_section('analysis_config')
+                self.analysis_params = self.unified_config.get_config_section(
+                    "analysis_config"
+                )
                 if not self.analysis_params:
-                    logger.warning("⚠️ Analysis parameters not found, using safe defaults")
+                    logger.warning(
+                        "⚠️ Analysis parameters not found, using safe defaults"
+                    )
                     self.analysis_params = self._get_safe_analysis_defaults()
             except Exception as param_error:
                 logger.warning(f"⚠️ Could not load analysis parameters: {param_error}")
                 self.analysis_params = self._get_safe_analysis_defaults()
-                
+
             logger.info("✅ Context pattern configuration loaded successfully")
-            
+
         except Exception as e:
             logger.error(f"❌ Error loading context configuration: {e}")
             self.context_config = self._get_safe_context_defaults()
@@ -109,23 +115,23 @@ class ContextAnalysisManager:
     def _get_safe_context_defaults(self) -> Dict[str, Any]:
         """Get safe default context configuration when JSON loading fails"""
         return {
-            'configuration': {
-                'enabled': True,
-                'global_multiplier': 1.0,
-                'context_window': 10,
-                'priority_level': 'high',
-                'bidirectional_analysis': True
+            "configuration": {
+                "enabled": True,
+                "global_multiplier": 1.0,
+                "context_window": 10,
+                "priority_level": "high",
+                "bidirectional_analysis": True,
             }
         }
 
     def _get_safe_analysis_defaults(self) -> Dict[str, Any]:
         """Get safe default analysis parameters when JSON loading fails"""
         return {
-            'semantic_analysis': {
-                'context_window': 3,
-                'similarity_threshold': 0.75,
-                'context_boost_weight': 1.5,
-                'negative_threshold': 0.6
+            "semantic_analysis": {
+                "context_window": 3,
+                "similarity_threshold": 0.75,
+                "context_boost_weight": 1.5,
+                "negative_threshold": 0.6,
             }
         }
 
@@ -133,36 +139,43 @@ class ContextAnalysisManager:
     # CORE CONTEXT ANALYSIS METHODS - Enhanced and Crisis-Specific
     # ========================================================================
 
-    def process_sentiment_with_flip(self, message: str, sentiment_score: float) -> Dict[str, Any]:
+    def process_sentiment_with_flip(
+        self, message: str, sentiment_score: float
+    ) -> Dict[str, Any]:
         """
         Process sentiment with potential polarity flipping based on context
-        
+
         Args:
             message: Message text to analyze
             sentiment_score: Original sentiment score
-            
+
         Returns:
             Dictionary with processed sentiment results
-            
+
         Note: Uses CrisisAnalyzer.analyze_sentiment_context() for enhanced analysis
         """
         # This method now delegates to CrisisAnalyzer for enhanced context analysis
         processed_sentiment = {
-            'original_score': sentiment_score,
-            'final_score': sentiment_score,
-            'flip_applied': False,
-            'context_analysis': {
-                'negation_detected': self.detect_negation_context(message),
-                'note': 'Enhanced analysis available via CrisisAnalyzer.analyze_sentiment_context()'
-            }
+            "original_score": sentiment_score,
+            "final_score": sentiment_score,
+            "flip_applied": False,
+            "context_analysis": {
+                "negation_detected": self.detect_negation_context(message),
+                "note": "Enhanced analysis available via CrisisAnalyzer.analyze_sentiment_context()",
+            },
         }
-        
+
         # Apply basic sentiment flip if negation detected and score is significant
-        if processed_sentiment['context_analysis']['negation_detected'] and abs(sentiment_score) > 0.1:
-            processed_sentiment['final_score'] = -sentiment_score
-            processed_sentiment['flip_applied'] = True
-            logger.debug(f"Basic sentiment flip applied: {sentiment_score} → {-sentiment_score}")
-        
+        if (
+            processed_sentiment["context_analysis"]["negation_detected"]
+            and abs(sentiment_score) > 0.1
+        ):
+            processed_sentiment["final_score"] = -sentiment_score
+            processed_sentiment["flip_applied"] = True
+            logger.debug(
+                f"Basic sentiment flip applied: {sentiment_score} → {-sentiment_score}"
+            )
+
         return processed_sentiment
 
     # ========================================================================
@@ -172,7 +185,9 @@ class ContextAnalysisManager:
     def _get_context_window(self) -> int:
         """Get context window size from configuration"""
         try:
-            value = self.unified_config.get_config_section('analysis_config', 'semantic_analysis.context_window', 3)
+            value = self.unified_config.get_config_section(
+                "analysis_config", "semantic_analysis.context_window", 3
+            )
             return int(value) if value is not None else 3
         except Exception as e:
             logger.warning(f"⚠️ Error getting context window: {e}, using default: 3")
@@ -181,19 +196,27 @@ class ContextAnalysisManager:
     def _get_context_boost_weight(self) -> float:
         """Get context boost weight from configuration"""
         try:
-            value = self.unified_config.get_config_section('analysis_config', 'semantic_analysis.context_boost_weight', 1.5)
+            value = self.unified_config.get_config_section(
+                "analysis_config", "semantic_analysis.context_boost_weight", 1.5
+            )
             return float(value) if value is not None else 1.5
         except Exception as e:
-            logger.warning(f"⚠️ Error getting context boost weight: {e}, using default: 1.5")
+            logger.warning(
+                f"⚠️ Error getting context boost weight: {e}, using default: 1.5"
+            )
             return 1.5
 
     def _get_negative_threshold(self) -> float:
         """Get negative sentiment threshold from configuration"""
         try:
-            value = self.unified_config.get_config_section('analysis_config', 'semantic_analysis.negative_threshold', 0.6)
+            value = self.unified_config.get_config_section(
+                "analysis_config", "semantic_analysis.negative_threshold", 0.6
+            )
             return float(value) if value is not None else 0.6
         except Exception as e:
-            logger.warning(f"⚠️ Error getting negative threshold: {e}, using default: 0.6")
+            logger.warning(
+                f"⚠️ Error getting negative threshold: {e}, using default: 0.6"
+            )
             return 0.6
 
     # ========================================================================
@@ -203,28 +226,53 @@ class ContextAnalysisManager:
     def _extract_basic_temporal_indicators(self, message_lower: str) -> List[str]:
         """Extract basic temporal indicators from message"""
         basic_temporal_words = [
-            'today', 'yesterday', 'tomorrow', 'lately', 'recently', 'always', 
-            'never', 'sometimes', 'right now', 'immediately', 'urgent', 'tonight'
+            "today",
+            "yesterday",
+            "tomorrow",
+            "lately",
+            "recently",
+            "always",
+            "never",
+            "sometimes",
+            "right now",
+            "immediately",
+            "urgent",
+            "tonight",
         ]
-        
+
         return [word for word in basic_temporal_words if word in message_lower]
 
     def _count_social_isolation_indicators(self, message_lower: str) -> int:
         """Count basic social isolation indicators"""
         isolation_words = [
-            'alone', 'lonely', 'isolated', 'nobody', 'no one', 'abandoned', 
-            'by myself', 'on my own', 'no friends', 'no family'
+            "alone",
+            "lonely",
+            "isolated",
+            "nobody",
+            "no one",
+            "abandoned",
+            "by myself",
+            "on my own",
+            "no friends",
+            "no family",
         ]
-        
+
         return sum(1 for word in isolation_words if word in message_lower)
 
     def _count_hopelessness_indicators(self, message_lower: str) -> int:
         """Count basic hopelessness indicators"""
         hopelessness_words = [
-            'hopeless', 'pointless', 'worthless', 'useless', 'meaningless',
-            'give up', 'no point', 'why bother', 'what\'s the point'
+            "hopeless",
+            "pointless",
+            "worthless",
+            "useless",
+            "meaningless",
+            "give up",
+            "no point",
+            "why bother",
+            "what's the point",
         ]
-        
+
         return sum(1 for word in hopelessness_words if word in message_lower)
 
     # ========================================================================
@@ -234,15 +282,15 @@ class ContextAnalysisManager:
     def get_configuration_status(self) -> Dict[str, Any]:
         """Get current configuration status"""
         return {
-            'manager_version': 'v3.1-3e-5.4-1',
-            'phase': 'Phase 3e Sub-step 5.4 - Cleanup Complete',
-            'initialization_time': self.initialization_time,
-            'configuration_loaded': bool(self.context_config),
-            'analysis_params_loaded': bool(self.analysis_params),
-            'context_window': self._get_context_window(),
-            'context_boost_weight': self._get_context_boost_weight(),
-            'negative_threshold': self._get_negative_threshold(),
-            'patterns_available': len(self.basic_negation_patterns)
+            "manager_version": "v3.1-3e-5.4-1",
+            "phase": "Phase 3e Sub-step 5.4 - Cleanup Complete",
+            "initialization_time": self.initialization_time,
+            "configuration_loaded": bool(self.context_config),
+            "analysis_params_loaded": bool(self.analysis_params),
+            "context_window": self._get_context_window(),
+            "context_boost_weight": self._get_context_boost_weight(),
+            "negative_threshold": self._get_negative_threshold(),
+            "patterns_available": len(self.basic_negation_patterns),
         }
 
     def reload_configuration(self) -> bool:
@@ -268,35 +316,37 @@ class ContextAnalysisManager:
 # FACTORY FUNCTION - Clean Architecture Compliance
 # ============================================================================
 
-def create_context_analysis_manager(unified_config: UnifiedConfigManager) -> ContextAnalysisManager:
+
+def create_context_analysis_manager(
+    unified_config: UnifiedConfigManager,
+) -> ContextAnalysisManager:
     """
     Factory function to create ContextAnalysisManager instance with dependency injection
-    
+
     Args:
         unified_config: UnifiedConfigManager instance for configuration loading
-        
+
     Returns:
         ContextAnalysisManager instance ready for use
-        
+
     Raises:
         RuntimeError: If initialization fails
     """
     try:
         manager = ContextAnalysisManager(unified_config)
-        
+
         if not manager.is_initialized():
             raise RuntimeError("ContextAnalysisManager failed to initialize properly")
-            
-        logger.info("✅ ContextAnalysisManager created successfully via factory function")
+
+        logger.info(
+            "✅ ContextAnalysisManager created successfully via factory function"
+        )
         return manager
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to create ContextAnalysisManager: {e}")
         raise RuntimeError(f"ContextAnalysisManager factory function failed: {e}")
 
 
 # Export for clean architecture
-__all__ = [
-    'ContextAnalysisManager',
-    'create_context_analysis_manager'
-]
+__all__ = ["ContextAnalysisManager", "create_context_analysis_manager"]

@@ -1,31 +1,30 @@
 <!-- ash-nlp/docs/tech/managers/unified_config.md -->
 <!--
 Unified Config Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Unified Config Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
 # UnifiedConfigManager Documentation
 
-The UnifiedConfigManager is the central configuration hub for the Ash-NLP crisis detection system, providing centralized access to all JSON configuration files with environment variable overrides, serving as the foundation for Clean Architecture v3.1 compliance.
+The **UnifiedConfigManager** is the central configuration hub for the Ash-NLP crisis detection system, providing centralized access to all JSON configuration files with environment variable overrides, serving as the foundation for Clean Architecture Compliance.
 
 ---
 
 ## Overview
 
-UnifiedConfigManager serves as the single source of truth for all system configuration, implementing the core architectural principle that all configuration access must flow through this centralized manager. It provides the foundation for the entire configuration architecture and enables the 74% performance improvement through optimized configuration access patterns.
+**UnifiedConfigManager** serves as the single source of truth for all system configuration, implementing the core architectural principle that all configuration access must flow through this centralized manager. It provides the foundation for the entire configuration architecture and enables the 74% performance improvement through optimized configuration access patterns.
 
 ### Core Responsibilities
 - **Centralized configuration access** - Single point of access for all system configuration
@@ -290,3 +289,9 @@ class ExampleManager:
 - **Minimal nesting**: Keep JSON structure shallow for easier environment variable mapping
 - **Clear naming**: Use descriptive names for all configuration keys
 - **Documentation**: Document all configuration options and their effects
+
+---
+
+*Unified Configuration Manager Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈

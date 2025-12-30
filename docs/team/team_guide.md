@@ -1,19 +1,18 @@
 <!-- ash-nlp/docs/team/team_guide.md -->
 <!--
-Crisis Response Team Guide for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+API Guide for Ash-NLP Service
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Crisis Response Team Guide
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
@@ -23,10 +22,10 @@ Comprehensive guide for crisis response teams using Ash-NLP v3.1 for LGBTQIA+ co
 
 ---
 
-## Understanding Ash-NLP v3.1
+## Understanding Ash-NLP v5.0
 
 ### What is Ash-NLP?
-Ash-NLP v3.1 is an AI-powered crisis detection system specifically designed for LGBTQIA+ Discord communities. It analyzes messages in real-time to identify potential mental health crises and alerts trained crisis response team members when intervention may be needed.
+Ash-NLP v5.0 is an AI-powered crisis detection system specifically designed for LGBTQIA+ Discord communities. It analyzes messages in real-time to identify potential mental health crises and alerts trained crisis response team members when intervention may be needed.
 
 ### Core Capabilities
 - **Real-time analysis** of Discord messages with 147ms average response time
@@ -41,30 +40,30 @@ Ash-NLP v3.1 is an AI-powered crisis detection system specifically designed for 
 
 ### Crisis Levels
 
-#### None (Score: 0.0 - 0.2)
+#### None (Score: {TBD})
 - **Description**: No crisis indicators detected
 - **Action**: Continue normal community monitoring
 - **Example Messages**: "Having a great day!", "Thanks for the help"
 
-#### Low (Score: 0.2 - 0.4)
+#### Low (Score: {TBD})
 - **Description**: Mild distress or negative emotions
 - **Action**: Monitor for escalation, consider check-in
 - **Example Messages**: "Feeling a bit down today", "Work is stressful"
 - **Response**: Gentle community support, resources sharing
 
-#### Medium (Score: 0.4 - 0.6)
+#### Medium (Score: {TBD})
 - **Description**: Moderate distress requiring attention
 - **Action**: Direct intervention recommended
 - **Example Messages**: "I don't know how to cope anymore", "Everything feels overwhelming"
 - **Response**: Personal outreach, emotional support, resource connection
 
-#### High (Score: 0.6 - 0.8)
+#### High (Score: {TBD})
 - **Description**: Significant crisis indicators present
 - **Action**: Immediate intervention required
 - **Example Messages**: "I can't take this anymore", "Nothing matters"
 - **Response**: Direct contact, crisis resources, potential professional referral
 
-#### Critical (Score: 0.8 - 1.0)
+#### Critical (Score: {TBD})
 - **Description**: Severe crisis with potential immediate risk
 - **Action**: Emergency intervention protocol
 - **Example Messages**: "I want to end it all", "Goodbye everyone"
@@ -150,18 +149,18 @@ URGENT - [Your Name] - Crisis Response Team
 ### Analysis Components
 
 #### Crisis Score Interpretation
-- **0.0-0.2**: Background monitoring sufficient
-- **0.3-0.4**: Increased attention warranted
-- **0.5-0.6**: Direct outreach recommended
-- **0.7-0.8**: Immediate intervention needed
-- **0.9-1.0**: Emergency protocols activated
+- **{TBD}**: Background monitoring sufficient
+- **{TBD}**: Increased attention warranted
+- **{TBD}**: Direct outreach recommended
+- **{TBD}**: Immediate intervention needed
+- **{TBD}**: Emergency protocols activated
 
 #### Confidence Score Meaning
-- **0.9-1.0**: Very high confidence - trust AI assessment
-- **0.7-0.8**: Good confidence - verify with context review
-- **0.5-0.6**: Moderate confidence - human judgment crucial
-- **0.3-0.4**: Low confidence - requires careful evaluation
-- **0.0-0.2**: Very low confidence - likely false positive
+- **{TBD}**: Very high confidence - trust AI assessment
+- **{TBD}**: Good confidence - verify with context review
+- **{TBD}**: Moderate confidence - human judgment crucial
+- **{TBD}**: Low confidence - requires careful evaluation
+- **{TBD}**: Very low confidence - likely false positive
 
 #### Detected Categories
 - **emotional_distress**: General emotional pain or suffering
@@ -173,11 +172,9 @@ URGENT - [Your Name] - Crisis Response Team
 
 ### AI Model Details
 The system uses three AI models working together:
-- **Model 1**: Depression and mental health focused analysis
-- **Model 2**: Emotional tone and sentiment analysis
-- **Model 3**: General distress and crisis pattern detection
-
-When models agree (consensus), confidence is higher. Disagreement between models may indicate complex situations requiring human judgment.
+- **Model 1**: {TBD}
+- **Model 2**: {TBD}
+- **Model 3**: {TBD}
 
 ---
 
@@ -223,33 +220,6 @@ Maintain connections to LGBTQIA+-specific crisis resources:
 
 ## Team Coordination
 
-### Shift Handoffs
-
-#### Information to Share
-- **Active cases** requiring ongoing monitoring
-- **Recent critical interventions** and current status
-- **Pattern observations** from recent activity
-- **System performance** notes or issues
-
-#### Handoff Template
-```
-Shift Handoff - [Date/Time]
-
-Active Cases:
-- [Username]: High crisis score, ongoing DM conversation
-- [Username]: Medium crisis, scheduled check-in at [time]
-
-Recent Activity:
-- 3 medium-level interventions this shift
-- 1 critical case resolved with professional referral
-
-System Notes:
-- AI system performing normally
-- 23 learning adjustments made today
-
-[Outgoing Team Member Name]
-```
-
 ### Case Documentation
 
 #### Required Information
@@ -287,39 +257,6 @@ Outcome:
 
 Team Member: [name]
 ```
-
----
-
-## Quality Assurance
-
-### Feedback to AI System
-
-#### When to Provide Feedback
-- **False Positives**: AI flagged crisis when none existed
-- **False Negatives**: AI missed crisis that human identified
-- **Correct Classifications**: Confirm accurate assessments
-
-#### Feedback Process
-1. **Document the case** with original message and AI analysis
-2. **Submit feedback** through admin interface or designated process
-3. **Include context** explaining why assessment was incorrect/correct
-4. **Note community impact** of the false positive/negative
-
-### Performance Monitoring
-
-#### Key Metrics to Track
-- **Response time** from AI alert to team contact
-- **Intervention success rate** (positive user engagement)
-- **False positive/negative rates** based on team assessment
-- **Resource utilization** effectiveness
-- **User satisfaction** with support received
-
-#### Weekly Team Review
-- **Case analysis** of challenging situations
-- **AI performance** discussion and feedback
-- **Protocol updates** based on experience
-- **Training needs** identification
-- **Community feedback** integration
 
 ---
 
@@ -423,10 +360,10 @@ Team Member: [name]
 
 #### Understanding Thresholds
 Current crisis detection thresholds:
-- **Low**: 0.2 (20% crisis probability)
-- **Medium**: 0.4 (40% crisis probability)
-- **High**: 0.6 (60% crisis probability)  
-- **Critical**: 0.8 (80% crisis probability)
+- **Low**: {TBD}
+- **Medium**: {TBD}
+- **High**: {TBD}
+- **Critical**: {TBD}
 
 #### When to Adjust
 - **High false positive rate** - consider raising thresholds
@@ -438,7 +375,7 @@ Current crisis detection thresholds:
 
 ## Conclusion
 
-This guide provides the foundation for effective crisis response using Ash-NLP v3.1. Remember that the AI system is a tool to assist human judgment, not replace it. Your expertise, empathy, and understanding of the LGBTQIA+ community remain the most critical elements in providing life-saving support.
+This guide provides the foundation for effective crisis response using Ash-NLP v5.0. Remember that the AI system is a tool to assist human judgment, not replace it. Your expertise, empathy, and understanding of the LGBTQIA+ community remain the most critical elements in providing life-saving support.
 
 ### Key Principles
 1. **Human judgment** remains paramount in all crisis situations
@@ -451,4 +388,6 @@ The combination of advanced AI assistance and skilled human intervention creates
 
 ---
 
-*Crisis Response Team Guide for Ash-NLP v3.1 - Supporting chosen family through technology and human care.*
+*Crisis Response Team Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈

@@ -1,19 +1,18 @@
-<!-- ash-nlp/docs/tech/managers/feature_config.md -->
+<!-- ash-nlp/docs/tech/managers/feature_flags.md -->
 <!--
-Feature Config Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+API Guide for Ash-NLP Service
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
-# Feature Config Manager Documentation
+# Feature Flags Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
@@ -32,11 +31,6 @@ FeatureConfigManager provides centralized management of feature flags and system
 - **Configuration validation** - Ensures feature flag consistency and validity
 - **System capability control** - Manages which analysis features are active
 - **Experimental feature support** - Safe deployment of new capabilities
-
-### Phase 3e Consolidation Impact
-- **Configuration pattern standardization** - Now uses `get_config_section()` for all configuration access
-- **Integration with SharedUtilitiesManager** - Leverages shared validation and configuration utilities
-- **Performance optimization compatibility** - Optimized for the 74% performance improvement architecture
 
 ---
 
@@ -60,21 +54,7 @@ def create_feature_config_manager(unified_config: UnifiedConfigManager) -> Featu
 ### JSON Configuration (`config/feature_flags.json`)
 ```json
 {
-    "analysis_features": {
-        "detailed_logging": true,
-        "experimental_patterns": false,
-        "enhanced_scoring": true
-    },
-    "api_features": {
-        "admin_endpoints": true,
-        "label_switching": true,
-        "bulk_analysis": false
-    },
-    "performance_features": {
-        "caching_enabled": true,
-        "lazy_loading": true,
-        "batch_processing": false
-    }
+...TBD...
 }
 ```
 
@@ -123,3 +103,9 @@ def create_feature_config_manager(unified_config: UnifiedConfigManager) -> Featu
 - **Manager interaction testing** - Validates proper integration with dependent managers
 - **Runtime feature toggling** - Tests dynamic feature enabling/disabling
 - **Performance impact testing** - Ensures feature flags don't degrade performance
+
+---
+
+*Feature Flags Manager Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈

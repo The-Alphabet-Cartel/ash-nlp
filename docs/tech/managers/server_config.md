@@ -1,25 +1,24 @@
 <!-- ash-nlp/docs/tech/managers/server_config.md -->
 <!--
 Server Config Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Server Config Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
 # ServerConfigManager Documentation
 
-The ServerConfigManager handles server configuration and deployment settings for the Ash-NLP crisis detection system, managing the production deployment on the Debian 12 Linux server infrastructure.
+The ServerConfigManager handles server configuration and deployment settings for the Ash-NLP crisis detection system, managing the production deployment on the Debian Linux server infrastructure.
 
 ---
 
@@ -206,16 +205,6 @@ def create_server_config_manager(unified_config: UnifiedConfigManager) -> Server
 
 ---
 
-## Testing and Validation
+*Server Configuration Manager Guide for Ash-NLP v5.0*
 
-### Configuration Testing
-- **Server startup validation** - Ensures server starts with current configuration
-- **Port availability testing** - Validates port accessibility and binding
-- **Security configuration testing** - Tests authentication and rate limiting
-- **Health check testing** - Validates health monitoring endpoints
-
-### Integration Testing
-- **API endpoint testing** - Comprehensive testing of all API endpoints
-- **Docker deployment testing** - Validates container deployment and configuration
-- **Load testing** - Performance testing under concurrent request load
-- **Security testing** - Authentication, authorization, and rate limiting validation
+**Built with care for chosen family** 🏳️‍🌈

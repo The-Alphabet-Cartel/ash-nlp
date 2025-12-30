@@ -1,19 +1,18 @@
-<!-- ash-nlp/docs/tech/managers/logging_config.md -->
+<!-- ash-nlp/docs/tech/managers/logging_manager.md -->
 <!--
 Logging Config Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Logging Config Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
@@ -171,3 +170,8 @@ def create_logging_config_manager(unified_config: UnifiedConfigManager) -> Loggi
 - **Manager interaction testing** - Validates logging integration across all managers
 - **Performance impact testing** - Ensures logging doesn't degrade crisis detection performance
 - **Privacy compliance testing** - Validates LGBTQIA+ community privacy protection
+---
+
+*Logging Manager Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈

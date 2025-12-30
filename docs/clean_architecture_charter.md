@@ -1,20 +1,18 @@
 <!-- ash-nlp/docs/clean_architecture_charter.md -->
 <!--
 Clean Architecture Charter for Ash-NLP Service
-FILE VERSION: v3.1-2
-LAST MODIFIED: 2025-08-28
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
 -->
-# Clean Architecture Charter - Ash-NLP (Production Ready)
+# Clean Architecture Charter - Ash-NLP
 
 ## Sacred Principles - NEVER TO BE VIOLATED
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-2
-**LAST UPDATED**: 2025-08-28
-**CLEAN ARCHITECTURE**: v3.1 Compliant  
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
 
 ---
 
@@ -23,8 +21,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 ## **Ash-NLP is a CRISIS DETECTION Natural Language Processor that**:
 1. **FIRST**: Uses Zero-Shot AI models for primary semantic classification
 2. **SECOND**: Enhances AI results with contextual pattern analysis
-3. **FALLBACK**: Uses pattern-only classification if AI models fail
-4. **PURPOSE**: Detect crisis messages in Discord community communications
+3. **PURPOSE**: Detect crisis messages in Discord community communications
 
 ## 🏛️ **IMMUTABLE ARCHITECTURE RULES**
 
@@ -32,7 +29,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 - **ALL managers MUST use factory functions** - `create_[manager_name]()`
 - **NEVER call constructors directly**
 - **Factory functions enable**: dependency injection, testing, consistency
-- **Examples**: `create_model_coordination_manager()`, `create_pattern_detection_manager()`, `create_settings_manager()`
+- **Examples**: `create_model_manager()`, `create_patterns_detection_manager()`, `create_settings_config_manager()`
 
 ### **Rule #2: Dependency Injection - REQUIRED**
 - **All managers accept dependencies through constructor parameters**
@@ -40,16 +37,16 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 - **Additional managers passed as named parameters**
 - **Clean separation of concerns maintained**
 
-### **Rule #3: Phase-Additive Development - SACRED**
+### **Rule #3: Phase-Additive Development - STANDARD**
 - **New phases ADD functionality, never REMOVE**
 - **Maintain backward compatibility within phase**
 - **Each phase builds on previous phases' foundations**
 - **Phase 3a + Phase 3b + Phase 3c + Phase 3d = cumulative enhancement**
 
-### **Rule #4: JSON Configuration + Environment Overrides - STANDARD**
+### **Rule #4: JSON Configuration + Environment Overrides - SACRED**
 - **All configuration externalized to JSON files**
-- **JSON configuration files set default values**
-- **Environment variables override JSON defaults**
+- **JSON configuration files set DEFAULT values**
+- **Environment Variables override JSON defaults**
 - **No hardcoded configuration in source code**
 - **UnifiedConfigManager handles all configuration loading**
 
@@ -64,7 +61,7 @@ CLEAN ARCHITECTURE: v3.1 Compliant
 - **ALL code files MUST include version headers** in the format:
   - `v[Major].[Minor]-[Phase]-[Step]-[Increment]`
 - **Version format**:
-  - `v3.1-3d-10.6-1` (Clean Architecture v3.1, Phase 3d, Step 10.6, Increment 1)
+  - `v5.0-1a-1.1-1` (Clean Architecture v5.0, Phase 1a, Step 1.1, Increment 1)
 - **Header placement**: At the top of each file in comments or docstrings
 - **Version increments**: Required for each meaningful change within a step
 - **Cross-conversation continuity**: Ensures accurate file tracking across sessions
@@ -80,15 +77,14 @@ CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classific
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. FIRST: Uses Zero-Shot AI models for primary semantic classification
 2. SECOND: Enhances AI results with contextual pattern analysis  
-3. FALLBACK: Uses pattern-only classification if AI models fail
-4. PURPOSE: Detect crisis messages in Discord community communications
+3. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 {fileDescription} for Ash-NLP Service
 ---
-FILE VERSION: v3.1-3d-10.6-1
-LAST MODIFIED: 2025-08-13
-PHASE: 3d Step 10.6 - Scoring Functions Consolidated
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0-1a-1.1-1
+LAST MODIFIED: 2025-12-30
+PHASE: 1a Step 1.1-1 - {Phase / Step Description}
+CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 """
@@ -108,7 +104,7 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 - **Document the mapping relationship when reusing variables**
 
 #### **Rule #7 Implementation Process**:
-1. **Audit Existing Variables**: Search `.env.template` for related functionality
+1. **Audit Existing Variables**: Search `./.env.template` for related functionality
 2. **Map Requirements**: Identify how new needs can use existing variables
 3. **Calculate Conversions**: Create appropriate scaling/conversion logic if needed
 4. **Document Reuse**: Clearly document which existing variables are being leveraged
@@ -154,7 +150,7 @@ NLP_CONFIG_CRISIS_CONTEXT_BOOST_MULTIPLIER=1.0  # Existing variable
 - **Reduces frustration between team members**
 
 ### **Rule #10: All files need to stay within ~1,000 lines of code (give or take 2%) - STANDARD**
-- **Code going over ~1,000 lines need to be split into helper files**
+- **Code going over ~1,000 lines needs to be split into helper files**
 - **Helper files will be stored in the same directory as the file being worked on under a sub-directory named `helpers`**
   - **Helper files will be named `*_helper.py`**
 
@@ -184,15 +180,14 @@ CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classific
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. FIRST: Uses Zero-Shot AI models for primary semantic classification
 2. SECOND: Enhances AI results with contextual pattern analysis  
-3. FALLBACK: Uses pattern-only classification if AI models fail
-4. PURPOSE: Detect crisis messages in Discord community communications
+3. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 {managerDescription} for Ash-NLP Service
 ---
-FILE VERSION: v3.1-{phase}-{step}-{increment}
+FILE VERSION: v{major}.{minor}-{phase}-{step}-{increment}
 LAST MODIFIED: {date}
 PHASE: {phase}, {step}
-CLEAN ARCHITECTURE: v3.1 Compliant
+CLEAN ARCHITECTURE: Compliant
 """
 
 class [Manager]Manager:
@@ -247,10 +242,9 @@ except Exception as e:
 ```json
 {
   "_metadata": {
-    "file_version": "v3.1-3d-[step]-[increment]",
-    "last_modified": "2025-08-13",
-    "phase": "3d Step [X] - [Description]",
-    "clean_architecture": "v3.1 Compliant",
+    "file_version": "v{major}.{minor}-{phase}-{step}-{increment}",
+    "last_modified": "{year}-{month}-{day}",
+    "clean_architecture": "Compliant",
   },
 
   "*setting_category*": {
@@ -281,10 +275,9 @@ except Exception as e:
 ```json
 {
   "_metadata": {
-    "file_version": "v3.1-3d-10.6-1",
-    "last_modified": "2025-08-13",
-    "phase": "3d Step 10.6 - Scoring Functions Consolidated",
-    "clean_architecture": "v3.1 Compliant",
+    "file_version": "v5.0",
+    "last_modified": "2025-12-30",
+    "clean_architecture": "Compliant",
   },
 
   "crisis_thresholds": {
@@ -531,13 +524,17 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 
 ---
 
-**Status**: Living Document - Updated for Production Resilience (Phase 3d Step 10.6)  
-**Authority**: Project Lead + AI Assistant Collaboration  
-**Enforcement**: Mandatory for ALL code changes  
-**Version**: v3.1-3d-10.7-1
+**Status**: Living Document - Updated for Production Resilience
+**Authority**: Project Lead + AI Assistant Collaboration
+**Enforcement**: Mandatory for ALL code changes
+**Version**: v5.0
 
 ---
 
 ## 🏆 **ARCHITECTURE PLEDGE**
 
 *"I commit to maintaining Clean v3.1 architecture principles with production-ready resilience and consistent file versioning in every code change, recognizing that system availability, operational continuity, and precise change tracking directly impact the ability to provide life-saving mental health crisis detection for The Alphabet Cartel community."*
+
+---
+
+**Built with care for chosen family** 🏳️‍🌈

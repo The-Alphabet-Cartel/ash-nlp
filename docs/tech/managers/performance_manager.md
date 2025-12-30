@@ -1,31 +1,30 @@
-<!-- ash-nlp/docs/tech/managers/performance_config.md -->
+<!-- ash-nlp/docs/tech/managers/performance_manager.md -->
 <!--
-Performance Config Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+Performance Manager Documentation for Ash-NLP Service
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE:Compliant
 -->
-# Performance Config Manager Documentation
+# Performance Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
-# PerformanceConfigManager Documentation
+# Performance Manager Documentation
 
-The PerformanceConfigManager handles performance optimization configuration for the Ash-NLP crisis detection system, enabling the 74% performance improvement achieved in Phase 3e while maintaining comprehensive analysis capabilities.
+The Performance Manager handles performance optimization configuration for the Ash-NLP crisis detection system.
 
 ---
 
 ## Overview
 
-PerformanceConfigManager provides centralized configuration for performance optimization features, caching strategies, and resource management, directly supporting the dramatic performance improvements that enable sub-200ms crisis detection response times.
+Performance Manager provides centralized configuration for performance optimization features, caching strategies, and resource management, directly supporting the dramatic performance improvements that enable sub-200ms crisis detection response times.
 
 ### Core Responsibilities
 - **Performance optimization configuration** - Controls performance enhancement features and settings
@@ -33,12 +32,6 @@ PerformanceConfigManager provides centralized configuration for performance opti
 - **Resource allocation control** - Manages CPU, memory, and GPU resource utilization
 - **Throughput optimization** - Configures batch processing and concurrent analysis capabilities
 - **Response time monitoring** - Tracks and optimizes crisis detection response times
-
-### Phase 3e Performance Achievement
-- **74% performance improvement** - Core configuration supporting 565ms → 147ms average response time reduction
-- **Sub-200ms operational response** - Configuration enabling life-saving rapid crisis detection
-- **Configuration pattern standardization** - Now uses `get_config_section()` for all configuration access
-- **Integration with performance optimizations** - Direct integration with `analysis/performance_optimizations.py` module
 
 ---
 
@@ -111,28 +104,6 @@ def create_performance_config_manager(unified_config: UnifiedConfigManager) -> P
 
 ---
 
-## Performance Optimization Features
-
-### Phase 3e Optimization Integration
-- **Synchronous model coordination** - Eliminates async/sync overhead for 40%+ performance gain
-- **Configuration caching** - Reduces configuration loading overhead by 60%
-- **Lazy loading patterns** - Defers expensive operations until actually needed
-- **Model preloading** - Pre-loads AI models to reduce cold start times
-
-### Caching Strategies
-- **Analysis result caching** - Caches crisis analysis results for repeated content
-- **Model output caching** - Caches AI model outputs for similar inputs
-- **Pattern matching caching** - Caches community pattern detection results
-- **Configuration caching** - Caches parsed configuration to reduce file I/O
-
-### Resource Management
-- **Memory monitoring** - Tracks and manages memory usage for large AI models
-- **GPU utilization** - Optimizes NVIDIA RTX 3060 12GB VRAM usage
-- **CPU thread management** - Manages concurrent processing on AMD Ryzen 7 5800x
-- **Connection pooling** - Manages database and external service connections
-
----
-
 ## Integration Points
 
 ### Dependencies
@@ -179,15 +150,6 @@ def create_performance_config_manager(unified_config: UnifiedConfigManager) -> P
 
 ---
 
-## Testing and Validation
+*Performance Manager Guide for Ash-NLP v5.0*
 
-### Performance Testing
-- **Response time validation** - Ensures performance targets are consistently met
-- **Resource usage testing** - Validates resource consumption stays within limits
-- **Optimization effectiveness testing** - Measures actual performance improvement from each feature
-- **Concurrent load testing** - Tests performance under multiple simultaneous crisis analyses
-
-### Integration Testing
-- **Manager interaction testing** - Validates performance configuration integration across managers
-- **Caching consistency testing** - Ensures cached results remain accurate and consistent
-- **Resource limit testing** - Tests system behavior when approaching resource limits
+**Built with care for chosen family** 🏳️‍🌈

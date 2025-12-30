@@ -1,22 +1,22 @@
 <!-- ash-nlp/docs/tech/technical_guide.md -->
 <!--
 Technical Guide for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Technical Guide
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
-# Ash-NLP v3.1 Technical Architecture Guide
+# Ash-NLP v5.0 Technical Architecture Guide
 
 Comprehensive technical documentation for developers working with Ash-NLP's crisis detection system.
 
@@ -24,9 +24,9 @@ Comprehensive technical documentation for developers working with Ash-NLP's cris
 
 ## Architecture Overview
 
-### Clean Architecture v3.1 Implementation
+### Clean Architecture v5.0 Implementation
 
-Ash-NLP v3.1 implements Clean Architecture principles with strict dependency direction enforcement and comprehensive separation of concerns.
+Ash-NLP v5.0 implements Clean Architecture principles with strict dependency direction enforcement and comprehensive separation of concerns.
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -40,17 +40,16 @@ Ash-NLP v3.1 implements Clean Architecture principles with strict dependency dir
 ├────────────────────────────────────────────────────────────────┤
 │                   Manager Layer (Business Logic)               │
 │  ┌─────────────────────────────────────────────────────────┐   │
-│  │ 15 Specialized Managers with Factory Functions          │   │
+│  │ Specialized Managers with Factory Functions             │   │
 │  │ - ModelCoordinationManager                              │   │
-│  │ - LearningSystemManager                                 │   │
-│  │ - PatternDetectionManager                               │   │
-│  │ │ ...and 12 others                                      │   │
+│  │ - PatternsDetectionManager                              │   │
+│  │ │ ... others                                            │   │
 │  └─────────────────────────────────────────────────────────┘   │
 ├────────────────────────────────────────────────────────────────┤
 │               Infrastructure Layer                             │
 │  ┌──────────────────┐  ┌────────────────────────────────┐      │
 │  │ UnifiedConfig    │  │ SharedUtilitiesManager         │      │
-│  │ Manager          │  │ (15 Core Utilities)            │      │
+│  │ Manager          │  │ (Core Utilities)               │      │
 │  │ (Foundation)     │  └────────────────────────────────┘      │
 │  └──────────────────┘                                          │
 └────────────────────────────────────────────────────────────────┘
@@ -223,46 +222,65 @@ docker-compose -f docker-compose.dev.yml up
 ### Project Structure
 ```
 ash-nlp/
+├── .env                        # Environment Variables
+├── analysis/                   # Crisis analysis components
+|   └── crisis_analysis.py      # Crisis Analysis Module
+├── api/                        # FastAPI endpoints
+|   ├── admin_endpoints.py      # Admin endpoints
+|   └── user_endpoints.py       # User endpoints
+├── backups/                    # Backup management
+|   ├── daily                   # Daily backups
+|   ├── monthly                 # Monthly backups
+|   ├── weekly                  # Weekly backups
+|   └── yearly                  # Yearly backups
+├── cache/                      # Cache management
+|   └── models/                 # Models Cache
+|       └── offload/            # Offloaded models
+├── config/                     # Configuration files
+|   ├── analysis_config.json    # Analysis Configuration
+|   ├── feature_flags.json      # Feature Flags Configuration
+|   ├── logging_config.json     # Logging Configuration
+|   ├── model_config.json       # Model Configuration
+|   ├── patterns_config.json    # Patterns Configuration
+|   ├── performance_config.json # Performance Configuration
+|   ├── server_config.json      # Server Configuration
+|   ├── settings_config.json    # Settings Configuration
+|   ├── storage_config.json     # Storage Configuration
+|   ├── threshold_config.json   # Crisis Threshold Configuration
+|   └── zero_shot.json          # Zero Shot Label Configuration
+├── data/                       # Data management
+|   ├── analysis                # Analysis data
+|   ├── learning                # Learning data (Future)
+|   └── patterns                # Patterns data
+├── docker-compose.yml          # Docker Configuration
+├── docs/                       # Documentation
+├── logs/                       # Logs management
 ├── main.py                     # Application entry point
-├── managers/                   # Business logic managers (15 total)
-│   ├── unified_config.py       # Configuration foundation
-│   ├── shared_utilities.py     # Universal utility methods
-│   ├── learning_system.py      # Adaptive learning system
-│   ├── model_coordination.py   # AI model ensemble
-│   ├── crisis_analyzer.py      # Analysis coordination
-│   └── ...                    # 10+ other specialized managers
-├── analysis/                   # Analysis components
-│   ├── performance_optimizations.py  # Performance enhancements
-│   └── crisis_analyzer.py      # Core analysis logic
-├── api/                       # FastAPI endpoints
-│   ├── admin_endpoints.py     # Administrative functions
-│   ├── ensemble_endpoints.py  # Core analysis endpoints
-│   └── learning_endpoints.py  # Learning system endpoints
-├── config/                    # Configuration files
-│   ├── analysis.json          # Analysis parameters
-│   ├── models.json            # AI model configuration
-│   ├── thresholds.json        # Crisis level thresholds
-│   └── ...                   # Additional config files
-├── docs/                      # Documentation
-│   ├── api/                   # API documentation
-│   ├── team/                  # Team operational guides
-│   ├── tech/                  # Technical documentation
-│   └── v3.1/phase/3/e/        # Phase 3e documentation
-├── tests/                     # Test suites
-│   ├── unit/                  # Unit tests for managers
-│   ├── integration/           # Integration tests
-│   └── performance/           # Performance benchmarks
-├── docker-compose.yml         # Production deployment
-├── docker-compose.dev.yml     # Development environment
-├── Dockerfile                 # Container definition
-├── .env.template             # Environment configuration template
-└── requirements.txt          # Python dependencies
+└── managers/                   # Core managers
+|   ├── context_analysis.py     # Context Analysis Manager
+|   ├── feature_flags.py        # Feature Flags Manager
+|   ├── logging_manager.py      # Logging Manager
+|   ├── model_manager.py        # Model Manager
+|   ├── patterns_manager.py     # Patterns Manager
+|   ├── performance_manager.py  # Performance Manager
+|   ├── server_config.py        # Server Configuration Manager
+|   ├── settings_config.py      # Settings Configuration Manager
+|   ├── shared_utilities.py     # Shared Utilities Manager
+|   ├── storage_config.py       # Storage Configuration Manager
+|   ├── threshold_manager.py    # Threshold Manager
+|   ├── unified_config.py       # Unified Configuration Manager
+|   └── zero_shot.py            # Zero-Shot Manager
+└── tests/                      # Testing Suites
+    ├── fixtures                # Fixtures for testing
+    ├── integrations            # Integration tests
+    ├── performance             # Performance tests
+    └── unit                    # Unit tests
 ```
 
 ### Code Standards
 
 #### Clean Architecture Compliance
-Every code change must follow Clean Architecture v3.1 principles:
+Every code change must follow Clean Architecture v5.0 principles:
 
 ```python
 # ✅ Correct: Factory function with dependency injection
@@ -279,10 +297,9 @@ manager = ExampleManager()  # Missing dependencies
 All Python files must include version headers:
 ```python
 """
-FILE VERSION: v3.1-3e-8-3
-LAST MODIFIED: 2025-08-26
-PHASE: 3e, Step 8
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 """
 ```
 
@@ -372,8 +389,8 @@ batch_results = model_manager.batch_analyze(
 
 ## Database Integration
 
-### Current State (v3.1)
-Ash-NLP v3.1 operates without persistent database storage, analyzing messages in-memory only for privacy protection.
+### Current State (v5.0)
+Ash-NLP v5.0 operates without persistent database storage, analyzing messages in-memory only for privacy protection.
 
 ### Planned Database Integration (Future)
 ```python
@@ -661,21 +678,19 @@ docker exec ash-nlp python tests/performance/benchmark_analysis.py
 #### Docker Configuration
 ```yaml
 # docker-compose.yml
-version: '3.8'
 services:
   ash-nlp:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8881:8881"
+      - "30880:30880"
     environment:
       - NLP_SERVER_HOST=0.0.0.0
-      - NLP_SERVER_PORT=8881
+      - NLP_SERVER_PORT=30880
       - NLP_PERFORMANCE_OPTIMIZATION=true
     secrets:
       - hugging_face_token
-      - openai_api_key
     deploy:
       resources:
         reservations:
@@ -691,15 +706,13 @@ services:
 secrets:
   hugging_face_token:
     file: ./secrets/hugging_face_token.txt
-  openai_api_key:
-    file: ./secrets/openai_api_key.txt
 ```
 
 #### Environment Configuration
 ```bash
 # Production .env file
 NLP_SERVER_HOST=0.0.0.0
-NLP_SERVER_PORT=8881
+NLP_SERVER_PORT=30880
 
 # Performance optimization
 NLP_PERFORMANCE_BATCH_SIZE=48
@@ -737,7 +750,7 @@ NLP_LOGGING_FILE=/app/logs/ash-nlp.log
 async def health_check():
     return {
         "status": "healthy",
-        "version": "v3.1-3e-8-3",
+        "version": "v5.0",
         "models_loaded": model_manager.are_models_loaded(),
         "managers_initialized": len(initialized_managers),
         "response_time": performance_monitor.get_avg_response_time(),
@@ -861,7 +874,7 @@ export NLP_PERFORMANCE_OPTIMIZATION=true
 export NLP_PERFORMANCE_BATCH_SIZE=32
 
 # Warm up models
-curl -X POST http://localhost:8881/analyze -d '{"message":"test","user_id":"warmup","channel_id":"warmup"}'
+curl -X POST http://localhost:30880/analyze -d '{"message":"test","user_id":"warmup","channel_id":"warmup"}'
 ```
 
 #### 3. Learning System Issues
@@ -870,7 +883,7 @@ curl -X POST http://localhost:8881/analyze -d '{"message":"test","user_id":"warm
 **Solutions**:
 ```bash
 # Check learning system status
-curl http://localhost:8881/admin/learning/status
+curl http://localhost:30880/admin/learning/status
 
 # Reset daily adjustment count (admin only)
 docker exec ash-nlp python -c "
@@ -921,7 +934,7 @@ docker-compose up ash-nlp
 # Debug specific analysis
 import requests
 
-response = requests.post('http://localhost:8881/analyze', json={
+response = requests.post('http://localhost:30880/analyze', json={
     'message': 'debug test message',
     'user_id': 'debug_user',
     'channel_id': 'debug_channel',
@@ -956,7 +969,7 @@ docker-compose -f docker-compose.dev.yml up --build
 ```python
 # Example: Adding new manager
 def create_new_manager(unified_config: UnifiedConfigManager) -> NewManager:
-    """Factory function following Clean v3.1 pattern"""
+    """Factory function following Clean v5.0 pattern"""
     if not unified_config:
         raise ValueError("unified_config is required")
     return NewManager(unified_config)
@@ -1050,7 +1063,7 @@ class TestNewManager:
 
 ## Conclusion
 
-Ash-NLP v3.1 represents a significant advancement in crisis detection technology specifically designed for LGBTQIA+ communities. The Clean Architecture v3.1 implementation provides a solid foundation for continued development while the Phase 3e optimizations ensure production-ready performance.
+Ash-NLP v5.0 represents a significant advancement in crisis detection technology specifically designed for LGBTQIA+ communities. The Clean Architecture implementation provides a solid foundation for continued development.
 
 ### Key Technical Achievements
 - **74% performance improvement** through architectural optimization
@@ -1068,4 +1081,6 @@ The combination of advanced AI capabilities, clean architecture, and community-f
 
 ---
 
-*Technical Guide for Ash-NLP v3.1 - Engineering excellence for community mental health support.*
+*Technical Guide for Ash-NLP v5.0 - Engineering excellence for community mental health support.*
+
+**Built with care for chosen family** 🏳️‍🌈

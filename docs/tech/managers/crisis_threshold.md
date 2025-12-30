@@ -1,26 +1,18 @@
 <!-- ash-nlp/docs/tech/managers/crisis_threshold.md -->
 <!--
-Crisis Threshold Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+API Guide for Ash-NLP Service
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Crisis Threshold Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
-
----
-
-**File**: `managers/crisis_threshold.py`  
-**Factory Function**: `create_crisis_threshold_manager(unified_config_manager, model_coordination_manager)`  
-**Dependencies**: UnifiedConfigManager, ModelCoordinationManager  
-**Status**: Production Ready - Phase 3e Consolidation Complete  
+**FILE VERSION**: v5.0-1
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
@@ -374,16 +366,6 @@ is_valid = shared_utils.validate_range(value, min_val, max_val, "threshold_name"
 
 ---
 
-## Phase 3e Achievement Summary
+*Threshold Configuration Manager Guide for Ash-NLP v5.0*
 
-**Before Phase 3e**: Threshold manager with mixed responsibilities  
-**After Phase 3e**: Focused threshold determination with learning system integration
-
-### Consolidation Results
-- **Learning methods**: Successfully extracted to LearningSystemManager
-- **Utility methods**: Successfully moved to SharedUtilitiesManager
-- **Critical logic preserved**: All life-saving threshold logic maintained
-- **Enhanced integration**: Improved connection with learning system for adaptation
-
-### Community Impact
-Maintained critical safety functions while enabling adaptive learning capabilities for The Alphabet Cartel's LGBTQIA+ crisis detection system, ensuring reliable threshold decisions that protect community members while continuously improving accuracy through learning from feedback.
+**Built with care for chosen family** 🏳️‍🌈

@@ -1,18 +1,18 @@
 <!-- ash-nlp/docs/project_instructions.md -->
 <!--
 Project Instructions for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-28
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Ash-NLP Project Instructions
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-28
-**CLEAN ARCHITECTURE**: v3.1 Compliant  
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant  
 
 ---
 
@@ -51,17 +51,17 @@ https://github.com/the-alphabet-cartel
     - Docker
       - We use a Docker first philosophy
         - Always containerize the code!
-    - The server has an IP of 10.20.30.253
+    - The server has an internal IP of 10.20.30.253
 
 ## Source Code and GitHub Repository Locations
 - `Ash-NLP`: https://github.com/the-alphabet-cartel/ash-nlp
   - Backend NLP Server
 
 ## Port Assignments
-- `Ash-NLP`: 8881
+- `Ash-NLP`: 30880
 
 ## General Instructions
-- Read and follow the Clean Architecture Charter (`ash-nlp/docs/clean_architecture_charter.md`) to the letter.
+- Read and follow the Clean Architecture Charter (`./docs/clean_architecture_charter.md`) to the letter.
   - This is our bible for all code within the Ash ecosystem.
 - Always ask for the current version of a specific file before making any modifications, changes, or edits to that file.
   - This is to ensure that we're both on the "same page" before making adjustments to the code.
@@ -76,12 +76,16 @@ https://github.com/the-alphabet-cartel
     - `docker exec ash-nlp python *script_to_run.py*`
 - **No Bash Scripting!**
 - Configuration Variables and Settings
-  - All default configuration variables and settings need to be defined in JSON files that are located in a directory named  `ash-nlp/config/`.
+  - All default configuration variables and settings need to be defined in JSON files that are located in a directory named  `./config/`.
     - Standard format for use is defined in the Clean Architecture Charter
-  - All associated managers for these JSON configuration files need to be located in a directory named `ash-nlp/managers/`
+  - All associated managers for these JSON configuration files need to be located in a directory named `./managers/`
     - Standard format for use is defined in the Clean Architecture Charter
-  - All configuration variables and settings need to be able to be overridden by environmental variables located in a `.env` file located at `ash-nlp/.env`
+  - All configuration variables and settings need to be able to be overridden by environmental variables located in a `.env` file located at `./.env`
 - Sensitive Information
   - All sensitive information (passwords, access tokens, API tokens, etc.) need to utilize Docker Secrets functionality
 
 Adhering to these rules will ensure that the main code base stays clean and easy to read through for troubleshooting purposes, as well as to be easily able to add more functionality in the future.
+
+---
+
+**Built with care for chosen family** 🏳️‍🌈

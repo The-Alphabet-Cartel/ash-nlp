@@ -1,26 +1,18 @@
-<!-- ash-nlp/docs/tech/managers/model_coordination.md -->
+<!-- ash-nlp/docs/tech/managers/model_manager.md -->
 <!--
 Model Coordination Manager Documentation for Ash-NLP Service
-FILE VERSION: v3.1-1
-LAST MODIFIED: 2025-08-26
-PHASE: 3e
-CLEAN ARCHITECTURE: v3.1 Compliant
+FILE VERSION: v5.0
+LAST MODIFIED: 2025-12-30
+CLEAN ARCHITECTURE: Compliant
 -->
 # Model Coordination Manager Documentation
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp
-**Project**: Ash-NLP v3.1
+**Project**: Ash-NLP v5.0
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-**FILE VERSION**: v3.1-1
-**LAST UPDATED**: 2025-08-26
-**CLEAN ARCHITECTURE**: v3.1 Compliant
-
----
-
-**File**: `managers/model_coordination.py`  
-**Factory Function**: `create_model_coordination_manager(unified_config_manager)`  
-**Dependencies**: UnifiedConfigManager  
-**Status**: Production Ready - Phase 3e Performance Optimization Complete  
+**FILE VERSION**: v5.0
+**LAST UPDATED**: 2025-12-30
+**CLEAN ARCHITECTURE**: Compliant
 
 ---
 
@@ -185,63 +177,6 @@ Model health monitoring and diagnostics:
 - Memory usage and resource consumption
 - Performance metrics and response times
 - Error rates and failure detection
-
----
-
-## Phase 3e Performance Optimization Impact
-
-### Performance Achievements
-
-**74% Performance Improvement Delivered:**
-- **Before optimization**: 565ms average analysis time
-- **After optimization**: 147ms average analysis time
-- **Improvement magnitude**: 418ms reduction (74% faster)
-- **Target achievement**: Exceeded 500ms target by 353ms
-
-**Key Performance Optimizations:**
-1. **Synchronous method integration** (`classify_sync_ensemble()`)
-2. **Direct model coordination** (`_classify_sync_direct()`)
-3. **Pipeline caching** with pre-warmed model access
-4. **Async/sync overhead elimination** throughout analysis path
-
-### Technical Implementation Details
-
-#### Synchronous Pipeline Optimization
-```python
-def classify_sync_ensemble(self, text: str, zero_shot_manager=None) -> Dict[str, Any]:
-    """
-    PHASE 3E STEP 7: Performance-optimized synchronous classification
-    
-    Eliminates asyncio overhead by using direct synchronous model calls
-    with pre-warmed pipeline access for maximum performance.
-    """
-    if self.get_warmup_status().get('pipeline_ready', False):
-        # Use cached pipeline references for immediate inference
-        return self._classify_sync_direct(text, model_labels, model_type, hypothesis_template)
-    else:
-        # Fallback to standard async coordination if pipelines not ready
-        return self.classify_ensemble_async(text, zero_shot_manager)
-```
-
-#### Configuration Caching Integration
-- **Pre-cached model weights** eliminate runtime configuration lookups
-- **Cached device settings** prevent repeated hardware detection
-- **Pipeline reference caching** reduces model object access overhead
-- **Configuration validation caching** speeds startup and reduces validation overhead
-
-### Production Performance Profile
-
-#### Response Time Characteristics
-- **Cold start**: 713ms (model loading and initialization)
-- **Operational average**: 147ms (74% improvement over baseline)
-- **Best case**: 136ms (optimized path with warm cache)
-- **Consistency**: 27ms variance (highly stable performance)
-
-#### Performance vs. Accuracy Trade-offs
-- **Zero accuracy loss**: All optimizations preserve full crisis detection capability
-- **Enhanced detail preservation**: Individual model scores maintained in optimized path
-- **Fallback safety**: Automatic fallback to original methods on optimization failures
-- **Progressive enhancement**: Optimizations activate only when safe and beneficial
 
 ---
 
@@ -469,3 +404,8 @@ print(f"Model precision: {precision}")
 
 ### Community Impact
 Dramatically enhanced response times for The Alphabet Cartel's LGBTQIA+ crisis detection system, providing near-instantaneous AI-powered crisis analysis that enables faster human intervention and support delivery, ultimately improving mental health outcomes for Discord community members through more responsive crisis detection technology.
+---
+
+*Model Manager Guide for Ash-NLP v5.0*
+
+**Built with care for chosen family** 🏳️‍🌈
