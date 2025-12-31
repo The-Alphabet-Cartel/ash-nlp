@@ -1,7 +1,8 @@
 #!/bin/bash
 # Ash-NLP Testing Suite - Docker Entrypoint
-# FILE VERSION: v5.0
-# LAST MODIFIED: 2025-12-30
+# FILE VERSION: v5.0-2a-2.2
+# LAST MODIFIED: 2025-12-31
+# PHASE: 2a Step 2.2 - Multi-Model Task Type Support
 # CLEAN ARCHITECTURE: v5.0 Compliant
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 
@@ -17,8 +18,8 @@ NC='\033[0m' # No Color
 # Banner
 echo -e "${BLUE}"
 echo "╔═══════════════════════════════════════════════════════════╗"
-echo "║        Ash-NLP v5.0 Testing Suite Container              ║"
-echo "║        The Alphabet Cartel - Crisis Detection            ║"
+echo "║        Ash-NLP v5.0 Testing Suite Container               ║"
+echo "║        The Alphabet Cartel - Crisis Detection             ║"
 echo "╚═══════════════════════════════════════════════════════════╝"
 echo -e "${NC}"
 
@@ -109,25 +110,37 @@ case "$1" in
         python <<EOF
 from testing import create_model_evaluator
 
+# Determine task type based on model
+model_lower = "${MODEL_NAME}".lower()
+if "bart" in model_lower:
+    task_type = "zero-shot-classification"
+else:
+    task_type = "text-classification"
+
+print(f"Task type: {task_type}")
+
 evaluator = create_model_evaluator()
 results = evaluator.test_dataset(
     model_name="${MODEL_NAME}",
-    dataset_path="testing/test_datasets/${DATASET}_examples.json",
-    task_type="zero-shot-classification"
+    dataset_path="testing/test_datasets/${DATASET}.json",
+    task_type=task_type
 )
 
 print("\n" + "="*60)
 print("TEST RESULTS")
 print("="*60)
 print(f"Model: ${MODEL_NAME}")
-print(f"Accuracy: {results['metrics']['overall']['accuracy']:.2%}")
-print(f"Passed: {results['metrics']['overall']['passed']}/{results['metrics']['overall']['total_tests']}")
+print(f"Label Accuracy: {results['metrics']['overall']['label_accuracy']:.2%}")
+print(f"Score Accuracy: {results['metrics']['overall']['score_accuracy']:.2%}")
+print(f"Label Passed: {results['metrics']['overall']['label_passed']}/{results['metrics']['overall']['total_tests']}")
 print(f"Avg Latency: {results['metrics']['performance']['avg_latency_ms']:.2f}ms")
 print(f"Avg VRAM: {results['metrics']['performance']['avg_vram_mb']:.2f}MB")
 
 # Save report
-report = evaluator.generate_report(results, "testing/reports/output/test_results.json")
-print("\nReport saved to: testing/reports/output/test_results.json")
+model = "${MODEL_NAME}"
+safe_name = model.replace("/", "_")
+report = evaluator.generate_report(results, f"testing/reports/output/{safe_name}_${DATASET}_results.json")
+print(f"\nReport saved to: testing/reports/output/{safe_name}_${DATASET}_results.json")
 EOF
         ;;
 
@@ -146,8 +159,9 @@ results = evaluator.test_dataset(
     task_type="zero-shot-classification"
 )
 
-print(f"\nBaseline Accuracy: {results['metrics']['overall']['accuracy']:.2%}")
-evaluator.generate_report(results, "testing/reports/output/baseline_v3.1.json")
+print(f"\nBaseline Label Accuracy: {results['metrics']['overall']['label_accuracy']:.2%}")
+print(f"Baseline Score Accuracy: {results['metrics']['overall']['score_accuracy']:.2%}")
+evaluator.generate_report(results, "testing/reports/output/baseline_v3_1.json")
 print("Baseline report saved!")
 EOF
         ;;
@@ -160,24 +174,25 @@ from testing import create_model_evaluator
 evaluator = create_model_evaluator()
 
 models = [
-    "facebook/bart-large-mnli",
-    "SamLowe/roberta-base-go_emotions",
-    "cardiffnlp/twitter-roberta-base-sentiment-latest",
-    "cardiffnlp/twitter-roberta-base-irony"
+    ("facebook/bart-large-mnli", "zero-shot-classification"),
+    ("SamLowe/roberta-base-go_emotions", "text-classification"),
+    ("cardiffnlp/twitter-roberta-base-sentiment-latest", "text-classification"),
+    ("cardiffnlp/twitter-roberta-base-irony", "text-classification")
 ]
 
-for model in models:
+for model, task_type in models:
     print(f"\n{'='*60}")
     print(f"Testing: {model}")
+    print(f"Task: {task_type}")
     print('='*60)
 
     results = evaluator.test_dataset(
         model_name=model,
         dataset_path="testing/test_datasets/crisis_examples.json",
-        task_type="zero-shot-classification" if "bart" in model else "text-classification"
+        task_type=task_type
     )
 
-    print(f"Accuracy: {results['metrics']['overall']['accuracy']:.2%}")
+    print(f"Label Accuracy: {results['metrics']['overall']['label_accuracy']:.2%}")
     print(f"Latency: {results['metrics']['performance']['avg_latency_ms']:.2f}ms")
 
     # Save individual report
@@ -214,7 +229,7 @@ for dataset in datasets:
         task_type="zero-shot-classification"
     )
     all_results[dataset] = results
-    print(f"  Accuracy: {results['metrics']['overall']['accuracy']:.2%}")
+    print(f"  Label Accuracy: {results['metrics']['overall']['label_accuracy']:.2%}")
 
 # Generate comprehensive report
 evaluator.generate_report(all_results, "testing/reports/output/comprehensive_test.json")
@@ -245,7 +260,7 @@ print("MODEL COMPARISON")
 print("="*60)
 print(f"Model A: $2")
 print(f"Model B: $3")
-print(f"\nAccuracy Improvement: {comparison['improvements']['accuracy']['percentage']:.2f}%")
+print(f"\nLabel Accuracy Improvement: {comparison['improvements']['label_accuracy']['percentage']:.2f}%")
 print(f"Latency Change: {comparison['improvements']['latency']['percentage']:.2f}%")
 print(f"\nWinner: {comparison['winner']}")
 
