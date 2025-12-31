@@ -4,18 +4,18 @@ CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classific
 
 Model Evaluator - Testing Framework Core
 ---
-FILE VERSION: v5.0-2a-2.1-1
+FILE VERSION: v5.0-2a-2.2
 LAST MODIFIED: 2025-12-31
-PHASE: 2a Step 2.1 - Updated for Label-Based Evaluation (Primary Metric)
+PHASE: 2a Step 2.2 - Multi-Model Task Type Support
 CLEAN ARCHITECTURE: v5.0 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-CHANGES in v5.0-2a-2.1-1:
-- Updated _is_prediction_correct to use LABEL MATCHING as primary metric
-- Score-based evaluation now secondary/informational
-- Follows Clean Architecture Rule #12 (ML Model Evaluation Standards)
-- Label accuracy is what matters for crisis detection
+CHANGES in v5.0-2a-2.2:
+- Added model-specific label extraction (BART crisis, RoBERTa emotions, Cardiff sentiment/irony)
+- Fixed task type handling for different model purposes
+- Each model now tested on its native task
+- Updated _get_expected_labels to be model-aware
 """
 
 import json
@@ -49,6 +49,7 @@ class ModelEvaluator:
     - Compare models against baselines
     - Generate comprehensive performance reports
     - Track VRAM usage and latency metrics
+    - Support multiple model types (crisis, emotion, sentiment, irony)
 
     Clean Architecture v5.0 Compliance:
     - Factory function pattern
@@ -81,10 +82,12 @@ class ModelEvaluator:
         # Cache for loaded models
         self.loaded_models = {}
 
-        logger.info(
-            f"ModelEvaluator v5.0-2a-2.1-1 initialized on device: {self.device}"
-        )
+        # Track current model being tested
+        self.current_model_name = None
+
+        logger.info(f"ModelEvaluator v5.0-2a-2.2 initialized on device: {self.device}")
         logger.info("Using LABEL-BASED evaluation as primary metric (Rule #12)")
+        logger.info("Multi-model task type support enabled")
 
     def _determine_device(self) -> str:
         """Determine available device (cuda/cpu)"""
@@ -113,7 +116,7 @@ class ModelEvaluator:
             logger.info(f"Using cached model: {model_name}")
             return self.loaded_models[model_name]
 
-        logger.info(f"Loading model: {model_name}")
+        logger.info(f"Loading model: {model_name} (task: {task})")
 
         try:
             device_id = 0 if self.device == "cuda" else -1
@@ -181,7 +184,10 @@ class ModelEvaluator:
                 predicted_score = prediction["scores"][0]
 
             # Determine correctness using LABEL-BASED evaluation (Rule #12)
-            expected_labels = self._get_expected_labels(expected, task_type)
+            # Pass model name to get correct expected labels
+            expected_labels = self._get_expected_labels(
+                expected, self.current_model_name, task_type
+            )
             is_correct = self._is_prediction_correct_label_based(
                 predicted_label, expected_labels
             )
@@ -214,24 +220,69 @@ class ModelEvaluator:
                 "score_correct": False,
             }
 
-    def _get_expected_labels(self, expected: Dict, task_type: str) -> List[str]:
+    def _get_expected_labels(
+        self, expected: Dict, model_name: str, task_type: str
+    ) -> List[str]:
         """
-        Extract expected labels from test case
+        Extract expected labels from test case based on model type
+
+        Model-specific label extraction:
+        - BART (facebook/bart-large-mnli): Crisis classification labels
+        - RoBERTa go_emotions: Emotion labels (sadness, fear, anger, etc.)
+        - Cardiff sentiment: Sentiment labels (positive, negative, neutral)
+        - Cardiff irony: Irony labels (ironic, not_ironic)
 
         Args:
             expected: Expected outputs dictionary
+            model_name: Name of the model being tested
             task_type: Type of classification task
 
         Returns:
             List of acceptable labels for this test case
         """
-        if task_type == "zero-shot-classification":
-            # For zero-shot, get expected labels from model_expectations
-            return expected.get("model_expectations", {}).get("bart_crisis", [])
-        else:
-            # For other tasks, might have different structure
-            # Add other task type handling as needed
+        model_expectations = expected.get("model_expectations", {})
+
+        if not model_name:
+            # Fallback to task type if model name not set
+            if task_type == "zero-shot-classification":
+                return model_expectations.get("bart_crisis", [])
             return []
+
+        # Determine which labels to use based on model name
+        model_lower = model_name.lower()
+
+        if "bart" in model_lower:
+            # BART crisis classifier
+            labels = model_expectations.get("bart_crisis", [])
+            logger.debug(f"Using bart_crisis labels: {labels}")
+            return labels
+
+        elif "go_emotions" in model_lower or "emotion" in model_lower:
+            # RoBERTa emotions classifier
+            labels = model_expectations.get("emotions", [])
+            logger.debug(f"Using emotions labels: {labels}")
+            return labels
+
+        elif "sentiment" in model_lower:
+            # Cardiff sentiment classifier
+            sentiment = model_expectations.get("sentiment", "")
+            labels = [sentiment] if sentiment else []
+            logger.debug(f"Using sentiment label: {labels}")
+            return labels
+
+        elif "irony" in model_lower:
+            # Cardiff irony classifier
+            irony = model_expectations.get("irony", "")
+            labels = [irony] if irony else []
+            logger.debug(f"Using irony label: {labels}")
+            return labels
+
+        else:
+            # Generic fallback - assume crisis detection
+            logger.warning(
+                f"Unknown model type: {model_name}, using bart_crisis labels"
+            )
+            return model_expectations.get("bart_crisis", [])
 
     def _is_prediction_correct_label_based(
         self, predicted_label: str, expected_labels: List[str]
@@ -251,7 +302,6 @@ class ModelEvaluator:
             True if predicted label matches any expected label
         """
         if not expected_labels:
-            # No expected labels defined, can't evaluate
             logger.warning(f"No expected labels for prediction: {predicted_label}")
             return False
 
@@ -306,6 +356,10 @@ class ModelEvaluator:
             Comprehensive test results with LABEL-BASED accuracy
         """
         logger.info(f"Testing {model_name} against {dataset_path}")
+        logger.info(f"Task type: {task_type}")
+
+        # Track current model for label extraction
+        self.current_model_name = model_name
 
         # Load model
         model = self.load_model(model_name, task=task_type)
@@ -325,6 +379,7 @@ class ModelEvaluator:
         return {
             "model_name": model_name,
             "dataset": dataset_path,
+            "task_type": task_type,
             "timestamp": datetime.utcnow().isoformat(),
             "total_tests": len(results),
             "results": results,
@@ -529,7 +584,7 @@ class ModelEvaluator:
             Report as JSON string
         """
         report = {
-            "report_version": "v5.0-2a-2.1-1",
+            "report_version": "v5.0-2a-2.2",
             "evaluation_method": "label_based_primary",
             "generated_at": datetime.utcnow().isoformat(),
             "results": results,
@@ -548,6 +603,7 @@ class ModelEvaluator:
         """Clean up loaded models and free memory"""
         logger.info("Cleaning up models...")
         self.loaded_models.clear()
+        self.current_model_name = None
 
         if self.device == "cuda" and torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -593,4 +649,4 @@ def create_model_evaluator(test_config_path: str = None) -> ModelEvaluator:
 
 __all__ = ["ModelEvaluator", "create_model_evaluator"]
 
-logger.info("ModelEvaluator v5.0-2a-2.1-1 loaded (Label-Based Evaluation)")
+logger.info("ModelEvaluator v5.0-2a-2.2 loaded (Multi-Model Task Type Support)")
