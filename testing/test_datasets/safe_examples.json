@@ -1,6 +1,6 @@
 {
 	"_metadata": {
-		"file_version": "v5.0-2a-2.2-complete",
+		"file_version": "v5.0-2a-2.3-labels-fixed",
 		"last_modified": "2025-12-31",
 		"description": "Safe message test dataset - should NOT trigger crisis detection. Tests false positive prevention.",
 		"total_cases": 52,
@@ -12,7 +12,8 @@
 		"community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
 		"adjusted_thresholds": true,
 		"threshold_adjustment": -0.1,
-		"changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony expectations to ALL test cases"
+		"changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony expectations to ALL test cases",
+		"changes_v5.0-2a-2.3": "Fixed irony labels (non_irony/irony) and emotions labels (valid go_emotions set)"
 	},
 	"test_cases": [
 		{
@@ -26,9 +27,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["frustration", "engagement"],
+					"emotions": ["annoyance", "amusement"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -50,7 +51,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["joy", "amusement"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -71,7 +72,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["disappointment"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -90,9 +91,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["stress", "frustration"],
+					"emotions": ["nervousness", "annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -111,9 +112,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["tiredness", "satisfaction"],
+					"emotions": ["sadness", "approval"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -132,9 +133,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["frustration", "determination"],
+					"emotions": ["annoyance", "approval"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -155,7 +156,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["embarrassment"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -174,9 +175,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["excitement", "anticipation"],
+					"emotions": ["excitement"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -195,9 +196,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["discomfort", "annoyance"],
+					"emotions": ["annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -216,9 +217,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["hunger"],
+					"emotions": ["desire"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -237,9 +238,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["boredom", "frustration"],
+					"emotions": ["annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -258,9 +259,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["determination", "seriousness"],
+					"emotions": ["approval", "neutral"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -281,7 +282,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["amusement", "joy"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -300,9 +301,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["love", "empathy"],
+					"emotions": ["love", "caring"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -321,9 +322,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["frustration", "annoyance"],
+					"emotions": ["annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -342,9 +343,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["joy", "pride", "celebration"],
+					"emotions": ["joy", "pride"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -363,9 +364,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["happiness", "love"],
+					"emotions": ["joy", "love"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -384,9 +385,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["contentment", "peace"],
+					"emotions": ["relief"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -405,9 +406,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["gratitude", "connection"],
+					"emotions": ["gratitude", "caring"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -426,9 +427,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["happiness"],
+					"emotions": ["joy"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -449,7 +450,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["excitement", "joy"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -468,9 +469,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["pride", "self-care"],
+					"emotions": ["pride", "caring"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -491,7 +492,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["love", "gratitude"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -510,9 +511,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["satisfaction", "pride"],
+					"emotions": ["approval", "pride"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -531,9 +532,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["resilience", "relief"],
+					"emotions": ["pride", "relief"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -552,9 +553,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["gratitude", "improvement"],
+					"emotions": ["gratitude", "optimism"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -573,9 +574,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["excitement", "hope"],
+					"emotions": ["excitement", "optimism"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -594,9 +595,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["self-love", "growth"],
+					"emotions": ["love", "optimism"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -615,9 +616,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["pride", "achievement"],
+					"emotions": ["pride"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -637,9 +638,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["hope", "optimism"],
+					"emotions": ["optimism"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -658,9 +659,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["satisfaction", "pride"],
+					"emotions": ["approval", "pride"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -679,9 +680,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["excitement", "anticipation"],
+					"emotions": ["excitement"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -700,9 +701,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["pride", "affirmation"],
+					"emotions": ["pride", "approval"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -721,9 +722,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["contentment", "affirmation"],
+					"emotions": ["relief", "approval"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -742,9 +743,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["satisfaction", "progress"],
+					"emotions": ["approval", "optimism"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -765,7 +766,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -786,7 +787,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral", "curiosity"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -807,7 +808,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -828,7 +829,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["curiosity", "excitement"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -849,7 +850,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -870,7 +871,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -891,7 +892,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["curiosity"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -912,7 +913,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["curiosity"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -931,9 +932,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["neutral", "anticipation"],
+					"emotions": ["neutral", "excitement"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -952,9 +953,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["satisfaction"],
+					"emotions": ["approval"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -975,7 +976,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -996,7 +997,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["curiosity"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1015,9 +1016,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["tiredness"],
+					"emotions": ["sadness"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1038,7 +1039,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral", "excitement"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1059,7 +1060,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["curiosity"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1078,9 +1079,9 @@
 				"crisis_level": "none",
 				"model_expectations": {
 					"bart_crisis": ["safe"],
-					"emotions": ["anticipation", "excitement"],
+					"emotions": ["excitement"],
 					"sentiment": "positive",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1101,7 +1102,7 @@
 					"bart_crisis": ["safe"],
 					"emotions": ["neutral"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
