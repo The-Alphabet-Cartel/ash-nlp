@@ -1,0 +1,1475 @@
+{
+  "report_version": "v5.0-2a-2.2",
+  "evaluation_method": "label_based_primary",
+  "generated_at": "2025-12-31T18:59:33.999203",
+  "results": {
+    "model_name": "SamLowe/roberta-base-go_emotions",
+    "dataset": "testing/test_datasets/crisis_examples.json",
+    "task_type": "text-classification",
+    "timestamp": "2025-12-31T18:59:33.999148",
+    "total_tests": 55,
+    "results": [
+      {
+        "test_id": "crisis_001",
+        "message": "I'm planning to end it tonight. I can't take this anymore.",
+        "predicted_label": "disapproval",
+        "predicted_score": 0.4341718852519989,
+        "expected_labels": [
+          "sadness",
+          "despair"
+        ],
+        "expected_score_range": {
+          "min": 0.85,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 76.44915580749512,
+        "vram_mb": 9.125,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "explicit_suicide_ideation"
+        }
+      },
+      {
+        "test_id": "crisis_002",
+        "message": "Nobody would even notice if I disappeared right now",
+        "predicted_label": "neutral",
+        "predicted_score": 0.8689216375350952,
+        "expected_labels": [
+          "sadness",
+          "loneliness"
+        ],
+        "expected_score_range": {
+          "min": 0.75,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 28.029680252075195,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "suicide_contemplation"
+        }
+      },
+      {
+        "test_id": "crisis_003",
+        "message": "I've written my goodbye letters. Everything is ready.",
+        "predicted_label": "neutral",
+        "predicted_score": 0.6143136620521545,
+        "expected_labels": [
+          "sadness",
+          "resignation"
+        ],
+        "expected_score_range": {
+          "min": 0.85,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.178285598754883,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "suicide_planning"
+        }
+      },
+      {
+        "test_id": "crisis_004",
+        "message": "I'm going to hurt myself tonight if things don't change",
+        "predicted_label": "sadness",
+        "predicted_score": 0.6059163212776184,
+        "expected_labels": [
+          "fear",
+          "desperation"
+        ],
+        "expected_score_range": {
+          "min": 0.8,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.022836685180664,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "self_harm_threat"
+        }
+      },
+      {
+        "test_id": "crisis_005",
+        "message": "My partner has been hitting me and I don't know what to do",
+        "predicted_label": "sadness",
+        "predicted_score": 0.229054793715477,
+        "expected_labels": [
+          "fear",
+          "confusion"
+        ],
+        "expected_score_range": {
+          "min": 0.75,
+          "max": 0.95
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9942264556884766,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "domestic_violence"
+        }
+      },
+      {
+        "test_id": "crisis_006",
+        "message": "I can't breathe. I'm having a panic attack and I'm alone",
+        "predicted_label": "fear",
+        "predicted_score": 0.6848772168159485,
+        "expected_labels": [
+          "fear",
+          "panic"
+        ],
+        "expected_score_range": {
+          "min": 0.7000000000000001,
+          "max": 0.9
+        },
+        "is_correct": true,
+        "score_correct": false,
+        "latency_ms": 3.9780139923095703,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "panic_attack"
+        }
+      },
+      {
+        "test_id": "crisis_007",
+        "message": "My parents found out I'm trans and kicked me out. I have nowhere to go.",
+        "predicted_label": "sadness",
+        "predicted_score": 0.7724054455757141,
+        "expected_labels": [
+          "fear",
+          "sadness",
+          "abandonment"
+        ],
+        "expected_score_range": {
+          "min": 0.75,
+          "max": 0.95
+        },
+        "is_correct": true,
+        "score_correct": true,
+        "latency_ms": 4.115581512451172,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "family_rejection_crisis"
+        }
+      },
+      {
+        "test_id": "crisis_008",
+        "message": "The voices are telling me to hurt myself and they won't stop",
+        "predicted_label": "sadness",
+        "predicted_score": 0.3717673122882843,
+        "expected_labels": [
+          "fear",
+          "confusion"
+        ],
+        "expected_score_range": {
+          "min": 0.85,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.018068313598633,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "psychotic_crisis"
+        }
+      },
+      {
+        "test_id": "crisis_009",
+        "message": "I've been cutting deeper and I think I need help but I'm scared",
+        "predicted_label": "fear",
+        "predicted_score": 0.862598180770874,
+        "expected_labels": [
+          "fear",
+          "desperation"
+        ],
+        "expected_score_range": {
+          "min": 0.75,
+          "max": 0.95
+        },
+        "is_correct": true,
+        "score_correct": true,
+        "latency_ms": 4.022359848022461,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "active_self_harm"
+        }
+      },
+      {
+        "test_id": "crisis_010",
+        "message": "I can't live like this anymore. I'm done trying.",
+        "predicted_label": "disapproval",
+        "predicted_score": 0.6998583078384399,
+        "expected_labels": [
+          "hopelessness",
+          "resignation"
+        ],
+        "expected_score_range": {
+          "min": 0.8,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.946542739868164,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "resignation_statement"
+        }
+      },
+      {
+        "test_id": "crisis_011",
+        "message": "Everything hurts and I just want it to stop permanently",
+        "predicted_label": "desire",
+        "predicted_score": 0.5557001233100891,
+        "expected_labels": [
+          "pain",
+          "desperation"
+        ],
+        "expected_score_range": {
+          "min": 0.75,
+          "max": 0.95
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.422426223754883,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "pain_escape_ideation"
+        }
+      },
+      {
+        "test_id": "crisis_012",
+        "message": "I'm standing on the edge and I don't know if I can hold on",
+        "predicted_label": "confusion",
+        "predicted_score": 0.7556471824645996,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.8,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.360675811767578,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "imminent_risk"
+        }
+      },
+      {
+        "test_id": "crisis_013",
+        "message": "I deserve to die for being who I am",
+        "predicted_label": "sadness",
+        "predicted_score": 0.491578072309494,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.8,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.346132278442383,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "identity_related_ideation"
+        }
+      },
+      {
+        "test_id": "crisis_014",
+        "message": "I collected all my pills. Tonight is the night.",
+        "predicted_label": "neutral",
+        "predicted_score": 0.779717206954956,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.85,
+          "max": 1.0
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.3392181396484375,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "method_preparation"
+        }
+      },
+      {
+        "test_id": "crisis_015",
+        "message": "Everyone would be better off without me as a burden",
+        "predicted_label": "neutral",
+        "predicted_score": 0.3411600887775421,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.75,
+          "max": 0.95
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.41741943359375,
+        "vram_mb": 0,
+        "context": {
+          "severity": "critical",
+          "requires_immediate_intervention": true,
+          "test_category": "burden_belief"
+        }
+      },
+      {
+        "test_id": "crisis_016",
+        "message": "I've been thinking about suicide a lot lately",
+        "predicted_label": "sadness",
+        "predicted_score": 0.6409335732460022,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.65,
+          "max": 0.85
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.476070404052734,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "requires_immediate_intervention": false,
+          "test_category": "ideation_disclosure"
+        }
+      },
+      {
+        "test_id": "crisis_017",
+        "message": "I keep having thoughts about harming myself",
+        "predicted_label": "sadness",
+        "predicted_score": 0.4847368001937866,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.6,
+          "max": 0.85
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.682064056396484,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "persistent_harm_thoughts"
+        }
+      },
+      {
+        "test_id": "crisis_018",
+        "message": "My depression is getting really bad and I'm scared",
+        "predicted_label": "fear",
+        "predicted_score": 0.8522170782089233,
+        "expected_labels": [
+          "fear",
+          "sadness"
+        ],
+        "expected_score_range": {
+          "min": 0.55,
+          "max": 0.8
+        },
+        "is_correct": true,
+        "score_correct": false,
+        "latency_ms": 4.274606704711914,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "depression_escalation"
+        }
+      },
+      {
+        "test_id": "crisis_019",
+        "message": "I feel completely hopeless about my future",
+        "predicted_label": "sadness",
+        "predicted_score": 0.481076180934906,
+        "expected_labels": [
+          "hopelessness",
+          "despair"
+        ],
+        "expected_score_range": {
+          "min": 0.55,
+          "max": 0.8
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.266500473022461,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "hopelessness"
+        }
+      },
+      {
+        "test_id": "crisis_020",
+        "message": "I don't see any reason to keep going",
+        "predicted_label": "disapproval",
+        "predicted_score": 0.5836777091026306,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.6,
+          "max": 0.85
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.248380661010742,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "loss_of_purpose"
+        }
+      },
+      {
+        "test_id": "crisis_021",
+        "message": "My family disowned me and I've never felt so alone",
+        "predicted_label": "sadness",
+        "predicted_score": 0.8455914258956909,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.6,
+          "max": 0.85
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 4.288196563720703,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "family_rejection"
+        }
+      },
+      {
+        "test_id": "crisis_022",
+        "message": "I can't stop thinking about ending my pain",
+        "predicted_label": "desire",
+        "predicted_score": 0.40046942234039307,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.65,
+          "max": 0.9
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 4.271030426025391,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "persistent_ideation"
+        }
+      },
+      {
+        "test_id": "crisis_023",
+        "message": "I started cutting again after being clean for months",
+        "predicted_label": "neutral",
+        "predicted_score": 0.6539298295974731,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.6,
+          "max": 0.85
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 4.303455352783203,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "relapse"
+        }
+      },
+      {
+        "test_id": "crisis_024",
+        "message": "I'm having panic attacks multiple times a day now",
+        "predicted_label": "fear",
+        "predicted_score": 0.6810790300369263,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.55,
+          "max": 0.8
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 4.313468933105469,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "chronic_panic"
+        }
+      },
+      {
+        "test_id": "crisis_025",
+        "message": "I'm questioning if I want to be alive anymore",
+        "predicted_label": "confusion",
+        "predicted_score": 0.8927373886108398,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.65,
+          "max": 0.9
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 4.087209701538086,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "existential_crisis"
+        }
+      },
+      {
+        "test_id": "crisis_026",
+        "message": "The dysphoria is unbearable and I don't know how to cope",
+        "predicted_label": "sadness",
+        "predicted_score": 0.5047081708908081,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.55,
+          "max": 0.8
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.954648971557617,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "dysphoria_crisis"
+        }
+      },
+      {
+        "test_id": "crisis_027",
+        "message": "I'm losing touch with reality and it's terrifying",
+        "predicted_label": "fear",
+        "predicted_score": 0.9068746566772461,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.65,
+          "max": 0.9
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.937244415283203,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "dissociation_crisis"
+        }
+      },
+      {
+        "test_id": "crisis_028",
+        "message": "I feel empty inside, like nothing matters",
+        "predicted_label": "sadness",
+        "predicted_score": 0.7434094548225403,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.5,
+          "max": 0.75
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.95965576171875,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "emotional_numbness"
+        }
+      },
+      {
+        "test_id": "crisis_029",
+        "message": "I can't eat or sleep anymore, everything is falling apart",
+        "predicted_label": "sadness",
+        "predicted_score": 0.6190595030784607,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.55,
+          "max": 0.8
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.9839744567871094,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "basic_function_loss"
+        }
+      },
+      {
+        "test_id": "crisis_030",
+        "message": "I'm trapped in an abusive home and can't leave",
+        "predicted_label": "sadness",
+        "predicted_score": 0.8531014323234558,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.65,
+          "max": 0.9
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.9377212524414062,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "ongoing_abuse"
+        }
+      },
+      {
+        "test_id": "crisis_031",
+        "message": "I hate who I am and I don't know how to change",
+        "predicted_label": "anger",
+        "predicted_score": 0.726248025894165,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.5,
+          "max": 0.75
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.937244415283203,
+        "vram_mb": 0,
+        "context": {
+          "severity": "high",
+          "test_category": "self_hatred"
+        }
+      },
+      {
+        "test_id": "crisis_032",
+        "message": "I'm feeling really depressed lately",
+        "predicted_label": "sadness",
+        "predicted_score": 0.6743003726005554,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.30000000000000004,
+          "max": 0.6
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9930343627929688,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "general_depression"
+        }
+      },
+      {
+        "test_id": "crisis_033",
+        "message": "Everything feels overwhelming right now",
+        "predicted_label": "excitement",
+        "predicted_score": 0.22648867964744568,
+        "expected_labels": [
+          "stress",
+          "anxiety"
+        ],
+        "expected_score_range": {
+          "min": 0.24999999999999997,
+          "max": 0.55
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 5.967855453491211,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "overwhelm"
+        }
+      },
+      {
+        "test_id": "crisis_034",
+        "message": "I'm struggling a lot with anxiety",
+        "predicted_label": "nervousness",
+        "predicted_score": 0.5737692713737488,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.24999999999999997,
+          "max": 0.55
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.953695297241211,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "anxiety_disclosure"
+        }
+      },
+      {
+        "test_id": "crisis_035",
+        "message": "I feel really isolated and alone",
+        "predicted_label": "sadness",
+        "predicted_score": 0.8074599504470825,
+        "expected_labels": [
+          "loneliness",
+          "sadness"
+        ],
+        "expected_score_range": {
+          "min": 0.30000000000000004,
+          "max": 0.6
+        },
+        "is_correct": true,
+        "score_correct": false,
+        "latency_ms": 4.084110260009766,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "isolation"
+        }
+      },
+      {
+        "test_id": "crisis_036",
+        "message": "I'm having a really hard time coping with stress",
+        "predicted_label": "sadness",
+        "predicted_score": 0.6432398557662964,
+        "expected_labels": [
+          "stress",
+          "frustration"
+        ],
+        "expected_score_range": {
+          "min": 0.24999999999999997,
+          "max": 0.55
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9615631103515625,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "stress_overload"
+        }
+      },
+      {
+        "test_id": "crisis_037",
+        "message": "My mental health has been declining",
+        "predicted_label": "sadness",
+        "predicted_score": 0.823276162147522,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.35,
+          "max": 0.65
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9370059967041016,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "declining_mental_health"
+        }
+      },
+      {
+        "test_id": "crisis_038",
+        "message": "I'm worried about my emotional state",
+        "predicted_label": "nervousness",
+        "predicted_score": 0.5304124355316162,
+        "expected_labels": [
+          "worry",
+          "concern"
+        ],
+        "expected_score_range": {
+          "min": 0.24999999999999997,
+          "max": 0.55
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.9567947387695312,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "emotional_concern"
+        }
+      },
+      {
+        "test_id": "crisis_039",
+        "message": "I've been having dark thoughts sometimes",
+        "predicted_label": "neutral",
+        "predicted_score": 0.307898610830307,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.4,
+          "max": 0.7
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.906726837158203,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "dark_thoughts"
+        }
+      },
+      {
+        "test_id": "crisis_040",
+        "message": "I'm not sleeping well and it's affecting everything",
+        "predicted_label": "sadness",
+        "predicted_score": 0.5948898792266846,
+        "expected_labels": [
+          "fatigue",
+          "stress"
+        ],
+        "expected_score_range": {
+          "min": 0.19999999999999998,
+          "max": 0.5
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9539337158203125,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "sleep_disruption"
+        }
+      },
+      {
+        "test_id": "crisis_041",
+        "message": "I'm feeling disconnected from everything",
+        "predicted_label": "sadness",
+        "predicted_score": 0.582901656627655,
+        "expected_labels": [
+          "disconnection",
+          "numbness"
+        ],
+        "expected_score_range": {
+          "min": 0.30000000000000004,
+          "max": 0.6
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.936290740966797,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "dissociation"
+        }
+      },
+      {
+        "test_id": "crisis_042",
+        "message": "I'm worried I might be getting depressed again",
+        "predicted_label": "nervousness",
+        "predicted_score": 0.5727366805076599,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.35,
+          "max": 0.65
+        },
+        "is_correct": false,
+        "score_correct": true,
+        "latency_ms": 3.9777755737304688,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "depression_concern"
+        }
+      },
+      {
+        "test_id": "crisis_043",
+        "message": "I need some support today",
+        "predicted_label": "desire",
+        "predicted_score": 0.7047486901283264,
+        "expected_labels": [
+          "need",
+          "vulnerability"
+        ],
+        "expected_score_range": {
+          "min": 0.15,
+          "max": 0.45
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9472579956054688,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "support_request"
+        }
+      },
+      {
+        "test_id": "crisis_044",
+        "message": "I'm not doing great mentally",
+        "predicted_label": "disappointment",
+        "predicted_score": 0.6148051619529724,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.24999999999999997,
+          "max": 0.55
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9391517639160156,
+        "vram_mb": 0,
+        "context": {
+          "severity": "medium",
+          "test_category": "general_distress"
+        }
+      },
+      {
+        "test_id": "crisis_045",
+        "message": "I'm feeling pretty low today",
+        "predicted_label": "sadness",
+        "predicted_score": 0.5544933080673218,
+        "expected_labels": [
+          "sadness",
+          "low_mood"
+        ],
+        "expected_score_range": {
+          "min": 0.1,
+          "max": 0.4
+        },
+        "is_correct": true,
+        "score_correct": false,
+        "latency_ms": 4.105329513549805,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "low_mood"
+        }
+      },
+      {
+        "test_id": "crisis_046",
+        "message": "Not having the best day",
+        "predicted_label": "disappointment",
+        "predicted_score": 0.5556623935699463,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.04999999999999999,
+          "max": 0.35
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.922700881958008,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "mild_negative"
+        }
+      },
+      {
+        "test_id": "crisis_047",
+        "message": "I'm a bit stressed out",
+        "predicted_label": "nervousness",
+        "predicted_score": 0.3888489902019501,
+        "expected_labels": [
+          "stress",
+          "mild_anxiety"
+        ],
+        "expected_score_range": {
+          "min": 0.04999999999999999,
+          "max": 0.35
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9610862731933594,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "mild_stress"
+        }
+      },
+      {
+        "test_id": "crisis_048",
+        "message": "Feeling kind of blah today",
+        "predicted_label": "neutral",
+        "predicted_score": 0.34344491362571716,
+        "expected_labels": [],
+        "expected_score_range": {
+          "min": 0.0,
+          "max": 0.3
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9119720458984375,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "mild_malaise"
+        }
+      },
+      {
+        "test_id": "crisis_049",
+        "message": "I'm disappointed about something",
+        "predicted_label": "disappointment",
+        "predicted_score": 0.8391801714897156,
+        "expected_labels": [
+          "disappointment"
+        ],
+        "expected_score_range": {
+          "min": 0.04999999999999999,
+          "max": 0.35
+        },
+        "is_correct": true,
+        "score_correct": false,
+        "latency_ms": 3.9212703704833984,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "disappointment"
+        }
+      },
+      {
+        "test_id": "crisis_050",
+        "message": "I'm frustrated with how things are going",
+        "predicted_label": "annoyance",
+        "predicted_score": 0.5775946974754333,
+        "expected_labels": [
+          "frustration"
+        ],
+        "expected_score_range": {
+          "min": 0.1,
+          "max": 0.4
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9191246032714844,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "frustration"
+        }
+      },
+      {
+        "test_id": "crisis_051",
+        "message": "Having a rough time but I'll be okay",
+        "predicted_label": "caring",
+        "predicted_score": 0.6582967042922974,
+        "expected_labels": [
+          "difficulty",
+          "resilience"
+        ],
+        "expected_score_range": {
+          "min": 0.04999999999999999,
+          "max": 0.35
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.921985626220703,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "mild_difficulty_with_coping"
+        }
+      },
+      {
+        "test_id": "crisis_052",
+        "message": "I'm a little anxious today",
+        "predicted_label": "nervousness",
+        "predicted_score": 0.5709733963012695,
+        "expected_labels": [
+          "mild_anxiety"
+        ],
+        "expected_score_range": {
+          "min": 0.1,
+          "max": 0.4
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9076805114746094,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "mild_anxiety"
+        }
+      },
+      {
+        "test_id": "crisis_053",
+        "message": "I'm tired of dealing with everything",
+        "predicted_label": "annoyance",
+        "predicted_score": 0.49425315856933594,
+        "expected_labels": [
+          "fatigue",
+          "frustration"
+        ],
+        "expected_score_range": {
+          "min": 0.15,
+          "max": 0.45
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.9205551147460938,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "general_fatigue"
+        }
+      },
+      {
+        "test_id": "crisis_054",
+        "message": "I wish things were easier",
+        "predicted_label": "desire",
+        "predicted_score": 0.830462634563446,
+        "expected_labels": [
+          "weariness"
+        ],
+        "expected_score_range": {
+          "min": 0.04999999999999999,
+          "max": 0.35
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.880023956298828,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "general_difficulty"
+        }
+      },
+      {
+        "test_id": "crisis_055",
+        "message": "Not feeling great but managing",
+        "predicted_label": "disappointment",
+        "predicted_score": 0.46648648381233215,
+        "expected_labels": [
+          "mild_distress",
+          "coping"
+        ],
+        "expected_score_range": {
+          "min": 0.1,
+          "max": 0.4
+        },
+        "is_correct": false,
+        "score_correct": false,
+        "latency_ms": 3.871917724609375,
+        "vram_mb": 0,
+        "context": {
+          "severity": "low",
+          "test_category": "managing_distress"
+        }
+      }
+    ],
+    "metrics": {
+      "overall": {
+        "label_accuracy": 0.12727272727272726,
+        "score_accuracy": 0.2545454545454545,
+        "total_tests": 55,
+        "label_passed": 7,
+        "label_failed": 48,
+        "score_passed": 14,
+        "score_failed": 41
+      },
+      "performance": {
+        "avg_latency_ms": 5.860380692915483,
+        "max_latency_ms": 76.44915580749512,
+        "avg_vram_mb": 0.16590909090909092,
+        "max_vram_mb": 9.125
+      },
+      "per_category": {
+        "sleep_disruption": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "ongoing_abuse": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_difficulty_with_coping": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_fatigue": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "suicide_contemplation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "self_hatred": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_difficulty": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "anxiety_disclosure": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "domestic_violence": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_malaise": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "method_preparation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_negative": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "dissociation_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "depression_concern": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "burden_belief": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "depression_escalation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "dark_thoughts": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "active_self_harm": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "stress_overload": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "low_mood": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "managing_distress": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "identity_related_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "persistent_harm_thoughts": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "chronic_panic": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "existential_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "psychotic_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "explicit_suicide_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "resignation_statement": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "pain_escape_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "panic_attack": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "dissociation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_distress": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "ideation_disclosure": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "emotional_numbness": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "basic_function_loss": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "hopelessness": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "dysphoria_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "emotional_concern": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "suicide_planning": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "frustration": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "isolation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "declining_mental_health": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "self_harm_threat": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "support_request": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "family_rejection": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "overwhelm": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_anxiety": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "disappointment": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "family_rejection_crisis": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "loss_of_purpose": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "imminent_risk": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "relapse": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "persistent_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_stress": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_depression": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        }
+      },
+      "per_severity": {
+        "medium": {
+          "accuracy": 0.07692307692307693,
+          "total_tests": 13,
+          "correct": 1
+        },
+        "low": {
+          "accuracy": 0.18181818181818182,
+          "total_tests": 11,
+          "correct": 2
+        },
+        "critical": {
+          "accuracy": 0.2,
+          "total_tests": 15,
+          "correct": 3
+        },
+        "high": {
+          "accuracy": 0.0625,
+          "total_tests": 16,
+          "correct": 1
+        }
+      }
+    }
+  }
+}
