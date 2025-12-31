@@ -1,1154 +1,1089 @@
 {
-  "_metadata": {
-    "file_version": "v5.0",
-    "last_modified": "2025-12-31",
-    "description": "LGBTQIA+ specific test dataset - identity crisis, family rejection, dysphoria, community language, and positive affirmations",
-    "total_cases": 50,
-    "categories": {
-      "identity_crisis": 12,
-      "family_social_rejection": 12,
-      "dysphoria_related": 8,
-      "positive_identity": 10,
-      "community_language": 8
-    },
-    "community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
-    "cultural_sensitivity": "Community-reviewed and approved",
-    "adjusted_thresholds": true,
-    "threshold_adjustment": -0.1
-  },
-  "test_cases": [
-    {
-      "id": "lgbtq_001",
-      "message": "My parents kicked me out when I came out as trans. I have nowhere to go.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection",
-            "identity crisis",
-            "housing emergency"
-          ],
-          "emotions": [
-            "fear",
-            "abandonment",
-            "sadness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "family_rejection_crisis"
-      }
-    },
-    {
-      "id": "lgbtq_002",
-      "message": "They said I'm going to hell for being gay. I'm their child.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection",
-            "religious trauma"
-          ],
-          "emotions": [
-            "pain",
-            "betrayal",
-            "sadness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "religious_trauma"
-      }
-    },
-    {
-      "id": "lgbtq_003",
-      "message": "I don't know if I can survive my family's conversion therapy",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "abuse situation",
-            "identity crisis"
-          ],
-          "emotions": [
-            "fear",
-            "trauma"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "conversion_therapy_abuse"
-      }
-    },
-    {
-      "id": "lgbtq_004",
-      "message": "My parents found my binder and destroyed it. I can't breathe looking in the mirror.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.9
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection",
-            "dysphoria crisis"
-          ],
-          "emotions": [
-            "distress",
-            "dysphoria"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "dysphoria_family_conflict"
-      }
-    },
-    {
-      "id": "lgbtq_005",
-      "message": "Everyone at school knows I'm trans now and I'm getting death threats",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.7000000000000001,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "abuse situation",
-            "identity crisis",
-            "safety threat"
-          ],
-          "emotions": [
-            "fear",
-            "terror"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "bullying_violence_threat"
-      }
-    },
-    {
-      "id": "lgbtq_006",
-      "message": "My church told my family to disown me for coming out",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.9
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection",
-            "religious trauma"
-          ],
-          "emotions": [
-            "betrayal",
-            "abandonment"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "religious_family_rejection"
-      }
-    },
-    {
-      "id": "lgbtq_007",
-      "message": "I'm the only queer person in this small town and I feel so isolated",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.4,
-          "max": 0.7
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "social isolation",
-            "identity crisis"
-          ],
-          "emotions": [
-            "loneliness",
-            "isolation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "geographic_isolation"
-      }
-    },
-    {
-      "id": "lgbtq_008",
-      "message": "My entire extended family stopped talking to me after Pride",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection"
-          ],
-          "emotions": [
-            "grief",
-            "abandonment"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "extended_family_rejection"
-      }
-    },
-    {
-      "id": "lgbtq_009",
-      "message": "I lost my job when they found out I'm transitioning",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "discrimination",
-            "financial crisis"
-          ],
-          "emotions": [
-            "fear",
-            "anger",
-            "stress"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "employment_discrimination"
-      }
-    },
-    {
-      "id": "lgbtq_010",
-      "message": "My best friend said they can't be friends with me anymore now that I've come out",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.45000000000000007,
-          "max": 0.75
-        },
-        "crisis_level": "medium_to_high",
-        "model_expectations": {
-          "bart_crisis": [
-            "social rejection"
-          ],
-          "emotions": [
-            "betrayal",
-            "sadness",
-            "loneliness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium_to_high",
-        "test_category": "friendship_loss"
-      }
-    },
-    {
-      "id": "lgbtq_011",
-      "message": "I don't know if I'll ever be accepted by my culture for being queer",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.4,
-          "max": 0.7
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "identity crisis",
-            "cultural conflict"
-          ],
-          "emotions": [
-            "grief",
-            "internal_conflict"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "cultural_identity_conflict"
-      }
-    },
-    {
-      "id": "lgbtq_012",
-      "message": "My family wants me to marry someone of the opposite gender to 'fix' me",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "family pressure",
-            "identity denial"
-          ],
-          "emotions": [
-            "distress",
-            "pressure"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "forced_heterosexuality"
-      }
-    },
-    {
-      "id": "lgbtq_013",
-      "message": "The dysphoria is so bad today I can't leave my room",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "dysphoria",
-            "severe distress"
-          ],
-          "emotions": [
-            "distress",
-            "dysphoria"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "acute_dysphoria"
-      }
-    },
-    {
-      "id": "lgbtq_014",
-      "message": "I hate my body and I don't know how long I can wait for HRT",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.5,
-          "max": 0.8
-        },
-        "crisis_level": "medium_to_high",
-        "model_expectations": {
-          "bart_crisis": [
-            "dysphoria",
-            "body image distress"
-          ],
-          "emotions": [
-            "frustration",
-            "distress"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium_to_high",
-        "test_category": "dysphoria_waiting"
-      }
-    },
-    {
-      "id": "lgbtq_015",
-      "message": "Looking at my reflection makes me want to disappear",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "dysphoria",
-            "severe distress"
-          ],
-          "emotions": [
-            "dysphoria",
-            "avoidance"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "severe_dysphoria"
-      }
-    },
-    {
-      "id": "lgbtq_016",
-      "message": "Every time I'm misgendered it feels like a knife",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.4,
-          "max": 0.7
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "pain",
-            "invalidation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "misgendering_pain"
-      }
-    },
-    {
-      "id": "lgbtq_017",
-      "message": "The wait list for top surgery is 3 years and I don't know if I can make it",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.5,
-          "max": 0.8
-        },
-        "crisis_level": "medium_to_high",
-        "model_expectations": {
-          "bart_crisis": [
-            "dysphoria",
-            "hopelessness"
-          ],
-          "emotions": [
-            "desperation",
-            "hopelessness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium_to_high",
-        "test_category": "medical_access_desperation"
-      }
-    },
-    {
-      "id": "lgbtq_018",
-      "message": "My insurance denied my gender affirming care again",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.45000000000000007,
-          "max": 0.75
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "frustration",
-            "anger",
-            "despair"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "healthcare_denial"
-      }
-    },
-    {
-      "id": "lgbtq_019",
-      "message": "I can't afford voice training and every time I speak I feel exposed",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.4,
-          "max": 0.7
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "dysphoria",
-            "anxiety",
-            "vulnerability"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "voice_dysphoria"
-      }
-    },
-    {
-      "id": "lgbtq_020",
-      "message": "Bad dysphoria day but I'm managing",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.30000000000000004,
-          "max": 0.6
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "discomfort",
-            "coping"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "manageable_dysphoria"
-      }
-    },
-    {
-      "id": "lgbtq_021",
-      "message": "Am I really trans or am I just confused?",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.30000000000000004,
-          "max": 0.6
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "identity crisis",
-            "confusion"
-          ],
-          "emotions": [
-            "confusion",
-            "doubt"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "identity_questioning"
-      }
-    },
-    {
-      "id": "lgbtq_022",
-      "message": "What if I'm making a mistake about my gender?",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.24999999999999997,
-          "max": 0.6
-        },
-        "crisis_level": "low_to_medium",
-        "model_expectations": {
-          "emotions": [
-            "doubt",
-            "fear"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low_to_medium",
-        "test_category": "identity_doubt"
-      }
-    },
-    {
-      "id": "lgbtq_023",
-      "message": "I don't know if I'm non-binary or something else",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.15,
-          "max": 0.5
-        },
-        "crisis_level": "low_to_medium",
-        "model_expectations": {
-          "emotions": [
-            "confusion",
-            "exploration"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low_to_medium",
-        "test_category": "identity_exploration"
-      }
-    },
-    {
-      "id": "lgbtq_024",
-      "message": "Is it okay to not have everything figured out about my sexuality?",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.1,
-          "max": 0.45
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "uncertainty",
-            "seeking_validation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "identity_validation_seeking"
-      }
-    },
-    {
-      "id": "lgbtq_025",
-      "message": "I think I might be aromantic and that scares me",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.19999999999999998,
-          "max": 0.55
-        },
-        "crisis_level": "low_to_medium",
-        "model_expectations": {
-          "emotions": [
-            "fear",
-            "self-discovery"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low_to_medium",
-        "test_category": "identity_realization"
-      }
-    },
-    {
-      "id": "lgbtq_026",
-      "message": "Just realized I'm definitely bi and not straight. Feeling a lot of things.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.15,
-          "max": 0.5
-        },
-        "crisis_level": "low_to_medium",
-        "model_expectations": {
-          "emotions": [
-            "overwhelm",
-            "self-discovery"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low_to_medium",
-        "test_category": "new_identity_realization"
-      }
-    },
-    {
-      "id": "lgbtq_027",
-      "message": "6 months on HRT and feeling amazing!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "joy",
-            "pride",
-            "celebration"
-          ],
-          "sentiment": "positive"
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "transition_milestone_positive"
-      }
-    },
-    {
-      "id": "lgbtq_028",
-      "message": "Finally got my name legally changed! This is such a relief!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "relief",
-            "joy",
-            "celebration"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "legal_affirmation_positive"
-      }
-    },
-    {
-      "id": "lgbtq_029",
-      "message": "Top surgery recovery going well! So happy with the results!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "happiness",
-            "satisfaction"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "surgery_success_positive"
-      }
-    },
-    {
-      "id": "lgbtq_030",
-      "message": "Wearing my pride flag with confidence today!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "pride",
-            "confidence"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "pride_expression"
-      }
-    },
-    {
-      "id": "lgbtq_031",
-      "message": "My chosen family is celebrating my coming out anniversary with me!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "joy",
-            "belonging",
-            "celebration"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "chosen_family_support"
-      }
-    },
-    {
-      "id": "lgbtq_032",
-      "message": "Found a gender affirming therapist who really gets it!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.15
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "relief",
-            "hope"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "healthcare_success"
-      }
-    },
-    {
-      "id": "lgbtq_033",
-      "message": "My partner uses my correct pronouns every time without fail. I'm so grateful.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "gratitude",
-            "love",
-            "validation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "relationship_affirmation"
-      }
-    },
-    {
-      "id": "lgbtq_034",
-      "message": "Finally feeling comfortable in my own skin after all these years",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.15
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "contentment",
-            "peace",
-            "self-acceptance"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "self_acceptance"
-      }
-    },
-    {
-      "id": "lgbtq_035",
-      "message": "This community has saved my life. Thank you all.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.15
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "gratitude",
-            "connection"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "community_gratitude"
-      }
-    },
-    {
-      "id": "lgbtq_036",
-      "message": "Proud to be queer and living authentically!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "pride",
-            "authenticity"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "pride_statement"
-      }
-    },
-    {
-      "id": "lgbtq_037",
-      "message": "T4T solidarity is real and beautiful",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "community_language": true,
-          "emotions": [
-            "solidarity",
-            "pride"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "community_solidarity",
-        "note": "T4T = Trans for Trans (trans people dating trans people)"
-      }
-    },
-    {
-      "id": "lgbtq_038",
-      "message": "Big queer energy today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "community_slang": true,
-          "sentiment": "positive"
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "positive_community_language"
-      }
-    },
-    {
-      "id": "lgbtq_039",
-      "message": "Being ace is valid and I'm learning to embrace it",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.15
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "self-acceptance",
-            "validation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "ace_affirmation",
-        "note": "Ace = asexual"
-      }
-    },
-    {
-      "id": "lgbtq_040",
-      "message": "Polyamory is working so well for us!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "happiness",
-            "fulfillment"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "relationship_success"
-      }
-    },
-    {
-      "id": "lgbtq_041",
-      "message": "Gender euphoria hitting different today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "community_language": true,
-          "emotions": [
-            "euphoria",
-            "joy"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "gender_euphoria"
-      }
-    },
-    {
-      "id": "lgbtq_042",
-      "message": "Transfem vibes are immaculate today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "community_language": true
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "positive_identity_expression",
-        "note": "Transfem = transfeminine"
-      }
-    },
-    {
-      "id": "lgbtq_043",
-      "message": "Enby life is treating me well",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "community_language": true
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "positive_nb_expression",
-        "note": "Enby = NB = non-binary"
-      }
-    },
-    {
-      "id": "lgbtq_044",
-      "message": "Sapphic love is magical",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "love",
-            "joy"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "wlw_positive",
-        "note": "Sapphic = women loving women"
-      }
-    },
-    {
-      "id": "lgbtq_045",
-      "message": "Achillean representation in media is finally improving!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "excitement",
-            "hope"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "mlm_positive",
-        "note": "Achillean = men loving men"
-      }
-    },
-    {
-      "id": "lgbtq_046",
-      "message": "My pronouns are they/them and I'm owning it",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "confidence",
-            "pride"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "pronoun_affirmation"
-      }
-    },
-    {
-      "id": "lgbtq_047",
-      "message": "Found my tribe in this queer community",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "belonging",
-            "connection"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "community_belonging"
-      }
-    },
-    {
-      "id": "lgbtq_048",
-      "message": "Transition goals achieved!",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "achievement",
-            "joy"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "transition_success"
-      }
-    },
-    {
-      "id": "lgbtq_049",
-      "message": "Pride month every month in this house",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "pride",
-            "joy"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "pride_celebration"
-      }
-    },
-    {
-      "id": "lgbtq_050",
-      "message": "Love wins and we're all living proof",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.1
-        },
-        "crisis_level": "none",
-        "model_expectations": {
-          "emotions": [
-            "love",
-            "triumph"
-          ]
-        }
-      },
-      "context": {
-        "severity": "none",
-        "test_category": "community_affirmation"
-      }
-    }
-  ]
+	"_metadata": {
+		"file_version": "v5.0-2a-2.2-complete",
+		"last_modified": "2025-12-31",
+		"description": "LGBTQIA+ specific test dataset - identity crisis, family rejection, dysphoria, community language, and positive affirmations",
+		"total_cases": 50,
+		"categories": {
+			"identity_crisis": 12,
+			"family_social_rejection": 12,
+			"dysphoria_related": 8,
+			"positive_identity": 10,
+			"community_language": 8
+		},
+		"community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
+		"cultural_sensitivity": "Community-reviewed and approved",
+		"adjusted_thresholds": true,
+		"threshold_adjustment": -0.1,
+		"changes_v5.0-2a-2.2-complete": "Added complete bart_crisis (for positive cases), sentiment, and irony to ALL 50 test cases"
+	},
+	"test_cases": [
+		{
+			"id": "lgbtq_001",
+			"message": "My parents kicked me out when I came out as trans. I have nowhere to go.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": [
+						"family rejection",
+						"identity crisis",
+						"housing emergency"
+					],
+					"emotions": ["fear", "abandonment", "sadness"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "family_rejection_crisis"
+			}
+		},
+		{
+			"id": "lgbtq_002",
+			"message": "They said I'm going to hell for being gay. I'm their child.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["family rejection", "religious trauma"],
+					"emotions": ["pain", "betrayal", "sadness"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "religious_trauma"
+			}
+		},
+		{
+			"id": "lgbtq_003",
+			"message": "I don't know if I can survive my family's conversion therapy",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["abuse situation", "identity crisis"],
+					"emotions": ["fear", "trauma"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "conversion_therapy_abuse"
+			}
+		},
+		{
+			"id": "lgbtq_004",
+			"message": "My parents found my binder and destroyed it. I can't breathe looking in the mirror.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.9
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["family rejection", "dysphoria crisis"],
+					"emotions": ["distress", "dysphoria"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "dysphoria_family_conflict"
+			}
+		},
+		{
+			"id": "lgbtq_005",
+			"message": "Everyone at school knows I'm trans now and I'm getting death threats",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.7000000000000001,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": [
+						"abuse situation",
+						"identity crisis",
+						"safety threat"
+					],
+					"emotions": ["fear", "terror"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "bullying_violence_threat"
+			}
+		},
+		{
+			"id": "lgbtq_006",
+			"message": "My church told my family to disown me for coming out",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.9
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["family rejection", "religious trauma"],
+					"emotions": ["betrayal", "abandonment"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "religious_family_rejection"
+			}
+		},
+		{
+			"id": "lgbtq_007",
+			"message": "I'm the only queer person in this small town and I feel so isolated",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.4,
+					"max": 0.7
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["social isolation", "identity crisis"],
+					"emotions": ["loneliness", "isolation"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "geographic_isolation"
+			}
+		},
+		{
+			"id": "lgbtq_008",
+			"message": "My entire extended family stopped talking to me after Pride",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["family rejection"],
+					"emotions": ["grief", "abandonment"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "extended_family_rejection"
+			}
+		},
+		{
+			"id": "lgbtq_009",
+			"message": "I lost my job when they found out I'm transitioning",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["discrimination", "financial crisis"],
+					"emotions": ["fear", "anger", "stress"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "employment_discrimination"
+			}
+		},
+		{
+			"id": "lgbtq_010",
+			"message": "My best friend said they can't be friends with me anymore now that I've come out",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.45000000000000007,
+					"max": 0.75
+				},
+				"crisis_level": "medium_to_high",
+				"model_expectations": {
+					"bart_crisis": ["social rejection"],
+					"emotions": ["betrayal", "sadness", "loneliness"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium_to_high",
+				"test_category": "friendship_loss"
+			}
+		},
+		{
+			"id": "lgbtq_011",
+			"message": "I don't know if I'll ever be accepted by my culture for being queer",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.4,
+					"max": 0.7
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["identity crisis", "cultural conflict"],
+					"emotions": ["grief", "internal_conflict"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "cultural_identity_conflict"
+			}
+		},
+		{
+			"id": "lgbtq_012",
+			"message": "My family wants me to marry someone of the opposite gender to 'fix' me",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["family pressure", "identity denial"],
+					"emotions": ["distress", "pressure"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "forced_heterosexuality"
+			}
+		},
+		{
+			"id": "lgbtq_013",
+			"message": "The dysphoria is so bad today I can't leave my room",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["dysphoria", "severe distress"],
+					"emotions": ["distress", "dysphoria"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "acute_dysphoria"
+			}
+		},
+		{
+			"id": "lgbtq_014",
+			"message": "I hate my body and I don't know how long I can wait for HRT",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.5,
+					"max": 0.8
+				},
+				"crisis_level": "medium_to_high",
+				"model_expectations": {
+					"bart_crisis": ["dysphoria", "body image distress"],
+					"emotions": ["frustration", "distress"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium_to_high",
+				"test_category": "dysphoria_waiting"
+			}
+		},
+		{
+			"id": "lgbtq_015",
+			"message": "Looking at my reflection makes me want to disappear",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["dysphoria", "severe distress"],
+					"emotions": ["dysphoria", "avoidance"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "severe_dysphoria"
+			}
+		},
+		{
+			"id": "lgbtq_016",
+			"message": "Every time I'm misgendered it feels like a knife",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.4,
+					"max": 0.7
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress", "invalidation"],
+					"emotions": ["pain", "invalidation"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "misgendering_pain"
+			}
+		},
+		{
+			"id": "lgbtq_017",
+			"message": "The wait list for top surgery is 3 years and I don't know if I can make it",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.5,
+					"max": 0.8
+				},
+				"crisis_level": "medium_to_high",
+				"model_expectations": {
+					"bart_crisis": ["dysphoria", "hopelessness"],
+					"emotions": ["desperation", "hopelessness"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium_to_high",
+				"test_category": "medical_access_desperation"
+			}
+		},
+		{
+			"id": "lgbtq_018",
+			"message": "My insurance denied my gender affirming care again",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.45000000000000007,
+					"max": 0.75
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["discrimination", "frustration"],
+					"emotions": ["frustration", "anger", "despair"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "healthcare_denial"
+			}
+		},
+		{
+			"id": "lgbtq_019",
+			"message": "I can't afford voice training and every time I speak I feel exposed",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.4,
+					"max": 0.7
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["dysphoria", "financial difficulty"],
+					"emotions": ["dysphoria", "anxiety", "vulnerability"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "voice_dysphoria"
+			}
+		},
+		{
+			"id": "lgbtq_020",
+			"message": "Bad dysphoria day but I'm managing",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.30000000000000004,
+					"max": 0.6
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["dysphoria"],
+					"emotions": ["discomfort", "coping"],
+					"sentiment": "neutral",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "manageable_dysphoria"
+			}
+		},
+		{
+			"id": "lgbtq_021",
+			"message": "Am I really trans or am I just confused?",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.30000000000000004,
+					"max": 0.6
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["identity crisis", "confusion"],
+					"emotions": ["confusion", "doubt"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "identity_questioning"
+			}
+		},
+		{
+			"id": "lgbtq_022",
+			"message": "What if I'm making a mistake about my gender?",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.24999999999999997,
+					"max": 0.6
+				},
+				"crisis_level": "low_to_medium",
+				"model_expectations": {
+					"bart_crisis": ["identity crisis", "doubt"],
+					"emotions": ["doubt", "fear"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "low_to_medium",
+				"test_category": "identity_doubt"
+			}
+		},
+		{
+			"id": "lgbtq_023",
+			"message": "I don't know if I'm non-binary or something else",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.15,
+					"max": 0.5
+				},
+				"crisis_level": "low_to_medium",
+				"model_expectations": {
+					"bart_crisis": ["identity exploration"],
+					"emotions": ["confusion", "exploration"],
+					"sentiment": "neutral",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "low_to_medium",
+				"test_category": "identity_exploration"
+			}
+		},
+		{
+			"id": "lgbtq_024",
+			"message": "Is it okay to not have everything figured out about my sexuality?",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.1,
+					"max": 0.45
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["identity exploration"],
+					"emotions": ["uncertainty", "seeking_validation"],
+					"sentiment": "neutral",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "identity_validation_seeking"
+			}
+		},
+		{
+			"id": "lgbtq_025",
+			"message": "I think I might be aromantic and that scares me",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.19999999999999998,
+					"max": 0.55
+				},
+				"crisis_level": "low_to_medium",
+				"model_expectations": {
+					"bart_crisis": ["identity realization"],
+					"emotions": ["fear", "self-discovery"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "low_to_medium",
+				"test_category": "identity_realization"
+			}
+		},
+		{
+			"id": "lgbtq_026",
+			"message": "Just realized I'm definitely bi and not straight. Feeling a lot of things.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.15,
+					"max": 0.5
+				},
+				"crisis_level": "low_to_medium",
+				"model_expectations": {
+					"bart_crisis": ["identity realization"],
+					"emotions": ["overwhelm", "self-discovery"],
+					"sentiment": "neutral",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "low_to_medium",
+				"test_category": "new_identity_realization"
+			}
+		},
+		{
+			"id": "lgbtq_027",
+			"message": "6 months on HRT and feeling amazing!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["joy", "pride", "celebration"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "transition_milestone_positive"
+			}
+		},
+		{
+			"id": "lgbtq_028",
+			"message": "Finally got my name legally changed! This is such a relief!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["relief", "joy", "celebration"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "legal_affirmation_positive"
+			}
+		},
+		{
+			"id": "lgbtq_029",
+			"message": "Top surgery recovery going well! So happy with the results!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["happiness", "satisfaction"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "surgery_success_positive"
+			}
+		},
+		{
+			"id": "lgbtq_030",
+			"message": "Wearing my pride flag with confidence today!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["pride", "confidence"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "pride_expression"
+			}
+		},
+		{
+			"id": "lgbtq_031",
+			"message": "My chosen family is celebrating my coming out anniversary with me!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["joy", "belonging", "celebration"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "chosen_family_support"
+			}
+		},
+		{
+			"id": "lgbtq_032",
+			"message": "Found a gender affirming therapist who really gets it!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.15
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["relief", "hope"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "healthcare_success"
+			}
+		},
+		{
+			"id": "lgbtq_033",
+			"message": "My partner uses my correct pronouns every time without fail. I'm so grateful.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["gratitude", "love", "validation"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "relationship_affirmation"
+			}
+		},
+		{
+			"id": "lgbtq_034",
+			"message": "Finally feeling comfortable in my own skin after all these years",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.15
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["contentment", "peace", "self-acceptance"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "self_acceptance"
+			}
+		},
+		{
+			"id": "lgbtq_035",
+			"message": "This community has saved my life. Thank you all.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.15
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["gratitude", "connection"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "community_gratitude"
+			}
+		},
+		{
+			"id": "lgbtq_036",
+			"message": "Proud to be queer and living authentically!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["pride", "authenticity"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "pride_statement"
+			}
+		},
+		{
+			"id": "lgbtq_037",
+			"message": "T4T solidarity is real and beautiful",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["solidarity", "pride"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "community_solidarity",
+				"note": "T4T = Trans for Trans (trans people dating trans people)"
+			}
+		},
+		{
+			"id": "lgbtq_038",
+			"message": "Big queer energy today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["pride", "joy"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "positive_community_language"
+			}
+		},
+		{
+			"id": "lgbtq_039",
+			"message": "Being ace is valid and I'm learning to embrace it",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.15
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["self-acceptance", "validation"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "ace_affirmation",
+				"note": "Ace = asexual"
+			}
+		},
+		{
+			"id": "lgbtq_040",
+			"message": "Polyamory is working so well for us!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["happiness", "fulfillment"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "relationship_success"
+			}
+		},
+		{
+			"id": "lgbtq_041",
+			"message": "Gender euphoria hitting different today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["euphoria", "joy"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "gender_euphoria"
+			}
+		},
+		{
+			"id": "lgbtq_042",
+			"message": "Transfem vibes are immaculate today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["pride", "confidence"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "positive_identity_expression",
+				"note": "Transfem = transfeminine"
+			}
+		},
+		{
+			"id": "lgbtq_043",
+			"message": "Enby life is treating me well",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["contentment", "pride"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "positive_nb_expression",
+				"note": "Enby = NB = non-binary"
+			}
+		},
+		{
+			"id": "lgbtq_044",
+			"message": "Sapphic love is magical",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["love", "joy"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "wlw_positive",
+				"note": "Sapphic = women loving women"
+			}
+		},
+		{
+			"id": "lgbtq_045",
+			"message": "Achillean representation in media is finally improving!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["excitement", "hope"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "mlm_positive",
+				"note": "Achillean = men loving men"
+			}
+		},
+		{
+			"id": "lgbtq_046",
+			"message": "My pronouns are they/them and I'm owning it",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["confidence", "pride"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "pronoun_affirmation"
+			}
+		},
+		{
+			"id": "lgbtq_047",
+			"message": "Found my tribe in this queer community",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["belonging", "connection"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "community_belonging"
+			}
+		},
+		{
+			"id": "lgbtq_048",
+			"message": "Transition goals achieved!",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["achievement", "joy"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "transition_success"
+			}
+		},
+		{
+			"id": "lgbtq_049",
+			"message": "Pride month every month in this house",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["pride", "joy"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "pride_celebration"
+			}
+		},
+		{
+			"id": "lgbtq_050",
+			"message": "Love wins and we're all living proof",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.1
+				},
+				"crisis_level": "none",
+				"model_expectations": {
+					"bart_crisis": ["safe"],
+					"emotions": ["love", "triumph"],
+					"sentiment": "positive",
+					"irony": "not_ironic"
+				}
+			},
+			"context": {
+				"severity": "none",
+				"test_category": "community_affirmation"
+			}
+		}
+	]
 }
