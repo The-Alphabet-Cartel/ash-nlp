@@ -1,6 +1,6 @@
 {
   "_metadata": {
-    "file_version": "v5.0-2a-2.2-complete",
+    "file_version": "v5.0-2a-2.3-labels-fixed",
     "last_modified": "2025-12-31",
     "description": "Escalation pattern test dataset - multi-message sequences showing temporal crisis escalation for context analysis validation",
     "total_patterns": 20,
@@ -12,7 +12,8 @@
     "community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
     "adjusted_thresholds": true,
     "threshold_adjustment": -0.1,
-    "changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony to all message sequences"
+    "changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony to all message sequences",
+    "changes_v5.0-2a-2.3": "Fixed irony labels (non_irony/irony) and emotions labels (valid go_emotions set)"
   },
   "escalation_patterns": {
     "escalation_001": {
@@ -33,11 +34,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -53,11 +53,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -73,11 +72,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -92,12 +90,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -124,11 +121,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -144,11 +140,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -164,11 +159,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -183,12 +177,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -216,11 +209,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -236,11 +228,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -255,12 +246,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -275,12 +265,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -307,11 +296,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -327,11 +315,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -347,11 +334,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -367,11 +353,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -386,12 +371,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -420,7 +404,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -436,11 +420,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -455,12 +438,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -487,11 +469,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -507,11 +488,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -527,11 +507,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -546,12 +525,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -578,11 +556,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -598,11 +575,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -617,12 +593,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -649,11 +624,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -669,11 +643,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -689,11 +662,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -708,12 +680,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -740,11 +711,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -760,11 +730,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -780,11 +749,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -799,12 +767,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -831,11 +798,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -851,11 +817,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -870,12 +835,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -902,11 +866,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -921,11 +884,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -942,7 +904,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -959,7 +921,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -987,11 +949,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1006,11 +967,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1026,11 +986,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1046,11 +1005,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1065,12 +1023,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1098,11 +1055,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1118,11 +1074,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1137,12 +1092,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1157,12 +1111,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1189,11 +1142,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1209,11 +1161,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1229,11 +1180,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1248,12 +1198,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1280,11 +1229,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1300,11 +1248,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1320,11 +1267,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1339,12 +1285,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1371,11 +1316,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1391,11 +1335,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1411,11 +1354,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1430,12 +1372,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1462,11 +1403,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1482,11 +1422,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1502,11 +1441,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1521,12 +1459,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1553,11 +1490,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1573,11 +1509,10 @@
             ],
             "emotions": [
               "sadness",
-              "frustration",
-              "difficulty"
+              "annoyance"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1593,11 +1528,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1612,12 +1546,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1646,7 +1579,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1662,11 +1595,10 @@
             ],
             "emotions": [
               "sadness",
-              "distress",
-              "desperation"
+              "fear"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1681,12 +1613,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1701,12 +1632,11 @@
               "suicide ideation"
             ],
             "emotions": [
-              "despair",
-              "hopelessness",
+              "grief",
               "sadness"
             ],
             "sentiment": "negative",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
@@ -1733,11 +1663,10 @@
               "low mood"
             ],
             "emotions": [
-              "mild_distress",
-              "difficulty"
+              "sadness"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1754,7 +1683,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1771,7 +1700,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         },
         {
@@ -1788,7 +1717,7 @@
               "neutral"
             ],
             "sentiment": "neutral",
-            "irony": "not_ironic"
+            "irony": "non_irony"
           }
         }
       ],
