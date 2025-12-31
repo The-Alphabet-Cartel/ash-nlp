@@ -1,6 +1,6 @@
 {
 	"_metadata": {
-		"file_version": "v5.0-2a-2.2-complete",
+		"file_version": "v5.0-2a-2.3-labels-fixed",
 		"last_modified": "2025-12-31",
 		"description": "Crisis message test dataset for model evaluation - covers full spectrum of crisis severity",
 		"total_cases": 55,
@@ -13,7 +13,8 @@
 		"community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
 		"adjusted_thresholds": true,
 		"threshold_adjustment": -0.1,
-		"changes_v5.0-2a-2.2-complete": "Added complete sentiment and irony fields to ALL 55 test cases"
+		"changes_v5.0-2a-2.2-complete": "Added complete sentiment and irony fields to ALL 55 test cases",
+		"changes_v5.0-2a-2.3": "Fixed irony labels (non_irony/irony) and emotions labels (valid go_emotions set)"
 	},
 	"test_cases": [
 		{
@@ -27,9 +28,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "mental health emergency"],
-					"emotions": ["sadness", "despair"],
+					"emotions": ["sadness", "grief"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				},
 				"temporal_flags": ["tonight"],
 				"pattern_matches": ["suicide_ideation", "temporal_urgency"]
@@ -51,9 +52,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "severe depression"],
-					"emotions": ["sadness", "loneliness"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				},
 				"temporal_flags": ["right now"]
 			},
@@ -74,9 +75,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "mental health emergency"],
-					"emotions": ["sadness", "resignation"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -96,9 +97,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["self-harm thoughts", "mental health emergency"],
-					"emotions": ["fear", "desperation"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				},
 				"temporal_flags": ["tonight"]
 			},
@@ -121,7 +122,7 @@
 					"bart_crisis": ["abuse situation", "domestic violence"],
 					"emotions": ["fear", "confusion"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -141,9 +142,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["panic attack", "mental health crisis"],
-					"emotions": ["fear", "panic"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -163,9 +164,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["family rejection", "identity crisis"],
-					"emotions": ["fear", "sadness", "abandonment"],
+					"emotions": ["fear", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -187,7 +188,7 @@
 					"bart_crisis": ["mental health emergency", "self-harm thoughts"],
 					"emotions": ["fear", "confusion"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -207,9 +208,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["self-harm thoughts", "severe depression"],
-					"emotions": ["fear", "desperation"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -229,9 +230,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "severe depression"],
-					"emotions": ["hopelessness", "resignation"],
+					"emotions": ["grief", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -251,9 +252,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation"],
-					"emotions": ["pain", "desperation"],
+					"emotions": ["sadness", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -273,9 +274,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "mental health emergency"],
-					"emotions": ["fear", "desperation"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -299,9 +300,9 @@
 						"identity crisis",
 						"severe depression"
 					],
-					"emotions": ["self-hatred", "despair"],
+					"emotions": ["disapproval", "grief"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -321,9 +322,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "mental health emergency"],
-					"emotions": ["resignation", "finality"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				},
 				"temporal_flags": ["tonight"]
 			},
@@ -344,9 +345,9 @@
 				"crisis_level": "critical",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "severe depression"],
-					"emotions": ["self-hatred", "worthlessness"],
+					"emotions": ["disapproval", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -366,9 +367,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "severe depression"],
-					"emotions": ["sadness", "despair"],
+					"emotions": ["sadness", "grief"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -388,9 +389,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["self-harm thoughts"],
-					"emotions": ["distress", "fear"],
+					"emotions": ["sadness", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -411,7 +412,7 @@
 					"bart_crisis": ["severe depression"],
 					"emotions": ["fear", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -430,9 +431,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["severe depression"],
-					"emotions": ["hopelessness", "despair"],
+					"emotions": ["grief"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -451,9 +452,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation", "severe depression"],
-					"emotions": ["hopelessness", "resignation"],
+					"emotions": ["grief", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -472,9 +473,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["family rejection", "severe depression"],
-					"emotions": ["loneliness", "abandonment", "sadness"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -493,9 +494,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation"],
-					"emotions": ["pain", "desperation"],
+					"emotions": ["sadness", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -514,9 +515,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["self-harm thoughts"],
-					"emotions": ["despair", "shame"],
+					"emotions": ["grief", "embarrassment"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -535,9 +536,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["panic attack", "severe anxiety"],
-					"emotions": ["fear", "panic"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -556,9 +557,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["suicide ideation"],
-					"emotions": ["despair", "confusion"],
+					"emotions": ["grief", "confusion"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -577,9 +578,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["identity crisis", "severe distress"],
-					"emotions": ["distress", "desperation"],
+					"emotions": ["sadness", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -598,9 +599,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["mental health crisis"],
-					"emotions": ["fear", "terror"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -619,9 +620,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["severe depression"],
-					"emotions": ["emptiness", "numbness"],
+					"emotions": ["sadness", "neutral"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -640,9 +641,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["severe depression"],
-					"emotions": ["distress", "desperation"],
+					"emotions": ["sadness", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -661,9 +662,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["abuse situation", "domestic violence"],
-					"emotions": ["fear", "trapped"],
+					"emotions": ["fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -682,9 +683,9 @@
 				"crisis_level": "high",
 				"model_expectations": {
 					"bart_crisis": ["identity crisis", "severe depression"],
-					"emotions": ["self-hatred", "helplessness"],
+					"emotions": ["disapproval", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -703,9 +704,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["depression"],
-					"emotions": ["sadness", "low_mood"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -724,9 +725,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress", "stress"],
-					"emotions": ["stress", "anxiety"],
+					"emotions": ["nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -745,9 +746,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["anxiety"],
-					"emotions": ["anxiety", "distress"],
+					"emotions": ["nervousness", "sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -766,9 +767,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress", "isolation"],
-					"emotions": ["loneliness", "sadness"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -787,9 +788,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress", "stress"],
-					"emotions": ["stress", "frustration"],
+					"emotions": ["nervousness", "annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -808,9 +809,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["mental health concern"],
-					"emotions": ["concern", "worry"],
+					"emotions": ["nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -829,9 +830,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress", "concern"],
-					"emotions": ["worry", "concern"],
+					"emotions": ["nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -850,9 +851,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["depression", "concerning thoughts"],
-					"emotions": ["distress", "concern"],
+					"emotions": ["sadness", "nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -871,9 +872,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["fatigue", "stress"],
+					"emotions": ["sadness", "nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -892,9 +893,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress", "dissociation"],
-					"emotions": ["disconnection", "numbness"],
+					"emotions": ["neutral"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -913,9 +914,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["depression"],
-					"emotions": ["worry", "fear"],
+					"emotions": ["nervousness", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -934,9 +935,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["need", "vulnerability"],
+					"emotions": ["desire", "fear"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -955,9 +956,9 @@
 				"crisis_level": "medium",
 				"model_expectations": {
 					"bart_crisis": ["mental health concern"],
-					"emotions": ["distress", "difficulty"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -976,9 +977,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress", "low mood"],
-					"emotions": ["sadness", "low_mood"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -997,9 +998,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["mild_distress"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1018,9 +1019,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress", "stress"],
-					"emotions": ["stress", "mild_anxiety"],
+					"emotions": ["nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1039,9 +1040,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["apathy", "low_energy"],
+					"emotions": ["neutral", "sadness"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1062,7 +1063,7 @@
 					"bart_crisis": ["distress", "disappointment"],
 					"emotions": ["disappointment"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1081,9 +1082,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress", "frustration"],
-					"emotions": ["frustration"],
+					"emotions": ["annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1102,9 +1103,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["difficulty", "resilience"],
+					"emotions": ["sadness", "pride"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1123,9 +1124,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress", "anxiety"],
-					"emotions": ["mild_anxiety"],
+					"emotions": ["nervousness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1144,9 +1145,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress", "fatigue"],
-					"emotions": ["fatigue", "frustration"],
+					"emotions": ["sadness", "annoyance"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1165,9 +1166,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["weariness"],
+					"emotions": ["sadness"],
 					"sentiment": "negative",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
@@ -1186,9 +1187,9 @@
 				"crisis_level": "low",
 				"model_expectations": {
 					"bart_crisis": ["distress"],
-					"emotions": ["mild_distress", "coping"],
+					"emotions": ["sadness", "relief"],
 					"sentiment": "neutral",
-					"irony": "not_ironic"
+					"irony": "non_irony"
 				}
 			},
 			"context": {
