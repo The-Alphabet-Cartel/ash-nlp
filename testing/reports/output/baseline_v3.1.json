@@ -1,10 +1,10 @@
 {
   "report_version": "v5.0",
-  "generated_at": "2025-12-31T16:14:09.511806",
+  "generated_at": "2025-12-31T16:57:31.867567",
   "results": {
     "model_name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
     "dataset": "testing/test_datasets/crisis_examples.json",
-    "timestamp": "2025-12-31T16:14:09.511769",
+    "timestamp": "2025-12-31T16:57:31.867520",
     "total_tests": 55,
     "results": [
       {
@@ -13,11 +13,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.944536030292511,
         "expected_score_range": {
-          "min": 0.95,
+          "min": 0.85,
           "max": 1.0
         },
-        "is_correct": false,
-        "latency_ms": 302.34670639038086,
+        "is_correct": true,
+        "latency_ms": 304.33082580566406,
         "vram_mb": 9.125,
         "context": {
           "severity": "critical",
@@ -31,11 +31,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.8467044830322266,
         "expected_score_range": {
-          "min": 0.85,
+          "min": 0.75,
           "max": 1.0
         },
-        "is_correct": false,
-        "latency_ms": 221.67444229125977,
+        "is_correct": true,
+        "latency_ms": 219.73133087158203,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -49,11 +49,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.8224744200706482,
         "expected_score_range": {
-          "min": 0.95,
+          "min": 0.85,
           "max": 1.0
         },
         "is_correct": false,
-        "latency_ms": 22.724390029907227,
+        "latency_ms": 24.695396423339844,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -67,11 +67,11 @@
         "predicted_label": "self-harm thoughts",
         "predicted_score": 0.9626380205154419,
         "expected_score_range": {
-          "min": 0.9,
+          "min": 0.8,
           "max": 1.0
         },
         "is_correct": true,
-        "latency_ms": 22.582292556762695,
+        "latency_ms": 36.35001182556152,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -85,11 +85,11 @@
         "predicted_label": "domestic violence",
         "predicted_score": 0.581778347492218,
         "expected_score_range": {
-          "min": 0.85,
+          "min": 0.75,
           "max": 0.95
         },
         "is_correct": false,
-        "latency_ms": 22.092580795288086,
+        "latency_ms": 34.12652015686035,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -103,11 +103,11 @@
         "predicted_label": "panic attack",
         "predicted_score": 0.6460136771202087,
         "expected_score_range": {
-          "min": 0.8,
+          "min": 0.7000000000000001,
           "max": 0.9
         },
         "is_correct": false,
-        "latency_ms": 22.116661071777344,
+        "latency_ms": 31.536340713500977,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -121,11 +121,11 @@
         "predicted_label": "family rejection",
         "predicted_score": 0.6791787147521973,
         "expected_score_range": {
-          "min": 0.85,
+          "min": 0.75,
           "max": 0.95
         },
         "is_correct": false,
-        "latency_ms": 21.98648452758789,
+        "latency_ms": 25.264978408813477,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -139,11 +139,11 @@
         "predicted_label": "self-harm thoughts",
         "predicted_score": 0.9486086964607239,
         "expected_score_range": {
-          "min": 0.95,
+          "min": 0.85,
           "max": 1.0
         },
-        "is_correct": false,
-        "latency_ms": 22.065162658691406,
+        "is_correct": true,
+        "latency_ms": 23.98681640625,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -157,11 +157,11 @@
         "predicted_label": "self-harm thoughts",
         "predicted_score": 0.7781439423561096,
         "expected_score_range": {
-          "min": 0.85,
+          "min": 0.75,
           "max": 0.95
         },
-        "is_correct": false,
-        "latency_ms": 21.991729736328125,
+        "is_correct": true,
+        "latency_ms": 23.76413345336914,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -175,11 +175,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.9571678042411804,
         "expected_score_range": {
-          "min": 0.9,
+          "min": 0.8,
           "max": 1.0
         },
         "is_correct": true,
-        "latency_ms": 22.05801010131836,
+        "latency_ms": 23.97441864013672,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -193,11 +193,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.8587185740470886,
         "expected_score_range": {
-          "min": 0.85,
+          "min": 0.75,
           "max": 0.95
         },
         "is_correct": true,
-        "latency_ms": 11.230230331420898,
+        "latency_ms": 12.227058410644531,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -211,11 +211,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.5279250144958496,
         "expected_score_range": {
-          "min": 0.9,
+          "min": 0.8,
           "max": 1.0
         },
         "is_correct": false,
-        "latency_ms": 21.99268341064453,
+        "latency_ms": 24.079322814941406,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -229,11 +229,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.8710307478904724,
         "expected_score_range": {
-          "min": 0.9,
+          "min": 0.8,
           "max": 1.0
         },
-        "is_correct": false,
-        "latency_ms": 32.932281494140625,
+        "is_correct": true,
+        "latency_ms": 35.77923774719238,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -247,11 +247,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.919714629650116,
         "expected_score_range": {
-          "min": 0.95,
+          "min": 0.85,
           "max": 1.0
         },
-        "is_correct": false,
-        "latency_ms": 22.060871124267578,
+        "is_correct": true,
+        "latency_ms": 24.031400680541992,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -265,11 +265,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.8041753172874451,
         "expected_score_range": {
-          "min": 0.85,
+          "min": 0.75,
           "max": 0.95
         },
-        "is_correct": false,
-        "latency_ms": 21.992921829223633,
+        "is_correct": true,
+        "latency_ms": 24.045944213867188,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -283,11 +283,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.9959099888801575,
         "expected_score_range": {
-          "min": 0.75,
+          "min": 0.65,
           "max": 0.85
         },
         "is_correct": false,
-        "latency_ms": 21.957874298095703,
+        "latency_ms": 23.930788040161133,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -301,11 +301,11 @@
         "predicted_label": "self-harm thoughts",
         "predicted_score": 0.9998968839645386,
         "expected_score_range": {
-          "min": 0.7,
+          "min": 0.6,
           "max": 0.85
         },
         "is_correct": false,
-        "latency_ms": 11.181116104125977,
+        "latency_ms": 12.121200561523438,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -318,11 +318,11 @@
         "predicted_label": "severe depression",
         "predicted_score": 0.9854404926300049,
         "expected_score_range": {
-          "min": 0.65,
+          "min": 0.55,
           "max": 0.8
         },
         "is_correct": false,
-        "latency_ms": 11.170387268066406,
+        "latency_ms": 12.169837951660156,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -335,11 +335,11 @@
         "predicted_label": "severe depression",
         "predicted_score": 0.9810219407081604,
         "expected_score_range": {
-          "min": 0.65,
+          "min": 0.55,
           "max": 0.8
         },
         "is_correct": false,
-        "latency_ms": 10.913372039794922,
+        "latency_ms": 11.976242065429688,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -352,11 +352,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.8426042795181274,
         "expected_score_range": {
-          "min": 0.7,
+          "min": 0.6,
           "max": 0.85
         },
         "is_correct": true,
-        "latency_ms": 21.970748901367188,
+        "latency_ms": 23.92864227294922,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -369,11 +369,11 @@
         "predicted_label": "family rejection",
         "predicted_score": 0.9957888722419739,
         "expected_score_range": {
-          "min": 0.7,
+          "min": 0.6,
           "max": 0.85
         },
         "is_correct": false,
-        "latency_ms": 21.994352340698242,
+        "latency_ms": 23.9560604095459,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -386,11 +386,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.9505029320716858,
         "expected_score_range": {
-          "min": 0.75,
+          "min": 0.65,
           "max": 0.9
         },
         "is_correct": false,
-        "latency_ms": 11.040925979614258,
+        "latency_ms": 12.018203735351562,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -403,11 +403,11 @@
         "predicted_label": "self-harm thoughts",
         "predicted_score": 0.6419275403022766,
         "expected_score_range": {
-          "min": 0.7,
+          "min": 0.6,
           "max": 0.85
         },
-        "is_correct": false,
-        "latency_ms": 11.063814163208008,
+        "is_correct": true,
+        "latency_ms": 12.060880661010742,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -420,11 +420,11 @@
         "predicted_label": "panic attack",
         "predicted_score": 0.5794004201889038,
         "expected_score_range": {
-          "min": 0.65,
+          "min": 0.55,
           "max": 0.8
         },
-        "is_correct": false,
-        "latency_ms": 21.97885513305664,
+        "is_correct": true,
+        "latency_ms": 24.00493621826172,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -437,11 +437,11 @@
         "predicted_label": "suicide ideation",
         "predicted_score": 0.9992972612380981,
         "expected_score_range": {
-          "min": 0.75,
+          "min": 0.65,
           "max": 0.9
         },
         "is_correct": false,
-        "latency_ms": 11.093378067016602,
+        "latency_ms": 12.092828750610352,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -454,11 +454,11 @@
         "predicted_label": "identity crisis",
         "predicted_score": 0.5588086247444153,
         "expected_score_range": {
-          "min": 0.65,
+          "min": 0.55,
           "max": 0.8
         },
-        "is_correct": false,
-        "latency_ms": 22.045612335205078,
+        "is_correct": true,
+        "latency_ms": 24.02210235595703,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -471,11 +471,11 @@
         "predicted_label": "mental health crisis",
         "predicted_score": 0.4682890772819519,
         "expected_score_range": {
-          "min": 0.75,
+          "min": 0.65,
           "max": 0.9
         },
         "is_correct": false,
-        "latency_ms": 11.219024658203125,
+        "latency_ms": 12.272119522094727,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -488,11 +488,11 @@
         "predicted_label": "severe depression",
         "predicted_score": 0.09773432463407516,
         "expected_score_range": {
-          "min": 0.6,
+          "min": 0.5,
           "max": 0.75
         },
         "is_correct": false,
-        "latency_ms": 11.100053787231445,
+        "latency_ms": 12.099027633666992,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -505,11 +505,11 @@
         "predicted_label": "severe depression",
         "predicted_score": 0.9374402761459351,
         "expected_score_range": {
-          "min": 0.65,
+          "min": 0.55,
           "max": 0.8
         },
         "is_correct": false,
-        "latency_ms": 11.069536209106445,
+        "latency_ms": 12.09712028503418,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -522,11 +522,11 @@
         "predicted_label": "domestic violence",
         "predicted_score": 0.5053708553314209,
         "expected_score_range": {
-          "min": 0.75,
+          "min": 0.65,
           "max": 0.9
         },
         "is_correct": false,
-        "latency_ms": 21.892309188842773,
+        "latency_ms": 23.97322654724121,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -539,11 +539,11 @@
         "predicted_label": "identity crisis",
         "predicted_score": 0.9976677894592285,
         "expected_score_range": {
-          "min": 0.6,
+          "min": 0.5,
           "max": 0.75
         },
         "is_correct": false,
-        "latency_ms": 21.967411041259766,
+        "latency_ms": 24.084091186523438,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -556,11 +556,11 @@
         "predicted_label": "depression",
         "predicted_score": 0.9998741149902344,
         "expected_score_range": {
-          "min": 0.4,
+          "min": 0.30000000000000004,
           "max": 0.6
         },
         "is_correct": false,
-        "latency_ms": 10.730981826782227,
+        "latency_ms": 11.897563934326172,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -573,11 +573,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.8729920983314514,
         "expected_score_range": {
-          "min": 0.35,
+          "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
-        "latency_ms": 31.75806999206543,
+        "latency_ms": 34.71016883850098,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -590,11 +590,11 @@
         "predicted_label": "anxiety",
         "predicted_score": 0.9998043179512024,
         "expected_score_range": {
-          "min": 0.35,
+          "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
-        "latency_ms": 10.625362396240234,
+        "latency_ms": 12.026786804199219,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -607,11 +607,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9935382008552551,
         "expected_score_range": {
-          "min": 0.4,
+          "min": 0.30000000000000004,
           "max": 0.6
         },
         "is_correct": false,
-        "latency_ms": 31.759977340698242,
+        "latency_ms": 34.85584259033203,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -624,11 +624,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9891061186790466,
         "expected_score_range": {
-          "min": 0.35,
+          "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
-        "latency_ms": 32.86242485046387,
+        "latency_ms": 36.88454627990723,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -641,11 +641,11 @@
         "predicted_label": "mental health concern",
         "predicted_score": 0.9987695813179016,
         "expected_score_range": {
-          "min": 0.45,
+          "min": 0.35,
           "max": 0.65
         },
         "is_correct": false,
-        "latency_ms": 10.821819305419922,
+        "latency_ms": 13.334274291992188,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -658,11 +658,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9818288087844849,
         "expected_score_range": {
-          "min": 0.35,
+          "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
-        "latency_ms": 31.549692153930664,
+        "latency_ms": 34.47079658508301,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -675,11 +675,11 @@
         "predicted_label": "concerning thoughts",
         "predicted_score": 0.9620006084442139,
         "expected_score_range": {
-          "min": 0.5,
+          "min": 0.4,
           "max": 0.7
         },
         "is_correct": false,
-        "latency_ms": 21.562814712524414,
+        "latency_ms": 23.630619049072266,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -692,11 +692,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9581624269485474,
         "expected_score_range": {
-          "min": 0.3,
+          "min": 0.19999999999999998,
           "max": 0.5
         },
         "is_correct": false,
-        "latency_ms": 32.90367126464844,
+        "latency_ms": 36.002159118652344,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -709,11 +709,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9924163222312927,
         "expected_score_range": {
-          "min": 0.4,
+          "min": 0.30000000000000004,
           "max": 0.6
         },
         "is_correct": false,
-        "latency_ms": 31.68487548828125,
+        "latency_ms": 34.7294807434082,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -726,11 +726,11 @@
         "predicted_label": "depression",
         "predicted_score": 0.9833748936653137,
         "expected_score_range": {
-          "min": 0.45,
+          "min": 0.35,
           "max": 0.65
         },
         "is_correct": false,
-        "latency_ms": 11.000871658325195,
+        "latency_ms": 12.061834335327148,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -743,11 +743,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.5777480006217957,
         "expected_score_range": {
-          "min": 0.25,
+          "min": 0.15,
           "max": 0.45
         },
         "is_correct": false,
-        "latency_ms": 31.526803970336914,
+        "latency_ms": 34.722328186035156,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -760,11 +760,11 @@
         "predicted_label": "mental health concern",
         "predicted_score": 0.999312162399292,
         "expected_score_range": {
-          "min": 0.35,
+          "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
-        "latency_ms": 11.056661605834961,
+        "latency_ms": 12.15219497680664,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -777,11 +777,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9925267696380615,
         "expected_score_range": {
-          "min": 0.2,
+          "min": 0.1,
           "max": 0.4
         },
         "is_correct": false,
-        "latency_ms": 31.686782836914062,
+        "latency_ms": 34.863948822021484,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -794,11 +794,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9807558059692383,
         "expected_score_range": {
-          "min": 0.15,
+          "min": 0.04999999999999999,
           "max": 0.35
         },
         "is_correct": false,
-        "latency_ms": 31.710147857666016,
+        "latency_ms": 34.94572639465332,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -811,11 +811,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.987821102142334,
         "expected_score_range": {
-          "min": 0.15,
+          "min": 0.04999999999999999,
           "max": 0.35
         },
         "is_correct": false,
-        "latency_ms": 31.820058822631836,
+        "latency_ms": 35.13526916503906,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -828,11 +828,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9785742163658142,
         "expected_score_range": {
-          "min": 0.1,
+          "min": 0.0,
           "max": 0.3
         },
         "is_correct": false,
-        "latency_ms": 31.75520896911621,
+        "latency_ms": 34.98983383178711,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -845,11 +845,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9712381362915039,
         "expected_score_range": {
-          "min": 0.15,
+          "min": 0.04999999999999999,
           "max": 0.35
         },
         "is_correct": false,
-        "latency_ms": 31.705379486083984,
+        "latency_ms": 34.80982780456543,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -862,11 +862,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9735962748527527,
         "expected_score_range": {
-          "min": 0.2,
+          "min": 0.1,
           "max": 0.4
         },
         "is_correct": false,
-        "latency_ms": 32.889366149902344,
+        "latency_ms": 35.996198654174805,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -879,11 +879,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9836119413375854,
         "expected_score_range": {
-          "min": 0.15,
+          "min": 0.04999999999999999,
           "max": 0.35
         },
         "is_correct": false,
-        "latency_ms": 32.858848571777344,
+        "latency_ms": 36.29350662231445,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -896,11 +896,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9943810701370239,
         "expected_score_range": {
-          "min": 0.2,
+          "min": 0.1,
           "max": 0.4
         },
         "is_correct": false,
-        "latency_ms": 31.59618377685547,
+        "latency_ms": 35.32099723815918,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -913,11 +913,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9112013578414917,
         "expected_score_range": {
-          "min": 0.25,
+          "min": 0.15,
           "max": 0.45
         },
         "is_correct": false,
-        "latency_ms": 31.567811965942383,
+        "latency_ms": 35.325050354003906,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -930,11 +930,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.8691800832748413,
         "expected_score_range": {
-          "min": 0.15,
+          "min": 0.04999999999999999,
           "max": 0.35
         },
         "is_correct": false,
-        "latency_ms": 31.620025634765625,
+        "latency_ms": 35.29500961303711,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -947,11 +947,11 @@
         "predicted_label": "distress",
         "predicted_score": 0.9802067875862122,
         "expected_score_range": {
-          "min": 0.2,
+          "min": 0.1,
           "max": 0.4
         },
         "is_correct": false,
-        "latency_ms": 31.6317081451416,
+        "latency_ms": 35.33196449279785,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -961,209 +961,29 @@
     ],
     "metrics": {
       "overall": {
-        "accuracy": 0.07272727272727272,
+        "accuracy": 0.2545454545454545,
         "total_tests": 55,
-        "passed": 4,
-        "failed": 51
+        "passed": 14,
+        "failed": 41
       },
       "performance": {
-        "avg_latency_ms": 31.203486702658914,
-        "max_latency_ms": 302.34670639038086,
+        "avg_latency_ms": 33.90030860900879,
+        "max_latency_ms": 304.33082580566406,
         "avg_vram_mb": 0.16590909090909092,
         "max_vram_mb": 9.125
       },
       "per_category": {
-        "burden_belief": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "method_preparation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "sleep_disruption": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "psychotic_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "loss_of_purpose": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
-        "relapse": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "support_request": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "chronic_panic": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "self_harm_threat": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
-        "dissociation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
         "frustration": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "family_rejection": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
         "active_self_harm": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "dissociation_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "general_depression": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "ideation_disclosure": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "anxiety_disclosure": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "isolation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "general_difficulty": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "general_fatigue": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "emotional_numbness": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "pain_escape_ideation": {
           "accuracy": 1.0,
           "total_tests": 1,
           "correct": 1
         },
-        "identity_related_ideation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "mild_stress": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "disappointment": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "managing_distress": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "family_rejection_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "hopelessness": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "suicide_contemplation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "dysphoria_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "overwhelm": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "emotional_concern": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "persistent_harm_thoughts": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "panic_attack": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "persistent_ideation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "stress_overload": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "mild_anxiety": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "low_mood": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "explicit_suicide_ideation": {
+        "mild_malaise": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1173,37 +993,32 @@
           "total_tests": 1,
           "correct": 0
         },
-        "mild_negative": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "basic_function_loss": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
         "suicide_planning": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "depression_escalation": {
+        "overwhelm": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "mild_malaise": {
+        "support_request": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "existential_crisis": {
+        "stress_overload": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "ongoing_abuse": {
+        "general_difficulty": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_stress": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1213,7 +1028,17 @@
           "total_tests": 1,
           "correct": 0
         },
-        "domestic_violence": {
+        "ideation_disclosure": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "burden_belief": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "hopelessness": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1223,7 +1048,152 @@
           "total_tests": 1,
           "correct": 0
         },
+        "existential_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "emotional_concern": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "panic_attack": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "explicit_suicide_ideation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "psychotic_crisis": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "persistent_harm_thoughts": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "relapse": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "dark_thoughts": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_negative": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "ongoing_abuse": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "loss_of_purpose": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "managing_distress": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "low_mood": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "suicide_contemplation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "basic_function_loss": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "disappointment": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "self_harm_threat": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "persistent_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "family_rejection": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "isolation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "resignation_statement": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "identity_related_ideation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "dissociation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
         "imminent_risk": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "chronic_panic": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "dissociation_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "sleep_disruption": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_depression": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "emotional_numbness": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "domestic_violence": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1233,20 +1203,50 @@
           "total_tests": 1,
           "correct": 0
         },
-        "dark_thoughts": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
         "self_hatred": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "resignation_statement": {
+        "dysphoria_crisis": {
           "accuracy": 1.0,
           "total_tests": 1,
           "correct": 1
+        },
+        "mild_anxiety": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "anxiety_disclosure": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "pain_escape_ideation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "method_preparation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "general_fatigue": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "depression_escalation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "family_rejection_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
         }
       }
     }
