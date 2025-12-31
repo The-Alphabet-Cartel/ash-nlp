@@ -33,42 +33,42 @@ Phase 3 focuses on **Production Integration** - taking the validated multi-model
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                         Ash Discord Bot                                   │
-│                              │                                            │
-│                              ▼                                            │
+│                         Ash Discord Bot                                  │
+│                              │                                           │
+│                              ▼                                           │
 │                    ┌─────────────────┐                                   │
 │                    │  Message Event  │                                   │
 │                    └────────┬────────┘                                   │
-│                              │                                            │
-└──────────────────────────────┼────────────────────────────────────────────┘
+│                              │                                           │
+└──────────────────────────────┼───────────────────────────────────────────┘
                                │ HTTP POST /api/v1/analyze
                                ▼
 ┌──────────────────────────────────────────────────────────────────────────┐
-│                       Ash-NLP Container (Port 30880)                      │
+│                       Ash-NLP Container (Port 30880)                     │
 │  ┌────────────────────────────────────────────────────────────────────┐  │
-│  │                        API Gateway                                  │  │
-│  │                    /api/v1/analyze                                  │  │
-│  │                    /api/v1/health                                   │  │
-│  │                    /api/v1/models                                   │  │
+│  │                        API Gateway                                 │  │
+│  │                    /api/v1/analyze                                 │  │
+│  │                    /api/v1/health                                  │  │
+│  │                    /api/v1/models                                  │  │
 │  └──────────────────────────┬─────────────────────────────────────────┘  │
-│                              │                                            │
+│                             │                                            │
 │  ┌──────────────────────────▼─────────────────────────────────────────┐  │
-│  │                    Ensemble Orchestrator                            │  │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐               │  │
-│  │  │  BART   │  │Sentiment│  │  Irony  │  │Emotions │               │  │
-│  │  │  0.50   │  │  0.25   │  │  0.15   │  │  0.10   │               │  │
-│  │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘               │  │
-│  │       │            │            │            │                      │  │
-│  │       └────────────┴─────┬──────┴────────────┘                      │  │
-│  │                          ▼                                          │  │
-│  │              ┌─────────────────────┐                                │  │
-│  │              │  Decision Engine    │                                │  │
-│  │              │  - Weighted scoring │                                │  │
-│  │              │  - Confidence calc  │                                │  │
-│  │              │  - Severity mapping │                                │  │
-│  │              └──────────┬──────────┘                                │  │
+│  │                    Ensemble Orchestrator                           │  │
+│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐                │  │
+│  │  │  BART   │  │Sentiment│  │  Irony  │  │Emotions │                │  │
+│  │  │  0.50   │  │  0.25   │  │  0.15   │  │  0.10   │                │  │
+│  │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘                │  │
+│  │       │            │            │            │                     │  │
+│  │       └────────────┴─────┬──────┴────────────┘                     │  │
+│  │                          ▼                                         │  │
+│  │              ┌─────────────────────┐                               │  │
+│  │              │  Decision Engine    │                               │  │
+│  │              │  - Weighted scoring │                               │  │
+│  │              │  - Confidence calc  │                               │  │
+│  │              │  - Severity mapping │                               │  │
+│  │              └──────────┬──────────┘                               │  │
 │  └─────────────────────────┼──────────────────────────────────────────┘  │
-│                            ▼                                              │
+│                            ▼                                             │
 │                   ┌────────────────┐                                     │
 │                   │  JSON Response │                                     │
 │                   └────────────────┘                                     │
@@ -138,7 +138,6 @@ class EnsembleDecisionEngine:
 | `/api/v1/analyze` | POST | Analyze message for crisis signals |
 | `/api/v1/health` | GET | Health check and model status |
 | `/api/v1/models` | GET | List loaded models and versions |
-| `/api/v1/batch` | POST | Batch message analysis |
 
 **Request Schema** (`/api/v1/analyze`):
 ```json
@@ -193,10 +192,9 @@ class EnsembleDecisionEngine:
 - [ ] 3.2.2 Implement `/api/v1/analyze` endpoint
 - [ ] 3.2.3 Implement `/api/v1/health` endpoint
 - [ ] 3.2.4 Implement `/api/v1/models` endpoint
-- [ ] 3.2.5 Implement `/api/v1/batch` endpoint
-- [ ] 3.2.6 Add request validation with Pydantic
-- [ ] 3.2.7 Add rate limiting
-- [ ] 3.2.8 API integration tests
+- [ ] 3.2.5 Add request validation with Pydantic
+- [ ] 3.2.6 Add rate limiting
+- [ ] 3.2.7 API integration tests
 
 ---
 
@@ -205,7 +203,6 @@ class EnsembleDecisionEngine:
 **Files**:
 - `Dockerfile` - Production container
 - `docker-compose.yml` - Production orchestration
-- `docker-compose.override.yml` - Development overrides
 
 **Dockerfile Target**:
 ```dockerfile
@@ -353,11 +350,9 @@ class ModelFallbackStrategy:
 
 **Tasks**:
 - [ ] 3.6.1 Implement structured JSON logging
-- [ ] 3.6.2 Add Prometheus metrics endpoint
-- [ ] 3.6.3 Create Grafana dashboard template
-- [ ] 3.6.4 Implement request tracing
-- [ ] 3.6.5 Add performance profiling hooks
-- [ ] 3.6.6 Create alerting rules
+- [ ] 3.6.2 Implement request tracing
+- [ ] 3.6.3 Add performance profiling hooks
+- [ ] 3.6.4 Create alerting rules
 
 ---
 
@@ -507,8 +502,8 @@ ash-nlp/
 
 | Role | Name | Approved | Date |
 |------|------|----------|------|
-| Development Lead | | ☐ | |
-| Community Admin | | ☐ | |
+| Development Lead | PapaBearDoes | ✅ | 31 Dec 2025 |
+| Community Admin | Valkyrie | ✅ | 31 Dec 2025 |
 
 ---
 
