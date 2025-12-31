@@ -1,12 +1,12 @@
 {
   "report_version": "v5.0-2a-2.2",
   "evaluation_method": "label_based_primary",
-  "generated_at": "2025-12-31T18:59:33.999203",
+  "generated_at": "2025-12-31T19:31:28.446773",
   "results": {
     "model_name": "SamLowe/roberta-base-go_emotions",
     "dataset": "testing/test_datasets/crisis_examples.json",
     "task_type": "text-classification",
-    "timestamp": "2025-12-31T18:59:33.999148",
+    "timestamp": "2025-12-31T19:31:28.446693",
     "total_tests": 55,
     "results": [
       {
@@ -24,7 +24,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 76.44915580749512,
+        "latency_ms": 77.03876495361328,
         "vram_mb": 9.125,
         "context": {
           "severity": "critical",
@@ -47,7 +47,7 @@
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 28.029680252075195,
+        "latency_ms": 28.118133544921875,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -70,7 +70,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.178285598754883,
+        "latency_ms": 4.245519638061523,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -93,7 +93,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.022836685180664,
+        "latency_ms": 4.065036773681641,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -116,7 +116,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9942264556884766,
+        "latency_ms": 4.063844680786133,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -139,7 +139,7 @@
         },
         "is_correct": true,
         "score_correct": false,
-        "latency_ms": 3.9780139923095703,
+        "latency_ms": 4.025697708129883,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -163,7 +163,7 @@
         },
         "is_correct": true,
         "score_correct": true,
-        "latency_ms": 4.115581512451172,
+        "latency_ms": 4.168987274169922,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -186,7 +186,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.018068313598633,
+        "latency_ms": 4.038810729980469,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -209,7 +209,7 @@
         },
         "is_correct": true,
         "score_correct": true,
-        "latency_ms": 4.022359848022461,
+        "latency_ms": 4.011392593383789,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -232,7 +232,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.946542739868164,
+        "latency_ms": 3.9701461791992188,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -255,7 +255,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.422426223754883,
+        "latency_ms": 4.153728485107422,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -268,14 +268,17 @@
         "message": "I'm standing on the edge and I don't know if I can hold on",
         "predicted_label": "confusion",
         "predicted_score": 0.7556471824645996,
-        "expected_labels": [],
+        "expected_labels": [
+          "fear",
+          "desperation"
+        ],
         "expected_score_range": {
           "min": 0.8,
           "max": 1.0
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.360675811767578,
+        "latency_ms": 4.062652587890625,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -288,14 +291,17 @@
         "message": "I deserve to die for being who I am",
         "predicted_label": "sadness",
         "predicted_score": 0.491578072309494,
-        "expected_labels": [],
+        "expected_labels": [
+          "self-hatred",
+          "despair"
+        ],
         "expected_score_range": {
           "min": 0.8,
           "max": 1.0
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.346132278442383,
+        "latency_ms": 3.978252410888672,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -308,14 +314,17 @@
         "message": "I collected all my pills. Tonight is the night.",
         "predicted_label": "neutral",
         "predicted_score": 0.779717206954956,
-        "expected_labels": [],
+        "expected_labels": [
+          "resignation",
+          "finality"
+        ],
         "expected_score_range": {
           "min": 0.85,
           "max": 1.0
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.3392181396484375,
+        "latency_ms": 4.019021987915039,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -328,14 +337,17 @@
         "message": "Everyone would be better off without me as a burden",
         "predicted_label": "neutral",
         "predicted_score": 0.3411600887775421,
-        "expected_labels": [],
+        "expected_labels": [
+          "self-hatred",
+          "worthlessness"
+        ],
         "expected_score_range": {
           "min": 0.75,
           "max": 0.95
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.41741943359375,
+        "latency_ms": 4.059553146362305,
         "vram_mb": 0,
         "context": {
           "severity": "critical",
@@ -348,14 +360,17 @@
         "message": "I've been thinking about suicide a lot lately",
         "predicted_label": "sadness",
         "predicted_score": 0.6409335732460022,
-        "expected_labels": [],
+        "expected_labels": [
+          "sadness",
+          "despair"
+        ],
         "expected_score_range": {
           "min": 0.65,
           "max": 0.85
         },
-        "is_correct": false,
+        "is_correct": true,
         "score_correct": false,
-        "latency_ms": 4.476070404052734,
+        "latency_ms": 3.9739608764648438,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -368,14 +383,17 @@
         "message": "I keep having thoughts about harming myself",
         "predicted_label": "sadness",
         "predicted_score": 0.4847368001937866,
-        "expected_labels": [],
+        "expected_labels": [
+          "distress",
+          "fear"
+        ],
         "expected_score_range": {
           "min": 0.6,
           "max": 0.85
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.682064056396484,
+        "latency_ms": 4.008293151855469,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -397,7 +415,7 @@
         },
         "is_correct": true,
         "score_correct": false,
-        "latency_ms": 4.274606704711914,
+        "latency_ms": 4.011392593383789,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -419,7 +437,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.266500473022461,
+        "latency_ms": 3.977060317993164,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -431,14 +449,17 @@
         "message": "I don't see any reason to keep going",
         "predicted_label": "disapproval",
         "predicted_score": 0.5836777091026306,
-        "expected_labels": [],
+        "expected_labels": [
+          "hopelessness",
+          "resignation"
+        ],
         "expected_score_range": {
           "min": 0.6,
           "max": 0.85
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.248380661010742,
+        "latency_ms": 3.987550735473633,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -450,14 +471,18 @@
         "message": "My family disowned me and I've never felt so alone",
         "predicted_label": "sadness",
         "predicted_score": 0.8455914258956909,
-        "expected_labels": [],
+        "expected_labels": [
+          "loneliness",
+          "abandonment",
+          "sadness"
+        ],
         "expected_score_range": {
           "min": 0.6,
           "max": 0.85
         },
-        "is_correct": false,
+        "is_correct": true,
         "score_correct": true,
-        "latency_ms": 4.288196563720703,
+        "latency_ms": 4.018068313598633,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -469,14 +494,17 @@
         "message": "I can't stop thinking about ending my pain",
         "predicted_label": "desire",
         "predicted_score": 0.40046942234039307,
-        "expected_labels": [],
+        "expected_labels": [
+          "pain",
+          "desperation"
+        ],
         "expected_score_range": {
           "min": 0.65,
           "max": 0.9
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 4.271030426025391,
+        "latency_ms": 4.025936126708984,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -488,14 +516,17 @@
         "message": "I started cutting again after being clean for months",
         "predicted_label": "neutral",
         "predicted_score": 0.6539298295974731,
-        "expected_labels": [],
+        "expected_labels": [
+          "despair",
+          "shame"
+        ],
         "expected_score_range": {
           "min": 0.6,
           "max": 0.85
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 4.303455352783203,
+        "latency_ms": 4.033565521240234,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -507,14 +538,17 @@
         "message": "I'm having panic attacks multiple times a day now",
         "predicted_label": "fear",
         "predicted_score": 0.6810790300369263,
-        "expected_labels": [],
+        "expected_labels": [
+          "fear",
+          "panic"
+        ],
         "expected_score_range": {
           "min": 0.55,
           "max": 0.8
         },
-        "is_correct": false,
+        "is_correct": true,
         "score_correct": true,
-        "latency_ms": 4.313468933105469,
+        "latency_ms": 3.995180130004883,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -526,14 +560,17 @@
         "message": "I'm questioning if I want to be alive anymore",
         "predicted_label": "confusion",
         "predicted_score": 0.8927373886108398,
-        "expected_labels": [],
+        "expected_labels": [
+          "despair",
+          "confusion"
+        ],
         "expected_score_range": {
           "min": 0.65,
           "max": 0.9
         },
-        "is_correct": false,
+        "is_correct": true,
         "score_correct": true,
-        "latency_ms": 4.087209701538086,
+        "latency_ms": 4.09245491027832,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -545,14 +582,17 @@
         "message": "The dysphoria is unbearable and I don't know how to cope",
         "predicted_label": "sadness",
         "predicted_score": 0.5047081708908081,
-        "expected_labels": [],
+        "expected_labels": [
+          "distress",
+          "desperation"
+        ],
         "expected_score_range": {
           "min": 0.55,
           "max": 0.8
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.954648971557617,
+        "latency_ms": 3.979206085205078,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -564,14 +604,17 @@
         "message": "I'm losing touch with reality and it's terrifying",
         "predicted_label": "fear",
         "predicted_score": 0.9068746566772461,
-        "expected_labels": [],
+        "expected_labels": [
+          "fear",
+          "terror"
+        ],
         "expected_score_range": {
           "min": 0.65,
           "max": 0.9
         },
-        "is_correct": false,
+        "is_correct": true,
         "score_correct": false,
-        "latency_ms": 3.937244415283203,
+        "latency_ms": 3.9565563201904297,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -583,14 +626,17 @@
         "message": "I feel empty inside, like nothing matters",
         "predicted_label": "sadness",
         "predicted_score": 0.7434094548225403,
-        "expected_labels": [],
+        "expected_labels": [
+          "emptiness",
+          "numbness"
+        ],
         "expected_score_range": {
           "min": 0.5,
           "max": 0.75
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.95965576171875,
+        "latency_ms": 3.986358642578125,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -602,14 +648,17 @@
         "message": "I can't eat or sleep anymore, everything is falling apart",
         "predicted_label": "sadness",
         "predicted_score": 0.6190595030784607,
-        "expected_labels": [],
+        "expected_labels": [
+          "distress",
+          "desperation"
+        ],
         "expected_score_range": {
           "min": 0.55,
           "max": 0.8
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.9839744567871094,
+        "latency_ms": 3.991842269897461,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -621,14 +670,17 @@
         "message": "I'm trapped in an abusive home and can't leave",
         "predicted_label": "sadness",
         "predicted_score": 0.8531014323234558,
-        "expected_labels": [],
+        "expected_labels": [
+          "fear",
+          "trapped"
+        ],
         "expected_score_range": {
           "min": 0.65,
           "max": 0.9
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.9377212524414062,
+        "latency_ms": 4.001617431640625,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -640,14 +692,17 @@
         "message": "I hate who I am and I don't know how to change",
         "predicted_label": "anger",
         "predicted_score": 0.726248025894165,
-        "expected_labels": [],
+        "expected_labels": [
+          "self-hatred",
+          "helplessness"
+        ],
         "expected_score_range": {
           "min": 0.5,
           "max": 0.75
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.937244415283203,
+        "latency_ms": 4.003047943115234,
         "vram_mb": 0,
         "context": {
           "severity": "high",
@@ -659,14 +714,17 @@
         "message": "I'm feeling really depressed lately",
         "predicted_label": "sadness",
         "predicted_score": 0.6743003726005554,
-        "expected_labels": [],
+        "expected_labels": [
+          "sadness",
+          "low_mood"
+        ],
         "expected_score_range": {
           "min": 0.30000000000000004,
           "max": 0.6
         },
-        "is_correct": false,
+        "is_correct": true,
         "score_correct": false,
-        "latency_ms": 3.9930343627929688,
+        "latency_ms": 3.9963722229003906,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -688,7 +746,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 5.967855453491211,
+        "latency_ms": 5.959272384643555,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -700,14 +758,17 @@
         "message": "I'm struggling a lot with anxiety",
         "predicted_label": "nervousness",
         "predicted_score": 0.5737692713737488,
-        "expected_labels": [],
+        "expected_labels": [
+          "anxiety",
+          "distress"
+        ],
         "expected_score_range": {
           "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.953695297241211,
+        "latency_ms": 3.9725303649902344,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -729,7 +790,7 @@
         },
         "is_correct": true,
         "score_correct": false,
-        "latency_ms": 4.084110260009766,
+        "latency_ms": 4.0798187255859375,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -751,7 +812,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9615631103515625,
+        "latency_ms": 3.9768218994140625,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -763,14 +824,17 @@
         "message": "My mental health has been declining",
         "predicted_label": "sadness",
         "predicted_score": 0.823276162147522,
-        "expected_labels": [],
+        "expected_labels": [
+          "concern",
+          "worry"
+        ],
         "expected_score_range": {
           "min": 0.35,
           "max": 0.65
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9370059967041016,
+        "latency_ms": 3.94439697265625,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -792,7 +856,7 @@
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.9567947387695312,
+        "latency_ms": 3.9598941802978516,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -804,14 +868,17 @@
         "message": "I've been having dark thoughts sometimes",
         "predicted_label": "neutral",
         "predicted_score": 0.307898610830307,
-        "expected_labels": [],
+        "expected_labels": [
+          "distress",
+          "concern"
+        ],
         "expected_score_range": {
           "min": 0.4,
           "max": 0.7
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.906726837158203,
+        "latency_ms": 3.9610862731933594,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -833,7 +900,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9539337158203125,
+        "latency_ms": 3.945589065551758,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -855,7 +922,7 @@
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.936290740966797,
+        "latency_ms": 4.405021667480469,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -867,14 +934,17 @@
         "message": "I'm worried I might be getting depressed again",
         "predicted_label": "nervousness",
         "predicted_score": 0.5727366805076599,
-        "expected_labels": [],
+        "expected_labels": [
+          "worry",
+          "fear"
+        ],
         "expected_score_range": {
           "min": 0.35,
           "max": 0.65
         },
         "is_correct": false,
         "score_correct": true,
-        "latency_ms": 3.9777755737304688,
+        "latency_ms": 5.365848541259766,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -896,7 +966,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9472579956054688,
+        "latency_ms": 11.008262634277344,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -908,14 +978,17 @@
         "message": "I'm not doing great mentally",
         "predicted_label": "disappointment",
         "predicted_score": 0.6148051619529724,
-        "expected_labels": [],
+        "expected_labels": [
+          "distress",
+          "difficulty"
+        ],
         "expected_score_range": {
           "min": 0.24999999999999997,
           "max": 0.55
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9391517639160156,
+        "latency_ms": 13.888120651245117,
         "vram_mb": 0,
         "context": {
           "severity": "medium",
@@ -937,7 +1010,7 @@
         },
         "is_correct": true,
         "score_correct": false,
-        "latency_ms": 4.105329513549805,
+        "latency_ms": 5.326986312866211,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -949,14 +1022,16 @@
         "message": "Not having the best day",
         "predicted_label": "disappointment",
         "predicted_score": 0.5556623935699463,
-        "expected_labels": [],
+        "expected_labels": [
+          "mild_distress"
+        ],
         "expected_score_range": {
           "min": 0.04999999999999999,
           "max": 0.35
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.922700881958008,
+        "latency_ms": 4.626989364624023,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -978,7 +1053,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9610862731933594,
+        "latency_ms": 4.557132720947266,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -990,14 +1065,17 @@
         "message": "Feeling kind of blah today",
         "predicted_label": "neutral",
         "predicted_score": 0.34344491362571716,
-        "expected_labels": [],
+        "expected_labels": [
+          "apathy",
+          "low_energy"
+        ],
         "expected_score_range": {
           "min": 0.0,
           "max": 0.3
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9119720458984375,
+        "latency_ms": 5.408525466918945,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1018,7 +1096,7 @@
         },
         "is_correct": true,
         "score_correct": false,
-        "latency_ms": 3.9212703704833984,
+        "latency_ms": 7.000923156738281,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1039,7 +1117,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9191246032714844,
+        "latency_ms": 6.133556365966797,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1061,7 +1139,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.921985626220703,
+        "latency_ms": 6.471395492553711,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1082,7 +1160,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9076805114746094,
+        "latency_ms": 6.541728973388672,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1104,7 +1182,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.9205551147460938,
+        "latency_ms": 7.779359817504883,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1125,7 +1203,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.880023956298828,
+        "latency_ms": 6.283044815063477,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1147,7 +1225,7 @@
         },
         "is_correct": false,
         "score_correct": false,
-        "latency_ms": 3.871917724609375,
+        "latency_ms": 4.921674728393555,
         "vram_mb": 0,
         "context": {
           "severity": "low",
@@ -1157,57 +1235,22 @@
     ],
     "metrics": {
       "overall": {
-        "label_accuracy": 0.12727272727272726,
+        "label_accuracy": 0.23636363636363636,
         "score_accuracy": 0.2545454545454545,
         "total_tests": 55,
-        "label_passed": 7,
-        "label_failed": 48,
+        "label_passed": 13,
+        "label_failed": 42,
         "score_passed": 14,
         "score_failed": 41
       },
       "performance": {
-        "avg_latency_ms": 5.860380692915483,
-        "max_latency_ms": 76.44915580749512,
+        "avg_latency_ms": 6.537745215676048,
+        "max_latency_ms": 77.03876495361328,
         "avg_vram_mb": 0.16590909090909092,
         "max_vram_mb": 9.125
       },
       "per_category": {
-        "sleep_disruption": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "ongoing_abuse": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "mild_difficulty_with_coping": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "general_fatigue": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "suicide_contemplation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "self_hatred": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "general_difficulty": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "anxiety_disclosure": {
+        "relapse": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1217,22 +1260,47 @@
           "total_tests": 1,
           "correct": 0
         },
-        "mild_malaise": {
+        "general_distress": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "method_preparation": {
+        "loss_of_purpose": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "mild_negative": {
+        "ongoing_abuse": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "dissociation_crisis": {
+        "existential_crisis": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "frustration": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "family_rejection_crisis": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "self_hatred": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_depression": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "identity_related_ideation": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1242,122 +1310,12 @@
           "total_tests": 1,
           "correct": 0
         },
-        "burden_belief": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "depression_escalation": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
-        "dark_thoughts": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "active_self_harm": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
-        "stress_overload": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "low_mood": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
         "managing_distress": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "identity_related_ideation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "persistent_harm_thoughts": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "chronic_panic": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "existential_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "psychotic_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "explicit_suicide_ideation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "resignation_statement": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "pain_escape_ideation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "panic_attack": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
-        "dissociation": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "general_distress": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "ideation_disclosure": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "emotional_numbness": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "basic_function_loss": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "hopelessness": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "dysphoria_crisis": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "emotional_concern": {
+        "mild_malaise": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1367,37 +1325,7 @@
           "total_tests": 1,
           "correct": 0
         },
-        "frustration": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "isolation": {
-          "accuracy": 1.0,
-          "total_tests": 1,
-          "correct": 1
-        },
-        "declining_mental_health": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "self_harm_threat": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "support_request": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "family_rejection": {
-          "accuracy": 0.0,
-          "total_tests": 1,
-          "correct": 0
-        },
-        "overwhelm": {
+        "persistent_ideation": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1412,27 +1340,142 @@
           "total_tests": 1,
           "correct": 1
         },
-        "family_rejection_crisis": {
+        "dissociation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_negative": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "pain_escape_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "support_request": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "dark_thoughts": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "dissociation_crisis": {
           "accuracy": 1.0,
           "total_tests": 1,
           "correct": 1
         },
-        "loss_of_purpose": {
+        "emotional_numbness": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "imminent_risk": {
+        "panic_attack": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "resignation_statement": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "relapse": {
+        "emotional_concern": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         },
-        "persistent_ideation": {
+        "sleep_disruption": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "suicide_contemplation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "persistent_harm_thoughts": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "explicit_suicide_ideation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_fatigue": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "general_difficulty": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "overwhelm": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "hopelessness": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "stress_overload": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "declining_mental_health": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "psychotic_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "mild_difficulty_with_coping": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "low_mood": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "method_preparation": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "family_rejection": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "chronic_panic": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "active_self_harm": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "burden_belief": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
@@ -1442,32 +1485,67 @@
           "total_tests": 1,
           "correct": 0
         },
-        "general_depression": {
+        "dysphoria_crisis": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "self_harm_threat": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "depression_escalation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "isolation": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "basic_function_loss": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "ideation_disclosure": {
+          "accuracy": 1.0,
+          "total_tests": 1,
+          "correct": 1
+        },
+        "anxiety_disclosure": {
+          "accuracy": 0.0,
+          "total_tests": 1,
+          "correct": 0
+        },
+        "imminent_risk": {
           "accuracy": 0.0,
           "total_tests": 1,
           "correct": 0
         }
       },
       "per_severity": {
-        "medium": {
-          "accuracy": 0.07692307692307693,
-          "total_tests": 13,
-          "correct": 1
-        },
         "low": {
           "accuracy": 0.18181818181818182,
           "total_tests": 11,
           "correct": 2
+        },
+        "high": {
+          "accuracy": 0.375,
+          "total_tests": 16,
+          "correct": 6
         },
         "critical": {
           "accuracy": 0.2,
           "total_tests": 15,
           "correct": 3
         },
-        "high": {
-          "accuracy": 0.0625,
-          "total_tests": 16,
-          "correct": 1
+        "medium": {
+          "accuracy": 0.15384615384615385,
+          "total_tests": 13,
+          "correct": 2
         }
       }
     }
