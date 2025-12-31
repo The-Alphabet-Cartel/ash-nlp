@@ -14,33 +14,30 @@ services:
     image: ash-nlp-testing:v5.0
 
     # GPU support (requires nvidia-container-toolkit)
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    runtime: nvidia
 
     # Environment variables from .env
     env_file:
       - .env.testing
 
     environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+
       # Testing Configuration
-      - TEST_DEVICE=${TEST_DEVICE:-cuda}
-      - TEST_BATCH_SIZE=${TEST_BATCH_SIZE:-8}
-      - TEST_TIMEOUT=${TEST_TIMEOUT:-30}
-      - TEST_VERBOSE=${TEST_VERBOSE:-true}
+      TEST_DEVICE: ${TEST_DEVICE:-cuda}
+      TEST_BATCH_SIZE: ${TEST_BATCH_SIZE:-8}
+      TEST_TIMEOUT: ${TEST_TIMEOUT:-30}
+      TEST_VERBOSE: ${TEST_VERBOSE:-true}
 
       # Thresholds
-      - TEST_ACCURACY_THRESHOLD=${TEST_ACCURACY_THRESHOLD:-0.85}
-      - TEST_LATENCY_THRESHOLD=${TEST_LATENCY_THRESHOLD:-5000}
-      - TEST_VRAM_THRESHOLD=${TEST_VRAM_THRESHOLD:-2000}
+      TEST_ACCURACY_THRESHOLD: ${TEST_ACCURACY_THRESHOLD:-0.85}
+      TEST_LATENCY_THRESHOLD: ${TEST_LATENCY_THRESHOLD:-5000}
+      TEST_VRAM_THRESHOLD: ${TEST_VRAM_THRESHOLD:-2000}
 
       # Model cache location
-      - TRANSFORMERS_CACHE=/app/testing/cache/models
-      - HF_HOME=/app/testing/cache/huggingface
+      TRANSFORMERS_CACHE: /app/testing/cache/models
+      HF_HOME: /app/testing/cache/huggingface
 
     # Volume mounts
     volumes:
