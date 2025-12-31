@@ -1,1050 +1,1294 @@
 {
-	"_metadata": {
-		"file_version": "v5.0-2a-2.3-labels-fixed",
-		"last_modified": "2025-12-31",
-		"description": "Edge case test dataset - challenging scenarios including sarcasm, irony, ambiguous severity, and context-dependent messages",
-		"total_cases": 50,
-		"categories": {
-			"sarcasm_irony": 20,
-			"ambiguous_severity": 15,
-			"cultural_community_language": 15
-		},
-		"community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
-		"adjusted_thresholds": true,
-		"threshold_adjustment": -0.1,
-		"changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony expectations to ALL test cases",
-		"changes_v5.0-2a-2.3": "Fixed irony labels (non_irony/irony) and emotions labels (valid go_emotions set)"
-	},
-	"test_cases": [
-		{
-			"id": "edge_001",
-			"message": "I'm just great. Best day of my life. Everything's perfect.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.4,
-					"max": 0.8
-				},
-				"crisis_level": "medium_to_high",
-				"model_expectations": {
-					"bart_crisis": ["distress", "depression"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_crisis",
-				"detection_difficulty": "high",
-				"note": "Sarcasm indicates distress despite positive words"
-			}
-		},
-		{
-			"id": "edge_002",
-			"message": "Oh yeah, I'm totally fine. Never better. Absolutely wonderful.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.30000000000000004,
-					"max": 0.7
-				},
-				"crisis_level": "medium",
-				"model_expectations": {
-					"bart_crisis": ["distress", "depression"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_crisis",
-				"detection_difficulty": "high"
-			}
-		},
-		{
-			"id": "edge_003",
-			"message": "Living the dream over here",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"crisis_level": "low_to_medium",
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "disappointment"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_potentially_crisis",
-				"detection_difficulty": "high",
-				"note": "Context-dependent - could be genuine or sarcastic"
-			}
-		},
-		{
-			"id": "edge_004",
-			"message": "I'm fine. Really. Totally fine.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"crisis_level": "low_to_medium",
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["annoyance", "sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "defensive_denial",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_005",
-			"message": "Couldn't be happier right now",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "ambiguous_sarcasm",
-				"detection_difficulty": "very_high",
-				"note": "Needs context to determine if genuine or sarcastic"
-			}
-		},
-		{
-			"id": "edge_006",
-			"message": "Love my life right now. So blessed.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_potentially_crisis",
-				"detection_difficulty": "high"
-			}
-		},
-		{
-			"id": "edge_007",
-			"message": "Everything is sunshine and rainbows",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_exaggeration",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_008",
-			"message": "Peachy. Just peachy.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["annoyance"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_crisis",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_009",
-			"message": "Oh I'm wonderful, thanks for asking",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "potentially_sarcastic",
-				"detection_difficulty": "high"
-			}
-		},
-		{
-			"id": "edge_010",
-			"message": "Never been better, honestly",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "ambiguous_sarcasm",
-				"detection_difficulty": "high"
-			}
-		},
-		{
-			"id": "edge_011",
-			"message": "I'm thriving. Can't you tell?",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress", "depression"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_rhetorical",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_012",
-			"message": "Such a perfect day. Nothing could go wrong.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "nervousness"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_potentially_crisis",
-				"detection_difficulty": "high"
-			}
-		},
-		{
-			"id": "edge_013",
-			"message": "I'm doing fantastic. Why do you ask?",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "defensive_response",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_014",
-			"message": "Best. Day. Ever.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "sarcastic_emphasis",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_015",
-			"message": "I'm okay I guess",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "confusion"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "minimization",
-				"detection_difficulty": "medium",
-				"note": "Downplaying actual distress"
-			}
-		},
-		{
-			"id": "edge_016",
-			"message": "Yeah I'm alright. Whatever.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["neutral", "annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "dismissive_distress",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_017",
-			"message": "Nothing's wrong. I'm fine. Don't worry about me.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["annoyance", "sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "defensive_denial",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_018",
-			"message": "It's whatever. I don't care anymore.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.30000000000000004,
-					"max": 0.7
-				},
-				"model_expectations": {
-					"bart_crisis": ["depression", "apathy"],
-					"emotions": ["sadness", "neutral"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "apathy_indicator",
-				"detection_difficulty": "medium",
-				"note": "Apathy can indicate depression"
-			}
-		},
-		{
-			"id": "edge_019",
-			"message": "Sure, life is great. If you say so.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["annoyance", "sadness"],
-					"sentiment": "negative",
-					"irony": "irony"
-				}
-			},
-			"context": {
-				"test_category": "passive_aggressive_sarcasm",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_020",
-			"message": "I'm hanging in there. Barely.",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.4,
-					"max": 0.7
-				},
-				"crisis_level": "medium",
-				"model_expectations": {
-					"bart_crisis": ["distress", "struggling"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "qualified_coping",
-				"detection_difficulty": "low",
-				"note": "'Barely' is a key distress qualifier"
-			}
-		},
-		{
-			"id": "edge_021",
-			"message": "I don't know how I feel anymore",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"crisis_level": "low_to_medium",
-				"model_expectations": {
-					"bart_crisis": ["distress", "confusion"],
-					"emotions": ["confusion", "neutral"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "ambiguous_emotional_state",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_022",
-			"message": "Maybe I'm okay, maybe I'm not",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["confusion"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "ambiguous_severity",
-				"detection_difficulty": "high"
-			}
-		},
-		{
-			"id": "edge_023",
-			"message": "Things could be better, things could be worse",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["neutral"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "ambiguous_severity",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_024",
-			"message": "I'm not sure if I should be worried or not",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress", "concern"],
-					"emotions": ["confusion", "nervousness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "uncertain_distress",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_025",
-			"message": "Some days are harder than others",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "vague_distress",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_026",
-			"message": "Existing, I guess",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["depression", "apathy"],
-					"emotions": ["neutral"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "passive_existence",
-				"detection_difficulty": "medium",
-				"note": "Just existing vs living indicates low quality of life"
-			}
-		},
-		{
-			"id": "edge_027",
-			"message": "I'm here, that's something",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "relief"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "minimal_coping",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_028",
-			"message": "Could be worse I suppose",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "downplaying_distress",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_029",
-			"message": "It is what it is",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["sadness", "approval"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "resignation_ambiguous",
-				"detection_difficulty": "high",
-				"note": "Could be healthy acceptance or unhealthy resignation"
-			}
-		},
-		{
-			"id": "edge_030",
-			"message": "I'll manage somehow",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["confusion", "approval"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "uncertain_coping",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_031",
-			"message": "Not my best moment but I've had worse",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "comparative_distress",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_032",
-			"message": "Feeling kinda meh about everything",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress", "apathy"],
-					"emotions": ["neutral", "annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "apathy_mild",
-				"detection_difficulty": "low"
-			}
-		},
-		{
-			"id": "edge_033",
-			"message": "I'm baby",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.3
-				},
-				"crisis_level": "none_to_low",
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["fear", "desire"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "internet_slang",
-				"detection_difficulty": "low",
-				"note": "Common internet phrase meaning needing care/comfort"
-			}
-		},
-		{
-			"id": "edge_034",
-			"message": "Big mood",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.2
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["approval"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "internet_slang",
-				"detection_difficulty": "high",
-				"note": "Needs context to determine meaning"
-			}
-		},
-		{
-			"id": "edge_035",
-			"message": "Oof that's rough buddy",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.2
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["caring"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "empathy_response",
-				"detection_difficulty": "low",
-				"note": "Response to someone else's distress, not own crisis"
-			}
-		},
-		{
-			"id": "edge_036",
-			"message": "Gender is fake and I'm tired",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "queer_discourse",
-				"detection_difficulty": "medium",
-				"note": "Common LGBTQIA+ expression of gender fatigue"
-			}
-		},
-		{
-			"id": "edge_037",
-			"message": "The cishets are at it again",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.3
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "community_venting",
-				"detection_difficulty": "low",
-				"note": "Common venting about societal issues"
-			}
-		},
-		{
-			"id": "edge_038",
-			"message": "Cishet nonsense is exhausting",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.4
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["sadness", "annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "social_fatigue",
-				"detection_difficulty": "low"
-			}
-		},
-		{
-			"id": "edge_039",
-			"message": "Egg vibes from that person lol",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.2
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["amusement", "realization"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "trans_community_language",
-				"detection_difficulty": "low",
-				"note": "'Egg' = person who hasn't realized they're trans yet"
-			}
-		},
-		{
-			"id": "edge_040",
-			"message": "My gender said no today",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress", "dysphoria"],
-					"emotions": ["annoyance"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "dysphoria_expression",
-				"detection_difficulty": "medium",
-				"note": "Could indicate mild dysphoria"
-			}
-		},
-		{
-			"id": "edge_041",
-			"message": "Spicy brain day",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["nervousness", "fear"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "neurodivergent_language",
-				"detection_difficulty": "medium",
-				"note": "Slang for ADHD/anxiety/mental health struggles"
-			}
-		},
-		{
-			"id": "edge_042",
-			"message": "The void is calling and I might answer",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.7
-				},
-				"model_expectations": {
-					"bart_crisis": ["suicide ideation", "severe depression"],
-					"emotions": ["sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "metaphorical_ideation",
-				"detection_difficulty": "high",
-				"note": "Could be joke or actual ideation"
-			}
-		},
-		{
-			"id": "edge_043",
-			"message": "Goblin mode activated",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.3
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["neutral", "caring"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "internet_slang",
-				"detection_difficulty": "low",
-				"note": "Meme about self-care/coping behavior"
-			}
-		},
-		{
-			"id": "edge_044",
-			"message": "No thoughts head empty",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.0,
-					"max": 0.3
-				},
-				"model_expectations": {
-					"bart_crisis": ["safe"],
-					"emotions": ["neutral", "relief"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "meme_expression",
-				"detection_difficulty": "low",
-				"note": "Internet meme, usually humorous"
-			}
-		},
-		{
-			"id": "edge_045",
-			"message": "Brain said no to functioning today",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["annoyance", "sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "executive_dysfunction",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_046",
-			"message": "Dissociating but make it fashion",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["dissociation", "mental health crisis"],
-					"emotions": ["neutral", "amusement"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "trauma_humor",
-				"detection_difficulty": "high",
-				"note": "Using humor to cope with dissociation"
-			}
-		},
-		{
-			"id": "edge_047",
-			"message": "Trauma dumping in 3... 2... jk unless?",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["confusion", "fear"],
-					"sentiment": "neutral",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "indirect_help_seeking",
-				"detection_difficulty": "medium",
-				"note": "Testing if it's safe to share"
-			}
-		},
-		{
-			"id": "edge_048",
-			"message": "My nervous system is not nervous system-ing",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress", "dysregulation"],
-					"emotions": ["nervousness", "fear"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "nervous_system_dysregulation",
-				"detection_difficulty": "medium",
-				"note": "Trauma-informed community language"
-			}
-		},
-		{
-			"id": "edge_049",
-			"message": "Accidentally did a big feel",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.1,
-					"max": 0.5
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["fear"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "emotional_overwhelm",
-				"detection_difficulty": "medium"
-			}
-		},
-		{
-			"id": "edge_050",
-			"message": "Having a moment but we're not gonna unpack that",
-			"expected_outputs": {
-				"crisis_score": {
-					"min": 0.19999999999999998,
-					"max": 0.6
-				},
-				"model_expectations": {
-					"bart_crisis": ["distress"],
-					"emotions": ["fear", "sadness"],
-					"sentiment": "negative",
-					"irony": "non_irony"
-				}
-			},
-			"context": {
-				"test_category": "acknowledged_avoidance",
-				"detection_difficulty": "medium",
-				"note": "Aware of distress but avoiding processing"
-			}
-		}
-	]
+  "_metadata": {
+    "file_version": "v5.0-2a-2.3-labels-fixed",
+    "last_modified": "2025-12-31",
+    "description": "Edge case test dataset - challenging scenarios including sarcasm, irony, ambiguous severity, and context-dependent messages",
+    "total_cases": 50,
+    "categories": {
+      "sarcasm_irony": 20,
+      "ambiguous_severity": 15,
+      "cultural_community_language": 15
+    },
+    "community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
+    "adjusted_thresholds": true,
+    "threshold_adjustment": -0.1,
+    "changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony expectations to ALL test cases",
+    "changes_v5.0-2a-2.3": "Fixed irony labels (non_irony/irony) and emotions labels (valid go_emotions set)"
+  },
+  "test_cases": [
+    {
+      "id": "edge_001",
+      "message": "I'm just great. Best day of my life. Everything's perfect.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.4,
+          "max": 0.8
+        },
+        "crisis_level": "medium_to_high",
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "depression"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_crisis",
+        "detection_difficulty": "high",
+        "note": "Sarcasm indicates distress despite positive words"
+      }
+    },
+    {
+      "id": "edge_002",
+      "message": "Oh yeah, I'm totally fine. Never better. Absolutely wonderful.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.30000000000000004,
+          "max": 0.7
+        },
+        "crisis_level": "medium",
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "depression"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_crisis",
+        "detection_difficulty": "high"
+      }
+    },
+    {
+      "id": "edge_003",
+      "message": "Living the dream over here",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "crisis_level": "low_to_medium",
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "disappointment"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_potentially_crisis",
+        "detection_difficulty": "high",
+        "note": "Context-dependent - could be genuine or sarcastic"
+      }
+    },
+    {
+      "id": "edge_004",
+      "message": "I'm fine. Really. Totally fine.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "crisis_level": "low_to_medium",
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "annoyance",
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "defensive_denial",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_005",
+      "message": "Couldn't be happier right now",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "ambiguous_sarcasm",
+        "detection_difficulty": "very_high",
+        "note": "Needs context to determine if genuine or sarcastic"
+      }
+    },
+    {
+      "id": "edge_006",
+      "message": "Love my life right now. So blessed.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_potentially_crisis",
+        "detection_difficulty": "high"
+      }
+    },
+    {
+      "id": "edge_007",
+      "message": "Everything is sunshine and rainbows",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_exaggeration",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_008",
+      "message": "Peachy. Just peachy.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_crisis",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_009",
+      "message": "Oh I'm wonderful, thanks for asking",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "potentially_sarcastic",
+        "detection_difficulty": "high"
+      }
+    },
+    {
+      "id": "edge_010",
+      "message": "Never been better, honestly",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "ambiguous_sarcasm",
+        "detection_difficulty": "high"
+      }
+    },
+    {
+      "id": "edge_011",
+      "message": "I'm thriving. Can't you tell?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "depression"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_rhetorical",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_012",
+      "message": "Such a perfect day. Nothing could go wrong.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "nervousness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_potentially_crisis",
+        "detection_difficulty": "high"
+      }
+    },
+    {
+      "id": "edge_013",
+      "message": "I'm doing fantastic. Why do you ask?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "defensive_response",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_014",
+      "message": "Best. Day. Ever.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "sarcastic_emphasis",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_015",
+      "message": "I'm okay I guess",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "confusion"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "minimization",
+        "detection_difficulty": "medium",
+        "note": "Downplaying actual distress"
+      }
+    },
+    {
+      "id": "edge_016",
+      "message": "Yeah I'm alright. Whatever.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "neutral",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "dismissive_distress",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_017",
+      "message": "Nothing's wrong. I'm fine. Don't worry about me.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "annoyance",
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "defensive_denial",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_018",
+      "message": "It's whatever. I don't care anymore.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.30000000000000004,
+          "max": 0.7
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "depression",
+            "apathy"
+          ],
+          "emotions": [
+            "sadness",
+            "neutral"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "apathy_indicator",
+        "detection_difficulty": "medium",
+        "note": "Apathy can indicate depression"
+      }
+    },
+    {
+      "id": "edge_019",
+      "message": "Sure, life is great. If you say so.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "annoyance",
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "passive_aggressive_sarcasm",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_020",
+      "message": "I'm hanging in there. Barely.",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.4,
+          "max": 0.7
+        },
+        "crisis_level": "medium",
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "struggling"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "qualified_coping",
+        "detection_difficulty": "low",
+        "note": "'Barely' is a key distress qualifier"
+      }
+    },
+    {
+      "id": "edge_021",
+      "message": "I don't know how I feel anymore",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "crisis_level": "low_to_medium",
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "confusion"
+          ],
+          "emotions": [
+            "confusion",
+            "neutral"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "ambiguous_emotional_state",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_022",
+      "message": "Maybe I'm okay, maybe I'm not",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "confusion"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "ambiguous_severity",
+        "detection_difficulty": "high"
+      }
+    },
+    {
+      "id": "edge_023",
+      "message": "Things could be better, things could be worse",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "ambiguous_severity",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_024",
+      "message": "I'm not sure if I should be worried or not",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "concern"
+          ],
+          "emotions": [
+            "confusion",
+            "nervousness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "uncertain_distress",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_025",
+      "message": "Some days are harder than others",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "vague_distress",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_026",
+      "message": "Existing, I guess",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "depression",
+            "apathy"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "passive_existence",
+        "detection_difficulty": "medium",
+        "note": "Just existing vs living indicates low quality of life"
+      }
+    },
+    {
+      "id": "edge_027",
+      "message": "I'm here, that's something",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "relief"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "minimal_coping",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_028",
+      "message": "Could be worse I suppose",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "downplaying_distress",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_029",
+      "message": "It is what it is",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "sadness",
+            "approval"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "resignation_ambiguous",
+        "detection_difficulty": "high",
+        "note": "Could be healthy acceptance or unhealthy resignation"
+      }
+    },
+    {
+      "id": "edge_030",
+      "message": "I'll manage somehow",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "confusion",
+            "approval"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "uncertain_coping",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_031",
+      "message": "Not my best moment but I've had worse",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "comparative_distress",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_032",
+      "message": "Feeling kinda meh about everything",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "apathy"
+          ],
+          "emotions": [
+            "neutral",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "apathy_mild",
+        "detection_difficulty": "low"
+      }
+    },
+    {
+      "id": "edge_033",
+      "message": "I'm baby",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.3
+        },
+        "crisis_level": "none_to_low",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "fear",
+            "desire"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "internet_slang",
+        "detection_difficulty": "low",
+        "note": "Common internet phrase meaning needing care/comfort"
+      }
+    },
+    {
+      "id": "edge_034",
+      "message": "Big mood",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "approval"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "internet_slang",
+        "detection_difficulty": "high",
+        "note": "Needs context to determine meaning"
+      }
+    },
+    {
+      "id": "edge_035",
+      "message": "Oof that's rough buddy",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "caring"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "empathy_response",
+        "detection_difficulty": "low",
+        "note": "Response to someone else's distress, not own crisis"
+      }
+    },
+    {
+      "id": "edge_036",
+      "message": "Gender is fake and I'm tired",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "queer_discourse",
+        "detection_difficulty": "medium",
+        "note": "Common LGBTQIA+ expression of gender fatigue"
+      }
+    },
+    {
+      "id": "edge_037",
+      "message": "The cishets are at it again",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.3
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "community_venting",
+        "detection_difficulty": "low",
+        "note": "Common venting about societal issues"
+      }
+    },
+    {
+      "id": "edge_038",
+      "message": "Cishet nonsense is exhausting",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.4
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "sadness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "social_fatigue",
+        "detection_difficulty": "low"
+      }
+    },
+    {
+      "id": "edge_039",
+      "message": "Egg vibes from that person lol",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "amusement",
+            "realization"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "trans_community_language",
+        "detection_difficulty": "low",
+        "note": "'Egg' = person who hasn't realized they're trans yet"
+      }
+    },
+    {
+      "id": "edge_040",
+      "message": "My gender said no today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "dysphoria"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "dysphoria_expression",
+        "detection_difficulty": "medium",
+        "note": "Could indicate mild dysphoria"
+      }
+    },
+    {
+      "id": "edge_041",
+      "message": "Spicy brain day",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "nervousness",
+            "fear"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neurodivergent_language",
+        "detection_difficulty": "medium",
+        "note": "Slang for ADHD/anxiety/mental health struggles"
+      }
+    },
+    {
+      "id": "edge_042",
+      "message": "The void is calling and I might answer",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.7
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "suicide ideation",
+            "severe depression"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_ideation",
+        "detection_difficulty": "high",
+        "note": "Could be joke or actual ideation"
+      }
+    },
+    {
+      "id": "edge_043",
+      "message": "Goblin mode activated",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.3
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral",
+            "caring"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "internet_slang",
+        "detection_difficulty": "low",
+        "note": "Meme about self-care/coping behavior"
+      }
+    },
+    {
+      "id": "edge_044",
+      "message": "No thoughts head empty",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.3
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral",
+            "relief"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "meme_expression",
+        "detection_difficulty": "low",
+        "note": "Internet meme, usually humorous"
+      }
+    },
+    {
+      "id": "edge_045",
+      "message": "Brain said no to functioning today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "annoyance",
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "executive_dysfunction",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_046",
+      "message": "Dissociating but make it fashion",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "dissociation",
+            "mental health crisis"
+          ],
+          "emotions": [
+            "neutral",
+            "amusement"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "trauma_humor",
+        "detection_difficulty": "high",
+        "note": "Using humor to cope with dissociation"
+      }
+    },
+    {
+      "id": "edge_047",
+      "message": "Trauma dumping in 3... 2... jk unless?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "confusion",
+            "fear"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "indirect_help_seeking",
+        "detection_difficulty": "medium",
+        "note": "Testing if it's safe to share"
+      }
+    },
+    {
+      "id": "edge_048",
+      "message": "My nervous system is not nervous system-ing",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress",
+            "dysregulation"
+          ],
+          "emotions": [
+            "nervousness",
+            "fear"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "nervous_system_dysregulation",
+        "detection_difficulty": "medium",
+        "note": "Trauma-informed community language"
+      }
+    },
+    {
+      "id": "edge_049",
+      "message": "Accidentally did a big feel",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.1,
+          "max": 0.5
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "fear"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "emotional_overwhelm",
+        "detection_difficulty": "medium"
+      }
+    },
+    {
+      "id": "edge_050",
+      "message": "Having a moment but we're not gonna unpack that",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.19999999999999998,
+          "max": 0.6
+        },
+        "model_expectations": {
+          "bart_crisis": [
+            "distress"
+          ],
+          "emotions": [
+            "fear",
+            "sadness"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "acknowledged_avoidance",
+        "detection_difficulty": "medium",
+        "note": "Aware of distress but avoiding processing"
+      }
+    }
+  ]
 }
