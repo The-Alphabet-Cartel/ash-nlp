@@ -4,11 +4,18 @@ CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classific
 
 Model Evaluator - Testing Framework Core
 ---
-FILE VERSION: v5.0
-LAST MODIFIED: 2025-12-30
+FILE VERSION: v5.0-2a-2.1-1
+LAST MODIFIED: 2025-12-31
+PHASE: 2a Step 2.1 - Updated for Label-Based Evaluation (Primary Metric)
 CLEAN ARCHITECTURE: v5.0 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
+
+CHANGES in v5.0-2a-2.1-1:
+- Updated _is_prediction_correct to use LABEL MATCHING as primary metric
+- Score-based evaluation now secondary/informational
+- Follows Clean Architecture Rule #12 (ML Model Evaluation Standards)
+- Label accuracy is what matters for crisis detection
 """
 
 import json
@@ -38,7 +45,7 @@ class ModelEvaluator:
 
     Responsibilities:
     - Load and test AI models against standardized datasets
-    - Calculate accuracy, precision, recall, F1 scores
+    - Calculate accuracy, precision, recall, F1 scores (LABEL-BASED per Rule #12)
     - Compare models against baselines
     - Generate comprehensive performance reports
     - Track VRAM usage and latency metrics
@@ -48,6 +55,7 @@ class ModelEvaluator:
     - Dependency injection (config manager)
     - JSON + environment variable configuration
     - Real model testing (no mocks per Rule #8)
+    - Label-based evaluation (per Rule #12)
     """
 
     def __init__(self, test_config: Dict):
@@ -73,7 +81,10 @@ class ModelEvaluator:
         # Cache for loaded models
         self.loaded_models = {}
 
-        logger.info(f"ModelEvaluator v5.0 initialized on device: {self.device}")
+        logger.info(
+            f"ModelEvaluator v5.0-2a-2.1-1 initialized on device: {self.device}"
+        )
+        logger.info("Using LABEL-BASED evaluation as primary metric (Rule #12)")
 
     def _determine_device(self) -> str:
         """Determine available device (cuda/cpu)"""
@@ -131,7 +142,7 @@ class ModelEvaluator:
             task_type: Type of task for result interpretation
 
         Returns:
-            Test result dictionary
+            Test result dictionary with LABEL-BASED correctness
         """
         message = test_case["message"]
         expected = test_case.get("expected_outputs", {})
@@ -169,11 +180,15 @@ class ModelEvaluator:
                 predicted_label = prediction["labels"][0]
                 predicted_score = prediction["scores"][0]
 
-            # Determine correctness
-            is_correct = self._is_prediction_correct(
-                predicted_score,
-                expected.get("crisis_score", {}),
-                test_case.get("context", {}),
+            # Determine correctness using LABEL-BASED evaluation (Rule #12)
+            expected_labels = self._get_expected_labels(expected, task_type)
+            is_correct = self._is_prediction_correct_label_based(
+                predicted_label, expected_labels
+            )
+
+            # Also check score-based for informational purposes
+            score_correct = self._is_score_in_range(
+                predicted_score, expected.get("crisis_score", {})
             )
 
             return {
@@ -181,8 +196,10 @@ class ModelEvaluator:
                 "message": message,
                 "predicted_label": predicted_label,
                 "predicted_score": float(predicted_score),
+                "expected_labels": expected_labels,
                 "expected_score_range": expected.get("crisis_score", {}),
-                "is_correct": is_correct,
+                "is_correct": is_correct,  # PRIMARY: Label-based
+                "score_correct": score_correct,  # SECONDARY: Score-based
                 "latency_ms": latency_ms,
                 "vram_mb": vram_used,
                 "context": test_case.get("context", {}),
@@ -194,21 +211,77 @@ class ModelEvaluator:
                 "test_id": test_case.get("id", "unknown"),
                 "error": str(e),
                 "is_correct": False,
+                "score_correct": False,
             }
 
-    def _is_prediction_correct(
-        self, predicted_score: float, expected_range: Dict, context: Dict
+    def _get_expected_labels(self, expected: Dict, task_type: str) -> List[str]:
+        """
+        Extract expected labels from test case
+
+        Args:
+            expected: Expected outputs dictionary
+            task_type: Type of classification task
+
+        Returns:
+            List of acceptable labels for this test case
+        """
+        if task_type == "zero-shot-classification":
+            # For zero-shot, get expected labels from model_expectations
+            return expected.get("model_expectations", {}).get("bart_crisis", [])
+        else:
+            # For other tasks, might have different structure
+            # Add other task type handling as needed
+            return []
+
+    def _is_prediction_correct_label_based(
+        self, predicted_label: str, expected_labels: List[str]
     ) -> bool:
         """
-        Determine if prediction matches expected result
+        Determine if prediction label matches expected labels (PRIMARY METRIC per Rule #12)
+
+        For crisis detection, we care about:
+        - Did it identify the CORRECT crisis type?
+        - NOT whether the confidence score hit some threshold
+
+        Args:
+            predicted_label: Model's predicted label
+            expected_labels: List of acceptable labels
+
+        Returns:
+            True if predicted label matches any expected label
+        """
+        if not expected_labels:
+            # No expected labels defined, can't evaluate
+            logger.warning(f"No expected labels for prediction: {predicted_label}")
+            return False
+
+        # Case-insensitive label matching
+        predicted_lower = predicted_label.lower().strip()
+        expected_lower = [label.lower().strip() for label in expected_labels]
+
+        is_match = predicted_lower in expected_lower
+
+        if not is_match:
+            logger.debug(
+                f"Label mismatch: predicted='{predicted_label}', "
+                f"expected one of {expected_labels}"
+            )
+
+        return is_match
+
+    def _is_score_in_range(self, predicted_score: float, expected_range: Dict) -> bool:
+        """
+        Check if confidence score falls in expected range (SECONDARY METRIC)
+
+        This is for informational/analysis purposes only.
+        Per Rule #12, score thresholds are NOT the primary success criterion.
 
         Args:
             predicted_score: Model's confidence score
             expected_range: Expected score range (min/max)
-            context: Test case context
 
         Returns:
-            True if prediction is correct
+            True if score is in expected range
         """
         if not expected_range:
             return True  # No expectation defined
@@ -230,7 +303,7 @@ class ModelEvaluator:
             task_type: Type of classification task
 
         Returns:
-            Comprehensive test results
+            Comprehensive test results with LABEL-BASED accuracy
         """
         logger.info(f"Testing {model_name} against {dataset_path}")
 
@@ -246,7 +319,7 @@ class ModelEvaluator:
             result = self.test_single_case(model, test_case, task_type)
             results.append(result)
 
-        # Calculate metrics
+        # Calculate metrics (LABEL-BASED)
         metrics = self._calculate_dataset_metrics(results)
 
         return {
@@ -272,6 +345,9 @@ class ModelEvaluator:
         """
         Calculate comprehensive metrics for dataset results
 
+        PRIMARY METRIC: Label-based accuracy (Rule #12)
+        SECONDARY METRIC: Score-based accuracy (informational)
+
         Args:
             results: List of test results
 
@@ -284,10 +360,14 @@ class ModelEvaluator:
         if not valid_results:
             return {"error": "No valid results"}
 
-        # Calculate accuracy
-        correct = sum(1 for r in valid_results if r["is_correct"])
+        # PRIMARY: Calculate LABEL-BASED accuracy
+        label_correct = sum(1 for r in valid_results if r["is_correct"])
         total = len(valid_results)
-        accuracy = correct / total if total > 0 else 0
+        label_accuracy = label_correct / total if total > 0 else 0
+
+        # SECONDARY: Calculate SCORE-BASED accuracy (for comparison/analysis)
+        score_correct = sum(1 for r in valid_results if r.get("score_correct", False))
+        score_accuracy = score_correct / total if total > 0 else 0
 
         # Calculate performance metrics
         avg_latency = sum(r["latency_ms"] for r in valid_results) / total
@@ -295,7 +375,7 @@ class ModelEvaluator:
         avg_vram = sum(r.get("vram_mb", 0) for r in valid_results) / total
         max_vram = max(r.get("vram_mb", 0) for r in valid_results)
 
-        # Calculate per-category accuracy
+        # Calculate per-category accuracy (LABEL-BASED)
         categories = set(
             r["context"].get("test_category", "unknown") for r in valid_results
         )
@@ -314,12 +394,30 @@ class ModelEvaluator:
                     "correct": category_correct,
                 }
 
+        # Calculate per-severity accuracy (LABEL-BASED)
+        severities = set(r["context"].get("severity", "unknown") for r in valid_results)
+        per_severity = {}
+        for severity in severities:
+            severity_results = [
+                r for r in valid_results if r["context"].get("severity") == severity
+            ]
+            if severity_results:
+                severity_correct = sum(1 for r in severity_results if r["is_correct"])
+                per_severity[severity] = {
+                    "accuracy": severity_correct / len(severity_results),
+                    "total_tests": len(severity_results),
+                    "correct": severity_correct,
+                }
+
         return {
             "overall": {
-                "accuracy": accuracy,
+                "label_accuracy": label_accuracy,  # PRIMARY METRIC
+                "score_accuracy": score_accuracy,  # SECONDARY METRIC
                 "total_tests": total,
-                "passed": correct,
-                "failed": total - correct,
+                "label_passed": label_correct,
+                "label_failed": total - label_correct,
+                "score_passed": score_correct,
+                "score_failed": total - score_correct,
             },
             "performance": {
                 "avg_latency_ms": avg_latency,
@@ -328,6 +426,7 @@ class ModelEvaluator:
                 "max_vram_mb": max_vram,
             },
             "per_category": per_category,
+            "per_severity": per_severity,
         }
 
     def compare_models(
@@ -338,7 +437,7 @@ class ModelEvaluator:
         task_type: str = "text-classification",
     ) -> Dict:
         """
-        Compare two models side-by-side
+        Compare two models side-by-side using LABEL-BASED accuracy
 
         Args:
             model_a: First model name
@@ -355,10 +454,10 @@ class ModelEvaluator:
         results_a = self.test_dataset(model_a, dataset_path, task_type)
         results_b = self.test_dataset(model_b, dataset_path, task_type)
 
-        # Calculate improvements
-        accuracy_a = results_a["metrics"]["overall"]["accuracy"]
-        accuracy_b = results_b["metrics"]["overall"]["accuracy"]
-        accuracy_improvement = accuracy_b - accuracy_a
+        # Calculate improvements using LABEL-BASED accuracy
+        label_accuracy_a = results_a["metrics"]["overall"]["label_accuracy"]
+        label_accuracy_b = results_b["metrics"]["overall"]["label_accuracy"]
+        accuracy_improvement = label_accuracy_b - label_accuracy_a
 
         latency_a = results_a["metrics"]["performance"]["avg_latency_ms"]
         latency_b = results_b["metrics"]["performance"]["avg_latency_ms"]
@@ -373,10 +472,10 @@ class ModelEvaluator:
             "model_a": {"name": model_a, "results": results_a},
             "model_b": {"name": model_b, "results": results_b},
             "improvements": {
-                "accuracy": {
+                "label_accuracy": {
                     "absolute": accuracy_improvement,
-                    "percentage": (accuracy_improvement / accuracy_a * 100)
-                    if accuracy_a > 0
+                    "percentage": (accuracy_improvement / label_accuracy_a * 100)
+                    if label_accuracy_a > 0
                     else 0,
                 },
                 "latency": {
@@ -400,6 +499,8 @@ class ModelEvaluator:
     ) -> str:
         """
         Determine which model performs better overall
+
+        Uses LABEL-BASED accuracy for comparison
 
         Priority: Accuracy > Latency
         """
@@ -428,7 +529,8 @@ class ModelEvaluator:
             Report as JSON string
         """
         report = {
-            "report_version": "v5.0",
+            "report_version": "v5.0-2a-2.1-1",
+            "evaluation_method": "label_based_primary",
             "generated_at": datetime.utcnow().isoformat(),
             "results": results,
         }
@@ -491,4 +593,4 @@ def create_model_evaluator(test_config_path: str = None) -> ModelEvaluator:
 
 __all__ = ["ModelEvaluator", "create_model_evaluator"]
 
-logger.info("ModelEvaluator v5.0 loaded")
+logger.info("ModelEvaluator v5.0-2a-2.1-1 loaded (Label-Based Evaluation)")
