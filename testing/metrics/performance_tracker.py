@@ -12,7 +12,7 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 
 import time
 import logging
-from typing import Optional, Callable, Any, Tuple
+from typing import Optional, Callable, Any, Tuple, Dict
 from contextlib import contextmanager
 
 try:
