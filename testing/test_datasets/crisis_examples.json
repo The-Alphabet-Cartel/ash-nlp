@@ -1,1238 +1,1069 @@
 {
-  "_metadata": {
-    "file_version": "v5.0",
-    "last_modified": "2025-12-31",
-    "description": "Crisis message test dataset for model evaluation - covers full spectrum of crisis severity",
-    "total_cases": 55,
-    "severity_distribution": {
-      "critical": 15,
-      "high": 20,
-      "medium": 12,
-      "low": 8
-    },
-    "community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
-    "adjusted_thresholds": true,
-    "threshold_adjustment": -0.1
-  },
-  "test_cases": [
-    {
-      "id": "crisis_001",
-      "message": "I'm planning to end it tonight. I can't take this anymore.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.85,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "mental health emergency"
-          ],
-          "emotions": [
-            "sadness",
-            "despair"
-          ],
-          "sentiment": "negative",
-          "irony": "not_ironic"
-        },
-        "temporal_flags": [
-          "tonight"
-        ],
-        "pattern_matches": [
-          "suicide_ideation",
-          "temporal_urgency"
-        ]
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "explicit_suicide_ideation"
-      }
-    },
-    {
-      "id": "crisis_002",
-      "message": "Nobody would even notice if I disappeared right now",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "severe depression"
-          ],
-          "emotions": [
-            "sadness",
-            "loneliness"
-          ],
-          "sentiment": "negative"
-        },
-        "temporal_flags": [
-          "right now"
-        ]
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "suicide_contemplation"
-      }
-    },
-    {
-      "id": "crisis_003",
-      "message": "I've written my goodbye letters. Everything is ready.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.85,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "mental health emergency"
-          ],
-          "emotions": [
-            "sadness",
-            "resignation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "suicide_planning"
-      }
-    },
-    {
-      "id": "crisis_004",
-      "message": "I'm going to hurt myself tonight if things don't change",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.8,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "self-harm thoughts",
-            "mental health emergency"
-          ],
-          "emotions": [
-            "fear",
-            "desperation"
-          ]
-        },
-        "temporal_flags": [
-          "tonight"
-        ]
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "self_harm_threat"
-      }
-    },
-    {
-      "id": "crisis_005",
-      "message": "My partner has been hitting me and I don't know what to do",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "abuse situation",
-            "domestic violence"
-          ],
-          "emotions": [
-            "fear",
-            "confusion"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "domestic_violence"
-      }
-    },
-    {
-      "id": "crisis_006",
-      "message": "I can't breathe. I'm having a panic attack and I'm alone",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.7000000000000001,
-          "max": 0.9
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "panic attack",
-            "mental health crisis"
-          ],
-          "emotions": [
-            "fear",
-            "panic"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "panic_attack"
-      }
-    },
-    {
-      "id": "crisis_007",
-      "message": "My parents found out I'm trans and kicked me out. I have nowhere to go.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection",
-            "identity crisis"
-          ],
-          "emotions": [
-            "fear",
-            "sadness",
-            "abandonment"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "family_rejection_crisis"
-      }
-    },
-    {
-      "id": "crisis_008",
-      "message": "The voices are telling me to hurt myself and they won't stop",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.85,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "mental health emergency",
-            "self-harm thoughts"
-          ],
-          "emotions": [
-            "fear",
-            "confusion"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "psychotic_crisis"
-      }
-    },
-    {
-      "id": "crisis_009",
-      "message": "I've been cutting deeper and I think I need help but I'm scared",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "self-harm thoughts",
-            "severe depression"
-          ],
-          "emotions": [
-            "fear",
-            "desperation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "active_self_harm"
-      }
-    },
-    {
-      "id": "crisis_010",
-      "message": "I can't live like this anymore. I'm done trying.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.8,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "severe depression"
-          ],
-          "emotions": [
-            "hopelessness",
-            "resignation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "resignation_statement"
-      }
-    },
-    {
-      "id": "crisis_011",
-      "message": "Everything hurts and I just want it to stop permanently",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation"
-          ],
-          "emotions": [
-            "pain",
-            "desperation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "pain_escape_ideation"
-      }
-    },
-    {
-      "id": "crisis_012",
-      "message": "I'm standing on the edge and I don't know if I can hold on",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.8,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "mental health emergency"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "imminent_risk"
-      }
-    },
-    {
-      "id": "crisis_013",
-      "message": "I deserve to die for being who I am",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.8,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "identity crisis",
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "identity_related_ideation"
-      }
-    },
-    {
-      "id": "crisis_014",
-      "message": "I collected all my pills. Tonight is the night.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.85,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "mental health emergency"
-          ]
-        },
-        "temporal_flags": [
-          "tonight"
-        ]
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "method_preparation"
-      }
-    },
-    {
-      "id": "crisis_015",
-      "message": "Everyone would be better off without me as a burden",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.75,
-          "max": 0.95
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "burden_belief"
-      }
-    },
-    {
-      "id": "crisis_016",
-      "message": "I've been thinking about suicide a lot lately",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "requires_immediate_intervention": false,
-        "test_category": "ideation_disclosure"
-      }
-    },
-    {
-      "id": "crisis_017",
-      "message": "I keep having thoughts about harming myself",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "self-harm thoughts"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "persistent_harm_thoughts"
-      }
-    },
-    {
-      "id": "crisis_018",
-      "message": "My depression is getting really bad and I'm scared",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "severe depression"
-          ],
-          "emotions": [
-            "fear",
-            "sadness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "depression_escalation"
-      }
-    },
-    {
-      "id": "crisis_019",
-      "message": "I feel completely hopeless about my future",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "severe depression"
-          ],
-          "emotions": [
-            "hopelessness",
-            "despair"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "hopelessness"
-      }
-    },
-    {
-      "id": "crisis_020",
-      "message": "I don't see any reason to keep going",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation",
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "loss_of_purpose"
-      }
-    },
-    {
-      "id": "crisis_021",
-      "message": "My family disowned me and I've never felt so alone",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "family rejection",
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "family_rejection"
-      }
-    },
-    {
-      "id": "crisis_022",
-      "message": "I can't stop thinking about ending my pain",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.9
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "persistent_ideation"
-      }
-    },
-    {
-      "id": "crisis_023",
-      "message": "I started cutting again after being clean for months",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.6,
-          "max": 0.85
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "self-harm thoughts"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "relapse"
-      }
-    },
-    {
-      "id": "crisis_024",
-      "message": "I'm having panic attacks multiple times a day now",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "panic attack",
-            "severe anxiety"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "chronic_panic"
-      }
-    },
-    {
-      "id": "crisis_025",
-      "message": "I'm questioning if I want to be alive anymore",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.9
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "suicide ideation"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "existential_crisis"
-      }
-    },
-    {
-      "id": "crisis_026",
-      "message": "The dysphoria is unbearable and I don't know how to cope",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "identity crisis",
-            "severe distress"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "dysphoria_crisis"
-      }
-    },
-    {
-      "id": "crisis_027",
-      "message": "I'm losing touch with reality and it's terrifying",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.9
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "mental health crisis"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "dissociation_crisis"
-      }
-    },
-    {
-      "id": "crisis_028",
-      "message": "I feel empty inside, like nothing matters",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.5,
-          "max": 0.75
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "emotional_numbness"
-      }
-    },
-    {
-      "id": "crisis_029",
-      "message": "I can't eat or sleep anymore, everything is falling apart",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.55,
-          "max": 0.8
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "basic_function_loss"
-      }
-    },
-    {
-      "id": "crisis_030",
-      "message": "I'm trapped in an abusive home and can't leave",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.65,
-          "max": 0.9
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "abuse situation",
-            "domestic violence"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "ongoing_abuse"
-      }
-    },
-    {
-      "id": "crisis_031",
-      "message": "I hate who I am and I don't know how to change",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.5,
-          "max": 0.75
-        },
-        "crisis_level": "high",
-        "model_expectations": {
-          "bart_crisis": [
-            "identity crisis",
-            "severe depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "high",
-        "test_category": "self_hatred"
-      }
-    },
-    {
-      "id": "crisis_032",
-      "message": "I'm feeling really depressed lately",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.30000000000000004,
-          "max": 0.6
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "general_depression"
-      }
-    },
-    {
-      "id": "crisis_033",
-      "message": "Everything feels overwhelming right now",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.24999999999999997,
-          "max": 0.55
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "stress",
-            "anxiety"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "overwhelm"
-      }
-    },
-    {
-      "id": "crisis_034",
-      "message": "I'm struggling a lot with anxiety",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.24999999999999997,
-          "max": 0.55
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "anxiety"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "anxiety_disclosure"
-      }
-    },
-    {
-      "id": "crisis_035",
-      "message": "I feel really isolated and alone",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.30000000000000004,
-          "max": 0.6
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "loneliness",
-            "sadness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "isolation"
-      }
-    },
-    {
-      "id": "crisis_036",
-      "message": "I'm having a really hard time coping with stress",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.24999999999999997,
-          "max": 0.55
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "stress",
-            "frustration"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "stress_overload"
-      }
-    },
-    {
-      "id": "crisis_037",
-      "message": "My mental health has been declining",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.35,
-          "max": 0.65
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "mental health concern"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "declining_mental_health"
-      }
-    },
-    {
-      "id": "crisis_038",
-      "message": "I'm worried about my emotional state",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.24999999999999997,
-          "max": 0.55
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "worry",
-            "concern"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "emotional_concern"
-      }
-    },
-    {
-      "id": "crisis_039",
-      "message": "I've been having dark thoughts sometimes",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.4,
-          "max": 0.7
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "depression",
-            "concerning thoughts"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "dark_thoughts"
-      }
-    },
-    {
-      "id": "crisis_040",
-      "message": "I'm not sleeping well and it's affecting everything",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.19999999999999998,
-          "max": 0.5
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "fatigue",
-            "stress"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "sleep_disruption"
-      }
-    },
-    {
-      "id": "crisis_041",
-      "message": "I'm feeling disconnected from everything",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.30000000000000004,
-          "max": 0.6
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "disconnection",
-            "numbness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "dissociation"
-      }
-    },
-    {
-      "id": "crisis_042",
-      "message": "I'm worried I might be getting depressed again",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.35,
-          "max": 0.65
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "depression"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "depression_concern"
-      }
-    },
-    {
-      "id": "crisis_043",
-      "message": "I need some support today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.15,
-          "max": 0.45
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "emotions": [
-            "need",
-            "vulnerability"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "support_request"
-      }
-    },
-    {
-      "id": "crisis_044",
-      "message": "I'm not doing great mentally",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.24999999999999997,
-          "max": 0.55
-        },
-        "crisis_level": "medium",
-        "model_expectations": {
-          "bart_crisis": [
-            "mental health concern"
-          ]
-        }
-      },
-      "context": {
-        "severity": "medium",
-        "test_category": "general_distress"
-      }
-    },
-    {
-      "id": "crisis_045",
-      "message": "I'm feeling pretty low today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.1,
-          "max": 0.4
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "sadness",
-            "low_mood"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "low_mood"
-      }
-    },
-    {
-      "id": "crisis_046",
-      "message": "Not having the best day",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.04999999999999999,
-          "max": 0.35
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "sentiment": "slightly_negative"
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "mild_negative"
-      }
-    },
-    {
-      "id": "crisis_047",
-      "message": "I'm a bit stressed out",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.04999999999999999,
-          "max": 0.35
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "stress",
-            "mild_anxiety"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "mild_stress"
-      }
-    },
-    {
-      "id": "crisis_048",
-      "message": "Feeling kind of blah today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.0,
-          "max": 0.3
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "sentiment": "neutral_to_negative"
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "mild_malaise"
-      }
-    },
-    {
-      "id": "crisis_049",
-      "message": "I'm disappointed about something",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.04999999999999999,
-          "max": 0.35
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "disappointment"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "disappointment"
-      }
-    },
-    {
-      "id": "crisis_050",
-      "message": "I'm frustrated with how things are going",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.1,
-          "max": 0.4
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "frustration"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "frustration"
-      }
-    },
-    {
-      "id": "crisis_051",
-      "message": "Having a rough time but I'll be okay",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.04999999999999999,
-          "max": 0.35
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "difficulty",
-            "resilience"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "mild_difficulty_with_coping"
-      }
-    },
-    {
-      "id": "crisis_052",
-      "message": "I'm a little anxious today",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.1,
-          "max": 0.4
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "mild_anxiety"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "mild_anxiety"
-      }
-    },
-    {
-      "id": "crisis_053",
-      "message": "I'm tired of dealing with everything",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.15,
-          "max": 0.45
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "fatigue",
-            "frustration"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "general_fatigue"
-      }
-    },
-    {
-      "id": "crisis_054",
-      "message": "I wish things were easier",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.04999999999999999,
-          "max": 0.35
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "weariness"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "general_difficulty"
-      }
-    },
-    {
-      "id": "crisis_055",
-      "message": "Not feeling great but managing",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.1,
-          "max": 0.4
-        },
-        "crisis_level": "low",
-        "model_expectations": {
-          "emotions": [
-            "mild_distress",
-            "coping"
-          ]
-        }
-      },
-      "context": {
-        "severity": "low",
-        "test_category": "managing_distress"
-      }
-    }
-  ]
+	"_metadata": {
+		"file_version": "v5.0-2a-2.1-2",
+		"last_modified": "2025-12-31",
+		"description": "Crisis message test dataset for model evaluation - covers full spectrum of crisis severity",
+		"total_cases": 55,
+		"severity_distribution": {
+			"critical": 15,
+			"high": 20,
+			"medium": 12,
+			"low": 8
+		},
+		"community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
+		"adjusted_thresholds": true,
+		"threshold_adjustment": -0.1,
+		"changes_v5.0-2a-2.1-2": "Added bart_crisis expected labels to all medium/low severity cases that were missing them"
+	},
+	"test_cases": [
+		{
+			"id": "crisis_001",
+			"message": "I'm planning to end it tonight. I can't take this anymore.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.85,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "mental health emergency"],
+					"emotions": ["sadness", "despair"],
+					"sentiment": "negative",
+					"irony": "not_ironic"
+				},
+				"temporal_flags": ["tonight"],
+				"pattern_matches": ["suicide_ideation", "temporal_urgency"]
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "explicit_suicide_ideation"
+			}
+		},
+		{
+			"id": "crisis_002",
+			"message": "Nobody would even notice if I disappeared right now",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "severe depression"],
+					"emotions": ["sadness", "loneliness"],
+					"sentiment": "negative"
+				},
+				"temporal_flags": ["right now"]
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "suicide_contemplation"
+			}
+		},
+		{
+			"id": "crisis_003",
+			"message": "I've written my goodbye letters. Everything is ready.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.85,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "mental health emergency"],
+					"emotions": ["sadness", "resignation"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "suicide_planning"
+			}
+		},
+		{
+			"id": "crisis_004",
+			"message": "I'm going to hurt myself tonight if things don't change",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.8,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["self-harm thoughts", "mental health emergency"],
+					"emotions": ["fear", "desperation"]
+				},
+				"temporal_flags": ["tonight"]
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "self_harm_threat"
+			}
+		},
+		{
+			"id": "crisis_005",
+			"message": "My partner has been hitting me and I don't know what to do",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["abuse situation", "domestic violence"],
+					"emotions": ["fear", "confusion"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "domestic_violence"
+			}
+		},
+		{
+			"id": "crisis_006",
+			"message": "I can't breathe. I'm having a panic attack and I'm alone",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.7000000000000001,
+					"max": 0.9
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["panic attack", "mental health crisis"],
+					"emotions": ["fear", "panic"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "panic_attack"
+			}
+		},
+		{
+			"id": "crisis_007",
+			"message": "My parents found out I'm trans and kicked me out. I have nowhere to go.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["family rejection", "identity crisis"],
+					"emotions": ["fear", "sadness", "abandonment"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "family_rejection_crisis"
+			}
+		},
+		{
+			"id": "crisis_008",
+			"message": "The voices are telling me to hurt myself and they won't stop",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.85,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["mental health emergency", "self-harm thoughts"],
+					"emotions": ["fear", "confusion"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "psychotic_crisis"
+			}
+		},
+		{
+			"id": "crisis_009",
+			"message": "I've been cutting deeper and I think I need help but I'm scared",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["self-harm thoughts", "severe depression"],
+					"emotions": ["fear", "desperation"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "active_self_harm"
+			}
+		},
+		{
+			"id": "crisis_010",
+			"message": "I can't live like this anymore. I'm done trying.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.8,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "severe depression"],
+					"emotions": ["hopelessness", "resignation"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "resignation_statement"
+			}
+		},
+		{
+			"id": "crisis_011",
+			"message": "Everything hurts and I just want it to stop permanently",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation"],
+					"emotions": ["pain", "desperation"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "pain_escape_ideation"
+			}
+		},
+		{
+			"id": "crisis_012",
+			"message": "I'm standing on the edge and I don't know if I can hold on",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.8,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "mental health emergency"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "imminent_risk"
+			}
+		},
+		{
+			"id": "crisis_013",
+			"message": "I deserve to die for being who I am",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.8,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": [
+						"suicide ideation",
+						"identity crisis",
+						"severe depression"
+					]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "identity_related_ideation"
+			}
+		},
+		{
+			"id": "crisis_014",
+			"message": "I collected all my pills. Tonight is the night.",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.85,
+					"max": 1.0
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "mental health emergency"]
+				},
+				"temporal_flags": ["tonight"]
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "method_preparation"
+			}
+		},
+		{
+			"id": "crisis_015",
+			"message": "Everyone would be better off without me as a burden",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.75,
+					"max": 0.95
+				},
+				"crisis_level": "critical",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "severe depression"]
+				}
+			},
+			"context": {
+				"severity": "critical",
+				"requires_immediate_intervention": true,
+				"test_category": "burden_belief"
+			}
+		},
+		{
+			"id": "crisis_016",
+			"message": "I've been thinking about suicide a lot lately",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "severe depression"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"requires_immediate_intervention": false,
+				"test_category": "ideation_disclosure"
+			}
+		},
+		{
+			"id": "crisis_017",
+			"message": "I keep having thoughts about harming myself",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["self-harm thoughts"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "persistent_harm_thoughts"
+			}
+		},
+		{
+			"id": "crisis_018",
+			"message": "My depression is getting really bad and I'm scared",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["severe depression"],
+					"emotions": ["fear", "sadness"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "depression_escalation"
+			}
+		},
+		{
+			"id": "crisis_019",
+			"message": "I feel completely hopeless about my future",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["severe depression"],
+					"emotions": ["hopelessness", "despair"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "hopelessness"
+			}
+		},
+		{
+			"id": "crisis_020",
+			"message": "I don't see any reason to keep going",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation", "severe depression"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "loss_of_purpose"
+			}
+		},
+		{
+			"id": "crisis_021",
+			"message": "My family disowned me and I've never felt so alone",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["family rejection", "severe depression"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "family_rejection"
+			}
+		},
+		{
+			"id": "crisis_022",
+			"message": "I can't stop thinking about ending my pain",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.9
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "persistent_ideation"
+			}
+		},
+		{
+			"id": "crisis_023",
+			"message": "I started cutting again after being clean for months",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.6,
+					"max": 0.85
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["self-harm thoughts"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "relapse"
+			}
+		},
+		{
+			"id": "crisis_024",
+			"message": "I'm having panic attacks multiple times a day now",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["panic attack", "severe anxiety"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "chronic_panic"
+			}
+		},
+		{
+			"id": "crisis_025",
+			"message": "I'm questioning if I want to be alive anymore",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.9
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["suicide ideation"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "existential_crisis"
+			}
+		},
+		{
+			"id": "crisis_026",
+			"message": "The dysphoria is unbearable and I don't know how to cope",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["identity crisis", "severe distress"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "dysphoria_crisis"
+			}
+		},
+		{
+			"id": "crisis_027",
+			"message": "I'm losing touch with reality and it's terrifying",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.9
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["mental health crisis"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "dissociation_crisis"
+			}
+		},
+		{
+			"id": "crisis_028",
+			"message": "I feel empty inside, like nothing matters",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.5,
+					"max": 0.75
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["severe depression"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "emotional_numbness"
+			}
+		},
+		{
+			"id": "crisis_029",
+			"message": "I can't eat or sleep anymore, everything is falling apart",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.55,
+					"max": 0.8
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["severe depression"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "basic_function_loss"
+			}
+		},
+		{
+			"id": "crisis_030",
+			"message": "I'm trapped in an abusive home and can't leave",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.65,
+					"max": 0.9
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["abuse situation", "domestic violence"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "ongoing_abuse"
+			}
+		},
+		{
+			"id": "crisis_031",
+			"message": "I hate who I am and I don't know how to change",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.5,
+					"max": 0.75
+				},
+				"crisis_level": "high",
+				"model_expectations": {
+					"bart_crisis": ["identity crisis", "severe depression"]
+				}
+			},
+			"context": {
+				"severity": "high",
+				"test_category": "self_hatred"
+			}
+		},
+		{
+			"id": "crisis_032",
+			"message": "I'm feeling really depressed lately",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.30000000000000004,
+					"max": 0.6
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["depression"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "general_depression"
+			}
+		},
+		{
+			"id": "crisis_033",
+			"message": "Everything feels overwhelming right now",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.24999999999999997,
+					"max": 0.55
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress", "stress"],
+					"emotions": ["stress", "anxiety"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "overwhelm"
+			}
+		},
+		{
+			"id": "crisis_034",
+			"message": "I'm struggling a lot with anxiety",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.24999999999999997,
+					"max": 0.55
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["anxiety"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "anxiety_disclosure"
+			}
+		},
+		{
+			"id": "crisis_035",
+			"message": "I feel really isolated and alone",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.30000000000000004,
+					"max": 0.6
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress", "isolation"],
+					"emotions": ["loneliness", "sadness"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "isolation"
+			}
+		},
+		{
+			"id": "crisis_036",
+			"message": "I'm having a really hard time coping with stress",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.24999999999999997,
+					"max": 0.55
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress", "stress"],
+					"emotions": ["stress", "frustration"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "stress_overload"
+			}
+		},
+		{
+			"id": "crisis_037",
+			"message": "My mental health has been declining",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.35,
+					"max": 0.65
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["mental health concern"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "declining_mental_health"
+			}
+		},
+		{
+			"id": "crisis_038",
+			"message": "I'm worried about my emotional state",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.24999999999999997,
+					"max": 0.55
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress", "concern"],
+					"emotions": ["worry", "concern"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "emotional_concern"
+			}
+		},
+		{
+			"id": "crisis_039",
+			"message": "I've been having dark thoughts sometimes",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.4,
+					"max": 0.7
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["depression", "concerning thoughts"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "dark_thoughts"
+			}
+		},
+		{
+			"id": "crisis_040",
+			"message": "I'm not sleeping well and it's affecting everything",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.19999999999999998,
+					"max": 0.5
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"emotions": ["fatigue", "stress"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "sleep_disruption"
+			}
+		},
+		{
+			"id": "crisis_041",
+			"message": "I'm feeling disconnected from everything",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.30000000000000004,
+					"max": 0.6
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress", "dissociation"],
+					"emotions": ["disconnection", "numbness"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "dissociation"
+			}
+		},
+		{
+			"id": "crisis_042",
+			"message": "I'm worried I might be getting depressed again",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.35,
+					"max": 0.65
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["depression"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "depression_concern"
+			}
+		},
+		{
+			"id": "crisis_043",
+			"message": "I need some support today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.15,
+					"max": 0.45
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"emotions": ["need", "vulnerability"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "support_request"
+			}
+		},
+		{
+			"id": "crisis_044",
+			"message": "I'm not doing great mentally",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.24999999999999997,
+					"max": 0.55
+				},
+				"crisis_level": "medium",
+				"model_expectations": {
+					"bart_crisis": ["mental health concern"]
+				}
+			},
+			"context": {
+				"severity": "medium",
+				"test_category": "general_distress"
+			}
+		},
+		{
+			"id": "crisis_045",
+			"message": "I'm feeling pretty low today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.1,
+					"max": 0.4
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress", "low mood"],
+					"emotions": ["sadness", "low_mood"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "low_mood"
+			}
+		},
+		{
+			"id": "crisis_046",
+			"message": "Not having the best day",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.04999999999999999,
+					"max": 0.35
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"sentiment": "slightly_negative"
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "mild_negative"
+			}
+		},
+		{
+			"id": "crisis_047",
+			"message": "I'm a bit stressed out",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.04999999999999999,
+					"max": 0.35
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress", "stress"],
+					"emotions": ["stress", "mild_anxiety"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "mild_stress"
+			}
+		},
+		{
+			"id": "crisis_048",
+			"message": "Feeling kind of blah today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.0,
+					"max": 0.3
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"sentiment": "neutral_to_negative"
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "mild_malaise"
+			}
+		},
+		{
+			"id": "crisis_049",
+			"message": "I'm disappointed about something",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.04999999999999999,
+					"max": 0.35
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress", "disappointment"],
+					"emotions": ["disappointment"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "disappointment"
+			}
+		},
+		{
+			"id": "crisis_050",
+			"message": "I'm frustrated with how things are going",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.1,
+					"max": 0.4
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress", "frustration"],
+					"emotions": ["frustration"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "frustration"
+			}
+		},
+		{
+			"id": "crisis_051",
+			"message": "Having a rough time but I'll be okay",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.04999999999999999,
+					"max": 0.35
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"emotions": ["difficulty", "resilience"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "mild_difficulty_with_coping"
+			}
+		},
+		{
+			"id": "crisis_052",
+			"message": "I'm a little anxious today",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.1,
+					"max": 0.4
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress", "anxiety"],
+					"emotions": ["mild_anxiety"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "mild_anxiety"
+			}
+		},
+		{
+			"id": "crisis_053",
+			"message": "I'm tired of dealing with everything",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.15,
+					"max": 0.45
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress", "fatigue"],
+					"emotions": ["fatigue", "frustration"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "general_fatigue"
+			}
+		},
+		{
+			"id": "crisis_054",
+			"message": "I wish things were easier",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.04999999999999999,
+					"max": 0.35
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"emotions": ["weariness"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "general_difficulty"
+			}
+		},
+		{
+			"id": "crisis_055",
+			"message": "Not feeling great but managing",
+			"expected_outputs": {
+				"crisis_score": {
+					"min": 0.1,
+					"max": 0.4
+				},
+				"crisis_level": "low",
+				"model_expectations": {
+					"bart_crisis": ["distress"],
+					"emotions": ["mild_distress", "coping"]
+				}
+			},
+			"context": {
+				"severity": "low",
+				"test_category": "managing_distress"
+			}
+		}
+	]
 }
