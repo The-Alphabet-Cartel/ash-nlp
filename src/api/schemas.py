@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 API Schemas for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.4-1
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.4 - API Layer
+FILE VERSION: v5.0-4-5.1-1
+LAST MODIFIED: 2026-01-01
+PHASE: Phase 4 - API Enhancements
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -22,6 +22,12 @@ RESPONSIBILITIES:
 - Define response schemas for consistent API output
 - Provide OpenAPI documentation through model configs
 - Handle field validation and serialization
+
+PHASE 4 ENHANCEMENTS:
+- Consensus algorithm selection in requests
+- Explainability verbosity levels
+- Conflict analysis in responses
+- Consensus configuration endpoints
 """
 
 from datetime import datetime
@@ -31,7 +37,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 # Module version
-__version__ = "v5.0-3-4.4-1"
+__version__ = "v5.0-4-5.1-1"
 
 
 # =============================================================================
@@ -69,6 +75,63 @@ class HealthStatus(str, Enum):
 
 
 # =============================================================================
+# Phase 4 Enums
+# =============================================================================
+
+
+class ConsensusAlgorithm(str, Enum):
+    """Available consensus algorithms (Phase 4)."""
+
+    WEIGHTED_VOTING = "weighted_voting"
+    MAJORITY_VOTING = "majority_voting"
+    UNANIMOUS = "unanimous"
+    CONFLICT_AWARE = "conflict_aware"
+
+
+class ResolutionStrategy(str, Enum):
+    """Conflict resolution strategies (Phase 4)."""
+
+    CONSERVATIVE = "conservative"
+    OPTIMISTIC = "optimistic"
+    MEAN = "mean"
+    REVIEW_FLAG = "review_flag"
+
+
+class VerbosityLevel(str, Enum):
+    """Explanation verbosity levels (Phase 4)."""
+
+    MINIMAL = "minimal"
+    STANDARD = "standard"
+    DETAILED = "detailed"
+
+
+class ConflictType(str, Enum):
+    """Types of model conflicts (Phase 4)."""
+
+    SCORE_DISAGREEMENT = "score_disagreement"
+    IRONY_SENTIMENT_CONFLICT = "irony_sentiment_conflict"
+    EMOTION_CRISIS_MISMATCH = "emotion_crisis_mismatch"
+    LABEL_DISAGREEMENT = "label_disagreement"
+
+
+class ConflictSeverity(str, Enum):
+    """Conflict severity levels (Phase 4)."""
+
+    HIGH = "high"
+    MEDIUM = "medium"
+    LOW = "low"
+
+
+class AgreementLevel(str, Enum):
+    """Model agreement levels (Phase 4)."""
+
+    STRONG_AGREEMENT = "strong_agreement"
+    MODERATE_AGREEMENT = "moderate_agreement"
+    WEAK_AGREEMENT = "weak_agreement"
+    SIGNIFICANT_DISAGREEMENT = "significant_disagreement"
+
+
+# =============================================================================
 # Request Schemas
 # =============================================================================
 
@@ -82,6 +145,11 @@ class AnalyzeRequest(BaseModel):
         user_id: Optional user identifier for tracking
         channel_id: Optional channel identifier
         metadata: Optional additional context
+        
+        # Phase 4 options
+        include_explanation: Include human-readable explanation
+        verbosity: Explanation verbosity level
+        consensus_algorithm: Override default consensus algorithm
     """
 
     message: str = Field(
@@ -105,6 +173,20 @@ class AnalyzeRequest(BaseModel):
         default=None,
         description="Optional additional context",
     )
+    
+    # Phase 4 options
+    include_explanation: bool = Field(
+        default=True,
+        description="Include human-readable explanation in response",
+    )
+    verbosity: Optional[VerbosityLevel] = Field(
+        default=None,
+        description="Explanation verbosity: minimal, standard, detailed",
+    )
+    consensus_algorithm: Optional[ConsensusAlgorithm] = Field(
+        default=None,
+        description="Override consensus algorithm for this request",
+    )
 
     @field_validator("message")
     @classmethod
@@ -121,6 +203,8 @@ class AnalyzeRequest(BaseModel):
                     "message": "I don't know if I can keep going anymore",
                     "user_id": "user_12345",
                     "channel_id": "general",
+                    "include_explanation": True,
+                    "verbosity": "standard",
                 }
             ]
         }
@@ -134,6 +218,7 @@ class BatchAnalyzeRequest(BaseModel):
     Attributes:
         messages: List of messages to analyze
         include_details: Whether to include detailed signals
+        include_explanation: Include explanations for each message
     """
 
     messages: List[str] = Field(
@@ -145,6 +230,10 @@ class BatchAnalyzeRequest(BaseModel):
     include_details: bool = Field(
         default=False,
         description="Include detailed model signals in response",
+    )
+    include_explanation: bool = Field(
+        default=False,
+        description="Include explanations (increases processing time)",
     )
 
     @field_validator("messages")
@@ -159,6 +248,99 @@ class BatchAnalyzeRequest(BaseModel):
         if not validated:
             raise ValueError("At least one non-empty message required")
         return validated
+
+
+# =============================================================================
+# Phase 4 Response Components
+# =============================================================================
+
+
+class ExplanationResponse(BaseModel):
+    """Human-readable explanation (Phase 4)."""
+
+    verbosity: VerbosityLevel = Field(description="Verbosity level used")
+    decision_summary: str = Field(description="Plain-English summary")
+    key_factors: List[str] = Field(
+        default_factory=list,
+        description="Primary factors driving the classification",
+    )
+    recommended_action: Optional[Dict[str, str]] = Field(
+        default=None,
+        description="Action recommendation details",
+    )
+    plain_text: str = Field(description="Full plain-text explanation")
+    
+    # Detailed fields (only in detailed verbosity)
+    confidence_summary: Optional[str] = Field(
+        default=None,
+        description="Explanation of confidence level",
+    )
+    model_contributions: Optional[List[Dict[str, Any]]] = Field(
+        default=None,
+        description="Per-model contribution breakdown",
+    )
+    conflict_summary: Optional[str] = Field(
+        default=None,
+        description="Summary of model conflicts",
+    )
+
+
+class DetectedConflictResponse(BaseModel):
+    """Single detected conflict (Phase 4)."""
+
+    conflict_type: ConflictType
+    severity: ConflictSeverity
+    description: str
+    involved_models: List[str]
+    details: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ConflictAnalysisResponse(BaseModel):
+    """Conflict analysis results (Phase 4)."""
+
+    has_conflicts: bool = Field(description="Whether any conflicts detected")
+    conflict_count: int = Field(description="Number of conflicts")
+    conflicts: List[DetectedConflictResponse] = Field(
+        default_factory=list,
+        description="List of detected conflicts",
+    )
+    highest_severity: Optional[ConflictSeverity] = Field(
+        default=None,
+        description="Most severe conflict level",
+    )
+    requires_review: bool = Field(description="Whether human review recommended")
+    summary: str = Field(description="Brief conflict summary")
+    
+    # Resolution info
+    resolution_strategy: Optional[ResolutionStrategy] = Field(
+        default=None,
+        description="Strategy used to resolve conflicts",
+    )
+    original_score: Optional[float] = Field(
+        default=None,
+        description="Score before resolution",
+    )
+    resolved_score: Optional[float] = Field(
+        default=None,
+        description="Score after resolution",
+    )
+
+
+class ConsensusResponse(BaseModel):
+    """Consensus algorithm results (Phase 4)."""
+
+    algorithm: ConsensusAlgorithm = Field(description="Algorithm used")
+    crisis_score: float = Field(description="Consensus crisis score")
+    confidence: float = Field(description="Confidence in consensus")
+    agreement_level: AgreementLevel = Field(description="Model agreement level")
+    is_crisis: bool = Field(description="Binary crisis determination")
+    requires_review: bool = Field(description="Whether review recommended")
+    has_conflict: bool = Field(description="Whether conflict detected")
+    individual_scores: Dict[str, float] = Field(description="Per-model scores")
+    vote_breakdown: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Voting details for voting algorithms",
+    )
 
 
 # =============================================================================
@@ -179,6 +361,7 @@ class AnalyzeResponse(BaseModel):
     Response schema for message analysis.
 
     This is the primary output format for crisis detection results.
+    Includes Phase 4 enhanced fields.
     """
 
     crisis_detected: bool = Field(description="Whether a crisis was detected")
@@ -215,6 +398,20 @@ class AnalyzeResponse(BaseModel):
     timestamp: datetime = Field(
         default_factory=datetime.utcnow, description="Response timestamp (UTC)"
     )
+    
+    # Phase 4 Enhanced Fields
+    explanation: Optional[ExplanationResponse] = Field(
+        default=None,
+        description="Human-readable explanation (Phase 4)",
+    )
+    conflict_analysis: Optional[ConflictAnalysisResponse] = Field(
+        default=None,
+        description="Conflict detection and resolution (Phase 4)",
+    )
+    consensus: Optional[ConsensusResponse] = Field(
+        default=None,
+        description="Consensus algorithm results (Phase 4)",
+    )
 
     model_config = {
         "json_schema_extra": {
@@ -243,6 +440,19 @@ class AnalyzeResponse(BaseModel):
                     "is_degraded": False,
                     "request_id": "req_abc123",
                     "timestamp": "2025-12-31T12:00:00Z",
+                    "explanation": {
+                        "verbosity": "standard",
+                        "decision_summary": "HIGH CONCERN: Crisis indicators detected with 87% confidence.",
+                        "key_factors": ["emotional distress", "negative sentiment"],
+                        "plain_text": "DECISION SUMMARY:\nHIGH CONCERN...",
+                    },
+                    "consensus": {
+                        "algorithm": "weighted_voting",
+                        "crisis_score": 0.78,
+                        "confidence": 0.87,
+                        "agreement_level": "strong_agreement",
+                        "is_crisis": True,
+                    },
                 }
             ]
         }
@@ -258,6 +468,10 @@ class BatchAnalyzeResponseItem(BaseModel):
     severity: SeverityLevel
     crisis_score: float
     requires_intervention: bool
+    explanation_summary: Optional[str] = Field(
+        default=None,
+        description="Brief explanation (if requested)",
+    )
 
 
 class BatchAnalyzeResponse(BaseModel):
@@ -271,6 +485,66 @@ class BatchAnalyzeResponse(BaseModel):
     processing_time_ms: float = Field(description="Total processing time")
     request_id: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+# =============================================================================
+# Consensus Configuration Schemas (Phase 4)
+# =============================================================================
+
+
+class ConsensusConfigResponse(BaseModel):
+    """Current consensus configuration (Phase 4)."""
+
+    default_algorithm: ConsensusAlgorithm = Field(
+        description="Default consensus algorithm"
+    )
+    available_algorithms: List[ConsensusAlgorithm] = Field(
+        description="All available algorithms"
+    )
+    weights: Dict[str, float] = Field(description="Model weights")
+    thresholds: Dict[str, float] = Field(description="Algorithm thresholds")
+    conflict_detection_enabled: bool = Field(
+        description="Whether conflict detection is enabled"
+    )
+    resolution_strategy: ResolutionStrategy = Field(
+        description="Default conflict resolution strategy"
+    )
+    explainability_verbosity: VerbosityLevel = Field(
+        description="Default explanation verbosity"
+    )
+
+
+class ConsensusConfigUpdateRequest(BaseModel):
+    """Request to update consensus configuration (Phase 4)."""
+
+    default_algorithm: Optional[ConsensusAlgorithm] = Field(
+        default=None,
+        description="Set default consensus algorithm",
+    )
+    resolution_strategy: Optional[ResolutionStrategy] = Field(
+        default=None,
+        description="Set conflict resolution strategy",
+    )
+    explainability_verbosity: Optional[VerbosityLevel] = Field(
+        default=None,
+        description="Set default explanation verbosity",
+    )
+    thresholds: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Update threshold values",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "default_algorithm": "conflict_aware",
+                    "resolution_strategy": "conservative",
+                    "explainability_verbosity": "detailed",
+                }
+            ]
+        }
+    }
 
 
 # =============================================================================
@@ -289,6 +563,19 @@ class ModelStatusResponse(BaseModel):
     average_latency_ms: Optional[float] = None
 
 
+class Phase4StatusResponse(BaseModel):
+    """Phase 4 component status (Phase 4)."""
+
+    enabled: bool = Field(description="Whether Phase 4 features are enabled")
+    consensus_algorithm: Optional[ConsensusAlgorithm] = None
+    resolution_strategy: Optional[ResolutionStrategy] = None
+    explainability_verbosity: Optional[VerbosityLevel] = None
+    conflicts_detected: int = Field(
+        default=0,
+        description="Total conflicts detected since startup",
+    )
+
+
 class HealthResponse(BaseModel):
     """
     Health check response schema.
@@ -305,6 +592,10 @@ class HealthResponse(BaseModel):
         default=None, description="Service uptime in seconds"
     )
     version: str = Field(description="Service version")
+    phase4_enabled: bool = Field(
+        default=True,
+        description="Whether Phase 4 features are enabled",
+    )
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = {
@@ -318,6 +609,7 @@ class HealthResponse(BaseModel):
                     "total_models": 4,
                     "uptime_seconds": 3600.5,
                     "version": "v5.0.0",
+                    "phase4_enabled": True,
                     "timestamp": "2025-12-31T12:00:00Z",
                 }
             ]
@@ -342,6 +634,10 @@ class StatusResponse(BaseModel):
     models: List[ModelStatusResponse] = Field(description="Model statuses")
     stats: Dict[str, Any] = Field(description="Service statistics")
     config: Dict[str, Any] = Field(description="Active configuration")
+    phase4: Optional[Phase4StatusResponse] = Field(
+        default=None,
+        description="Phase 4 component status",
+    )
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
@@ -430,6 +726,26 @@ class CrisisAlertPayload(BaseModel):
         return v
 
 
+class ConflictAlertPayload(BaseModel):
+    """
+    Payload for model conflict alert webhooks (Phase 4).
+
+    Sent to Discord when significant model conflicts detected.
+    """
+
+    alert_type: str = Field(default="model_conflict")
+    conflict_severity: ConflictSeverity
+    conflict_count: int
+    conflict_types: List[ConflictType]
+    crisis_score: float
+    requires_review: bool
+    resolution_strategy: ResolutionStrategy
+    message_preview: str = Field(description="First 100 chars of message")
+    summary: str = Field(description="Conflict summary")
+    request_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
 # =============================================================================
 # Export public interface
 # =============================================================================
@@ -439,9 +755,17 @@ __all__ = [
     "SeverityLevel",
     "RecommendedAction",
     "HealthStatus",
+    # Phase 4 Enums
+    "ConsensusAlgorithm",
+    "ResolutionStrategy",
+    "VerbosityLevel",
+    "ConflictType",
+    "ConflictSeverity",
+    "AgreementLevel",
     # Request schemas
     "AnalyzeRequest",
     "BatchAnalyzeRequest",
+    "ConsensusConfigUpdateRequest",
     # Response schemas
     "AnalyzeResponse",
     "ModelSignalResponse",
@@ -452,6 +776,14 @@ __all__ = [
     "ModelStatusResponse",
     "ErrorResponse",
     "ErrorDetail",
+    # Phase 4 Response components
+    "ExplanationResponse",
+    "ConflictAnalysisResponse",
+    "DetectedConflictResponse",
+    "ConsensusResponse",
+    "ConsensusConfigResponse",
+    "Phase4StatusResponse",
     # Webhook schemas
     "CrisisAlertPayload",
+    "ConflictAlertPayload",
 ]

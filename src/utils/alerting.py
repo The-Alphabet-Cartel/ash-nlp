@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-3-5.6-1
+FILE VERSION: v5.0-4-5.6-3
 LAST MODIFIED: 2026-01-01
-PHASE: Phase 3 Step 5.6 - Alerting for Model Failures
+PHASE: Phase 4 - Ensemble Coordinator Enhancement
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -22,6 +22,7 @@ RESPONSIBILITIES:
 - Throttle alerts to prevent spam
 - Format alerts with severity and context
 - Support async and sync operations
+- Phase 4: Send conflict alerts for ensemble disagreements
 
 WEBHOOK SETUP:
 1. Create webhook in Discord server (Server Settings > Integrations > Webhooks)
@@ -35,6 +36,7 @@ ALERT TYPES:
 - ERROR: Secondary model failure - degraded operation
 - WARNING: Performance degradation - monitoring needed
 - INFO: System events - startup, recovery, etc.
+- CONFLICT: Phase 4 - Model ensemble disagreement alerts
 """
 
 import asyncio
@@ -47,10 +49,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 # Module version
-__version__ = "v5.0-3-5.6-1"
+__version__ = "v5.0-4-5.6-3"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+# User-Agent for Discord webhook requests
+USER_AGENT = "Ash-NLP/5.0 (Discord Webhook; +https://github.com/the-alphabet-cartel/ash-nlp)"
 
 
 # =============================================================================
@@ -66,6 +71,7 @@ class AlertSeverity(Enum):
     WARNING = ("warning", 0xFFAA00)  # Orange
     INFO = ("info", 0x00AA00)  # Green
     RECOVERY = ("recovery", 0x00FF00)  # Bright Green
+    CONFLICT = ("conflict", 0x9B59B6)  # Purple - Phase 4
 
     def __init__(self, name: str, color: int):
         self._name = name
@@ -80,6 +86,7 @@ class AlertSeverity(Enum):
             "warning": "⚠️",
             "info": "ℹ️",
             "recovery": "✅",
+            "conflict": "⚔️",  # Phase 4
         }
         return emojis.get(self._name, "📢")
 
@@ -129,7 +136,7 @@ class Alert:
 
         if self.fields:
             embed["fields"] = [
-                {"name": k, "value": str(v), "inline": True}
+                {"name": k, "value": str(v)[:1024], "inline": True}  # Discord limit
                 for k, v in self.fields.items()
             ]
 
@@ -196,6 +203,7 @@ class DiscordAlerter:
         enabled: bool = True,
         throttle: Optional[ThrottleConfig] = None,
         service_name: str = "Ash-NLP",
+        conflict_cooldown_seconds: float = 60.0,  # Phase 4
     ):
         """
         Initialize the Discord alerter.
@@ -205,6 +213,7 @@ class DiscordAlerter:
             enabled: Whether alerting is enabled
             throttle: Throttle configuration
             service_name: Name for the footer
+            conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
         """
         self.webhook_url = webhook_url
         self.enabled = enabled and webhook_url is not None
@@ -215,6 +224,10 @@ class DiscordAlerter:
         self._alert_history: List[float] = []
         self._in_cooldown = False
         self._cooldown_until = 0.0
+
+        # Phase 4: Conflict alert cooldown
+        self._conflict_cooldown_seconds = conflict_cooldown_seconds
+        self._last_conflict_alert = 0.0
 
         # HTTP session (lazy init)
         self._session = None
@@ -275,6 +288,15 @@ class DiscordAlerter:
         """Record an alert for throttling."""
         self._alert_history.append(time.time())
 
+    def _should_throttle_conflict(self) -> bool:
+        """Check if conflict alert should be throttled (Phase 4)."""
+        now = time.time()
+        return now - self._last_conflict_alert < self._conflict_cooldown_seconds
+
+    def _record_conflict_alert(self):
+        """Record a conflict alert timestamp (Phase 4)."""
+        self._last_conflict_alert = time.time()
+
     # =========================================================================
     # Send Methods
     # =========================================================================
@@ -307,7 +329,10 @@ class DiscordAlerter:
             async with session.post(
                 self.webhook_url,
                 json=payload,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": USER_AGENT,
+                },
             ) as response:
                 if response.status == 204:
                     self._record_alert()
@@ -347,7 +372,10 @@ class DiscordAlerter:
             req = urllib.request.Request(
                 self.webhook_url,
                 data=payload,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": USER_AGENT,
+                },
                 method="POST",
             )
 
@@ -450,6 +478,161 @@ class DiscordAlerter:
             source=source,
         )
         return await self.send_alert(alert)
+
+    # =========================================================================
+    # Phase 4: Conflict Alert Method
+    # =========================================================================
+
+    async def send_conflict_alert(
+        self,
+        conflict_type: str,
+        severity: str,
+        details: Dict[str, Any],
+        resolution: Optional[Dict[str, Any]] = None,
+        source: str = "ensemble",
+    ) -> bool:
+        """
+        Send an alert for ensemble model conflicts (Phase 4).
+
+        Args:
+            conflict_type: Type of conflict (e.g., "score_disagreement", "irony_sentiment")
+            severity: Conflict severity level (e.g., "high", "medium", "low")
+            details: Conflict details dictionary
+            resolution: Resolution information (if resolved)
+            source: Source component
+
+        Returns:
+            True if alert sent successfully
+        """
+        if not self.enabled:
+            logger.debug(f"Conflict alert skipped (disabled): {conflict_type}")
+            return False
+
+        # Check conflict-specific cooldown
+        if self._should_throttle_conflict():
+            logger.debug(f"Conflict alert on cooldown: {conflict_type}")
+            return False
+
+        # Build fields from details
+        fields = {
+            "Conflict Type": conflict_type.replace("_", " ").title(),
+            "Severity": severity.upper(),
+        }
+
+        # Add key details
+        if "max_score" in details:
+            fields["Max Score"] = f"{details['max_score']:.3f}"
+        if "min_score" in details:
+            fields["Min Score"] = f"{details['min_score']:.3f}"
+        if "range" in details:
+            fields["Score Range"] = f"{details['range']:.3f}"
+        if "variance" in details:
+            fields["Variance"] = f"{details['variance']:.4f}"
+
+        # Add resolution info if available
+        if resolution:
+            fields["Resolution"] = resolution.get("strategy", "unknown").title()
+            if "final_score" in resolution:
+                fields["Final Score"] = f"{resolution['final_score']:.3f}"
+            if "flagged_for_review" in resolution and resolution["flagged_for_review"]:
+                fields["Review Required"] = "Yes"
+
+        # Determine alert severity based on conflict severity
+        if severity.lower() == "high":
+            alert_severity = AlertSeverity.WARNING
+            description = (
+                "**Significant model disagreement detected.**\n"
+                "The ensemble models have conflicting opinions on this analysis. "
+                "Review may be required for accurate crisis assessment."
+            )
+        elif severity.lower() == "medium":
+            alert_severity = AlertSeverity.CONFLICT
+            description = (
+                "**Model conflict detected.**\n"
+                "Some models disagree on the analysis. "
+                "The system has applied conflict resolution."
+            )
+        else:
+            alert_severity = AlertSeverity.INFO
+            description = (
+                "**Minor model disagreement.**\n"
+                "A small conflict was detected and resolved automatically."
+            )
+
+        alert = Alert(
+            severity=alert_severity,
+            title=f"Ensemble Conflict: {conflict_type.replace('_', ' ').title()}",
+            description=description,
+            fields=fields,
+            source=source,
+        )
+
+        result = await self.send_alert(alert)
+        if result:
+            self._record_conflict_alert()
+        return result
+
+    def send_conflict_alert_sync(
+        self,
+        conflict_type: str,
+        severity: str,
+        details: Dict[str, Any],
+        resolution: Optional[Dict[str, Any]] = None,
+        source: str = "ensemble",
+    ) -> bool:
+        """
+        Send a conflict alert synchronously (Phase 4).
+
+        Args:
+            conflict_type: Type of conflict
+            severity: Conflict severity level
+            details: Conflict details dictionary
+            resolution: Resolution information
+            source: Source component
+
+        Returns:
+            True if alert sent successfully
+        """
+        if not self.enabled:
+            return False
+
+        if self._should_throttle_conflict():
+            logger.debug(f"Conflict alert on cooldown: {conflict_type}")
+            return False
+
+        # Build fields
+        fields = {
+            "Conflict Type": conflict_type.replace("_", " ").title(),
+            "Severity": severity.upper(),
+        }
+
+        if "max_score" in details:
+            fields["Max Score"] = f"{details['max_score']:.3f}"
+        if "min_score" in details:
+            fields["Min Score"] = f"{details['min_score']:.3f}"
+
+        if resolution:
+            fields["Resolution"] = resolution.get("strategy", "unknown").title()
+
+        if severity.lower() == "high":
+            alert_severity = AlertSeverity.WARNING
+        elif severity.lower() == "medium":
+            alert_severity = AlertSeverity.CONFLICT
+        else:
+            alert_severity = AlertSeverity.INFO
+
+        alert = Alert(
+            severity=alert_severity,
+            title=f"Ensemble Conflict: {conflict_type.replace('_', ' ').title()}",
+            description="Model conflict detected in ensemble analysis.",
+            fields=fields,
+            source=source,
+        )
+
+        result = self.send_alert_sync(alert)
+        if result:
+            self._record_conflict_alert()
+        return result
 
     # =========================================================================
     # Model-Specific Alerts
@@ -593,10 +776,16 @@ class DiscordAlerter:
             "webhook_configured": self.webhook_url is not None,
             "in_cooldown": self._in_cooldown,
             "alerts_in_window": len(self._alert_history),
+            "conflict_cooldown_remaining": max(
+                0,
+                self._conflict_cooldown_seconds
+                - (time.time() - self._last_conflict_alert),
+            ),
             "throttle_config": {
                 "window_seconds": self.throttle.window_seconds,
                 "max_alerts": self.throttle.max_alerts,
                 "cooldown_seconds": self.throttle.cooldown_seconds,
+                "conflict_cooldown_seconds": self._conflict_cooldown_seconds,
             },
         }
 
@@ -610,6 +799,7 @@ def create_discord_alerter(
     webhook_url: Optional[str] = None,
     secrets_manager=None,
     enabled: bool = True,
+    conflict_cooldown_seconds: float = 60.0,
 ) -> DiscordAlerter:
     """
     Factory function to create a Discord alerter.
@@ -618,6 +808,7 @@ def create_discord_alerter(
         webhook_url: Explicit webhook URL (optional)
         secrets_manager: SecretsManager instance for loading URL
         enabled: Whether alerting is enabled
+        conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
 
     Returns:
         Configured DiscordAlerter instance
@@ -635,6 +826,7 @@ def create_discord_alerter(
     return DiscordAlerter(
         webhook_url=webhook_url,
         enabled=enabled,
+        conflict_cooldown_seconds=conflict_cooldown_seconds,
     )
 
 

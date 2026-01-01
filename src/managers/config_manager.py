@@ -10,19 +10,27 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.1-1
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.1 - Configuration Management Foundation
+FILE VERSION: v5.0-4-4.1-3
+LAST MODIFIED: 2026-01-01
+PHASE: Phase 4 - Ensemble Coordinator Enhancement
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
 RESPONSIBILITIES:
 - Load JSON configuration files (default.json, production.json, testing.json)
+- Load Phase 4 configuration (consensus_config.json)
 - Apply environment variable overrides
 - Validate configuration values against schemas
 - Provide safe fallbacks for invalid/missing values (Rule #5)
 - Support multiple environments (production, testing, development)
+
+PHASE 4 ADDITIONS:
+- get_consensus_config() - Consensus algorithm settings
+- get_conflict_detection_config() - Conflict detection settings
+- get_conflict_resolution_config() - Conflict resolution settings
+- get_conflict_alerting_config() - Discord alerting settings
+- get_explainability_config() - Explainability settings
 """
 
 import json
@@ -33,7 +41,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Module version
-__version__ = "v5.0-3-4.1-1"
+__version__ = "v5.0-4-4.1-3"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -60,6 +68,9 @@ class ConfigManager:
 
     # Default configuration file
     DEFAULT_CONFIG = "default.json"
+    
+    # Phase 4: Consensus configuration file
+    CONSENSUS_CONFIG = "consensus_config.json"
 
     def __init__(
         self,
@@ -96,9 +107,15 @@ class ConfigManager:
         self._raw_config: Dict[str, Any] = {}
         self._resolved_config: Dict[str, Any] = {}
         self._validation_errors: List[str] = []
+        
+        # Phase 4: Consensus configuration storage
+        self._consensus_config: Dict[str, Any] = {}
 
         # Load and resolve configuration
         self._load_configuration()
+        
+        # Phase 4: Load consensus configuration
+        self._load_consensus_configuration()
 
         logger.info(
             f"✅ ConfigManager v{__version__} initialized "
@@ -140,6 +157,160 @@ class ConfigManager:
 
         # Step 4: Resolve and validate configuration
         self._resolve_configuration()
+
+    def _load_consensus_configuration(self) -> None:
+        """
+        Load Phase 4 consensus configuration from consensus_config.json.
+        
+        This handles consensus algorithms, conflict detection/resolution,
+        and explainability settings.
+        """
+        consensus_path = self.config_dir / self.CONSENSUS_CONFIG
+        
+        if consensus_path.exists():
+            raw_consensus = self._load_json_file(consensus_path)
+            if raw_consensus:
+                # Apply environment variable overrides to consensus config
+                self._consensus_config = self._resolve_consensus_config(raw_consensus)
+                logger.info("📝 Loaded Phase 4 consensus configuration")
+            else:
+                logger.warning("⚠️ Failed to parse consensus_config.json, using defaults")
+                self._consensus_config = self._get_consensus_defaults()
+        else:
+            logger.debug(f"No consensus config found: {consensus_path}, using defaults")
+            self._consensus_config = self._get_consensus_defaults()
+
+    def _resolve_env_value(self, value: Any, defaults: Dict[str, Any], key: str) -> Any:
+        """
+        Resolve a single value that may be an environment variable reference.
+        
+        Args:
+            value: The value to resolve (may be ${ENV_VAR} string)
+            defaults: Dictionary of default values
+            key: The key name for looking up defaults
+            
+        Returns:
+            Resolved value (from env var, or default)
+        """
+        if not isinstance(value, str) or not value.startswith("${") or not value.endswith("}"):
+            return value
+            
+        env_var = value[2:-1]
+        env_value = os.environ.get(env_var)
+        
+        # Get default value for type inference
+        default_value = defaults.get(key)
+        
+        if env_value is not None:
+            # Convert type based on default
+            if isinstance(default_value, bool):
+                return env_value.lower() in ("true", "1", "yes")
+            elif isinstance(default_value, int):
+                try:
+                    return int(env_value)
+                except ValueError:
+                    return default_value
+            elif isinstance(default_value, float):
+                try:
+                    return float(env_value)
+                except ValueError:
+                    return default_value
+            else:
+                return env_value
+        else:
+            # Use default
+            return default_value
+
+    def _resolve_consensus_config(self, raw_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Resolve consensus configuration with environment variable overrides.
+        
+        Handles nested dictionaries like 'thresholds' properly.
+        
+        Args:
+            raw_config: Raw consensus configuration from JSON
+            
+        Returns:
+            Resolved configuration with defaults applied
+        """
+        resolved = {}
+        
+        for section, section_config in raw_config.items():
+            if section.startswith("_") or not isinstance(section_config, dict):
+                continue
+                
+            resolved[section] = {}
+            defaults = section_config.get("defaults", {})
+            
+            for key, value in section_config.items():
+                # Skip metadata keys
+                if key in ("defaults", "validation", "description", "algorithms", 
+                           "strategies", "types", "verbosity_levels"):
+                    resolved[section][key] = value
+                    continue
+                
+                # Handle nested dictionaries (like 'thresholds')
+                if isinstance(value, dict):
+                    # Check if this is a nested config dict with env vars
+                    has_env_refs = any(
+                        isinstance(v, str) and v.startswith("${") and v.endswith("}")
+                        for v in value.values()
+                    )
+                    
+                    if has_env_refs:
+                        # Resolve each nested value
+                        resolved_nested = {}
+                        for nested_key, nested_value in value.items():
+                            resolved_nested[nested_key] = self._resolve_env_value(
+                                nested_value, defaults, nested_key
+                            )
+                        resolved[section][key] = resolved_nested
+                    else:
+                        # Keep as-is (like 'algorithms' sub-dicts)
+                        resolved[section][key] = value
+                else:
+                    # Simple value - resolve env var if needed
+                    resolved[section][key] = self._resolve_env_value(value, defaults, key)
+                    
+        return resolved
+
+    def _get_consensus_defaults(self) -> Dict[str, Any]:
+        """
+        Return default consensus configuration if file not found.
+        
+        Returns:
+            Default consensus configuration
+        """
+        return {
+            "consensus": {
+                "default_algorithm": "weighted_voting",
+                "thresholds": {
+                    "crisis": 0.5,
+                    "majority": 0.5,
+                    "unanimous": 0.6,
+                    "disagreement": 0.15,
+                },
+            },
+            "conflict_detection": {
+                "enabled": True,
+                "score_threshold": 0.4,
+            },
+            "conflict_resolution": {
+                "default_strategy": "conservative",
+            },
+            "conflict_alerting": {
+                "enabled": True,
+                "alert_on_high_severity": True,
+                "alert_on_review_flag": True,
+                "cooldown_seconds": 60,
+            },
+            "explainability": {
+                "enabled": True,
+                "verbosity": "standard",
+                "include_model_details": True,
+                "include_recommendations": True,
+            },
+        }
 
     def _load_json_file(self, path: Path) -> Dict[str, Any]:
         """
@@ -592,6 +763,162 @@ class ConfigManager:
             logger.warning(f"⚠️ Model weights sum to {total:.3f}, expected 1.0")
 
         return is_valid, total
+
+    # =========================================================================
+    # PHASE 4: Consensus Configuration Getters
+    # =========================================================================
+
+    def get_consensus_config(self) -> Dict[str, Any]:
+        """
+        Get consensus algorithm configuration.
+        
+        Returns:
+            Dictionary with:
+            - default_algorithm: str (weighted_voting, majority_voting, unanimous, conflict_aware)
+            - thresholds: dict with crisis, majority, unanimous, disagreement values (as floats)
+            - algorithms: dict with algorithm details (if available)
+        """
+        consensus = self._consensus_config.get("consensus", {})
+        defaults = self._get_consensus_defaults()["consensus"]
+        
+        # Get thresholds, ensuring they're floats
+        raw_thresholds = consensus.get("thresholds", defaults.get("thresholds", {}))
+        default_thresholds = defaults.get("thresholds", {})
+        
+        # Ensure all threshold values are floats
+        thresholds = {}
+        for key in ["crisis", "majority", "unanimous", "disagreement"]:
+            value = raw_thresholds.get(key, default_thresholds.get(key, 0.5))
+            # Convert to float if it's a string (unresolved env var fallback)
+            if isinstance(value, str):
+                try:
+                    value = float(value)
+                except ValueError:
+                    value = default_thresholds.get(key, 0.5)
+            thresholds[key] = float(value)
+        
+        return {
+            "default_algorithm": consensus.get("default_algorithm", defaults.get("default_algorithm", "weighted_voting")),
+            "thresholds": thresholds,
+            "algorithms": consensus.get("algorithms", {}),
+        }
+
+    def get_conflict_detection_config(self) -> Dict[str, Any]:
+        """
+        Get conflict detection configuration.
+        
+        Returns:
+            Dictionary with:
+            - enabled: bool
+            - score_threshold: float (threshold for score disagreement detection)
+            - types: dict with conflict type details (if available)
+        """
+        detection = self._consensus_config.get("conflict_detection", {})
+        defaults = self._get_consensus_defaults()["conflict_detection"]
+        
+        # Ensure score_threshold is a float
+        score_threshold = detection.get("score_threshold", defaults.get("score_threshold", 0.4))
+        if isinstance(score_threshold, str):
+            try:
+                score_threshold = float(score_threshold)
+            except ValueError:
+                score_threshold = 0.4
+        
+        # Ensure enabled is a bool
+        enabled = detection.get("enabled", defaults.get("enabled", True))
+        if isinstance(enabled, str):
+            enabled = enabled.lower() in ("true", "1", "yes")
+        
+        return {
+            "enabled": bool(enabled),
+            "score_threshold": float(score_threshold),
+            "types": detection.get("types", {}),
+        }
+
+    def get_conflict_resolution_config(self) -> Dict[str, Any]:
+        """
+        Get conflict resolution configuration.
+        
+        Returns:
+            Dictionary with:
+            - default_strategy: str (conservative, optimistic, mean, review_flag)
+            - strategies: dict with strategy details (if available)
+        """
+        resolution = self._consensus_config.get("conflict_resolution", {})
+        defaults = self._get_consensus_defaults()["conflict_resolution"]
+        
+        return {
+            "default_strategy": resolution.get("default_strategy", defaults.get("default_strategy", "conservative")),
+            "strategies": resolution.get("strategies", {}),
+        }
+
+    def get_conflict_alerting_config(self) -> Dict[str, Any]:
+        """
+        Get conflict alerting configuration for Discord notifications.
+        
+        Returns:
+            Dictionary with:
+            - enabled: bool
+            - alert_on_high_severity: bool
+            - alert_on_review_flag: bool
+            - cooldown_seconds: int
+        """
+        alerting = self._consensus_config.get("conflict_alerting", {})
+        defaults = self._get_consensus_defaults()["conflict_alerting"]
+        
+        # Ensure proper types
+        def to_bool(val, default):
+            if isinstance(val, bool):
+                return val
+            if isinstance(val, str):
+                return val.lower() in ("true", "1", "yes")
+            return default
+        
+        def to_int(val, default):
+            if isinstance(val, int):
+                return val
+            if isinstance(val, str):
+                try:
+                    return int(val)
+                except ValueError:
+                    return default
+            return default
+        
+        return {
+            "enabled": to_bool(alerting.get("enabled", defaults.get("enabled")), True),
+            "alert_on_high_severity": to_bool(alerting.get("alert_on_high_severity", defaults.get("alert_on_high_severity")), True),
+            "alert_on_review_flag": to_bool(alerting.get("alert_on_review_flag", defaults.get("alert_on_review_flag")), True),
+            "cooldown_seconds": to_int(alerting.get("cooldown_seconds", defaults.get("cooldown_seconds")), 60),
+        }
+
+    def get_explainability_config(self) -> Dict[str, Any]:
+        """
+        Get explainability configuration.
+        
+        Returns:
+            Dictionary with:
+            - enabled: bool
+            - verbosity: str (minimal, standard, detailed)
+            - include_model_details: bool
+            - include_recommendations: bool
+        """
+        explainability = self._consensus_config.get("explainability", {})
+        defaults = self._get_consensus_defaults()["explainability"]
+        
+        # Ensure proper types
+        def to_bool(val, default):
+            if isinstance(val, bool):
+                return val
+            if isinstance(val, str):
+                return val.lower() in ("true", "1", "yes")
+            return default
+        
+        return {
+            "enabled": to_bool(explainability.get("enabled", defaults.get("enabled")), True),
+            "verbosity": explainability.get("verbosity", defaults.get("verbosity", "standard")),
+            "include_model_details": to_bool(explainability.get("include_model_details", defaults.get("include_model_details")), True),
+            "include_recommendations": to_bool(explainability.get("include_recommendations", defaults.get("include_recommendations")), True),
+        }
 
     # =========================================================================
     # Utility Methods

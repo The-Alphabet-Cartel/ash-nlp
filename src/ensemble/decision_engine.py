@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-7.4-2
+FILE VERSION: v5.0-4-2.0-2
 LAST MODIFIED: 2026-01-01
-PHASE: Phase 3 Step 7 - Performance Optimization
+PHASE: Phase 4 - Ensemble Coordinator Enhancement
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -24,6 +24,12 @@ RESPONSIBILITIES:
 - Calculate final crisis assessment
 - Handle async parallel inference with asyncio.gather()
 - Cache responses for repeated messages
+
+PHASE 4 ENHANCEMENTS:
+- Consensus algorithm selection (weighted, majority, unanimous, conflict-aware)
+- Conflict detection and resolution
+- Comprehensive result aggregation
+- Human-readable explainability
 
 This is the PRIMARY INTERFACE for crisis detection.
 API endpoints call this engine to analyze messages.
@@ -56,20 +62,52 @@ from .fallback import (
     CriticalModelFailure,
 )
 
+# Phase 4 imports
+from .consensus import (
+    ConsensusSelector,
+    ConsensusAlgorithm,
+    ConsensusResult,
+    create_consensus_selector,
+)
+from .conflict_detector import (
+    ConflictDetector,
+    ConflictReport,
+    ModelSignals,
+    create_conflict_detector,
+)
+from .conflict_resolver import (
+    ConflictResolver,
+    ResolutionStrategy,
+    ResolutionResult,
+    create_conflict_resolver,
+)
+from .aggregator import (
+    ResultAggregator,
+    AggregatedResult,
+    CrisisLevel,
+    create_result_aggregator,
+)
+from .explainability import (
+    ExplainabilityGenerator,
+    VerbosityLevel,
+    Explanation,
+    create_explainability_generator,
+)
+
 if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
     from src.utils.cache import ResponseCache
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-3-7.4-2"
+__version__ = "v5.0-4-2.0-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Crisis Assessment Result
+# Crisis Assessment Result (Phase 3 - Backward Compatible)
 # =============================================================================
 
 
@@ -94,6 +132,12 @@ class CrisisAssessment:
         is_degraded: Whether ensemble is operating in degraded mode
         message: Original message analyzed
         cached: Whether result was from cache
+        
+        # Phase 4 Enhanced Fields
+        explanation: Human-readable explanation (Phase 4)
+        conflict_report: Conflict detection report (Phase 4)
+        consensus_result: Consensus algorithm result (Phase 4)
+        aggregated_result: Full aggregated result (Phase 4)
     """
 
     crisis_detected: bool
@@ -109,10 +153,16 @@ class CrisisAssessment:
     degradation_reason: str = ""
     message: str = ""
     cached: bool = False
+    
+    # Phase 4 Enhanced Fields
+    explanation: Optional[Dict[str, Any]] = None
+    conflict_report: Optional[Dict[str, Any]] = None
+    consensus_result: Optional[Dict[str, Any]] = None
+    aggregated_result: Optional[AggregatedResult] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""
-        return {
+        result = {
             "crisis_detected": self.crisis_detected,
             "severity": self.severity.value,
             "confidence": round(self.confidence, 4),
@@ -125,6 +175,22 @@ class CrisisAssessment:
             "is_degraded": self.is_degraded,
             "cached": self.cached,
         }
+        
+        # Include Phase 4 fields if present
+        if self.explanation:
+            result["explanation"] = self.explanation
+        if self.conflict_report:
+            result["conflict_analysis"] = self.conflict_report
+        if self.consensus_result:
+            result["consensus"] = self.consensus_result
+            
+        return result
+
+    def to_enhanced_dict(self) -> Dict[str, Any]:
+        """Convert to full enhanced dictionary with all Phase 4 data."""
+        if self.aggregated_result:
+            return self.aggregated_result.to_dict()
+        return self.to_dict()
 
     @staticmethod
     def create_error(
@@ -194,6 +260,12 @@ class EnsembleDecisionEngine:
     5. Caches responses for repeated messages
     6. Returns comprehensive CrisisAssessment
 
+    Phase 4 Enhancements:
+    - Consensus algorithm selection
+    - Conflict detection and resolution
+    - Comprehensive result aggregation
+    - Human-readable explainability
+
     This is the main interface for the API to call.
 
     Performance Optimizations (Phase 3.7):
@@ -220,6 +292,13 @@ class EnsembleDecisionEngine:
         cache_enabled: bool = True,
         cache_ttl: float = 300.0,
         cache_max_size: int = 1000,
+        # Phase 4 components
+        consensus_selector: Optional[ConsensusSelector] = None,
+        conflict_detector: Optional[ConflictDetector] = None,
+        conflict_resolver: Optional[ConflictResolver] = None,
+        result_aggregator: Optional[ResultAggregator] = None,
+        explainability_generator: Optional[ExplainabilityGenerator] = None,
+        phase4_enabled: bool = True,
     ):
         """
         Initialize Ensemble Decision Engine.
@@ -235,12 +314,21 @@ class EnsembleDecisionEngine:
             cache_enabled: Enable response caching
             cache_ttl: Cache time-to-live in seconds
             cache_max_size: Maximum cache entries
+            
+            # Phase 4 components
+            consensus_selector: Consensus algorithm selector
+            conflict_detector: Conflict detection component
+            conflict_resolver: Conflict resolution component
+            result_aggregator: Result aggregation component
+            explainability_generator: Explainability component
+            phase4_enabled: Enable Phase 4 features (default: True)
         """
         self.config_manager = config_manager
         self.async_inference = async_inference
         self.cache_enabled = cache_enabled
+        self.phase4_enabled = phase4_enabled
 
-        # Initialize components
+        # Initialize Phase 3 components
         self.model_loader = model_loader or create_model_loader(
             config_manager=config_manager,
             lazy_load=True,
@@ -269,11 +357,48 @@ class EnsembleDecisionEngine:
         # Alerter for notifications (Phase 3.7.1)
         self._alerter = alerter
 
+        # =====================================================================
+        # Initialize Phase 4 components
+        # =====================================================================
+        
+        if phase4_enabled:
+            self.consensus_selector = consensus_selector or create_consensus_selector(
+                config_manager=config_manager
+            )
+            
+            self.conflict_detector = conflict_detector or create_conflict_detector(
+                config_manager=config_manager
+            )
+            
+            self.conflict_resolver = conflict_resolver or create_conflict_resolver(
+                config_manager=config_manager,
+                alerter=alerter,
+            )
+            
+            self.result_aggregator = result_aggregator or create_result_aggregator(
+                config_manager=config_manager
+            )
+            
+            self.explainability_generator = (
+                explainability_generator or create_explainability_generator(
+                    config_manager=config_manager
+                )
+            )
+            
+            logger.info("✨ Phase 4 components initialized")
+        else:
+            self.consensus_selector = None
+            self.conflict_detector = None
+            self.conflict_resolver = None
+            self.result_aggregator = None
+            self.explainability_generator = None
+
         # Performance tracking
         self._total_requests: int = 0
         self._total_latency_ms: float = 0.0
         self._crisis_detections: int = 0
         self._cache_hits: int = 0
+        self._conflicts_detected: int = 0
 
         # Thread pool for parallel inference
         self._executor: Optional[ThreadPoolExecutor] = None
@@ -282,27 +407,39 @@ class EnsembleDecisionEngine:
 
         logger.info(
             f"🧠 EnsembleDecisionEngine initialized "
-            f"(async={async_inference}, cache={cache_enabled})"
+            f"(async={async_inference}, cache={cache_enabled}, phase4={phase4_enabled})"
         )
 
     # =========================================================================
     # Main Analysis Methods
     # =========================================================================
 
-    def analyze(self, message: str, use_cache: bool = True) -> CrisisAssessment:
+    def analyze(
+        self,
+        message: str,
+        use_cache: bool = True,
+        include_explanation: bool = True,
+        verbosity: Optional[str] = None,
+        consensus_algorithm: Optional[str] = None,
+    ) -> CrisisAssessment:
         """
         Analyze a message for crisis signals.
 
         This is the PRIMARY method for crisis detection.
+        Includes Phase 4 enhancements when enabled.
 
         Args:
             message: Text message to analyze
             use_cache: Whether to use response cache (default: True)
+            include_explanation: Include human-readable explanation (Phase 4)
+            verbosity: Explanation verbosity: minimal, standard, detailed (Phase 4)
+            consensus_algorithm: Override consensus algorithm (Phase 4)
 
         Returns:
             CrisisAssessment with complete analysis
         """
         start_time = time.perf_counter()
+        per_model_latency: Dict[str, float] = {}
 
         try:
             # Check cache first (Phase 3.7.4)
@@ -320,12 +457,13 @@ class EnsembleDecisionEngine:
                     return cached_result
 
             # Run inference on all models
+            inference_start = time.perf_counter()
             if self.async_inference and self._executor:
-                results = self._run_parallel_inference(message)
+                results, per_model_latency = self._run_parallel_inference_with_timing(message)
             else:
-                results = self._run_sequential_inference(message)
+                results, per_model_latency = self._run_sequential_inference_with_timing(message)
 
-            # Calculate ensemble score
+            # Calculate ensemble score (Phase 3 scoring)
             ensemble_score = self.scorer.calculate_score(
                 bart_result=results.get("bart"),
                 sentiment_result=results.get("sentiment"),
@@ -336,12 +474,111 @@ class EnsembleDecisionEngine:
             # Calculate processing time
             processing_time_ms = (time.perf_counter() - start_time) * 1000
 
+            # =========================================================
+            # Phase 4: Enhanced Processing
+            # =========================================================
+            
+            consensus_result: Optional[ConsensusResult] = None
+            conflict_report: Optional[ConflictReport] = None
+            resolution_result: Optional[ResolutionResult] = None
+            aggregated_result: Optional[AggregatedResult] = None
+            explanation: Optional[Explanation] = None
+            
+            if self.phase4_enabled:
+                # Extract crisis signals for consensus
+                crisis_scores = {
+                    name: signal.crisis_signal
+                    for name, signal in ensemble_score.signals.items()
+                }
+                
+                # Build signals dict for conflict detection
+                signals_dict = {
+                    name: {
+                        "crisis_signal": signal.crisis_signal,
+                        "label": signal.label,
+                        "raw_score": signal.raw_score,
+                        "score": signal.raw_score,
+                        "metadata": signal.metadata,
+                    }
+                    for name, signal in ensemble_score.signals.items()
+                }
+                
+                # Run consensus algorithm
+                if self.consensus_selector:
+                    algo = None
+                    if consensus_algorithm:
+                        try:
+                            algo = ConsensusAlgorithm(consensus_algorithm)
+                        except ValueError:
+                            logger.warning(f"Invalid consensus algorithm: {consensus_algorithm}")
+                    
+                    consensus_result = self.consensus_selector.select_and_run(
+                        model_signals=crisis_scores,
+                        algorithm=algo,
+                    )
+                
+                # Run conflict detection
+                if self.conflict_detector:
+                    model_signals = ModelSignals.from_ensemble_signals(signals_dict)
+                    conflict_report = self.conflict_detector.detect_conflicts(
+                        model_signals=model_signals,
+                        crisis_scores=crisis_scores,
+                    )
+                    
+                    if conflict_report.has_conflicts:
+                        self._conflicts_detected += 1
+                
+                # Run conflict resolution if conflicts found
+                if self.conflict_resolver and conflict_report and conflict_report.has_conflicts:
+                    resolution_result = self.conflict_resolver.resolve(
+                        crisis_scores=crisis_scores,
+                        conflict_report=conflict_report,
+                        message_preview=message[:100],
+                    )
+                
+                # Aggregate results
+                if self.result_aggregator:
+                    aggregated_result = self.result_aggregator.aggregate(
+                        model_signals=signals_dict,
+                        consensus_result=consensus_result,
+                        conflict_report=conflict_report,
+                        resolution_result=resolution_result,
+                        processing_time_ms=processing_time_ms,
+                        per_model_latency=per_model_latency,
+                        is_degraded=self.fallback.is_degraded(),
+                        degradation_reason=self.fallback.get_degradation_reason(),
+                        message=message,
+                        cached=False,
+                    )
+                
+                # Generate explanation
+                if include_explanation and self.explainability_generator and aggregated_result:
+                    verbosity_level = None
+                    if verbosity:
+                        try:
+                            verbosity_level = VerbosityLevel(verbosity)
+                        except ValueError:
+                            pass
+                    
+                    explanation = self.explainability_generator.generate(
+                        result=aggregated_result,
+                        verbosity=verbosity_level,
+                    )
+                    
+                    # Attach explanation to aggregated result
+                    aggregated_result.explanation = explanation.to_dict()
+
             # Build assessment
-            assessment = self._build_assessment(
+            assessment = self._build_assessment_enhanced(
                 ensemble_score=ensemble_score,
                 results=results,
                 message=message,
                 processing_time_ms=processing_time_ms,
+                consensus_result=consensus_result,
+                conflict_report=conflict_report,
+                resolution_result=resolution_result,
+                aggregated_result=aggregated_result,
+                explanation=explanation,
             )
 
             # Store in cache (Phase 3.7.4)
@@ -381,20 +618,32 @@ class EnsembleDecisionEngine:
                 processing_time_ms=processing_time_ms,
             )
 
-    async def analyze_async(self, message: str, use_cache: bool = True) -> CrisisAssessment:
+    async def analyze_async(
+        self,
+        message: str,
+        use_cache: bool = True,
+        include_explanation: bool = True,
+        verbosity: Optional[str] = None,
+        consensus_algorithm: Optional[str] = None,
+    ) -> CrisisAssessment:
         """
         Async version of analyze using asyncio.gather for parallel inference.
 
         This is the optimized async implementation (Phase 3.7.2).
+        Includes Phase 4 enhancements when enabled.
 
         Args:
             message: Text message to analyze
             use_cache: Whether to use response cache
+            include_explanation: Include human-readable explanation (Phase 4)
+            verbosity: Explanation verbosity level (Phase 4)
+            consensus_algorithm: Override consensus algorithm (Phase 4)
 
         Returns:
             CrisisAssessment with complete analysis
         """
         start_time = time.perf_counter()
+        per_model_latency: Dict[str, float] = {}
 
         try:
             # Check cache first (Phase 3.7.4)
@@ -410,7 +659,7 @@ class EnsembleDecisionEngine:
                     return cached_result
 
             # Run parallel inference with asyncio.gather (Phase 3.7.2)
-            results = await self._run_async_parallel_inference(message)
+            results, per_model_latency = await self._run_async_parallel_inference_with_timing(message)
 
             # Calculate ensemble score
             ensemble_score = self.scorer.calculate_score(
@@ -423,12 +672,109 @@ class EnsembleDecisionEngine:
             # Calculate processing time
             processing_time_ms = (time.perf_counter() - start_time) * 1000
 
+            # =========================================================
+            # Phase 4: Enhanced Processing (Async)
+            # =========================================================
+            
+            consensus_result: Optional[ConsensusResult] = None
+            conflict_report: Optional[ConflictReport] = None
+            resolution_result: Optional[ResolutionResult] = None
+            aggregated_result: Optional[AggregatedResult] = None
+            explanation: Optional[Explanation] = None
+            
+            if self.phase4_enabled:
+                # Extract crisis signals
+                crisis_scores = {
+                    name: signal.crisis_signal
+                    for name, signal in ensemble_score.signals.items()
+                }
+                
+                signals_dict = {
+                    name: {
+                        "crisis_signal": signal.crisis_signal,
+                        "label": signal.label,
+                        "raw_score": signal.raw_score,
+                        "score": signal.raw_score,
+                        "metadata": signal.metadata,
+                    }
+                    for name, signal in ensemble_score.signals.items()
+                }
+                
+                # Run consensus
+                if self.consensus_selector:
+                    algo = None
+                    if consensus_algorithm:
+                        try:
+                            algo = ConsensusAlgorithm(consensus_algorithm)
+                        except ValueError:
+                            pass
+                    
+                    consensus_result = self.consensus_selector.select_and_run(
+                        model_signals=crisis_scores,
+                        algorithm=algo,
+                    )
+                
+                # Run conflict detection
+                if self.conflict_detector:
+                    model_signals = ModelSignals.from_ensemble_signals(signals_dict)
+                    conflict_report = self.conflict_detector.detect_conflicts(
+                        model_signals=model_signals,
+                        crisis_scores=crisis_scores,
+                    )
+                    
+                    if conflict_report.has_conflicts:
+                        self._conflicts_detected += 1
+                
+                # Run conflict resolution (async)
+                if self.conflict_resolver and conflict_report and conflict_report.has_conflicts:
+                    resolution_result = await self.conflict_resolver.resolve_async(
+                        crisis_scores=crisis_scores,
+                        conflict_report=conflict_report,
+                        message_preview=message[:100],
+                    )
+                
+                # Aggregate results
+                if self.result_aggregator:
+                    aggregated_result = self.result_aggregator.aggregate(
+                        model_signals=signals_dict,
+                        consensus_result=consensus_result,
+                        conflict_report=conflict_report,
+                        resolution_result=resolution_result,
+                        processing_time_ms=processing_time_ms,
+                        per_model_latency=per_model_latency,
+                        is_degraded=self.fallback.is_degraded(),
+                        degradation_reason=self.fallback.get_degradation_reason(),
+                        message=message,
+                        cached=False,
+                    )
+                
+                # Generate explanation
+                if include_explanation and self.explainability_generator and aggregated_result:
+                    verbosity_level = None
+                    if verbosity:
+                        try:
+                            verbosity_level = VerbosityLevel(verbosity)
+                        except ValueError:
+                            pass
+                    
+                    explanation = self.explainability_generator.generate(
+                        result=aggregated_result,
+                        verbosity=verbosity_level,
+                    )
+                    
+                    aggregated_result.explanation = explanation.to_dict()
+
             # Build assessment
-            assessment = self._build_assessment(
+            assessment = self._build_assessment_enhanced(
                 ensemble_score=ensemble_score,
                 results=results,
                 message=message,
                 processing_time_ms=processing_time_ms,
+                consensus_result=consensus_result,
+                conflict_report=conflict_report,
+                resolution_result=resolution_result,
+                aggregated_result=aggregated_result,
+                explanation=explanation,
             )
 
             # Store in cache
@@ -447,7 +793,6 @@ class EnsembleDecisionEngine:
             processing_time_ms = (time.perf_counter() - start_time) * 1000
             logger.critical(f"🚨 Critical model failure during analysis: {e}")
             
-            # Send alert
             if self._alerter:
                 await self._alerter.alert_model_failure("bart", str(e), is_critical=True)
             
@@ -466,155 +811,58 @@ class EnsembleDecisionEngine:
                 processing_time_ms=processing_time_ms,
             )
 
-    async def _run_async_parallel_inference(
+    # =========================================================================
+    # Inference Methods with Timing
+    # =========================================================================
+
+    def _run_sequential_inference_with_timing(
         self, message: str
-    ) -> Dict[str, Optional[ModelResult]]:
-        """
-        Run inference on all models in parallel using asyncio.gather.
-
-        This is the optimized async implementation (Phase 3.7.2).
-
-        Args:
-            message: Text to analyze
-
-        Returns:
-            Dictionary of model_name -> ModelResult
-        """
-        loop = asyncio.get_event_loop()
-
-        async def run_model_async(model_name: str) -> tuple:
-            """Run a single model inference in thread pool."""
-            if not self.fallback.can_call_model(model_name):
-                return (model_name, None)
-
-            try:
-                model = self.model_loader.get_model(model_name)
-                if model:
-                    # Run blocking inference in thread pool
-                    result = await loop.run_in_executor(
-                        self._executor,
-                        model.analyze,
-                        message,
-                    )
-                    self.fallback.handle_model_success(model_name)
-                    return (model_name, result)
-                return (model_name, None)
-            except Exception as e:
-                self.fallback.handle_model_failure(model_name, str(e))
-                logger.warning(f"Model {model_name} failed: {e}")
-                
-                # Alert on model failure (non-critical models)
-                if self._alerter and model_name != "bart":
-                    asyncio.create_task(
-                        self._alerter.alert_model_failure(model_name, str(e), is_critical=False)
-                    )
-                
-                return (model_name, None)
-
-        # Run all models in parallel with asyncio.gather
+    ) -> tuple[Dict[str, Optional[ModelResult]], Dict[str, float]]:
+        """Run sequential inference with per-model timing."""
+        results: Dict[str, Optional[ModelResult]] = {}
+        latencies: Dict[str, float] = {}
         model_names = ["bart", "sentiment", "irony", "emotions"]
-        tasks = [run_model_async(name) for name in model_names]
-        
-        results_list = await asyncio.gather(*tasks, return_exceptions=True)
 
-        # Convert to dictionary
-        results: Dict[str, Optional[ModelResult]] = {}
-        for item in results_list:
-            if isinstance(item, Exception):
-                logger.error(f"Async inference exception: {item}")
-                continue
-            if isinstance(item, tuple) and len(item) == 2:
-                model_name, result = item
-                if result is not None:
-                    results[model_name] = result
+        for model_name in model_names:
+            if self.fallback.can_call_model(model_name):
+                model_start = time.perf_counter()
+                try:
+                    model = self.model_loader.get_model(model_name)
+                    if model:
+                        results[model_name] = model.analyze(message)
+                        self.fallback.handle_model_success(model_name)
+                except Exception as e:
+                    self.fallback.handle_model_failure(model_name, str(e))
+                finally:
+                    latencies[model_name] = (time.perf_counter() - model_start) * 1000
 
-        return results
+        return results, latencies
 
-    def _run_sequential_inference(
+    def _run_parallel_inference_with_timing(
         self, message: str
-    ) -> Dict[str, Optional[ModelResult]]:
-        """
-        Run inference on all models sequentially.
-
-        Args:
-            message: Text to analyze
-
-        Returns:
-            Dictionary of model_name -> ModelResult
-        """
+    ) -> tuple[Dict[str, Optional[ModelResult]], Dict[str, float]]:
+        """Run parallel inference with per-model timing."""
         results: Dict[str, Optional[ModelResult]] = {}
+        latencies: Dict[str, float] = {}
 
-        # BART (Primary - Required)
-        if self.fallback.can_call_model("bart"):
-            try:
-                bart = self.model_loader.get_bart()
-                if bart:
-                    results["bart"] = bart.analyze(message)
-                    self.fallback.handle_model_success("bart")
-            except Exception as e:
-                self.fallback.handle_model_failure("bart", str(e))
-
-        # Sentiment (Secondary)
-        if self.fallback.can_call_model("sentiment"):
-            try:
-                sentiment = self.model_loader.get_sentiment()
-                if sentiment:
-                    results["sentiment"] = sentiment.analyze(message)
-                    self.fallback.handle_model_success("sentiment")
-            except Exception as e:
-                self.fallback.handle_model_failure("sentiment", str(e))
-
-        # Irony (Tertiary)
-        if self.fallback.can_call_model("irony"):
-            try:
-                irony = self.model_loader.get_irony()
-                if irony:
-                    results["irony"] = irony.analyze(message)
-                    self.fallback.handle_model_success("irony")
-            except Exception as e:
-                self.fallback.handle_model_failure("irony", str(e))
-
-        # Emotions (Supplementary)
-        if self.fallback.can_call_model("emotions"):
-            try:
-                emotions = self.model_loader.get_emotions()
-                if emotions:
-                    results["emotions"] = emotions.analyze(message)
-                    self.fallback.handle_model_success("emotions")
-            except Exception as e:
-                self.fallback.handle_model_failure("emotions", str(e))
-
-        return results
-
-    def _run_parallel_inference(self, message: str) -> Dict[str, Optional[ModelResult]]:
-        """
-        Run inference on all models in parallel using ThreadPoolExecutor.
-
-        Args:
-            message: Text to analyze
-
-        Returns:
-            Dictionary of model_name -> ModelResult
-        """
-        results: Dict[str, Optional[ModelResult]] = {}
-
-        def run_model(model_name: str):
-            """Run a single model inference."""
+        def run_model(model_name: str) -> tuple:
             if not self.fallback.can_call_model(model_name):
-                return None
+                return (model_name, None, 0.0)
 
+            model_start = time.perf_counter()
             try:
                 model = self.model_loader.get_model(model_name)
                 if model:
                     result = model.analyze(message)
                     self.fallback.handle_model_success(model_name)
-                    return result
-                return None
+                    latency = (time.perf_counter() - model_start) * 1000
+                    return (model_name, result, latency)
+                return (model_name, None, 0.0)
             except Exception as e:
                 self.fallback.handle_model_failure(model_name, str(e))
-                return None
+                latency = (time.perf_counter() - model_start) * 1000
+                return (model_name, None, latency)
 
-        # Submit all model tasks
         model_names = ["bart", "sentiment", "irony", "emotions"]
 
         with ThreadPoolExecutor(max_workers=4) as executor:
@@ -623,33 +871,102 @@ class EnsembleDecisionEngine:
             for future in futures:
                 model_name = futures[future]
                 try:
-                    result = future.result(timeout=30)
+                    name, result, latency = future.result(timeout=30)
                     if result:
-                        results[model_name] = result
+                        results[name] = result
+                    latencies[name] = latency
                 except Exception as e:
                     logger.error(f"Parallel inference failed for {model_name}: {e}")
 
-        return results
+        return results, latencies
 
-    def _build_assessment(
+    async def _run_async_parallel_inference_with_timing(
+        self, message: str
+    ) -> tuple[Dict[str, Optional[ModelResult]], Dict[str, float]]:
+        """Run async parallel inference with per-model timing."""
+        loop = asyncio.get_event_loop()
+
+        async def run_model_async(model_name: str) -> tuple:
+            if not self.fallback.can_call_model(model_name):
+                return (model_name, None, 0.0)
+
+            model_start = time.perf_counter()
+            try:
+                model = self.model_loader.get_model(model_name)
+                if model:
+                    result = await loop.run_in_executor(
+                        self._executor,
+                        model.analyze,
+                        message,
+                    )
+                    self.fallback.handle_model_success(model_name)
+                    latency = (time.perf_counter() - model_start) * 1000
+                    return (model_name, result, latency)
+                return (model_name, None, 0.0)
+            except Exception as e:
+                self.fallback.handle_model_failure(model_name, str(e))
+                logger.warning(f"Model {model_name} failed: {e}")
+                latency = (time.perf_counter() - model_start) * 1000
+                return (model_name, None, latency)
+
+        model_names = ["bart", "sentiment", "irony", "emotions"]
+        tasks = [run_model_async(name) for name in model_names]
+        
+        results_list = await asyncio.gather(*tasks, return_exceptions=True)
+
+        results: Dict[str, Optional[ModelResult]] = {}
+        latencies: Dict[str, float] = {}
+
+        for item in results_list:
+            if isinstance(item, Exception):
+                logger.error(f"Async inference exception: {item}")
+                continue
+            if isinstance(item, tuple) and len(item) == 3:
+                model_name, result, latency = item
+                if result is not None:
+                    results[model_name] = result
+                latencies[model_name] = latency
+
+        return results, latencies
+
+    # =========================================================================
+    # Assessment Building
+    # =========================================================================
+
+    def _build_assessment_enhanced(
         self,
         ensemble_score: EnsembleScore,
         results: Dict[str, Optional[ModelResult]],
         message: str,
         processing_time_ms: float,
+        consensus_result: Optional[ConsensusResult] = None,
+        conflict_report: Optional[ConflictReport] = None,
+        resolution_result: Optional[ResolutionResult] = None,
+        aggregated_result: Optional[AggregatedResult] = None,
+        explanation: Optional[Explanation] = None,
     ) -> CrisisAssessment:
         """
-        Build final CrisisAssessment from ensemble score.
+        Build CrisisAssessment with Phase 4 enhancements.
 
         Args:
             ensemble_score: Calculated ensemble score
             results: Model results
             message: Original message
             processing_time_ms: Processing time
+            consensus_result: Phase 4 consensus result
+            conflict_report: Phase 4 conflict report
+            resolution_result: Phase 4 resolution result
+            aggregated_result: Phase 4 aggregated result
+            explanation: Phase 4 explanation
 
         Returns:
-            Complete CrisisAssessment
+            Complete CrisisAssessment with Phase 4 data
         """
+        # Use resolved score if available, otherwise ensemble score
+        final_crisis_score = ensemble_score.crisis_score
+        if resolution_result and resolution_result.was_modified:
+            final_crisis_score = resolution_result.resolved_score
+
         # Determine recommended action
         recommended_action = RecommendedAction.from_severity(ensemble_score.severity)
 
@@ -665,12 +982,20 @@ class EnsembleDecisionEngine:
         # List models that contributed
         models_used = list(results.keys())
 
-        return CrisisAssessment(
+        # Check if review required
+        requires_review = False
+        if resolution_result and resolution_result.requires_review:
+            requires_review = True
+        elif conflict_report and conflict_report.requires_review:
+            requires_review = True
+
+        # Build assessment
+        assessment = CrisisAssessment(
             crisis_detected=ensemble_score.crisis_detected,
             severity=ensemble_score.severity,
             confidence=ensemble_score.confidence,
-            crisis_score=ensemble_score.crisis_score,
-            requires_intervention=ensemble_score.requires_intervention,
+            crisis_score=final_crisis_score,
+            requires_intervention=ensemble_score.requires_intervention or requires_review,
             recommended_action=recommended_action,
             signals=signals,
             processing_time_ms=processing_time_ms,
@@ -678,7 +1003,14 @@ class EnsembleDecisionEngine:
             is_degraded=self.fallback.is_degraded(),
             degradation_reason=self.fallback.get_degradation_reason(),
             message=message,
+            # Phase 4 fields
+            explanation=explanation.to_dict() if explanation else None,
+            conflict_report=conflict_report.to_dict() if conflict_report else None,
+            consensus_result=consensus_result.to_dict() if consensus_result else None,
+            aggregated_result=aggregated_result,
         )
+
+        return assessment
 
     # =========================================================================
     # Initialization and Management
@@ -735,6 +1067,7 @@ class EnsembleDecisionEngine:
         Warm up the engine with a sample analysis.
 
         Phase 3.7.1: Model warmup on startup.
+        Note: Alerting is disabled during warmup to prevent spurious notifications.
 
         Args:
             sample_text: Text to use for warmup
@@ -744,9 +1077,15 @@ class EnsembleDecisionEngine:
         """
         logger.info("🔥 Warming up Decision Engine...")
 
+        # Temporarily disable alerting during warmup
+        original_alerter = None
+        if self.conflict_resolver:
+            original_alerter = self.conflict_resolver._alerter
+            self.conflict_resolver._alerter = None
+
         try:
-            # Run warmup analysis (bypass cache)
-            result = self.analyze(sample_text, use_cache=False)
+            # Run warmup analysis (bypass cache, no explanations)
+            result = self.analyze(sample_text, use_cache=False, include_explanation=False)
 
             if result.crisis_score >= 0:  # Valid result
                 logger.info(
@@ -761,6 +1100,11 @@ class EnsembleDecisionEngine:
             logger.error(f"❌ Warmup failed: {e}")
             return False
 
+        finally:
+            # Restore alerter after warmup
+            if self.conflict_resolver and original_alerter is not None:
+                self.conflict_resolver._alerter = original_alerter
+
     def set_alerter(self, alerter: "DiscordAlerter") -> None:
         """
         Set the Discord alerter for notifications.
@@ -769,7 +1113,58 @@ class EnsembleDecisionEngine:
             alerter: DiscordAlerter instance
         """
         self._alerter = alerter
+        
+        # Also set on conflict resolver
+        if self.conflict_resolver:
+            self.conflict_resolver.set_alerter(alerter)
+            
         logger.debug("Discord alerter configured")
+
+    # =========================================================================
+    # Phase 4 Configuration Methods
+    # =========================================================================
+
+    def set_consensus_algorithm(self, algorithm: str) -> None:
+        """Set the default consensus algorithm."""
+        if self.consensus_selector:
+            try:
+                algo = ConsensusAlgorithm(algorithm)
+                self.consensus_selector.set_algorithm(algo)
+                logger.info(f"Consensus algorithm set to: {algorithm}")
+            except ValueError:
+                logger.warning(f"Invalid consensus algorithm: {algorithm}")
+
+    def set_resolution_strategy(self, strategy: str) -> None:
+        """Set the default conflict resolution strategy."""
+        if self.conflict_resolver:
+            try:
+                strat = ResolutionStrategy(strategy)
+                self.conflict_resolver.set_strategy(strat)
+                logger.info(f"Resolution strategy set to: {strategy}")
+            except ValueError:
+                logger.warning(f"Invalid resolution strategy: {strategy}")
+
+    def set_explainability_verbosity(self, verbosity: str) -> None:
+        """Set the default explainability verbosity."""
+        if self.explainability_generator:
+            try:
+                level = VerbosityLevel(verbosity)
+                self.explainability_generator.set_verbosity(level)
+                logger.info(f"Explainability verbosity set to: {verbosity}")
+            except ValueError:
+                logger.warning(f"Invalid verbosity level: {verbosity}")
+
+    def get_consensus_config(self) -> Optional[Dict[str, Any]]:
+        """Get current consensus configuration."""
+        if self.consensus_selector:
+            return self.consensus_selector.get_config()
+        return None
+
+    def get_conflict_config(self) -> Optional[Dict[str, Any]]:
+        """Get current conflict detection configuration."""
+        if self.conflict_detector:
+            return self.conflict_detector.get_config()
+        return None
 
     # =========================================================================
     # Cache Management
@@ -820,15 +1215,17 @@ class EnsembleDecisionEngine:
             else 0.0
         )
 
-        return {
+        status = {
             "is_ready": self.is_ready(),
             "is_degraded": self.fallback.is_degraded(),
             "degradation_reason": self.fallback.get_degradation_reason(),
             "async_inference": self.async_inference,
             "cache_enabled": self.cache_enabled,
+            "phase4_enabled": self.phase4_enabled,
             "stats": {
                 "total_requests": self._total_requests,
                 "crisis_detections": self._crisis_detections,
+                "conflicts_detected": self._conflicts_detected,
                 "cache_hits": self._cache_hits,
                 "cache_hit_rate": round(cache_hit_rate, 4),
                 "average_latency_ms": round(avg_latency, 2),
@@ -839,6 +1236,21 @@ class EnsembleDecisionEngine:
             "fallback": self.fallback.get_status(),
             "cache": self.get_cache_stats(),
         }
+        
+        # Add Phase 4 component status
+        if self.phase4_enabled:
+            status["phase4"] = {
+                "consensus": self.get_consensus_config(),
+                "conflict_detection": self.get_conflict_config(),
+                "conflict_resolution": (
+                    self.conflict_resolver.get_config() if self.conflict_resolver else None
+                ),
+                "explainability": (
+                    self.explainability_generator.get_config() if self.explainability_generator else None
+                ),
+            }
+            
+        return status
 
     def get_model_info(self) -> List[Dict[str, Any]]:
         """
@@ -872,6 +1284,7 @@ class EnsembleDecisionEngine:
             "models_loaded": self.model_loader._models_loaded,
             "total_models": len(self.model_loader._models),
             "cache_enabled": self.cache_enabled,
+            "phase4_enabled": self.phase4_enabled,
         }
 
 
@@ -886,11 +1299,12 @@ def create_decision_engine(
     async_inference: bool = True,
     cache_enabled: bool = True,
     alerter: Optional["DiscordAlerter"] = None,
+    phase4_enabled: bool = True,
 ) -> EnsembleDecisionEngine:
     """
     Factory function for EnsembleDecisionEngine.
 
-    Creates a fully configured decision engine.
+    Creates a fully configured decision engine with Phase 4 enhancements.
 
     Args:
         config_manager: Configuration manager instance
@@ -898,6 +1312,7 @@ def create_decision_engine(
         async_inference: Enable parallel model inference
         cache_enabled: Enable response caching
         alerter: Discord alerter for notifications
+        phase4_enabled: Enable Phase 4 features (default: True)
 
     Returns:
         Configured EnsembleDecisionEngine instance
@@ -906,6 +1321,7 @@ def create_decision_engine(
         >>> engine = create_decision_engine(config_manager=config)
         >>> engine.initialize()
         >>> assessment = engine.analyze("I'm feeling really down today")
+        >>> print(assessment.explanation)  # Phase 4 explanation
     """
     # Get settings from config
     perf_config = {}
@@ -924,6 +1340,7 @@ def create_decision_engine(
         cache_ttl=cache_ttl,
         cache_max_size=cache_max_size,
         alerter=alerter,
+        phase4_enabled=phase4_enabled,
     )
 
     if auto_initialize:

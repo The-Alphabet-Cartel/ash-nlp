@@ -344,6 +344,73 @@ RUN python3.11 -m pip install -r requirements.txt
 - **Reproducible builds** across team members
 - **Clear debugging** when version issues occur
 
+### **Rule #14: AI Assistant File System Tool Usage - MANDATORY**
+
+When Claude or other AI assistants are editing project files, they MUST use the correct tools for the file location.
+
+#### **User's Computer (Network Shares, Local Files)**
+For files on the user's computer (Windows network shares like `\\10.20.30.253\...` or local paths):
+
+```
+# ✅ CORRECT - Use Filesystem tools
+Filesystem:read_file       - Read file contents
+Filesystem:edit_file       - Make targeted edits (preferred for changes)
+Filesystem:write_file      - Write entire file (use sparingly)
+Filesystem:list_directory  - Browse directories
+Filesystem:search_files    - Search for files
+
+# ❌ INCORRECT - These only work on Claude's container
+str_replace    - Only works on Claude's Linux container
+view           - Only works on Claude's Linux container  
+create_file    - Only works on Claude's Linux container
+bash_tool      - Only works on Claude's Linux container
+```
+
+#### **Claude's Computer (Container Filesystem)**
+For files in Claude's container (`/home/claude/`, `/mnt/user-data/uploads/`):
+
+```
+# ✅ CORRECT - Use computer use tools
+str_replace    - Edit files in Claude's container
+view           - Read files in Claude's container
+create_file    - Create files in Claude's container
+bash_tool      - Execute commands in Claude's container
+```
+
+#### **How to Identify File Location**
+| Path Pattern | Location | Tools to Use |
+|--------------|----------|-------------|
+| `\\10.20.30.253\...` | User's network share | `Filesystem:*` |
+| `C:\Users\...` | User's Windows PC | `Filesystem:*` |
+| `/home/claude/...` | Claude's container | `str_replace`, `view`, etc. |
+| `/mnt/user-data/...` | Claude's container | `str_replace`, `view`, etc. |
+
+#### **Best Practices for File Editing**
+1. **Prefer `Filesystem:edit_file`** over `Filesystem:write_file` for changes
+   - `edit_file` shows a diff preview and is safer
+   - `write_file` replaces entire file content
+2. **Use `dryRun: true`** first to preview changes before applying
+3. **Always verify file path** before editing to ensure correct tool selection
+
+#### **Real-World Impact**
+Phase 4 encountered:
+```bash
+# Attempted edit with wrong tool
+str_replace on \\10.20.30.253\nas\git\ash\ash-nlp\src\utils\alerting.py
+# Error: File not found (path doesn't exist in Claude's container)
+
+# Correct approach
+Filesystem:edit_file on \\10.20.30.253\nas\git\ash\ash-nlp\src\utils\alerting.py
+# Success: File edited on user's network share
+```
+
+#### **Benefits of Rule #14**:
+- **Prevents failed edits** due to wrong tool selection
+- **Maintains cross-conversation consistency** by documenting tool usage
+- **Reduces frustration** from "file not found" errors
+- **Enables targeted edits** instead of full file rewrites
+- **Preserves file history** with smaller, traceable changes
+
 ---
 
 ## 🔧 **MANAGER IMPLEMENTATION STANDARDS**
@@ -641,6 +708,7 @@ This system serves **The Alphabet Cartel LGBTQIA+ community** by providing **lif
 9. **Have I verified we are working on the same file version?** ✅ Required
 10. **Does this use label-based evaluation for ML models?** ✅ Required
 11. **Does this use version-specific commands (python3.11 -m pip)?** ✅ Required
+12. **Am I using the correct file system tools for the file location?** ✅ Required
 
 ---
 
