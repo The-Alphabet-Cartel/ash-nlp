@@ -1,6 +1,6 @@
-# Ash-NLP Secrets
+# Ash-NLP (Testing) Secrets
 
-**Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
+**Repository**: https://github.com/the-alphabet-cartel/ash-nlp/testing
 **Community**: [The Alphabet Cartel](https://discord.gg/alphabetcartel) | [alphabetcartel.org](https://alphabetcartel.org)
 
 ---

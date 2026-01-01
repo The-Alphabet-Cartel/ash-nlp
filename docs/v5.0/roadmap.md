@@ -1,18 +1,8 @@
-<!-- ash-nlp/docs/v5.0/roadmap.md -->
-<!--
-Ash-NLP v5.0 Complete Rewrite Roadmap
-FILE VERSION: v5.0
-LAST MODIFIED: 2025-12-30
-CLEAN ARCHITECTURE: v5.0 Compliant
--->
 # Ash-NLP v5.0 Complete Rewrite Roadmap
 
+**Version**: v5.0  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Project**: Ash-NLP v5.0 - Local Multi-Model Ensemble for Crisis Detection  
-**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v5.0  
-**LAST UPDATED**: 2025-12-30  
-**CLEAN ARCHITECTURE**: v5.0 Compliant  
+**Community**: [The Alphabet Cartel](https://discord.gg/alphabetcartel) | [alphabetcartel.org](https://alphabetcartel.org)
 
 ---
 
@@ -103,7 +93,7 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
 
 ## 🎯 **MODEL SELECTION**
 
-### **Current Models (v3.1) - TO BE REPLACED**
+### **Old Models (v3.1)**
 ```
 ❌ Depression: MoritzLaurer/deberta-v3-base-zeroshot-v2.0
    - Downloads: 276K | Generic zero-shot, not depression-specific
@@ -115,7 +105,7 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
    - Downloads: 7.7M | Good but generic NLI, not distress-specific
 ```
 
-### **New Model Ensemble (v5.0) - LOCAL DEPLOYMENT**
+### **New Model Ensemble (v5.0)**
 
 #### **Model 1: Crisis Severity Classifier (Zero-Shot)**
 ```yaml
@@ -219,15 +209,11 @@ Phase 1: Testing Framework Setup ← Prerequisite for all model work
     ↓
 Phase 2: Model Migration & Integration
     ↓
-Phase 3: Ensemble Coordinator Implementation
+Phase 3: Ensemble Decision Engine / API Implementation
     ↓
-Phase 4: Context Analysis Integration
+Phase 4: History Analysis Integration
     ↓
-Phase 5: Pattern Enhancement Integration
-    ↓
-Phase 6: Production Deployment & Optimization
-    ↓
-Phase 7: Monitoring & Continuous Improvement
+Phase 5: Monitoring & Continuous Improvement
 ```
 
 ---
@@ -283,52 +269,6 @@ Phase 7: Monitoring & Continuous Improvement
 - [x] Create `testing/reports/` directory
 - [x] Create `testing/config/` directory for test configuration
 
-**Directory Structure**:
-```
-ash-nlp/
-├── testing/
-│   ├── __init__.py
-│   ├── model_evaluator.py          # Main evaluation orchestrator
-│   ├── test_datasets/
-│   │   ├── __init__.py
-│   │   ├── crisis_examples.json    # High-severity crisis messages
-│   │   ├── safe_examples.json      # Non-crisis messages
-│   │   ├── edge_cases.json         # Ambiguous cases (sarcasm, etc.)
-│   │   ├── lgbtqia_specific.json   # Community-specific language
-│   │   └── escalation_patterns.json # Temporal escalation examples
-│   ├── metrics/
-│   │   ├── __init__.py
-│   │   ├── accuracy_calculator.py  # Precision, Recall, F1
-│   │   ├── confusion_matrix.py     # Visual confusion analysis
-│   │   ├── performance_tracker.py  # Speed, VRAM, latency
-│   │   └── ensemble_analyzer.py    # Multi-model agreement metrics
-│   ├── reports/
-│   │   ├── __init__.py
-│   │   ├── model_comparison.py     # Generate comparison reports
-│   │   ├── visualization.py        # Charts and graphs
-│   │   └── report_templates/       # HTML/JSON report templates
-│   └── config/
-│       ├── test_config.json        # Testing configuration
-│       └── baseline_thresholds.json # Expected performance baselines
-```
-
-**File Versioning Requirements**:
-```python
-# All testing files must include:
-"""
-Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
-
-Testing Framework - [Component Name]
----
-FILE VERSION: v5.0
-LAST MODIFIED: YYYY-MM-DD
-CLEAN ARCHITECTURE: v5.0 Compliant
-Repository: https://github.com/the-alphabet-cartel/ash-nlp
-Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-"""
-```
-
 **Deliverables**:
 - [x] Directory structure created and validated
 - [x] `__init__.py` files in all directories
@@ -337,83 +277,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 ---
 
 ### **Step 1.2: Create Test Dataset - Crisis Examples**
-
-**File**: `testing/test_datasets/crisis_examples.json`
-
-**Requirements**:
-- Minimum 50 test cases covering spectrum of crisis severity
-- Each test case includes expected outputs for validation
-- Covers diverse crisis types (suicide, self-harm, abuse, identity crisis)
-- Includes temporal urgency markers ("tonight", "right now", "can't wait")
-
-**Test Case Structure**:
-```json
-{
-  "_metadata": {
-    "file_version": "v5.0",
-    "last_modified": "YYYY-MM-DD",
-    "description": "Crisis message test dataset for model evaluation",
-    "total_cases": 50,
-    "severity_distribution": {
-      "critical": 15,
-      "high": 20,
-      "medium": 10,
-      "low": 5
-    }
-  },
-  "test_cases": [
-    {
-      "id": "crisis_001",
-      "message": "I'm planning to end it tonight. I can't take this anymore.",
-      "expected_outputs": {
-        "crisis_score": {
-          "min": 0.95,
-          "max": 1.0
-        },
-        "crisis_level": "critical",
-        "model_expectations": {
-          "bart_crisis": ["suicide ideation", "mental health emergency"],
-          "emotions": ["sadness", "despair", "hopelessness"],
-          "sentiment": "negative",
-          "irony": "not_ironic"
-        },
-        "temporal_flags": ["tonight"],
-        "pattern_matches": ["suicide_ideation", "temporal_urgency"]
-      },
-      "context": {
-        "severity": "critical",
-        "requires_immediate_intervention": true,
-        "test_category": "explicit_suicide_ideation"
-      }
-    }
-  ]
-}
-```
-
-**Test Categories Required**:
-1. **Critical Crisis** (15 cases):
-   - Explicit suicide ideation
-   - Immediate self-harm threats
-   - Active abuse situations
-   - Urgent temporal markers
-
-2. **High Crisis** (20 cases):
-   - Severe depression indicators
-   - Self-harm thoughts (not immediate)
-   - Family rejection crisis
-   - Identity crisis with distress
-
-3. **Medium Crisis** (10 cases):
-   - Moderate depression
-   - Anxiety/panic indicators
-   - Chronic stress/burnout
-   - Social isolation
-
-4. **Low Crisis** (5 cases):
-   - General negative mood
-   - Frustration/anger
-   - Disappointment
-   - Mild anxiety
 
 **Tasks**:
 - [x] Create crisis_examples.json with 50+ test cases
@@ -425,48 +288,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 
 ### **Step 1.3: Create Test Dataset - Safe Examples**
 
-**File**: `testing/test_datasets/safe_examples.json`
-
-**Requirements**:
-- Minimum 50 test cases of non-crisis messages
-- Include false positive triggers (metaphorical language)
-- Cover positive emotional expressions
-- Include LGBTQIA+ positive identity affirmations
-
-**Test Categories**:
-1. **Metaphorical Language** (15 cases):
-   ```json
-   {
-     "id": "safe_001",
-     "message": "This game is killing me, it's so hard!",
-     "expected_outputs": {
-       "crisis_score": {"min": 0.0, "max": 0.2},
-       "crisis_level": "none",
-       "model_expectations": {
-         "emotions": ["frustration", "amusement"],
-         "sentiment": "neutral",
-         "irony": "not_ironic"
-       }
-     },
-     "context": {
-       "test_category": "metaphorical_language",
-       "false_positive_risk": "high"
-     }
-   }
-   ```
-
-2. **Positive Expressions** (20 cases):
-   - Joy, excitement, pride
-   - Celebration of identity
-   - Support for others
-   - General positive mood
-
-3. **Neutral Conversations** (15 cases):
-   - General chat
-   - Gaming discussions
-   - Information sharing
-   - Casual conversation
-
 **Tasks**:
 - [x] Create safe_examples.json with 50+ test cases
 - [x] Include diverse false positive scenarios
@@ -476,39 +297,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 ---
 
 ### **Step 1.4: Create Test Dataset - Edge Cases**
-
-**File**: `testing/test_datasets/edge_cases.json`
-
-**Critical Edge Cases**:
-1. **Sarcasm/Irony** (20 cases):
-   ```json
-   {
-     "id": "edge_001",
-     "message": "Best day of my life. Just perfect. Everything's great.",
-     "expected_outputs": {
-       "crisis_score": {"min": 0.5, "max": 0.8},
-       "model_expectations": {
-         "sentiment": "positive_surface",
-         "irony": "ironic",
-         "actual_sentiment": "negative"
-       }
-     },
-     "context": {
-       "test_category": "sarcastic_crisis",
-       "detection_difficulty": "high"
-     }
-   }
-   ```
-
-2. **Ambiguous Severity** (15 cases):
-   - Messages that could be mild or severe
-   - Context-dependent severity
-   - Need for additional information
-
-3. **Cultural/Community Language** (15 cases):
-   - LGBTQIA+ slang
-   - Gaming terminology
-   - Memes and internet culture
 
 **Tasks**:
 - [x] Create edge_cases.json with 50+ challenging cases
@@ -520,35 +308,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 
 ### **Step 1.5: Create Test Dataset - LGBTQIA+ Specific**
 
-**File**: `testing/test_datasets/lgbtqia_specific.json`
-
-**Critical Requirements**:
-- Community-reviewed for cultural sensitivity
-- Covers identity crisis scenarios
-- Includes family rejection situations
-- Contains positive identity affirmations
-
-**Test Categories**:
-1. **Identity Crisis** (15 cases):
-   - Coming out distress
-   - Dysphoria-related crisis
-   - Identity questioning
-
-2. **Family/Social Rejection** (15 cases):
-   - Disownment scenarios
-   - Religious trauma
-   - Social isolation
-
-3. **Positive Identity** (10 cases):
-   - Pride celebrations
-   - Transition milestones
-   - Community support
-
-4. **Community Language** (10 cases):
-   - LGBTQIA+ terminology
-   - Safe expressions
-   - Coded language
-
 **Tasks**:
 - [x] Create lgbtqia_specific.json with 50+ cases
 - [x] Get community feedback on test cases
@@ -559,44 +318,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 
 ### **Step 1.6: Create Test Dataset - Escalation Patterns**
 
-**File**: `testing/test_datasets/escalation_patterns.json`
-
-**Purpose**: Test context analyzer's ability to detect worsening situations
-
-**Structure**:
-```json
-{
-  "escalation_001": {
-    "user_id": "test_user_001",
-    "message_sequence": [
-      {
-        "timestamp": "2025-01-01T10:00:00Z",
-        "message": "Having a rough day",
-        "expected_crisis_score": 0.2
-      },
-      {
-        "timestamp": "2025-01-01T14:00:00Z",
-        "message": "Things aren't getting better",
-        "expected_crisis_score": 0.4
-      },
-      {
-        "timestamp": "2025-01-01T20:00:00Z",
-        "message": "I don't know how much longer I can do this",
-        "expected_crisis_score": 0.7
-      },
-      {
-        "timestamp": "2025-01-01T23:00:00Z",
-        "message": "I'm done. This is it.",
-        "expected_crisis_score": 0.95
-      }
-    ],
-    "expected_escalation_detected": true,
-    "escalation_rate": "rapid",
-    "intervention_point": 2
-  }
-}
-```
-
 **Tasks**:
 - [x] Create escalation_patterns.json with 20+ sequences
 - [x] Include various escalation speeds (rapid, gradual, sudden)
@@ -606,89 +327,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 ---
 
 ### **Step 1.7: Implement ModelEvaluator Class**
-
-**File**: `testing/model_evaluator.py`
-
-**Clean Architecture Requirements**:
-- ✅ Factory function: `create_model_evaluator()`
-- ✅ Dependency injection for configuration
-- ✅ JSON configuration for test parameters
-- ✅ File versioning header
-- ✅ Real model testing (not mocks)
-
-**Core Functionality**:
-```python
-class ModelEvaluator:
-    """
-    Model evaluation and comparison framework for Ash-NLP
-    
-    Responsibilities:
-    - Load and test AI models against standardized datasets
-    - Calculate accuracy, precision, recall, F1 scores
-    - Compare models against baselines
-    - Generate comprehensive performance reports
-    - Track VRAM usage and latency metrics
-    """
-    
-    def __init__(self, unified_config_manager):
-        """Initialize with UnifiedConfigManager dependency"""
-        pass
-    
-    def load_model(self, model_name: str) -> Pipeline:
-        """Load model for testing"""
-        pass
-    
-    def test_single_case(self, model, test_case: Dict) -> Dict:
-        """Test model against single test case"""
-        pass
-    
-    def test_dataset(self, model, dataset_file: str) -> Dict:
-        """Test model against entire dataset"""
-        pass
-    
-    def compare_models(
-        self, 
-        model_a: str, 
-        model_b: str, 
-        dataset: str
-    ) -> Dict:
-        """Compare two models side-by-side"""
-        pass
-    
-    def generate_report(self, results: Dict) -> str:
-        """Generate comprehensive test report"""
-        pass
-```
-
-**Configuration File**: `testing/config/test_config.json`
-```json
-{
-  "_metadata": {
-    "file_version": "v5.0",
-    "description": "Testing framework configuration"
-  },
-  "test_execution": {
-    "device": "${TEST_DEVICE}",
-    "batch_size": "${TEST_BATCH_SIZE}",
-    "timeout_seconds": "${TEST_TIMEOUT}",
-    "parallel_tests": "${TEST_PARALLEL}"
-  },
-  "metrics": {
-    "accuracy_threshold": "${TEST_ACCURACY_THRESHOLD}",
-    "latency_threshold_ms": "${TEST_LATENCY_THRESHOLD}",
-    "vram_threshold_mb": "${TEST_VRAM_THRESHOLD}"
-  },
-  "defaults": {
-    "device": "cuda",
-    "batch_size": 8,
-    "timeout_seconds": 30,
-    "parallel_tests": false,
-    "accuracy_threshold": 0.85,
-    "latency_threshold_ms": 5000,
-    "vram_threshold_mb": 2000
-  }
-}
-```
 
 **Tasks**:
 - [x] Implement ModelEvaluator class with factory function
@@ -704,100 +342,6 @@ class ModelEvaluator:
 
 ### **Step 1.8: Implement Metrics Calculators**
 
-**Files**:
-- `testing/metrics/accuracy_calculator.py`
-- `testing/metrics/confusion_matrix.py`
-- `testing/metrics/performance_tracker.py`
-- `testing/metrics/ensemble_analyzer.py`
-
-**AccuracyCalculator Requirements**:
-```python
-class AccuracyCalculator:
-    """Calculate classification metrics"""
-    
-    def calculate_precision(self, predictions, ground_truth) -> float:
-        """Calculate precision score"""
-        pass
-    
-    def calculate_recall(self, predictions, ground_truth) -> float:
-        """Calculate recall score"""
-        pass
-    
-    def calculate_f1(self, precision, recall) -> float:
-        """Calculate F1 score"""
-        pass
-    
-    def calculate_accuracy(self, predictions, ground_truth) -> float:
-        """Calculate overall accuracy"""
-        pass
-    
-    def generate_classification_report(self, results) -> Dict:
-        """Generate comprehensive classification metrics"""
-        pass
-```
-
-**ConfusionMatrix Requirements**:
-```python
-class ConfusionMatrix:
-    """Generate and visualize confusion matrices"""
-    
-    def generate_matrix(self, predictions, ground_truth) -> np.ndarray:
-        """Generate confusion matrix"""
-        pass
-    
-    def plot_matrix(self, matrix, labels) -> None:
-        """Plot confusion matrix visualization"""
-        pass
-    
-    def calculate_per_class_accuracy(self, matrix) -> Dict:
-        """Calculate accuracy for each class"""
-        pass
-```
-
-**PerformanceTracker Requirements**:
-```python
-class PerformanceTracker:
-    """Track system performance metrics"""
-    
-    def measure_latency(self, func, *args) -> Tuple[Any, float]:
-        """Measure function execution time"""
-        pass
-    
-    def track_vram_usage(self) -> float:
-        """Track GPU VRAM usage in MB"""
-        pass
-    
-    def track_cpu_usage(self) -> float:
-        """Track CPU usage percentage"""
-        pass
-    
-    def generate_performance_report(self) -> Dict:
-        """Generate system performance report"""
-        pass
-```
-
-**EnsembleAnalyzer Requirements** (NEW):
-```python
-class EnsembleAnalyzer:
-    """Analyze multi-model ensemble behavior"""
-    
-    def calculate_agreement_rate(self, model_results: List) -> float:
-        """Calculate how often models agree"""
-        pass
-    
-    def identify_disagreements(self, model_results: List) -> List[Dict]:
-        """Find cases where models disagree"""
-        pass
-    
-    def calculate_confidence_variance(self, model_results: List) -> float:
-        """Calculate variance in model confidence scores"""
-        pass
-    
-    def analyze_ensemble_correlation(self, results: List) -> Dict:
-        """Analyze correlation between ensemble models"""
-        pass
-```
-
 **Tasks**:
 - [x] Implement AccuracyCalculator with all metrics
 - [x] Implement ConfusionMatrix with visualization
@@ -811,99 +355,10 @@ class EnsembleAnalyzer:
 
 ### **Step 1.9: Implement Report Generation**
 
-**Files**:
-- `testing/reports/model_comparison.py`
-- `testing/reports/visualization.py`
-
-**ModelComparison Requirements**:
-```python
-class ModelComparisonReport:
-    """Generate model comparison reports"""
-    
-    def compare_accuracy(self, model_a_results, model_b_results) -> Dict:
-        """Compare accuracy metrics between models"""
-        pass
-    
-    def compare_performance(self, model_a_perf, model_b_perf) -> Dict:
-        """Compare latency and VRAM usage"""
-        pass
-    
-    def generate_html_report(self, comparison_data) -> str:
-        """Generate HTML comparison report"""
-        pass
-    
-    def generate_json_report(self, comparison_data) -> Dict:
-        """Generate JSON comparison report"""
-        pass
-```
-
-**Visualization Requirements**:
-```python
-class TestVisualization:
-    """Generate charts and visualizations for test results"""
-    
-    def plot_accuracy_comparison(self, models_data) -> Figure:
-        """Bar chart of accuracy across models"""
-        pass
-    
-    def plot_confusion_matrix(self, matrix, labels) -> Figure:
-        """Heatmap of confusion matrix"""
-        pass
-    
-    def plot_latency_comparison(self, models_data) -> Figure:
-        """Box plot of latency distribution"""
-        pass
-    
-    def plot_ensemble_agreement(self, agreement_data) -> Figure:
-        """Visualization of model agreement rates"""
-        pass
-```
-
-**Report Templates**:
-```html
-<!-- testing/reports/report_templates/comparison_report.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Ash-NLP Model Comparison Report</title>
-    <style>/* Styling */</style>
-</head>
-<body>
-    <h1>Model Comparison: {{model_a}} vs {{model_b}}</h1>
-    
-    <section class="metrics">
-        <h2>Accuracy Metrics</h2>
-        <table>
-            <tr>
-                <th>Metric</th>
-                <th>{{model_a}}</th>
-                <th>{{model_b}}</th>
-                <th>Improvement</th>
-            </tr>
-            <!-- Data populated by template engine -->
-        </table>
-    </section>
-    
-    <section class="performance">
-        <h2>Performance Metrics</h2>
-        <!-- Performance charts -->
-    </section>
-    
-    <section class="recommendations">
-        <h2>Recommendations</h2>
-        <!-- AI-generated recommendations -->
-    </section>
-</body>
-</html>
-```
-
 **Tasks**:
 - [x] Implement ModelComparisonReport class
 - [x] Implement TestVisualization class
-- [x] Create HTML report templates
-- [x] Add chart generation with matplotlib/plotly
 - [x] Implement JSON report export
-- [x] Create example reports with sample data
 - [x] Document report interpretation
 
 ---
@@ -934,34 +389,6 @@ class TestVisualization:
   - [x] False Positive Rate
   - [x] False Negative Rate
   - [x] Per-category performance
-
-**Baseline Report Structure**:
-```json
-{
-  "baseline_version": "v3.1",
-  "date_tested": "YYYY-MM-DD",
-  "models": {
-    "depression_model": {
-      "name": "MoritzLaurer/deberta-v3-base-zeroshot-v2.0",
-      "accuracy_metrics": {
-        "precision": 0.XX,
-        "recall": 0.XX,
-        "f1": 0.XX,
-        "accuracy": 0.XX
-      },
-      "performance_metrics": {
-        "avg_latency_ms": XX,
-        "max_vram_mb": XX
-      },
-      "per_category_performance": {
-        "critical": {"precision": 0.XX, "recall": 0.XX},
-        "high": {"precision": 0.XX, "recall": 0.XX},
-        "medium": {"precision": 0.XX, "recall": 0.XX}
-      }
-    }
-  }
-}
-```
 
 **Deliverables**:
 - [x] Baseline performance report (JSON + HTML)
@@ -1027,103 +454,6 @@ class TestVisualization:
 ---
 
 ### **Step 2.1: Create Model Management Infrastructure**
-
-**New Files**:
-- `managers/model_loader.py` - Model download and caching
-- `managers/model_wrapper.py` - Unified model interface
-- `config/model_config.json` - Model configuration
-
-**ModelLoader Requirements**:
-```python
-class ModelLoader:
-    """
-    Download, cache, and load AI models for Ash-NLP
-    
-    Responsibilities:
-    - Download models from HuggingFace
-    - Cache models locally
-    - Validate model integrity
-    - Handle model versioning
-    """
-    
-    def __init__(self, unified_config_manager):
-        """Initialize with configuration"""
-        pass
-    
-    def download_model(self, model_name: str) -> str:
-        """Download model from HuggingFace"""
-        pass
-    
-    def load_model(self, model_name: str) -> Pipeline:
-        """Load model from cache"""
-        pass
-    
-    def validate_model(self, model_path: str) -> bool:
-        """Validate model integrity"""
-        pass
-    
-    def get_model_info(self, model_name: str) -> Dict:
-        """Get model metadata"""
-        pass
-```
-
-**Configuration**: `config/model_config.json`
-```json
-{
-  "_metadata": {
-    "file_version": "v5.0",
-    "description": "AI model configuration for ensemble"
-  },
-  "models": {
-    "crisis_classifier": {
-      "name": "facebook/bart-large-mnli",
-      "type": "zero-shot-classification",
-      "cache_dir": "${MODEL_CACHE_DIR}/crisis_classifier",
-      "device": "${MODEL_DEVICE}",
-      "max_length": 1024,
-      "batch_size": "${MODEL_BATCH_SIZE}"
-    },
-    "emotion_detector": {
-      "name": "SamLowe/roberta-base-go_emotions",
-      "type": "text-classification",
-      "cache_dir": "${MODEL_CACHE_DIR}/emotion_detector",
-      "device": "${MODEL_DEVICE}",
-      "max_length": 512,
-      "batch_size": "${MODEL_BATCH_SIZE}"
-    },
-    "sentiment_analyzer": {
-      "name": "cardiffnlp/twitter-roberta-base-sentiment-latest",
-      "type": "text-classification",
-      "cache_dir": "${MODEL_CACHE_DIR}/sentiment_analyzer",
-      "device": "${MODEL_DEVICE}",
-      "max_length": 512,
-      "batch_size": "${MODEL_BATCH_SIZE}"
-    },
-    "irony_detector": {
-      "name": "cardiffnlp/twitter-roberta-base-irony",
-      "type": "text-classification",
-      "cache_dir": "${MODEL_CACHE_DIR}/irony_detector",
-      "device": "${MODEL_DEVICE}",
-      "max_length": 512,
-      "batch_size": "${MODEL_BATCH_SIZE}"
-    }
-  },
-  "defaults": {
-    "cache_dir": "./models",
-    "device": "cuda",
-    "batch_size": 8
-  }
-}
-```
-
-**Environment Variables**: `.env.template` additions
-```bash
-# Model Configuration
-MODEL_CACHE_DIR=./models
-MODEL_DEVICE=cuda  # or cpu
-MODEL_BATCH_SIZE=8
-MODEL_DOWNLOAD_TIMEOUT=600
-```
 
 **Tasks**:
 - [x] Implement ModelLoader class with factory function
@@ -1336,114 +666,6 @@ test_cases = [
 
 ### **Step 2.7: Create Unified Model Wrapper Interface**
 
-**File**: `managers/model_wrapper.py`
-
-**Objective**: Create consistent interface for all 4 models
-
-**ModelWrapper Requirements**:
-```python
-class ModelWrapper:
-    """
-    Unified interface for AI models in Ash-NLP ensemble
-    
-    Provides consistent API regardless of underlying model type
-    """
-    
-    def __init__(
-        self, 
-        model_name: str,
-        model_type: str,
-        unified_config_manager
-    ):
-        """Initialize wrapper with model configuration"""
-        pass
-    
-    def predict(self, text: str) -> Dict:
-        """
-        Make prediction on input text
-        
-        Returns standardized format:
-        {
-            "model": "model_name",
-            "predictions": [...],
-            "confidence": float,
-            "latency_ms": float,
-            "metadata": {...}
-        }
-        """
-        pass
-    
-    def batch_predict(self, texts: List[str]) -> List[Dict]:
-        """Batch prediction for efficiency"""
-        pass
-    
-    def get_model_info(self) -> Dict:
-        """Get model metadata"""
-        pass
-```
-
-**Standardized Output Format**:
-```python
-# Crisis Classifier Output
-{
-    "model": "crisis_classifier",
-    "type": "zero-shot-classification",
-    "predictions": [
-        {"label": "suicide ideation", "score": 0.87},
-        {"label": "severe depression", "score": 0.65},
-        {"label": "self-harm thoughts", "score": 0.42}
-    ],
-    "top_prediction": "suicide ideation",
-    "confidence": 0.87,
-    "latency_ms": 1247.5,
-    "vram_mb": 823.2
-}
-
-# Emotion Detector Output
-{
-    "model": "emotion_detector",
-    "type": "multi-label-classification",
-    "predictions": [
-        {"label": "sadness", "score": 0.92},
-        {"label": "fear", "score": 0.78},
-        {"label": "grief", "score": 0.61}
-    ],
-    "crisis_emotions": ["sadness", "fear", "grief"],
-    "confidence": 0.92,
-    "latency_ms": 567.3,
-    "vram_mb": 267.1
-}
-
-# Sentiment Analyzer Output
-{
-    "model": "sentiment_analyzer",
-    "type": "sentiment-classification",
-    "predictions": [
-        {"label": "negative", "score": 0.89},
-        {"label": "neutral", "score": 0.08},
-        {"label": "positive", "score": 0.03}
-    ],
-    "sentiment": "negative",
-    "confidence": 0.89,
-    "latency_ms": 342.8,
-    "vram_mb": 245.6
-}
-
-# Irony Detector Output
-{
-    "model": "irony_detector",
-    "type": "irony-classification",
-    "predictions": [
-        {"label": "ironic", "score": 0.76},
-        {"label": "not_ironic", "score": 0.24}
-    ],
-    "is_ironic": true,
-    "confidence": 0.76,
-    "latency_ms": 298.4,
-    "vram_mb": 241.3
-}
-```
-
 **Tasks**:
 - [x] Implement ModelWrapper base class
 - [x] Create specific wrappers for each model type:
@@ -1509,25 +731,27 @@ class ModelWrapper:
 
 ---
 
-## 📝 **PHASE 3: ENSEMBLE COORDINATOR IMPLEMENTATION**
+## 📝 **PHASE 3: API CREATION AND DOCKER DEPLOYMENT**
 
-### **Status**: ⏳ **NOT STARTED**
+### **Status**: ✅ **COMPLETED** (2026-1-1)
 
 ### **Duration**: 2-3 weeks
 ### **Priority**: HIGH
 
 ### **Objectives**:
-- Implement multi-model coordination logic
-- Create consensus algorithms (Council-inspired)
-- Implement confidence weighting and conflict resolution
-- Create ensemble result aggregation
-- Test ensemble behavior against test datasets
+- Implement Ensemble Decision Engine
+- Implement API Endpoints
+- Implement Docker Deployment
+  - Dockerize Ash-NLP
+  - Deploy Ash-NLP
+- Implement Configuration Management
+- Implement Error Handling & Fallbacks
+- Implement Logging & Monitoring
+- Implement Performance Optimization
 
 ---
 
-### **Step 3.1: Design Ensemble Coordinator Architecture**
-
-**File**: `analysis/ensemble_coordinator.py`
+### **Step 3.1: Design Ensemble Decision Engine**
 
 **Core Responsibilities**:
 ```
@@ -1550,135 +774,162 @@ Ensemble Coordinator
     └── Provide reasoning for final classification
 ```
 
-**EnsembleCoordinator Class**:
-```python
-class EnsembleCoordinator:
-    """
-    Coordinate multiple AI models for crisis detection
-    
-    Council-inspired multi-model consensus with local models
-    """
-    
-    def __init__(
-        self,
-        unified_config_manager,
-        model_wrappers: Dict[str, ModelWrapper]
-    ):
-        """Initialize with model wrappers"""
-        self.config = unified_config_manager
-        self.models = model_wrappers
-        self.consensus_algorithm = self._load_consensus_algorithm()
-    
-    def analyze_message(self, message: str) -> Dict:
-        """
-        Analyze message with all models
-        
-        Returns ensemble result with consensus
-        """
-        # Execute all models in parallel (or sequential)
-        model_results = self._execute_models(message)
-        
-        # Apply consensus algorithm
-        consensus = self._calculate_consensus(model_results)
-        
-        # Aggregate results
-        ensemble_result = self._aggregate_results(
-            model_results, 
-            consensus
-        )
-        
-        return ensemble_result
-    
-    def _execute_models(self, message: str) -> Dict:
-        """Execute all models on message"""
-        results = {}
-        for model_name, wrapper in self.models.items():
-            try:
-                results[model_name] = wrapper.predict(message)
-            except Exception as e:
-                results[model_name] = self._handle_model_failure(
-                    model_name, 
-                    e
-                )
-        return results
-    
-    def _calculate_consensus(self, model_results: Dict) -> Dict:
-        """
-        Calculate consensus between models
-        
-        Inspired by LLM Council peer review stage
-        """
-        pass
-    
-    def _aggregate_results(
-        self, 
-        model_results: Dict, 
-        consensus: Dict
-    ) -> Dict:
-        """Combine model results into final ensemble result"""
-        pass
-    
-    def _detect_disagreement(self, model_results: Dict) -> bool:
-        """Detect if models significantly disagree"""
-        pass
-```
-
-**Configuration**: `config/ensemble_config.json`
-```json
-{
-  "_metadata": {
-    "file_version": "v5.0",
-    "description": "Ensemble coordination configuration"
-  },
-  "consensus_algorithm": {
-    "type": "${ENSEMBLE_CONSENSUS_TYPE}",
-    "confidence_threshold": "${ENSEMBLE_CONFIDENCE_THRESHOLD}",
-    "disagreement_threshold": "${ENSEMBLE_DISAGREEMENT_THRESHOLD}",
-    "require_unanimous": "${ENSEMBLE_REQUIRE_UNANIMOUS}"
-  },
-  "model_weights": {
-    "crisis_classifier": "${ENSEMBLE_WEIGHT_CRISIS}",
-    "emotion_detector": "${ENSEMBLE_WEIGHT_EMOTION}",
-    "sentiment_analyzer": "${ENSEMBLE_WEIGHT_SENTIMENT}",
-    "irony_detector": "${ENSEMBLE_WEIGHT_IRONY}"
-  },
-  "aggregation": {
-    "method": "${ENSEMBLE_AGGREGATION_METHOD}",
-    "crisis_score_formula": "${ENSEMBLE_CRISIS_SCORE_FORMULA}"
-  },
-  "defaults": {
-    "consensus_algorithm": {
-      "type": "weighted_voting",
-      "confidence_threshold": 0.6,
-      "disagreement_threshold": 0.3,
-      "require_unanimous": false
-    },
-    "model_weights": {
-      "crisis_classifier": 0.4,
-      "emotion_detector": 0.3,
-      "sentiment_analyzer": 0.2,
-      "irony_detector": 0.1
-    },
-    "aggregation": {
-      "method": "weighted_average",
-      "crisis_score_formula": "weighted"
-    }
-  }
-}
-```
-
 **Tasks**:
-- [ ] Design EnsembleCoordinator class structure
-- [ ] Create ensemble_config.json
-- [ ] Define consensus algorithm options
-- [ ] Define model weighting strategy
-- [ ] Create architecture documentation
+- [x] Design EnsembleCoordinator class structure
+- [x] Create ensemble_config.json
+- [x] Define consensus algorithm options
+- [x] Define model weighting strategy
+- [x] Create architecture documentation
 
 ---
 
-### **Step 3.2: Implement Consensus Algorithms**
+### **Step 3.2: Implement API Endpoints**
 
-**File**: `analysis/consensus_algorithms.py`
+**Tasks**:
+- [x] Create FastAPI application with lifespan management and OpenAPI docs (Swagger/ReDoc)
+- [x] Implement `/api/v1/analyze` POST endpoint for single message crisis detection
+- [x] Implement `/api/v1/analyze/batch` POST endpoint for batch processing (1-10 messages)
+- [x] Implement `/api/v1/health` GET endpoint with system status and model readiness
+- [x] Implement `/api/v1/models` GET endpoint with loaded model information
+- [x] Create Pydantic request/response schemas with validation
+- [x] Add rate limiting middleware with configurable limits
+- [x] Document API application
+
+---
+
+### **Step 3.3: Implement Docker Deployment**
+
+**Tasks**:
+- [x] Create multi-stage Dockerfile with NVIDIA CUDA runtime base
+- [x] Implement non-root user (UID 1001) for security
+- [x] Configure container health checks with appropriate timeouts
+- [x] Create docker-compose.yml with GPU and CPU service profiles
+- [x] Configure model caching with persistent volume mounts
+- [x] Add resource limits (memory, GPU) and security hardening
+- [x] Integrate Docker secrets for sensitive credentials
+- [x] Document deployment strategy
+
+---
+
+### **Step 3.4: Implement Configuration Management**
+
+**Tasks**:
+- [x] Create ConfigManager class with singleton pattern and JSON loading
+- [x] Implement environment variable overrides with `NLP_` prefix
+- [x] Add configuration validation (weights, thresholds, ports)
+- [x] Create config templates (default.json, production.json, .env.template)
+- [x] Document all configuration options in `docs/configuration.module`
+
+---
+
+### **Step 3.5: Implement Error Handling & Fallbacks**
+
+**Tasks**:
+- [x] Implement FallbackStrategy with weight redistribution on model failure
+- [x] Add circuit breaker pattern (CLOSED/OPEN/HALF_OPEN states)
+- [x] Implement retry logic with exponential backoff and jitter
+- [x] Add timeout handling for model inference
+- [x] Create standardized error response schemas with error codes
+- [x] Implement Discord webhook alerting for failures and state changes
+- [x] Document Error Handleing and Fallbacks
+
+---
+
+### **Step 3.6: Implement Logging & Monitoring**
+
+**Tasks**:
+- [x] Implement structured JSON logging with configurable format
+- [x] Add request tracing with X-Request-ID header propagation
+- [x] Track performance metrics (processing time, per-model latency)
+- [x] Create Discord alerting for startup, shutdown, and critical events
+- [x] Add optional Prometheus metrics endpoint
+- [x] Document Monitoring and Logging
+
+---
+
+### **Step 3.7: Implement Performance Optimization**
+
+**Tasks**:
+- [x] Implement model warmup on startup for consistent latency
+- [x] Add async parallel model inference using `asyncio.gather()`
+- [x] Implement response caching with LRU eviction and TTL expiration
+- [ ] Request batching → **Deferred to Phase 5**
+- [ ] Benchmarking and profiling → **Deferred to Phase 5**
+- [ ] Memory optimization (quantization) → **Deferred to Phase 5**
+- [x] Document optimization results
+
+---
+### **Step 3.8: Phase 3 Validation & Sign-Off**
+
+**Phase 3 Complete Checklist**:
+
+**Ensemble Implementation**:
+- [x] EnsembleCoordinator implemented and tested
+- [x] All consensus algorithms working
+- [x] Result aggregation functional
+- [x] Conflict detection operational
+- [x] Explainability layer complete
+
+**API Integration**:
+- [x] API endpoints updated
+- [x] Factory functions working
+- [x] Dependency injection maintained
+
+**Testing**:
+- [x] All test datasets passed
+- [x] Performance metrics within targets
+- [x] Accuracy improved over baseline
+- [x] False positive rate acceptable
+- [x] Edge cases handled properly
+
+**Performance Validation**:
+- [x] Latency < 10 seconds ✓
+- [x] VRAM < 2GB ✓
+- [x] Can handle 100 messages/minute
+- [x] No memory leaks detected
+
+**Clean Architecture Compliance**:
+- [x] All files have version headers
+- [x] Factory functions used
+- [x] Configuration via JSON + environment
+- [x] Dependency injection maintained
+
+**Documentation**:
+- [x] Ensemble architecture documented
+- [x] Consensus algorithms explained
+- [x] Configuration guide complete
+- [x] Troubleshooting guide created
+
+**Success Criteria**:
+- ✅ Ensemble operational with all 4 models
+- ✅ Consensus working across algorithms
+- ✅ Performance within acceptable ranges
+- ✅ Accuracy improved over v3.1 baseline
+- ✅ Ready for context analysis integration
+
+**Sign-Off Required**:
+- [x] Project Lead approval
+- [x] Ensemble performance validated
+- [x] Test coverage sufficient
+- [x] Ready to proceed to Phase 4
+
+---
+
+## 📝 **PHASE 4: ENSEMBLE COORDINATOR IMPLEMENTATION**
+
+### **Status**: ⏳ **NOT STARTED**
+
+### **Duration**: 2-3 weeks
+### **Priority**: HIGH
+
+### **Objectives**:
+- Create consensus algorithms (Council-inspired)
+- Implement confidence weighting and conflict resolution
+- Create ensemble result aggregation
+
+---
+
+### **Step 4.1: Implement Consensus Algorithms**
 
 **Algorithm Options**:
 
@@ -1820,14 +1071,11 @@ def conflict_aware_consensus(model_results: Dict) -> Dict:
 - [ ] Implement unanimous_consensus
 - [ ] Implement conflict_aware_consensus
 - [ ] Create consensus algorithm selector
-- [ ] Add unit tests for each algorithm
 - [ ] Document algorithm selection criteria
 
 ---
 
-### **Step 3.3: Implement Result Aggregation**
-
-**File**: `analysis/result_aggregator.py`
+### **Step 4.2: Implement Result Aggregation**
 
 **ResultAggregator Class**:
 ```python
@@ -1974,12 +1222,11 @@ class ResultAggregator:
 - [ ] Implement agreement level calculation
 - [ ] Add primary indicator identification
 - [ ] Create explainability report
-- [ ] Add unit tests for aggregator
 - [ ] Document output format
 
 ---
 
-### **Step 3.4: Implement Conflict Detection & Resolution**
+### **Step 4.3: Implement Conflict Detection & Resolution**
 
 **Objective**: Handle cases where models disagree significantly
 
@@ -2089,12 +1336,11 @@ class ConflictDetector:
 - [ ] Implement conflict detection algorithms
 - [ ] Implement conflict resolution strategies
 - [ ] Create conflict reporting
-- [ ] Add unit tests for conflict detection
 - [ ] Document conflict handling procedures
 
 ---
 
-### **Step 3.5: Implement Explainability Layer**
+### **Step 4.4: Implement Explainability Layer**
 
 **Objective**: Make ensemble decisions transparent and auditable
 
@@ -2276,213 +1522,13 @@ class ExplainabilityGenerator:
 - [ ] Implement contribution explanations
 - [ ] Add action recommendations
 - [ ] Create explanation templates
-- [ ] Add unit tests for explanations
 - [ ] Document explanation format
 
 ---
 
-### **Step 3.6: Integrate Ensemble with CrisisAnalyzer**
+### **Step 4.5: Phase 4 Validation & Sign-Off**
 
-**File**: `analysis/crisis_analyzer.py` (Update existing)
-
-**Integration Requirements**:
-```python
-class CrisisAnalyzer:
-    """
-    Updated for v5.0 with ensemble coordination
-    """
-    
-    def __init__(
-        self,
-        unified_config_manager,
-        ensemble_coordinator,  # NEW
-        pattern_detection_manager,
-        context_analysis_manager  # Will add in Phase 4
-    ):
-        """Initialize with ensemble coordinator"""
-        self.config = unified_config_manager
-        self.ensemble = ensemble_coordinator
-        self.patterns = pattern_detection_manager
-        self.context = context_analysis_manager
-    
-    def analyze_message(
-        self, 
-        user_id: str, 
-        message: str
-    ) -> Dict:
-        """
-        Analyze message with ensemble + patterns + context
-        
-        Phase 3: Ensemble only
-        Phase 4: Add context analysis
-        Phase 5: Add pattern enhancement
-        """
-        # Step 1: Ensemble Analysis (NEW)
-        ensemble_result = self.ensemble.analyze_message(message)
-        
-        # Step 2: Pattern Detection (existing, will enhance)
-        pattern_result = self.patterns.detect_patterns(message)
-        
-        # Step 3: Context Analysis (Phase 4)
-        # context_result = self.context.analyze_with_history(
-        #     user_id, message
-        # )
-        
-        # Step 4: Combine all analyses
-        final_result = self._combine_analyses(
-            ensemble_result,
-            pattern_result
-            # context_result  # Phase 4
-        )
-        
-        return final_result
-    
-    def _combine_analyses(
-        self,
-        ensemble_result: Dict,
-        pattern_result: Dict
-    ) -> Dict:
-        """
-        Combine ensemble and pattern results
-        
-        Pattern detection can boost/reduce ensemble score
-        """
-        # Start with ensemble score
-        base_score = ensemble_result['crisis_assessment']['crisis_score']
-        
-        # Apply pattern modifiers
-        pattern_boost = self._calculate_pattern_boost(pattern_result)
-        
-        # Calculate final score
-        final_score = min(1.0, base_score + pattern_boost)
-        
-        return {
-            "analysis_version": "v5.0",
-            "user_id": user_id,
-            "message": message,
-            "timestamp": datetime.utcnow().isoformat(),
-            
-            # Final Assessment
-            "final_assessment": {
-                "crisis_score": final_score,
-                "crisis_level": self._determine_level(final_score),
-                "requires_intervention": final_score >= 0.70
-            },
-            
-            # Component Results
-            "ensemble_result": ensemble_result,
-            "pattern_result": pattern_result,
-            
-            # Explanation
-            "explanation": ensemble_result['explanation']
-        }
-```
-
-**Tasks**:
-- [ ] Update CrisisAnalyzer to use EnsembleCoordinator
-- [ ] Implement analysis combination logic
-- [ ] Update factory function
-- [ ] Maintain backward compatibility where possible
-- [ ] Add integration tests
-- [ ] Update API endpoints to use new analyzer
-- [ ] Document integration changes
-
----
-
-### **Step 3.7: Test Ensemble Against All Test Datasets**
-
-**Testing Requirements**:
-
-**Test Suite Execution**:
-- [ ] Run ensemble against crisis_examples.json
-  - [ ] Calculate accuracy metrics
-  - [ ] Compare to individual model performance
-  - [ ] Compare to v3.1 baseline
-  - [ ] Identify improvement areas
-
-- [ ] Run ensemble against safe_examples.json
-  - [ ] Calculate false positive rate
-  - [ ] Compare to baseline false positive rate
-  - [ ] Validate safe message handling
-
-- [ ] Run ensemble against edge_cases.json
-  - [ ] Test sarcasm detection improvement
-  - [ ] Test ambiguous case handling
-  - [ ] Validate conflict detection
-
-- [ ] Run ensemble against lgbtqia_specific.json
-  - [ ] Test community-specific language
-  - [ ] Validate cultural sensitivity
-  - [ ] Test identity crisis detection
-
-**Performance Testing**:
-- [ ] Measure ensemble latency (target: < 10s)
-- [ ] Measure ensemble VRAM usage (target: < 2GB)
-- [ ] Test load handling (100 messages)
-- [ ] Test error recovery
-
-**Consensus Algorithm Testing**:
-- [ ] Test weighted voting
-- [ ] Test majority voting
-- [ ] Test unanimous consensus
-- [ ] Test conflict-aware consensus
-- [ ] Compare algorithm performance
-
-**Tasks**:
-- [ ] Execute all test suites
-- [ ] Generate performance reports
-- [ ] Create comparison visualizations
-- [ ] Document test results
-- [ ] Identify optimization opportunities
-
----
-
-### **Step 3.8: Optimize Ensemble Performance**
-
-**Optimization Targets**:
-
-**Latency Optimization**:
-- [ ] Implement parallel model execution
-  ```python
-  import asyncio
-  
-  async def execute_models_parallel(message: str):
-      tasks = [
-          model.predict_async(message) 
-          for model in self.models.values()
-      ]
-      results = await asyncio.gather(*tasks)
-      return results
-  ```
-- [ ] Add result caching for repeated queries
-- [ ] Implement early stopping for clear cases
-- [ ] Optimize model loading
-
-**VRAM Optimization**:
-- [ ] Implement model unloading for unused models
-- [ ] Add dynamic batching
-- [ ] Optimize model quantization if needed
-- [ ] Implement gradient checkpointing
-
-**Accuracy Optimization**:
-- [ ] Tune model weights based on test results
-- [ ] Tune consensus thresholds
-- [ ] Optimize conflict resolution strategies
-- [ ] Fine-tune crisis level boundaries
-
-**Tasks**:
-- [ ] Implement parallel execution
-- [ ] Add caching layer
-- [ ] Tune hyperparameters
-- [ ] Run optimization tests
-- [ ] Document optimization results
-- [ ] Validate no accuracy regression
-
----
-
-### **Step 3.9: Phase 3 Validation & Sign-Off**
-
-**Phase 3 Complete Checklist**:
+**Phase 4 Complete Checklist**:
 
 **Ensemble Implementation**:
 - [ ] EnsembleCoordinator implemented and tested
@@ -2537,9 +1583,9 @@ class CrisisAnalyzer:
 
 ---
 
-## 📝 **PHASE 4: CONTEXT ANALYSIS INTEGRATION**
+## 📝 **PHASE 5: CONTEXT ANALYSIS INTEGRATION**
 
-### **Status**: ⏳ **NOT STARTED** (Blocked by Phase 3)
+### **Status**: ⏳ **NOT STARTED** (Blocked by Phase 4)
 
 ### **Duration**: 1-2 weeks
 ### **Priority**: MEDIUM
@@ -2548,14 +1594,10 @@ class CrisisAnalyzer:
 - Implement rolling window message history
 - Add temporal pattern detection
 - Create escalation detection
-- Integrate context with ensemble results
-- Test context-aware crisis detection
 
 ---
 
-### **Step 4.1: Design Context Analyzer Architecture**
-
-**File**: `analysis/context_analyzer.py`
+### **Step 5.1: Design Context History Architecture**
 
 **Core Concept**: Track user message history to detect:
 - **Escalating crisis** (getting worse over time)
@@ -2563,152 +1605,7 @@ class CrisisAnalyzer:
 - **Sudden onset** (rapid mood change)
 - **Communication patterns** (frequency, isolation)
 
-**ContextAnalyzer Class**:
-```python
-class ContextAnalyzer:
-    """
-    Analyze message in context of user's message history
-    
-    Implements rolling window analysis for temporal patterns
-    """
-    
-    def __init__(
-        self,
-        unified_config_manager,
-        window_size: int = 10
-    ):
-        """
-        Initialize context analyzer
-        
-        Args:
-            window_size: Number of previous messages to analyze
-        """
-        self.config = unified_config_manager
-        self.window_size = window_size
-        self.user_histories = {}  # user_id -> deque of messages
-    
-    def analyze_with_context(
-        self,
-        user_id: str,
-        message: str,
-        ensemble_result: Dict
-    ) -> Dict:
-        """
-        Analyze message considering user's history
-        
-        Returns context-enhanced result
-        """
-        # Get user history
-        history = self._get_user_history(user_id)
-        
-        # Add current message
-        message_record = {
-            "timestamp": datetime.utcnow(),
-            "message": message,
-            "crisis_score": ensemble_result['crisis_assessment']['crisis_score'],
-            "crisis_level": ensemble_result['crisis_assessment']['crisis_level']
-        }
-        history.append(message_record)
-        
-        # Analyze temporal patterns
-        temporal_analysis = self._analyze_temporal_patterns(history)
-        
-        # Detect escalation
-        escalation = self._detect_escalation(history)
-        
-        # Calculate context-adjusted score
-        adjusted_score = self._adjust_score_for_context(
-            ensemble_result['crisis_assessment']['crisis_score'],
-            temporal_analysis,
-            escalation
-        )
-        
-        return {
-            "base_score": ensemble_result['crisis_assessment']['crisis_score'],
-            "context_adjusted_score": adjusted_score,
-            "temporal_analysis": temporal_analysis,
-            "escalation": escalation,
-            "history_summary": self._summarize_history(history)
-        }
-    
-    def _get_user_history(self, user_id: str) -> deque:
-        """Get or create user message history"""
-        if user_id not in self.user_histories:
-            self.user_histories[user_id] = deque(
-                maxlen=self.window_size
-            )
-        return self.user_histories[user_id]
-    
-    def _analyze_temporal_patterns(self, history: deque) -> Dict:
-        """Analyze patterns over time"""
-        if len(history) < 3:
-            return {"pattern": "insufficient_data"}
-        
-        # Calculate trend
-        scores = [h['crisis_score'] for h in history]
-        trend = self._calculate_trend(scores)
-        
-        # Calculate frequency
-        timestamps = [h['timestamp'] for h in history]
-        frequency = self._calculate_message_frequency(timestamps)
-        
-        return {
-            "trend": trend,  # "increasing", "stable", "decreasing"
-            "frequency": frequency,  # messages per hour
-            "avg_score": sum(scores) / len(scores),
-            "score_variance": self._calculate_variance(scores)
-        }
-    
-    def _detect_escalation(self, history: deque) -> Dict:
-        """Detect if crisis is escalating"""
-        if len(history) < 3:
-            return {"is_escalating": False}
-        
-        recent_scores = [h['crisis_score'] for h in list(history)[-3:]]
-        
-        # Check if each message is worse than the last
-        is_escalating = all(
-            recent_scores[i] < recent_scores[i+1]
-            for i in range(len(recent_scores)-1)
-        )
-        
-        if is_escalating:
-            escalation_rate = recent_scores[-1] - recent_scores[0]
-            return {
-                "is_escalating": True,
-                "escalation_rate": escalation_rate,
-                "time_window": "last_3_messages",
-                "severity": "high" if escalation_rate > 0.3 else "moderate"
-            }
-        
-        return {"is_escalating": False}
-    
-    def _adjust_score_for_context(
-        self,
-        base_score: float,
-        temporal_analysis: Dict,
-        escalation: Dict
-    ) -> float:
-        """Adjust crisis score based on context"""
-        adjusted_score = base_score
-        
-        # Boost for escalation
-        if escalation.get('is_escalating'):
-            boost = 0.15 if escalation['severity'] == 'high' else 0.10
-            adjusted_score += boost
-        
-        # Boost for chronic high scores
-        if temporal_analysis.get('avg_score', 0) > 0.6:
-            adjusted_score += 0.10
-        
-        # Boost for high frequency (isolation indicator)
-        if temporal_analysis.get('frequency', 0) > 5:  # >5 messages/hour
-            adjusted_score += 0.05
-        
-        return min(1.0, adjusted_score)  # Cap at 1.0
-```
-
-**Configuration**: `config/context_config.json`
+**Configuration**: `src/config/context_config.json`
 ```json
 {
   "_metadata": {
@@ -2751,7 +1648,7 @@ class ContextAnalyzer:
 ```
 
 **Tasks**:
-- [ ] Design ContextAnalyzer class structure
+- [ ] Design ContextHistory class structure
 - [ ] Create context_config.json
 - [ ] Define history storage strategy
 - [ ] Define escalation detection algorithm
@@ -2759,7 +1656,7 @@ class ContextAnalyzer:
 
 ---
 
-### **Step 4.2: Implement Message History Storage**
+### **Step 5.2: Implement Message History Storage**
 
 **Requirements**:
 - Store last N messages per user
@@ -2770,38 +1667,7 @@ class ContextAnalyzer:
 
 **Implementation Options**:
 
-**Option A: In-Memory (Simple)**:
-```python
-class InMemoryHistoryStore:
-    """Simple in-memory message history"""
-    
-    def __init__(self, max_window_size: int = 10):
-        self.histories = {}  # user_id -> deque
-        self.max_window_size = max_window_size
-    
-    def add_message(
-        self, 
-        user_id: str, 
-        message_record: Dict
-    ) -> None:
-        """Add message to user history"""
-        if user_id not in self.histories:
-            self.histories[user_id] = deque(
-                maxlen=self.max_window_size
-            )
-        self.histories[user_id].append(message_record)
-    
-    def get_history(self, user_id: str) -> List[Dict]:
-        """Get user message history"""
-        return list(self.histories.get(user_id, []))
-    
-    def clear_history(self, user_id: str) -> None:
-        """Clear user history"""
-        if user_id in self.histories:
-            del self.histories[user_id]
-```
-
-**Option B: Redis Cache (Scalable - Phase 6)**:
+**Redis Cache (Scalable)**:
 ```python
 class RedisHistoryStore:
     """Redis-backed message history for scalability"""
@@ -2828,22 +1694,15 @@ class RedisHistoryStore:
         return [json.loads(r) for r in records]
 ```
 
-**For Phase 4**: Use InMemoryHistoryStore (simpler, faster)
-**For Phase 6**: Migrate to RedisHistoryStore (scalable, persistent)
-
 **Tasks**:
-- [ ] Implement InMemoryHistoryStore
+- [ ] Implement RedisHistoryStore
 - [ ] Add thread safety (locks if needed)
 - [ ] Implement history cleanup
-- [ ] Add unit tests
 - [ ] Document storage strategy
-- [ ] Plan Redis migration for Phase 6
 
 ---
 
-### **Step 4.3: Implement Temporal Pattern Detection**
-
-**File**: `analysis/temporal_patterns.py`
+### **Step 5.3: Implement Temporal Pattern Detection**
 
 **TemporalPatternDetector Class**:
 ```python
@@ -2997,14 +1856,11 @@ class TemporalPatternDetector:
 - [ ] Implement frequency analysis
 - [ ] Implement volatility analysis
 - [ ] Implement time-of-day analysis
-- [ ] Add unit tests
 - [ ] Document pattern detection
 
 ---
 
-### **Step 4.4: Implement Escalation Detection**
-
-**File**: `analysis/escalation_detector.py`
+### **Step 5.4: Implement Escalation Detection**
 
 **EscalationDetector Class**:
 ```python
@@ -3223,245 +2079,17 @@ class EscalationDetector:
 - [ ] Implement severity escalation detection
 - [ ] Implement temporal urgency detection
 - [ ] Implement communication change detection
-- [ ] Add unit tests with escalation test datasets
 - [ ] Document escalation detection logic
 
 ---
 
-### **Step 4.5: Integrate Context with Ensemble**
+### **Step 5.5: Phase 5 Validation & Sign-Off**
 
-**Update**: `analysis/crisis_analyzer.py`
-
-**Integration Logic**:
-```python
-class CrisisAnalyzer:
-    """
-    Updated for Phase 4: Context integration
-    """
-    
-    def __init__(
-        self,
-        unified_config_manager,
-        ensemble_coordinator,
-        pattern_detection_manager,
-        context_analyzer  # NEW
-    ):
-        """Initialize with context analyzer"""
-        self.config = unified_config_manager
-        self.ensemble = ensemble_coordinator
-        self.patterns = pattern_detection_manager
-        self.context = context_analyzer  # NEW
-    
-    def analyze_message(
-        self, 
-        user_id: str, 
-        message: str
-    ) -> Dict:
-        """
-        Analyze message with ensemble + context + patterns
-        """
-        # Step 1: Ensemble Analysis
-        ensemble_result = self.ensemble.analyze_message(message)
-        
-        # Step 2: Context Analysis (NEW)
-        context_result = self.context.analyze_with_context(
-            user_id,
-            message,
-            ensemble_result
-        )
-        
-        # Step 3: Pattern Detection
-        pattern_result = self.patterns.detect_patterns(message)
-        
-        # Step 4: Combine all analyses
-        final_result = self._combine_all_analyses(
-            ensemble_result,
-            context_result,
-            pattern_result
-        )
-        
-        return final_result
-    
-    def _combine_all_analyses(
-        self,
-        ensemble_result: Dict,
-        context_result: Dict,
-        pattern_result: Dict
-    ) -> Dict:
-        """
-        Combine ensemble + context + patterns
-        
-        Priority order:
-        1. Context escalation (highest priority)
-        2. Ensemble consensus
-        3. Pattern modifiers
-        """
-        # Start with context-adjusted score
-        base_score = context_result['context_adjusted_score']
-        
-        # Check for critical escalation
-        if context_result['escalation'].get('is_escalating'):
-            if context_result['escalation']['severity'] == 'critical':
-                base_score = max(base_score, 0.85)  # Force critical level
-        
-        # Apply pattern modifiers
-        pattern_boost = self._calculate_pattern_boost(pattern_result)
-        final_score = min(1.0, base_score + pattern_boost)
-        
-        return {
-            "analysis_version": "v5.0-phase4",
-            "user_id": user_id,
-            "timestamp": datetime.utcnow().isoformat(),
-            
-            # Final Assessment
-            "final_assessment": {
-                "crisis_score": final_score,
-                "crisis_level": self._determine_level(final_score),
-                "requires_intervention": self._requires_intervention(
-                    final_score,
-                    context_result
-                ),
-                "priority": self._determine_priority(
-                    final_score,
-                    context_result
-                )
-            },
-            
-            # Component Results
-            "ensemble_result": ensemble_result,
-            "context_result": context_result,
-            "pattern_result": pattern_result,
-            
-            # Enhanced Explanation
-            "explanation": self._create_enhanced_explanation(
-                ensemble_result,
-                context_result,
-                pattern_result
-            )
-        }
-    
-    def _requires_intervention(
-        self, 
-        final_score: float,
-        context_result: Dict
-    ) -> bool:
-        """
-        Determine if intervention needed
-        
-        Lower threshold if escalating
-        """
-        base_threshold = 0.70
-        
-        # Lower threshold for escalation
-        if context_result['escalation'].get('is_escalating'):
-            return final_score >= 0.60
-        
-        return final_score >= base_threshold
-    
-    def _determine_priority(
-        self,
-        final_score: float,
-        context_result: Dict
-    ) -> str:
-        """Determine response priority"""
-        if context_result['escalation'].get('is_escalating'):
-            if context_result['escalation']['severity'] == 'critical':
-                return "immediate"
-        
-        if final_score >= 0.85:
-            return "immediate"
-        elif final_score >= 0.65:
-            return "high"
-        elif final_score >= 0.40:
-            return "medium"
-        else:
-            return "low"
-```
-
-**Tasks**:
-- [ ] Update CrisisAnalyzer for context integration
-- [ ] Implement analysis combination logic
-- [ ] Update factory function
-- [ ] Add priority determination
-- [ ] Create enhanced explanation
-- [ ] Add integration tests
-- [ ] Update API endpoints
-- [ ] Document context integration
-
----
-
-### **Step 4.6: Test Context Analysis**
-
-**Testing Requirements**:
-
-**Use Escalation Patterns Dataset**:
-- [ ] Run against escalation_patterns.json
-- [ ] Validate escalation detection accuracy
-- [ ] Test temporal pattern detection
-- [ ] Verify context adjustments working
-
-**Create New Test Scenarios**:
-```json
-{
-  "context_test_001": {
-    "description": "User starts okay, gradually worsens",
-    "messages": [
-      {"time": "10:00", "text": "Morning everyone", "expected_score": 0.1},
-      {"time": "12:00", "text": "Not feeling great today", "expected_score": 0.3},
-      {"time": "15:00", "text": "Things are getting worse", "expected_score": 0.5},
-      {"time": "18:00", "text": "I can't handle this anymore", "expected_score": 0.7},
-      {"time": "21:00", "text": "I give up", "expected_score": 0.9}
-    ],
-    "expected_escalation": true,
-    "expected_final_score": ">0.85"
-  },
-  
-  "context_test_002": {
-    "description": "Chronic low-level distress",
-    "messages": [
-      {"time": "09:00", "text": "Struggling today", "expected_score": 0.4},
-      {"time": "09:30", "text": "Still not good", "expected_score": 0.4},
-      {"time": "10:00", "text": "This isn't getting better", "expected_score": 0.5},
-      {"time": "10:30", "text": "Feeling really down", "expected_score": 0.5}
-    ],
-    "expected_escalation": false,
-    "expected_context_boost": true,
-    "expected_final_score": ">0.5"
-  }
-}
-```
-
-**Performance Testing**:
-- [ ] Measure history storage overhead
-- [ ] Test with 100 users
-- [ ] Test memory usage
-- [ ] Test cleanup effectiveness
-
-**Tasks**:
-- [ ] Create context-specific test datasets
-- [ ] Run escalation detection tests
-- [ ] Run temporal pattern tests
-- [ ] Run integration tests
-- [ ] Generate context analysis report
-- [ ] Document test results
-
----
-
-### **Step 4.7: Phase 4 Validation & Sign-Off**
-
-**Phase 4 Complete Checklist**:
-
-**Context Implementation**:
-- [ ] ContextAnalyzer implemented and tested
-- [ ] Message history storage working
-- [ ] Temporal pattern detection functional
-- [ ] Escalation detection operational
-- [ ] Context integration complete
+**Phase 5 Complete Checklist**:
 
 **Testing**:
 - [ ] Escalation patterns detected correctly
 - [ ] Temporal analysis accurate
-- [ ] Context adjustments appropriate
 - [ ] False escalation rate acceptable
 - [ ] Performance acceptable
 
@@ -3478,7 +2106,6 @@ class CrisisAnalyzer:
 - [ ] Dependency injection maintained
 
 **Documentation**:
-- [ ] Context architecture documented
 - [ ] Escalation detection explained
 - [ ] Configuration guide complete
 - [ ] Testing methodology documented
@@ -3498,351 +2125,9 @@ class CrisisAnalyzer:
 
 ---
 
-## 📝 **PHASE 5: PATTERN ENHANCEMENT INTEGRATION**
+## 📝 **PHASE 6: MONITORING & CONTINUOUS IMPROVEMENT**
 
-### **Status**: ⏳ **NOT STARTED** (Blocked by Phase 4)
-
-### **Duration**: 1 week
-### **Priority**: MEDIUM-LOW
-
-### **Objectives**:
-- Integrate existing pattern detection
-- Enhance patterns with ensemble insights
-- Add new pattern types
-- Test complete crisis detection pipeline
-- Validate end-to-end performance
-
----
-
-### **Step 5.1: Review Existing Pattern Detection**
-
-**Current Pattern System** (from v3.1):
-- Temporal modifiers ("tonight", "right now")
-- Crisis keywords
-- Contextual patterns
-- Polarity detection
-
-**Tasks**:
-- [ ] Audit existing PatternDetectionManager
-- [ ] Identify what works well
-- [ ] Identify what needs enhancement
-- [ ] Document current pattern system
-- [ ] Plan integration strategy
-
----
-
-### **Step 5.2: Enhance Patterns with Ensemble Insights**
-
-**New Pattern Types**:
-
-**1. Ensemble-Informed Patterns**:
-- Use emotion detection to refine keyword matching
-- Use irony detection to reinterpret sentiment patterns
-- Use crisis classifier to validate pattern matches
-
-**2. Multi-Signal Patterns**:
-- Combine ensemble + patterns for higher confidence
-- Example: "I'm fine" + irony detected + negative emotions = crisis
-
-**3. Community-Specific Patterns**:
-- LGBTQIA+ specific language patterns
-- Community slang recognition
-- Cultural context understanding
-
-**Tasks**:
-- [ ] Design ensemble-pattern integration
-- [ ] Implement multi-signal patterns
-- [ ] Add community-specific patterns
-- [ ] Test pattern enhancements
-- [ ] Document new patterns
-
----
-
-### **Step 5.3: Integrate Patterns with CrisisAnalyzer**
-
-**Update**: `analysis/crisis_analyzer.py`
-
-**Final Integration**:
-```python
-def _combine_all_analyses(
-    self,
-    ensemble_result: Dict,
-    context_result: Dict,
-    pattern_result: Dict
-) -> Dict:
-    """
-    Final combination: Ensemble + Context + Patterns
-    """
-    # Priority order:
-    # 1. Context escalation (critical situations)
-    # 2. Ensemble consensus (AI models agree)
-    # 3. Pattern modifiers (keyword boosts)
-    
-    base_score = context_result['context_adjusted_score']
-    
-    # Apply pattern modifiers
-    pattern_boost = self._calculate_intelligent_pattern_boost(
-        pattern_result,
-        ensemble_result  # Use ensemble to validate patterns
-    )
-    
-    final_score = min(1.0, base_score + pattern_boost)
-    
-    return final_result
-```
-
-**Tasks**:
-- [ ] Update CrisisAnalyzer with pattern integration
-- [ ] Implement intelligent pattern boosting
-- [ ] Test complete pipeline
-- [ ] Validate performance
-- [ ] Document integration
-
----
-
-### **Step 5.4: End-to-End Testing**
-
-**Complete Pipeline Test**:
-```
-Message → Ensemble (4 models) → Context Analysis → Pattern Enhancement → Final Score
-```
-
-**Test All Datasets**:
-- [ ] crisis_examples.json - end-to-end
-- [ ] safe_examples.json - end-to-end
-- [ ] edge_cases.json - end-to-end
-- [ ] lgbtqia_specific.json - end-to-end
-- [ ] escalation_patterns.json - end-to-end
-
-**Performance Validation**:
-- [ ] Total latency < 15 seconds ✓
-- [ ] VRAM < 2GB ✓
-- [ ] Accuracy > v3.1 baseline ✓
-- [ ] False positive rate acceptable ✓
-
-**Tasks**:
-- [ ] Run complete test suite
-- [ ] Generate comprehensive report
-- [ ] Compare to v3.1 baseline
-- [ ] Identify remaining issues
-- [ ] Document results
-
----
-
-### **Step 5.5: Phase 5 Validation & Sign-Off**
-
-**Phase 5 Complete Checklist**:
-
-**Pattern Enhancement**:
-- [ ] Patterns integrated with ensemble
-- [ ] New pattern types implemented
-- [ ] Community patterns added
-- [ ] Complete pipeline tested
-
-**Testing**:
-- [ ] All datasets passed
-- [ ] Performance within targets
-- [ ] Accuracy improved
-- [ ] Edge cases handled
-
-**Integration**:
-- [ ] Complete CrisisAnalyzer functional
-- [ ] All components working together
-- [ ] API fully operational
-- [ ] Documentation complete
-
-**Success Criteria**:
-- ✅ Complete v5.0 crisis detection pipeline operational
-- ✅ All three analysis layers working together
-- ✅ Performance and accuracy targets met
-- ✅ Ready for production deployment
-
-**Sign-Off Required**:
-- [ ] Project Lead approval
-- [ ] Complete system validated
-- [ ] Ready to proceed to Phase 6
-
----
-
-## 📝 **PHASE 6: PRODUCTION DEPLOYMENT & OPTIMIZATION**
-
-### **Status**: ⏳ **NOT STARTED** (Blocked by Phase 5)
-
-### **Duration**: 2-3 weeks
-### **Priority**: HIGH (when ready)
-
-### **Objectives**:
-- Deploy to production server
-- Implement monitoring and logging
-- Add performance optimizations
-- Set up alerting system
-- Create operational procedures
-
----
-
-### **Step 6.1: Docker Containerization**
-
-**Requirements**:
-- Create production Dockerfile
-- Configure for GPU support
-- Optimize image size
-- Set up Docker Compose
-
-**Dockerfile Example**:
-```dockerfile
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
-
-# Install Python and dependencies
-RUN apt-get update && apt-get install -y \
-    python3.11 \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Set working directory
-WORKDIR /app
-
-# Copy requirements
-COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
-
-# Copy application
-COPY . .
-
-# Download models during build
-RUN python3 scripts/download_models.py
-
-# Expose API port
-EXPOSE 30880
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s \
-    CMD curl -f http://localhost:30880/health || exit 1
-
-# Start application
-CMD ["python3", "-m", "uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "30880"]
-```
-
-**Tasks**:
-- [ ] Create production Dockerfile
-- [ ] Set up Docker Compose
-- [ ] Test GPU access in container
-- [ ] Optimize image size
-- [ ] Document deployment
-
----
-
-### **Step 6.2: Monitoring & Logging**
-
-**Implement**:
-- Prometheus metrics
-- Grafana dashboards
-- Log aggregation
-- Performance tracking
-
-**Key Metrics**:
-```python
-# Crisis detection metrics
-crisis_detection_total
-crisis_detection_by_level
-false_positive_rate
-false_negative_rate
-
-# Performance metrics
-analysis_latency_seconds
-model_inference_time
-vram_usage_mb
-cpu_usage_percent
-
-# System metrics
-api_requests_total
-api_errors_total
-model_failures_total
-```
-
-**Tasks**:
-- [ ] Set up Prometheus
-- [ ] Create Grafana dashboards
-- [ ] Configure log aggregation
-- [ ] Set up alerting rules
-- [ ] Document monitoring
-
----
-
-### **Step 6.3: Performance Optimization**
-
-**Optimization Targets**:
-- [ ] Reduce latency to < 10 seconds
-- [ ] Optimize VRAM usage
-- [ ] Implement caching
-- [ ] Add batch processing
-- [ ] Optimize model loading
-
-**Tasks**:
-- [ ] Profile system performance
-- [ ] Identify bottlenecks
-- [ ] Implement optimizations
-- [ ] Validate improvements
-- [ ] Document optimizations
-
----
-
-### **Step 6.4: Production Deployment**
-
-**Deployment Steps**:
-- [ ] Deploy to production server (10.20.30.253)
-- [ ] Configure environment variables
-- [ ] Set up SSL/TLS
-- [ ] Configure firewall
-- [ ] Test production access
-
-**Rollout Strategy**:
-- [ ] Deploy to staging first
-- [ ] Run smoke tests
-- [ ] Deploy to production
-- [ ] Monitor for 24 hours
-- [ ] Validate stability
-
-**Tasks**:
-- [ ] Execute deployment
-- [ ] Validate production functionality
-- [ ] Monitor initial performance
-- [ ] Document deployment procedures
-
----
-
-### **Step 6.5: Phase 6 Validation & Sign-Off**
-
-**Phase 6 Complete Checklist**:
-
-**Deployment**:
-- [ ] Deployed to production
-- [ ] Monitoring operational
-- [ ] Logging configured
-- [ ] Alerting working
-- [ ] Performance optimized
-
-**Operational Readiness**:
-- [ ] Runbooks created
-- [ ] On-call procedures defined
-- [ ] Backup procedures tested
-- [ ] Disaster recovery plan documented
-
-**Success Criteria**:
-- ✅ System operational in production
-- ✅ 24/7 availability achieved
-- ✅ Performance targets met
-- ✅ Monitoring and alerting working
-
-**Sign-Off Required**:
-- [ ] Project Lead approval
-- [ ] Production deployment validated
-- [ ] Ready for Phase 7
-
----
-
-## 📝 **PHASE 7: MONITORING & CONTINUOUS IMPROVEMENT**
-
-### **Status**: ⏳ **NOT STARTED** (Ongoing after Phase 6)
+### **Status**: ⏳ **NOT STARTED** (Ongoing after Phase 4)
 
 ### **Duration**: Ongoing
 ### **Priority**: CONTINUOUS
@@ -3856,7 +2141,7 @@ model_failures_total
 
 ---
 
-### **Step 7.1: Production Monitoring**
+### **Step 6.1: Production Monitoring**
 
 **Daily Tasks**:
 - [ ] Review crisis detection metrics
@@ -3867,7 +2152,7 @@ model_failures_total
 
 ---
 
-### **Step 7.2: Model Performance Analysis**
+### **Step 6.2: Model Performance Analysis**
 
 **Weekly Tasks**:
 - [ ] Analyze model accuracy
@@ -3878,7 +2163,7 @@ model_failures_total
 
 ---
 
-### **Step 7.3: Community Feedback Integration**
+### **Step 6.3: Community Feedback Integration**
 
 **Monthly Tasks**:
 - [ ] Collect community feedback
@@ -3889,7 +2174,7 @@ model_failures_total
 
 ---
 
-### **Step 7.4: Continuous Optimization**
+### **Step 6.4: Continuous Optimization**
 
 **Quarterly Tasks**:
 - [ ] Evaluate new models
@@ -3914,27 +2199,17 @@ model_failures_total
 - ✅ Performance within targets
 - ✅ Improved over baseline
 
-**Phase 3**: Ensemble Coordinator
+**Phase 3**: Ensemble/API Framework & Deployment
 - ✅ Multi-model consensus working
 - ✅ Explainability implemented
 - ✅ Conflict resolution functional
 
-**Phase 4**: Context Analysis
+**Phase 4**: History Analysis
 - ✅ Escalation detection working
 - ✅ Temporal patterns identified
 - ✅ History tracking operational
 
-**Phase 5**: Pattern Enhancement
-- ✅ Complete pipeline functional
-- ✅ All components integrated
-- ✅ End-to-end testing passed
-
-**Phase 6**: Production Deployment
-- ✅ Deployed to production
-- ✅ Monitoring operational
-- ✅ 24/7 availability
-
-**Phase 7**: Continuous Improvement
+**Phase 5**: Continuous Improvement
 - ✅ Ongoing monitoring
 - ✅ Regular optimization
 - ✅ Community feedback integration
@@ -3945,8 +2220,8 @@ model_failures_total
 
 ### **Phase Dependencies**:
 ```
-Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7
-  ✅       ⏳        ⏳        ⏳        ⏳        ⏳        ⏳        ⏳
+Phase 0 → Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5
+  ✅       ⏳        ⏳        ⏳        ⏳        ⏳
 ```
 
 ### **Technical Prerequisites**:
@@ -3988,11 +2263,11 @@ pandas==2.1.0
 - Re-test ensemble
 
 **Context Issues (Phase 4)**:
-- Rollback: Disable context analysis
+- Rollback: Disable history analysis
 - Fix context logic
 - Re-enable
 
-**Production Issues (Phase 6)**:
+**Production Issues (Phase 5)**:
 - Rollback: Redeploy v3.1
 - Fix production issues
 - Re-deploy v5.0
@@ -4005,15 +2280,13 @@ pandas==2.1.0
 
 ### **Phase Completion**:
 - [x] Phase 0: Foundation & Planning - 100% ✅
-- [ ] Phase 1: Testing Framework - 0%
-- [ ] Phase 2: Model Migration - 0%
-- [ ] Phase 3: Ensemble Coordinator - 0%
+- [x] Phase 1: Testing Framework - 0%
+- [x] Phase 2: Model Migration - 0%
+- [x] Phase 3: Ensemble/API & Deployment- 0%
 - [ ] Phase 4: Context Analysis - 0%
-- [ ] Phase 5: Pattern Enhancement - 0%
-- [ ] Phase 6: Production Deployment - 0%
-- [ ] Phase 7: Continuous Improvement - 0%
+- [ ] Phase 5: Continuous Improvement - 0%
 
-### **Overall Progress**: 12.5% (1/8 phases complete)
+### **Overall Progress**: 66.67% (4/6 phases complete)
 
 ---
 

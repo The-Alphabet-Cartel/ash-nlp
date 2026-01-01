@@ -1,8 +1,8 @@
 # ============================================================================
 # Ash-NLP v5.0 Docker Compose Configuration
 # ============================================================================
-# FILE VERSION: v5.0-3-5.5-3
-# LAST MODIFIED: 2025-12-31
+# FILE VERSION: v5.0-3-6.4-1
+# LAST MODIFIED: 2026-01-01
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
@@ -26,6 +26,7 @@
 # SECRETS:
 #   Secrets are stored in ./secrets/ directory:
 #   - ./secrets/huggingface - HuggingFace API token
+#   - ./secrets/discord_alert_webhook - Discord webhook for alerts (optional)
 #
 # REQUIREMENTS:
 #   - Docker Engine 24.0+
@@ -46,8 +47,8 @@ services:
       target: runtime
       args:
         APP_USER: nlp
-        APP_UID: 1000
-        APP_GID: 1000
+        APP_UID: 1001
+        APP_GID: 1001
     image: ash-nlp:v5.0
 
     # GPU Support (requires NVIDIA Container Toolkit)
@@ -66,6 +67,7 @@ services:
     # Docker Secrets
     secrets:
       - huggingface
+      - discord_alert_webhook
 
     # Environment variables
     environment:
@@ -73,7 +75,7 @@ services:
       - NLP_ENVIRONMENT=production
       - NLP_API_HOST=0.0.0.0
       - NLP_API_PORT=30880
-      - NLP_API_WORKERS=4
+      - NLP_API_WORKERS=1
       - NLP_API_TIMEOUT=30
       - NLP_LOG_LEVEL=INFO
 
@@ -98,6 +100,12 @@ services:
       - NLP_PERFORMANCE_CACHE_ENABLED=true
       - NLP_PERFORMANCE_CACHE_TTL=300
       - NLP_PERFORMANCE_ASYNC_INFERENCE=true
+
+      # Alerting
+      - NLP_ALERTING_ENABLED=true
+
+      # Logging
+      - NLP_LOG_FORMAT=human  # human or json
 
       # HuggingFace cache
       - HF_HOME=/app/models
@@ -161,13 +169,16 @@ services:
     # Docker Secrets
     secrets:
       - huggingface
+      - discord_alert_webhook
 
     environment:
       - NLP_ENVIRONMENT=production
       - NLP_API_HOST=0.0.0.0
       - NLP_API_PORT=30880
-      - NLP_API_WORKERS=4
+      - NLP_API_WORKERS=1
       - NLP_LOG_LEVEL=INFO
+      - NLP_LOG_FORMAT=human
+      - NLP_ALERTING_ENABLED=true
       - NLP_MODELS_DEVICE=cpu
       - NLP_MODELS_WARMUP_ENABLED=true
       - HF_HOME=/app/models
@@ -205,6 +216,8 @@ services:
 secrets:
   huggingface:
     file: ./secrets/huggingface
+  discord_alert_webhook:
+    file: ./secrets/discord_alert_webhook
 
 # =============================================================================
 # Networks

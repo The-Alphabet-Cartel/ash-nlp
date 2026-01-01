@@ -1,18 +1,10 @@
-<!-- ash-nlp/docs/clean_architecture_charter.md -->
-<!--
-Clean Architecture Charter for Ash-NLP Service
-FILE VERSION: v5.1
-LAST MODIFIED: 2025-12-31
--->
 # Clean Architecture Charter - Ash-NLP
 
 ## Sacred Principles - NEVER TO BE VIOLATED
 
+**Version**: v5.0  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Project**: Ash-NLP v5.0
-**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v5.1
-**LAST UPDATED**: 2025-12-31
+**Community**: [The Alphabet Cartel](https://discord.gg/alphabetcartel) | [alphabetcartel.org](https://alphabetcartel.org)
 
 ---
 

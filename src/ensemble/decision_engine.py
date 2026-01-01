@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.3-4
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.3 - Ensemble Decision Engine
+FILE VERSION: v5.0-3-7.4-2
+LAST MODIFIED: 2026-01-01
+PHASE: Phase 3 Step 7 - Performance Optimization
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -22,10 +22,16 @@ RESPONSIBILITIES:
 - Coordinate model loading, scoring, and fallback
 - Provide unified analyze() method for API
 - Calculate final crisis assessment
-- Handle async parallel inference (optional)
+- Handle async parallel inference with asyncio.gather()
+- Cache responses for repeated messages
 
 This is the PRIMARY INTERFACE for crisis detection.
 API endpoints call this engine to analyze messages.
+
+PERFORMANCE OPTIMIZATIONS (Phase 3.7):
+- 3.7.1: Model warmup on startup with alerting
+- 3.7.2: Async parallel inference with asyncio.gather()
+- 3.7.4: Response caching for repeated messages
 """
 
 import asyncio
@@ -52,9 +58,11 @@ from .fallback import (
 
 if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
+    from src.utils.cache import ResponseCache
+    from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-3-4.3-4"
+__version__ = "v5.0-3-7.4-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -85,6 +93,7 @@ class CrisisAssessment:
         models_used: Which models contributed
         is_degraded: Whether ensemble is operating in degraded mode
         message: Original message analyzed
+        cached: Whether result was from cache
     """
 
     crisis_detected: bool
@@ -99,6 +108,7 @@ class CrisisAssessment:
     is_degraded: bool = False
     degradation_reason: str = ""
     message: str = ""
+    cached: bool = False
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""
@@ -113,6 +123,7 @@ class CrisisAssessment:
             "processing_time_ms": round(self.processing_time_ms, 2),
             "models_used": self.models_used,
             "is_degraded": self.is_degraded,
+            "cached": self.cached,
         }
 
     @staticmethod
@@ -177,12 +188,18 @@ class EnsembleDecisionEngine:
 
     Orchestrates the multi-model ensemble:
     1. Loads and manages models via ModelLoader
-    2. Runs inference on all models
+    2. Runs inference on all models (parallel with asyncio.gather)
     3. Calculates weighted scores via WeightedScorer
     4. Handles failures via FallbackStrategy
-    5. Returns comprehensive CrisisAssessment
+    5. Caches responses for repeated messages
+    6. Returns comprehensive CrisisAssessment
 
     This is the main interface for the API to call.
+
+    Performance Optimizations (Phase 3.7):
+    - Model warmup on startup (3.7.1)
+    - Async parallel inference with asyncio.gather (3.7.2)
+    - Response caching (3.7.4)
 
     Clean Architecture v5.1 Compliance:
     - Factory function: create_decision_engine()
@@ -197,7 +214,12 @@ class EnsembleDecisionEngine:
         model_loader: Optional[ModelLoader] = None,
         scorer: Optional[WeightedScorer] = None,
         fallback: Optional[FallbackStrategy] = None,
+        cache: Optional["ResponseCache"] = None,
+        alerter: Optional["DiscordAlerter"] = None,
         async_inference: bool = True,
+        cache_enabled: bool = True,
+        cache_ttl: float = 300.0,
+        cache_max_size: int = 1000,
     ):
         """
         Initialize Ensemble Decision Engine.
@@ -207,10 +229,16 @@ class EnsembleDecisionEngine:
             model_loader: Pre-configured model loader (optional)
             scorer: Pre-configured scorer (optional)
             fallback: Pre-configured fallback strategy (optional)
+            cache: Pre-configured response cache (optional)
+            alerter: Discord alerter for notifications (optional)
             async_inference: Enable parallel model inference
+            cache_enabled: Enable response caching
+            cache_ttl: Cache time-to-live in seconds
+            cache_max_size: Maximum cache entries
         """
         self.config_manager = config_manager
         self.async_inference = async_inference
+        self.cache_enabled = cache_enabled
 
         # Initialize components
         self.model_loader = model_loader or create_model_loader(
@@ -225,23 +253,43 @@ class EnsembleDecisionEngine:
             config_manager=config_manager
         )
 
+        # Initialize cache (Phase 3.7.4)
+        if cache is not None:
+            self._cache = cache
+        elif cache_enabled:
+            from src.utils.cache import create_response_cache
+            self._cache = create_response_cache(
+                max_size=cache_max_size,
+                ttl_seconds=cache_ttl,
+                config_manager=config_manager,
+            )
+        else:
+            self._cache = None
+
+        # Alerter for notifications (Phase 3.7.1)
+        self._alerter = alerter
+
         # Performance tracking
         self._total_requests: int = 0
         self._total_latency_ms: float = 0.0
         self._crisis_detections: int = 0
+        self._cache_hits: int = 0
 
         # Thread pool for parallel inference
         self._executor: Optional[ThreadPoolExecutor] = None
         if async_inference:
             self._executor = ThreadPoolExecutor(max_workers=4)
 
-        logger.info(f"🧠 EnsembleDecisionEngine initialized (async={async_inference})")
+        logger.info(
+            f"🧠 EnsembleDecisionEngine initialized "
+            f"(async={async_inference}, cache={cache_enabled})"
+        )
 
     # =========================================================================
     # Main Analysis Methods
     # =========================================================================
 
-    def analyze(self, message: str) -> CrisisAssessment:
+    def analyze(self, message: str, use_cache: bool = True) -> CrisisAssessment:
         """
         Analyze a message for crisis signals.
 
@@ -249,6 +297,7 @@ class EnsembleDecisionEngine:
 
         Args:
             message: Text message to analyze
+            use_cache: Whether to use response cache (default: True)
 
         Returns:
             CrisisAssessment with complete analysis
@@ -256,6 +305,20 @@ class EnsembleDecisionEngine:
         start_time = time.perf_counter()
 
         try:
+            # Check cache first (Phase 3.7.4)
+            if use_cache and self._cache is not None and self.cache_enabled:
+                cached_result = self._cache.get(message)
+                if cached_result is not None:
+                    self._cache_hits += 1
+                    self._total_requests += 1
+                    # Update timing for cached response
+                    cached_result.processing_time_ms = (
+                        time.perf_counter() - start_time
+                    ) * 1000
+                    cached_result.cached = True
+                    logger.debug(f"Cache hit for message (hash: {hash(message) % 10000})")
+                    return cached_result
+
             # Run inference on all models
             if self.async_inference and self._executor:
                 results = self._run_parallel_inference(message)
@@ -281,6 +344,10 @@ class EnsembleDecisionEngine:
                 processing_time_ms=processing_time_ms,
             )
 
+            # Store in cache (Phase 3.7.4)
+            if use_cache and self._cache is not None and self.cache_enabled:
+                self._cache.set(message, assessment)
+
             # Update stats
             self._total_requests += 1
             self._total_latency_ms += processing_time_ms
@@ -292,6 +359,13 @@ class EnsembleDecisionEngine:
         except CriticalModelFailure as e:
             processing_time_ms = (time.perf_counter() - start_time) * 1000
             logger.critical(f"🚨 Critical model failure during analysis: {e}")
+            
+            # Send alert if alerter configured
+            if self._alerter:
+                asyncio.create_task(
+                    self._alerter.alert_model_failure("bart", str(e), is_critical=True)
+                )
+            
             return CrisisAssessment.create_error(
                 error=str(e),
                 message=message,
@@ -307,23 +381,154 @@ class EnsembleDecisionEngine:
                 processing_time_ms=processing_time_ms,
             )
 
-    async def analyze_async(self, message: str) -> CrisisAssessment:
+    async def analyze_async(self, message: str, use_cache: bool = True) -> CrisisAssessment:
         """
-        Async version of analyze for use in async frameworks.
+        Async version of analyze using asyncio.gather for parallel inference.
+
+        This is the optimized async implementation (Phase 3.7.2).
 
         Args:
             message: Text message to analyze
+            use_cache: Whether to use response cache
 
         Returns:
             CrisisAssessment with complete analysis
         """
-        # Run in thread pool to not block event loop
+        start_time = time.perf_counter()
+
+        try:
+            # Check cache first (Phase 3.7.4)
+            if use_cache and self._cache is not None and self.cache_enabled:
+                cached_result = self._cache.get(message)
+                if cached_result is not None:
+                    self._cache_hits += 1
+                    self._total_requests += 1
+                    cached_result.processing_time_ms = (
+                        time.perf_counter() - start_time
+                    ) * 1000
+                    cached_result.cached = True
+                    return cached_result
+
+            # Run parallel inference with asyncio.gather (Phase 3.7.2)
+            results = await self._run_async_parallel_inference(message)
+
+            # Calculate ensemble score
+            ensemble_score = self.scorer.calculate_score(
+                bart_result=results.get("bart"),
+                sentiment_result=results.get("sentiment"),
+                irony_result=results.get("irony"),
+                emotions_result=results.get("emotions"),
+            )
+
+            # Calculate processing time
+            processing_time_ms = (time.perf_counter() - start_time) * 1000
+
+            # Build assessment
+            assessment = self._build_assessment(
+                ensemble_score=ensemble_score,
+                results=results,
+                message=message,
+                processing_time_ms=processing_time_ms,
+            )
+
+            # Store in cache
+            if use_cache and self._cache is not None and self.cache_enabled:
+                self._cache.set(message, assessment)
+
+            # Update stats
+            self._total_requests += 1
+            self._total_latency_ms += processing_time_ms
+            if assessment.crisis_detected:
+                self._crisis_detections += 1
+
+            return assessment
+
+        except CriticalModelFailure as e:
+            processing_time_ms = (time.perf_counter() - start_time) * 1000
+            logger.critical(f"🚨 Critical model failure during analysis: {e}")
+            
+            # Send alert
+            if self._alerter:
+                await self._alerter.alert_model_failure("bart", str(e), is_critical=True)
+            
+            return CrisisAssessment.create_error(
+                error=str(e),
+                message=message,
+                processing_time_ms=processing_time_ms,
+            )
+
+        except Exception as e:
+            processing_time_ms = (time.perf_counter() - start_time) * 1000
+            logger.error(f"❌ Analysis failed: {e}")
+            return CrisisAssessment.create_error(
+                error=str(e),
+                message=message,
+                processing_time_ms=processing_time_ms,
+            )
+
+    async def _run_async_parallel_inference(
+        self, message: str
+    ) -> Dict[str, Optional[ModelResult]]:
+        """
+        Run inference on all models in parallel using asyncio.gather.
+
+        This is the optimized async implementation (Phase 3.7.2).
+
+        Args:
+            message: Text to analyze
+
+        Returns:
+            Dictionary of model_name -> ModelResult
+        """
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            self._executor,
-            self.analyze,
-            message,
-        )
+
+        async def run_model_async(model_name: str) -> tuple:
+            """Run a single model inference in thread pool."""
+            if not self.fallback.can_call_model(model_name):
+                return (model_name, None)
+
+            try:
+                model = self.model_loader.get_model(model_name)
+                if model:
+                    # Run blocking inference in thread pool
+                    result = await loop.run_in_executor(
+                        self._executor,
+                        model.analyze,
+                        message,
+                    )
+                    self.fallback.handle_model_success(model_name)
+                    return (model_name, result)
+                return (model_name, None)
+            except Exception as e:
+                self.fallback.handle_model_failure(model_name, str(e))
+                logger.warning(f"Model {model_name} failed: {e}")
+                
+                # Alert on model failure (non-critical models)
+                if self._alerter and model_name != "bart":
+                    asyncio.create_task(
+                        self._alerter.alert_model_failure(model_name, str(e), is_critical=False)
+                    )
+                
+                return (model_name, None)
+
+        # Run all models in parallel with asyncio.gather
+        model_names = ["bart", "sentiment", "irony", "emotions"]
+        tasks = [run_model_async(name) for name in model_names]
+        
+        results_list = await asyncio.gather(*tasks, return_exceptions=True)
+
+        # Convert to dictionary
+        results: Dict[str, Optional[ModelResult]] = {}
+        for item in results_list:
+            if isinstance(item, Exception):
+                logger.error(f"Async inference exception: {item}")
+                continue
+            if isinstance(item, tuple) and len(item) == 2:
+                model_name, result = item
+                if result is not None:
+                    results[model_name] = result
+
+        return results
 
     def _run_sequential_inference(
         self, message: str
@@ -383,7 +588,7 @@ class EnsembleDecisionEngine:
 
     def _run_parallel_inference(self, message: str) -> Dict[str, Optional[ModelResult]]:
         """
-        Run inference on all models in parallel.
+        Run inference on all models in parallel using ThreadPoolExecutor.
 
         Args:
             message: Text to analyze
@@ -392,7 +597,6 @@ class EnsembleDecisionEngine:
             Dictionary of model_name -> ModelResult
         """
         results: Dict[str, Optional[ModelResult]] = {}
-        futures = {}
 
         def run_model(model_name: str):
             """Run a single model inference."""
@@ -520,11 +724,17 @@ class EnsembleDecisionEngine:
             self._executor.shutdown(wait=True)
             self._executor = None
 
+        # Clear cache
+        if self._cache:
+            self._cache.clear()
+
         logger.info("✅ Decision Engine shutdown complete")
 
     def warmup(self, sample_text: str = "Hello, how are you today?") -> bool:
         """
         Warm up the engine with a sample analysis.
+
+        Phase 3.7.1: Model warmup on startup.
 
         Args:
             sample_text: Text to use for warmup
@@ -535,7 +745,8 @@ class EnsembleDecisionEngine:
         logger.info("🔥 Warming up Decision Engine...")
 
         try:
-            result = self.analyze(sample_text)
+            # Run warmup analysis (bypass cache)
+            result = self.analyze(sample_text, use_cache=False)
 
             if result.crisis_score >= 0:  # Valid result
                 logger.info(
@@ -549,6 +760,42 @@ class EnsembleDecisionEngine:
         except Exception as e:
             logger.error(f"❌ Warmup failed: {e}")
             return False
+
+    def set_alerter(self, alerter: "DiscordAlerter") -> None:
+        """
+        Set the Discord alerter for notifications.
+
+        Args:
+            alerter: DiscordAlerter instance
+        """
+        self._alerter = alerter
+        logger.debug("Discord alerter configured")
+
+    # =========================================================================
+    # Cache Management
+    # =========================================================================
+
+    def clear_cache(self) -> int:
+        """
+        Clear the response cache.
+
+        Returns:
+            Number of entries cleared
+        """
+        if self._cache:
+            return self._cache.clear()
+        return 0
+
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """
+        Get cache statistics.
+
+        Returns:
+            Cache stats dictionary
+        """
+        if self._cache:
+            return self._cache.get_stats()
+        return {"enabled": False}
 
     # =========================================================================
     # Status and Metrics
@@ -567,20 +814,30 @@ class EnsembleDecisionEngine:
             else 0.0
         )
 
+        cache_hit_rate = (
+            self._cache_hits / self._total_requests
+            if self._total_requests > 0
+            else 0.0
+        )
+
         return {
             "is_ready": self.is_ready(),
             "is_degraded": self.fallback.is_degraded(),
             "degradation_reason": self.fallback.get_degradation_reason(),
             "async_inference": self.async_inference,
+            "cache_enabled": self.cache_enabled,
             "stats": {
                 "total_requests": self._total_requests,
                 "crisis_detections": self._crisis_detections,
+                "cache_hits": self._cache_hits,
+                "cache_hit_rate": round(cache_hit_rate, 4),
                 "average_latency_ms": round(avg_latency, 2),
             },
             "models": self.model_loader.get_status(),
             "weights": self.scorer.get_weights(),
             "thresholds": self.scorer.get_thresholds(),
             "fallback": self.fallback.get_status(),
+            "cache": self.get_cache_stats(),
         }
 
     def get_model_info(self) -> List[Dict[str, Any]]:
@@ -614,6 +871,7 @@ class EnsembleDecisionEngine:
             "degraded": self.fallback.is_degraded(),
             "models_loaded": self.model_loader._models_loaded,
             "total_models": len(self.model_loader._models),
+            "cache_enabled": self.cache_enabled,
         }
 
 
@@ -626,6 +884,8 @@ def create_decision_engine(
     config_manager: Optional["ConfigManager"] = None,
     auto_initialize: bool = False,
     async_inference: bool = True,
+    cache_enabled: bool = True,
+    alerter: Optional["DiscordAlerter"] = None,
 ) -> EnsembleDecisionEngine:
     """
     Factory function for EnsembleDecisionEngine.
@@ -636,6 +896,8 @@ def create_decision_engine(
         config_manager: Configuration manager instance
         auto_initialize: If True, load models immediately
         async_inference: Enable parallel model inference
+        cache_enabled: Enable response caching
+        alerter: Discord alerter for notifications
 
     Returns:
         Configured EnsembleDecisionEngine instance
@@ -645,15 +907,23 @@ def create_decision_engine(
         >>> engine.initialize()
         >>> assessment = engine.analyze("I'm feeling really down today")
     """
-    # Get async setting from config
+    # Get settings from config
+    perf_config = {}
     if config_manager is not None:
-        perf_config = config_manager.get_performance_config()
-        if perf_config:
-            async_inference = perf_config.get("async_inference", async_inference)
+        perf_config = config_manager.get_performance_config() or {}
+        async_inference = perf_config.get("async_inference", async_inference)
+        cache_enabled = perf_config.get("cache_enabled", cache_enabled)
+
+    cache_ttl = perf_config.get("cache_ttl", 300.0)
+    cache_max_size = perf_config.get("cache_max_size", 1000)
 
     engine = EnsembleDecisionEngine(
         config_manager=config_manager,
         async_inference=async_inference,
+        cache_enabled=cache_enabled,
+        cache_ttl=cache_ttl,
+        cache_max_size=cache_max_size,
+        alerter=alerter,
     )
 
     if auto_initialize:

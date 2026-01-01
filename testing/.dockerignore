@@ -18,6 +18,7 @@ secrets/
 .gitignore
 .gitattributes
 .github
+.gitkeep
 
 # =============================================================================
 # Python

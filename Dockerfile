@@ -130,8 +130,8 @@ LABEL org.opencontainers.image.source="https://github.com/the-alphabet-cartel/as
 
 # Build arguments
 ARG APP_USER=nlp
-ARG APP_UID=1000
-ARG APP_GID=1000
+ARG APP_UID=1001
+ARG APP_GID=1001
 
 # Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -141,7 +141,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NLP_ENVIRONMENT=production \
     NLP_API_HOST=0.0.0.0 \
     NLP_API_PORT=30880 \
-    NLP_API_WORKERS=4 \
+    NLP_API_WORKERS=1 \
     NLP_LOG_LEVEL=INFO \
     # Model settings
     NLP_MODELS_DEVICE=auto \
@@ -204,7 +204,7 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "uvicorn", "src.api.app:app", \
      "--host", "0.0.0.0", \
      "--port", "30880", \
-     "--workers", "4", \
+     "--workers", "1", \
      "--log-level", "info"]
 
 
@@ -220,8 +220,8 @@ LABEL org.opencontainers.image.description="Crisis Detection Backend - CPU Only"
 
 # Build arguments
 ARG APP_USER=nlp
-ARG APP_UID=1000
-ARG APP_GID=1000
+ARG APP_UID=1001
+ARG APP_GID=1001
 
 # Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -230,7 +230,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NLP_ENVIRONMENT=production \
     NLP_API_HOST=0.0.0.0 \
     NLP_API_PORT=30880 \
-    NLP_API_WORKERS=4 \
+    NLP_API_WORKERS=1 \
     NLP_LOG_LEVEL=INFO \
     NLP_MODELS_DEVICE=cpu \
     NLP_MODELS_WARMUP_ENABLED=true \
@@ -270,5 +270,5 @@ ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["python", "-m", "uvicorn", "src.api.app:app", \
      "--host", "0.0.0.0", \
      "--port", "30880", \
-     "--workers", "4", \
+     "--workers", "1", \
      "--log-level", "info"]

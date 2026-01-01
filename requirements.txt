@@ -1,8 +1,8 @@
 # ============================================================================
 # Ash-NLP v5.0 Requirements
 # ============================================================================
-# FILE VERSION: v5.0-3-4.4-7
-# LAST MODIFIED: 2025-12-31
+# FILE VERSION: v5.0-3-6.4-1
+# LAST MODIFIED: 2026-01-01
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
@@ -50,11 +50,21 @@ python-dotenv>=1.0.0,<2.0.0
 # structlog>=24.1.0,<25.0.0
 
 # =============================================================================
+# Monitoring (Optional)
+# =============================================================================
+
+# Prometheus client - Metrics endpoint (optional)
+# prometheus-client>=0.19.0,<1.0.0
+
+# =============================================================================
 # HTTP and Networking
 # =============================================================================
 
 # HTTPX - Async HTTP client (for webhooks)
 httpx>=0.26.0,<1.0.0
+
+# AIOHTTP - Async HTTP client (for Discord alerting)
+aiohttp>=3.9.0,<4.0.0
 
 # =============================================================================
 # Testing (Development Only)

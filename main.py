@@ -23,7 +23,7 @@ USAGE:
     python main.py
 
     # Run with custom settings
-    python main.py --host 0.0.0.0 --port 30880 --workers 4
+    python main.py --host 0.0.0.0 --port 30880 --workers 1
 
     # Run in development mode
     python main.py --reload --env development
@@ -52,7 +52,7 @@ __version__ = "v5.0-3-4.4-6"
 # Default configuration
 DEFAULT_HOST = "0.0.0.0"
 DEFAULT_PORT = 30880
-DEFAULT_WORKERS = 4
+DEFAULT_WORKERS = 1
 DEFAULT_ENVIRONMENT = "production"
 DEFAULT_LOG_LEVEL = "INFO"
 

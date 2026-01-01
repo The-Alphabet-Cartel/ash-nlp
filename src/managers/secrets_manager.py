@@ -10,8 +10,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Secrets Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-5.5-1
-LAST MODIFIED: 2025-12-31
+FILE VERSION: v5.0-3-5.5-2
+LAST MODIFIED: 2026-01-01
 PHASE: Phase 3 - Production Integration
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -29,8 +29,9 @@ DOCKER SECRETS LOCATIONS:
 
 SUPPORTED SECRETS:
 - huggingface: HuggingFace API token for model downloads
-- (future) discord_token: Discord bot token
-- (future) webhook_secret: Webhook signing secret
+- discord_alert_webhook: Discord webhook URL for system alerts
+- discord_token: Discord bot token (future use)
+- webhook_secret: Webhook signing secret (future use)
 """
 
 import logging
@@ -39,7 +40,7 @@ from pathlib import Path
 from typing import Dict, Optional
 
 # Module version
-__version__ = "v5.0-3-5.5-1"
+__version__ = "v5.0-3-5.5-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -57,6 +58,7 @@ LOCAL_SECRETS_PATH = Path("secrets")
 # Known secret names and their descriptions
 KNOWN_SECRETS = {
     "huggingface": "HuggingFace API token for authenticated model downloads",
+    "discord_alert_webhook": "Discord webhook URL for system alerts",
     "discord_token": "Discord bot token (future use)",
     "webhook_secret": "Webhook signing secret (future use)",
 }

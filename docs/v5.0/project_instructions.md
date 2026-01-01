@@ -1,18 +1,8 @@
-<!-- ash-nlp/docs/project_instructions.md -->
-<!--
-Project Instructions for Ash-NLP Service
-FILE VERSION: v5.0
-LAST MODIFIED: 2025-12-30
-CLEAN ARCHITECTURE: Compliant
--->
 # Ash-NLP Project Instructions
 
+**Version**: v5.0  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
-**Project**: Ash-NLP v5.0
-**Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org  
-**FILE VERSION**: v5.0
-**LAST UPDATED**: 2025-12-30
-**CLEAN ARCHITECTURE**: Compliant  
+**Community**: [The Alphabet Cartel](https://discord.gg/alphabetcartel) | [alphabetcartel.org](https://alphabetcartel.org)
 
 ---
 
