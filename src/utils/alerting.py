@@ -10,7 +10,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-4-5.6-2
+FILE VERSION: v5.0-4-5.6-3
 LAST MODIFIED: 2026-01-01
 PHASE: Phase 4 - Ensemble Coordinator Enhancement
 CLEAN ARCHITECTURE: v5.1 Compliant
@@ -49,10 +49,13 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 # Module version
-__version__ = "v5.0-4-5.6-2"
+__version__ = "v5.0-4-5.6-3"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+# User-Agent for Discord webhook requests
+USER_AGENT = "Ash-NLP/5.0 (Discord Webhook; +https://github.com/the-alphabet-cartel/ash-nlp)"
 
 
 # =============================================================================
@@ -326,7 +329,10 @@ class DiscordAlerter:
             async with session.post(
                 self.webhook_url,
                 json=payload,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": USER_AGENT,
+                },
             ) as response:
                 if response.status == 204:
                     self._record_alert()
@@ -366,7 +372,10 @@ class DiscordAlerter:
             req = urllib.request.Request(
                 self.webhook_url,
                 data=payload,
-                headers={"Content-Type": "application/json"},
+                headers={
+                    "Content-Type": "application/json",
+                    "User-Agent": USER_AGENT,
+                },
                 method="POST",
             )
 
