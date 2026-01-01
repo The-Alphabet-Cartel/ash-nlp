@@ -1,100 +1,344 @@
-<!-- ash-nlp/README.md -->
-<!--
-README Documentation for Ash-NLP Service
-FILE VERSION: v5.0
-LAST MODIFIED: 2025-12-30
-CLEAN ARCHITECTURE: v5.0 Compliant
--->
-# Ash-NLP v5.0 - Crisis Detection Service
+# Ash-NLP v5.0
 
-**Mental health crisis detection**
+**Crisis Detection Backend for [The Alphabet Cartel](https://discord.gg/alphabetcartel) Discord Community**
 
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da)](https://discord.gg/alphabetcartel)
-[![Website](https://img.shields.io/badge/Website-alphabetcartel.org-blue)](https://alphabetcartel.org)
-[![GitHub](https://img.shields.io/badge/Version-v3.1-green)](https://github.com/the-alphabet-cartel/ash-nlp)
+[![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](https://github.com/the-alphabet-cartel/ash-nlp)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Discord](https://img.shields.io/discord/YOUR_DISCORD_ID?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/alphabetcartel)
 
 ---
 
-## What is Ash-NLP v5.0?
+## 🎯 Overview
 
-**Ash-NLP v5.0** is a mental health crisis detection service engineered for The Alphabet Cartel LGBTQIA+ Discord community. Built with Clean Architecture v5.0 principles, it provides intelligent mental health crisis detection with adaptive learning capabilities.
+Ash-NLP is a **multi-model ensemble crisis detection system** designed to identify crisis signals in Discord community messages. It uses a weighted combination of four specialized NLP models to provide accurate, contextual crisis assessment.
 
-### Core System Vision
-1. **FIRST**: Uses Zero-Shot AI models for primary semantic classification
-2. **SECOND**: Enhances AI results with contextual pattern analysis
-3. **PURPOSE**: Detect crisis messages in Discord community communications
+### Core Architecture
 
----
-
-## Key Features
-
-### Advanced Crisis Detection
-- **Multi-model ensemble** with intelligent consensus algorithms
-- **Zero-shot classification** for semantic understanding beyond keywords
-- **Pattern-based fallback** ensuring continuous operation
-
-### System Architecture
-- **Clean Architecture v5.0 compliant** with 100% validated compliance
-- **Specialized managers** with factory function patterns
-- **Dependency injection** throughout system architecture
-- **Comprehensive error handling** with graceful degradation
-- **Docker-first deployment** with production-ready configuration
-
----
-
-## Architecture Overview
-
-### Manager System
-Ash-NLP v5.0 uses a clean architecture with specialized managers:
-
-- **UnifiedConfigManager** - Configuration foundation
-- **SharedUtilitiesManager** - Common utilities
-- **ModelCoordinationManager** - AI model ensemble management
-- **CrisisAnalyzer** - Primary analysis coordination
-- **PatternDetectionManager** - Crisis pattern recognition
-- **ContextAnalysisManager** - Community context understanding
-
-### Data Flow
 ```
-Discord Message → API → CrisisAnalyzer → AI Models → Pattern Analysis → Context Analysis → Response
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    Multi-Model Ensemble Pipeline                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│   Message → [BART] → [Sentiment] → [Irony] → [Emotions] → Crisis Score  │
+│             (0.50)    (0.25)       (0.15)    (0.10)                     │
+│                                                                         │
+│   PRIMARY   SECONDARY   TERTIARY   SUPPLEMENTARY                        │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
----
+### Model Ensemble
 
-## Integration with Ash Ecosystem
+| Model | Role | Weight | Purpose |
+|-------|------|--------|---------|
+| **BART** | Primary | 0.50 | Zero-shot crisis classification |
+| **Sentiment** | Secondary | 0.25 | Emotional context (positive/negative/neutral) |
+| **Irony** | Tertiary | 0.15 | Sarcasm detection (reduces false positives) |
+| **Emotions** | Supplementary | 0.10 | Fine-grained emotion signals (28 labels) |
 
-Ash-NLP v5.0 integrates with The Alphabet Cartel ecosystem:
+### Crisis Severity Levels
 
-- **[Ash Bot](https://github.com/the-alphabet-cartel/ash-bot)** - Discord crisis response bot
-- **[The Alphabet Cartel](https://github.com/the-alphabet-cartel)** - Community organization
-
----
-
-## License
-
-This project is licensed under the **GNU General Public License v3.0** - see the [LICENSE](LICENSE) file for details.
-
-**Open source for community mental health support.**
-
----
-
-## Community
-
-**The Alphabet Cartel** - Building technology for LGBTQIA+ communities
-
-### Core Values
-- **Safety First** - Every design decision prioritizes user wellbeing
-- **Community-Driven** - Built with and for the communities we serve  
-- **Transparency** - Open source, auditable, and improvable by all
-- **Chosen Family** - Technology supporting found family connections
-
-### Connect With Us
-- **Discord**: [Join our community](https://discord.gg/alphabetcartel)
-- **Website**: [alphabetcartel.org](https://alphabetcartel.org)
-- **GitHub**: [github.com/the-alphabet-cartel](https://github.com/the-alphabet-cartel)
+| Level | Threshold | Action |
+|-------|-----------|--------|
+| 🔴 **Critical** | ≥ 0.85 | Immediate intervention required |
+| 🟠 **High** | ≥ 0.70 | Priority response needed |
+| 🟡 **Medium** | ≥ 0.50 | Standard monitoring |
+| 🟢 **Low** | ≥ 0.30 | Passive monitoring |
+| ⚪ **Safe** | < 0.30 | No crisis detected |
 
 ---
 
-*Ash-NLP v5.0: Engineered for community mental health support, one conversation at a time.*
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Docker Engine 24.0+
+- Docker Compose v2.20+
+- NVIDIA Container Toolkit (for GPU support)
+- 12GB+ VRAM recommended for GPU inference
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/the-alphabet-cartel/ash-nlp.git
+cd ash-nlp
+
+# Start with Docker Compose (GPU)
+docker-compose up -d
+
+# Or CPU-only
+docker-compose --profile cpu up -d
+```
+
+### Verify Installation
+
+```bash
+# Check health
+curl http://localhost:30880/health
+
+# Test analysis
+curl -X POST http://localhost:30880/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"message": "I am feeling really happy today!"}'
+```
+
+---
+
+## 📡 API Reference
+
+### Analyze Message
+
+**POST** `/analyze`
+
+Analyze a single message for crisis signals.
+
+```bash
+curl -X POST http://localhost:30880/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "I dont know if I can keep going anymore",
+    "user_id": "user_123",
+    "channel_id": "general"
+  }'
+```
+
+**Response:**
+```json
+{
+  "crisis_detected": true,
+  "severity": "high",
+  "confidence": 0.87,
+  "crisis_score": 0.78,
+  "requires_intervention": true,
+  "recommended_action": "priority_response",
+  "signals": {
+    "bart": {
+      "label": "emotional distress",
+      "score": 0.89,
+      "crisis_signal": 0.89
+    },
+    "sentiment": {
+      "label": "negative",
+      "score": 0.92,
+      "crisis_signal": 0.75
+    }
+  },
+  "processing_time_ms": 145.32,
+  "models_used": ["bart", "sentiment", "irony", "emotions"]
+}
+```
+
+### Batch Analysis
+
+**POST** `/analyze/batch`
+
+Analyze multiple messages in a single request (max 100).
+
+```bash
+curl -X POST http://localhost:30880/analyze/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      "I am feeling great!",
+      "Everything is falling apart",
+      "Just had lunch, it was okay"
+    ]
+  }'
+```
+
+### Health Check
+
+**GET** `/health`
+
+```bash
+curl http://localhost:30880/health
+```
+
+### Service Status
+
+**GET** `/status`
+
+Detailed service status including model information and statistics.
+
+### API Documentation
+
+- **Swagger UI**: http://localhost:30880/docs
+- **ReDoc**: http://localhost:30880/redoc
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NLP_ENVIRONMENT` | `production` | Environment name |
+| `NLP_API_HOST` | `0.0.0.0` | Server bind address |
+| `NLP_API_PORT` | `30880` | Server port |
+| `NLP_API_WORKERS` | `4` | Uvicorn worker count |
+| `NLP_LOG_LEVEL` | `INFO` | Logging level |
+| `NLP_MODELS_DEVICE` | `auto` | Device (auto/cuda/cpu) |
+| `NLP_MODEL_BART_WEIGHT` | `0.50` | BART model weight |
+| `NLP_MODEL_SENTIMENT_WEIGHT` | `0.25` | Sentiment model weight |
+| `NLP_MODEL_IRONY_WEIGHT` | `0.15` | Irony model weight |
+| `NLP_MODEL_EMOTIONS_WEIGHT` | `0.10` | Emotions model weight |
+| `NLP_THRESHOLD_CRITICAL` | `0.85` | Critical severity threshold |
+| `NLP_THRESHOLD_HIGH` | `0.70` | High severity threshold |
+| `NLP_THRESHOLD_MEDIUM` | `0.50` | Medium severity threshold |
+| `NLP_THRESHOLD_LOW` | `0.30` | Low severity threshold |
+
+### Configuration Files
+
+```
+config/
+├── default.json      # Base configuration with validation
+├── production.json   # Production overrides
+└── testing.json      # Testing overrides
+```
+
+---
+
+## 🐳 Docker
+
+### Build
+
+```bash
+# Build GPU image
+docker build -t ash-nlp:v5.0 .
+
+# Build CPU image
+docker build -t ash-nlp:v5.0-cpu --target runtime-cpu .
+```
+
+### Run
+
+```bash
+# GPU with NVIDIA runtime
+docker run --gpus all -p 30880:30880 ash-nlp:v5.0
+
+# CPU only
+docker run -p 30880:30880 ash-nlp:v5.0-cpu
+```
+
+### Docker Compose
+
+```bash
+# Start (GPU)
+docker-compose up -d
+
+# Start (CPU)
+docker-compose --profile cpu up -d
+
+# View logs
+docker-compose logs -f ash-nlp
+
+# Stop
+docker-compose down
+```
+
+---
+
+## 🧪 Development
+
+### Local Setup
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run development server
+python main.py --reload --env development
+```
+
+### Project Structure
+
+```
+ash-nlp/
+├── main.py                 # CLI entry point
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # Multi-stage Docker build
+├── docker-compose.yml      # Production orchestration
+├── config/
+│   ├── default.json        # Base configuration
+│   ├── production.json     # Production overrides
+│   └── testing.json        # Testing overrides
+└── src/
+    ├── managers/
+    │   └── config_manager.py
+    ├── models/
+    │   ├── base.py
+    │   ├── bart_classifier.py
+    │   ├── sentiment.py
+    │   ├── irony.py
+    │   └── emotions.py
+    ├── ensemble/
+    │   ├── model_loader.py
+    │   ├── scoring.py
+    │   ├── fallback.py
+    │   └── decision_engine.py
+    └── api/
+        ├── app.py
+        ├── routes.py
+        ├── schemas.py
+        └── middleware.py
+```
+
+---
+
+## 🔧 Technical Details
+
+### Hardware Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | 4 cores | 8+ cores |
+| RAM | 16 GB | 32+ GB |
+| GPU VRAM | 8 GB | 12+ GB |
+| Storage | 20 GB | 50+ GB |
+
+### Model Details
+
+- **BART**: `facebook/bart-large-mnli` (~1.5GB)
+- **Sentiment**: `cardiffnlp/twitter-roberta-base-sentiment-latest` (~500MB)
+- **Irony**: `cardiffnlp/twitter-roberta-base-irony` (~500MB)
+- **Emotions**: `SamLowe/roberta-base-go_emotions` (~500MB)
+
+### Performance
+
+- **Latency**: ~50-150ms per message (GPU)
+- **Throughput**: ~20-50 requests/second (GPU, 4 workers)
+- **Memory**: ~6-8GB GPU VRAM under load
+
+---
+
+## 🏳️‍🌈 Community
+
+**The Alphabet Cartel** is an LGBTQIA+ Discord community centered around gaming, political discourse, activism, and societal advocacy.
+
+- 🌐 **Website**: [alphabetcartel.org](https://alphabetcartel.org)
+- 💬 **Discord**: [discord.gg/alphabetcartel](https://discord.gg/alphabetcartel)
+- 🐙 **GitHub**: [github.com/the-alphabet-cartel](https://github.com/the-alphabet-cartel)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [HuggingFace](https://huggingface.co/) for transformer models
+- [FastAPI](https://fastapi.tiangolo.com/) for the web framework
+- The Alphabet Cartel community for inspiration and support
+
+---
 
 **Built with care for chosen family** 🏳️‍🌈

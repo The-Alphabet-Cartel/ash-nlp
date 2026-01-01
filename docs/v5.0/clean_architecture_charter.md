@@ -72,12 +72,13 @@ LAST MODIFIED: 2025-12-31
 ```python
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Classification
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
-1. FIRST: Uses Zero-Shot AI models for primary semantic classification
-2. SECOND: Enhances AI results with contextual pattern analysis  
-3. PURPOSE: Detect crisis messages in Discord community communications
+1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
+2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+3. ENSEMBLE: Combines weighted model outputs through decision engine
+4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 {fileDescription} for Ash-NLP Service
 ---
@@ -359,12 +360,13 @@ RUN python3.11 -m pip install -r requirements.txt
 ```python
 """
 Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Zero-Shot AI Models → Pattern Enhancement → Crisis Classification
+CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Classification
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
-1. FIRST: Uses Zero-Shot AI models for primary semantic classification
-2. SECOND: Enhances AI results with contextual pattern analysis  
-3. PURPOSE: Detect crisis messages in Discord community communications
+1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
+2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+3. ENSEMBLE: Combines weighted model outputs through decision engine
+4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 {managerDescription} for Ash-NLP Service
 ---

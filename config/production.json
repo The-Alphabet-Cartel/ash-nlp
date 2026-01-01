@@ -1,0 +1,38 @@
+{
+	"_metadata": {
+		"file_version": "v5.0-3-4.1-1",
+		"last_modified": "2025-12-31",
+		"clean_architecture": "Compliant",
+		"description": "Ash-NLP v5.0 Production Configuration Overrides",
+		"note": "This file contains ONLY values that differ from default.json",
+		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
+		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
+	},
+
+	"api": {
+		"description": "Production API settings - optimized for Lofn server",
+		"workers": 4,
+		"timeout": 30
+	},
+
+	"models": {
+		"description": "Production model settings - GPU enabled",
+		"device": "cuda",
+		"warmup_enabled": true,
+		"cache_dir": "/app/cache/models"
+	},
+
+	"logging": {
+		"description": "Production logging - JSON format for log aggregation",
+		"level": "INFO",
+		"format": "json",
+		"file": "/app/logs/ash-nlp.log"
+	},
+
+	"performance": {
+		"description": "Production performance - all optimizations enabled",
+		"cache_enabled": true,
+		"cache_ttl": 300,
+		"async_inference": true
+	}
+}

@@ -1,0 +1,83 @@
+# ============================================================================
+# Ash-NLP v5.0 Requirements
+# ============================================================================
+# FILE VERSION: v5.0-3-4.4-7
+# LAST MODIFIED: 2025-12-31
+# Repository: https://github.com/the-alphabet-cartel/ash-nlp
+# Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+# ============================================================================
+
+# =============================================================================
+# Core Framework
+# =============================================================================
+
+# FastAPI - Modern async web framework
+fastapi>=0.109.0,<1.0.0
+
+# Uvicorn - ASGI server with uvloop for performance
+uvicorn[standard]>=0.27.0,<1.0.0
+
+# Pydantic - Data validation and settings management
+pydantic>=2.5.0,<3.0.0
+pydantic-settings>=2.1.0,<3.0.0
+
+# =============================================================================
+# Machine Learning
+# =============================================================================
+
+# Transformers - HuggingFace transformer models
+transformers>=4.36.0,<5.0.0
+
+# PyTorch - Deep learning framework (CUDA version)
+# Note: For GPU support, install with CUDA:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+torch>=2.1.0,<3.0.0
+
+# Accelerate - Optimized model loading
+accelerate>=0.25.0,<1.0.0
+
+# Safetensors - Fast model loading format
+safetensors>=0.4.0,<1.0.0
+
+# =============================================================================
+# Utilities
+# =============================================================================
+
+# Python-dotenv - Environment variable loading
+python-dotenv>=1.0.0,<2.0.0
+
+# Structlog - Structured logging (optional, for JSON logs)
+# structlog>=24.1.0,<25.0.0
+
+# =============================================================================
+# HTTP and Networking
+# =============================================================================
+
+# HTTPX - Async HTTP client (for webhooks)
+httpx>=0.26.0,<1.0.0
+
+# =============================================================================
+# Testing (Development Only)
+# =============================================================================
+
+# Pytest - Testing framework
+pytest>=7.4.0,<8.0.0
+
+# Pytest-asyncio - Async test support
+pytest-asyncio>=0.23.0,<1.0.0
+
+# HTTPX - For TestClient
+# (already included above)
+
+# =============================================================================
+# Development Tools (Optional)
+# =============================================================================
+
+# Black - Code formatter
+# black>=24.1.0,<25.0.0
+
+# Ruff - Fast linter
+# ruff>=0.1.0,<1.0.0
+
+# MyPy - Type checking
+# mypy>=1.8.0,<2.0.0

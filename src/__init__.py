@@ -8,26 +8,37 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 3. ENSEMBLE: Combines weighted model outputs through decision engine
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
-Utilities Package for Ash-NLP Service
+Ash-NLP Source Package
 ---
-FILE VERSION: v5.0-3-4.6-1
+FILE VERSION: v5.0-3-4.5-4
 LAST MODIFIED: 2025-12-31
 PHASE: Phase 3 - Production Integration
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
-PLACEHOLDER PACKAGE - Reserved for future utility modules.
+This is the main source package for Ash-NLP containing:
+- managers: Configuration and resource management
+- models: Individual model wrappers for the ensemble
+- ensemble: Decision engine and scoring system
+- api: FastAPI application and endpoints
 
-POTENTIAL FUTURE UTILITIES:
-- logging.py: Structured JSON logging for log aggregation (ELK/Loki)
-- metrics.py: Prometheus metrics endpoint (/metrics)
-- cache.py: Response caching for repeated messages
-- validators.py: Custom validation utilities
-- helpers.py: General helper functions
+USAGE:
+    from src.managers import create_config_manager
+    from src.models import create_bart_classifier
+    from src.ensemble import create_decision_engine
+    from src.api import create_app
 """
 
-__version__ = "v5.0-3-4.6-1"
+__version__ = "5.0.0"
+__author__ = "The Alphabet Cartel"
+__email__ = "dev@alphabetcartel.org"
+__url__ = "https://github.com/the-alphabet-cartel/ash-nlp"
 
-# Reserved for future exports
-__all__ = []
+# Package metadata
+__all__ = [
+    "__version__",
+    "__author__",
+    "__email__",
+    "__url__",
+]
