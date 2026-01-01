@@ -10,7 +10,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Consensus Algorithms for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.0-4-1.1-1
+FILE VERSION: v5.0-4-1.1-2
 LAST MODIFIED: 2026-01-01
 PHASE: Phase 4 Step 1 - Consensus Algorithms
 CLEAN ARCHITECTURE: v5.1 Compliant
@@ -41,10 +41,39 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.0-4-1.1-1"
+__version__ = "v5.0-4-1.1-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Helper: Safe Float Conversion
+# =============================================================================
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    """
+    Safely convert a value to float.
+    
+    Args:
+        value: Value to convert
+        default: Default if conversion fails
+        
+    Returns:
+        Float value
+    """
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        # Handle unresolved env vars
+        if value.startswith("${"):
+            return default
+        try:
+            return float(value)
+        except ValueError:
+            return default
+    return default
 
 
 # =============================================================================
@@ -149,6 +178,9 @@ def weighted_voting_consensus(
     Returns:
         ConsensusResult with weighted voting outcome
     """
+    # Ensure crisis_threshold is float
+    crisis_threshold = _safe_float(crisis_threshold, 0.5)
+    
     if not model_signals:
         return ConsensusResult(
             algorithm=ConsensusAlgorithm.WEIGHTED_VOTING,
@@ -168,7 +200,8 @@ def weighted_voting_consensus(
     contributions = {}
 
     for model_name, signal in model_signals.items():
-        weight = weights.get(model_name, 0.0)
+        weight = _safe_float(weights.get(model_name, 0.0), 0.0)
+        signal = _safe_float(signal, 0.0)
         contribution = signal * weight
         total_weighted_score += contribution
         total_weight += weight
@@ -238,6 +271,10 @@ def majority_voting_consensus(
     Returns:
         ConsensusResult with majority voting outcome
     """
+    # Ensure thresholds are floats
+    crisis_threshold = _safe_float(crisis_threshold, 0.5)
+    majority_threshold = _safe_float(majority_threshold, 0.5)
+    
     if not model_signals:
         return ConsensusResult(
             algorithm=ConsensusAlgorithm.MAJORITY_VOTING,
@@ -257,6 +294,7 @@ def majority_voting_consensus(
     vote_details = {}
 
     for model_name, signal in model_signals.items():
+        signal = _safe_float(signal, 0.0)
         if signal >= crisis_threshold:
             crisis_votes += 1
             vote_details[model_name] = {"vote": "crisis", "signal": signal}
@@ -324,6 +362,9 @@ def unanimous_consensus(
     Returns:
         ConsensusResult with unanimous consensus outcome
     """
+    # Ensure threshold is float
+    crisis_threshold = _safe_float(crisis_threshold, 0.6)
+    
     if not model_signals:
         return ConsensusResult(
             algorithm=ConsensusAlgorithm.UNANIMOUS,
@@ -343,6 +384,7 @@ def unanimous_consensus(
     agreement_details = {}
 
     for model_name, signal in model_signals.items():
+        signal = _safe_float(signal, 0.0)
         if signal >= crisis_threshold:
             crisis_signals.append(model_name)
             agreement_details[model_name] = {"agrees_crisis": True, "signal": signal}
@@ -357,7 +399,7 @@ def unanimous_consensus(
     is_unanimous_safe = len(crisis_signals) == 0 and len(safe_signals) > 0
 
     # Calculate score as average (for reference)
-    scores = list(model_signals.values())
+    scores = [_safe_float(s, 0.0) for s in model_signals.values()]
     avg_score = sum(scores) / len(scores) if scores else 0.0
 
     # If unanimous crisis, use average. If not unanimous, score is 0 (conservative)
@@ -429,6 +471,10 @@ def conflict_aware_consensus(
     Returns:
         ConsensusResult with conflict analysis
     """
+    # Ensure thresholds are floats
+    disagreement_threshold = _safe_float(disagreement_threshold, 0.15)
+    crisis_threshold = _safe_float(crisis_threshold, 0.5)
+    
     if not model_signals:
         return ConsensusResult(
             algorithm=ConsensusAlgorithm.CONFLICT_AWARE,
@@ -442,7 +488,7 @@ def conflict_aware_consensus(
             metadata={"error": "No model signals provided"},
         )
 
-    scores = list(model_signals.values())
+    scores = [_safe_float(s, 0.0) for s in model_signals.values()]
     n = len(scores)
 
     # Calculate mean
@@ -458,6 +504,7 @@ def conflict_aware_consensus(
     outliers = []
     std_dev = variance ** 0.5
     for model_name, signal in model_signals.items():
+        signal = _safe_float(signal, 0.0)
         deviation = abs(signal - mean_score)
         if deviation > std_dev * 1.5:  # 1.5 standard deviations
             outliers.append(
@@ -477,7 +524,8 @@ def conflict_aware_consensus(
     total_weight = 0.0
 
     for model_name, signal in model_signals.items():
-        weight = weights.get(model_name, 0.0)
+        weight = _safe_float(weights.get(model_name, 0.0), 0.0)
+        signal = _safe_float(signal, 0.0)
         total_weighted_score += signal * weight
         total_weight += weight
 
@@ -549,6 +597,9 @@ def _calculate_agreement_level(scores: List[float]) -> AgreementLevel:
     if not scores:
         return AgreementLevel.SIGNIFICANT_DISAGREEMENT
 
+    # Ensure all scores are floats
+    scores = [_safe_float(s, 0.0) for s in scores]
+    
     n = len(scores)
     if n < 2:
         return AgreementLevel.STRONG_AGREEMENT
@@ -581,6 +632,9 @@ def _calculate_confidence_from_agreement(
     """
     if not scores:
         return 0.0
+
+    # Ensure all scores are floats
+    scores = [_safe_float(s, 0.0) for s in scores]
 
     # Agreement component (inverse of variance)
     n = len(scores)
@@ -633,18 +687,30 @@ class ConsensusSelector:
             thresholds: Various threshold configurations
         """
         self.default_algorithm = default_algorithm
-        self.weights = weights or {
+        
+        # Default weights - ensure all are floats
+        default_weights = {
             "bart": 0.50,
             "sentiment": 0.25,
             "irony": 0.15,
             "emotions": 0.10,
         }
-        self.thresholds = thresholds or {
+        if weights:
+            for k, v in weights.items():
+                default_weights[k] = _safe_float(v, default_weights.get(k, 0.0))
+        self.weights = default_weights
+        
+        # Default thresholds - ensure all are floats
+        default_thresholds = {
             "crisis": 0.5,
             "majority": 0.5,
             "unanimous": 0.6,
             "disagreement": 0.15,
         }
+        if thresholds:
+            for k, v in thresholds.items():
+                default_thresholds[k] = _safe_float(v, default_thresholds.get(k, 0.5))
+        self.thresholds = default_thresholds
 
         # Algorithm implementations
         self._algorithms = {
@@ -656,7 +722,7 @@ class ConsensusSelector:
 
         logger.info(
             f"📊 ConsensusSelector initialized "
-            f"(default: {default_algorithm.value})"
+            f"(default: {default_algorithm.value}, thresholds: {self.thresholds})"
         )
 
     def select_and_run(
@@ -731,12 +797,14 @@ class ConsensusSelector:
 
     def set_weights(self, weights: Dict[str, float]) -> None:
         """Update model weights."""
-        self.weights.update(weights)
+        for k, v in weights.items():
+            self.weights[k] = _safe_float(v, self.weights.get(k, 0.0))
         logger.info(f"Updated weights: {self.weights}")
 
     def set_thresholds(self, thresholds: Dict[str, float]) -> None:
         """Update threshold values."""
-        self.thresholds.update(thresholds)
+        for k, v in thresholds.items():
+            self.thresholds[k] = _safe_float(v, self.thresholds.get(k, 0.5))
         logger.info(f"Updated thresholds: {self.thresholds}")
 
     def get_algorithm(self) -> ConsensusAlgorithm:
@@ -817,12 +885,15 @@ def create_consensus_selector(
 
             config_thresholds = consensus_config.get("thresholds", {})
             if config_thresholds:
-                final_thresholds.update(config_thresholds)
+                # Ensure all thresholds are floats
+                for k, v in config_thresholds.items():
+                    final_thresholds[k] = _safe_float(v, final_thresholds.get(k, 0.5))
 
         # Get model weights
         config_weights = config_manager.get_model_weights()
         if config_weights:
-            final_weights.update(config_weights)
+            for k, v in config_weights.items():
+                final_weights[k] = _safe_float(v, final_weights.get(k, 0.0))
 
     # Apply explicit overrides
     if default_algorithm:
@@ -834,10 +905,12 @@ def create_consensus_selector(
             )
 
     if weights:
-        final_weights.update(weights)
+        for k, v in weights.items():
+            final_weights[k] = _safe_float(v, final_weights.get(k, 0.0))
 
     if thresholds:
-        final_thresholds.update(thresholds)
+        for k, v in thresholds.items():
+            final_thresholds[k] = _safe_float(v, final_thresholds.get(k, 0.5))
 
     return ConsensusSelector(
         default_algorithm=final_algorithm,
@@ -864,4 +937,6 @@ __all__ = [
     # Selector class
     "ConsensusSelector",
     "create_consensus_selector",
+    # Utility
+    "_safe_float",
 ]
