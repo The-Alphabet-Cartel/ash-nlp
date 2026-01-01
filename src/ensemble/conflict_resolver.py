@@ -10,7 +10,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Conflict Resolution for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.0-4-2.6-1
+FILE VERSION: v5.0-4-2.6-2
 LAST MODIFIED: 2026-01-01
 PHASE: Phase 4 Step 2 - Conflict Resolution
 CLEAN ARCHITECTURE: v5.1 Compliant
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-4-2.6-1"
+__version__ = "v5.0-4-2.6-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -477,23 +477,56 @@ class ConflictResolver:
             return False
 
         try:
-            # Build alert message
-            alert_content = self._build_alert_content(
-                conflict_report, result, message_preview
+            # Determine primary conflict type
+            conflict_type = "model_disagreement"
+            if conflict_report.conflicts:
+                conflict_type = conflict_report.conflicts[0].conflict_type.value
+
+            # Build details dict
+            details = {
+                "conflict_count": conflict_report.conflict_count,
+                "summary": conflict_report.summary,
+                "message_preview": message_preview[:100] if message_preview else "",
+            }
+
+            # Add score range if available
+            if conflict_report.conflicts:
+                all_scores = []
+                for c in conflict_report.conflicts:
+                    if "models_involved" in c.details:
+                        for model_info in c.details.get("models_involved", []):
+                            if "score" in model_info:
+                                all_scores.append(model_info["score"])
+                if all_scores:
+                    details["max_score"] = max(all_scores)
+                    details["min_score"] = min(all_scores)
+                    details["range"] = max(all_scores) - min(all_scores)
+
+            # Build resolution dict
+            resolution = {
+                "strategy": result.strategy_used.value,
+                "original_score": result.original_score,
+                "final_score": result.resolved_score,
+                "flagged_for_review": result.requires_review,
+            }
+
+            severity = conflict_report.highest_severity.value if conflict_report.highest_severity else "medium"
+
+            # Send via alerter sync method
+            sent = self._alerter.send_conflict_alert_sync(
+                conflict_type=conflict_type,
+                severity=severity,
+                details=details,
+                resolution=resolution,
+                source="conflict_resolver",
             )
 
-            # Send via alerter (fire and forget for sync)
-            asyncio.create_task(
-                self._alerter.send_conflict_alert(
-                    content=alert_content,
-                    severity=conflict_report.highest_severity.value if conflict_report.highest_severity else "unknown",
-                )
-            )
+            if sent:
+                self._last_alert_time = time.time()
+                self._alert_count += 1
+                logger.info(f"📢 Conflict alert sent (total: {self._alert_count})")
 
-            self._last_alert_time = time.time()
-            self._alert_count += 1
-            logger.info(f"📢 Conflict alert queued (total: {self._alert_count})")
-            return True
+            return sent
 
         except Exception as e:
             logger.error(f"Failed to send conflict alert: {e}")
@@ -520,21 +553,56 @@ class ConflictResolver:
             return False
 
         try:
-            # Build alert message
-            alert_content = self._build_alert_content(
-                conflict_report, result, message_preview
+            # Determine primary conflict type
+            conflict_type = "model_disagreement"
+            if conflict_report.conflicts:
+                conflict_type = conflict_report.conflicts[0].conflict_type.value
+
+            # Build details dict
+            details = {
+                "conflict_count": conflict_report.conflict_count,
+                "summary": conflict_report.summary,
+                "message_preview": message_preview[:100] if message_preview else "",
+            }
+
+            # Add score range if available
+            if conflict_report.conflicts:
+                all_scores = []
+                for c in conflict_report.conflicts:
+                    if "models_involved" in c.details:
+                        for model_info in c.details.get("models_involved", []):
+                            if "score" in model_info:
+                                all_scores.append(model_info["score"])
+                if all_scores:
+                    details["max_score"] = max(all_scores)
+                    details["min_score"] = min(all_scores)
+                    details["range"] = max(all_scores) - min(all_scores)
+
+            # Build resolution dict
+            resolution = {
+                "strategy": result.strategy_used.value,
+                "original_score": result.original_score,
+                "final_score": result.resolved_score,
+                "flagged_for_review": result.requires_review,
+            }
+
+            severity = conflict_report.highest_severity.value if conflict_report.highest_severity else "medium"
+
+            # Send via alerter async method
+            sent = await self._alerter.send_conflict_alert(
+                conflict_type=conflict_type,
+                severity=severity,
+                details=details,
+                resolution=resolution,
+                source="conflict_resolver",
             )
 
-            # Send via alerter
-            await self._alerter.send_conflict_alert(
-                content=alert_content,
-                severity=conflict_report.highest_severity.value if conflict_report.highest_severity else "unknown",
-            )
+            if sent:
+                self._last_alert_time = time.time()
+                self._alert_count += 1
+                logger.info(f"📢 Conflict alert sent (total: {self._alert_count})")
 
-            self._last_alert_time = time.time()
-            self._alert_count += 1
-            logger.info(f"📢 Conflict alert sent (total: {self._alert_count})")
-            return True
+            return sent
 
         except Exception as e:
             logger.error(f"Failed to send conflict alert: {e}")
@@ -546,7 +614,7 @@ class ConflictResolver:
         result: ResolutionResult,
         message_preview: str,
     ) -> Dict[str, Any]:
-        """Build structured alert content."""
+        """Build structured alert content (legacy, kept for reference)."""
         # Truncate message preview safely
         safe_preview = message_preview[:100] + "..." if len(message_preview) > 100 else message_preview
 
