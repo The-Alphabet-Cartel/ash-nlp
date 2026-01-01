@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 FastAPI Application Factory for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-7.4-3
+FILE VERSION: v5.0-4-5.3-1
 LAST MODIFIED: 2026-01-01
-PHASE: Phase 3 Step 7 - Performance Optimization
+PHASE: Phase 4 - API Enhancements
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -29,6 +29,11 @@ PHASE 3.7 FEATURES:
 - 3.7.1: Model warmup on startup with Discord alerting
 - 3.7.2: Async parallel inference enabled by default
 - 3.7.4: Response caching enabled by default
+
+PHASE 4 FEATURES:
+- Consensus algorithm configuration endpoint
+- Enhanced analysis with explainability
+- Conflict detection and resolution
 """
 
 import asyncio
@@ -44,11 +49,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.managers.config_manager import ConfigManager, create_config_manager
 from src.ensemble import EnsembleDecisionEngine, create_decision_engine
 
-from .routes import analysis_router, health_router, models_router
+from .routes import analysis_router, health_router, models_router, config_router
 from .middleware import setup_middleware
 
 # Module version
-__version__ = "v5.0-3-7.4-3"
+__version__ = "v5.0-4-5.3-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -120,12 +125,16 @@ async def lifespan(app: FastAPI):
             config = create_config_manager()
             app.state.config = config
 
-        # Create decision engine with alerter
-        logger.info("Initializing Decision Engine...")
+        # Check if Phase 4 should be enabled
+        phase4_enabled = os.environ.get("NLP_PHASE4_ENABLED", "true").lower() == "true"
+
+        # Create decision engine with alerter and Phase 4
+        logger.info(f"Initializing Decision Engine (Phase 4: {phase4_enabled})...")
         engine = create_decision_engine(
             config_manager=config,
             auto_initialize=False,
             alerter=alerter,
+            phase4_enabled=phase4_enabled,
         )
 
         # Load models
@@ -161,6 +170,8 @@ async def lifespan(app: FastAPI):
         total_models = len(engine.model_loader._models) if engine.model_loader._models else 4
 
         logger.info(f"✅ Ash-NLP Service started in {startup_time:.2f}s")
+        if phase4_enabled:
+            logger.info("✨ Phase 4 features enabled: consensus, conflicts, explainability")
 
         # Send startup alert (Phase 3.7.1)
         if alerter and alerter.enabled:
@@ -221,6 +232,7 @@ def create_app(
     cors_origins: Optional[list] = None,
     enable_rate_limiting: bool = True,
     requests_per_minute: int = 60,
+    phase4_enabled: bool = True,
 ) -> FastAPI:
     """
     Create and configure the FastAPI application.
@@ -233,6 +245,7 @@ def create_app(
         cors_origins: Allowed CORS origins (default: all)
         enable_rate_limiting: Enable rate limiting middleware
         requests_per_minute: Rate limit threshold
+        phase4_enabled: Enable Phase 4 features (default: True)
 
     Returns:
         Configured FastAPI application
@@ -275,7 +288,13 @@ Ash-NLP uses a multi-model ensemble for crisis detection:
 - **Low** (≥0.30): Passive monitoring
 - **Safe** (<0.30): No crisis detected
 
-## Performance Features (v5.0)
+## Phase 4 Features (v5.0.4)
+
+- **Consensus Algorithms**: weighted_voting, majority_voting, unanimous, conflict_aware
+- **Conflict Detection**: Identifies model disagreements
+- **Explainability**: Human-readable explanations with configurable verbosity
+
+## Performance Features
 
 - **Response Caching**: Repeated messages served from cache
 - **Async Parallel Inference**: All models run concurrently
@@ -349,9 +368,12 @@ Ash-NLP uses a multi-model ensemble for crisis detection:
     # Models information endpoints
     app.include_router(models_router)
 
+    # Phase 4: Configuration endpoints
+    app.include_router(config_router)
+
     logger.info(
         f"🔧 Application created "
-        f"(cors={enable_cors}, rate_limit={enable_rate_limiting})"
+        f"(cors={enable_cors}, rate_limit={enable_rate_limiting}, phase4={phase4_enabled})"
     )
 
     return app

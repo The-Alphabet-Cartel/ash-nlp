@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 API Routes for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.4-3
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.4 - API Layer
+FILE VERSION: v5.0-4-5.2-1
+LAST MODIFIED: 2026-01-01
+PHASE: Phase 4 - API Enhancements
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -23,12 +23,19 @@ RESPONSIBILITIES:
 - Integrate with Decision Engine for analysis
 - Provide health and status endpoints
 
+PHASE 4 ENHANCEMENTS:
+- Consensus configuration endpoint
+- Enhanced analysis with explanations
+- Conflict analysis in responses
+
 ENDPOINTS:
 - POST /analyze - Analyze single message for crisis signals
 - POST /analyze/batch - Analyze multiple messages
 - GET /health - Health check for load balancers
 - GET /status - Detailed service status
 - GET /models - Model information
+- GET /config/consensus - Get consensus configuration (Phase 4)
+- PUT /config/consensus - Update consensus configuration (Phase 4)
 """
 
 import logging
@@ -40,24 +47,41 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 
 from .schemas import (
+    # Request schemas
     AnalyzeRequest,
     AnalyzeResponse,
     BatchAnalyzeRequest,
     BatchAnalyzeResponse,
     BatchAnalyzeResponseItem,
+    ConsensusConfigUpdateRequest,
+    # Response schemas
     HealthResponse,
     StatusResponse,
     ModelStatusResponse,
     ModelSignalResponse,
     ErrorResponse,
+    # Phase 4 Response schemas
+    ExplanationResponse,
+    ConflictAnalysisResponse,
+    DetectedConflictResponse,
+    ConsensusResponse,
+    ConsensusConfigResponse,
+    Phase4StatusResponse,
+    # Enums
     SeverityLevel,
     RecommendedAction,
     HealthStatus,
+    ConsensusAlgorithm,
+    ResolutionStrategy,
+    VerbosityLevel,
+    ConflictType,
+    ConflictSeverity,
+    AgreementLevel,
 )
 from .middleware import get_request_id
 
 # Module version
-__version__ = "v5.0-3-4.4-3"
+__version__ = "v5.0-4-5.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -84,13 +108,18 @@ models_router = APIRouter(
     tags=["Models"],
 )
 
+# Phase 4: Configuration router
+config_router = APIRouter(
+    prefix="/config",
+    tags=["Configuration"],
+)
+
 
 # =============================================================================
 # Dependency Injection
 # =============================================================================
 
 
-# Engine will be injected via app.state
 def get_engine(request: Request):
     """Get decision engine from app state."""
     engine = getattr(request.app.state, "engine", None)
@@ -135,8 +164,13 @@ def get_start_time(request: Request) -> float:
     - Cardiff Irony Detection (tertiary, weight 0.15)
     - RoBERTa Emotions Classification (supplementary, weight 0.10)
 
+    **Phase 4 Features:**
+    - Multiple consensus algorithms (weighted_voting, majority_voting, unanimous, conflict_aware)
+    - Conflict detection and resolution
+    - Human-readable explanations with configurable verbosity
+
     Returns a comprehensive crisis assessment including severity level,
-    confidence score, and recommended action.
+    confidence score, recommended action, and optional explanation.
     """,
 )
 async def analyze_message(
@@ -148,6 +182,7 @@ async def analyze_message(
     Analyze a single message for crisis signals.
 
     This is the primary endpoint for crisis detection.
+    Supports Phase 4 enhanced options.
     """
     request_id = get_request_id(request)
 
@@ -157,12 +192,20 @@ async def analyze_message(
             "request_id": request_id,
             "user_id": body.user_id,
             "channel_id": body.channel_id,
+            "include_explanation": body.include_explanation,
+            "verbosity": body.verbosity.value if body.verbosity else None,
+            "consensus_algorithm": body.consensus_algorithm.value if body.consensus_algorithm else None,
         },
     )
 
     try:
-        # Run analysis
-        assessment = engine.analyze(body.message)
+        # Run analysis with Phase 4 options
+        assessment = engine.analyze(
+            message=body.message,
+            include_explanation=body.include_explanation,
+            verbosity=body.verbosity.value if body.verbosity else None,
+            consensus_algorithm=body.consensus_algorithm.value if body.consensus_algorithm else None,
+        )
 
         # Convert signals to response format
         signals = {}
@@ -174,7 +217,7 @@ async def analyze_message(
                     crisis_signal=signal_data.get("crisis_signal", 0.0),
                 )
 
-        # Build response
+        # Build base response
         response = AnalyzeResponse(
             crisis_detected=assessment.crisis_detected,
             severity=SeverityLevel(assessment.severity.value),
@@ -189,6 +232,19 @@ async def analyze_message(
             request_id=request_id,
             timestamp=datetime.utcnow(),
         )
+
+        # Add Phase 4 enhanced fields
+        if assessment.explanation:
+            response.explanation = _build_explanation_response(assessment.explanation)
+
+        if assessment.conflict_report:
+            response.conflict_analysis = _build_conflict_response(
+                assessment.conflict_report,
+                assessment.aggregated_result.resolution if assessment.aggregated_result else None,
+            )
+
+        if assessment.consensus_result:
+            response.consensus = _build_consensus_response(assessment.consensus_result)
 
         # Log crisis detections
         if assessment.crisis_detected:
@@ -231,6 +287,9 @@ async def analyze_message(
 
     Useful for processing historical messages or bulk analysis.
     Maximum 100 messages per request.
+
+    **Note:** For performance, explanations are optional in batch mode
+    and only a summary is returned when enabled.
     """,
 )
 async def analyze_batch(
@@ -245,7 +304,7 @@ async def analyze_batch(
 
     logger.info(
         f"Batch analysis: {len(body.messages)} messages",
-        extra={"request_id": request_id},
+        extra={"request_id": request_id, "include_explanation": body.include_explanation},
     )
 
     start_time = time.perf_counter()
@@ -256,10 +315,19 @@ async def analyze_batch(
 
     try:
         for idx, message in enumerate(body.messages):
-            assessment = engine.analyze(message)
+            assessment = engine.analyze(
+                message=message,
+                include_explanation=body.include_explanation,
+                verbosity="minimal" if body.include_explanation else None,
+            )
 
             # Create preview
             preview = message[:50] + "..." if len(message) > 50 else message
+
+            # Get explanation summary if requested
+            explanation_summary = None
+            if body.include_explanation and assessment.explanation:
+                explanation_summary = assessment.explanation.get("decision_summary", "")
 
             results.append(
                 BatchAnalyzeResponseItem(
@@ -269,6 +337,7 @@ async def analyze_batch(
                     severity=SeverityLevel(assessment.severity.value),
                     crisis_score=assessment.crisis_score,
                     requires_intervention=assessment.requires_intervention,
+                    explanation_summary=explanation_summary,
                 )
             )
 
@@ -301,6 +370,110 @@ async def analyze_batch(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Batch analysis failed: {str(e)}",
+        )
+
+
+# =============================================================================
+# Phase 4: Configuration Endpoints
+# =============================================================================
+
+
+@config_router.get(
+    "/consensus",
+    response_model=ConsensusConfigResponse,
+    summary="Get consensus configuration",
+    description="""
+    Get the current consensus algorithm configuration.
+
+    **Phase 4 Feature**
+
+    Returns:
+    - Default algorithm being used
+    - Available algorithms
+    - Model weights
+    - Thresholds
+    - Conflict resolution settings
+    - Explainability settings
+    """,
+)
+async def get_consensus_config(
+    engine=Depends(get_engine),
+) -> ConsensusConfigResponse:
+    """
+    Get current consensus configuration.
+    """
+    status_data = engine.get_status()
+
+    # Get Phase 4 config
+    phase4_config = status_data.get("phase4", {})
+    consensus_config = phase4_config.get("consensus", {}) or {}
+    conflict_config = phase4_config.get("conflict_detection", {}) or {}
+    resolution_config = phase4_config.get("conflict_resolution", {}) or {}
+    explainability_config = phase4_config.get("explainability", {}) or {}
+
+    return ConsensusConfigResponse(
+        default_algorithm=ConsensusAlgorithm(
+            consensus_config.get("algorithm", "weighted_voting")
+        ),
+        available_algorithms=list(ConsensusAlgorithm),
+        weights=status_data.get("weights", {}),
+        thresholds=consensus_config.get("thresholds", {}),
+        conflict_detection_enabled=conflict_config.get("enabled", True),
+        resolution_strategy=ResolutionStrategy(
+            resolution_config.get("default_strategy", "conservative")
+        ),
+        explainability_verbosity=VerbosityLevel(
+            explainability_config.get("default_verbosity", "standard")
+        ),
+    )
+
+
+@config_router.put(
+    "/consensus",
+    response_model=ConsensusConfigResponse,
+    summary="Update consensus configuration",
+    description="""
+    Update the consensus algorithm configuration.
+
+    **Phase 4 Feature**
+
+    Allows updating:
+    - Default consensus algorithm
+    - Conflict resolution strategy
+    - Explainability verbosity
+    - Threshold values
+
+    Changes take effect immediately for new requests.
+    """,
+)
+async def update_consensus_config(
+    body: ConsensusConfigUpdateRequest,
+    engine=Depends(get_engine),
+) -> ConsensusConfigResponse:
+    """
+    Update consensus configuration.
+    """
+    logger.info(f"Updating consensus config: {body.model_dump(exclude_none=True)}")
+
+    try:
+        # Apply updates
+        if body.default_algorithm:
+            engine.set_consensus_algorithm(body.default_algorithm.value)
+
+        if body.resolution_strategy:
+            engine.set_resolution_strategy(body.resolution_strategy.value)
+
+        if body.explainability_verbosity:
+            engine.set_explainability_verbosity(body.explainability_verbosity.value)
+
+        # Return updated config
+        return await get_consensus_config(engine)
+
+    except Exception as e:
+        logger.error(f"Failed to update consensus config: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Configuration update failed: {str(e)}",
         )
 
 
@@ -340,6 +513,7 @@ async def health_check(
                 models_loaded=0,
                 total_models=4,
                 version=__version__,
+                phase4_enabled=False,
             ).model_dump(mode="json"),
         )
 
@@ -360,6 +534,7 @@ async def health_check(
         total_models=health.get("total_models", 4),
         uptime_seconds=uptime,
         version=__version__,
+        phase4_enabled=health.get("phase4_enabled", True),
         timestamp=datetime.utcnow(),
     )
 
@@ -425,7 +600,7 @@ async def get_status(
     """
     Get detailed service status.
 
-    Includes model status, statistics, and configuration.
+    Includes model status, statistics, configuration, and Phase 4 status.
     """
     status_data = engine.get_status()
 
@@ -455,6 +630,28 @@ async def get_status(
     if config:
         environment = getattr(config, "environment", "production")
 
+    # Build Phase 4 status
+    phase4_status = None
+    if status_data.get("phase4_enabled", True):
+        phase4_config = status_data.get("phase4", {})
+        consensus_config = phase4_config.get("consensus", {}) or {}
+        resolution_config = phase4_config.get("conflict_resolution", {}) or {}
+        explainability_config = phase4_config.get("explainability", {}) or {}
+
+        phase4_status = Phase4StatusResponse(
+            enabled=True,
+            consensus_algorithm=ConsensusAlgorithm(
+                consensus_config.get("algorithm", "weighted_voting")
+            ) if consensus_config.get("algorithm") else None,
+            resolution_strategy=ResolutionStrategy(
+                resolution_config.get("default_strategy", "conservative")
+            ) if resolution_config.get("default_strategy") else None,
+            explainability_verbosity=VerbosityLevel(
+                explainability_config.get("default_verbosity", "standard")
+            ) if explainability_config.get("default_verbosity") else None,
+            conflicts_detected=status_data.get("stats", {}).get("conflicts_detected", 0),
+        )
+
     return StatusResponse(
         service="ash-nlp",
         version=__version__,
@@ -470,6 +667,7 @@ async def get_status(
             "thresholds": status_data.get("thresholds", {}),
             "async_inference": status_data.get("async_inference", True),
         },
+        phase4=phase4_status,
         timestamp=datetime.utcnow(),
     )
 
@@ -569,7 +767,84 @@ async def root() -> Dict[str, str]:
         "description": "Crisis Detection Backend for The Alphabet Cartel Discord Community",
         "docs": "/docs",
         "health": "/health",
+        "phase4": "enabled",
     }
+
+
+# =============================================================================
+# Helper Functions for Phase 4 Response Building
+# =============================================================================
+
+
+def _build_explanation_response(explanation_data: Dict[str, Any]) -> ExplanationResponse:
+    """Build ExplanationResponse from explanation dict."""
+    return ExplanationResponse(
+        verbosity=VerbosityLevel(explanation_data.get("verbosity", "standard")),
+        decision_summary=explanation_data.get("decision_summary", ""),
+        key_factors=explanation_data.get("key_factors", []),
+        recommended_action=explanation_data.get("recommended_action"),
+        plain_text=explanation_data.get("plain_text", ""),
+        confidence_summary=explanation_data.get("confidence_summary"),
+        model_contributions=explanation_data.get("model_contributions"),
+        conflict_summary=explanation_data.get("conflict_summary"),
+    )
+
+
+def _build_conflict_response(
+    conflict_data: Dict[str, Any],
+    resolution_data: Optional[Any] = None,
+) -> ConflictAnalysisResponse:
+    """Build ConflictAnalysisResponse from conflict report dict."""
+    conflicts = []
+    for conflict in conflict_data.get("conflicts", []):
+        conflicts.append(
+            DetectedConflictResponse(
+                conflict_type=ConflictType(conflict.get("conflict_type", "score_disagreement")),
+                severity=ConflictSeverity(conflict.get("severity", "medium")),
+                description=conflict.get("description", ""),
+                involved_models=conflict.get("involved_models", []),
+                details=conflict.get("details", {}),
+            )
+        )
+
+    response = ConflictAnalysisResponse(
+        has_conflicts=conflict_data.get("has_conflicts", False),
+        conflict_count=conflict_data.get("conflict_count", 0),
+        conflicts=conflicts,
+        highest_severity=ConflictSeverity(conflict_data["highest_severity"]) if conflict_data.get("highest_severity") else None,
+        requires_review=conflict_data.get("requires_review", False),
+        summary=conflict_data.get("summary", ""),
+    )
+
+    # Add resolution info if available
+    if resolution_data:
+        if hasattr(resolution_data, "to_dict"):
+            res_dict = resolution_data.to_dict()
+        else:
+            res_dict = resolution_data
+
+        response.resolution_strategy = ResolutionStrategy(
+            res_dict.get("strategy_used", "conservative")
+        )
+        response.original_score = res_dict.get("original_score")
+        response.resolved_score = res_dict.get("resolved_score")
+
+    return response
+
+
+def _build_consensus_response(consensus_data: Dict[str, Any]) -> ConsensusResponse:
+    """Build ConsensusResponse from consensus result dict."""
+    return ConsensusResponse(
+        algorithm=ConsensusAlgorithm(consensus_data.get("algorithm", "weighted_voting")),
+        crisis_score=consensus_data.get("crisis_score", 0.0),
+        confidence=consensus_data.get("confidence", 0.0),
+        agreement_level=AgreementLevel(consensus_data.get("agreement_level", "moderate_agreement")),
+        is_crisis=consensus_data.get("is_crisis", False),
+        requires_review=consensus_data.get("requires_review", False),
+        has_conflict=consensus_data.get("has_conflict", False),
+        individual_scores=consensus_data.get("individual_scores", {}),
+        vote_breakdown=consensus_data.get("vote_breakdown"),
+    )
 
 
 # =============================================================================
@@ -580,4 +855,5 @@ __all__ = [
     "analysis_router",
     "health_router",
     "models_router",
+    "config_router",
 ]
