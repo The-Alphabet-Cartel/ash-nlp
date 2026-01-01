@@ -43,7 +43,7 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
 
 ## 📈 **PROGRESS TRACKING**
 
-### **Current Status**: Phase 4 Complete ✅
+### **Current Status**: Phase 5 In Progress 🚧
 
 ### **Phase Completion**:
 - [x] Phase 0: Foundation & Planning - 100% ✅
@@ -51,9 +51,9 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
 - [x] Phase 2: Model Migration - 100% ✅
 - [x] Phase 3: API & Docker Deployment - 100% ✅
 - [x] Phase 4: Ensemble Coordinator Enhancement - 100% ✅
-- [ ] Phase 5: Context History Analysis - 0%
+- [ ] Phase 5: Context History Analysis - 5% (Planning complete)
 
-### **Overall Progress**: 83.33% (5/6 phases complete)
+### **Overall Progress**: 84.17% (5/6 phases complete, Phase 5 started)
 
 ### **Phase Dependency Map**
 ```
@@ -255,38 +255,55 @@ docs/v5.0/Phase4/api_reference.md
 
 ## 📝 **PHASE 5: CONTEXT HISTORY ANALYSIS**
 
-### **Status**: ⏳ **NOT STARTED**
+### **Status**: ⏳ **IN PROGRESS**
 
 ### **Duration**: 2-3 weeks
 ### **Priority**: MEDIUM
 
+> **Documentation**: See `docs/v5.0/Phase5/phase_5_planning.md` for detailed implementation plan
+
+### **Key Architectural Decision**:
+
+**Ash-NLP remains STATELESS.** All message history persistence is managed by Ash-Bot.
+Ash-NLP receives message history as part of the request payload and performs analysis.
+
 ### **Planned Objectives**:
 
-**Context History Analysis**:
-- [ ] Rolling window message history
-- [ ] Temporal pattern detection
-- [ ] Escalation detection
-- [ ] User communication pattern analysis
+**Context Analysis** (Ash-NLP receives history from Ash-Bot):
+- [ ] Escalation detection across message sequences
+- [ ] Temporal pattern detection (late night, rapid posting)
+- [ ] Trend analysis (worsening, stable, improving)
+- [ ] Pattern classification (rapid, gradual, sudden onset)
+- [ ] Intervention urgency scoring
 
-**Performance Optimization** (Deferred from Phase 3):
-- [ ] Request batching optimization
-- [ ] Benchmarking and profiling suite
-- [ ] Memory optimization (quantization options)
-- [ ] Advanced caching strategies
+**Configuration Management**:
+- [ ] `context_config.json` with environment variable overrides
+- [ ] `ContextConfigManager` with factory function
+- [ ] Configurable `max_history_size` (default: 20 messages)
+- [ ] Configurable `alert_cooldown_seconds` (default: 300)
 
-**Monitoring, Testing, & Observability**:
-- Will be handled by:
-  - [Ash-Thrash Project](https://github.com/the-alphabet-cartel/ash-thrash)
-  - [Ash-Dash Project](https://github.com/the-alphabet-cartel/ash-dash)
+**API Enhancement**:
+- [ ] Accept `message_history[]` in request payload
+- [ ] Return `context_analysis` in response
+- [ ] `GET/PUT /config/context` endpoints
 
-### **Proposed File Structure**:
+**NOT in Ash-NLP Scope** (handled elsewhere):
+- Message persistence (Ash-Bot)
+- Rolling window management (Ash-Bot)
+- Performance benchmarking (Ash-Thrash)
+- Monitoring dashboards (Ash-Dash)
+
+### **File Structure**:
 ```
 src/context/
 ├── __init__.py
-├── history_store.py      # Message history storage
-├── temporal_detector.py  # Temporal pattern detection
-├── escalation.py         # Escalation detection
-└── context_analyzer.py   # Main context analysis coordinator
+├── context_analyzer.py   # Main orchestrator
+├── escalation_detector.py # Escalation detection algorithms
+├── temporal_detector.py  # Time-based pattern detection
+└── trend_analyzer.py     # Trend direction and velocity
+
+src/managers/
+└── context_config_manager.py  # ContextConfigManager
 
 src/config/context_config.json
 tests/phase5/
@@ -344,12 +361,20 @@ pydantic>=2.0.0
 
 ## 💾 **VERSION CONTROL**
 
-### **Document Version**: v5.0.4
+### **Document Version**: v5.0.5
 ### **Last Updated**: 2026-01-01
 ### **Last Updated By**: Project Team
 
 ### **Change Log**:
 ```
+2026-01-01: Phase 5 planning completed
+- Planning document created (phase_5_planning.md)
+- Architecture decision: Ash-NLP remains stateless
+- Ash-Bot handles message persistence and rolling window
+- Configuration schema designed (context_config.json)
+- Confirmed max_history_size=20, alert_cooldown=300s
+- Performance benchmarking deferred to Ash-Thrash
+
 2026-01-01: Phase 4 completed
 - Consensus algorithms implemented (4)
 - Conflict detection/resolution complete
@@ -380,16 +405,23 @@ pydantic>=2.0.0
 
 ## 🏁 **NEXT STEPS**
 
-**Phase 5 Planning** (Starting Tomorrow):
-1. Design context history architecture
-2. Implement message history storage
-3. Create temporal pattern detection
-4. Implement escalation detection
-5. Add performance optimization features
+**Phase 5 Implementation** (In Progress):
+1. ✅ Planning document created (`docs/v5.0/Phase5/phase_5_planning.md`)
+2. ✅ Architecture decision: Ash-NLP remains stateless
+3. ✅ Configuration schema designed (`context_config.json`)
+4. ⏳ Create `context_config.json` and `ContextConfigManager`
+5. ⏳ Implement core context analysis components
+6. ⏳ Implement escalation detection algorithms
+7. ⏳ Implement temporal pattern detection
+8. ⏳ API enhancement for message history
 
 **Immediate Actions**:
-- [ ] Create Phase 5 planning document
-- [ ] Design context_config.json schema
+- [x] Create Phase 5 planning document
+- [x] Design context_config.json schema
+- [x] Confirm architectural decisions (stateless NLP)
+- [ ] Create `src/config/context_config.json`
+- [ ] Create `src/managers/context_config_manager.py`
+- [ ] Update `.env.template` with Phase 5 variables
 
 ---
 
