@@ -1,6 +1,6 @@
 # Ash-NLP v5.0 Phase 5 Planning Document
 
-**Document Version**: v5.0-5-PLANNING-1  
+**Document Version**: v5.0-5-PLANNING-2  
 **Created**: 2026-01-01  
 **Status**: 🚧 IN PROGRESS  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
@@ -207,16 +207,16 @@ Implement **Context History Analysis** capabilities that enable Ash-NLP to detec
 
 | Task ID | Description | Status |
 |---------|-------------|--------|
-| 5.6.1 | Create `src/config/context_config.json` | ⏳ |
-| 5.6.2 | Define escalation thresholds | ⏳ |
-| 5.6.3 | Define temporal pattern parameters | ⏳ |
-| 5.6.4 | Define trend analysis parameters | ⏳ |
-| 5.6.5 | Add environment variable overrides | ⏳ |
-| 5.6.6 | Update `.env.template` | ⏳ |
-| 5.6.7 | Update `ConfigManager` to load `context_config.json` | ⏳ |
-| 5.6.8 | Create `ContextConfigManager` class with factory function | ⏳ |
-| 5.6.9 | Add `max_history_size` setting (default: 20) | ⏳ |
-| 5.6.10 | Add `alert_cooldown_seconds` setting (default: 300) | ⏳ |
+| 5.6.1 | Create `src/config/context_config.json` | ✅ |
+| 5.6.2 | Define escalation thresholds | ✅ |
+| 5.6.3 | Define temporal pattern parameters | ✅ |
+| 5.6.4 | Define trend analysis parameters | ✅ |
+| 5.6.5 | Add environment variable overrides | ✅ |
+| 5.6.6 | Update `.env.template` | ✅ |
+| 5.6.7 | Update `ConfigManager` to load `context_config.json` | ⏳ (deferred - using dedicated manager) |
+| 5.6.8 | Create `ContextConfigManager` class with factory function | ✅ |
+| 5.6.9 | Add `max_history_size` setting (default: 20) | ✅ |
+| 5.6.10 | Add `alert_cooldown_seconds` setting (default: 300) | ✅ |
 
 ### 5.7 Unit Tests
 
