@@ -1,0 +1,328 @@
+{
+	"_metadata": {
+		"file_version": "v5.0-5-1.0-1",
+		"last_modified": "2026-01-01",
+		"clean_architecture": "Compliant",
+		"description": "Context Analysis Configuration for Ash-NLP Phase 5 - Escalation Detection, Temporal Patterns, and Trend Analysis",
+		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
+		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
+	},
+
+	"context_analysis": {
+		"description": "Master toggle and limits for context analysis features",
+		"enabled": "${NLP_CONTEXT_ANALYSIS_ENABLED}",
+		"max_history_size": "${NLP_CONTEXT_MAX_HISTORY_SIZE}",
+		"defaults": {
+			"enabled": true,
+			"max_history_size": 20
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"max_history_size": {
+				"type": "integer",
+				"range": [3, 50],
+				"required": true
+			}
+		}
+	},
+
+	"escalation_detection": {
+		"description": "Configuration for detecting crisis escalation patterns across message sequences",
+		"enabled": "${NLP_ESCALATION_DETECTION_ENABLED}",
+		"rapid_threshold_hours": "${NLP_ESCALATION_RAPID_THRESHOLD_HOURS}",
+		"gradual_threshold_hours": "${NLP_ESCALATION_GRADUAL_THRESHOLD_HOURS}",
+		"score_increase_threshold": "${NLP_ESCALATION_SCORE_THRESHOLD}",
+		"minimum_messages": "${NLP_ESCALATION_MINIMUM_MESSAGES}",
+		"alert_on_detection": "${NLP_ESCALATION_ALERT_ENABLED}",
+		"alert_cooldown_seconds": "${NLP_ESCALATION_ALERT_COOLDOWN_SECONDS}",
+		"defaults": {
+			"enabled": true,
+			"rapid_threshold_hours": 4,
+			"gradual_threshold_hours": 24,
+			"score_increase_threshold": 0.3,
+			"minimum_messages": 3,
+			"alert_on_detection": true,
+			"alert_cooldown_seconds": 300
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"rapid_threshold_hours": {
+				"type": "integer",
+				"range": [1, 12],
+				"required": true
+			},
+			"gradual_threshold_hours": {
+				"type": "integer",
+				"range": [12, 168],
+				"required": true
+			},
+			"score_increase_threshold": {
+				"type": "float",
+				"range": [0.1, 0.8],
+				"required": true
+			},
+			"minimum_messages": {
+				"type": "integer",
+				"range": [2, 20],
+				"required": true
+			},
+			"alert_on_detection": {
+				"type": "boolean",
+				"required": true
+			},
+			"alert_cooldown_seconds": {
+				"type": "integer",
+				"range": [60, 3600],
+				"required": true
+			}
+		}
+	},
+
+	"temporal_detection": {
+		"description": "Configuration for time-based pattern detection (late night, rapid posting, etc.)",
+		"enabled": "${NLP_TEMPORAL_DETECTION_ENABLED}",
+		"late_night_start_hour": "${NLP_TEMPORAL_LATE_NIGHT_START}",
+		"late_night_end_hour": "${NLP_TEMPORAL_LATE_NIGHT_END}",
+		"late_night_risk_modifier": "${NLP_TEMPORAL_LATE_NIGHT_MODIFIER}",
+		"rapid_posting_threshold_minutes": "${NLP_TEMPORAL_RAPID_POSTING_MINUTES}",
+		"rapid_posting_message_count": "${NLP_TEMPORAL_RAPID_POSTING_COUNT}",
+		"weekend_risk_modifier": "${NLP_TEMPORAL_WEEKEND_MODIFIER}",
+		"defaults": {
+			"enabled": true,
+			"late_night_start_hour": 22,
+			"late_night_end_hour": 4,
+			"late_night_risk_modifier": 1.2,
+			"rapid_posting_threshold_minutes": 30,
+			"rapid_posting_message_count": 5,
+			"weekend_risk_modifier": 1.1
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"late_night_start_hour": {
+				"type": "integer",
+				"range": [18, 23],
+				"required": true
+			},
+			"late_night_end_hour": {
+				"type": "integer",
+				"range": [0, 8],
+				"required": true
+			},
+			"late_night_risk_modifier": {
+				"type": "float",
+				"range": [1.0, 2.0],
+				"required": true
+			},
+			"rapid_posting_threshold_minutes": {
+				"type": "integer",
+				"range": [5, 120],
+				"required": true
+			},
+			"rapid_posting_message_count": {
+				"type": "integer",
+				"range": [3, 20],
+				"required": true
+			},
+			"weekend_risk_modifier": {
+				"type": "float",
+				"range": [1.0, 2.0],
+				"required": true
+			}
+		}
+	},
+
+	"trend_analysis": {
+		"description": "Configuration for analyzing trend direction and velocity in crisis scores",
+		"enabled": "${NLP_TREND_ANALYSIS_ENABLED}",
+		"worsening_threshold": "${NLP_TREND_WORSENING_THRESHOLD}",
+		"improving_threshold": "${NLP_TREND_IMPROVING_THRESHOLD}",
+		"velocity_rapid_threshold": "${NLP_TREND_VELOCITY_RAPID}",
+		"velocity_gradual_threshold": "${NLP_TREND_VELOCITY_GRADUAL}",
+		"defaults": {
+			"enabled": true,
+			"worsening_threshold": 0.15,
+			"improving_threshold": -0.15,
+			"velocity_rapid_threshold": 0.1,
+			"velocity_gradual_threshold": 0.03
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"worsening_threshold": {
+				"type": "float",
+				"range": [0.05, 0.5],
+				"required": true
+			},
+			"improving_threshold": {
+				"type": "float",
+				"range": [-0.5, -0.05],
+				"required": true
+			},
+			"velocity_rapid_threshold": {
+				"type": "float",
+				"range": [0.05, 0.5],
+				"required": true
+			},
+			"velocity_gradual_threshold": {
+				"type": "float",
+				"range": [0.01, 0.2],
+				"required": true
+			}
+		}
+	},
+
+	"intervention": {
+		"description": "Configuration for intervention urgency and recommendations",
+		"urgency_levels": {
+			"immediate": {
+				"min_score": 0.85,
+				"description": "Crisis requires immediate intervention - contact user now"
+			},
+			"high": {
+				"min_score": 0.70,
+				"description": "High priority - respond within minutes"
+			},
+			"standard": {
+				"min_score": 0.50,
+				"description": "Standard priority - respond soon"
+			},
+			"low": {
+				"min_score": 0.30,
+				"description": "Low priority - monitor situation"
+			},
+			"none": {
+				"min_score": 0.0,
+				"description": "No intervention needed - user appears safe"
+			}
+		},
+		"escalation_urgency_boost": "${NLP_INTERVENTION_ESCALATION_BOOST}",
+		"late_night_urgency_boost": "${NLP_INTERVENTION_LATE_NIGHT_BOOST}",
+		"defaults": {
+			"escalation_urgency_boost": true,
+			"late_night_urgency_boost": true
+		},
+		"validation": {
+			"escalation_urgency_boost": {
+				"type": "boolean",
+				"required": false
+			},
+			"late_night_urgency_boost": {
+				"type": "boolean",
+				"required": false
+			}
+		}
+	},
+
+	"known_patterns": {
+		"description": "Named escalation patterns for classification and matching",
+		"patterns": {
+			"evening_deterioration": {
+				"description": "Rapid decline during evening hours (6PM-midnight)",
+				"typical_duration_hours": 6,
+				"escalation_type": "rapid",
+				"risk_level": "high"
+			},
+			"week_long_decline": {
+				"description": "Gradual decline over multiple days",
+				"typical_duration_hours": 168,
+				"escalation_type": "gradual",
+				"risk_level": "medium"
+			},
+			"post_rejection_spiral": {
+				"description": "Rapid decline following rejection event (coming out, relationship, etc.)",
+				"typical_duration_hours": 4,
+				"escalation_type": "rapid",
+				"risk_level": "critical"
+			},
+			"chronic_low_grade": {
+				"description": "Persistent low-level distress with sudden spike",
+				"typical_duration_hours": 72,
+				"escalation_type": "gradual",
+				"risk_level": "high"
+			},
+			"sudden_onset": {
+				"description": "Sudden crisis following triggering event",
+				"typical_duration_hours": 1,
+				"escalation_type": "sudden",
+				"risk_level": "critical"
+			},
+			"late_night_spiral": {
+				"description": "Escalation during late night hours with isolation",
+				"typical_duration_hours": 5,
+				"escalation_type": "rapid",
+				"risk_level": "critical"
+			},
+			"dysphoria_escalation": {
+				"description": "Escalation driven by gender dysphoria",
+				"typical_duration_hours": 3,
+				"escalation_type": "rapid",
+				"risk_level": "high"
+			},
+			"relationship_rejection": {
+				"description": "Escalation following relationship rejection related to identity",
+				"typical_duration_hours": 8,
+				"escalation_type": "rapid",
+				"risk_level": "critical"
+			},
+			"isolation_indicator": {
+				"description": "Escalation with increasing message frequency and isolation themes",
+				"typical_duration_hours": 24,
+				"escalation_type": "gradual",
+				"risk_level": "high"
+			},
+			"self_harm_urge": {
+				"description": "Explicit escalation of self-harm urges",
+				"typical_duration_hours": 4,
+				"escalation_type": "rapid",
+				"risk_level": "critical"
+			},
+			"substance_use_coping": {
+				"description": "Substance use as maladaptive coping escalating to crisis",
+				"typical_duration_hours": 48,
+				"escalation_type": "gradual",
+				"risk_level": "high"
+			},
+			"academic_stress_breakdown": {
+				"description": "Academic/work stress escalating to crisis ideation",
+				"typical_duration_hours": 120,
+				"escalation_type": "gradual",
+				"risk_level": "high"
+			},
+			"medication_change_crisis": {
+				"description": "Crisis following psychiatric medication changes",
+				"typical_duration_hours": 168,
+				"escalation_type": "gradual",
+				"risk_level": "high"
+			},
+			"anniversary_trigger": {
+				"description": "Escalation on anniversary of loss or trauma",
+				"typical_duration_hours": 12,
+				"escalation_type": "rapid",
+				"risk_level": "high"
+			},
+			"hormonal_cycle": {
+				"description": "Mood escalation related to hormonal cycles",
+				"typical_duration_hours": 96,
+				"escalation_type": "gradual",
+				"risk_level": "medium"
+			},
+			"social_media_trigger": {
+				"description": "Rapid escalation following social media trigger/trauma content",
+				"typical_duration_hours": 3,
+				"escalation_type": "rapid",
+				"risk_level": "high"
+			}
+		}
+	}
+}
