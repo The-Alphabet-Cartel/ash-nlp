@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Managers Package for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.5-5
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 - Production Integration
+FILE VERSION: v5.0-5-1.0-1
+LAST MODIFIED: 2026-01-01
+PHASE: Phase 5 - Context History Analysis
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -21,17 +21,21 @@ This package contains resource managers for Ash-NLP:
 
 MANAGERS:
 - ConfigManager: Configuration loading and validation
+- ContextConfigManager: Phase 5 context analysis configuration (NEW)
+- SecretsManager: Secure secrets management
 
 USAGE:
-    from src.managers import create_config_manager
+    from src.managers import create_config_manager, create_context_config_manager
 
     config = create_config_manager(environment="production")
+    context_config = create_context_config_manager()
+    
     api_config = config.get_api_config()
-    weights = config.get_model_weights()
+    escalation_config = context_config.get_escalation_detection_config()
 """
 
 # Module version
-__version__ = "v5.0-3-5.5-2"
+__version__ = "v5.0-5-1.0-1"
 
 # =============================================================================
 # Configuration Manager
@@ -40,6 +44,22 @@ __version__ = "v5.0-3-5.5-2"
 from .config_manager import (
     ConfigManager,
     create_config_manager,
+)
+
+# =============================================================================
+# Context Configuration Manager (Phase 5)
+# =============================================================================
+
+from .context_config_manager import (
+    ContextConfigManager,
+    create_context_config_manager,
+    # Config dataclasses
+    ContextAnalysisConfig,
+    EscalationDetectionConfig,
+    TemporalDetectionConfig,
+    TrendAnalysisConfig,
+    InterventionConfig,
+    KnownPattern,
 )
 
 # =============================================================================
@@ -64,6 +84,15 @@ __all__ = [
     # Config
     "ConfigManager",
     "create_config_manager",
+    # Context Config (Phase 5)
+    "ContextConfigManager",
+    "create_context_config_manager",
+    "ContextAnalysisConfig",
+    "EscalationDetectionConfig",
+    "TemporalDetectionConfig",
+    "TrendAnalysisConfig",
+    "InterventionConfig",
+    "KnownPattern",
     # Secrets
     "SecretsManager",
     "create_secrets_manager",
