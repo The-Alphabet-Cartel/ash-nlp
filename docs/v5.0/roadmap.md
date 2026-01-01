@@ -1,7 +1,7 @@
 # Ash-NLP v5.0 Complete Rewrite Roadmap
 
 **Version**: v5.0  
-**Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
+**Repository**: https://github.com/the-alphabet-cartel/ash-nlp
 **Community**: [The Alphabet Cartel](https://discord.gg/alphabetcartel) | [alphabetcartel.org](https://alphabetcartel.org)
 
 ---
@@ -33,7 +33,7 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
 - ✅ **Cost**: Maintain $0 ongoing costs (GPU-based, no API fees)
 
 ### **Non-Negotiables**
-- ⚠️ **Latency**: Must remain < 5 seconds per analysis
+- ⚠️ **Latency**: Must remain < 500ms per message analysis
 - ⚠️ **Privacy**: All data stays on local server (10.20.30.253)
 - ⚠️ **Clean Architecture**: 100% v5.0 Charter compliance
 - ⚠️ **Availability**: 24/7 uptime for crisis detection
@@ -51,7 +51,7 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
 - [x] Phase 2: Model Migration - 100% ✅
 - [x] Phase 3: API & Docker Deployment - 100% ✅
 - [x] Phase 4: Ensemble Coordinator Enhancement - 100% ✅
-- [ ] Phase 5: Context Analysis & Optimization - 0%
+- [ ] Phase 5: Context History Analysis - 0%
 
 ### **Overall Progress**: 83.33% (5/6 phases complete)
 
@@ -67,7 +67,7 @@ Phase 3: API & Docker Deployment ✅
     ↓
 Phase 4: Ensemble Coordinator Enhancement ✅
     ↓
-Phase 5: Context Analysis & Optimization ⏳
+Phase 5: Context History Analysis ⏳
 ```
 
 ---
@@ -98,7 +98,7 @@ Phase 5: Context Analysis & Optimization ⏳
 │  - Temporal modifiers                                           │
 │  - Contextual patterns                                          │
 ├─────────────────────────────────────────────────────────────────┤
-│  Context Analyzer (Phase 5 - rolling window)                    │
+│  Context History Analyzer (Phase 5 - rolling window)            │
 │  - User message history (last 5-10 messages)                    │
 │  - Escalation detection                                         │
 │  - Temporal trends                                              │
@@ -253,7 +253,7 @@ docs/v5.0/Phase4/api_reference.md
 
 ---
 
-## 📝 **PHASE 5: CONTEXT ANALYSIS & OPTIMIZATION**
+## 📝 **PHASE 5: CONTEXT HISTORY ANALYSIS**
 
 ### **Status**: ⏳ **NOT STARTED**
 
@@ -262,7 +262,7 @@ docs/v5.0/Phase4/api_reference.md
 
 ### **Planned Objectives**:
 
-**Context Analysis** (Deferred from original Phase 4):
+**Context History Analysis**:
 - [ ] Rolling window message history
 - [ ] Temporal pattern detection
 - [ ] Escalation detection
@@ -274,10 +274,10 @@ docs/v5.0/Phase4/api_reference.md
 - [ ] Memory optimization (quantization options)
 - [ ] Advanced caching strategies
 
-**Monitoring & Observability**:
-- [ ] Real-time performance dashboard
-- [ ] Model accuracy tracking
-- [ ] A/B testing framework for consensus algorithms
+**Monitoring, Testing, & Observability**:
+- Will be handled by:
+  - [Ash-Thrash Project](https://github.com/the-alphabet-cartel/ash-thrash)
+  - [Ash-Dash Project](https://github.com/the-alphabet-cartel/ash-dash)
 
 ### **Proposed File Structure**:
 ```
@@ -390,7 +390,6 @@ pydantic>=2.0.0
 **Immediate Actions**:
 - [ ] Create Phase 5 planning document
 - [ ] Design context_config.json schema
-- [ ] Evaluate Redis vs in-memory storage for history
 
 ---
 
