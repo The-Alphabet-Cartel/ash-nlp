@@ -10,7 +10,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-2.0-1
+FILE VERSION: v5.0-4-2.0-2
 LAST MODIFIED: 2026-01-01
 PHASE: Phase 4 - Ensemble Coordinator Enhancement
 CLEAN ARCHITECTURE: v5.1 Compliant
@@ -100,7 +100,7 @@ if TYPE_CHECKING:
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-4-2.0-1"
+__version__ = "v5.0-4-2.0-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -1067,6 +1067,7 @@ class EnsembleDecisionEngine:
         Warm up the engine with a sample analysis.
 
         Phase 3.7.1: Model warmup on startup.
+        Note: Alerting is disabled during warmup to prevent spurious notifications.
 
         Args:
             sample_text: Text to use for warmup
@@ -1076,8 +1077,14 @@ class EnsembleDecisionEngine:
         """
         logger.info("🔥 Warming up Decision Engine...")
 
+        # Temporarily disable alerting during warmup
+        original_alerter = None
+        if self.conflict_resolver:
+            original_alerter = self.conflict_resolver._alerter
+            self.conflict_resolver._alerter = None
+
         try:
-            # Run warmup analysis (bypass cache)
+            # Run warmup analysis (bypass cache, no explanations)
             result = self.analyze(sample_text, use_cache=False, include_explanation=False)
 
             if result.crisis_score >= 0:  # Valid result
@@ -1092,6 +1099,11 @@ class EnsembleDecisionEngine:
         except Exception as e:
             logger.error(f"❌ Warmup failed: {e}")
             return False
+
+        finally:
+            # Restore alerter after warmup
+            if self.conflict_resolver and original_alerter is not None:
+                self.conflict_resolver._alerter = original_alerter
 
     def set_alerter(self, alerter: "DiscordAlerter") -> None:
         """
