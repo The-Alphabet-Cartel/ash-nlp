@@ -412,10 +412,10 @@ class TestContextAnalyzerIntegration:
         )
         
         # Should have correct message count
-        assert result.history_metadata.message_count == 6  # 5 history + 1 current
+        assert result.metadata.message_count == 6  # 5 history + 1 current
         
         # Should have time span
-        assert result.history_metadata.time_span_hours >= 4.0
+        assert result.metadata.time_span_hours >= 4.0
     
     def test_trajectory_info(
         self, 
@@ -438,7 +438,7 @@ class TestContextAnalyzerIntegration:
         
         # Should capture score trajectory
         assert result.trajectory.start_score < result.trajectory.end_score
-        assert result.trajectory.peak_score >= 0.7
+        assert result.trajectory.max_score >= 0.7
 
 
 class TestContextAnalyzerEdgeCases:
@@ -452,7 +452,7 @@ class TestContextAnalyzerEdgeCases:
             message_history=[],
         )
         
-        assert result.history_metadata.message_count == 1
+        assert result.metadata.message_count == 1
         assert not result.escalation.detected
     
     def test_single_history_item(self, context_analyzer, base_timestamp):
@@ -469,7 +469,7 @@ class TestContextAnalyzerEdgeCases:
             message_history=history,
         )
         
-        assert result.history_metadata.message_count == 2
+        assert result.metadata.message_count == 2
     
     def test_history_without_scores(self, context_analyzer, base_timestamp):
         """Test analysis when history items lack crisis_score."""
