@@ -67,8 +67,6 @@ def critical_result() -> AggregatedResult:
     result.model_results = {
         "bart": ModelResultSummary(
             model_name="bart",
-            display_name="Crisis Classifier",
-            description="",
             label="suicide ideation",
             score=0.92,
             confidence=0.92,
@@ -79,8 +77,6 @@ def critical_result() -> AggregatedResult:
         ),
         "sentiment": ModelResultSummary(
             model_name="sentiment",
-            display_name="Sentiment Analyzer",
-            description="",
             label="negative",
             score=0.85,
             confidence=0.85,
@@ -108,8 +104,6 @@ def high_result() -> AggregatedResult:
     result.model_results = {
         "bart": ModelResultSummary(
             model_name="bart",
-            display_name="Crisis Classifier",
-            description="",
             label="emotional distress",
             score=0.78,
             confidence=0.78,
@@ -153,8 +147,6 @@ def safe_result() -> AggregatedResult:
     result.model_results = {
         "bart": ModelResultSummary(
             model_name="bart",
-            display_name="Crisis Classifier",
-            description="",
             label="safe",
             score=0.10,
             confidence=0.90,

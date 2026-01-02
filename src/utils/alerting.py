@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-4-5.6-3
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - Ensemble Coordinator Enhancement
+FILE VERSION: v5.0-5-5.6-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 5 - Context History Analysis
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -23,6 +23,7 @@ RESPONSIBILITIES:
 - Format alerts with severity and context
 - Support async and sync operations
 - Phase 4: Send conflict alerts for ensemble disagreements
+- Phase 5: Send escalation alerts for crisis pattern detection
 
 WEBHOOK SETUP:
 1. Create webhook in Discord server (Server Settings > Integrations > Webhooks)
@@ -37,6 +38,7 @@ ALERT TYPES:
 - WARNING: Performance degradation - monitoring needed
 - INFO: System events - startup, recovery, etc.
 - CONFLICT: Phase 4 - Model ensemble disagreement alerts
+- ESCALATION: Phase 5 - Crisis pattern escalation alerts
 """
 
 import asyncio
@@ -49,7 +51,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 
 # Module version
-__version__ = "v5.0-4-5.6-3"
+__version__ = "v5.0-5-5.6-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -72,6 +74,7 @@ class AlertSeverity(Enum):
     INFO = ("info", 0x00AA00)  # Green
     RECOVERY = ("recovery", 0x00FF00)  # Bright Green
     CONFLICT = ("conflict", 0x9B59B6)  # Purple - Phase 4
+    ESCALATION = ("escalation", 0xE74C3C)  # Dark Red - Phase 5
 
     def __init__(self, name: str, color: int):
         self._name = name
@@ -87,6 +90,7 @@ class AlertSeverity(Enum):
             "info": "ℹ️",
             "recovery": "✅",
             "conflict": "⚔️",  # Phase 4
+            "escalation": "📈",  # Phase 5 - trending up
         }
         return emojis.get(self._name, "📢")
 
@@ -204,6 +208,7 @@ class DiscordAlerter:
         throttle: Optional[ThrottleConfig] = None,
         service_name: str = "Ash-NLP",
         conflict_cooldown_seconds: float = 60.0,  # Phase 4
+        escalation_cooldown_seconds: float = 300.0,  # Phase 5
     ):
         """
         Initialize the Discord alerter.
@@ -214,6 +219,7 @@ class DiscordAlerter:
             throttle: Throttle configuration
             service_name: Name for the footer
             conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
+            escalation_cooldown_seconds: Cooldown between escalation alerts (Phase 5)
         """
         self.webhook_url = webhook_url
         self.enabled = enabled and webhook_url is not None
@@ -228,6 +234,10 @@ class DiscordAlerter:
         # Phase 4: Conflict alert cooldown
         self._conflict_cooldown_seconds = conflict_cooldown_seconds
         self._last_conflict_alert = 0.0
+
+        # Phase 5: Escalation alert cooldown
+        self._escalation_cooldown_seconds = escalation_cooldown_seconds
+        self._last_escalation_alert = 0.0
 
         # HTTP session (lazy init)
         self._session = None
@@ -296,6 +306,15 @@ class DiscordAlerter:
     def _record_conflict_alert(self):
         """Record a conflict alert timestamp (Phase 4)."""
         self._last_conflict_alert = time.time()
+
+    def _should_throttle_escalation(self) -> bool:
+        """Check if escalation alert should be throttled (Phase 5)."""
+        now = time.time()
+        return now - self._last_escalation_alert < self._escalation_cooldown_seconds
+
+    def _record_escalation_alert(self):
+        """Record an escalation alert timestamp (Phase 5)."""
+        self._last_escalation_alert = time.time()
 
     # =========================================================================
     # Send Methods
@@ -635,6 +654,191 @@ class DiscordAlerter:
         return result
 
     # =========================================================================
+    # Phase 5: Escalation Alert Methods
+    # =========================================================================
+
+    async def send_escalation_alert(
+        self,
+        escalation_rate: str,
+        pattern_name: Optional[str],
+        pattern_confidence: float,
+        crisis_score: float,
+        score_delta: float,
+        time_span_hours: float,
+        intervention_urgency: str,
+        message_preview: str,
+        user_id: Optional[str] = None,
+        channel_id: Optional[str] = None,
+        source: str = "context_analyzer",
+    ) -> bool:
+        """
+        Send an alert for crisis escalation detection (Phase 5).
+
+        Args:
+            escalation_rate: Rate of escalation (none, gradual, rapid, sudden)
+            pattern_name: Name of matched escalation pattern
+            pattern_confidence: Confidence in pattern match (0-1)
+            crisis_score: Current crisis score
+            score_delta: Score change during escalation
+            time_span_hours: Time span of the escalation
+            intervention_urgency: Urgency level (none, low, standard, high, immediate)
+            message_preview: First 100 chars of current message
+            user_id: Optional user identifier
+            channel_id: Optional channel identifier
+            source: Source component
+
+        Returns:
+            True if alert sent successfully
+        """
+        if not self.enabled:
+            logger.debug(f"Escalation alert skipped (disabled): {escalation_rate}")
+            return False
+
+        # Check escalation-specific cooldown
+        if self._should_throttle_escalation():
+            logger.debug(f"Escalation alert on cooldown: {escalation_rate}")
+            return False
+
+        # Build fields
+        fields = {
+            "Escalation Rate": escalation_rate.replace("_", " ").title(),
+            "Crisis Score": f"{crisis_score:.2f}",
+            "Score Change": f"+{score_delta:.2f}" if score_delta >= 0 else f"{score_delta:.2f}",
+            "Time Span": f"{time_span_hours:.1f} hours",
+            "Urgency": intervention_urgency.replace("_", " ").title(),
+        }
+
+        if pattern_name:
+            fields["Pattern"] = pattern_name.replace("_", " ").title()
+            fields["Confidence"] = f"{pattern_confidence:.0%}"
+
+        if user_id:
+            fields["User ID"] = user_id[:20]
+        if channel_id:
+            fields["Channel"] = channel_id[:20]
+
+        # Truncate message preview
+        preview = message_preview[:97] + "..." if len(message_preview) > 100 else message_preview
+        fields["Message"] = f"\"...{preview[-50:]}\"" if len(preview) > 50 else f"\"{preview}\""
+
+        # Determine alert severity based on intervention urgency
+        urgency_lower = intervention_urgency.lower()
+        if urgency_lower == "immediate":
+            alert_severity = AlertSeverity.CRITICAL
+            description = (
+                "**IMMEDIATE INTERVENTION REQUIRED**\n"
+                "A rapid crisis escalation pattern has been detected. "
+                "The user's distress level has increased significantly in a short time."
+            )
+        elif urgency_lower == "high":
+            alert_severity = AlertSeverity.ESCALATION
+            description = (
+                "**High Priority: Crisis Escalation Detected**\n"
+                "The user's messages show a worsening trend that may require prompt attention."
+            )
+        elif urgency_lower == "standard":
+            alert_severity = AlertSeverity.WARNING
+            description = (
+                "**Crisis Escalation Pattern Detected**\n"
+                "A gradual increase in crisis indicators has been observed over recent messages."
+            )
+        else:
+            alert_severity = AlertSeverity.INFO
+            description = (
+                "**Monitoring: Escalation Pattern**\n"
+                "A minor escalation pattern was detected. Continued monitoring recommended."
+            )
+
+        alert = Alert(
+            severity=alert_severity,
+            title=f"Escalation: {escalation_rate.replace('_', ' ').title()}",
+            description=description,
+            fields=fields,
+            source=source,
+        )
+
+        result = await self.send_alert(alert)
+        if result:
+            self._record_escalation_alert()
+        return result
+
+    def send_escalation_alert_sync(
+        self,
+        escalation_rate: str,
+        pattern_name: Optional[str],
+        pattern_confidence: float,
+        crisis_score: float,
+        score_delta: float,
+        time_span_hours: float,
+        intervention_urgency: str,
+        message_preview: str,
+        user_id: Optional[str] = None,
+        channel_id: Optional[str] = None,
+        source: str = "context_analyzer",
+    ) -> bool:
+        """
+        Send an escalation alert synchronously (Phase 5).
+
+        Args:
+            escalation_rate: Rate of escalation
+            pattern_name: Name of matched escalation pattern
+            pattern_confidence: Confidence in pattern match (0-1)
+            crisis_score: Current crisis score
+            score_delta: Score change during escalation
+            time_span_hours: Time span of the escalation
+            intervention_urgency: Urgency level
+            message_preview: First 100 chars of current message
+            user_id: Optional user identifier
+            channel_id: Optional channel identifier
+            source: Source component
+
+        Returns:
+            True if alert sent successfully
+        """
+        if not self.enabled:
+            return False
+
+        if self._should_throttle_escalation():
+            logger.debug(f"Escalation alert on cooldown: {escalation_rate}")
+            return False
+
+        # Build fields
+        fields = {
+            "Escalation Rate": escalation_rate.replace("_", " ").title(),
+            "Crisis Score": f"{crisis_score:.2f}",
+            "Score Change": f"+{score_delta:.2f}" if score_delta >= 0 else f"{score_delta:.2f}",
+            "Time Span": f"{time_span_hours:.1f} hours",
+            "Urgency": intervention_urgency.replace("_", " ").title(),
+        }
+
+        if pattern_name:
+            fields["Pattern"] = pattern_name.replace("_", " ").title()
+
+        # Determine alert severity
+        urgency_lower = intervention_urgency.lower()
+        if urgency_lower == "immediate":
+            alert_severity = AlertSeverity.CRITICAL
+        elif urgency_lower == "high":
+            alert_severity = AlertSeverity.ESCALATION
+        elif urgency_lower == "standard":
+            alert_severity = AlertSeverity.WARNING
+        else:
+            alert_severity = AlertSeverity.INFO
+
+        alert = Alert(
+            severity=alert_severity,
+            title=f"Escalation: {escalation_rate.replace('_', ' ').title()}",
+            description="Crisis escalation pattern detected in user messages.",
+            fields=fields,
+            source=source,
+        )
+
+        result = self.send_alert_sync(alert)
+        if result:
+            self._record_escalation_alert()
+        return result
+
+    # =========================================================================
     # Model-Specific Alerts
     # =========================================================================
 
@@ -781,11 +985,17 @@ class DiscordAlerter:
                 self._conflict_cooldown_seconds
                 - (time.time() - self._last_conflict_alert),
             ),
+            "escalation_cooldown_remaining": max(
+                0,
+                self._escalation_cooldown_seconds
+                - (time.time() - self._last_escalation_alert),
+            ),
             "throttle_config": {
                 "window_seconds": self.throttle.window_seconds,
                 "max_alerts": self.throttle.max_alerts,
                 "cooldown_seconds": self.throttle.cooldown_seconds,
                 "conflict_cooldown_seconds": self._conflict_cooldown_seconds,
+                "escalation_cooldown_seconds": self._escalation_cooldown_seconds,
             },
         }
 
@@ -800,6 +1010,7 @@ def create_discord_alerter(
     secrets_manager=None,
     enabled: bool = True,
     conflict_cooldown_seconds: float = 60.0,
+    escalation_cooldown_seconds: float = 300.0,
 ) -> DiscordAlerter:
     """
     Factory function to create a Discord alerter.
@@ -809,6 +1020,7 @@ def create_discord_alerter(
         secrets_manager: SecretsManager instance for loading URL
         enabled: Whether alerting is enabled
         conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
+        escalation_cooldown_seconds: Cooldown between escalation alerts (Phase 5)
 
     Returns:
         Configured DiscordAlerter instance
@@ -827,6 +1039,7 @@ def create_discord_alerter(
         webhook_url=webhook_url,
         enabled=enabled,
         conflict_cooldown_seconds=conflict_cooldown_seconds,
+        escalation_cooldown_seconds=escalation_cooldown_seconds,
     )
 
 

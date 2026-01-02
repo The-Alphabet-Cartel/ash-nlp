@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 API Schemas for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-5.1-1
+FILE VERSION: v5.0-5-5.1-1
 LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - API Enhancements
+PHASE: Phase 5 - Context History Analysis
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -28,6 +28,12 @@ PHASE 4 ENHANCEMENTS:
 - Explainability verbosity levels
 - Conflict analysis in responses
 - Consensus configuration endpoints
+
+PHASE 5 ENHANCEMENTS:
+- Message history input for context analysis
+- Context analysis response schemas
+- Escalation, temporal, and trend detection outputs
+- Context configuration endpoints
 """
 
 from datetime import datetime
@@ -37,7 +43,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 # Module version
-__version__ = "v5.0-4-5.1-1"
+__version__ = "v5.0-5-5.1-1"
 
 
 # =============================================================================
@@ -132,8 +138,97 @@ class AgreementLevel(str, Enum):
 
 
 # =============================================================================
+# Phase 5 Enums
+# =============================================================================
+
+
+class InterventionUrgency(str, Enum):
+    """Intervention urgency levels (Phase 5)."""
+
+    NONE = "none"
+    LOW = "low"
+    STANDARD = "standard"
+    HIGH = "high"
+    IMMEDIATE = "immediate"
+
+
+class TrendDirection(str, Enum):
+    """Trend direction indicators (Phase 5)."""
+
+    IMPROVING = "improving"
+    STABLE = "stable"
+    WORSENING = "worsening"
+    VOLATILE = "volatile"
+
+
+class TrendVelocity(str, Enum):
+    """Trend velocity indicators (Phase 5)."""
+
+    NONE = "none"
+    GRADUAL = "gradual"
+    MODERATE = "moderate"
+    RAPID = "rapid"
+
+
+class EscalationRate(str, Enum):
+    """Escalation rate classification (Phase 5)."""
+
+    NONE = "none"
+    GRADUAL = "gradual"
+    RAPID = "rapid"
+    SUDDEN = "sudden"
+
+
+# =============================================================================
 # Request Schemas
 # =============================================================================
+
+
+class MessageHistoryItemRequest(BaseModel):
+    """
+    Single message in history for context analysis (Phase 5).
+    
+    Attributes:
+        message: The message text content
+        timestamp: When the message was sent (ISO format)
+        crisis_score: Pre-calculated crisis score (optional)
+        message_id: Optional message identifier
+    """
+
+    message: str = Field(
+        ...,
+        min_length=1,
+        max_length=10000,
+        description="Message text content",
+    )
+    timestamp: datetime = Field(
+        ...,
+        description="When message was sent (ISO 8601 format)",
+    )
+    crisis_score: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Pre-calculated crisis score (will calculate if not provided)",
+    )
+    message_id: Optional[str] = Field(
+        default=None,
+        max_length=100,
+        description="Optional message identifier",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "message": "Not having the best day",
+                    "timestamp": "2025-01-01T16:00:00Z",
+                    "crisis_score": 0.25,
+                    "message_id": "msg_001",
+                }
+            ]
+        }
+    }
 
 
 class AnalyzeRequest(BaseModel):
@@ -150,6 +245,10 @@ class AnalyzeRequest(BaseModel):
         include_explanation: Include human-readable explanation
         verbosity: Explanation verbosity level
         consensus_algorithm: Override default consensus algorithm
+        
+        # Phase 5 options
+        message_history: Previous messages for context analysis
+        include_context_analysis: Enable context history analysis
     """
 
     message: str = Field(
@@ -187,6 +286,17 @@ class AnalyzeRequest(BaseModel):
         default=None,
         description="Override consensus algorithm for this request",
     )
+    
+    # Phase 5 options
+    message_history: Optional[List[MessageHistoryItemRequest]] = Field(
+        default=None,
+        max_length=20,
+        description="Previous messages for context analysis (max 20)",
+    )
+    include_context_analysis: bool = Field(
+        default=True,
+        description="Enable context history analysis (Phase 5)",
+    )
 
     @field_validator("message")
     @classmethod
@@ -205,6 +315,19 @@ class AnalyzeRequest(BaseModel):
                     "channel_id": "general",
                     "include_explanation": True,
                     "verbosity": "standard",
+                    "message_history": [
+                        {
+                            "message": "Not having the best day",
+                            "timestamp": "2025-01-01T16:00:00Z",
+                            "crisis_score": 0.25,
+                        },
+                        {
+                            "message": "Things are getting harder",
+                            "timestamp": "2025-01-01T18:00:00Z",
+                            "crisis_score": 0.45,
+                        },
+                    ],
+                    "include_context_analysis": True,
                 }
             ]
         }
@@ -344,6 +467,243 @@ class ConsensusResponse(BaseModel):
 
 
 # =============================================================================
+# Phase 5 Response Components
+# =============================================================================
+
+
+class EscalationResponse(BaseModel):
+    """Escalation detection results (Phase 5)."""
+
+    detected: bool = Field(description="Whether escalation was detected")
+    rate: EscalationRate = Field(
+        default=EscalationRate.NONE,
+        description="Escalation rate: none, gradual, rapid, sudden",
+    )
+    pattern: Optional[str] = Field(
+        default=None,
+        description="Matched escalation pattern name",
+    )
+    confidence: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in escalation detection (0-1)",
+    )
+
+
+class TemporalFactorsResponse(BaseModel):
+    """Temporal pattern detection results (Phase 5)."""
+
+    late_night_risk: bool = Field(
+        default=False,
+        description="Whether message was sent during late night hours",
+    )
+    rapid_posting: bool = Field(
+        default=False,
+        description="Whether user is posting rapidly",
+    )
+    time_risk_modifier: float = Field(
+        default=1.0,
+        ge=0.5,
+        le=2.0,
+        description="Risk modifier based on temporal factors",
+    )
+    hour_of_day: int = Field(
+        default=12,
+        ge=0,
+        le=23,
+        description="Hour of day (0-23)",
+    )
+    is_weekend: bool = Field(
+        default=False,
+        description="Whether message was sent on weekend",
+    )
+
+
+class TrendResponse(BaseModel):
+    """Trend analysis results (Phase 5)."""
+
+    direction: TrendDirection = Field(
+        default=TrendDirection.STABLE,
+        description="Trend direction: improving, stable, worsening, volatile",
+    )
+    velocity: TrendVelocity = Field(
+        default=TrendVelocity.NONE,
+        description="Trend velocity: none, gradual, moderate, rapid",
+    )
+    score_delta: float = Field(
+        default=0.0,
+        description="Change in score from start to end",
+    )
+    time_span_hours: float = Field(
+        default=0.0,
+        ge=0.0,
+        description="Time span analyzed in hours",
+    )
+
+
+class TrajectoryResponse(BaseModel):
+    """Score trajectory information (Phase 5)."""
+
+    start_score: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Score of first message in sequence",
+    )
+    end_score: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Score of last message (current)",
+    )
+    peak_score: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Highest score in sequence",
+    )
+    scores: List[float] = Field(
+        default_factory=list,
+        description="All scores in sequence order",
+    )
+
+
+class InterventionResponse(BaseModel):
+    """Intervention recommendations (Phase 5)."""
+
+    urgency: InterventionUrgency = Field(
+        default=InterventionUrgency.NONE,
+        description="Intervention urgency: none, low, standard, high, immediate",
+    )
+    recommended_point: Optional[int] = Field(
+        default=None,
+        description="Message index where intervention should have occurred",
+    )
+    intervention_delayed: bool = Field(
+        default=False,
+        description="Whether intervention point has passed",
+    )
+    reason: str = Field(
+        default="",
+        description="Explanation for urgency level",
+    )
+
+
+class HistoryMetadataResponse(BaseModel):
+    """Metadata about analyzed history (Phase 5)."""
+
+    message_count: int = Field(
+        default=0,
+        ge=0,
+        description="Number of messages analyzed",
+    )
+    time_span_hours: float = Field(
+        default=0.0,
+        ge=0.0,
+        description="Time span of history in hours",
+    )
+    oldest_timestamp: Optional[datetime] = Field(
+        default=None,
+        description="Timestamp of oldest message",
+    )
+    newest_timestamp: Optional[datetime] = Field(
+        default=None,
+        description="Timestamp of newest message",
+    )
+
+
+class ContextAnalysisResponse(BaseModel):
+    """
+    Complete context analysis results (Phase 5).
+    
+    Contains escalation detection, temporal patterns, trend analysis,
+    trajectory information, and intervention recommendations.
+    """
+
+    # Escalation detection
+    escalation_detected: bool = Field(
+        default=False,
+        description="Whether escalation pattern detected",
+    )
+    escalation_rate: EscalationRate = Field(
+        default=EscalationRate.NONE,
+        description="Escalation rate classification",
+    )
+    escalation_pattern: Optional[str] = Field(
+        default=None,
+        description="Matched escalation pattern name",
+    )
+    pattern_confidence: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Confidence in pattern match",
+    )
+    
+    # Sub-components
+    trend: TrendResponse = Field(
+        default_factory=TrendResponse,
+        description="Trend analysis results",
+    )
+    temporal_factors: TemporalFactorsResponse = Field(
+        default_factory=TemporalFactorsResponse,
+        description="Temporal pattern results",
+    )
+    trajectory: TrajectoryResponse = Field(
+        default_factory=TrajectoryResponse,
+        description="Score trajectory information",
+    )
+    intervention: InterventionResponse = Field(
+        default_factory=InterventionResponse,
+        description="Intervention recommendations",
+    )
+    history_analyzed: HistoryMetadataResponse = Field(
+        default_factory=HistoryMetadataResponse,
+        description="Metadata about analyzed history",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "escalation_detected": True,
+                    "escalation_rate": "rapid",
+                    "escalation_pattern": "evening_deterioration",
+                    "pattern_confidence": 0.87,
+                    "trend": {
+                        "direction": "worsening",
+                        "velocity": "rapid",
+                        "score_delta": 0.66,
+                        "time_span_hours": 6.0,
+                    },
+                    "temporal_factors": {
+                        "late_night_risk": False,
+                        "rapid_posting": False,
+                        "time_risk_modifier": 1.0,
+                    },
+                    "trajectory": {
+                        "start_score": 0.25,
+                        "end_score": 0.91,
+                        "peak_score": 0.91,
+                        "scores": [0.25, 0.45, 0.70, 0.91],
+                    },
+                    "intervention": {
+                        "urgency": "immediate",
+                        "recommended_point": 2,
+                        "intervention_delayed": True,
+                    },
+                    "history_analyzed": {
+                        "message_count": 4,
+                        "time_span_hours": 6.0,
+                    },
+                }
+            ]
+        }
+    }
+
+
+# =============================================================================
 # Response Schemas
 # =============================================================================
 
@@ -411,6 +771,12 @@ class AnalyzeResponse(BaseModel):
     consensus: Optional[ConsensusResponse] = Field(
         default=None,
         description="Consensus algorithm results (Phase 4)",
+    )
+    
+    # Phase 5 Enhanced Fields
+    context_analysis: Optional[ContextAnalysisResponse] = Field(
+        default=None,
+        description="Context history analysis results (Phase 5)",
     )
 
     model_config = {
@@ -541,6 +907,146 @@ class ConsensusConfigUpdateRequest(BaseModel):
                     "default_algorithm": "conflict_aware",
                     "resolution_strategy": "conservative",
                     "explainability_verbosity": "detailed",
+                }
+            ]
+        }
+    }
+
+
+# =============================================================================
+# Context Configuration Schemas (Phase 5)
+# =============================================================================
+
+
+class EscalationConfigResponse(BaseModel):
+    """Escalation detection configuration (Phase 5)."""
+
+    enabled: bool = Field(description="Whether escalation detection is enabled")
+    rapid_threshold_hours: int = Field(description="Hours threshold for rapid escalation")
+    gradual_threshold_hours: int = Field(description="Hours threshold for gradual escalation")
+    score_increase_threshold: float = Field(description="Score increase to trigger detection")
+    minimum_messages: int = Field(description="Minimum messages needed for detection")
+    alert_on_detection: bool = Field(description="Whether to alert on detection")
+    alert_cooldown_seconds: int = Field(description="Cooldown between alerts")
+
+
+class TemporalConfigResponse(BaseModel):
+    """Temporal detection configuration (Phase 5)."""
+
+    enabled: bool = Field(description="Whether temporal detection is enabled")
+    late_night_start_hour: int = Field(description="Hour when late night starts (0-23)")
+    late_night_end_hour: int = Field(description="Hour when late night ends (0-23)")
+    late_night_risk_modifier: float = Field(description="Risk modifier for late night")
+    rapid_posting_threshold_minutes: int = Field(description="Minutes for rapid posting")
+    rapid_posting_message_count: int = Field(description="Messages for rapid posting")
+
+
+class TrendConfigResponse(BaseModel):
+    """Trend analysis configuration (Phase 5)."""
+
+    enabled: bool = Field(description="Whether trend analysis is enabled")
+    worsening_threshold: float = Field(description="Score change for worsening")
+    improving_threshold: float = Field(description="Score change for improving")
+    velocity_rapid_threshold: float = Field(description="Threshold for rapid velocity")
+
+
+class ContextConfigResponse(BaseModel):
+    """
+    Current context analysis configuration (Phase 5).
+    
+    Returns all configuration for escalation detection,
+    temporal patterns, and trend analysis.
+    """
+
+    enabled: bool = Field(description="Whether context analysis is enabled")
+    max_history_size: int = Field(description="Maximum messages in history")
+    escalation: EscalationConfigResponse = Field(description="Escalation config")
+    temporal: TemporalConfigResponse = Field(description="Temporal config")
+    trend: TrendConfigResponse = Field(description="Trend config")
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "enabled": True,
+                    "max_history_size": 20,
+                    "escalation": {
+                        "enabled": True,
+                        "rapid_threshold_hours": 4,
+                        "gradual_threshold_hours": 24,
+                        "score_increase_threshold": 0.3,
+                        "minimum_messages": 3,
+                        "alert_on_detection": True,
+                        "alert_cooldown_seconds": 300,
+                    },
+                    "temporal": {
+                        "enabled": True,
+                        "late_night_start_hour": 22,
+                        "late_night_end_hour": 4,
+                        "late_night_risk_modifier": 1.2,
+                        "rapid_posting_threshold_minutes": 30,
+                        "rapid_posting_message_count": 5,
+                    },
+                    "trend": {
+                        "enabled": True,
+                        "worsening_threshold": 0.15,
+                        "improving_threshold": -0.15,
+                        "velocity_rapid_threshold": 0.1,
+                    },
+                }
+            ]
+        }
+    }
+
+
+class ContextConfigUpdateRequest(BaseModel):
+    """
+    Request to update context analysis configuration (Phase 5).
+    
+    Only provided fields will be updated.
+    """
+
+    enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable/disable context analysis",
+    )
+    max_history_size: Optional[int] = Field(
+        default=None,
+        ge=3,
+        le=50,
+        description="Maximum messages in history (3-50)",
+    )
+    escalation_enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable/disable escalation detection",
+    )
+    temporal_enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable/disable temporal detection",
+    )
+    trend_enabled: Optional[bool] = Field(
+        default=None,
+        description="Enable/disable trend analysis",
+    )
+    alert_on_escalation: Optional[bool] = Field(
+        default=None,
+        description="Enable/disable escalation alerts",
+    )
+    alert_cooldown_seconds: Optional[int] = Field(
+        default=None,
+        ge=60,
+        le=3600,
+        description="Cooldown between alerts (60-3600 seconds)",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "enabled": True,
+                    "max_history_size": 20,
+                    "alert_on_escalation": True,
+                    "alert_cooldown_seconds": 300,
                 }
             ]
         }
@@ -746,6 +1252,41 @@ class ConflictAlertPayload(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
 
+class EscalationAlertPayload(BaseModel):
+    """
+    Payload for escalation detection alert webhooks (Phase 5).
+
+    Sent to Discord when an escalation pattern is detected.
+    """
+
+    alert_type: str = Field(default="escalation_detected")
+    escalation_rate: EscalationRate = Field(description="Rate of escalation")
+    escalation_pattern: Optional[str] = Field(
+        default=None,
+        description="Matched escalation pattern name",
+    )
+    pattern_confidence: float = Field(description="Confidence in pattern match")
+    crisis_score: float = Field(description="Current crisis score")
+    score_delta: float = Field(description="Score change during escalation")
+    time_span_hours: float = Field(description="Time span of escalation")
+    intervention_urgency: InterventionUrgency = Field(
+        description="Recommended intervention urgency",
+    )
+    message_preview: str = Field(description="First 100 chars of message")
+    user_id: Optional[str] = None
+    channel_id: Optional[str] = None
+    request_id: str
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+    @field_validator("message_preview")
+    @classmethod
+    def truncate_preview(cls, v: str) -> str:
+        """Truncate message preview to 100 chars."""
+        if len(v) > 100:
+            return v[:97] + "..."
+        return v
+
+
 # =============================================================================
 # Export public interface
 # =============================================================================
@@ -762,10 +1303,17 @@ __all__ = [
     "ConflictType",
     "ConflictSeverity",
     "AgreementLevel",
+    # Phase 5 Enums
+    "InterventionUrgency",
+    "TrendDirection",
+    "TrendVelocity",
+    "EscalationRate",
     # Request schemas
     "AnalyzeRequest",
     "BatchAnalyzeRequest",
+    "MessageHistoryItemRequest",
     "ConsensusConfigUpdateRequest",
+    "ContextConfigUpdateRequest",
     # Response schemas
     "AnalyzeResponse",
     "ModelSignalResponse",
@@ -783,7 +1331,20 @@ __all__ = [
     "ConsensusResponse",
     "ConsensusConfigResponse",
     "Phase4StatusResponse",
+    # Phase 5 Response components
+    "ContextAnalysisResponse",
+    "EscalationResponse",
+    "TemporalFactorsResponse",
+    "TrendResponse",
+    "TrajectoryResponse",
+    "InterventionResponse",
+    "HistoryMetadataResponse",
+    "ContextConfigResponse",
+    "EscalationConfigResponse",
+    "TemporalConfigResponse",
+    "TrendConfigResponse",
     # Webhook schemas
     "CrisisAlertPayload",
     "ConflictAlertPayload",
+    "EscalationAlertPayload",
 ]

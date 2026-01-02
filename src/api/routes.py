@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 API Routes for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-5.2-1
+FILE VERSION: v5.0-5-5.2-1
 LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - API Enhancements
+PHASE: Phase 5 - Context History Analysis
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -28,6 +28,11 @@ PHASE 4 ENHANCEMENTS:
 - Enhanced analysis with explanations
 - Conflict analysis in responses
 
+PHASE 5 ENHANCEMENTS:
+- Message history input for context analysis
+- Context analysis in responses
+- Context configuration endpoints
+
 ENDPOINTS:
 - POST /analyze - Analyze single message for crisis signals
 - POST /analyze/batch - Analyze multiple messages
@@ -36,6 +41,8 @@ ENDPOINTS:
 - GET /models - Model information
 - GET /config/consensus - Get consensus configuration (Phase 4)
 - PUT /config/consensus - Update consensus configuration (Phase 4)
+- GET /config/context - Get context configuration (Phase 5)
+- PUT /config/context - Update context configuration (Phase 5)
 """
 
 import logging
@@ -54,6 +61,7 @@ from .schemas import (
     BatchAnalyzeResponse,
     BatchAnalyzeResponseItem,
     ConsensusConfigUpdateRequest,
+    ContextConfigUpdateRequest,
     # Response schemas
     HealthResponse,
     StatusResponse,
@@ -67,6 +75,17 @@ from .schemas import (
     ConsensusResponse,
     ConsensusConfigResponse,
     Phase4StatusResponse,
+    # Phase 5 Response schemas
+    ContextAnalysisResponse,
+    TrendResponse,
+    TemporalFactorsResponse,
+    TrajectoryResponse,
+    InterventionResponse,
+    HistoryMetadataResponse,
+    ContextConfigResponse,
+    EscalationConfigResponse,
+    TemporalConfigResponse,
+    TrendConfigResponse,
     # Enums
     SeverityLevel,
     RecommendedAction,
@@ -77,11 +96,16 @@ from .schemas import (
     ConflictType,
     ConflictSeverity,
     AgreementLevel,
+    # Phase 5 Enums
+    InterventionUrgency,
+    TrendDirection,
+    TrendVelocity,
+    EscalationRate,
 )
 from .middleware import get_request_id
 
 # Module version
-__version__ = "v5.0-4-5.2-1"
+__version__ = "v5.0-5-5.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -169,8 +193,15 @@ def get_start_time(request: Request) -> float:
     - Conflict detection and resolution
     - Human-readable explanations with configurable verbosity
 
+    **Phase 5 Features:**
+    - Context history analysis with message_history input
+    - Escalation pattern detection (rapid, gradual, sudden)
+    - Temporal pattern detection (late night, rapid posting)
+    - Trend analysis (worsening, stable, improving)
+    - Intervention urgency recommendations
+
     Returns a comprehensive crisis assessment including severity level,
-    confidence score, recommended action, and optional explanation.
+    confidence score, recommended action, optional explanation, and context analysis.
     """,
 )
 async def analyze_message(
@@ -182,29 +213,46 @@ async def analyze_message(
     Analyze a single message for crisis signals.
 
     This is the primary endpoint for crisis detection.
-    Supports Phase 4 enhanced options.
+    Supports Phase 4 and Phase 5 enhanced options.
     """
     request_id = get_request_id(request)
+    history_count = len(body.message_history) if body.message_history else 0
 
     logger.info(
-        f"Analyzing message (length={len(body.message)})",
+        f"Analyzing message (length={len(body.message)}, history={history_count})",
         extra={
             "request_id": request_id,
             "user_id": body.user_id,
             "channel_id": body.channel_id,
             "include_explanation": body.include_explanation,
+            "include_context_analysis": body.include_context_analysis,
+            "history_count": history_count,
             "verbosity": body.verbosity.value if body.verbosity else None,
             "consensus_algorithm": body.consensus_algorithm.value if body.consensus_algorithm else None,
         },
     )
 
     try:
-        # Run analysis with Phase 4 options
+        # Convert message history to format expected by engine
+        message_history = None
+        if body.message_history and body.include_context_analysis:
+            message_history = [
+                {
+                    "message": item.message,
+                    "timestamp": item.timestamp.isoformat(),
+                    "crisis_score": item.crisis_score,
+                }
+                for item in body.message_history
+            ]
+
+        # Run analysis with Phase 4 and Phase 5 options
         assessment = engine.analyze(
             message=body.message,
             include_explanation=body.include_explanation,
             verbosity=body.verbosity.value if body.verbosity else None,
             consensus_algorithm=body.consensus_algorithm.value if body.consensus_algorithm else None,
+            message_history=message_history,
+            include_context_analysis=body.include_context_analysis,
         )
 
         # Convert signals to response format
@@ -245,6 +293,12 @@ async def analyze_message(
 
         if assessment.consensus_result:
             response.consensus = _build_consensus_response(assessment.consensus_result)
+
+        # Add Phase 5 context analysis
+        if hasattr(assessment, 'context_analysis') and assessment.context_analysis:
+            response.context_analysis = _build_context_analysis_response(
+                assessment.context_analysis
+            )
 
         # Log crisis detections
         if assessment.crisis_detected:
@@ -471,6 +525,122 @@ async def update_consensus_config(
 
     except Exception as e:
         logger.error(f"Failed to update consensus config: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Configuration update failed: {str(e)}",
+        )
+
+
+# =============================================================================
+# Phase 5: Context Configuration Endpoints
+# =============================================================================
+
+
+@config_router.get(
+    "/context",
+    response_model=ContextConfigResponse,
+    summary="Get context configuration",
+    description="""
+    Get the current context analysis configuration.
+
+    **Phase 5 Feature**
+
+    Returns:
+    - Whether context analysis is enabled
+    - Maximum message history size
+    - Escalation detection settings
+    - Temporal pattern detection settings
+    - Trend analysis settings
+    """,
+)
+async def get_context_config(
+    engine=Depends(get_engine),
+) -> ContextConfigResponse:
+    """
+    Get current context analysis configuration.
+    """
+    # Get context config from engine
+    context_config = engine.get_context_config() if hasattr(engine, 'get_context_config') else {}
+    
+    # Build escalation config
+    escalation = context_config.get("escalation", {})
+    escalation_response = EscalationConfigResponse(
+        enabled=escalation.get("enabled", True),
+        rapid_threshold_hours=escalation.get("rapid_threshold_hours", 4),
+        gradual_threshold_hours=escalation.get("gradual_threshold_hours", 24),
+        score_increase_threshold=escalation.get("score_increase_threshold", 0.3),
+        minimum_messages=escalation.get("minimum_messages", 3),
+        alert_on_detection=escalation.get("alert_on_detection", True),
+        alert_cooldown_seconds=escalation.get("alert_cooldown_seconds", 300),
+    )
+    
+    # Build temporal config
+    temporal = context_config.get("temporal", {})
+    temporal_response = TemporalConfigResponse(
+        enabled=temporal.get("enabled", True),
+        late_night_start_hour=temporal.get("late_night_start_hour", 22),
+        late_night_end_hour=temporal.get("late_night_end_hour", 4),
+        late_night_risk_modifier=temporal.get("late_night_risk_modifier", 1.2),
+        rapid_posting_threshold_minutes=temporal.get("rapid_posting_threshold_minutes", 30),
+        rapid_posting_message_count=temporal.get("rapid_posting_message_count", 5),
+    )
+    
+    # Build trend config
+    trend = context_config.get("trend", {})
+    trend_response = TrendConfigResponse(
+        enabled=trend.get("enabled", True),
+        worsening_threshold=trend.get("worsening_threshold", 0.15),
+        improving_threshold=trend.get("improving_threshold", -0.15),
+        velocity_rapid_threshold=trend.get("velocity_rapid_threshold", 0.1),
+    )
+    
+    return ContextConfigResponse(
+        enabled=context_config.get("enabled", True),
+        max_history_size=context_config.get("max_history_size", 20),
+        escalation=escalation_response,
+        temporal=temporal_response,
+        trend=trend_response,
+    )
+
+
+@config_router.put(
+    "/context",
+    response_model=ContextConfigResponse,
+    summary="Update context configuration",
+    description="""
+    Update the context analysis configuration.
+
+    **Phase 5 Feature**
+
+    Allows updating:
+    - Enable/disable context analysis
+    - Maximum message history size
+    - Escalation alert settings
+    - Individual feature toggles
+
+    Changes take effect immediately for new requests.
+    """,
+)
+async def update_context_config(
+    body: ContextConfigUpdateRequest,
+    engine=Depends(get_engine),
+) -> ContextConfigResponse:
+    """
+    Update context analysis configuration.
+    """
+    logger.info(f"Updating context config: {body.model_dump(exclude_none=True)}")
+
+    try:
+        # Apply updates through engine
+        if hasattr(engine, 'update_context_config'):
+            updates = body.model_dump(exclude_none=True)
+            engine.update_context_config(updates)
+
+        # Return updated config
+        return await get_context_config(engine)
+
+    except Exception as e:
+        logger.error(f"Failed to update context config: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Configuration update failed: {str(e)}",
@@ -845,6 +1015,155 @@ def _build_consensus_response(consensus_data: Dict[str, Any]) -> ConsensusRespon
         individual_scores=consensus_data.get("individual_scores", {}),
         vote_breakdown=consensus_data.get("vote_breakdown"),
     )
+
+
+# =============================================================================
+# Helper Functions for Phase 5 Response Building
+# =============================================================================
+
+
+def _build_context_analysis_response(context_data: Any) -> ContextAnalysisResponse:
+    """
+    Build ContextAnalysisResponse from context analysis result.
+    
+    Handles both dict format and ContextAnalysisResult dataclass.
+    """
+    # Handle dataclass with to_dict method
+    if hasattr(context_data, 'to_dict'):
+        data = context_data.to_dict()
+    elif hasattr(context_data, '__dict__'):
+        # Handle dataclass directly
+        data = _context_dataclass_to_dict(context_data)
+    else:
+        data = context_data
+    
+    # Build trend response
+    trend_data = data.get("trend", {})
+    trend = TrendResponse(
+        direction=TrendDirection(trend_data.get("direction", "stable")),
+        velocity=TrendVelocity(trend_data.get("velocity", "none")),
+        score_delta=trend_data.get("score_delta", 0.0),
+        time_span_hours=trend_data.get("time_span_hours", 0.0),
+    )
+    
+    # Build temporal factors response
+    temporal_data = data.get("temporal_factors", {})
+    temporal = TemporalFactorsResponse(
+        late_night_risk=temporal_data.get("late_night_risk", False),
+        rapid_posting=temporal_data.get("rapid_posting", False),
+        time_risk_modifier=temporal_data.get("time_risk_modifier", 1.0),
+        hour_of_day=temporal_data.get("hour_of_day", 12),
+        is_weekend=temporal_data.get("is_weekend", False),
+    )
+    
+    # Build trajectory response
+    trajectory_data = data.get("trajectory", {})
+    trajectory = TrajectoryResponse(
+        start_score=trajectory_data.get("start_score", 0.0),
+        end_score=trajectory_data.get("end_score", 0.0),
+        peak_score=trajectory_data.get("peak_score", trajectory_data.get("end_score", 0.0)),
+        scores=trajectory_data.get("scores", []),
+    )
+    
+    # Build intervention response
+    intervention_data = data.get("intervention", {})
+    intervention = InterventionResponse(
+        urgency=InterventionUrgency(intervention_data.get("urgency", "none")),
+        recommended_point=intervention_data.get("recommended_point"),
+        intervention_delayed=intervention_data.get("intervention_delayed", False),
+        reason=intervention_data.get("reason", ""),
+    )
+    
+    # Build history metadata response
+    history_data = data.get("history_analyzed", data.get("metadata", {}))
+    history = HistoryMetadataResponse(
+        message_count=history_data.get("message_count", 0),
+        time_span_hours=history_data.get("time_span_hours", 0.0),
+        oldest_timestamp=history_data.get("oldest_timestamp"),
+        newest_timestamp=history_data.get("newest_timestamp"),
+    )
+    
+    return ContextAnalysisResponse(
+        escalation_detected=data.get("escalation_detected", False),
+        escalation_rate=EscalationRate(data.get("escalation_rate", "none")),
+        escalation_pattern=data.get("escalation_pattern"),
+        pattern_confidence=data.get("pattern_confidence", 0.0),
+        trend=trend,
+        temporal_factors=temporal,
+        trajectory=trajectory,
+        intervention=intervention,
+        history_analyzed=history,
+    )
+
+
+def _context_dataclass_to_dict(context_data: Any) -> Dict[str, Any]:
+    """
+    Convert ContextAnalysisResult dataclass to dict format.
+    
+    Handles nested dataclasses from the context module.
+    """
+    result = {}
+    
+    # Escalation fields
+    if hasattr(context_data, 'escalation'):
+        esc = context_data.escalation
+        result["escalation_detected"] = esc.detected if hasattr(esc, 'detected') else False
+        result["escalation_rate"] = esc.rate if hasattr(esc, 'rate') else "none"
+        result["escalation_pattern"] = esc.pattern if hasattr(esc, 'pattern') else None
+        result["pattern_confidence"] = esc.confidence if hasattr(esc, 'confidence') else 0.0
+    
+    # Trend fields
+    if hasattr(context_data, 'trend'):
+        trend = context_data.trend
+        result["trend"] = {
+            "direction": trend.direction if hasattr(trend, 'direction') else "stable",
+            "velocity": trend.velocity if hasattr(trend, 'velocity') else "none",
+            "score_delta": trend.score_delta if hasattr(trend, 'score_delta') else 0.0,
+            "time_span_hours": trend.time_span_hours if hasattr(trend, 'time_span_hours') else 0.0,
+        }
+    
+    # Temporal fields
+    if hasattr(context_data, 'temporal'):
+        temp = context_data.temporal
+        result["temporal_factors"] = {
+            "late_night_risk": temp.late_night_risk if hasattr(temp, 'late_night_risk') else False,
+            "rapid_posting": temp.rapid_posting if hasattr(temp, 'rapid_posting') else False,
+            "time_risk_modifier": temp.time_risk_modifier if hasattr(temp, 'time_risk_modifier') else 1.0,
+            "hour_of_day": temp.hour_of_day if hasattr(temp, 'hour_of_day') else 12,
+            "is_weekend": temp.is_weekend if hasattr(temp, 'is_weekend') else False,
+        }
+    
+    # Trajectory fields
+    if hasattr(context_data, 'trajectory'):
+        traj = context_data.trajectory
+        result["trajectory"] = {
+            "start_score": traj.start_score if hasattr(traj, 'start_score') else 0.0,
+            "end_score": traj.end_score if hasattr(traj, 'end_score') else 0.0,
+            "peak_score": traj.max_score if hasattr(traj, 'max_score') else 0.0,
+            "scores": traj.scores if hasattr(traj, 'scores') else [],
+        }
+    
+    # Intervention fields
+    if hasattr(context_data, 'intervention'):
+        intv = context_data.intervention
+        result["intervention"] = {
+            "urgency": intv.urgency if hasattr(intv, 'urgency') else "none",
+            "recommended_point": intv.recommended_point if hasattr(intv, 'recommended_point') else None,
+            "intervention_delayed": intv.intervention_delayed if hasattr(intv, 'intervention_delayed') else False,
+            "reason": intv.reason if hasattr(intv, 'reason') else "",
+        }
+    
+    # Metadata fields
+    if hasattr(context_data, 'metadata'):
+        meta = context_data.metadata
+        result["history_analyzed"] = {
+            "message_count": meta.message_count if hasattr(meta, 'message_count') else 0,
+            "time_span_hours": meta.time_span_hours if hasattr(meta, 'time_span_hours') else 0.0,
+            "oldest_timestamp": None,
+            "newest_timestamp": None,
+        }
+    
+    return result
 
 
 # =============================================================================
