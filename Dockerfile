@@ -1,190 +1,275 @@
-# Dockerfile for Ash NLP Service - Three Model Ensemble Architecture
-# Enhanced for DistilBERT emotional distress detection
+# ============================================================================
+# Ash-NLP v5.0 Production Dockerfile
+# ============================================================================
+# FILE VERSION: v5.0-3-4.5-1
+# LAST MODIFIED: 2025-12-31
+# Repository: https://github.com/the-alphabet-cartel/ash-nlp
+# Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+# ============================================================================
+#
+# USAGE:
+#   # Build the image
+#   docker build -t ash-nlp:v5.0 .
+#
+#   # Run with GPU support
+#   docker run --gpus all -p 30880:30880 ash-nlp:v5.0
+#
+#   # Run with docker-compose (recommended)
+#   docker-compose up -d
+#
+# MULTI-STAGE BUILD:
+#   Stage 1 (builder): Install dependencies, download models
+#   Stage 2 (runtime): Minimal production image
+#
+# ============================================================================
 
-FROM python:3.11-slim
+# =============================================================================
+# Stage 1: Builder
+# =============================================================================
+FROM python:3.11-slim-bookworm AS builder
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Build arguments
+ARG HUGGINGFACE_HUB_CACHE=/app/models
+ARG PIP_NO_CACHE_DIR=1
+ARG PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    HF_HOME=${HUGGINGFACE_HUB_CACHE}
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     curl \
     git \
-    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
+# Create app directory
 WORKDIR /app
 
-# Copy requirements first for better caching
+# Copy requirements first (for better caching)
 COPY requirements.txt .
 
-# Create non-root user with /app as home directory (no separate home dir)
-RUN groupadd -g 1001 nlp && \
-    useradd -g 1001 -u 1001 -d /app -M nlp
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Create virtual environment and install dependencies
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Copy model download script
+COPY --chmod=755 <<'EOF' /app/download_models.py
+#!/usr/bin/env python3
+"""Download HuggingFace models for offline use."""
+import os
+import sys
 
-# Install dependencies in virtual environment
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Set cache directory
+cache_dir = os.environ.get("HUGGINGFACE_HUB_CACHE", "/app/models")
+os.makedirs(cache_dir, exist_ok=True)
 
-# Copy application code
-COPY --chown=nlp:nlp . .
+print(f"Downloading models to {cache_dir}...")
 
-# Create necessary directories with proper ownership
-RUN mkdir -p ./models/cache ./data ./logs ./learning_data && \
-    chown -R nlp:nlp /app && \
-    chmod 755 /app
+try:
+    from transformers import pipeline
 
-# Switch to non-root user
-USER nlp
+    # Download BART (Primary model)
+    print("📥 Downloading facebook/bart-large-mnli...")
+    pipeline(
+        "zero-shot-classification",
+        model="facebook/bart-large-mnli",
+        device=-1,  # CPU for download
+    )
+
+    # Download Sentiment (Secondary model)
+    print("📥 Downloading cardiffnlp/twitter-roberta-base-sentiment-latest...")
+    pipeline(
+        "text-classification",
+        model="cardiffnlp/twitter-roberta-base-sentiment-latest",
+        device=-1,
+    )
+
+    # Download Irony (Tertiary model)
+    print("📥 Downloading cardiffnlp/twitter-roberta-base-irony...")
+    pipeline(
+        "text-classification",
+        model="cardiffnlp/twitter-roberta-base-irony",
+        device=-1,
+    )
+
+    # Download Emotions (Supplementary model)
+    print("📥 Downloading SamLowe/roberta-base-go_emotions...")
+    pipeline(
+        "text-classification",
+        model="SamLowe/roberta-base-go_emotions",
+        device=-1,
+    )
+
+    print("✅ All models downloaded successfully!")
+
+except Exception as e:
+    print(f"❌ Error downloading models: {e}")
+    sys.exit(1)
+EOF
+
+# Download models during build (optional - can be skipped for smaller images)
+# Uncomment to pre-download models:
+# RUN python /app/download_models.py
+
+
+# =============================================================================
+# Stage 2: Runtime (CUDA)
+# =============================================================================
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS runtime
+
+# Labels
+LABEL maintainer="The Alphabet Cartel <dev@alphabetcartel.org>"
+LABEL org.opencontainers.image.title="Ash-NLP"
+LABEL org.opencontainers.image.description="Crisis Detection Backend for The Alphabet Cartel Discord Community"
+LABEL org.opencontainers.image.version="5.0.0"
+LABEL org.opencontainers.image.vendor="The Alphabet Cartel"
+LABEL org.opencontainers.image.url="https://github.com/the-alphabet-cartel/ash-nlp"
+LABEL org.opencontainers.image.source="https://github.com/the-alphabet-cartel/ash-nlp"
+
+# Build arguments
+ARG APP_USER=nlp
+ARG APP_UID=1001
+ARG APP_GID=1001
+
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=UTF-8 \
+    # Application
+    NLP_ENVIRONMENT=production \
+    NLP_API_HOST=0.0.0.0 \
+    NLP_API_PORT=30880 \
+    NLP_API_WORKERS=1 \
+    NLP_LOG_LEVEL=INFO \
+    # Model settings
+    NLP_MODELS_DEVICE=auto \
+    NLP_MODELS_WARMUP_ENABLED=true \
+    # HuggingFace cache
+    HF_HOME=/app/models \
+    # CUDA
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-venv \
+    python3-pip \
+    curl \
+    tini \
+    tzdata \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python \
+    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create non-root user
+RUN groupadd --gid ${APP_GID} ${APP_USER} \
+    && useradd --uid ${APP_UID} --gid ${APP_GID} --shell /bin/bash --create-home ${APP_USER}
+
+# Create app directories
+RUN mkdir -p /app/config /app/models /app/logs \
+    && chown -R ${APP_USER}:${APP_USER} /app
 
 # Set working directory
 WORKDIR /app
 
-# Set default environment variables optimized for Three Zero-Shot Model Ensemble
-ENV TZ="America/Los_Angeles"
+# Copy Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/dist-packages
 
-## Core Python settings
-ENV PYTHONUNBUFFERED="1"
-ENV PYTHONDONTWRITEBYTECODE="1"
-ENV PYTHONPATH="/app"
+# Copy pre-downloaded models from builder (if downloaded)
+# COPY --from=builder --chown=${APP_USER}:${APP_USER} /app/models /app/models
 
-## Hugging Face Configuration
-ENV NLP_HUGGINGFACE_CACHE_DIR="./models/cache"
-ENV HF_HOME="/app/models/cache"
-# ENV TRANSFORMERS_CACHE="/app/models/cache"
-ENV HF_DATASETS_CACHE="/app/models/cache"
-ENV TORCH_HOME="/app/models/cache"
-ENV XDG_CACHE_HOME="/app/models/cache"
+# Copy application code
+COPY --chown=${APP_USER}:${APP_USER} . /app/
 
-## Mode
-ENV NLP_ENSEMBLE_MODE="consensus"
+# Make entrypoint executable
+RUN chmod +x /app/main.py 2>/dev/null || true
 
-## Learning System Configuration
-ENV GLOBAL_ENABLE_LEARNING_SYSTEM="true"
-ENV NLP_LEARNING_RATE="0.1"
-ENV NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY="50"
-ENV NLP_LEARNING_PERSISTENCE_FILE="./learning_data/adjustments.json"
-ENV NLP_MIN_CONFIDENCE_ADJUSTMENT="0.05"
-ENV NLP_MAX_CONFIDENCE_ADJUSTMENT="0.30"
-
-## Three-Model Configuration
-ENV NLP_DEPRESSION_MODEL="MoritzLaurer/deberta-v3-base-zeroshot-v2.0"
-ENV NLP_SENTIMENT_MODEL="Lowerated/lm6-deberta-v3-topic-sentiment"
-ENV NLP_EMOTIONAL_DISTRESS_MODEL="facebook/bart-large-mnli"
-ENV NLP_MODEL_CACHE_DIR="./models/cache"
-
-## Ensemble Configuration
-ENV NLP_ENSEMBLE_MODE="consensus"
-ENV NLP_GAP_DETECTION_THRESHOLD="0.4"
-ENV NLP_DISAGREEMENT_THRESHOLD="0.5"
-ENV NLP_AUTO_FLAG_DISAGREEMENTS="true"
-
-## Hardware Configuration - Optimized for RTX 3060 (12GB VRAM) with three models
-ENV NLP_DEVICE="auto"
-ENV NLP_MODEL_PRECISION="float16"
-
-## Performance Tuning - Optimized for Ryzen 7 5800X (8C/16T) + RTX 3060 (12GB) + 64GB RAM
-ENV NLP_MAX_BATCH_SIZE="48"
-ENV NLP_INFERENCE_THREADS="16"
-ENV NLP_MAX_CONCURRENT_REQUESTS="20"
-ENV NLP_REQUEST_TIMEOUT="35"
-
-## Server Configuration
-ENV GLOBAL_NLP_API_PORT="8881"
-ENV NLP_UVICORN_WORKERS="1"
-ENV NLP_RELOAD_ON_CHANGES="false"
-
-## Logging Configuration
-ENV GLOBAL_LOG_LEVEL="INFO"
-ENV NLP_LOG_FILE="nlp_service.log"
-ENV GLOBAL_ENABLE_DEBUG_MODE="false"
-ENV NLP_FLIP_SENTIMENT_LOGIC="false"
-
-## Storage Paths
-ENV NLP_DATA_DIR="./data"
-ENV NLP_MODELS_DIR="./models/cache"
-ENV NLP_LOGS_DIR="./logs"
-ENV NLP_LEARNING_DATA_DIR="./learning_data"
-
-## Crisis Detection Thresholds - Adjusted for ensemble
-ENV NLP_HIGH_CRISIS_THRESHOLD="0.45"
-ENV NLP_MEDIUM_CRISIS_THRESHOLD="0.25"
-ENV NLP_LOW_CRISIS_THRESHOLD="0.15"
-
-# UPDATED: Legacy thresholds (update values)
-ENV NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD="0.45"
-ENV NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD="0.25"
-ENV NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD="0.12"
-
-# Additional threshold controls (new)
-ENV NLP_MILD_CRISIS_THRESHOLD="0.25"
-ENV NLP_NEGATIVE_RESPONSE_THRESHOLD="0.65"
-ENV NLP_UNKNOWN_RESPONSE_THRESHOLD="0.45"
-
-# Safety controls (new)
-ENV NLP_CONSENSUS_SAFETY_BIAS="0.05"
-ENV NLP_ENABLE_SAFETY_OVERRIDE="true"
-
-# UPDATED: Model weights
-ENV NLP_DEPRESSION_MODEL_WEIGHT="0.6"
-ENV NLP_SENTIMENT_MODEL_WEIGHT="0.15"
-ENV NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT="0.25"
-
-# UPDATED: Gap detection
-ENV NLP_GAP_DETECTION_THRESHOLD="0.25"
-ENV NLP_DISAGREEMENT_THRESHOLD="0.35"
-ENV NLP_AUTO_FLAG_DISAGREEMENTS="true"
-
-# NEW: Consensus mapping thresholds
-ENV NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD="0.50"
-ENV NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD="0.30"
-ENV NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD="0.40"
-ENV NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD="0.70"
-ENV NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD="0.50"
-
-# NEW: Staff review thresholds
-ENV NLP_STAFF_REVIEW_HIGH_ALWAYS="true"
-ENV NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD="0.45"
-ENV NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD="0.75"
-ENV NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT="true"
-
-# NEW: Safety controls
-ENV NLP_CONSENSUS_SAFETY_BIAS="0.03"
-ENV NLP_ENABLE_SAFETY_OVERRIDE="true"
-
-## Rate Limiting - Optimized for RTX 3060 (12GB) + Ryzen 7 5800X performance
-ENV NLP_MAX_REQUESTS_PER_MINUTE="120"
-ENV NLP_MAX_REQUESTS_PER_HOUR="2000"
-
-## Security
-ENV GLOBAL_ALLOWED_IPS="10.20.30.0/24,127.0.0.1,::1"
-ENV GLOBAL_ENABLE_CORS="true"
-
-## Experimental Features
-ENV NLP_ENABLE_ENSEMBLE_ANALYSIS="true"
-ENV NLP_ENABLE_GAP_DETECTION="true"
-ENV NLP_ENABLE_CONFIDENCE_SPREADING="true"
-ENV NLP_LOG_MODEL_DISAGREEMENTS="true"
+# Switch to non-root user
+USER ${APP_USER}
 
 # Expose port
-EXPOSE 8881
+EXPOSE 30880
 
-# Health check - optimized for RTX 3060 (12GB) model loading time
-HEALTHCHECK --interval=60s --timeout=35s --start-period=300s --retries=3 \
-    CMD curl -f http://localhost:8881/health || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:30880/health || exit 1
 
-# Start the service
-CMD ["python", "main.py"]
+# Use tini as init system
+ENTRYPOINT ["/usr/bin/tini", "--"]
 
-# Updated labels for API server version
-LABEL maintainer="The Alphabet Cartel" \
-      version="3.0" \
-      description="Ash NLP Server - Mental Health Support with Analytics" \
-      org.opencontainers.image.source="https://github.com/The-Alphabet-Cartel/ash" \
-      feature.conversation-isolation="enabled" \
-      feature.api-server="enabled" \
-      feature.analytics-dashboard="supported" \
-      api.port="8881" \
-      api.endpoints="/health,/stats,/analyze,/learning_statistics"
+# Default command
+CMD ["python", "-m", "uvicorn", "src.api.app:app", \
+     "--host", "0.0.0.0", \
+     "--port", "30880", \
+     "--workers", "1", \
+     "--log-level", "info"]
+
+
+# =============================================================================
+# Stage 2 Alternative: CPU-only Runtime (smaller image)
+# =============================================================================
+FROM python:3.11-slim-bookworm AS runtime-cpu
+
+# Labels
+LABEL maintainer="The Alphabet Cartel <dev@alphabetcartel.org>"
+LABEL org.opencontainers.image.title="Ash-NLP (CPU)"
+LABEL org.opencontainers.image.description="Crisis Detection Backend - CPU Only"
+
+# Build arguments
+ARG APP_USER=nlp
+ARG APP_UID=1001
+ARG APP_GID=1001
+
+# Environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=UTF-8 \
+    NLP_ENVIRONMENT=production \
+    NLP_API_HOST=0.0.0.0 \
+    NLP_API_PORT=30880 \
+    NLP_API_WORKERS=1 \
+    NLP_LOG_LEVEL=INFO \
+    NLP_MODELS_DEVICE=cpu \
+    NLP_MODELS_WARMUP_ENABLED=true \
+    HF_HOME=/app/models
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    tini \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN groupadd --gid ${APP_GID} ${APP_USER} \
+    && useradd --uid ${APP_UID} --gid ${APP_GID} --shell /bin/bash --create-home ${APP_USER}
+
+# Create app directories
+RUN mkdir -p /app/config /app/models /app/logs \
+    && chown -R ${APP_USER}:${APP_USER} /app
+
+WORKDIR /app
+
+# Copy Python packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+# Copy application code
+COPY --chown=${APP_USER}:${APP_USER} . /app/
+
+USER ${APP_USER}
+
+EXPOSE 30880
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \
+    CMD curl -f http://localhost:30880/health || exit 1
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+
+CMD ["python", "-m", "uvicorn", "src.api.app:app", \
+     "--host", "0.0.0.0", \
+     "--port", "30880", \
+     "--workers", "1", \
+     "--log-level", "info"]

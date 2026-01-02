@@ -1,0 +1,229 @@
+{
+	"_metadata": {
+		"file_version": "v5.0-4-1.6-1",
+		"last_modified": "2026-01-01",
+		"clean_architecture": "Compliant",
+		"description": "Consensus and Conflict Configuration for Ash-NLP Ensemble",
+		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
+		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
+	},
+
+	"consensus": {
+		"description": "Consensus algorithm configuration for ensemble decision-making",
+		"default_algorithm": "${NLP_CONSENSUS_ALGORITHM}",
+		"algorithms": {
+			"weighted_voting": {
+				"enabled": true,
+				"description": "Weight-based model contribution scoring (default)"
+			},
+			"majority_voting": {
+				"enabled": true,
+				"description": "Binary majority decision - more than half must agree"
+			},
+			"unanimous": {
+				"enabled": true,
+				"description": "All models must agree - most conservative"
+			},
+			"conflict_aware": {
+				"enabled": true,
+				"description": "Detect disagreements and flag for review (Council-inspired)"
+			}
+		},
+		"thresholds": {
+			"crisis": "${NLP_CONSENSUS_CRISIS_THRESHOLD}",
+			"majority": "${NLP_CONSENSUS_MAJORITY_THRESHOLD}",
+			"unanimous": "${NLP_CONSENSUS_UNANIMOUS_THRESHOLD}",
+			"disagreement": "${NLP_CONSENSUS_DISAGREEMENT_THRESHOLD}"
+		},
+		"defaults": {
+			"default_algorithm": "weighted_voting",
+			"crisis": 0.5,
+			"majority": 0.5,
+			"unanimous": 0.6,
+			"disagreement": 0.15
+		},
+		"validation": {
+			"default_algorithm": {
+				"type": "string",
+				"allowed_values": ["weighted_voting", "majority_voting", "unanimous", "conflict_aware"],
+				"required": true
+			},
+			"crisis": {
+				"type": "float",
+				"range": [0.3, 0.8],
+				"required": true
+			},
+			"majority": {
+				"type": "float",
+				"range": [0.3, 0.8],
+				"required": true
+			},
+			"unanimous": {
+				"type": "float",
+				"range": [0.4, 0.9],
+				"required": true
+			},
+			"disagreement": {
+				"type": "float",
+				"range": [0.05, 0.5],
+				"required": true
+			}
+		}
+	},
+
+	"conflict_detection": {
+		"description": "Configuration for detecting model disagreements",
+		"enabled": "${NLP_CONFLICT_DETECTION_ENABLED}",
+		"types": {
+			"score_disagreement": {
+				"enabled": true,
+				"threshold": "${NLP_CONFLICT_SCORE_THRESHOLD}",
+				"severity": "high",
+				"description": "Max-min score difference exceeds threshold"
+			},
+			"irony_sentiment": {
+				"enabled": true,
+				"severity": "medium",
+				"description": "Sentiment positive but irony detected"
+			},
+			"emotion_crisis_mismatch": {
+				"enabled": true,
+				"severity": "medium",
+				"description": "High crisis score but no crisis emotions"
+			},
+			"label_disagreement": {
+				"enabled": true,
+				"severity": "medium",
+				"description": "Models predict conflicting crisis types"
+			}
+		},
+		"defaults": {
+			"enabled": true,
+			"score_threshold": 0.4
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"score_threshold": {
+				"type": "float",
+				"range": [0.2, 0.7],
+				"required": true
+			}
+		}
+	},
+
+	"conflict_resolution": {
+		"description": "Configuration for resolving model disagreements",
+		"default_strategy": "${NLP_CONFLICT_RESOLUTION_STRATEGY}",
+		"strategies": {
+			"conservative": {
+				"description": "Use highest crisis score - safety-first approach",
+				"rationale": "Better to over-alert than miss a crisis"
+			},
+			"optimistic": {
+				"description": "Use lowest crisis score - reduce false positives",
+				"rationale": "Minimize unnecessary alerts"
+			},
+			"mean": {
+				"description": "Use average score - balanced approach",
+				"rationale": "Compromise between all models"
+			},
+			"review_flag": {
+				"description": "Flag for human review - defer decision",
+				"rationale": "Let humans decide on ambiguous cases"
+			}
+		},
+		"defaults": {
+			"default_strategy": "conservative"
+		},
+		"validation": {
+			"default_strategy": {
+				"type": "string",
+				"allowed_values": ["conservative", "optimistic", "mean", "review_flag"],
+				"required": true
+			}
+		}
+	},
+
+	"conflict_alerting": {
+		"description": "Configuration for Discord alerts on model conflicts",
+		"enabled": "${NLP_CONFLICT_ALERT_ENABLED}",
+		"alert_on_high_severity": "${NLP_CONFLICT_ALERT_HIGH_SEVERITY}",
+		"alert_on_review_flag": "${NLP_CONFLICT_ALERT_REVIEW_FLAG}",
+		"cooldown_seconds": "${NLP_CONFLICT_ALERT_COOLDOWN}",
+		"defaults": {
+			"enabled": true,
+			"alert_on_high_severity": true,
+			"alert_on_review_flag": true,
+			"cooldown_seconds": 60
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"alert_on_high_severity": {
+				"type": "boolean",
+				"required": false
+			},
+			"alert_on_review_flag": {
+				"type": "boolean",
+				"required": false
+			},
+			"cooldown_seconds": {
+				"type": "integer",
+				"range": [10, 600],
+				"required": false
+			}
+		}
+	},
+
+	"explainability": {
+		"description": "Configuration for human-readable explanation generation",
+		"enabled": "${NLP_EXPLAINABILITY_ENABLED}",
+		"verbosity": "${NLP_EXPLAINABILITY_VERBOSITY}",
+		"include_model_details": "${NLP_EXPLAINABILITY_MODEL_DETAILS}",
+		"include_recommendations": "${NLP_EXPLAINABILITY_RECOMMENDATIONS}",
+		"verbosity_levels": {
+			"minimal": {
+				"description": "Crisis level and score only",
+				"components": ["decision_summary"]
+			},
+			"standard": {
+				"description": "Summary, key factors, and recommendation",
+				"components": ["decision_summary", "key_factors", "recommended_action"]
+			},
+			"detailed": {
+				"description": "Full breakdown with all model contributions",
+				"components": ["decision_summary", "model_contributions", "key_factors", "recommended_action", "confidence_breakdown"]
+			}
+		},
+		"defaults": {
+			"enabled": true,
+			"verbosity": "standard",
+			"include_model_details": true,
+			"include_recommendations": true
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": true
+			},
+			"verbosity": {
+				"type": "string",
+				"allowed_values": ["minimal", "standard", "detailed"],
+				"required": true
+			},
+			"include_model_details": {
+				"type": "boolean",
+				"required": false
+			},
+			"include_recommendations": {
+				"type": "boolean",
+				"required": false
+			}
+		}
+	}
+}

@@ -1,196 +1,242 @@
-# Ash-NLP Docker Compose for Ash Ecosystem
+# ============================================================================
+# Ash-NLP v5.0 Docker Compose Configuration
+# ============================================================================
+# FILE VERSION: v5.0-3-6.4-1
+# LAST MODIFIED: 2026-01-01
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
-# Discord: https://discord.gg/alphabetcartel
-# Website: http://alphabetcartel.org
+# Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
+# ============================================================================
+#
+# USAGE:
+#   # Start services
+#   docker-compose up -d
+#
+#   # View logs
+#   docker-compose logs -f ash-nlp
+#
+#   # Stop services
+#   docker-compose down
+#
+#   # Rebuild and start
+#   docker-compose up -d --build
+#
+#   # Start CPU-only version
+#   docker-compose --profile cpu up -d
+#
+# SECRETS:
+#   Secrets are stored in ./secrets/ directory:
+#   - ./secrets/huggingface - HuggingFace API token
+#   - ./secrets/discord_alert_webhook - Discord webhook for alerts (optional)
+#
+# REQUIREMENTS:
+#   - Docker Engine 24.0+
+#   - Docker Compose v2.20+
+#   - NVIDIA Container Toolkit (for GPU support)
+#
+# ============================================================================
+
 services:
-  # ========================================================================
-  # NLP Server (ash-nlp)
-  # ========================================================================
+  # ===========================================================================
+  # Ash-NLP Service (GPU)
+  # ===========================================================================
   ash-nlp:
-#    build:
-#      context: .
-    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
     container_name: ash-nlp
-    restart: unless-stopped
-    networks:
-      ash-network:
-        ipv4_address: 172.20.0.11
-    ports:
-      - 8881:8881
-    environment:
-      # Local Timezone
-      - TZ=America/Los_Angeles
-      
-      # Secrets
-      - GLOBAL_HUGGINGFACE_TOKEN=${GLOBAL_HUGGINGFACE_TOKEN}
-      - GLOBAL_CLAUDE_API_KEY=${GLOBAL_CLAUDE_API_KEY}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+      args:
+        APP_USER: nlp
+        APP_UID: 1001
+        APP_GID: 1001
+    image: ash-nlp:v5.0
 
-      # Hugging Face Configuration
-      - NLP_HUGGINGFACE_CACHE_DIR=${NLP_HUGGINGFACE_CACHE_DIR}
-      
-      # Mode
-      - NLP_ENSEMBLE_MODE=${NLP_ENSEMBLE_MODE:-consensus}
-
-      # Learning System Configuration
-      - GLOBAL_ENABLE_LEARNING_SYSTEM=${GLOBAL_ENABLE_LEARNING_SYSTEM:-true}
-      - NLP_LEARNING_RATE=${NLP_LEARNING_RATE:-0.1}
-      - NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY=${NLP_MAX_LEARNING_ADJUSTMENTS_PER_DAY:-50}
-      - NLP_LEARNING_PERSISTENCE_FILE=${NLP_LEARNING_PERSISTENCE_FILE}
-      - NLP_MIN_CONFIDENCE_ADJUSTMENT=${NLP_MIN_CONFIDENCE_ADJUSTMENT:-0.05}
-      - NLP_MAX_CONFIDENCE_ADJUSTMENT=${NLP_MAX_CONFIDENCE_ADJUSTMENT:-0.30}
-      
-      # Model Configuration
-      - NLP_DEPRESSION_MODEL=${NLP_DEPRESSION_MODEL:-MoritzLaurer/deberta-v3-base-zeroshot-v2.0}
-      - NLP_SENTIMENT_MODEL=${NLP_SENTIMENT_MODEL:-Lowerated/lm6-deberta-v3-topic-sentiment}
-      - NLP_EMOTIONAL_DISTRESS_MODEL=${NLP_EMOTIONAL_DISTRESS_MODEL:-facebook/bart-large-mnli}
-      - NLP_MODEL_CACHE_DIR=${NLP_MODEL_CACHE_DIR}
-      
-      # Hardware Configuration
-      - NLP_DEVICE=${NLP_DEVICE:-auto}
-      - NLP_MODEL_PRECISION=${NLP_MODEL_PRECISION:-float16}
-      
-      # Performance Tuning
-      - NLP_MAX_BATCH_SIZE=${NLP_MAX_BATCH_SIZE:-32}
-      - NLP_INFERENCE_THREADS=${NLP_INFERENCE_THREADS:-4}
-      - NLP_MAX_CONCURRENT_REQUESTS=${NLP_MAX_CONCURRENT_REQUESTS:-10}
-      - NLP_REQUEST_TIMEOUT=${NLP_REQUEST_TIMEOUT:-30}
-      
-      # Server Configuration
-      - GLOBAL_NLP_API_PORT=${GLOBAL_NLP_API_PORT:-8881}
-      - NLP_UVICORN_WORKERS=${NLP_UVICORN_WORKERS:-1}
-      - NLP_RELOAD_ON_CHANGES=${NLP_RELOAD_ON_CHANGES:-false}
-      
-      # Logging Configuration
-      - GLOBAL_LOG_LEVEL=${GLOBAL_LOG_LEVEL:-INFO}
-      - NLP_LOG_FILE=${NLP_LOG_FILE:-nlp_service.log}
-      - GLOBAL_ENABLE_DEBUG_MODE=${GLOBAL_ENABLE_DEBUG_MODE:-false}
-      - NLP_FLIP_SENTIMENT_LOGIC=${NLP_FLIP_SENTIMENT_LOGIC:-false}
-      
-      # Storage Paths
-      - NLP_DATA_DIR=${NLP_DATA_DIR}
-      - NLP_MODELS_DIR=${NLP_MODELS_DIR}
-      - NLP_LOGS_DIR=${NLP_LOGS_DIR}
-      - NLP_LEARNING_DATA_DIR=${NLP_LEARNING_DATA_DIR}
-      
-      # UPDATED: Individual model thresholds (if you use them)
-      - NLP_HIGH_CRISIS_THRESHOLD=${NLP_HIGH_CRISIS_THRESHOLD:-0.45}
-      - NLP_MEDIUM_CRISIS_THRESHOLD=${NLP_MEDIUM_CRISIS_THRESHOLD:-0.25}
-      - NLP_LOW_CRISIS_THRESHOLD=${NLP_LOW_CRISIS_THRESHOLD:-0.15}
-
-      # UPDATED: Legacy ensemble thresholds (if you use them)
-      - NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD=${NLP_ENSEMBLE_HIGH_CRISIS_THRESHOLD:-0.45}
-      - NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD=${NLP_ENSEMBLE_MEDIUM_CRISIS_THRESHOLD:-0.25}
-      - NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD=${NLP_ENSEMBLE_LOW_CRISIS_THRESHOLD:-0.12}
-      
-      # Additional threshold controls (new)
-      - NLP_MILD_CRISIS_THRESHOLD=${NLP_MILD_CRISIS_THRESHOLD:-0.25}
-      - NLP_NEGATIVE_RESPONSE_THRESHOLD=${NLP_NEGATIVE_RESPONSE_THRESHOLD:-0.65}
-      - NLP_UNKNOWN_RESPONSE_THRESHOLD=${NLP_UNKNOWN_RESPONSE_THRESHOLD:-0.45}
-      
-      # Safety controls (new)
-      - NLP_CONSENSUS_SAFETY_BIAS=${NLP_CONSENSUS_SAFETY_BIAS:-0.05}
-      - NLP_ENABLE_SAFETY_OVERRIDE=${NLP_ENABLE_SAFETY_OVERRIDE:-true}
-      
-      # UPDATED: Model weights
-      - NLP_DEPRESSION_MODEL_WEIGHT=${NLP_DEPRESSION_MODEL_WEIGHT:-0.6}
-      - NLP_SENTIMENT_MODEL_WEIGHT=${NLP_SENTIMENT_MODEL_WEIGHT:-0.15}
-      - NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT=${NLP_EMOTIONAL_DISTRESS_MODEL_WEIGHT:-0.25}
-      
-      # UPDATED: Gap detection thresholds
-      - NLP_GAP_DETECTION_THRESHOLD=${NLP_GAP_DETECTION_THRESHOLD:-0.25}
-      - NLP_DISAGREEMENT_THRESHOLD=${NLP_DISAGREEMENT_THRESHOLD:-0.35}
-      - NLP_AUTO_FLAG_DISAGREEMENTS=${NLP_AUTO_FLAG_DISAGREEMENTS:-true}
-      
-      # NEW: Primary consensus mapping thresholds
-      - NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD=${NLP_CONSENSUS_CRISIS_TO_HIGH_THRESHOLD:-0.50}
-      - NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD=${NLP_CONSENSUS_CRISIS_TO_MEDIUM_THRESHOLD:-0.30}
-      - NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD=${NLP_CONSENSUS_MILD_CRISIS_TO_LOW_THRESHOLD:-0.40}
-      - NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD=${NLP_CONSENSUS_NEGATIVE_TO_LOW_THRESHOLD:-0.70}
-      - NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD=${NLP_CONSENSUS_UNKNOWN_TO_LOW_THRESHOLD:-0.50}
-      
-      # NEW: Staff review thresholds
-      - NLP_STAFF_REVIEW_HIGH_ALWAYS=${NLP_STAFF_REVIEW_HIGH_ALWAYS:-true}
-      - NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD=${NLP_STAFF_REVIEW_MEDIUM_CONFIDENCE_THRESHOLD:-0.45}
-      - NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD=${NLP_STAFF_REVIEW_LOW_CONFIDENCE_THRESHOLD:-0.75}
-      - NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT=${NLP_STAFF_REVIEW_ON_MODEL_DISAGREEMENT:-true}
-      
-      # NEW: Safety controls
-      - NLP_CONSENSUS_SAFETY_BIAS=${NLP_CONSENSUS_SAFETY_BIAS:-0.03}
-      - NLP_ENABLE_SAFETY_OVERRIDE=${NLP_ENABLE_SAFETY_OVERRIDE:-true}
-
-      # Rate Limiting
-      - NLP_MAX_REQUESTS_PER_MINUTE=${NLP_MAX_REQUESTS_PER_MINUTE:-60}
-      - NLP_MAX_REQUESTS_PER_HOUR=${NLP_MAX_REQUESTS_PER_HOUR:-1000}
-      
-      # Security
-      - GLOBAL_ALLOWED_IPS=${GLOBAL_ALLOWED_IPS}
-      - GLOBAL_ENABLE_CORS=${GLOBAL_ENABLE_CORS}
-
-      # EXPERIMENTAL FEATURES
-      - NLP_ENABLE_ENSEMBLE_ANALYSIS=${NLP_ENABLE_ENSEMBLE_ANALYSIS:-true}
-      - NLP_ENABLE_GAP_DETECTION=${NLP_ENABLE_GAP_DETECTION:-true}
-      - NLP_ENABLE_CONFIDENCE_SPREADING=${NLP_ENABLE_CONFIDENCE_SPREADING:-true}
-      - NLP_LOG_MODEL_DISAGREEMENTS=${NLP_LOG_MODEL_DISAGREEMENTS:-true}
-    volumes:
-      - ./ash-nlp/data:/app/data
-      - ./ash-nlp/models/cache:/app/models/cache
-      - ./ash-nlp/logs:/app/logs
-      - ./ash-nlp/learning_data:/app/learning_data
-      - ./secrets:/run/secrets:ro
-    depends_on:
-      ash-redis:
-        condition: service_started
+    # GPU Support (requires NVIDIA Container Toolkit)
     deploy:
       resources:
-        limits:
-          memory: 8G
-          cpus: '4.0'
         reservations:
           devices:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8881/health"]
-      interval: 30s
-      timeout: 15s
-      retries: 3
-      start_period: 60s
 
-  # ========================================================================
-  # Redis Cache
-  # ========================================================================
-  ash-redis:
-    image: redis:7-alpine
-    container_name: ash-redis
-    restart: unless-stopped
-    networks:
-      ash-network:
-        ipv4_address: 172.20.0.20
+    # Port mapping
     ports:
-      - 6379:6379
-    command: redis-server --appendonly yes --requirepass ${GLOBAL_REDIS_PASSWORD}
+      - "30880:30880"
+
+    # Docker Secrets
+    secrets:
+      - huggingface
+      - discord_alert_webhook
+
+    # Environment variables
+    environment:
+      # Application settings
+      - NLP_ENVIRONMENT=production
+      - NLP_API_HOST=0.0.0.0
+      - NLP_API_PORT=30880
+      - NLP_API_WORKERS=1
+      - NLP_API_TIMEOUT=30
+      - NLP_LOG_LEVEL=INFO
+
+      # Model settings
+      - NLP_MODELS_DEVICE=auto
+      - NLP_MODELS_WARMUP_ENABLED=true
+      - NLP_MODELS_MAX_CONCURRENT=4
+
+      # Model weights
+      - NLP_MODEL_BART_WEIGHT=0.50
+      - NLP_MODEL_SENTIMENT_WEIGHT=0.25
+      - NLP_MODEL_IRONY_WEIGHT=0.15
+      - NLP_MODEL_EMOTIONS_WEIGHT=0.10
+
+      # Thresholds
+      - NLP_THRESHOLD_CRITICAL=0.85
+      - NLP_THRESHOLD_HIGH=0.70
+      - NLP_THRESHOLD_MEDIUM=0.50
+      - NLP_THRESHOLD_LOW=0.30
+
+      # Performance
+      - NLP_PERFORMANCE_CACHE_ENABLED=true
+      - NLP_PERFORMANCE_CACHE_TTL=300
+      - NLP_PERFORMANCE_ASYNC_INFERENCE=true
+
+      # Alerting
+      - NLP_ALERTING_ENABLED=true
+
+      # Logging
+      - NLP_LOG_FORMAT=human  # human or json
+
+      # HuggingFace cache
+      - HF_HOME=/app/models
+      - TRANSFORMERS_OFFLINE=0
+
+    # Volume mounts
     volumes:
-      - redis_data:/data
-      - ./secrets:/run/secrets:ro
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.25'
+      # Configuration (read-only)
+      - ./config:/app/config:ro
+
+      # Model cache (persistent)
+      - ash-nlp-models:/app/models
+
+      # Logs (optional)
+      - ash-nlp-logs:/app/logs
+
+    # Health check
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "curl", "-f", "http://localhost:30880/health"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 120s
 
+    # Restart policy
+    restart: unless-stopped
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+    # Network
+    networks:
+      - ash-network
+
+    # Labels for organization
+    labels:
+      - "com.alphabetcartel.service=ash-nlp"
+      - "com.alphabetcartel.version=5.0.0"
+      - "com.alphabetcartel.description=Crisis Detection Backend"
+
+  # ===========================================================================
+  # Ash-NLP Service (CPU-only) - Alternative profile
+  # ===========================================================================
+  ash-nlp-cpu:
+    container_name: ash-nlp-cpu
+    profiles:
+      - cpu
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime-cpu
+    image: ash-nlp:v5.0-cpu
+
+    ports:
+      - "30880:30880"
+
+    # Docker Secrets
+    secrets:
+      - huggingface
+      - discord_alert_webhook
+
+    environment:
+      - NLP_ENVIRONMENT=production
+      - NLP_API_HOST=0.0.0.0
+      - NLP_API_PORT=30880
+      - NLP_API_WORKERS=1
+      - NLP_LOG_LEVEL=INFO
+      - NLP_LOG_FORMAT=human
+      - NLP_ALERTING_ENABLED=true
+      - NLP_MODELS_DEVICE=cpu
+      - NLP_MODELS_WARMUP_ENABLED=true
+      - HF_HOME=/app/models
+
+    volumes:
+      - ./config:/app/config:ro
+      - ash-nlp-models:/app/models
+      - ash-nlp-logs:/app/logs
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:30880/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s # Longer for CPU
+
+    restart: unless-stopped
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+    networks:
+      - ash-network
+
+    labels:
+      - "com.alphabetcartel.service=ash-nlp-cpu"
+      - "com.alphabetcartel.version=5.0.0"
+
+# =============================================================================
+# Secrets
+# =============================================================================
+secrets:
+  huggingface:
+    file: ./secrets/huggingface
+  discord_alert_webhook:
+    file: ./secrets/discord_alert_webhook
+
+# =============================================================================
+# Networks
+# =============================================================================
 networks:
   ash-network:
+    name: ash-network
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
 
+# =============================================================================
+# Volumes
+# =============================================================================
 volumes:
-  redis_data:
+  # Persistent model cache
+  ash-nlp-models:
+    name: ash-nlp-models
+    driver: local
+
+  # Log storage
+  ash-nlp-logs:
+    name: ash-nlp-logs
     driver: local

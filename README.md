@@ -1,64 +1,61 @@
-# Ash NLP Service v3.0 - Three-Model Crisis Detection Ensemble
+# Ash-NLP v5.0
 
-**Revolutionary mental health crisis detection using advanced AI ensemble methods**
+**Crisis Detection Backend for [The Alphabet Cartel](https://discord.gg/alphabetcartel) Discord Community**
 
-[![Discord](https://img.shields.io/badge/Discord-Join%20Server-7289da)](https://discord.gg/alphabetcartel)
-[![Website](https://img.shields.io/badge/Website-alphabetcartel.org-blue)](http://alphabetcartel.org)
-[![GitHub](https://img.shields.io/badge/Branch-Main-green)](https://github.com/the-alphabet-cartel/ash-nlp)
+[![Version](https://img.shields.io/badge/version-5.0.0-blue.svg)](https://github.com/the-alphabet-cartel/ash-nlp)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Discord](https://img.shields.io/discord/YOUR_DISCORD_ID?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.gg/alphabetcartel)
 
-## 🚀 What is Ash NLP v3.0?
+---
 
-Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designed specifically for mental health crisis detection in LGBTQIA+ Discord communities. Unlike traditional single-model approaches, our system combines three specialized AI models to provide:
+## 🎯 Overview
 
-- **🧠 Enhanced accuracy** through model consensus and disagreement detection
-- **⚡ Sub-35ms response times** optimized for real-time Discord interactions
-- **🔍 Gap detection** to identify when models disagree and require human review
-- **🏳️‍🌈 Community-aware** patterns specific to LGBTQIA+ experiences
-- **🛡️ Safety-first** approach with transparent decision-making
+Ash-NLP is a **multi-model ensemble crisis detection system** designed to identify crisis signals in Discord community messages. It uses a weighted combination of four specialized NLP models to provide accurate, contextual crisis assessment.
 
-## 🤖 Three-Model Architecture
+### Core Architecture
 
-### Model 1: Depression Detection 🧠
-- **Model**: `MoritzLaurer/deberta-v3-base-zeroshot-v2.0`
-- **Architecture**: DeBERTa-based classification
-- **Purpose**: Primary crisis classification with clinical depression focus
-- **Labels**: `[Dynamic Zero-Shot Labels]`
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    Multi-Model Ensemble Pipeline                        │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                         │
+│   Message → [BART] → [Sentiment] → [Irony] → [Emotions] → Crisis Score  │
+│             (0.50)    (0.25)       (0.15)    (0.10)                     │
+│                                                                         │
+│   PRIMARY   SECONDARY   TERTIARY   SUPPLEMENTARY                        │
+│                                                                         │
+└─────────────────────────────────────────────────────────────────────────┘
+```
 
-### Model 2: Sentiment Analysis 💭
-- **Model**: `Lowerated/lm6-deberta-v3-topic-sentiment`
-- **Architecture**: DeBERTa-based sentiment analysis
-- **Purpose**: Contextual validation and emotional tone analysis
-- **Labels**: `[Dynamic Zero-Shot Labels]`
+### Model Ensemble
 
-### Model 3: Emotional Distress Detection 😰
-- **Model**: `facebook/bart-large-mnli`
-- **Architecture**: BART-based emotional analysis
-- **Purpose**: Additional emotional state detection and validation
-- **Labels**: `[Dynamic Zero-Shot]`
+| Model | Role | Weight | Purpose |
+|-------|------|--------|---------|
+| **BART** | Primary | 0.50 | Zero-shot crisis classification |
+| **Sentiment** | Secondary | 0.25 | Emotional context (positive/negative/neutral) |
+| **Irony** | Tertiary | 0.15 | Sarcasm detection (reduces false positives) |
+| **Emotions** | Supplementary | 0.10 | Fine-grained emotion signals (28 labels) |
 
-## 🎯 Key Features
+### Crisis Severity Levels
 
-### Ensemble Decision Making
-- **Consensus Mode**: All models must agree for high confidence
-- **Majority Mode**: Democratic voting with confidence weighting
-- **Weighted Mode**: Configurable model importance (Depression: 50%, Sentiment: 20%, Distress: 30%)
+| Level | Threshold | Action |
+|-------|-----------|--------|
+| 🔴 **Critical** | ≥ 0.85 | Immediate intervention required |
+| 🟠 **High** | ≥ 0.70 | Priority response needed |
+| 🟡 **Medium** | ≥ 0.50 | Standard monitoring |
+| 🟢 **Low** | ≥ 0.30 | Passive monitoring |
+| ⚪ **Safe** | < 0.30 | No crisis detected |
 
-### Gap Detection System
-- **Meaningful Disagreement Detection**: Identifies when models fundamentally disagree
-- **Automatic Staff Flagging**: Routes uncertain cases to human review
-- **Confidence Spread Analysis**: Detects when model confidence varies significantly
-
-### Hardware Optimization
-- **RTX 3060 Optimized**: 12GB VRAM utilization with 48-item batch processing
-- **CPU Performance**: 16-thread processing for Ryzen 7 5800X
-- **Memory Efficient**: ~1GB GPU memory for all three models
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose
-- NVIDIA GPU with 4GB+ VRAM (recommended)
-- 8GB+ system RAM
+
+- Docker Engine 24.0+
+- Docker Compose v2.20+
+- NVIDIA Container Toolkit (for GPU support)
+- 12GB+ VRAM recommended for GPU inference
 
 ### Installation
 
@@ -66,158 +63,282 @@ Ash NLP v3.0 is a cutting-edge **Three Zero-Shot Model Ensemble system** designe
 # Clone the repository
 git clone https://github.com/the-alphabet-cartel/ash-nlp.git
 cd ash-nlp
-git checkout Organic-Learning
 
-# Copy environment template
-cp .env.template .env
+# Start with Docker Compose (GPU)
+docker-compose up -d
 
-# Configure your environment variables
-# See docs/tech/api_v3_0.md for detailed configuration
-
-# Build and start the service
-docker-compose build ash-nlp
-docker-compose up ash-nlp
+# Or CPU-only
+docker-compose --profile cpu up -d
 ```
 
-### Quick Test
+### Verify Installation
 
 ```bash
-# Health check
-curl http://localhost:8881/health
+# Check health
+curl http://localhost:30880/health
 
-# Three Zero-Shot Model Ensemble analysis
-curl -X POST http://localhost:8881/analyze \
+# Test analysis
+curl -X POST http://localhost:30880/analyze \
   -H "Content-Type: application/json" \
-  -d '{"message": "I am feeling really down", "user_id": "test", "channel_id": "test"}'
+  -d '{"message": "I am feeling really happy today!"}'
 ```
-
-## 📊 Performance Benchmarks
-
-| Metric | Single Model | Three Zero-Shot Model Ensemble |
-|--------|--------------|---------------------|
-| **Response Time** | 25ms | 31ms |
-| **Accuracy** | 61.7% | 75%+ |
-| **False Positive Rate** | 15% | <8% |
-| **High Crisis Detection** | 85% | 95%+ |
-| **GPU Memory Usage** | 350MB | 1.03GB |
-
-## 🔧 Configuration
-
-### Environment Variables
-
-Key configuration options in `.env`:
-
-```bash
-# Three-Model Configuration
-NLP_DEPRESSION_MODEL=MoritzLaurer/deberta-v3-base-zeroshot-v2.0
-NLP_SENTIMENT_MODEL=Lowerated/lm6-deberta-v3-topic-sentiment
-NLP_EMOTIONAL_DISTRESS_MODEL=facebook/bart-large-mnli
-
-# Ensemble Configuration
-NLP_ENSEMBLE_MODE=weighted  # consensus, majority, weighted
-NLP_GAP_DETECTION_THRESHOLD=0.4
-NLP_DISAGREEMENT_THRESHOLD=0.5
-
-# Hardware Optimization
-NLP_MAX_BATCH_SIZE=32
-NLP_INFERENCE_THREADS=16
-NLP_MAX_CONCURRENT_REQUESTS=20
-```
-
-## 🏗️ Architecture Overview
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Depression    │    │    Sentiment     │    │ Emotional       │
-│     Model       │    │     Model        │    │ Distress Model  │
-│   (DeBERTa)     │    │   (DeBERTa)      │    │ (BART)          │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │   Ensemble Processor   │
-                    │  • Consensus Algorithm │
-                    │  • Gap Detection       │
-                    │  • Confidence Analysis │
-                    └────────────┬────────────┘
-                                 │
-                    ┌────────────▼────────────┐
-                    │    Decision Engine     │
-                    │  • Crisis Level Map    │
-                    │  • Staff Review Flag   │
-                    │  • Response Required   │
-                    └─────────────────────────┘
-```
-
-## 📚 Documentation
-
-- **[API Documentation](docs/tech/api_v3_0.md)** - Complete API reference
-- **[Team Guide](docs/team/team_guide_v3_0.md)** - Guide for crisis response teams
-- **[Troubleshooting](docs/troubleshooting_v3_0.md)** - Common issues and solutions
-- **[GitHub Release Notes](docs/github/github_release_v3_0.md)** - Version 3.0 details
-
-## 🤝 Integration with Ash Ecosystem
-
-Ash NLP v3.0 integrates seamlessly with:
-
-- **[Ash Bot](https://github.com/the-alphabet-cartel/ash-bot)** - Discord crisis response bot
-- **[Ash Dashboard](https://github.com/the-alphabet-cartel/ash-dash)** - Analytics and monitoring (Not Yet Implemented)
-- **[Ash Thrash](https://github.com/the-alphabet-cartel/ash-thrash)** - Testing and validation (Not Yet Implemented)
-
-## 🔒 Security & Privacy
-
-- **Docker Secrets Support**: Secure API key management
-- **No Data Persistence**: Messages are analyzed in-memory only
-- **CORS Protection**: Configurable origin restrictions
-- **Rate Limiting**: Prevents abuse and ensures fair usage
-
-## 🧪 Experimental Features
-
-Version 3.0 includes cutting-edge features:
-
-- **Confidence Spreading**: Dynamic threshold adjustment based on model agreement
-- **Community Pattern Learning**: Adaptive recognition of LGBTQIA+ specific language
-- **Real-time Gap Analytics**: Live monitoring of model disagreement patterns
-
-## 📈 Monitoring & Analytics
-
-Access real-time metrics:
-
-```bash
-# Service statistics
-curl http://localhost:8881/stats
-
-# Model performance
-curl http://localhost:8881/health
-
-# Learning system status
-curl http://localhost:8881/learning_statistics
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our:
-- [Contributing Guidelines](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Development Setup](docs/development.md)
-
-## 📄 License
-
-This project is licensed under the GNU GENERAL PUBLIC LICENSE Version 3 - see the [LICENSE](LICENSE) file for details.
-
-## 🏳️‍🌈 Community
-
-**The Alphabet Cartel** builds technology for LGBTQIA+ communities with:
-- **Safety First**: Every design decision prioritizes user wellbeing
-- **Community Input**: Built with and for the communities we serve
-- **Open Source**: Transparent, auditable, and improvable by all
-- **Chosen Family**: Technology that supports found family connections
 
 ---
 
-**Discord**: [Join our community](https://discord.gg/alphabetcartel)  
-**Website**: [alphabetcartel.org](http://alphabetcartel.org)  
-**Support**: Available through Discord or GitHub issues
+## 📡 API Reference
 
-*Built with ❤️ for chosen family, one conversation at a time.*
+### Analyze Message
+
+**POST** `/analyze`
+
+Analyze a single message for crisis signals.
+
+```bash
+curl -X POST http://localhost:30880/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": "I dont know if I can keep going anymore",
+    "user_id": "user_123",
+    "channel_id": "general"
+  }'
+```
+
+**Response:**
+```json
+{
+  "crisis_detected": true,
+  "severity": "high",
+  "confidence": 0.87,
+  "crisis_score": 0.78,
+  "requires_intervention": true,
+  "recommended_action": "priority_response",
+  "signals": {
+    "bart": {
+      "label": "emotional distress",
+      "score": 0.89,
+      "crisis_signal": 0.89
+    },
+    "sentiment": {
+      "label": "negative",
+      "score": 0.92,
+      "crisis_signal": 0.75
+    }
+  },
+  "processing_time_ms": 145.32,
+  "models_used": ["bart", "sentiment", "irony", "emotions"]
+}
+```
+
+### Batch Analysis
+
+**POST** `/analyze/batch`
+
+Analyze multiple messages in a single request (max 100).
+
+```bash
+curl -X POST http://localhost:30880/analyze/batch \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      "I am feeling great!",
+      "Everything is falling apart",
+      "Just had lunch, it was okay"
+    ]
+  }'
+```
+
+### Health Check
+
+**GET** `/health`
+
+```bash
+curl http://localhost:30880/health
+```
+
+### Service Status
+
+**GET** `/status`
+
+Detailed service status including model information and statistics.
+
+### API Documentation
+
+- **Swagger UI**: http://localhost:30880/docs
+- **ReDoc**: http://localhost:30880/redoc
+
+---
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `NLP_ENVIRONMENT` | `production` | Environment name |
+| `NLP_API_HOST` | `0.0.0.0` | Server bind address |
+| `NLP_API_PORT` | `30880` | Server port |
+| `NLP_API_WORKERS` | `4` | Uvicorn worker count |
+| `NLP_LOG_LEVEL` | `INFO` | Logging level |
+| `NLP_MODELS_DEVICE` | `auto` | Device (auto/cuda/cpu) |
+| `NLP_MODEL_BART_WEIGHT` | `0.50` | BART model weight |
+| `NLP_MODEL_SENTIMENT_WEIGHT` | `0.25` | Sentiment model weight |
+| `NLP_MODEL_IRONY_WEIGHT` | `0.15` | Irony model weight |
+| `NLP_MODEL_EMOTIONS_WEIGHT` | `0.10` | Emotions model weight |
+| `NLP_THRESHOLD_CRITICAL` | `0.85` | Critical severity threshold |
+| `NLP_THRESHOLD_HIGH` | `0.70` | High severity threshold |
+| `NLP_THRESHOLD_MEDIUM` | `0.50` | Medium severity threshold |
+| `NLP_THRESHOLD_LOW` | `0.30` | Low severity threshold |
+
+### Configuration Files
+
+```
+config/
+├── default.json      # Base configuration with validation
+├── production.json   # Production overrides
+└── testing.json      # Testing overrides
+```
+
+---
+
+## 🐳 Docker
+
+### Build
+
+```bash
+# Build GPU image
+docker build -t ash-nlp:v5.0 .
+
+# Build CPU image
+docker build -t ash-nlp:v5.0-cpu --target runtime-cpu .
+```
+
+### Run
+
+```bash
+# GPU with NVIDIA runtime
+docker run --gpus all -p 30880:30880 ash-nlp:v5.0
+
+# CPU only
+docker run -p 30880:30880 ash-nlp:v5.0-cpu
+```
+
+### Docker Compose
+
+```bash
+# Start (GPU)
+docker-compose up -d
+
+# Start (CPU)
+docker-compose --profile cpu up -d
+
+# View logs
+docker-compose logs -f ash-nlp
+
+# Stop
+docker-compose down
+```
+
+---
+
+## 🧪 Development
+
+### Local Setup
+
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # or `venv\Scripts\activate` on Windows
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run development server
+python main.py --reload --env development
+```
+
+### Project Structure
+
+```
+ash-nlp/
+├── main.py                 # CLI entry point
+├── requirements.txt        # Python dependencies
+├── Dockerfile              # Multi-stage Docker build
+├── docker-compose.yml      # Production orchestration
+├── config/
+│   ├── default.json        # Base configuration
+│   ├── production.json     # Production overrides
+│   └── testing.json        # Testing overrides
+└── src/
+    ├── managers/
+    │   └── config_manager.py
+    ├── models/
+    │   ├── base.py
+    │   ├── bart_classifier.py
+    │   ├── sentiment.py
+    │   ├── irony.py
+    │   └── emotions.py
+    ├── ensemble/
+    │   ├── model_loader.py
+    │   ├── scoring.py
+    │   ├── fallback.py
+    │   └── decision_engine.py
+    └── api/
+        ├── app.py
+        ├── routes.py
+        ├── schemas.py
+        └── middleware.py
+```
+
+---
+
+## 🔧 Technical Details
+
+### Hardware Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | 4 cores | 8+ cores |
+| RAM | 16 GB | 32+ GB |
+| GPU VRAM | 8 GB | 12+ GB |
+| Storage | 20 GB | 50+ GB |
+
+### Model Details
+
+- **BART**: `facebook/bart-large-mnli` (~1.5GB)
+- **Sentiment**: `cardiffnlp/twitter-roberta-base-sentiment-latest` (~500MB)
+- **Irony**: `cardiffnlp/twitter-roberta-base-irony` (~500MB)
+- **Emotions**: `SamLowe/roberta-base-go_emotions` (~500MB)
+
+### Performance
+
+- **Latency**: ~50-150ms per message (GPU)
+- **Throughput**: ~20-50 requests/second (GPU, 4 workers)
+- **Memory**: ~6-8GB GPU VRAM under load
+
+---
+
+## 🏳️‍🌈 Community
+
+**The Alphabet Cartel** is an LGBTQIA+ Discord community centered around gaming, political discourse, activism, and societal advocacy.
+
+- 🌐 **Website**: [alphabetcartel.org](https://alphabetcartel.org)
+- 💬 **Discord**: [discord.gg/alphabetcartel](https://discord.gg/alphabetcartel)
+- 🐙 **GitHub**: [github.com/the-alphabet-cartel](https://github.com/the-alphabet-cartel)
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [HuggingFace](https://huggingface.co/) for transformer models
+- [FastAPI](https://fastapi.tiangolo.com/) for the web framework
+- The Alphabet Cartel community for inspiration and support
+
+---
+
+**Built with care for chosen family** 🏳️‍🌈

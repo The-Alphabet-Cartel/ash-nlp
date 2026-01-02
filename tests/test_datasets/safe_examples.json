@@ -1,0 +1,1349 @@
+{
+  "_metadata": {
+    "file_version": "v5.0-2a-2.3-labels-fixed",
+    "last_modified": "2025-12-31",
+    "description": "Safe message test dataset - should NOT trigger crisis detection. Tests false positive prevention.",
+    "total_cases": 52,
+    "categories": {
+      "metaphorical_language": 15,
+      "positive_expressions": 20,
+      "neutral_conversations": 17
+    },
+    "community": "The Alphabet Cartel - LGBTQIA+ Discord Community",
+    "adjusted_thresholds": true,
+    "threshold_adjustment": -0.1,
+    "changes_v5.0-2a-2.2-complete": "Added complete bart_crisis, emotions, sentiment, and irony expectations to ALL test cases",
+    "changes_v5.0-2a-2.3": "Fixed irony labels (non_irony/irony) and emotions labels (valid go_emotions set)"
+  },
+  "test_cases": [
+    {
+      "id": "safe_001",
+      "message": "This game is killing me, it's so hard!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "annoyance",
+            "amusement"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "high",
+        "reason": "Gaming metaphor - not actual distress"
+      }
+    },
+    {
+      "id": "safe_002",
+      "message": "I'm dying laughing at this meme",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "joy",
+            "amusement"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "high"
+      }
+    },
+    {
+      "id": "safe_003",
+      "message": "Game of Thrones ending killed me inside",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "disappointment"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_004",
+      "message": "This homework is going to be the death of me",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "nervousness",
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_005",
+      "message": "I'm literally dead from exhaustion after that workout",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "sadness",
+            "approval"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_006",
+      "message": "This boss fight is destroying me",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "annoyance",
+            "approval"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_007",
+      "message": "I could just die of embarrassment",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "embarrassment"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "high"
+      }
+    },
+    {
+      "id": "safe_008",
+      "message": "The suspense is killing me!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "excitement"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_009",
+      "message": "My allergies are murdering me today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_010",
+      "message": "I'm starving, haven't eaten all day",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "desire"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_011",
+      "message": "This meeting is dragging on forever, kill me now",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "high"
+      }
+    },
+    {
+      "id": "safe_012",
+      "message": "I'm dead serious about this",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "approval",
+            "neutral"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_013",
+      "message": "That joke killed me",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "amusement",
+            "joy"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "high"
+      }
+    },
+    {
+      "id": "safe_014",
+      "message": "I'm bleeding hearts for this character",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "love",
+            "caring"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_015",
+      "message": "This traffic is going to be the end of me",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "annoyance"
+          ],
+          "sentiment": "negative",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "metaphorical_language",
+        "false_positive_risk": "medium"
+      }
+    },
+    {
+      "id": "safe_016",
+      "message": "Celebrating 1 year on HRT! So proud of how far I've come!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "joy",
+            "pride"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_identity_expression",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_017",
+      "message": "Just had the best date with my partner!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "joy",
+            "love"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_018",
+      "message": "Finally feeling comfortable in my own skin",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "relief"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_identity_expression",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_019",
+      "message": "So grateful for this community, you all are amazing!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "gratitude",
+            "caring"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_020",
+      "message": "Having a great day! Hope everyone else is too!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "joy"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_021",
+      "message": "Just got accepted to my dream college!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "excitement",
+            "joy"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_022",
+      "message": "Proud of myself for going to therapy today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "pride",
+            "caring"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_023",
+      "message": "My chosen family is the best thing that ever happened to me",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "love",
+            "gratitude"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_024",
+      "message": "Feeling really good about my progress lately",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "approval",
+            "pride"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_025",
+      "message": "Today was rough but I made it through!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.2
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "pride",
+            "relief"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_026",
+      "message": "Thanks everyone for the support yesterday, feeling much better",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "gratitude",
+            "optimism"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_027",
+      "message": "Excited to see where my journey takes me next",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "excitement",
+            "optimism"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_028",
+      "message": "Learning to love myself more each day",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "love",
+            "optimism"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_029",
+      "message": "Six months self-harm free today!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "pride"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "low",
+        "note": "Recovery celebration, not crisis"
+      }
+    },
+    {
+      "id": "safe_030",
+      "message": "Feeling hopeful about the future for once",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "optimism"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_031",
+      "message": "My art really captured my feelings today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "approval",
+            "pride"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_032",
+      "message": "Can't wait for the new game release!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "excitement"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_033",
+      "message": "Pride month is always so affirming",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "pride",
+            "approval"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_identity_expression",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_034",
+      "message": "My pronouns feel so right now",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "relief",
+            "approval"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_identity_expression",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_035",
+      "message": "Had a productive therapy session today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.15
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "approval",
+            "optimism"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "positive_expressions",
+        "false_positive_risk": "low"
+      }
+    },
+    {
+      "id": "safe_036",
+      "message": "Anyone want to play some games later?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_037",
+      "message": "What's everyone having for dinner?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral",
+            "curiosity"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_038",
+      "message": "Good morning everyone!",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_039",
+      "message": "Has anyone seen the new episode yet?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "curiosity",
+            "excitement"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_040",
+      "message": "I think I'm going to read a book tonight",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_041",
+      "message": "The weather is nice today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_042",
+      "message": "What's your favorite pizza topping?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "curiosity"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_043",
+      "message": "Anyone know where I can find good headphones?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "curiosity"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_044",
+      "message": "I'm thinking about getting a cat",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral",
+            "excitement"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_045",
+      "message": "Just finished my workout",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "approval"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_046",
+      "message": "Going to bed early tonight",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_047",
+      "message": "What's everyone up to this weekend?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "curiosity"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_048",
+      "message": "I need coffee",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "sadness"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_049",
+      "message": "Trying out a new recipe today",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral",
+            "excitement"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_050",
+      "message": "Does anyone have Netflix recommendations?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "curiosity"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_051",
+      "message": "Looking forward to the long weekend",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "excitement"
+          ],
+          "sentiment": "positive",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    },
+    {
+      "id": "safe_052",
+      "message": "Anyone want to voice chat?",
+      "expected_outputs": {
+        "crisis_score": {
+          "min": 0.0,
+          "max": 0.1
+        },
+        "crisis_level": "none",
+        "model_expectations": {
+          "bart_crisis": [
+            "safe"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "sentiment": "neutral",
+          "irony": "non_irony"
+        }
+      },
+      "context": {
+        "test_category": "neutral_conversation",
+        "false_positive_risk": "very_low"
+      }
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+	"_metadata": {
+		"file_version": "v5.0-3-4.1-1",
+		"last_modified": "2025-12-31",
+		"clean_architecture": "Compliant",
+		"description": "Ash-NLP v5.0 Testing Configuration Overrides",
+		"note": "Optimized for debugging and reproducible test runs",
+		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
+		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
+	},
+
+	"api": {
+		"description": "Testing API settings - single worker for predictable behavior",
+		"workers": 1,
+		"timeout": 60,
+		"rate_limit_enabled": false
+	},
+
+	"models": {
+		"description": "Testing model settings - auto device detection",
+		"device": "auto",
+		"warmup_enabled": true,
+		"cache_dir": "/app/testing/cache/models"
+	},
+
+	"logging": {
+		"description": "Testing logging - human readable for debugging",
+		"level": "DEBUG",
+		"format": "text",
+		"file": "/app/testing/logs/ash-nlp-test.log",
+		"console": true
+	},
+
+	"performance": {
+		"description": "Testing performance - caching disabled for fresh results",
+		"cache_enabled": false,
+		"async_inference": true
+	}
+}
