@@ -15,7 +15,7 @@ This document captures the state of Phase 5 implementation for handoff to the ne
 
 ---
 
-## ✅ COMPLETED IN THIS SESSION
+## ✅ COMPLETED
 
 ### 1. API Schema Enhancement (Task 5.5) - COMPLETE ✅
 
@@ -120,19 +120,57 @@ if (self.phase5_enabled and
 
 ---
 
-## ❌ NOT STARTED
+### 4. Discord Escalation Alerting (Task 5.2.6) - COMPLETE ✅
 
-### 4. Discord Alerting for Escalations (Task 5.2.6)
+**File**: `src/utils/alerting.py` (v5.0-5-5.6-1)
 
-**File**: `src/utils/alerting.py`
+#### New Alert Severity:
+- `ESCALATION` - Dark red color (0xE74C3C) with 📈 emoji
 
-**Requirements**:
-- Add `alert_escalation_detected()` method to DiscordAlerter
-- Use `EscalationAlertPayload` schema for webhook payload
-- Implement cooldown logic (configurable, default 5 minutes)
-- Integrate with ContextAnalyzer's intervention urgency
+#### New Methods:
+- `send_escalation_alert()` - Async method to send escalation alerts to Discord
+- `send_escalation_alert_sync()` - Sync version for non-async contexts
+
+#### New Cooldown Tracking:
+- `_escalation_cooldown_seconds` - Configurable cooldown (default: 300 seconds / 5 minutes)
+- `_last_escalation_alert` - Timestamp of last escalation alert
+- `_should_throttle_escalation()` - Check if alert should be throttled
+- `_record_escalation_alert()` - Record alert timestamp
+
+#### Alert Parameters:
+```python
+async def send_escalation_alert(
+    self,
+    escalation_rate: str,          # none, gradual, rapid, sudden
+    pattern_name: Optional[str],   # Matched pattern name
+    pattern_confidence: float,     # 0-1 confidence
+    crisis_score: float,           # Current crisis score
+    score_delta: float,            # Score change during escalation
+    time_span_hours: float,        # Time span of escalation
+    intervention_urgency: str,     # none, low, standard, high, immediate
+    message_preview: str,          # First 100 chars
+    user_id: Optional[str] = None,
+    channel_id: Optional[str] = None,
+    source: str = "context_analyzer",
+) -> bool
+```
+
+#### Urgency-Based Severity Mapping:
+| Intervention Urgency | Alert Severity | Description |
+|---------------------|----------------|-------------|
+| `immediate` | CRITICAL (🚨) | IMMEDIATE INTERVENTION REQUIRED |
+| `high` | ESCALATION (📈) | High Priority: Crisis Escalation Detected |
+| `standard` | WARNING (⚠️) | Crisis Escalation Pattern Detected |
+| Other | INFO (ℹ️) | Monitoring: Escalation Pattern |
+
+#### Updated Components:
+- `__init__()` - Added `escalation_cooldown_seconds` parameter
+- `get_status()` - Includes `escalation_cooldown_remaining` and config
+- `create_discord_alerter()` - Factory accepts `escalation_cooldown_seconds`
 
 ---
+
+## ❌ NOT STARTED
 
 ### 5. Unit Tests (Task 5.7)
 
@@ -143,12 +181,14 @@ if (self.phase5_enabled and
 - `tests/unit/test_trend_analyzer.py`
 - `tests/unit/test_api_schemas_phase5.py`
 - `tests/unit/test_api_routes_phase5.py`
+- `tests/unit/test_alerting_phase5.py`
 
 **Test Coverage Requirements**:
 - ContextAnalyzer orchestration
 - Each detector component individually
 - API schema validation
 - API endpoint request/response handling
+- Escalation alert functionality
 - Edge cases (empty history, single message, max history)
 
 ---
@@ -164,6 +204,7 @@ if (self.phase5_enabled and
 - Escalation detection with real message sequences
 - Temporal pattern detection at different times
 - Trend analysis across message histories
+- Discord alert triggering on escalation
 
 ---
 
@@ -174,12 +215,12 @@ if (self.phase5_enabled and
 | 5.1.1-5.1.5 | Context module components | ✅ Complete |
 | 5.1.6 | Engine integration | ✅ Complete |
 | 5.2.1-5.2.5 | Config management | ✅ Complete |
-| 5.2.6 | Discord escalation alerts | ❌ Not started |
+| 5.2.6 | Discord escalation alerts | ✅ Complete |
 | 5.5 | API enhancement | ✅ Complete |
 | 5.7 | Unit tests | ❌ Not started |
 | 5.8 | Integration tests | ❌ Not started |
 
-**Overall Progress**: ~75% complete
+**Overall Progress**: ~85% complete (6/8 tasks done)
 
 ---
 
@@ -190,22 +231,21 @@ if (self.phase5_enabled and
 | `src/api/schemas.py` | v5.0-5-5.1-1 | Phase 5 schemas added |
 | `src/api/routes.py` | v5.0-5-5.2-1 | Phase 5 endpoints added |
 | `src/ensemble/decision_engine.py` | v5.0-5-2.0-1 | Phase 5 context integration |
+| `src/utils/alerting.py` | v5.0-5-5.6-1 | Phase 5 escalation alerting |
 
 ---
 
 ## Next Session Priority Order
 
-1. **Add Discord Alerting** (5.2.6)
-   - Implement escalation alert method
-   - Wire up to context analyzer
-
-2. **Create Unit Tests** (5.7)
+1. **Create Unit Tests** (5.7)
    - Start with context module tests
    - Then API schema/route tests
+   - Alerting tests for escalation
 
-3. **Create Integration Tests** (5.8)
+2. **Create Integration Tests** (5.8)
    - Full flow testing
    - Edge case coverage
+   - Escalation → Discord alert flow
 
 ---
 
@@ -234,6 +274,12 @@ src/context/
 - `analyze()` and `analyze_async()` accept `message_history` and `include_context_analysis`
 - `CrisisAssessment` has `context_analysis` field
 - Status endpoints report Phase 5 status
+
+### Discord Alerting (Complete)
+- `DiscordAlerter.send_escalation_alert()` - Async escalation alerts
+- `DiscordAlerter.send_escalation_alert_sync()` - Sync version
+- Cooldown: 300 seconds (5 minutes) default
+- Urgency-based severity mapping
 
 ---
 
@@ -284,13 +330,40 @@ POST /analyze
 
 ---
 
+## Escalation Alert Example
+
+When escalation is detected with `immediate` urgency, Discord receives:
+
+```json
+{
+    "embeds": [{
+        "title": "🚨 Escalation: Rapid",
+        "description": "**IMMEDIATE INTERVENTION REQUIRED**\nA rapid crisis escalation pattern has been detected. The user's distress level has increased significantly in a short time.",
+        "color": 16711680,  // Red
+        "fields": [
+            {"name": "Escalation Rate", "value": "Rapid", "inline": true},
+            {"name": "Crisis Score", "value": "0.91", "inline": true},
+            {"name": "Score Change", "value": "+0.66", "inline": true},
+            {"name": "Time Span", "value": "6.0 hours", "inline": true},
+            {"name": "Urgency", "value": "Immediate", "inline": true},
+            {"name": "Pattern", "value": "Evening Deterioration", "inline": true}
+        ],
+        "timestamp": "2026-01-02T02:30:00Z",
+        "footer": {"text": "Ash-NLP | context_analyzer"}
+    }]
+}
+```
+
+---
+
 ## Notes for Next Developer
 
 1. The API layer is fully ready - schemas and routes are complete
 2. The context module is fully implemented and wired to the engine
 3. Engine integration is complete - both sync and async methods support Phase 5
-4. Tests should focus on the integration points first
-5. Follow Clean Architecture Charter v5.1 patterns throughout
+4. Discord alerting for escalations is complete with cooldown handling
+5. Tests should focus on the integration points first
+6. Follow Clean Architecture Charter v5.1 patterns throughout
 
 ---
 
