@@ -51,9 +51,9 @@ Complete rewrite of Ash-NLP from v3.1 to v5.0, implementing Local Multi-Model En
 - [x] Phase 2: Model Migration - 100% ✅
 - [x] Phase 3: API & Docker Deployment - 100% ✅
 - [x] Phase 4: Ensemble Coordinator Enhancement - 100% ✅
-- [ ] Phase 5: Context History Analysis - 60% (Core components complete)
+- [ ] Phase 5: Context History Analysis - 75% (Engine integration complete)
 
-### **Overall Progress**: 84.17% (5/6 phases complete, Phase 5 started)
+### **Overall Progress**: 87.5% (5/6 phases complete, Phase 5 at 75%)
 
 ### **Phase Dependency Map**
 ```
@@ -270,22 +270,33 @@ Ash-NLP receives message history as part of the request payload and performs ana
 ### **Planned Objectives**:
 
 **Context Analysis** (Ash-NLP receives history from Ash-Bot):
-- [ ] Escalation detection across message sequences
-- [ ] Temporal pattern detection (late night, rapid posting)
-- [ ] Trend analysis (worsening, stable, improving)
-- [ ] Pattern classification (rapid, gradual, sudden onset)
-- [ ] Intervention urgency scoring
+- [x] Escalation detection across message sequences
+- [x] Temporal pattern detection (late night, rapid posting)
+- [x] Trend analysis (worsening, stable, improving)
+- [x] Pattern classification (rapid, gradual, sudden onset)
+- [x] Intervention urgency scoring
 
 **Configuration Management**:
-- [ ] `context_config.json` with environment variable overrides
-- [ ] `ContextConfigManager` with factory function
-- [ ] Configurable `max_history_size` (default: 20 messages)
-- [ ] Configurable `alert_cooldown_seconds` (default: 300)
+- [x] `context_config.json` with environment variable overrides
+- [x] `ContextConfigManager` with factory function
+- [x] Configurable `max_history_size` (default: 20 messages)
+- [x] Configurable `alert_cooldown_seconds` (default: 300)
 
 **API Enhancement**:
-- [ ] Accept `message_history[]` in request payload
-- [ ] Return `context_analysis` in response
-- [ ] `GET/PUT /config/context` endpoints
+- [x] Accept `message_history[]` in request payload
+- [x] Return `context_analysis` in response
+- [x] `GET/PUT /config/context` endpoints
+
+**Engine Integration**:
+- [x] Integrate ContextAnalyzer into EnsembleDecisionEngine
+- [x] Add `phase5_enabled` configuration parameter
+- [x] Update sync/async analyze methods
+- [x] Add context analysis to CrisisAssessment dataclass
+
+**Remaining Tasks**:
+- [ ] Discord escalation alerting integration
+- [ ] Unit tests for Phase 5 components
+- [ ] Integration tests for end-to-end flow
 
 **NOT in Ash-NLP Scope** (handled elsewhere):
 - Message persistence (Ash-Bot)
@@ -361,12 +372,21 @@ pydantic>=2.0.0
 
 ## 💾 **VERSION CONTROL**
 
-### **Document Version**: v5.0.5
-### **Last Updated**: 2026-01-01
+### **Document Version**: v5.0.6
+### **Last Updated**: 2026-01-02
 ### **Last Updated By**: Project Team
 
 ### **Change Log**:
 ```
+2026-01-02: Phase 5 engine integration complete
+- Integrated ContextAnalyzer into EnsembleDecisionEngine
+- Updated API schemas with Phase 5 request/response types
+- Enhanced /analyze endpoint with message_history support
+- Added phase5_enabled configuration parameter
+- Updated CrisisAssessment dataclass with context_analysis field
+- Sync and async analyze methods now support context analysis
+- Progress: 75% (6/8 objectives complete)
+
 2026-01-01: Phase 5 core implementation
 - Created src/context/ module with 4 core files
 - Implemented ContextAnalyzer orchestrator
@@ -418,11 +438,15 @@ pydantic>=2.0.0
 1. ✅ Planning document created (`docs/v5.0/Phase5/phase_5_planning.md`)
 2. ✅ Architecture decision: Ash-NLP remains stateless
 3. ✅ Configuration schema designed (`context_config.json`)
-4. ⏳ Create `context_config.json` and `ContextConfigManager`
-5. ⏳ Implement core context analysis components
-6. ⏳ Implement escalation detection algorithms
-7. ⏳ Implement temporal pattern detection
-8. ⏳ API enhancement for message history
+4. ✅ Created `context_config.json` and `ContextConfigManager`
+5. ✅ Implemented core context analysis components
+6. ✅ Implemented escalation detection algorithms
+7. ✅ Implemented temporal pattern detection
+8. ✅ API enhancement with message history support
+9. ✅ Engine integration (ContextAnalyzer in EnsembleDecisionEngine)
+10. ⏳ Discord escalation alerting
+11. ⏳ Unit tests for Phase 5 components
+12. ⏳ Integration tests
 
 **Immediate Actions**:
 - [x] Create Phase 5 planning document
@@ -436,9 +460,12 @@ pydantic>=2.0.0
 - [x] Implement `TemporalDetector` class
 - [x] Implement `TrendAnalyzer` class
 - [x] Implement `ContextAnalyzer` orchestrator
-- [ ] Update API schemas for context analysis
-- [ ] Update `/analyze` endpoint
+- [x] Update API schemas for context analysis
+- [x] Update `/analyze` endpoint with message history support
+- [x] Integrate ContextAnalyzer into EnsembleDecisionEngine
+- [ ] Implement Discord escalation alerting
 - [ ] Create unit tests for Phase 5 components
+- [ ] Create integration tests for end-to-end flow
 
 ---
 
