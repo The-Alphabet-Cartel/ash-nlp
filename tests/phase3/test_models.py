@@ -80,7 +80,8 @@ class TestBARTClassifier:
         bart = create_bart_classifier(config_manager=config_manager)
 
         assert bart is not None
-        assert bart.name == "bart"
+        # Model name is bart_crisis (updated in v5.0)
+        assert bart.name in ["bart", "bart_crisis"]
         assert bart.weight == 0.50
 
     def test_bart_default_labels(self):
@@ -218,17 +219,20 @@ class TestModelPackage:
         """Test generic model creation function."""
         from src.models import create_model
 
+        # BART can be created with either alias
         bart = create_model("bart")
         assert bart is not None
-        assert bart.name == "bart"
+        assert bart.name in ["bart", "bart_crisis"]
 
         sentiment = create_model("sentiment")
         assert sentiment is not None
         assert sentiment.name == "sentiment"
 
     def test_create_model_invalid(self):
-        """Test create_model with invalid name."""
+        """Test create_model with invalid name raises ValueError."""
         from src.models import create_model
 
-        result = create_model("invalid_model")
-        assert result is None
+        with pytest.raises(ValueError) as exc_info:
+            create_model("invalid_model")
+        
+        assert "invalid_model" in str(exc_info.value).lower() or "unknown" in str(exc_info.value).lower()

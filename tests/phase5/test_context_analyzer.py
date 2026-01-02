@@ -154,7 +154,7 @@ def create_message_history(
             message=f"Test message {i}",
             timestamp=base + timedelta(minutes=interval_minutes * i),
             crisis_score=score,
-            message_id=f"msg_{i}",
+            user_id=f"user_{i}",
         ))
     return history
 
@@ -226,7 +226,7 @@ class TestContextAnalyzerBasic:
         assert isinstance(result.trend, TrendResult)
         assert isinstance(result.trajectory, TrajectoryInfo)
         assert isinstance(result.intervention, InterventionInfo)
-        assert isinstance(result.history_metadata, HistoryMetadata)
+        assert isinstance(result.metadata, HistoryMetadata)
 
 
 class TestMessageHistoryItem:
@@ -238,14 +238,14 @@ class TestMessageHistoryItem:
             "message": "Test message",
             "timestamp": "2026-01-01T14:00:00Z",
             "crisis_score": 0.5,
-            "message_id": "msg_123",
+            "user_id": "user_123",
         }
         
         item = MessageHistoryItem.from_dict(data)
         
         assert item.message == "Test message"
         assert item.crisis_score == 0.5
-        assert item.message_id == "msg_123"
+        assert item.user_id == "user_123"
     
     def test_from_dict_without_score(self):
         """Test from_dict without crisis_score."""
@@ -268,7 +268,7 @@ class TestMessageHistoryItem:
         )
         
         assert isinstance(result, ContextAnalysisResult)
-        assert result.history_metadata.message_count == 1  # Just current
+        assert result.metadata.message_count == 1  # Just current
     
     def test_single_history_item(self, context_analyzer, base_timestamp):
         """Test analysis with single history item."""
@@ -284,7 +284,7 @@ class TestMessageHistoryItem:
             message_history=history,
         )
         
-        assert result.history_metadata.message_count == 2
+        assert result.metadata.message_count == 2
 
 
 class TestEscalationIntegration:
@@ -418,7 +418,7 @@ class TestTrajectoryInfo:
             message_history=history,
         )
         
-        assert result.trajectory.peak_score >= 0.7
+        assert result.trajectory.max_score >= 0.7
 
 
 class TestInterventionUrgency:
@@ -488,7 +488,7 @@ class TestHistoryMetadata:
         )
         
         # Should count history + current
-        assert result.history_metadata.message_count == 6
+        assert result.metadata.message_count == 6
     
     def test_time_span(self, context_analyzer, base_timestamp):
         """Test time span is calculated."""
@@ -505,7 +505,7 @@ class TestHistoryMetadata:
         )
         
         # 4 messages at 60 min + current
-        assert result.history_metadata.time_span_hours >= 3.0
+        assert result.metadata.time_span_hours >= 3.0
 
 
 class TestHistoryTruncation:
@@ -539,7 +539,7 @@ class TestEdgeCases:
         )
         
         assert isinstance(result, ContextAnalysisResult)
-        assert result.history_metadata.message_count == 1
+        assert result.metadata.message_count == 1
     
     def test_missing_crisis_scores(self, context_analyzer, base_timestamp):
         """Test handling of history items without crisis_score."""
@@ -584,12 +584,12 @@ class TestConfigAccess:
         """Test is_enabled returns correct value."""
         assert context_analyzer.is_enabled() is True
     
-    def test_get_config(self, context_analyzer):
-        """Test get_config returns config."""
-        config = context_analyzer.get_config()
+    def test_get_max_history_size(self, context_analyzer):
+        """Test get_max_history_size returns config value."""
+        max_size = context_analyzer.get_max_history_size()
         
-        assert config is not None
-        assert config.enabled is True
+        assert max_size is not None
+        assert max_size == 20  # Default from mock config
 
 
 # =============================================================================

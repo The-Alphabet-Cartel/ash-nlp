@@ -165,12 +165,179 @@ message: str = Field(
 
 ---
 
+### 🔔 Alerting & Notifications
+
+#### FE-008: Enhanced Ensemble Conflict Webhook Alerts
+
+**Priority**: Medium  
+**Complexity**: Low  
+**Identified During**: Phase 5 Production Review
+
+**Current Behavior**:
+- Discord webhook fires for "Ensemble Conflict: Score Agreement"
+- Alert contains minimal information
+- Difficult to investigate or understand the conflict
+
+**Proposed Enhancement**:
+Include detailed information in the webhook alert:
+
+1. **Message Content**: The message that triggered the conflict
+2. **Model Scores**: Individual scores from each model in the ensemble
+3. **Score Differences**: Delta between highest and lowest model scores
+4. **Labels/Classifications**: What each model classified the message as
+
+**Example Webhook Payload**:
+```json
+{
+  "embeds": [{
+    "title": "⚠️ Ensemble Conflict: Score Agreement",
+    "color": 16744448,
+    "fields": [
+      {
+        "name": "Message",
+        "value": "I don't know what to do anymore...",
+        "inline": false
+      },
+      {
+        "name": "BART (Primary)",
+        "value": "Label: emotional distress\nScore: 0.82",
+        "inline": true
+      },
+      {
+        "name": "Sentiment",
+        "value": "Label: negative\nScore: 0.91",
+        "inline": true
+      },
+      {
+        "name": "Irony",
+        "value": "Label: not_ironic\nScore: 0.95",
+        "inline": true
+      },
+      {
+        "name": "Emotions",
+        "value": "Label: sadness\nScore: 0.78",
+        "inline": true
+      },
+      {
+        "name": "Score Range",
+        "value": "Δ 0.17 (0.78 - 0.95)",
+        "inline": true
+      },
+      {
+        "name": "Final Score",
+        "value": "0.65 (weighted)",
+        "inline": true
+      }
+    ],
+    "timestamp": "2025-01-02T02:45:00.000Z"
+  }]
+}
+```
+
+**Files to Modify**:
+- `src/ensemble/decision_engine.py` - Capture conflict details
+- `src/notifications/webhook.py` (or equivalent) - Format enhanced payload
+- `config/webhooks.json` - Add verbosity configuration option
+
+**Privacy Consideration**:
+- Consider truncating long messages
+- May want configurable redaction for sensitive content
+
+---
+
+#### FE-009: Suppress Webhooks During Test Execution
+
+**Priority**: Medium  
+**Complexity**: Low  
+**Identified During**: Phase 5 Integration Testing
+
+**Current Behavior**:
+- Each test run triggers "Ash-NLP Started" webhook messages
+- Running 47+ tests floods the Discord alert channel
+- No distinction between test and production environments
+
+**Proposed Enhancement**:
+1. **Environment Detection**: Check for `TESTING=true` or `PYTEST_CURRENT_TEST` env var
+2. **Webhook Suppression**: Disable startup/status webhooks during tests
+3. **Configuration Option**: Add `webhooks.enabled_in_tests: false` to config
+
+**Implementation Options**:
+
+```python
+# Option A: Environment variable check
+import os
+
+def should_send_webhook() -> bool:
+    """Check if webhooks should fire."""
+    if os.getenv("TESTING", "").lower() == "true":
+        return False
+    if os.getenv("PYTEST_CURRENT_TEST"):
+        return False
+    return True
+```
+
+```python
+# Option B: Config-based
+# In config/webhooks.json
+{
+    "enabled": true,
+    "suppress_in_tests": true,
+    "startup_notification": true,
+    ...
+}
+```
+
+```python
+# Option C: pytest fixture (conftest.py)
+@pytest.fixture(autouse=True)
+def suppress_webhooks(monkeypatch):
+    """Disable webhooks during all tests."""
+    monkeypatch.setenv("WEBHOOKS_ENABLED", "false")
+```
+
+**Files to Modify**:
+- `src/notifications/webhook.py` - Add suppression check
+- `config/webhooks.json` - Add `suppress_in_tests` option
+- `tests/conftest.py` - Add autouse fixture for test suppression
+- `docker-compose.test.yml` - Set `TESTING=true` environment
+
+---
+
+### 🐛 Known Integration Issues
+
+#### FE-007: Message History Not Reaching Context Analyzer
+
+**Priority**: High  
+**Complexity**: Medium  
+**Identified During**: Phase 5 Integration Testing
+
+**Observed Behavior**:
+- API receives `message_history` in request
+- Context analysis returns `message_count: 0`
+- History data not being passed through engine to context analyzer
+
+**Expected Behavior**:
+- `message_count` should equal `len(message_history)` provided in request
+- Context analyzer should receive and process all history items
+
+**Investigation Areas**:
+1. `src/api/routes.py` - How message_history is extracted from request
+2. `src/ensemble/decision_engine.py` - How history is passed to context analyzer
+3. `src/context/context_analyzer.py` - How history is received and counted
+
+**Workaround**: Context analysis still runs, but without historical pattern detection.
+
+---
+
 ## Implementation Priority Matrix
 
 | ID | Enhancement | Priority | Complexity | Dependencies |
 |----|-------------|----------|------------|--------------|
+| FE-007 | History Passthrough Bug | High | Medium | None (Bug Fix) |
 | FE-001 | User Timezone Support | High | Medium | Ash-Bot changes |
 | FE-002 | Message Length Validation | High | Low | None |
+| FE-008 | Enhanced Conflict Alerts | Medium | Low | None |
+| FE-009 | Suppress Test Webhooks | Medium | Low | None |
 | FE-003 | Token Truncation | Medium | Medium | None |
 | FE-004 | Model Warm-up | Low | Low | None |
 | FE-005 | Escalation Thresholds | Medium | Medium | Testing |

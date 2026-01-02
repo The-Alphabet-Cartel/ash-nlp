@@ -295,6 +295,14 @@ curl -X POST http://localhost:30880/analyze \
 
 ## 🧪 Testing
 
+### Final Test Results
+
+**Integration Tests**: ✅ **47/47 PASSED** (114.28s)
+
+```
+======================== 47 passed in 114.28s (0:01:54) ========================
+```
+
 ### Run All Tests
 
 ```bash
@@ -313,15 +321,43 @@ docker exec ash-nlp python -m pytest tests/ --cov=src --cov-report=term-missing
 
 ### Test Coverage Summary
 
-| Component | Test Classes | Test Methods | Coverage |
-|-----------|--------------|--------------|----------|
-| EscalationDetector | 11 | ~35 | Basic, detection, classification, patterns, confidence, edge cases |
-| TemporalDetector | 10 | ~30 | Late night, rapid posting, weekend, risk modifiers, edge cases |
-| TrendAnalyzer | 10 | ~30 | Direction, velocity, metrics, inflection, smoothing, edge cases |
-| ContextAnalyzer | 10 | ~25 | Orchestration, integration, history handling, urgency |
-| Discord Alerting | 7 | ~20 | Severity levels, async/sync, cooldowns, formatting |
-| Engine Integration | 5 | ~20 | Full analyzer integration, combined factors |
-| API Flow | 8 | ~25 | Request/response, validation, endpoints, edge cases |
+| Component | Test Classes | Test Methods | Status |
+|-----------|--------------|--------------|--------|
+| EscalationDetector | 11 | ~35 | ✅ Pass |
+| TemporalDetector | 10 | ~30 | ✅ Pass |
+| TrendAnalyzer | 10 | ~30 | ✅ Pass |
+| ContextAnalyzer | 10 | ~25 | ✅ Pass |
+| Discord Alerting | 7 | ~20 | ✅ Pass |
+| Engine Integration | 5 | 20 | ✅ Pass |
+| API Flow | 8 | 27 | ✅ Pass |
+
+### Integration Test Details
+
+**test_api_context_flow.py** (27 tests):
+- `TestAnalyzeWithMessageHistory` - 5 tests
+- `TestContextResponseFields` - 6 tests
+- `TestMessageHistoryValidation` - 5 tests
+- `TestBatchAnalyzeWithHistory` - 1 test
+- `TestContextConfigEndpoints` - 2 tests
+- `TestHealthWithContext` - 2 tests
+- `TestAPIEdgeCases` - 4 tests
+- `TestContextAnalysisIntegration` - 2 tests
+
+**test_engine_context_integration.py** (20 tests):
+- `TestContextAnalyzerIntegration` - 8 tests
+- `TestContextAnalyzerEdgeCases` - 5 tests
+- `TestContextAnalyzerCombinedFactors` - 3 tests
+- `TestContextAnalyzerInterventionPoints` - 2 tests
+- `TestPatternMatching` - 2 tests
+
+### Bug Fixes During Integration Testing
+
+| Issue | Fix |
+|-------|-----|
+| Timezone mismatch (offset-naive vs offset-aware) | Added `_normalize_timestamp()` helper |
+| API field name mismatches | Aligned tests with actual schema (`temporal_factors`, `history_analyzed`) |
+| Discord message limit | Updated tests to respect 2000 char limit |
+| Test helper field names | Fixed `message_id` → `user_id` in MessageHistoryItem |
 
 ---
 
@@ -372,15 +408,21 @@ curl -X POST http://localhost:30880/analyze \
 
 ---
 
-## 🔮 Future Enhancements
+## 🔮 Future Enhancements (Phase 6)
 
-While Phase 5 is complete, potential future enhancements could include:
+Identified during Phase 5 development and integration testing. Full details in `docs/v5.0/Phase6/phase6_future_enhancements.md`.
 
-1. **Pattern Library Expansion**: More escalation pattern types
-2. **User Baselines**: Per-user "normal" score baselines (in Ash-Bot)
-3. **Seasonal Patterns**: Holiday/anniversary awareness
-4. **Multi-Language Temporal**: Language-specific time patterns
-5. **ML-Based Escalation**: Train model on escalation patterns
+| ID | Enhancement | Priority | Complexity |
+|----|-------------|----------|------------|
+| FE-007 | History Passthrough Bug | High | Medium |
+| FE-001 | User Timezone Support | High | Medium |
+| FE-002 | Message Length Validation | High | Low |
+| FE-008 | Enhanced Conflict Alerts | Medium | Low |
+| FE-009 | Suppress Test Webhooks | Medium | Low |
+| FE-003 | Token Truncation | Medium | Medium |
+| FE-005 | Escalation Thresholds | Medium | Medium |
+| FE-004 | Model Warm-up | Low | Low |
+| FE-006 | Pattern Learning | Low | High |
 
 ---
 
@@ -397,11 +439,12 @@ Phase 5 was developed with care for The Alphabet Cartel community. Special atten
 
 ## 📚 Related Documentation
 
-- [Roadmap](v5.0/roadmap.md) - Full project roadmap
-- [Phase 5 Planning](v5.0/Phase5/phase_5_planning.md) - Original planning document
-- [Clean Architecture Charter](clean_architecture_charter.md) - Architecture guidelines
-- [API Documentation](api.md) - Full API reference
-- [Deployment Guide](../DEPLOYMENT.md) - Production deployment
+- [Roadmap](../roadmap.md) - Full project roadmap
+- [Phase 5 Planning](phase5_planning.md) - Original planning document
+- [Phase 6 Future Enhancements](../Phase6/phase6_future_enhancements.md) - Identified improvements
+- [Clean Architecture Charter](../clean_architecture_charter.md) - Architecture guidelines
+- [API Documentation](../../api.md) - Full API reference
+- [Deployment Guide](../../../DEPLOYMENT.md) - Production deployment
 
 ---
 
