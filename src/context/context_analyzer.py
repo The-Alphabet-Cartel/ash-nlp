@@ -62,10 +62,41 @@ from .trend_analyzer import (
 )
 
 # Module version
-__version__ = "v5.0-5-1.0-1"
+__version__ = "v5.0-5-1.0-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Timezone Helpers
+# =============================================================================
+
+def _normalize_timestamp(dt: datetime) -> datetime:
+    """
+    Normalize a datetime to naive UTC.
+    
+    Handles both timezone-aware (with tzinfo) and naive datetimes.
+    API timestamps come as aware (with Z suffix -> +00:00),
+    but internal operations use naive UTC.
+    
+    Args:
+        dt: Datetime to normalize
+        
+    Returns:
+        Naive datetime in UTC
+    """
+    if dt is None:
+        return datetime.utcnow()
+    
+    if dt.tzinfo is not None:
+        # Convert to UTC and strip timezone info
+        from datetime import timezone
+        utc_dt = dt.astimezone(timezone.utc)
+        return utc_dt.replace(tzinfo=None)
+    
+    # Already naive, assume UTC
+    return dt
 
 
 # =============================================================================
@@ -396,26 +427,30 @@ class ContextAnalyzer:
         """
         Build score and timestamp sequences from history + current.
         
+        All timestamps are normalized to naive UTC to prevent
+        timezone-aware vs naive datetime comparison errors.
+        
         Args:
             history: Message history items
             current_score: Current message score
             current_timestamp: Current message timestamp
             
         Returns:
-            Tuple of (scores, timestamps) lists
+            Tuple of (scores, timestamps) lists (all timestamps naive UTC)
         """
         scores = []
         timestamps = []
         
         # Add history items (filter out items without scores)
+        # Normalize all timestamps to naive UTC
         for item in history:
             if item.crisis_score is not None:
                 scores.append(item.crisis_score)
-                timestamps.append(item.timestamp)
+                timestamps.append(_normalize_timestamp(item.timestamp))
         
-        # Add current message
+        # Add current message (normalize timestamp)
         scores.append(current_score)
-        timestamps.append(current_timestamp)
+        timestamps.append(_normalize_timestamp(current_timestamp))
         
         return scores, timestamps
     
@@ -449,14 +484,16 @@ class ContextAnalyzer:
         Run temporal pattern detection.
         
         Args:
-            timestamps: Timestamp sequence
+            timestamps: Timestamp sequence (should be normalized)
             current_timestamp: Current message timestamp
             
         Returns:
             TemporalAnalysis result
         """
         try:
-            return self._temporal_detector.analyze(timestamps, current_timestamp)
+            # Normalize current_timestamp in case it wasn't done earlier
+            normalized_current = _normalize_timestamp(current_timestamp)
+            return self._temporal_detector.analyze(timestamps, normalized_current)
         except Exception as e:
             logger.error(f"Temporal analysis failed: {e}")
             return TemporalAnalysis()
