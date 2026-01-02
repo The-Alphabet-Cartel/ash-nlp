@@ -51,7 +51,7 @@ https://github.com/the-alphabet-cartel
 - `Ash-NLP`: 30880
 
 ## General Instructions
-- Read and follow the Clean Architecture Charter (`./docs/clean_architecture_charter.md`) to the letter.
+- Read and follow the Clean Architecture Charter (`\10.20.30.253\nas\git\ash\ash-nlp\docs\standards\clean_architecture_charter.md`) to the letter.
   - This is our bible for all code within the Ash ecosystem.
 - Always ask for the current version of a specific file before making any modifications, changes, or edits to that file.
   - This is to ensure that we're both on the "same page" before making adjustments to the code.
