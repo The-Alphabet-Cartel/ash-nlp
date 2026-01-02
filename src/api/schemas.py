@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 API Schemas for Ash-NLP Service
 ---
-FILE VERSION: v5.0-5-5.1-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 5 - Context History Analysis
+FILE VERSION: v5.0-6-2.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 2 (FE-001: Timezone Support)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -34,6 +34,10 @@ PHASE 5 ENHANCEMENTS:
 - Context analysis response schemas
 - Escalation, temporal, and trend detection outputs
 - Context configuration endpoints
+
+PHASE 6 ENHANCEMENTS:
+- FE-001: User timezone support for late night detection
+- Timezone parameter in analyze requests
 """
 
 from datetime import datetime
@@ -43,7 +47,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 # Module version
-__version__ = "v5.0-5-5.1-1"
+__version__ = "v5.0-6-2.0-1"
 
 
 # =============================================================================
@@ -297,6 +301,14 @@ class AnalyzeRequest(BaseModel):
         default=True,
         description="Enable context history analysis (Phase 5)",
     )
+    
+    # Phase 6 options (FE-001)
+    user_timezone: Optional[str] = Field(
+        default=None,
+        max_length=50,
+        description="User's timezone for late night detection (e.g., 'America/New_York', 'Europe/London')",
+        examples=["America/New_York", "Europe/London", "Asia/Tokyo", "UTC"],
+    )
 
     @field_validator("message")
     @classmethod
@@ -496,7 +508,7 @@ class TemporalFactorsResponse(BaseModel):
 
     late_night_risk: bool = Field(
         default=False,
-        description="Whether message was sent during late night hours",
+        description="Whether message was sent during late night hours (in user's local time)",
     )
     rapid_posting: bool = Field(
         default=False,
@@ -512,11 +524,22 @@ class TemporalFactorsResponse(BaseModel):
         default=12,
         ge=0,
         le=23,
-        description="Hour of day (0-23)",
+        description="Hour of day (0-23) in user's local time if timezone provided, otherwise UTC",
     )
     is_weekend: bool = Field(
         default=False,
-        description="Whether message was sent on weekend",
+        description="Whether message was sent on weekend (in user's local time)",
+    )
+    # FE-001: Timezone support fields
+    user_timezone: Optional[str] = Field(
+        default=None,
+        description="User's timezone if provided (FE-001)",
+    )
+    local_hour: Optional[int] = Field(
+        default=None,
+        ge=0,
+        le=23,
+        description="Hour in user's local timezone (FE-001)",
     )
 
 

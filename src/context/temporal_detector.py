@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Temporal Detector for Ash-NLP Service - Phase 5
 ---
-FILE VERSION: v5.0-5-1.0-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 5 - Context History Analysis
+FILE VERSION: v5.0-6-2.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 2 (FE-001: Timezone Support)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -23,13 +23,20 @@ RESPONSIBILITIES:
 - Calculate time-based risk modifiers
 - Identify weekend patterns
 - Provide temporal context for crisis assessment
+- FE-001: Support user timezone for accurate local time detection
 """
 
 import logging
 from enum import Enum
 from typing import List, Optional
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    # Python < 3.9 fallback
+    from backports.zoneinfo import ZoneInfo  # type: ignore
 
 from src.managers import (
     ContextConfigManager,
@@ -37,7 +44,7 @@ from src.managers import (
 )
 
 # Module version
-__version__ = "v5.0-5-1.0-1"
+__version__ = "v5.0-6-2.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -79,8 +86,10 @@ class TemporalAnalysis:
         posting_frequency: Classification of posting frequency
         risk_modifier: Combined risk modifier to apply (1.0 = no change)
         is_weekend: Whether current message is on weekend
-        hour_of_day: Hour of the current message (0-23)
+        hour_of_day: Hour of the current message (0-23) in USER's local time
         average_gap_minutes: Average time between messages
+        user_timezone: User's timezone if provided (FE-001)
+        local_hour: Hour in user's local timezone (FE-001)
     """
     late_night_detected: bool = False
     late_night_count: int = 0
@@ -92,6 +101,8 @@ class TemporalAnalysis:
     is_weekend: bool = False
     hour_of_day: int = 12
     average_gap_minutes: float = 0.0
+    user_timezone: Optional[str] = None  # FE-001
+    local_hour: Optional[int] = None  # FE-001: Hour in user's local time
 
 
 # =============================================================================
@@ -136,6 +147,7 @@ class TemporalDetector:
         self,
         timestamps: List[datetime],
         current_timestamp: Optional[datetime] = None,
+        user_timezone: Optional[str] = None,
     ) -> TemporalAnalysis:
         """
         Analyze timestamps for temporal patterns.
@@ -143,6 +155,8 @@ class TemporalDetector:
         Args:
             timestamps: List of message timestamps in chronological order
             current_timestamp: Timestamp of current message (default: last in list)
+            user_timezone: User's timezone for local time detection (FE-001)
+                          e.g., 'America/New_York', 'Europe/London', 'UTC'
             
         Returns:
             TemporalAnalysis with detection results
@@ -159,9 +173,28 @@ class TemporalDetector:
         if current_timestamp is None:
             current_timestamp = timestamps[-1]
         
-        # Analyze late night patterns
+        # FE-001: Convert to user's local time if timezone provided
+        local_timestamp = current_timestamp
+        local_hour = None
+        if user_timezone:
+            local_timestamp = self._convert_to_local_time(current_timestamp, user_timezone)
+            if local_timestamp:
+                local_hour = local_timestamp.hour
+                logger.debug(
+                    f"Timezone conversion: UTC hour {current_timestamp.hour} -> "
+                    f"{user_timezone} hour {local_hour}"
+                )
+            else:
+                # Invalid timezone, fall back to UTC
+                local_timestamp = current_timestamp
+                logger.warning(f"Invalid timezone '{user_timezone}', using UTC")
+        
+        # Use local time for late night analysis
+        analysis_timestamp = local_timestamp if local_timestamp else current_timestamp
+        
+        # Analyze late night patterns (using local time)
         late_night_detected, late_night_count = self._analyze_late_night(
-            timestamps, current_timestamp
+            timestamps, analysis_timestamp, user_timezone
         )
         
         # Analyze posting frequency
@@ -169,8 +202,8 @@ class TemporalDetector:
             timestamps
         )
         
-        # Classify time of day risk
-        time_of_day_risk = self._classify_time_of_day(current_timestamp)
+        # Classify time of day risk (using local time - FE-001)
+        time_of_day_risk = self._classify_time_of_day(analysis_timestamp)
         
         # Classify posting frequency
         posting_frequency = self._classify_posting_frequency(
@@ -178,8 +211,8 @@ class TemporalDetector:
             rapid_posting_detected
         )
         
-        # Check weekend
-        is_weekend = self._is_weekend(current_timestamp)
+        # Check weekend (using local time - FE-001)
+        is_weekend = self._is_weekend(analysis_timestamp)
         
         # Calculate average gap
         average_gap = self._calculate_average_gap(timestamps)
@@ -200,33 +233,48 @@ class TemporalDetector:
             posting_frequency=posting_frequency,
             risk_modifier=risk_modifier,
             is_weekend=is_weekend,
-            hour_of_day=current_timestamp.hour,
+            hour_of_day=analysis_timestamp.hour,  # Now uses local time if timezone provided
             average_gap_minutes=average_gap,
+            user_timezone=user_timezone,  # FE-001
+            local_hour=local_hour,  # FE-001
         )
     
     def _analyze_late_night(
         self,
         timestamps: List[datetime],
         current_timestamp: datetime,
+        user_timezone: Optional[str] = None,
     ) -> tuple[bool, int]:
         """
         Analyze for late night posting patterns.
         
         Args:
             timestamps: List of message timestamps
-            current_timestamp: Current message timestamp
+            current_timestamp: Current message timestamp (in local time if timezone provided)
+            user_timezone: User's timezone for converting historical timestamps (FE-001)
             
         Returns:
             Tuple of (is_late_night, late_night_message_count)
         """
-        # Check if current message is late night
+        # Check if current message is late night (already in local time)
         is_late_night = self._is_late_night_hour(current_timestamp.hour)
         
         # Count how many messages in history are late night
-        late_night_count = sum(
-            1 for ts in timestamps 
-            if self._is_late_night_hour(ts.hour)
-        )
+        # FE-001: Convert each timestamp to user's local time if timezone provided
+        late_night_count = 0
+        for ts in timestamps:
+            if user_timezone:
+                local_ts = self._convert_to_local_time(ts, user_timezone)
+                if local_ts:
+                    if self._is_late_night_hour(local_ts.hour):
+                        late_night_count += 1
+                else:
+                    # Fallback to UTC if conversion fails
+                    if self._is_late_night_hour(ts.hour):
+                        late_night_count += 1
+            else:
+                if self._is_late_night_hour(ts.hour):
+                    late_night_count += 1
         
         return is_late_night, late_night_count
     
@@ -251,6 +299,62 @@ class TemporalDetector:
         else:
             # Same day range (e.g., 1-5)
             return start <= hour < end
+    
+    def _convert_to_local_time(
+        self,
+        utc_timestamp: datetime,
+        timezone_str: str,
+    ) -> Optional[datetime]:
+        """
+        Convert UTC timestamp to user's local time (FE-001).
+        
+        Args:
+            utc_timestamp: Timestamp in UTC (or naive assumed UTC)
+            timezone_str: IANA timezone string (e.g., 'America/New_York')
+            
+        Returns:
+            Datetime in user's local timezone, or None if invalid timezone
+            
+        Example:
+            >>> detector._convert_to_local_time(
+            ...     datetime(2026, 1, 1, 3, 0),  # 3 AM UTC
+            ...     'America/New_York'
+            ... )
+            datetime(2025, 12, 31, 22, 0)  # 10 PM EST (previous day)
+        """
+        try:
+            tz = ZoneInfo(timezone_str)
+            
+            # Ensure timestamp is timezone-aware (assume UTC if naive)
+            if utc_timestamp.tzinfo is None:
+                utc_aware = utc_timestamp.replace(tzinfo=timezone.utc)
+            else:
+                utc_aware = utc_timestamp
+            
+            # Convert to user's local time
+            local_time = utc_aware.astimezone(tz)
+            
+            return local_time
+            
+        except Exception as e:
+            logger.warning(f"Failed to convert timezone '{timezone_str}': {e}")
+            return None
+    
+    def is_valid_timezone(self, timezone_str: str) -> bool:
+        """
+        Check if a timezone string is valid (FE-001).
+        
+        Args:
+            timezone_str: IANA timezone string to validate
+            
+        Returns:
+            True if timezone is valid
+        """
+        try:
+            ZoneInfo(timezone_str)
+            return True
+        except Exception:
+            return False
     
     def _analyze_posting_frequency(
         self,

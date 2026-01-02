@@ -1,6 +1,6 @@
 # Phase 6: Future Enhancements
 
-**FILE VERSION**: v5.0.1  
+**FILE VERSION**: v5.0.2  
 **CREATED**: 2026-01-02  
 **UPDATED**: 2026-01-02  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
@@ -20,7 +20,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Medium  
 **Category**: Context Analysis  
-**Status**: Planned
+**Status**: ✅ COMPLETED (Sprint 2)
 
 **Description**: Currently, late night detection uses server time (UTC). Users in different timezones may have messages incorrectly flagged or missed.
 
@@ -29,9 +29,19 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Store user timezone preferences
 - Convert timestamps to user's local time for late night detection
 
-**Files Affected**:
-- `src/context/temporal_detector.py`
-- `src/api/schemas.py`
+**Implementation (Sprint 2)**:
+- Added `user_timezone` parameter to AnalyzeRequest schema
+- Added `_convert_to_local_time()` method to TemporalDetector using ZoneInfo
+- Updated `analyze()` to accept `user_timezone` and convert all timestamps to local time
+- Late night detection, weekend detection, and hour_of_day now use user's local time
+- Added `is_valid_timezone()` helper method
+- Added `user_timezone` and `local_hour` fields to TemporalAnalysis and TemporalFactorsResponse
+- Version: v5.0-6-2.0-1
+
+**Files Modified**:
+- `src/context/temporal_detector.py` → v5.0-6-2.0-1
+- `src/api/schemas.py` → v5.0-6-2.0-1
+- `tests/phase6/test_sprint2.py` (new)
 
 ---
 
@@ -57,7 +67,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Medium  
 **Category**: Model Processing  
-**Status**: Planned
+**Status**: ✅ COMPLETED (Sprint 2)
 
 **Description**: Very long messages may exceed model token limits, causing truncation at unpredictable points.
 
@@ -66,9 +76,22 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Add configurable max token limits per model
 - Log truncation events for monitoring
 
-**Files Affected**:
-- `src/models/base.py`
-- `src/models/bart_classifier.py`
+**Implementation (Sprint 2)**:
+- Created `src/utils/text_truncation.py` with `TextTruncator` class
+- Supports three strategies: `smart` (preserves sentences), `head`, and `tail`
+- Added `max_input_tokens` and `truncation_strategy` to models config
+- Updated `BaseModelWrapper` with `_truncate_text()` method
+- Smart truncation preserves sentence boundaries and prioritizes recent content
+- Token estimation uses 4 chars/token heuristic
+- Factory function: `create_text_truncator()`
+- Version: v5.0-6-2.0-1
+
+**Files Modified**:
+- `src/utils/text_truncation.py` (new) → v5.0-6-2.0-1
+- `src/utils/__init__.py` → v5.0-6-2.0-1
+- `src/models/base.py` → v5.0-6-2.0-1
+- `src/config/default.json` → v5.0-6-2.0-1
+- `tests/phase6/test_sprint2.py` (new)
 
 ---
 
@@ -298,7 +321,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 | Priority | Tickets | Focus Area | Status |
 |----------|---------|------------|--------|
 | **High** | FE-006, ~~FE-009~~ | ML Learning, ~~Test Isolation~~ | FE-009 ✅ |
-| **Medium** | FE-001, FE-003, FE-005, FE-007 | Accuracy, Robustness | Pending |
+| **Medium** | ~~FE-001~~, ~~FE-003~~, FE-005, FE-007 | ~~Accuracy~~, Robustness | FE-001 ✅, FE-003 ✅ |
 | **Low** | FE-002, FE-004, FE-008, ~~FE-010~~, ~~FE-011~~, ~~FE-012~~ | Polish, ~~Test Fixes~~ | FE-010/011/012 ✅ |
 
 ---
@@ -337,10 +360,28 @@ This document tracks future enhancements identified during Phase 5 development. 
 ### Suggested Sprint Order
 
 1. ~~**Sprint 1**: FE-009 (test isolation) + FE-010/011/012 (fix skipped tests)~~ ✅ COMPLETED
-2. **Sprint 2**: FE-001 (timezone) + FE-003 (token truncation)
+2. ~~**Sprint 2**: FE-001 (timezone) + FE-003 (token truncation)~~ ✅ COMPLETED
 3. **Sprint 3**: FE-005 (per-severity thresholds) + FE-007 (investigation)
 4. **Sprint 4**: FE-006 (historical learning) - larger effort
 5. **Sprint 5**: FE-002, FE-004, FE-008 (polish items)
+
+### Sprint 2 Completed (2026-01-02)
+
+✅ **FE-001**: User Timezone Support
+- Added `user_timezone` parameter to API requests
+- Temporal detection uses user's local time for late night and weekend detection
+- ZoneInfo-based timezone conversion with fallback handling
+- New fields: `user_timezone`, `local_hour` in responses
+
+✅ **FE-003**: Token Truncation
+- New `TextTruncator` class with smart, head, and tail strategies
+- Smart truncation preserves sentence boundaries
+- Configurable via `max_input_tokens` and `truncation_strategy` in config
+- Integrated into `BaseModelWrapper.analyze()` method
+
+**New Test File**: `tests/phase6/test_sprint2.py`
+- 14 new tests for timezone and truncation features
+- Integration tests for schema and config validation
 
 ---
 

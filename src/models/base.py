@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Abstract Base Model Class for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.2-1
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.2 - Model Wrapper Foundation
+FILE VERSION: v5.0-6-2.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 2 (FE-003: Token Truncation)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -22,17 +22,19 @@ RESPONSIBILITIES:
 - Provide common functionality (lazy loading, performance tracking)
 - Ensure consistent response format across all models
 - Handle errors gracefully with logging
+- FE-003: Smart token truncation for long inputs
 """
 
 import logging
+import re
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from enum import Enum
 
 # Module version
-__version__ = "v5.0-3-4.2-1"
+__version__ = "v5.0-6-2.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -191,6 +193,8 @@ class BaseModelWrapper(ABC):
         weight: float = 0.0,
         device: str = "auto",
         enabled: bool = True,
+        max_tokens: int = 512,  # FE-003: Default max tokens
+        truncation_strategy: str = "smart",  # FE-003: 'smart', 'simple', 'none'
     ):
         """
         Initialize base model wrapper.
@@ -203,6 +207,11 @@ class BaseModelWrapper(ABC):
             weight: Weight in ensemble scoring
             device: Device to load model on (auto, cuda, cpu)
             enabled: Whether this model is enabled
+            max_tokens: Maximum tokens for input (FE-003)
+            truncation_strategy: How to truncate long inputs (FE-003)
+                - 'smart': Preserve sentence boundaries
+                - 'simple': Hard cut at character limit
+                - 'none': No truncation (may cause errors)
         """
         self.model_id = model_id
         self.name = name
@@ -211,6 +220,12 @@ class BaseModelWrapper(ABC):
         self.weight = weight
         self.device = device
         self.enabled = enabled
+        
+        # FE-003: Truncation settings
+        self.max_tokens = max_tokens
+        self.truncation_strategy = truncation_strategy
+        # Approximate chars per token (conservative estimate for most models)
+        self._chars_per_token = 4
 
         # Pipeline will be loaded lazily
         self._pipeline: Optional[Any] = None
@@ -220,10 +235,12 @@ class BaseModelWrapper(ABC):
         # Performance tracking
         self._total_inferences: int = 0
         self._total_latency_ms: float = 0.0
+        self._truncation_count: int = 0  # FE-003: Track truncations
 
         logger.debug(
             f"Initialized {self.name} wrapper "
-            f"(model_id={self.model_id}, role={self.role.value})"
+            f"(model_id={self.model_id}, role={self.role.value}, "
+            f"max_tokens={self.max_tokens}, truncation={self.truncation_strategy})"
         )
 
     # =========================================================================
@@ -282,7 +299,7 @@ class BaseModelWrapper(ABC):
         Analyze text and return standardized result.
 
         This is the main public interface for all model wrappers.
-        Handles lazy loading, timing, and error handling.
+        Handles lazy loading, timing, truncation (FE-003), and error handling.
 
         Args:
             text: Input text to analyze
@@ -310,11 +327,18 @@ class BaseModelWrapper(ABC):
                     error=f"Model loading failed: {str(e)}",
                 )
 
+        # FE-003: Truncate text if needed
+        processed_text, was_truncated = self._truncate_text(text)
+        if was_truncated:
+            logger.info(
+                f"{self.name}: Input truncated from {len(text)} to {len(processed_text)} chars"
+            )
+
         # Run inference with timing
         start_time = time.perf_counter()
 
         try:
-            raw_output = self._run_inference(text, **kwargs)
+            raw_output = self._run_inference(processed_text, **kwargs)
             latency_ms = (time.perf_counter() - start_time) * 1000
 
             # Process output
@@ -459,6 +483,76 @@ class BaseModelWrapper(ABC):
     # =========================================================================
     # Helper Methods
     # =========================================================================
+
+    def _truncate_text(self, text: str) -> Tuple[str, bool]:
+        """
+        Truncate text to fit within max_tokens (FE-003).
+        
+        Args:
+            text: Input text to potentially truncate
+            
+        Returns:
+            Tuple of (truncated_text, was_truncated)
+        """
+        if self.truncation_strategy == "none":
+            return text, False
+        
+        # Estimate max characters based on tokens
+        max_chars = self.max_tokens * self._chars_per_token
+        
+        if len(text) <= max_chars:
+            return text, False
+        
+        if self.truncation_strategy == "simple":
+            # Hard cut at character limit
+            truncated = text[:max_chars].rstrip()
+            self._truncation_count += 1
+            logger.debug(
+                f"{self.name}: Truncated {len(text)} chars to {len(truncated)} (simple)"
+            )
+            return truncated, True
+        
+        # Smart truncation: preserve sentence boundaries
+        # Try to end at a complete sentence within the limit
+        truncated = text[:max_chars]
+        
+        # Find the last sentence boundary
+        # Look for sentence-ending punctuation followed by space or end
+        sentence_endings = list(re.finditer(r'[.!?]+\s*', truncated))
+        
+        if sentence_endings:
+            # End at the last complete sentence
+            last_boundary = sentence_endings[-1].end()
+            if last_boundary >= max_chars * 0.5:  # At least 50% of content
+                truncated = truncated[:last_boundary].rstrip()
+            else:
+                # Sentence boundary too early, try word boundary instead
+                truncated = self._truncate_at_word_boundary(truncated)
+        else:
+            # No sentence boundaries, try word boundary
+            truncated = self._truncate_at_word_boundary(truncated)
+        
+        self._truncation_count += 1
+        logger.debug(
+            f"{self.name}: Truncated {len(text)} chars to {len(truncated)} (smart)"
+        )
+        return truncated, True
+    
+    def _truncate_at_word_boundary(self, text: str) -> str:
+        """
+        Truncate at the last word boundary (FE-003).
+        
+        Args:
+            text: Text to truncate
+            
+        Returns:
+            Text truncated at last word boundary
+        """
+        # Find last whitespace
+        last_space = text.rfind(' ')
+        if last_space > len(text) * 0.5:  # At least 50% of content
+            return text[:last_space].rstrip()
+        return text.rstrip()
 
     def _determine_device(self) -> int:
         """

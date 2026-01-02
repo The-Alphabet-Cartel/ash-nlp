@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.0-3-4.1-1",
-		"last_modified": "2025-12-31",
+		"file_version": "v5.0-6-2.0-1",
+		"last_modified": "2026-01-02",
 		"clean_architecture": "Compliant",
 		"description": "Ash-NLP v5.0 Default Configuration - Crisis Detection Ensemble",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -62,11 +62,15 @@
 		"cache_dir": "${NLP_MODEL_CACHE_DIR}",
 		"warmup_enabled": "${NLP_MODEL_WARMUP_ENABLED}",
 		"max_concurrent": "${NLP_MODEL_MAX_CONCURRENT}",
+		"max_input_tokens": "${NLP_MODEL_MAX_INPUT_TOKENS}",
+		"truncation_strategy": "${NLP_MODEL_TRUNCATION_STRATEGY}",
 		"defaults": {
 			"device": "auto",
 			"cache_dir": "/app/cache/models",
 			"warmup_enabled": true,
-			"max_concurrent": 4
+			"max_concurrent": 4,
+			"max_input_tokens": 512,
+			"truncation_strategy": "smart"
 		},
 		"validation": {
 			"device": {
@@ -86,6 +90,18 @@
 				"type": "integer",
 				"range": [1, 8],
 				"required": false
+			},
+			"max_input_tokens": {
+				"type": "integer",
+				"range": [128, 2048],
+				"required": false,
+				"description": "FE-003: Maximum input tokens before truncation"
+			},
+			"truncation_strategy": {
+				"type": "string",
+				"allowed_values": ["smart", "head", "tail"],
+				"required": false,
+				"description": "FE-003: smart=preserve sentence boundaries, head=truncate end, tail=truncate start"
 			}
 		}
 	},

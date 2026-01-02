@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Utilities Package for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-7.4-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 3 Step 7 - Performance Optimization
+FILE VERSION: v5.0-6-2.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 2 (FE-003: Token Truncation)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -24,9 +24,10 @@ PACKAGE CONTENTS:
 - logging.py: Structured JSON logging
 - metrics.py: Prometheus metrics (optional)
 - cache.py: Response caching layer
+- text_truncation.py: Smart text truncation for long inputs (FE-003)
 """
 
-__version__ = "v5.0-3-7.4-1"
+__version__ = "v5.0-6-2.0-1"
 
 # Retry utilities
 from src.utils.retry import (
@@ -97,6 +98,16 @@ from src.utils.cache import (
     cached_response_async,
 )
 
+# Text Truncation (FE-003)
+from src.utils.text_truncation import (
+    TruncationStrategy,
+    TruncationResult,
+    TextTruncator,
+    create_text_truncator,
+    truncate_text,
+    estimate_tokens,
+)
+
 __all__ = [
     # Retry
     "RetryConfig",
@@ -149,4 +160,11 @@ __all__ = [
     "create_response_cache",
     "cached_response",
     "cached_response_async",
+    # Text Truncation (FE-003)
+    "TruncationStrategy",
+    "TruncationResult",
+    "TextTruncator",
+    "create_text_truncator",
+    "truncate_text",
+    "estimate_tokens",
 ]
