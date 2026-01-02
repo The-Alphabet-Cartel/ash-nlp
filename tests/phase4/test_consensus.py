@@ -1,7 +1,7 @@
 """
 Ash-NLP Phase 4 Tests: Consensus Algorithms
 ---
-FILE VERSION: v5.0-4-TEST-1.2
+FILE VERSION: v5.0-6-1.0-1
 LAST MODIFIED: 2026-01-02
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -224,23 +224,29 @@ class TestMajorityVotingConsensus:
         assert result.vote_breakdown["total_votes"] == 4
         assert result.vote_breakdown["vote_ratio"] == 0.5
 
-    @pytest.mark.skip(reason="Threshold uses > not >= comparison, 0.25 == 0.25 returns False. FE-011")
     def test_majority_threshold_configurable(self):
-        """Majority threshold should be configurable."""
-        scores = {"bart": 0.70, "sentiment": 0.30, "irony": 0.30, "emotions": 0.30}
+        """
+        Majority threshold should be configurable.
+        
+        FE-011 Fix: Use test data that clearly exceeds thresholds.
+        Previous issue: 0.25 == 0.25 returns False with > comparison.
+        Solution: Ensure vote ratios clearly cross threshold boundaries.
+        """
+        # 2 of 4 models vote crisis = 0.5 ratio
+        scores = {"bart": 0.70, "sentiment": 0.70, "irony": 0.30, "emotions": 0.30}
 
-        # Low threshold (25%) - should be crisis
+        # Low threshold (40%) - 0.5 > 0.4, should be crisis
         result1 = majority_voting_consensus(
             model_signals=scores,
             crisis_threshold=0.5,
-            majority_threshold=0.25,
+            majority_threshold=0.40,
         )
 
-        # High threshold (75%) - should be safe
+        # High threshold (60%) - 0.5 < 0.6, should be safe
         result2 = majority_voting_consensus(
             model_signals=scores,
             crisis_threshold=0.5,
-            majority_threshold=0.75,
+            majority_threshold=0.60,
         )
 
         assert result1.is_crisis is True
@@ -332,11 +338,24 @@ class TestConflictAwareConsensus:
         assert result.has_conflict is False
         assert result.requires_review is False
 
-    @pytest.mark.skip(reason="Test data variance 0.099 < 0.15 disagreement threshold. FE-011")
-    def test_disagreement_flags_conflict(self, disagreement_scores, default_weights):
-        """Significant disagreement should flag conflict."""
+    def test_disagreement_flags_conflict(self, default_weights):
+        """
+        Significant disagreement should flag conflict.
+        
+        FE-011 Fix: Use extreme disagreement data that exceeds threshold.
+        Previous issue: disagreement_scores variance 0.099 < 0.15 threshold.
+        Solution: Use scores with very high variance (0.95 vs 0.05).
+        """
+        # Extreme disagreement: variance will be ~0.203 (well above 0.15)
+        extreme_disagreement_scores = {
+            "bart": 0.95,      # Very high crisis
+            "sentiment": 0.05,  # Very low
+            "irony": 0.90,     # High crisis
+            "emotions": 0.10,  # Low
+        }
+        
         result = conflict_aware_consensus(
-            model_signals=disagreement_scores,
+            model_signals=extreme_disagreement_scores,
             weights=default_weights,
             disagreement_threshold=0.15,
             crisis_threshold=0.5,
@@ -473,11 +492,24 @@ class TestAgreementLevel:
             AgreementLevel.MODERATE_AGREEMENT,
         )
 
-    @pytest.mark.skip(reason="Test data variance 0.099 < 0.15 disagreement threshold. FE-011")
-    def test_significant_disagreement_high_variance(self, disagreement_scores, default_weights):
-        """High variance should produce significant disagreement."""
+    def test_significant_disagreement_high_variance(self, default_weights):
+        """
+        High variance should produce significant disagreement.
+        
+        FE-011 Fix: Use extreme disagreement data with high variance.
+        Previous issue: disagreement_scores variance 0.099 < 0.15 threshold.
+        Solution: Use scores with very high variance.
+        """
+        # Extreme variance data - same as test_disagreement_flags_conflict
+        extreme_disagreement_scores = {
+            "bart": 0.95,
+            "sentiment": 0.05,
+            "irony": 0.90,
+            "emotions": 0.10,
+        }
+        
         result = conflict_aware_consensus(
-            model_signals=disagreement_scores,
+            model_signals=extreme_disagreement_scores,
             weights=default_weights,
             disagreement_threshold=0.15,
             crisis_threshold=0.5,

@@ -1,7 +1,7 @@
 """
 Ash-NLP Configuration Tests
 ---
-FILE VERSION: v5.0-3-5.4-3
+FILE VERSION: v5.0-6-1.0-1
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -140,28 +140,59 @@ class TestConfigValidation:
 class TestConfigFiles:
     """Tests for configuration file existence."""
 
-    @pytest.mark.skip(reason="Config files in src/config/, Docker maps to different location. FE-010")
-    def test_default_config_exists(self):
-        """Test default.json exists."""
-        # Config files are in /app/config/, not /app/tests/config/
-        config_path = Path("/app/config/default.json")
-        assert config_path.exists(), "config/default.json not found"
+    def _get_config_paths(self) -> list:
+        """
+        Get possible config directory paths.
+        
+        FE-010 Fix: Dynamically detect config location based on environment.
+        - Docker container: /app/config/ or /app/src/config/
+        - Local development: ./src/config/ or ./config/
+        """
+        possible_paths = [
+            Path("/app/config"),           # Docker standard
+            Path("/app/src/config"),       # Docker with src/ structure
+            Path("src/config"),            # Local development
+            Path("config"),                # Local alternative
+            Path(__file__).parent.parent / "src" / "config",  # Relative to tests
+        ]
+        return [p for p in possible_paths if p.exists()]
 
-    @pytest.mark.skip(reason="Config files in src/config/, Docker maps to different location. FE-010")
+    def test_default_config_exists(self):
+        """Test default.json exists in at least one config location."""
+        config_dirs = self._get_config_paths()
+        
+        # Skip if no config dirs found (indicates unusual environment)
+        if not config_dirs:
+            pytest.skip("No config directories found - unusual environment")
+        
+        # Check if default.json exists in any config directory
+        found = any((d / "default.json").exists() for d in config_dirs)
+        assert found, f"default.json not found in any of: {config_dirs}"
+
     def test_production_config_exists(self):
         """Test production.json exists (optional - may use default)."""
-        config_path = Path("/app/config/production.json")
+        config_dirs = self._get_config_paths()
+        
+        if not config_dirs:
+            pytest.skip("No config directories found - unusual environment")
+        
         # Production config is optional - system falls back to default
-        # Just check the default exists if production doesn't
-        default_path = Path("/app/config/default.json")
-        assert config_path.exists() or default_path.exists(), \
-            "Neither production.json nor default.json found in /app/config/"
+        prod_found = any((d / "production.json").exists() for d in config_dirs)
+        default_found = any((d / "default.json").exists() for d in config_dirs)
+        
+        assert prod_found or default_found, \
+            f"Neither production.json nor default.json found in: {config_dirs}"
 
-    @pytest.mark.skip(reason="Config files in src/config/, Docker maps to different location. FE-010")
     def test_testing_config_exists(self):
         """Test testing.json exists (optional - may use default)."""
-        config_path = Path("/app/config/testing.json")
+        config_dirs = self._get_config_paths()
+        
+        if not config_dirs:
+            pytest.skip("No config directories found - unusual environment")
+        
         # Testing config is optional - system falls back to default
-        default_path = Path("/app/config/default.json")
-        assert config_path.exists() or default_path.exists(), \
-            "Neither testing.json nor default.json found in /app/config/"
+        testing_found = any((d / "testing.json").exists() for d in config_dirs)
+        default_found = any((d / "default.json").exists() for d in config_dirs)
+        
+        assert testing_found or default_found, \
+            f"Neither testing.json nor default.json found in: {config_dirs}"

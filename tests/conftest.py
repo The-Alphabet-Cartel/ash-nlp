@@ -1,7 +1,7 @@
 """
 Ash-NLP Test Fixtures
 ---
-FILE VERSION: v5.0-3-5.4-2
+FILE VERSION: v5.0-6-1.0-1
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -300,6 +300,59 @@ def client_no_engine():
 
     with TestClient(application, raise_server_exceptions=False) as test_client:
         yield test_client
+
+
+# =============================================================================
+# Alerting Fixtures (Phase 6 FE-009)
+# =============================================================================
+
+
+@pytest.fixture
+def mock_alerter():
+    """
+    Create a Discord alerter in testing mode.
+    
+    This alerter will NOT send real webhooks but tracks all alerts
+    for test assertions.
+    """
+    from src.utils.alerting import create_discord_alerter
+
+    alerter = create_discord_alerter(
+        webhook_url="https://discord.com/api/webhooks/test/test",
+        enabled=True,
+        testing_mode=True,
+    )
+    return alerter
+
+
+@pytest.fixture
+def alert_callback_tracker():
+    """
+    Create a callback tracker for testing alert calls.
+    
+    Example:
+        def test_alert(mock_alerter, alert_callback_tracker):
+            mock_alerter.set_alert_callback(alert_callback_tracker.track)
+            mock_alerter.send_alert_sync(some_alert)
+            assert len(alert_callback_tracker.alerts) == 1
+    """
+    class AlertTracker:
+        def __init__(self):
+            self.alerts = []
+        
+        def track(self, alert):
+            self.alerts.append(alert)
+        
+        def clear(self):
+            self.alerts.clear()
+        
+        def get_by_severity(self, severity):
+            from src.utils.alerting import AlertSeverity
+            if isinstance(severity, str):
+                severity = AlertSeverity[severity.upper()]
+            return [a for a in self.alerts if a.severity == severity]
+    
+    return AlertTracker()
 
 
 # =============================================================================

@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-5-5.6-1
+FILE VERSION: v5.0-6-1.0-1
 LAST MODIFIED: 2026-01-02
-PHASE: Phase 5 - Context History Analysis
+PHASE: Phase 6 - Enhancements (FE-009: Test Mode Webhook Suppression)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -44,11 +44,12 @@ ALERT TYPES:
 import asyncio
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 # Module version
 __version__ = "v5.0-5-5.6-1"
@@ -183,12 +184,14 @@ class DiscordAlerter:
     - Severity-based colors
     - Throttling to prevent spam
     - Async and sync support
+    - Testing mode for suppressing real webhooks (FE-009)
 
     Attributes:
         webhook_url: Discord webhook URL
         enabled: Whether alerting is enabled
         throttle: Throttle configuration
         service_name: Name of the service (for footer)
+        testing_mode: Whether to suppress real webhook calls
 
     Example:
         alerter = DiscordAlerter(webhook_url="https://discord.com/api/webhooks/...")
@@ -209,6 +212,7 @@ class DiscordAlerter:
         service_name: str = "Ash-NLP",
         conflict_cooldown_seconds: float = 60.0,  # Phase 4
         escalation_cooldown_seconds: float = 300.0,  # Phase 5
+        testing_mode: Optional[bool] = None,  # Phase 6 FE-009
     ):
         """
         Initialize the Discord alerter.
@@ -220,11 +224,26 @@ class DiscordAlerter:
             service_name: Name for the footer
             conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
             escalation_cooldown_seconds: Cooldown between escalation alerts (Phase 5)
+            testing_mode: Suppress real webhook calls (auto-detects from NLP_ENVIRONMENT)
         """
         self.webhook_url = webhook_url
-        self.enabled = enabled and webhook_url is not None
         self.throttle = throttle or ThrottleConfig()
         self.service_name = service_name
+
+        # Phase 6 FE-009: Testing mode detection
+        # Auto-detect from environment if not explicitly set
+        if testing_mode is None:
+            env = os.environ.get("NLP_ENVIRONMENT", "production")
+            self._testing_mode = env.lower() == "testing"
+        else:
+            self._testing_mode = testing_mode
+
+        # When in testing mode, suppress real webhook calls but track them
+        self.enabled = enabled and webhook_url is not None and not self._testing_mode
+
+        # Phase 6 FE-009: Track suppressed alerts for test assertions
+        self._suppressed_alerts: List[Alert] = []
+        self._alert_callback: Optional[Callable[[Alert], None]] = None
 
         # Throttling state
         self._alert_history: List[float] = []
@@ -242,7 +261,9 @@ class DiscordAlerter:
         # HTTP session (lazy init)
         self._session = None
 
-        if self.enabled:
+        if self._testing_mode:
+            logger.info(f"🧪 Discord alerter in TESTING MODE for {service_name} (webhooks suppressed)")
+        elif self.enabled:
             logger.info(f"🔔 Discord alerter initialized for {service_name}")
         else:
             logger.info("🔕 Discord alerter disabled (no webhook URL)")
@@ -320,6 +341,68 @@ class DiscordAlerter:
     # Send Methods
     # =========================================================================
 
+    # =========================================================================
+    # Phase 6 FE-009: Testing Mode Methods
+    # =========================================================================
+
+    def is_testing_mode(self) -> bool:
+        """Check if alerter is in testing mode."""
+        return self._testing_mode
+
+    def get_suppressed_alerts(self) -> List[Alert]:
+        """
+        Get list of alerts that were suppressed in testing mode.
+
+        Returns:
+            List of Alert objects that would have been sent
+        """
+        return self._suppressed_alerts.copy()
+
+    def clear_suppressed_alerts(self) -> None:
+        """Clear the list of suppressed alerts."""
+        self._suppressed_alerts.clear()
+
+    def set_alert_callback(self, callback: Optional[Callable[[Alert], None]]) -> None:
+        """
+        Set a callback function to be called for each alert (useful for testing).
+
+        Args:
+            callback: Function that receives Alert objects, or None to remove
+        """
+        self._alert_callback = callback
+
+    def get_last_suppressed_alert(self) -> Optional[Alert]:
+        """
+        Get the most recent suppressed alert.
+
+        Returns:
+            Most recent Alert or None if no alerts suppressed
+        """
+        return self._suppressed_alerts[-1] if self._suppressed_alerts else None
+
+    def _handle_testing_mode_alert(self, alert: Alert) -> bool:
+        """
+        Handle an alert in testing mode (suppress but track).
+
+        Args:
+            alert: Alert that would be sent
+
+        Returns:
+            True (simulating successful send)
+        """
+        self._suppressed_alerts.append(alert)
+        self._record_alert()  # Still track for throttling behavior
+
+        if self._alert_callback:
+            self._alert_callback(alert)
+
+        logger.debug(f"🧪 Alert suppressed (testing mode): {alert.title}")
+        return True
+
+    # =========================================================================
+    # Send Methods
+    # =========================================================================
+
     async def send_alert(self, alert: Alert) -> bool:
         """
         Send an alert to Discord.
@@ -330,6 +413,10 @@ class DiscordAlerter:
         Returns:
             True if sent successfully
         """
+        # Phase 6 FE-009: Handle testing mode
+        if self._testing_mode:
+            return self._handle_testing_mode_alert(alert)
+
         if not self.enabled:
             logger.debug(f"Alert skipped (disabled): {alert.title}")
             return False
@@ -376,6 +463,10 @@ class DiscordAlerter:
         Returns:
             True if sent successfully
         """
+        # Phase 6 FE-009: Handle testing mode
+        if self._testing_mode:
+            return self._handle_testing_mode_alert(alert)
+
         if not self.enabled:
             return False
 
@@ -978,6 +1069,8 @@ class DiscordAlerter:
         return {
             "enabled": self.enabled,
             "webhook_configured": self.webhook_url is not None,
+            "testing_mode": self._testing_mode,  # Phase 6 FE-009
+            "suppressed_alert_count": len(self._suppressed_alerts),  # Phase 6 FE-009
             "in_cooldown": self._in_cooldown,
             "alerts_in_window": len(self._alert_history),
             "conflict_cooldown_remaining": max(
@@ -1011,6 +1104,7 @@ def create_discord_alerter(
     enabled: bool = True,
     conflict_cooldown_seconds: float = 60.0,
     escalation_cooldown_seconds: float = 300.0,
+    testing_mode: Optional[bool] = None,
 ) -> DiscordAlerter:
     """
     Factory function to create a Discord alerter.
@@ -1021,9 +1115,14 @@ def create_discord_alerter(
         enabled: Whether alerting is enabled
         conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
         escalation_cooldown_seconds: Cooldown between escalation alerts (Phase 5)
+        testing_mode: Suppress real webhooks (auto-detects from NLP_ENVIRONMENT)
 
     Returns:
         Configured DiscordAlerter instance
+
+    Note (Phase 6 FE-009):
+        When NLP_ENVIRONMENT="testing" or testing_mode=True, webhook calls are
+        suppressed but tracked. Use get_suppressed_alerts() to inspect them.
     """
     # Get webhook URL from secrets if not provided
     if webhook_url is None and secrets_manager is not None:
@@ -1031,8 +1130,6 @@ def create_discord_alerter(
 
     # Also check environment variable
     if webhook_url is None:
-        import os
-
         webhook_url = os.environ.get("NLP_DISCORD_ALERT_WEBHOOK")
 
     return DiscordAlerter(
@@ -1040,6 +1137,7 @@ def create_discord_alerter(
         enabled=enabled,
         conflict_cooldown_seconds=conflict_cooldown_seconds,
         escalation_cooldown_seconds=escalation_cooldown_seconds,
+        testing_mode=testing_mode,
     )
 
 
