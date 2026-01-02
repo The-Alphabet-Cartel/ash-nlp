@@ -264,11 +264,11 @@ ash-nlp/
 ├── requirements.txt        # Python dependencies
 ├── Dockerfile              # Multi-stage Docker build
 ├── docker-compose.yml      # Production orchestration
-├── config/
-│   ├── default.json        # Base configuration
-│   ├── production.json     # Production overrides
-│   └── testing.json        # Testing overrides
 └── src/
+    ├── config/
+    │   ├── default.json        # Base configuration
+    │   ├── production.json     # Production overrides
+    │   └── testing.json        # Testing overrides
     ├── managers/
     │   └── config_manager.py
     ├── models/
