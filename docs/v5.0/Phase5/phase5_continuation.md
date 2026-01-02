@@ -1,6 +1,7 @@
 # Phase 5 Implementation Continuation Document
 
 **Created**: 2026-01-02  
+**Updated**: 2026-01-02  
 **Project**: Ash-NLP v5.0  
 **Phase**: Phase 5 - Context History Analysis  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
@@ -76,47 +77,45 @@ Added Phase 5 components:
 
 ---
 
-## 🔄 IN PROGRESS
+### 3. Engine Integration (Task 5.1.6) - COMPLETE ✅
 
-### 3. Engine Integration (Task 5.1.6) - STARTED, NOT COMPLETE
+**File**: `src/ensemble/decision_engine.py` (v5.0-5-2.0-1)
 
-**File**: `src/ensemble/decision_engine.py`
-
-**Current State**: Engine is at v5.0-4-2.0-2 (Phase 4)
-
-**Required Changes**:
-1. Add Phase 5 imports for context module
-2. Add `context_analyzer` parameter to `__init__`
-3. Update `analyze()` method signature to accept:
+#### Changes Made:
+1. Added Phase 5 imports for context module
+2. Added `context_analysis` field to `CrisisAssessment` dataclass
+3. Added `context_analyzer` and `phase5_enabled` parameters to `__init__`
+4. Updated `analyze()` method signature with:
    - `message_history: Optional[List[Dict]]`
-   - `include_context_analysis: bool`
-4. Integrate ContextAnalyzer call in analyze flow
-5. Add `context_analysis` field to `CrisisAssessment` dataclass
-6. Add `get_context_config()` method
-7. Add `update_context_config()` method
-8. Update version to v5.0-5-2.0-1
+   - `include_context_analysis: bool = True`
+5. Integrated ContextAnalyzer call in analyze flow
+6. Updated `analyze_async()` with same Phase 5 enhancements
+7. Updated `_build_assessment_enhanced()` to accept `context_analysis_result`
+8. Added Phase 5 configuration methods:
+   - `get_context_config()` - Get context analysis configuration
+   - `is_context_analysis_enabled()` - Check if context analysis is enabled
+9. Updated `get_status()` to include Phase 5 status
+10. Updated `get_health()` to include Phase 5 status
+11. Updated factory function `create_decision_engine()` with `phase5_enabled` parameter
 
-**Key Integration Points**:
+#### Integration Points:
 ```python
-# In analyze() after ensemble scoring:
-if include_context_analysis and self.context_analyzer:
-    from src.context import MessageHistoryItem
-    
-    # Convert message history
+# In analyze() after Phase 4 processing:
+if (self.phase5_enabled and 
+    include_context_analysis and 
+    self.context_analyzer):
+    # Convert message history to MessageHistoryItem objects
     history_items = []
     if message_history:
         for item in message_history:
             history_items.append(MessageHistoryItem.from_dict(item))
     
-    # Run context analysis
-    context_result = self.context_analyzer.analyze(
+    # Run context analysis with current message score
+    context_analysis_result = self.context_analyzer.analyze(
         current_message=message,
-        current_score=final_crisis_score,
+        current_score=ensemble_score.crisis_score,
         message_history=history_items,
     )
-    
-    # Attach to assessment
-    assessment.context_analysis = context_result
 ```
 
 ---
@@ -172,15 +171,15 @@ if include_context_analysis and self.context_analyzer:
 
 | Task | Description | Status |
 |------|-------------|--------|
-| 5.1.1-5.1.5 | Context module components | ✅ Complete (prior session) |
-| 5.1.6 | Engine integration | 🔄 Started |
-| 5.2.1-5.2.5 | Config management | ✅ Complete (prior session) |
+| 5.1.1-5.1.5 | Context module components | ✅ Complete |
+| 5.1.6 | Engine integration | ✅ Complete |
+| 5.2.1-5.2.5 | Config management | ✅ Complete |
 | 5.2.6 | Discord escalation alerts | ❌ Not started |
 | 5.5 | API enhancement | ✅ Complete |
 | 5.7 | Unit tests | ❌ Not started |
 | 5.8 | Integration tests | ❌ Not started |
 
-**Overall Progress**: ~65% complete
+**Overall Progress**: ~75% complete
 
 ---
 
@@ -190,25 +189,21 @@ if include_context_analysis and self.context_analyzer:
 |------|---------|---------|
 | `src/api/schemas.py` | v5.0-5-5.1-1 | Phase 5 schemas added |
 | `src/api/routes.py` | v5.0-5-5.2-1 | Phase 5 endpoints added |
+| `src/ensemble/decision_engine.py` | v5.0-5-2.0-1 | Phase 5 context integration |
 
 ---
 
 ## Next Session Priority Order
 
-1. **Complete Engine Integration** (5.1.6)
-   - Update decision_engine.py with context analyzer integration
-   - Add context_analysis to CrisisAssessment dataclass
-   - Add context config methods
-
-2. **Add Discord Alerting** (5.2.6)
+1. **Add Discord Alerting** (5.2.6)
    - Implement escalation alert method
    - Wire up to context analyzer
 
-3. **Create Unit Tests** (5.7)
+2. **Create Unit Tests** (5.7)
    - Start with context module tests
    - Then API schema/route tests
 
-4. **Create Integration Tests** (5.8)
+3. **Create Integration Tests** (5.8)
    - Full flow testing
    - Edge case coverage
 
@@ -216,7 +211,7 @@ if include_context_analysis and self.context_analyzer:
 
 ## Key Context for Next Session
 
-### Context Module Structure (Already Complete)
+### Context Module Structure (Complete)
 ```
 src/context/
 ├── __init__.py
@@ -232,16 +227,68 @@ src/context/
 - `EscalationResult`, `TemporalResult`, `TrendResult` - Sub-components
 
 ### Configuration
-- `src/managers/context_config_manager.py` - Already complete
+- `src/managers/context_config_manager.py` - Complete
 - `config/context.json` - Configuration file
+
+### Engine Integration (Complete)
+- `analyze()` and `analyze_async()` accept `message_history` and `include_context_analysis`
+- `CrisisAssessment` has `context_analysis` field
+- Status endpoints report Phase 5 status
+
+---
+
+## API Usage Example
+
+```python
+# Request with context analysis
+POST /analyze
+{
+    "message": "I can't do this anymore",
+    "user_id": "user_123",
+    "message_history": [
+        {
+            "message": "Not having the best day",
+            "timestamp": "2026-01-01T16:00:00Z",
+            "crisis_score": 0.25
+        },
+        {
+            "message": "Things are getting harder",
+            "timestamp": "2026-01-01T18:00:00Z",
+            "crisis_score": 0.45
+        }
+    ],
+    "include_context_analysis": true,
+    "include_explanation": true
+}
+
+# Response includes context_analysis
+{
+    "crisis_detected": true,
+    "severity": "critical",
+    "crisis_score": 0.91,
+    ...
+    "context_analysis": {
+        "escalation_detected": true,
+        "escalation_rate": "rapid",
+        "escalation_pattern": "evening_deterioration",
+        "trend": {
+            "direction": "worsening",
+            "velocity": "rapid"
+        },
+        "intervention": {
+            "urgency": "immediate"
+        }
+    }
+}
+```
 
 ---
 
 ## Notes for Next Developer
 
 1. The API layer is fully ready - schemas and routes are complete
-2. The context module is fully implemented - just needs engine wiring
-3. The engine needs ~50 lines of changes to integrate context analysis
+2. The context module is fully implemented and wired to the engine
+3. Engine integration is complete - both sync and async methods support Phase 5
 4. Tests should focus on the integration points first
 5. Follow Clean Architecture Charter v5.1 patterns throughout
 
