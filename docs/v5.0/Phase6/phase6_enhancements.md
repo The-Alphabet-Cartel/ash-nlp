@@ -1,6 +1,6 @@
 # Phase 6: Future Enhancements
 
-**FILE VERSION**: v5.0.2  
+**FILE VERSION**: v5.0.3  
 **CREATED**: 2026-01-02  
 **UPDATED**: 2026-01-02  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
@@ -118,7 +118,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Medium  
 **Category**: Context Analysis  
-**Status**: Planned
+**Status**: ✅ COMPLETED (Sprint 3)
 
 **Description**: Different severity levels may need different escalation detection thresholds.
 
@@ -127,10 +127,23 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Allow stricter thresholds for lower severities
 - Provide presets (conservative, balanced, sensitive)
 
-**Files Affected**:
-- `src/context/escalation_detector.py`
-- `src/managers/context_config_manager.py`
-- `config/default.json`
+**Implementation (Sprint 3)**:
+- Added `SeverityThreshold` dataclass with `score_increase_threshold`, `minimum_messages`, `rapid_threshold_hours`
+- Added `ThresholdPreset` dataclass for preset configurations
+- Updated `EscalationDetectionConfig` with `per_severity_thresholds` and `threshold_presets` dictionaries
+- Added `get_threshold_for_severity()` and `get_preset()` methods to config
+- Updated `context_config.json` with per-severity thresholds for critical/high/medium/low/safe
+- Added three threshold presets: conservative, balanced, sensitive
+- New `analyze_with_severity()` method in `EscalationDetector`
+- Uses severity-specific thresholds for more sensitive detection at higher severity levels
+- Version: v5.0-6-3.0-1
+
+**Files Modified**:
+- `src/config/context_config.json` → v5.0-6-3.0-1
+- `src/managers/context_config_manager.py` → v5.0-6-3.0-1
+- `src/managers/__init__.py` → v5.0-6-3.0-1
+- `src/context/escalation_detector.py` → v5.0-6-3.0-1
+- `tests/phase6/test_sprint3.py` (new)
 
 ---
 
@@ -157,7 +170,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Medium  
 **Category**: Bug Investigation  
-**Status**: Needs Investigation
+**Status**: ✅ COMPLETED (Sprint 3)
 
 **Description**: During integration testing, some edge cases showed unexpected behavior with message history passthrough.
 
@@ -166,9 +179,24 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Create comprehensive edge case test suite
 - Investigate potential race conditions in async processing
 
-**Files Affected**:
-- `src/context/context_analyzer.py`
-- `src/api/routes.py`
+**Implementation (Sprint 3)**:
+- Created `src/utils/history_debug.py` with comprehensive validation utilities
+- New `HistoryValidator` class with validation for:
+  - Required fields (message, timestamp)
+  - Valid data types and ranges
+  - Chronological ordering
+  - Score validity (0.0-1.0 range)
+  - Edge cases (future timestamps, large gaps, duplicates)
+- `HistoryIssue` enum for categorized validation issues
+- `HistoryValidationResult` dataclass with detailed statistics
+- `HistoryDebugLogger` class for structured FE-007 logging throughout processing pipeline
+- Factory functions: `create_history_validator()`, `create_history_debug_logger()`, `validate_history()`
+- Version: v5.0-6-3.0-1
+
+**Files Modified**:
+- `src/utils/history_debug.py` (new) → v5.0-6-3.0-1
+- `src/utils/__init__.py` → v5.0-6-3.0-1
+- `tests/phase6/test_sprint3.py` (new)
 
 ---
 
@@ -321,7 +349,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 | Priority | Tickets | Focus Area | Status |
 |----------|---------|------------|--------|
 | **High** | FE-006, ~~FE-009~~ | ML Learning, ~~Test Isolation~~ | FE-009 ✅ |
-| **Medium** | ~~FE-001~~, ~~FE-003~~, FE-005, FE-007 | ~~Accuracy~~, Robustness | FE-001 ✅, FE-003 ✅ |
+| **Medium** | ~~FE-001~~, ~~FE-003~~, ~~FE-005~~, ~~FE-007~~ | ~~Accuracy~~, ~~Robustness~~ | All ✅ |
 | **Low** | FE-002, FE-004, FE-008, ~~FE-010~~, ~~FE-011~~, ~~FE-012~~ | Polish, ~~Test Fixes~~ | FE-010/011/012 ✅ |
 
 ---
@@ -361,7 +389,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 1. ~~**Sprint 1**: FE-009 (test isolation) + FE-010/011/012 (fix skipped tests)~~ ✅ COMPLETED
 2. ~~**Sprint 2**: FE-001 (timezone) + FE-003 (token truncation)~~ ✅ COMPLETED
-3. **Sprint 3**: FE-005 (per-severity thresholds) + FE-007 (investigation)
+3. ~~**Sprint 3**: FE-005 (per-severity thresholds) + FE-007 (investigation)~~ ✅ COMPLETED
 4. **Sprint 4**: FE-006 (historical learning) - larger effort
 5. **Sprint 5**: FE-002, FE-004, FE-008 (polish items)
 
@@ -382,6 +410,27 @@ This document tracks future enhancements identified during Phase 5 development. 
 **New Test File**: `tests/phase6/test_sprint2.py`
 - 14 new tests for timezone and truncation features
 - Integration tests for schema and config validation
+
+### Sprint 3 Completed (2026-01-02)
+
+✅ **FE-005**: Per-Severity Escalation Thresholds
+- New `SeverityThreshold` and `ThresholdPreset` dataclasses
+- Per-severity thresholds: critical (0.15), high (0.20), medium (0.30), low (0.40), safe (0.50)
+- Three threshold presets: conservative, balanced, sensitive
+- New `analyze_with_severity()` method uses severity-specific detection thresholds
+- Higher severity levels trigger on smaller score increases
+
+✅ **FE-007**: History Validation and Debug Utilities
+- New `HistoryValidator` class with comprehensive validation
+- Detects: missing fields, invalid timestamps, out-of-order data, large gaps, score range issues
+- `HistoryDebugLogger` for structured debugging throughout history pipeline
+- `HistoryIssue` enum categorizes 12+ types of validation issues
+- Factory functions for easy instantiation
+
+**New Test File**: `tests/phase6/test_sprint3.py`
+- Tests for per-severity thresholds
+- Tests for history validation edge cases
+- Integration tests for Sprint 3 features
 
 ---
 

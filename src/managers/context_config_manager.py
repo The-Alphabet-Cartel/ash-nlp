@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Context Configuration Manager for Ash-NLP Service - Phase 5
 ---
-FILE VERSION: v5.0-5-1.0-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 5 - Context History Analysis
+FILE VERSION: v5.0-6-3.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 3 (FE-005: Per-Severity Thresholds)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -41,7 +41,7 @@ from pathlib import Path
 from dataclasses import dataclass, field
 
 # Module version
-__version__ = "v5.0-5-1.0-1"
+__version__ = "v5.0-6-3.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -59,8 +59,32 @@ class ContextAnalysisConfig:
 
 
 @dataclass
+class SeverityThreshold:
+    """
+    Per-severity escalation threshold (FE-005).
+    
+    Lower thresholds = more sensitive detection for that severity.
+    """
+    score_increase_threshold: float = 0.3
+    minimum_messages: int = 3
+    rapid_threshold_hours: int = 4
+
+
+@dataclass
+class ThresholdPreset:
+    """
+    Preset configuration for escalation detection sensitivity (FE-005).
+    """
+    name: str = "balanced"
+    description: str = ""
+    score_increase_threshold: float = 0.3
+    minimum_messages: int = 3
+    rapid_threshold_hours: int = 4
+
+
+@dataclass
 class EscalationDetectionConfig:
-    """Escalation detection configuration."""
+    """Escalation detection configuration with FE-005 per-severity thresholds."""
     enabled: bool = True
     rapid_threshold_hours: int = 4
     gradual_threshold_hours: int = 24
@@ -68,6 +92,41 @@ class EscalationDetectionConfig:
     minimum_messages: int = 3
     alert_on_detection: bool = True
     alert_cooldown_seconds: int = 300
+    # FE-005: Per-severity thresholds
+    threshold_preset: str = "balanced"
+    per_severity_thresholds: Dict[str, SeverityThreshold] = field(default_factory=dict)
+    threshold_presets: Dict[str, ThresholdPreset] = field(default_factory=dict)
+    
+    def get_threshold_for_severity(self, severity: str) -> SeverityThreshold:
+        """
+        Get escalation threshold for a specific severity level (FE-005).
+        
+        Args:
+            severity: Severity level (critical, high, medium, low, safe)
+            
+        Returns:
+            SeverityThreshold for that level, or default if not found
+        """
+        return self.per_severity_thresholds.get(
+            severity.lower(),
+            SeverityThreshold(
+                score_increase_threshold=self.score_increase_threshold,
+                minimum_messages=self.minimum_messages,
+                rapid_threshold_hours=self.rapid_threshold_hours,
+            )
+        )
+    
+    def get_preset(self, preset_name: str) -> Optional[ThresholdPreset]:
+        """
+        Get a threshold preset by name (FE-005).
+        
+        Args:
+            preset_name: Preset name (conservative, balanced, sensitive)
+            
+        Returns:
+            ThresholdPreset if found, None otherwise
+        """
+        return self.threshold_presets.get(preset_name.lower())
 
 
 @dataclass
@@ -314,9 +373,37 @@ class ContextConfigManager:
             self._context_analysis.max_history_size = max(3, min(50, self._context_analysis.max_history_size))
     
     def _resolve_escalation_detection(self) -> None:
-        """Resolve escalation_detection configuration section."""
+        """Resolve escalation_detection configuration section with FE-005 enhancements."""
         section = self._raw_config.get("escalation_detection", {})
         defaults = section.get("defaults", {})
+        
+        # Load per-severity thresholds (FE-005)
+        per_severity_thresholds: Dict[str, SeverityThreshold] = {}
+        per_severity_data = section.get("per_severity_thresholds", {})
+        for severity, threshold_data in per_severity_data.items():
+            if severity.startswith("_"):  # Skip metadata keys like _description
+                continue
+            if isinstance(threshold_data, dict):
+                per_severity_thresholds[severity] = SeverityThreshold(
+                    score_increase_threshold=threshold_data.get("score_increase_threshold", 0.3),
+                    minimum_messages=threshold_data.get("minimum_messages", 3),
+                    rapid_threshold_hours=threshold_data.get("rapid_threshold_hours", 4),
+                )
+        
+        # Load threshold presets (FE-005)
+        threshold_presets: Dict[str, ThresholdPreset] = {}
+        presets_data = section.get("threshold_presets", {})
+        for preset_name, preset_data in presets_data.items():
+            if preset_name.startswith("_"):  # Skip metadata keys
+                continue
+            if isinstance(preset_data, dict):
+                threshold_presets[preset_name] = ThresholdPreset(
+                    name=preset_name,
+                    description=preset_data.get("description", ""),
+                    score_increase_threshold=preset_data.get("score_increase_threshold", 0.3),
+                    minimum_messages=preset_data.get("minimum_messages", 3),
+                    rapid_threshold_hours=preset_data.get("rapid_threshold_hours", 4),
+                )
         
         self._escalation_detection = EscalationDetectionConfig(
             enabled=self._resolve_env_value(
@@ -340,7 +427,24 @@ class ContextConfigManager:
             alert_cooldown_seconds=self._resolve_env_value(
                 section.get("alert_cooldown_seconds"), defaults.get("alert_cooldown_seconds", 300), int
             ),
+            # FE-005: Per-severity thresholds and presets
+            threshold_preset=self._resolve_env_value(
+                section.get("threshold_preset"), defaults.get("threshold_preset", "balanced"), str
+            ),
+            per_severity_thresholds=per_severity_thresholds,
+            threshold_presets=threshold_presets,
         )
+        
+        # Log FE-005 config if any thresholds loaded
+        if per_severity_thresholds:
+            logger.debug(
+                f"📊 Loaded {len(per_severity_thresholds)} per-severity thresholds (FE-005)"
+            )
+        if threshold_presets:
+            logger.debug(
+                f"📊 Loaded {len(threshold_presets)} threshold presets (FE-005): "
+                f"{list(threshold_presets.keys())}"
+            )
     
     def _resolve_temporal_detection(self) -> None:
         """Resolve temporal_detection configuration section."""
@@ -659,4 +763,7 @@ __all__ = [
     "TrendAnalysisConfig",
     "InterventionConfig",
     "KnownPattern",
+    # FE-005: Per-severity thresholds
+    "SeverityThreshold",
+    "ThresholdPreset",
 ]

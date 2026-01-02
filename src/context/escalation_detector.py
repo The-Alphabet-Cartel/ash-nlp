@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Escalation Detector for Ash-NLP Service - Phase 5
 ---
-FILE VERSION: v5.0-5-1.0-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 5 - Context History Analysis
+FILE VERSION: v5.0-6-3.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 3 (FE-005: Per-Severity Thresholds)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -35,10 +35,11 @@ from src.managers import (
     ContextConfigManager,
     EscalationDetectionConfig,
     KnownPattern,
+    SeverityThreshold,
 )
 
 # Module version
-__version__ = "v5.0-5-1.0-1"
+__version__ = "v5.0-6-3.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -76,6 +77,8 @@ class EscalationAnalysis:
         pattern_confidence: Confidence of pattern match (0.0-1.0)
         scores: List of crisis scores in sequence
         rate_per_hour: Score change rate per hour
+        severity_used: FE-005: Severity level used for threshold selection
+        threshold_used: FE-005: Threshold values used for detection
     """
     detected: bool = False
     escalation_type: EscalationType = EscalationType.NONE
@@ -87,6 +90,9 @@ class EscalationAnalysis:
     pattern_confidence: float = 0.0
     scores: List[float] = field(default_factory=list)
     rate_per_hour: float = 0.0
+    # FE-005: Per-severity threshold tracking
+    severity_used: Optional[str] = None
+    threshold_used: Optional[dict] = None
 
 
 # =============================================================================
@@ -515,6 +521,238 @@ class EscalationDetector:
     def get_config(self) -> EscalationDetectionConfig:
         """Get current escalation detection configuration."""
         return self._config
+    
+    # =========================================================================
+    # FE-005: Per-Severity Threshold Analysis
+    # =========================================================================
+    
+    def analyze_with_severity(
+        self,
+        scores: List[float],
+        timestamps: List[datetime],
+        current_severity: str = "medium",
+    ) -> EscalationAnalysis:
+        """
+        Analyze escalation using severity-specific thresholds (FE-005).
+        
+        Uses per-severity thresholds from configuration to provide
+        more sensitive detection for higher severity levels.
+        
+        Args:
+            scores: List of crisis scores (0.0-1.0) in chronological order
+            timestamps: List of timestamps corresponding to each score
+            current_severity: Current severity level (critical, high, medium, low, safe)
+            
+        Returns:
+            EscalationAnalysis with detection results and threshold info
+        """
+        # Get severity-specific threshold
+        threshold = self._config.get_threshold_for_severity(current_severity)
+        
+        logger.debug(
+            f"FE-005: Using {current_severity} thresholds "
+            f"(score={threshold.score_increase_threshold}, "
+            f"min_msgs={threshold.minimum_messages}, "
+            f"rapid_hrs={threshold.rapid_threshold_hours})"
+        )
+        
+        # Validate inputs
+        if not self._config.enabled:
+            logger.debug("Escalation detection disabled")
+            return EscalationAnalysis(
+                scores=scores,
+                severity_used=current_severity,
+            )
+        
+        # Use severity-specific minimum_messages
+        if len(scores) < threshold.minimum_messages:
+            logger.debug(
+                f"Insufficient messages for {current_severity} escalation analysis: "
+                f"{len(scores)} < {threshold.minimum_messages}"
+            )
+            return EscalationAnalysis(
+                scores=scores,
+                severity_used=current_severity,
+                threshold_used={
+                    "score_increase_threshold": threshold.score_increase_threshold,
+                    "minimum_messages": threshold.minimum_messages,
+                    "rapid_threshold_hours": threshold.rapid_threshold_hours,
+                },
+            )
+        
+        if len(scores) != len(timestamps):
+            logger.warning("Score and timestamp lists must be same length")
+            return EscalationAnalysis(scores=scores, severity_used=current_severity)
+        
+        # Calculate basic metrics
+        time_span = self._calculate_time_span(timestamps)
+        score_delta = scores[-1] - scores[0]
+        rate_per_hour = self._calculate_rate_per_hour(score_delta, time_span)
+        
+        # Detect escalation with severity-specific threshold
+        detected, escalation_type, confidence = self._detect_escalation_with_threshold(
+            scores=scores,
+            time_span_hours=time_span,
+            score_delta=score_delta,
+            threshold=threshold,
+        )
+        
+        # Find intervention point
+        intervention_point = self._find_intervention_point(scores)
+        
+        # Match against known patterns
+        matched_pattern, pattern_confidence = self._match_pattern(
+            escalation_type=escalation_type,
+            time_span_hours=time_span,
+            score_delta=score_delta,
+        )
+        
+        return EscalationAnalysis(
+            detected=detected,
+            escalation_type=escalation_type,
+            confidence=confidence,
+            score_delta=score_delta,
+            time_span_hours=time_span,
+            intervention_point=intervention_point,
+            matched_pattern=matched_pattern,
+            pattern_confidence=pattern_confidence,
+            scores=scores,
+            rate_per_hour=rate_per_hour,
+            severity_used=current_severity,
+            threshold_used={
+                "score_increase_threshold": threshold.score_increase_threshold,
+                "minimum_messages": threshold.minimum_messages,
+                "rapid_threshold_hours": threshold.rapid_threshold_hours,
+            },
+        )
+    
+    def _detect_escalation_with_threshold(
+        self,
+        scores: List[float],
+        time_span_hours: float,
+        score_delta: float,
+        threshold: SeverityThreshold,
+    ) -> Tuple[bool, EscalationType, float]:
+        """
+        Detect escalation using severity-specific threshold (FE-005).
+        
+        Args:
+            scores: List of crisis scores
+            time_span_hours: Time span in hours
+            score_delta: Total score change
+            threshold: Severity-specific threshold to use
+            
+        Returns:
+            Tuple of (detected, escalation_type, confidence)
+        """
+        # Check if score increased enough using severity-specific threshold
+        if score_delta < threshold.score_increase_threshold:
+            return False, EscalationType.NONE, 0.0
+        
+        # Check for consistent upward trend
+        if not self._is_upward_trend(scores):
+            return False, EscalationType.NONE, 0.0
+        
+        # Classify escalation type using severity-specific rapid threshold
+        escalation_type = self._classify_escalation_type_with_threshold(
+            time_span_hours, threshold
+        )
+        
+        # Calculate confidence with severity-specific threshold
+        confidence = self._calculate_confidence_with_threshold(
+            scores=scores,
+            score_delta=score_delta,
+            time_span_hours=time_span_hours,
+            escalation_type=escalation_type,
+            threshold=threshold,
+        )
+        
+        return True, escalation_type, confidence
+    
+    def _classify_escalation_type_with_threshold(
+        self,
+        time_span_hours: float,
+        threshold: SeverityThreshold,
+    ) -> EscalationType:
+        """
+        Classify escalation type using severity-specific threshold (FE-005).
+        
+        Args:
+            time_span_hours: Time span in hours
+            threshold: Severity-specific threshold
+            
+        Returns:
+            EscalationType classification
+        """
+        if time_span_hours <= 1:
+            return EscalationType.SUDDEN
+        elif time_span_hours <= threshold.rapid_threshold_hours:
+            return EscalationType.RAPID
+        elif time_span_hours <= self._config.gradual_threshold_hours:
+            return EscalationType.GRADUAL
+        else:
+            return EscalationType.GRADUAL
+    
+    def _calculate_confidence_with_threshold(
+        self,
+        scores: List[float],
+        score_delta: float,
+        time_span_hours: float,
+        escalation_type: EscalationType,
+        threshold: SeverityThreshold,
+    ) -> float:
+        """
+        Calculate confidence using severity-specific threshold (FE-005).
+        
+        Args:
+            scores: List of crisis scores
+            score_delta: Total score change
+            time_span_hours: Time span in hours
+            escalation_type: Classified escalation type
+            threshold: Severity-specific threshold
+            
+        Returns:
+            Confidence score 0.0-1.0
+        """
+        # Factor 1: Score delta relative to severity threshold (0-0.4)
+        delta_factor = min(
+            score_delta / (threshold.score_increase_threshold * 2),
+            0.4
+        )
+        
+        # Factor 2: Trend consistency (0-0.3)
+        consistency = self._calculate_trend_consistency(scores)
+        consistency_factor = consistency * 0.3
+        
+        # Factor 3: Final score severity (0-0.3)
+        final_score = scores[-1] if scores else 0.0
+        severity_factor = min(final_score, 1.0) * 0.3
+        
+        # Combine factors
+        confidence = delta_factor + consistency_factor + severity_factor
+        
+        return min(confidence, 1.0)
+    
+    def get_available_severities(self) -> List[str]:
+        """
+        Get list of available severity levels with custom thresholds (FE-005).
+        
+        Returns:
+            List of severity level names
+        """
+        return list(self._config.per_severity_thresholds.keys())
+    
+    def get_threshold_for_severity(self, severity: str) -> SeverityThreshold:
+        """
+        Get the threshold configuration for a severity level (FE-005).
+        
+        Args:
+            severity: Severity level name
+            
+        Returns:
+            SeverityThreshold for that severity
+        """
+        return self._config.get_threshold_for_severity(severity)
 
 
 # =============================================================================

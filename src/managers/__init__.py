@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Managers Package for Ash-NLP Service
 ---
-FILE VERSION: v5.0-5-1.0-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 5 - Context History Analysis
+FILE VERSION: v5.0-6-3.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 3 (FE-005)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -35,7 +35,7 @@ USAGE:
 """
 
 # Module version
-__version__ = "v5.0-5-1.0-1"
+__version__ = "v5.0-6-3.0-1"
 
 # =============================================================================
 # Configuration Manager
@@ -60,6 +60,9 @@ from .context_config_manager import (
     TrendAnalysisConfig,
     InterventionConfig,
     KnownPattern,
+    # FE-005: Per-severity thresholds
+    SeverityThreshold,
+    ThresholdPreset,
 )
 
 # =============================================================================
@@ -93,6 +96,9 @@ __all__ = [
     "TrendAnalysisConfig",
     "InterventionConfig",
     "KnownPattern",
+    # FE-005: Per-severity thresholds
+    "SeverityThreshold",
+    "ThresholdPreset",
     # Secrets
     "SecretsManager",
     "create_secrets_manager",

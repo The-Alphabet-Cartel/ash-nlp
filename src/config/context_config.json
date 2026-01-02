@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.0-5-1.0-1",
-		"last_modified": "2026-01-01",
+		"file_version": "v5.0-6-3.0-1",
+		"last_modified": "2026-01-02",
 		"clean_architecture": "Compliant",
 		"description": "Context Analysis Configuration for Ash-NLP Phase 5 - Escalation Detection, Temporal Patterns, and Trend Analysis",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -38,6 +38,7 @@
 		"minimum_messages": "${NLP_ESCALATION_MINIMUM_MESSAGES}",
 		"alert_on_detection": "${NLP_ESCALATION_ALERT_ENABLED}",
 		"alert_cooldown_seconds": "${NLP_ESCALATION_ALERT_COOLDOWN_SECONDS}",
+		"threshold_preset": "${NLP_ESCALATION_THRESHOLD_PRESET}",
 		"defaults": {
 			"enabled": true,
 			"rapid_threshold_hours": 4,
@@ -45,7 +46,57 @@
 			"score_increase_threshold": 0.3,
 			"minimum_messages": 3,
 			"alert_on_detection": true,
-			"alert_cooldown_seconds": 300
+			"alert_cooldown_seconds": 300,
+			"threshold_preset": "balanced"
+		},
+		"per_severity_thresholds": {
+			"_description": "FE-005: Per-severity escalation detection thresholds. Lower = more sensitive.",
+			"critical": {
+				"score_increase_threshold": 0.15,
+				"minimum_messages": 2,
+				"rapid_threshold_hours": 2
+			},
+			"high": {
+				"score_increase_threshold": 0.20,
+				"minimum_messages": 2,
+				"rapid_threshold_hours": 3
+			},
+			"medium": {
+				"score_increase_threshold": 0.30,
+				"minimum_messages": 3,
+				"rapid_threshold_hours": 4
+			},
+			"low": {
+				"score_increase_threshold": 0.40,
+				"minimum_messages": 4,
+				"rapid_threshold_hours": 6
+			},
+			"safe": {
+				"score_increase_threshold": 0.50,
+				"minimum_messages": 5,
+				"rapid_threshold_hours": 8
+			}
+		},
+		"threshold_presets": {
+			"_description": "FE-005: Preset configurations for different detection sensitivity levels.",
+			"conservative": {
+				"description": "Fewer alerts, higher confidence. Best for low-noise environments.",
+				"score_increase_threshold": 0.40,
+				"minimum_messages": 4,
+				"rapid_threshold_hours": 3
+			},
+			"balanced": {
+				"description": "Default balance between sensitivity and precision.",
+				"score_increase_threshold": 0.30,
+				"minimum_messages": 3,
+				"rapid_threshold_hours": 4
+			},
+			"sensitive": {
+				"description": "More alerts, catches more cases. Best for high-risk communities.",
+				"score_increase_threshold": 0.20,
+				"minimum_messages": 2,
+				"rapid_threshold_hours": 6
+			}
 		},
 		"validation": {
 			"enabled": {
