@@ -7,6 +7,115 @@ All notable changes to Ash-NLP will be documented in this file.
 
 ---
 
+## [5.0.7] - 2026-01-02
+
+### 🐛 FE-011 Bug Fixes - Final Test Stabilization
+
+**All 512 tests now pass!** ✅
+
+### Bug Fixes
+
+- **Consensus Agreement Level** (`src/ensemble/consensus.py` v5.0-4-1.1-3)
+  - Fixed `conflict_aware_consensus()` to return `SIGNIFICANT_DISAGREEMENT` when `has_conflict=True`
+  - Previously, variance between 0.15-0.25 returned `WEAK_AGREEMENT` even when conflict was detected
+  - Now ensures logical consistency: conflict detected = significant disagreement
+
+- **Disabled Alerter Return Value** (`src/utils/alerting.py` v5.0-6-4.0-4)
+  - Fixed `send_escalation_alert()` and `send_escalation_alert_sync()` to return `False` when alerter explicitly disabled
+  - Added `_user_requested_enabled` to store original user intent
+  - Respects explicit disable even when testing mode auto-detection is active
+
+### Final Test Results
+
+| Metric | Value |
+|--------|-------|
+| **Tests Passed** | 512 |
+| **Tests Skipped** | 2 (model loading integration tests) |
+| **Tests Failed** | 0 |
+| **Test Time** | ~3 minutes |
+
+---
+
+## [5.0.6-3] - 2026-01-02
+
+### 🚀 Phase 6 Complete - Sprint 4 Enhancements
+
+Final sprint completing all Phase 6 future enhancements.
+
+### Sprint 4: Historical Pattern & Alert Enhancements (FE-008)
+
+- **ASCII Disagreement Charts**: Visual model score representation for conflict alerts
+  - `generate_disagreement_chart()` - Creates ASCII bar charts showing model disagreement
+  - `format_conflict_summary()` - Formats conflict data with charts for Discord
+  - Bar width and label display configurable
+
+- **Enhanced Conflict Alerts**: Improved conflict webhook notifications
+  - `DEFAULT_CONFLICT_ALERT_THRESHOLD` constant (0.15 variance)
+  - Visual disagreement charts in Discord embeds
+  - Conflict type, resolution strategy, and final score display
+
+- **Model Warm-up Results**: Structured warm-up reporting
+  - `WarmupResult` dataclass with timing and status
+  - GPU memory tracking during warm-up
+  - Per-model warm-up success/failure tracking
+
+### Sprint 3: Per-Severity Thresholds & History Validation (FE-005)
+
+- **Per-Severity Escalation Thresholds**: Different thresholds for each crisis severity
+  - `SeverityThreshold` dataclass for threshold configuration
+  - `ThresholdPreset` for severity-specific presets
+  - Escalation detector now accepts `current_severity` parameter
+  - Configurable via `config/context_config.json`
+
+- **History Validation Utilities**: Comprehensive message history validation
+  - `HistoryValidator` class with detailed error/warning reporting
+  - Validates timestamps, crisis scores, required fields
+  - Detects out-of-order timestamps, future timestamps, large time gaps
+  - `HistoryValidationResult` with `is_valid`, `errors`, `warnings`
+  - `HistoryDebugLogger` for detailed history debugging
+
+### Sprint 2: Timezone & Truncation (FE-001, FE-003)
+
+- **User Timezone Support**: Accurate late-night detection across timezones
+  - `convert_utc_to_timezone()` - Converts UTC to user's local time
+  - `is_valid_timezone()` - Validates timezone strings
+  - `analyze()` returns timezone info in response
+  - Uses `zoneinfo` module for timezone handling
+
+- **Smart Text Truncation**: Intelligent text truncation for model inputs
+  - `TextTruncator` class with sentence boundary preservation
+  - `TruncationResult` dataclass with metadata
+  - Token estimation (~4 chars per token)
+  - Head and tail truncation modes
+  - `truncate_for_model()` convenience function
+
+### Sprint 1: Discord Limits & Testing Mode (FE-002, FE-009)
+
+- **Discord Message Length Validation**: Respect Discord API limits
+  - `DISCORD_LIMITS` constant with all Discord embed limits
+  - `truncate_text()` and `truncate_at_boundary()` functions
+  - `calculate_embed_size()` and `validate_embed_size()` for embeds
+  - Auto-truncation in `Alert.to_discord_embed()` with warnings
+
+- **Testing Mode for Webhooks**: Suppress real webhooks during tests
+  - Auto-detect from `NLP_ENVIRONMENT=testing`
+  - `testing_mode` parameter for explicit control
+  - `get_suppressed_alerts()` for test assertions
+  - `set_alert_callback()` for alert interception
+
+### Test Results After Phase 6
+
+| Suite | Passed | Skipped |
+|-------|--------|--------|
+| Phase 3 | 92 | 0 |
+| Phase 4 | 149 | 0 |
+| Phase 5 | 144 | 0 |
+| Phase 6 | 79 | 2 |
+| Integration | 47 | 0 |
+| **TOTAL** | **512** | **2** |
+
+---
+
 ## [5.0.6] - 2026-01-02
 
 ### 📝 Documentation & Test Stabilization
