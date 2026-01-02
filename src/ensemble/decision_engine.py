@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-2.0-2
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - Ensemble Coordinator Enhancement
+FILE VERSION: v5.0-5-2.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 5 - Context History Analysis
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -30,6 +30,13 @@ PHASE 4 ENHANCEMENTS:
 - Conflict detection and resolution
 - Comprehensive result aggregation
 - Human-readable explainability
+
+PHASE 5 ENHANCEMENTS:
+- Context history analysis integration
+- Escalation pattern detection (rapid, gradual, sudden)
+- Temporal pattern detection (late night, rapid posting)
+- Trend analysis (worsening, stable, improving)
+- Intervention urgency recommendations
 
 This is the PRIMARY INTERFACE for crisis detection.
 API endpoints call this engine to analyze messages.
@@ -94,13 +101,21 @@ from .explainability import (
     create_explainability_generator,
 )
 
+# Phase 5 imports
+from src.context import (
+    ContextAnalyzer,
+    create_context_analyzer,
+    MessageHistoryItem,
+    ContextAnalysisResult,
+)
+
 if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
     from src.utils.cache import ResponseCache
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-4-2.0-2"
+__version__ = "v5.0-5-2.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -138,6 +153,9 @@ class CrisisAssessment:
         conflict_report: Conflict detection report (Phase 4)
         consensus_result: Consensus algorithm result (Phase 4)
         aggregated_result: Full aggregated result (Phase 4)
+        
+        # Phase 5 Enhanced Fields
+        context_analysis: Context history analysis result (Phase 5)
     """
 
     crisis_detected: bool
@@ -159,6 +177,9 @@ class CrisisAssessment:
     conflict_report: Optional[Dict[str, Any]] = None
     consensus_result: Optional[Dict[str, Any]] = None
     aggregated_result: Optional[AggregatedResult] = None
+    
+    # Phase 5 Enhanced Fields
+    context_analysis: Optional[ContextAnalysisResult] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""
@@ -183,6 +204,10 @@ class CrisisAssessment:
             result["conflict_analysis"] = self.conflict_report
         if self.consensus_result:
             result["consensus"] = self.consensus_result
+        
+        # Include Phase 5 fields if present
+        if self.context_analysis:
+            result["context_analysis"] = self.context_analysis.to_dict()
             
         return result
 
@@ -266,6 +291,11 @@ class EnsembleDecisionEngine:
     - Comprehensive result aggregation
     - Human-readable explainability
 
+    Phase 5 Enhancements:
+    - Context history analysis integration
+    - Escalation, temporal, and trend detection
+    - Intervention urgency recommendations
+
     This is the main interface for the API to call.
 
     Performance Optimizations (Phase 3.7):
@@ -299,6 +329,9 @@ class EnsembleDecisionEngine:
         result_aggregator: Optional[ResultAggregator] = None,
         explainability_generator: Optional[ExplainabilityGenerator] = None,
         phase4_enabled: bool = True,
+        # Phase 5 components
+        context_analyzer: Optional[ContextAnalyzer] = None,
+        phase5_enabled: bool = True,
     ):
         """
         Initialize Ensemble Decision Engine.
@@ -322,6 +355,10 @@ class EnsembleDecisionEngine:
             result_aggregator: Result aggregation component
             explainability_generator: Explainability component
             phase4_enabled: Enable Phase 4 features (default: True)
+            
+            # Phase 5 components
+            context_analyzer: Context history analyzer component
+            phase5_enabled: Enable Phase 5 features (default: True)
         """
         self.config_manager = config_manager
         self.async_inference = async_inference
@@ -393,6 +430,18 @@ class EnsembleDecisionEngine:
             self.result_aggregator = None
             self.explainability_generator = None
 
+        # =====================================================================
+        # Initialize Phase 5 components
+        # =====================================================================
+        
+        self.phase5_enabled = phase5_enabled
+        
+        if phase5_enabled:
+            self.context_analyzer = context_analyzer or create_context_analyzer()
+            logger.info("🌊 Phase 5 context analyzer initialized")
+        else:
+            self.context_analyzer = None
+
         # Performance tracking
         self._total_requests: int = 0
         self._total_latency_ms: float = 0.0
@@ -407,7 +456,8 @@ class EnsembleDecisionEngine:
 
         logger.info(
             f"🧠 EnsembleDecisionEngine initialized "
-            f"(async={async_inference}, cache={cache_enabled}, phase4={phase4_enabled})"
+            f"(async={async_inference}, cache={cache_enabled}, "
+            f"phase4={phase4_enabled}, phase5={phase5_enabled})"
         )
 
     # =========================================================================
@@ -421,12 +471,14 @@ class EnsembleDecisionEngine:
         include_explanation: bool = True,
         verbosity: Optional[str] = None,
         consensus_algorithm: Optional[str] = None,
+        message_history: Optional[List[Dict]] = None,
+        include_context_analysis: bool = True,
     ) -> CrisisAssessment:
         """
         Analyze a message for crisis signals.
 
         This is the PRIMARY method for crisis detection.
-        Includes Phase 4 enhancements when enabled.
+        Includes Phase 4 and Phase 5 enhancements when enabled.
 
         Args:
             message: Text message to analyze
@@ -434,6 +486,8 @@ class EnsembleDecisionEngine:
             include_explanation: Include human-readable explanation (Phase 4)
             verbosity: Explanation verbosity: minimal, standard, detailed (Phase 4)
             consensus_algorithm: Override consensus algorithm (Phase 4)
+            message_history: List of prior messages with timestamps/scores (Phase 5)
+            include_context_analysis: Include context analysis in response (Phase 5)
 
         Returns:
             CrisisAssessment with complete analysis
@@ -568,6 +622,39 @@ class EnsembleDecisionEngine:
                     # Attach explanation to aggregated result
                     aggregated_result.explanation = explanation.to_dict()
 
+            # =========================================================
+            # Phase 5: Context History Analysis
+            # =========================================================
+            
+            context_analysis_result: Optional[ContextAnalysisResult] = None
+            
+            if (self.phase5_enabled and 
+                include_context_analysis and 
+                self.context_analyzer):
+                try:
+                    # Convert message history to MessageHistoryItem objects
+                    history_items: List[MessageHistoryItem] = []
+                    if message_history:
+                        for item in message_history:
+                            history_items.append(MessageHistoryItem.from_dict(item))
+                    
+                    # Run context analysis with current message score
+                    context_analysis_result = self.context_analyzer.analyze(
+                        current_message=message,
+                        current_score=ensemble_score.crisis_score,
+                        message_history=history_items,
+                    )
+                    
+                    logger.debug(
+                        f"Context analysis: escalation={context_analysis_result.escalation.detected}, "
+                        f"trend={context_analysis_result.trend.direction}, "
+                        f"urgency={context_analysis_result.intervention.urgency}"
+                    )
+                    
+                except Exception as e:
+                    logger.error(f"Context analysis failed: {e}")
+                    # Continue without context analysis - non-critical failure
+
             # Build assessment
             assessment = self._build_assessment_enhanced(
                 ensemble_score=ensemble_score,
@@ -579,6 +666,7 @@ class EnsembleDecisionEngine:
                 resolution_result=resolution_result,
                 aggregated_result=aggregated_result,
                 explanation=explanation,
+                context_analysis_result=context_analysis_result,
             )
 
             # Store in cache (Phase 3.7.4)
@@ -625,12 +713,14 @@ class EnsembleDecisionEngine:
         include_explanation: bool = True,
         verbosity: Optional[str] = None,
         consensus_algorithm: Optional[str] = None,
+        message_history: Optional[List[Dict]] = None,
+        include_context_analysis: bool = True,
     ) -> CrisisAssessment:
         """
         Async version of analyze using asyncio.gather for parallel inference.
 
         This is the optimized async implementation (Phase 3.7.2).
-        Includes Phase 4 enhancements when enabled.
+        Includes Phase 4 and Phase 5 enhancements when enabled.
 
         Args:
             message: Text message to analyze
@@ -638,6 +728,8 @@ class EnsembleDecisionEngine:
             include_explanation: Include human-readable explanation (Phase 4)
             verbosity: Explanation verbosity level (Phase 4)
             consensus_algorithm: Override consensus algorithm (Phase 4)
+            message_history: List of prior messages with timestamps/scores (Phase 5)
+            include_context_analysis: Include context analysis in response (Phase 5)
 
         Returns:
             CrisisAssessment with complete analysis
@@ -764,6 +856,39 @@ class EnsembleDecisionEngine:
                     
                     aggregated_result.explanation = explanation.to_dict()
 
+            # =========================================================
+            # Phase 5: Context History Analysis (Async)
+            # =========================================================
+            
+            context_analysis_result: Optional[ContextAnalysisResult] = None
+            
+            if (self.phase5_enabled and 
+                include_context_analysis and 
+                self.context_analyzer):
+                try:
+                    # Convert message history to MessageHistoryItem objects
+                    history_items: List[MessageHistoryItem] = []
+                    if message_history:
+                        for item in message_history:
+                            history_items.append(MessageHistoryItem.from_dict(item))
+                    
+                    # Run context analysis with current message score
+                    context_analysis_result = self.context_analyzer.analyze(
+                        current_message=message,
+                        current_score=ensemble_score.crisis_score,
+                        message_history=history_items,
+                    )
+                    
+                    logger.debug(
+                        f"Context analysis (async): escalation={context_analysis_result.escalation.detected}, "
+                        f"trend={context_analysis_result.trend.direction}, "
+                        f"urgency={context_analysis_result.intervention.urgency}"
+                    )
+                    
+                except Exception as e:
+                    logger.error(f"Context analysis failed (async): {e}")
+                    # Continue without context analysis - non-critical failure
+
             # Build assessment
             assessment = self._build_assessment_enhanced(
                 ensemble_score=ensemble_score,
@@ -775,6 +900,7 @@ class EnsembleDecisionEngine:
                 resolution_result=resolution_result,
                 aggregated_result=aggregated_result,
                 explanation=explanation,
+                context_analysis_result=context_analysis_result,
             )
 
             # Store in cache
@@ -944,9 +1070,10 @@ class EnsembleDecisionEngine:
         resolution_result: Optional[ResolutionResult] = None,
         aggregated_result: Optional[AggregatedResult] = None,
         explanation: Optional[Explanation] = None,
+        context_analysis_result: Optional[ContextAnalysisResult] = None,
     ) -> CrisisAssessment:
         """
-        Build CrisisAssessment with Phase 4 enhancements.
+        Build CrisisAssessment with Phase 4 and Phase 5 enhancements.
 
         Args:
             ensemble_score: Calculated ensemble score
@@ -958,9 +1085,10 @@ class EnsembleDecisionEngine:
             resolution_result: Phase 4 resolution result
             aggregated_result: Phase 4 aggregated result
             explanation: Phase 4 explanation
+            context_analysis_result: Phase 5 context analysis result
 
         Returns:
-            Complete CrisisAssessment with Phase 4 data
+            Complete CrisisAssessment with Phase 4 and Phase 5 data
         """
         # Use resolved score if available, otherwise ensemble score
         final_crisis_score = ensemble_score.crisis_score
@@ -1008,6 +1136,8 @@ class EnsembleDecisionEngine:
             conflict_report=conflict_report.to_dict() if conflict_report else None,
             consensus_result=consensus_result.to_dict() if consensus_result else None,
             aggregated_result=aggregated_result,
+            # Phase 5 fields
+            context_analysis=context_analysis_result,
         )
 
         return assessment
@@ -1167,6 +1297,35 @@ class EnsembleDecisionEngine:
         return None
 
     # =========================================================================
+    # Phase 5 Configuration Methods
+    # =========================================================================
+
+    def get_context_config(self) -> Optional[Dict[str, Any]]:
+        """
+        Get current context analysis configuration.
+        
+        Returns:
+            Context configuration dictionary or None if disabled
+        """
+        if self.context_analyzer and self.phase5_enabled:
+            return {
+                "enabled": self.context_analyzer.is_enabled(),
+                "max_history_size": self.context_analyzer.get_max_history_size(),
+            }
+        return None
+
+    def is_context_analysis_enabled(self) -> bool:
+        """
+        Check if context analysis is enabled.
+        
+        Returns:
+            True if Phase 5 and context analyzer are enabled
+        """
+        if self.phase5_enabled and self.context_analyzer:
+            return self.context_analyzer.is_enabled()
+        return False
+
+    # =========================================================================
     # Cache Management
     # =========================================================================
 
@@ -1249,6 +1408,13 @@ class EnsembleDecisionEngine:
                     self.explainability_generator.get_config() if self.explainability_generator else None
                 ),
             }
+        
+        # Add Phase 5 component status
+        status["phase5_enabled"] = self.phase5_enabled
+        if self.phase5_enabled:
+            status["phase5"] = {
+                "context_analysis": self.get_context_config(),
+            }
             
         return status
 
@@ -1285,6 +1451,8 @@ class EnsembleDecisionEngine:
             "total_models": len(self.model_loader._models),
             "cache_enabled": self.cache_enabled,
             "phase4_enabled": self.phase4_enabled,
+            "phase5_enabled": self.phase5_enabled,
+            "context_analysis_enabled": self.is_context_analysis_enabled(),
         }
 
 
@@ -1300,11 +1468,12 @@ def create_decision_engine(
     cache_enabled: bool = True,
     alerter: Optional["DiscordAlerter"] = None,
     phase4_enabled: bool = True,
+    phase5_enabled: bool = True,
 ) -> EnsembleDecisionEngine:
     """
     Factory function for EnsembleDecisionEngine.
 
-    Creates a fully configured decision engine with Phase 4 enhancements.
+    Creates a fully configured decision engine with Phase 4 and Phase 5 enhancements.
 
     Args:
         config_manager: Configuration manager instance
@@ -1313,6 +1482,7 @@ def create_decision_engine(
         cache_enabled: Enable response caching
         alerter: Discord alerter for notifications
         phase4_enabled: Enable Phase 4 features (default: True)
+        phase5_enabled: Enable Phase 5 context analysis (default: True)
 
     Returns:
         Configured EnsembleDecisionEngine instance
@@ -1320,8 +1490,12 @@ def create_decision_engine(
     Example:
         >>> engine = create_decision_engine(config_manager=config)
         >>> engine.initialize()
-        >>> assessment = engine.analyze("I'm feeling really down today")
+        >>> assessment = engine.analyze(
+        ...     "I'm feeling really down today",
+        ...     message_history=[...],  # Phase 5 context
+        ... )
         >>> print(assessment.explanation)  # Phase 4 explanation
+        >>> print(assessment.context_analysis)  # Phase 5 analysis
     """
     # Get settings from config
     perf_config = {}
@@ -1341,6 +1515,7 @@ def create_decision_engine(
         cache_max_size=cache_max_size,
         alerter=alerter,
         phase4_enabled=phase4_enabled,
+        phase5_enabled=phase5_enabled,
     )
 
     if auto_initialize:
