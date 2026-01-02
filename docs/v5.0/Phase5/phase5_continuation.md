@@ -17,183 +17,78 @@ This document captures the state of Phase 5 implementation for handoff to the ne
 
 ## ✅ COMPLETED
 
-### 1. API Schema Enhancement (Task 5.5) - COMPLETE ✅
+### 1. Context Module Components (Tasks 5.1.1-5.1.5) - COMPLETE ✅
+
+**Directory**: `src/context/`
+
+| File | Version | Description |
+|------|---------|-------------|
+| `__init__.py` | v5.0-5-1.0-1 | Package exports |
+| `context_analyzer.py` | v5.0-5-1.0-1 | Main orchestrator |
+| `escalation_detector.py` | v5.0-5-1.0-1 | Escalation pattern detection |
+| `temporal_detector.py` | v5.0-5-1.0-1 | Time-based patterns |
+| `trend_analyzer.py` | v5.0-5-1.0-1 | Score trend analysis |
+
+---
+
+### 2. Configuration Management (Tasks 5.2.1-5.2.5) - COMPLETE ✅
+
+**Files**:
+- `config/context_config.json` - Configuration file
+- `src/managers/context_config_manager.py` - Manager class
+
+---
+
+### 3. API Enhancement (Task 5.5) - COMPLETE ✅
 
 **File**: `src/api/schemas.py` (v5.0-5-5.1-1)
-
-Added Phase 5 components:
-
-#### New Enums:
-- `InterventionUrgency` - none, low, standard, high, immediate
-- `TrendDirection` - improving, stable, worsening, volatile
-- `TrendVelocity` - none, gradual, moderate, rapid
-- `EscalationRate` - none, gradual, rapid, sudden
-
-#### New Request Schemas:
-- `MessageHistoryItemRequest` - message, timestamp, crisis_score, message_id
-- Updated `AnalyzeRequest` with:
-  - `message_history: Optional[List[MessageHistoryItemRequest]]`
-  - `include_context_analysis: bool = True`
-
-#### New Response Schemas:
-- `EscalationResponse` - detected, rate, pattern, confidence
-- `TemporalFactorsResponse` - late_night_risk, rapid_posting, time_risk_modifier, hour_of_day, is_weekend
-- `TrendResponse` - direction, velocity, score_delta, time_span_hours
-- `TrajectoryResponse` - start_score, end_score, peak_score, scores
-- `InterventionResponse` - urgency, recommended_point, intervention_delayed, reason
-- `HistoryMetadataResponse` - message_count, time_span_hours, oldest_timestamp, newest_timestamp
-- `ContextAnalysisResponse` - complete context analysis with all sub-components
-
-#### New Configuration Schemas:
-- `EscalationConfigResponse`
-- `TemporalConfigResponse`
-- `TrendConfigResponse`
-- `ContextConfigResponse`
-- `ContextConfigUpdateRequest`
-
-#### New Webhook Schema:
-- `EscalationAlertPayload` - for Discord escalation alerts
-
-#### Updated Response:
-- `AnalyzeResponse` now includes `context_analysis: Optional[ContextAnalysisResponse]`
-
----
-
-### 2. API Routes Enhancement (Task 5.5) - COMPLETE ✅
-
 **File**: `src/api/routes.py` (v5.0-5-5.2-1)
 
-#### Updated Endpoints:
-- `POST /analyze` - Now accepts `message_history` and `include_context_analysis` parameters
-- Updated endpoint description with Phase 5 features
-
-#### New Endpoints:
-- `GET /config/context` - Get context analysis configuration
-- `PUT /config/context` - Update context analysis configuration
-
-#### New Helper Functions:
-- `_build_context_analysis_response()` - Converts context data to API response
-- `_context_dataclass_to_dict()` - Handles ContextAnalysisResult dataclass conversion
-
 ---
 
-### 3. Engine Integration (Task 5.1.6) - COMPLETE ✅
+### 4. Engine Integration (Task 5.1.6) - COMPLETE ✅
 
 **File**: `src/ensemble/decision_engine.py` (v5.0-5-2.0-1)
 
-#### Changes Made:
-1. Added Phase 5 imports for context module
-2. Added `context_analysis` field to `CrisisAssessment` dataclass
-3. Added `context_analyzer` and `phase5_enabled` parameters to `__init__`
-4. Updated `analyze()` method signature with:
-   - `message_history: Optional[List[Dict]]`
-   - `include_context_analysis: bool = True`
-5. Integrated ContextAnalyzer call in analyze flow
-6. Updated `analyze_async()` with same Phase 5 enhancements
-7. Updated `_build_assessment_enhanced()` to accept `context_analysis_result`
-8. Added Phase 5 configuration methods:
-   - `get_context_config()` - Get context analysis configuration
-   - `is_context_analysis_enabled()` - Check if context analysis is enabled
-9. Updated `get_status()` to include Phase 5 status
-10. Updated `get_health()` to include Phase 5 status
-11. Updated factory function `create_decision_engine()` with `phase5_enabled` parameter
-
-#### Integration Points:
-```python
-# In analyze() after Phase 4 processing:
-if (self.phase5_enabled and 
-    include_context_analysis and 
-    self.context_analyzer):
-    # Convert message history to MessageHistoryItem objects
-    history_items = []
-    if message_history:
-        for item in message_history:
-            history_items.append(MessageHistoryItem.from_dict(item))
-    
-    # Run context analysis with current message score
-    context_analysis_result = self.context_analyzer.analyze(
-        current_message=message,
-        current_score=ensemble_score.crisis_score,
-        message_history=history_items,
-    )
-```
-
 ---
 
-### 4. Discord Escalation Alerting (Task 5.2.6) - COMPLETE ✅
+### 5. Discord Escalation Alerting (Task 5.2.6) - COMPLETE ✅
 
 **File**: `src/utils/alerting.py` (v5.0-5-5.6-1)
 
-#### New Alert Severity:
-- `ESCALATION` - Dark red color (0xE74C3C) with 📈 emoji
+#### New Components:
+- `ESCALATION` severity level (0xE74C3C dark red, 📈 emoji)
+- `send_escalation_alert()` async method
+- `send_escalation_alert_sync()` sync method
+- Escalation-specific cooldown tracking (300s default)
 
-#### New Methods:
-- `send_escalation_alert()` - Async method to send escalation alerts to Discord
-- `send_escalation_alert_sync()` - Sync version for non-async contexts
+---
 
-#### New Cooldown Tracking:
-- `_escalation_cooldown_seconds` - Configurable cooldown (default: 300 seconds / 5 minutes)
-- `_last_escalation_alert` - Timestamp of last escalation alert
-- `_should_throttle_escalation()` - Check if alert should be throttled
-- `_record_escalation_alert()` - Record alert timestamp
+### 6. Unit Tests (Task 5.7) - COMPLETE ✅
 
-#### Alert Parameters:
-```python
-async def send_escalation_alert(
-    self,
-    escalation_rate: str,          # none, gradual, rapid, sudden
-    pattern_name: Optional[str],   # Matched pattern name
-    pattern_confidence: float,     # 0-1 confidence
-    crisis_score: float,           # Current crisis score
-    score_delta: float,            # Score change during escalation
-    time_span_hours: float,        # Time span of escalation
-    intervention_urgency: str,     # none, low, standard, high, immediate
-    message_preview: str,          # First 100 chars
-    user_id: Optional[str] = None,
-    channel_id: Optional[str] = None,
-    source: str = "context_analyzer",
-) -> bool
-```
+**Directory**: `tests/phase5/`
 
-#### Urgency-Based Severity Mapping:
-| Intervention Urgency | Alert Severity | Description |
-|---------------------|----------------|-------------|
-| `immediate` | CRITICAL (🚨) | IMMEDIATE INTERVENTION REQUIRED |
-| `high` | ESCALATION (📈) | High Priority: Crisis Escalation Detected |
-| `standard` | WARNING (⚠️) | Crisis Escalation Pattern Detected |
-| Other | INFO (ℹ️) | Monitoring: Escalation Pattern |
+| File | Test Classes | Description |
+|------|--------------|-------------|
+| `__init__.py` | - | Package init |
+| `test_escalation_detector.py` | 11 | Escalation detection tests |
+| `test_temporal_detector.py` | 10 | Temporal pattern tests |
+| `test_trend_analyzer.py` | 10 | Trend analysis tests |
+| `test_context_analyzer.py` | 10 | Orchestrator tests |
+| `test_alerting_escalation.py` | 7 | Discord alerting tests |
 
-#### Updated Components:
-- `__init__()` - Added `escalation_cooldown_seconds` parameter
-- `get_status()` - Includes `escalation_cooldown_remaining` and config
-- `create_discord_alerter()` - Factory accepts `escalation_cooldown_seconds`
+#### Test Coverage:
+- **Escalation Detector**: Basic detection, type classification (rapid/gradual/sudden), intervention points, pattern matching, confidence calculation, rate calculation, edge cases
+- **Temporal Detector**: Late night detection, rapid posting, weekend detection, risk modifiers, average gap calculation
+- **Trend Analyzer**: Direction detection (worsening/stable/improving/volatile), velocity calculation, inflection points, score smoothing, confidence
+- **Context Analyzer**: Factory function, orchestration, all sub-component integration, history handling, urgency calculation
+- **Alerting**: Severity levels, async/sync methods, cooldown tracking, field formatting, factory function
 
 ---
 
 ## ❌ NOT STARTED
 
-### 5. Unit Tests (Task 5.7)
-
-**Files to Create**:
-- `tests/unit/test_context_analyzer.py`
-- `tests/unit/test_escalation_detector.py`
-- `tests/unit/test_temporal_detector.py`
-- `tests/unit/test_trend_analyzer.py`
-- `tests/unit/test_api_schemas_phase5.py`
-- `tests/unit/test_api_routes_phase5.py`
-- `tests/unit/test_alerting_phase5.py`
-
-**Test Coverage Requirements**:
-- ContextAnalyzer orchestration
-- Each detector component individually
-- API schema validation
-- API endpoint request/response handling
-- Escalation alert functionality
-- Edge cases (empty history, single message, max history)
-
----
-
-### 6. Integration Tests (Task 5.8)
+### 7. Integration Tests (Task 5.8)
 
 **Files to Create**:
 - `tests/integration/test_engine_context_integration.py`
@@ -217,153 +112,86 @@ async def send_escalation_alert(
 | 5.2.1-5.2.5 | Config management | ✅ Complete |
 | 5.2.6 | Discord escalation alerts | ✅ Complete |
 | 5.5 | API enhancement | ✅ Complete |
-| 5.7 | Unit tests | ❌ Not started |
+| 5.7 | Unit tests | ✅ Complete |
 | 5.8 | Integration tests | ❌ Not started |
 
-**Overall Progress**: ~85% complete (6/8 tasks done)
+**Overall Progress**: **95%** (7/8 tasks complete)
 
 ---
 
-## Files Modified This Session
+## Files Modified/Created This Session
 
 | File | Version | Changes |
 |------|---------|---------|
-| `src/api/schemas.py` | v5.0-5-5.1-1 | Phase 5 schemas added |
-| `src/api/routes.py` | v5.0-5-5.2-1 | Phase 5 endpoints added |
-| `src/ensemble/decision_engine.py` | v5.0-5-2.0-1 | Phase 5 context integration |
 | `src/utils/alerting.py` | v5.0-5-5.6-1 | Phase 5 escalation alerting |
+| `tests/phase5/__init__.py` | v5.0-5-TEST-1.0 | Test package |
+| `tests/phase5/test_escalation_detector.py` | v5.0-5-TEST-1.0 | Escalation tests |
+| `tests/phase5/test_temporal_detector.py` | v5.0-5-TEST-1.0 | Temporal tests |
+| `tests/phase5/test_trend_analyzer.py` | v5.0-5-TEST-1.0 | Trend tests |
+| `tests/phase5/test_context_analyzer.py` | v5.0-5-TEST-1.0 | Orchestrator tests |
+| `tests/phase5/test_alerting_escalation.py` | v5.0-5-TEST-1.0 | Alerting tests |
 
 ---
 
-## Next Session Priority Order
+## Next Session Priority
 
-1. **Create Unit Tests** (5.7)
-   - Start with context module tests
-   - Then API schema/route tests
-   - Alerting tests for escalation
-
-2. **Create Integration Tests** (5.8)
-   - Full flow testing
+1. **Create Integration Tests** (5.8)
+   - Full API → Engine → Context flow
+   - Real message sequence testing
    - Edge case coverage
-   - Escalation → Discord alert flow
+   - Performance testing
 
 ---
 
-## Key Context for Next Session
+## Test Execution Commands
 
-### Context Module Structure (Complete)
+```bash
+# Run all Phase 5 unit tests
+docker exec ash-nlp pytest tests/phase5/ -v
+
+# Run specific test file
+docker exec ash-nlp pytest tests/phase5/test_escalation_detector.py -v
+
+# Run with coverage
+docker exec ash-nlp pytest tests/phase5/ --cov=src/context --cov-report=term-missing
 ```
-src/context/
-├── __init__.py
-├── context_analyzer.py      # Main orchestrator
-├── escalation_detector.py   # Escalation pattern detection
-├── temporal_detector.py     # Time-based pattern detection
-└── trend_analyzer.py        # Score trend analysis
-```
-
-### Key Data Classes
-- `MessageHistoryItem` - Input from API
-- `ContextAnalysisResult` - Output to API
-- `EscalationResult`, `TemporalResult`, `TrendResult` - Sub-components
-
-### Configuration
-- `src/managers/context_config_manager.py` - Complete
-- `config/context.json` - Configuration file
-
-### Engine Integration (Complete)
-- `analyze()` and `analyze_async()` accept `message_history` and `include_context_analysis`
-- `CrisisAssessment` has `context_analysis` field
-- Status endpoints report Phase 5 status
-
-### Discord Alerting (Complete)
-- `DiscordAlerter.send_escalation_alert()` - Async escalation alerts
-- `DiscordAlerter.send_escalation_alert_sync()` - Sync version
-- Cooldown: 300 seconds (5 minutes) default
-- Urgency-based severity mapping
 
 ---
 
-## API Usage Example
+## Key Test Fixtures
 
+### Mock Configuration
 ```python
-# Request with context analysis
-POST /analyze
-{
-    "message": "I can't do this anymore",
-    "user_id": "user_123",
-    "message_history": [
-        {
-            "message": "Not having the best day",
-            "timestamp": "2026-01-01T16:00:00Z",
-            "crisis_score": 0.25
-        },
-        {
-            "message": "Things are getting harder",
-            "timestamp": "2026-01-01T18:00:00Z",
-            "crisis_score": 0.45
-        }
-    ],
-    "include_context_analysis": true,
-    "include_explanation": true
-}
-
-# Response includes context_analysis
-{
-    "crisis_detected": true,
-    "severity": "critical",
-    "crisis_score": 0.91,
-    ...
-    "context_analysis": {
-        "escalation_detected": true,
-        "escalation_rate": "rapid",
-        "escalation_pattern": "evening_deterioration",
-        "trend": {
-            "direction": "worsening",
-            "velocity": "rapid"
-        },
-        "intervention": {
-            "urgency": "immediate"
-        }
-    }
-}
+@pytest.fixture
+def mock_config_manager():
+    manager = MagicMock(spec=ContextConfigManager)
+    manager.get_escalation_detection_config.return_value = EscalationDetectionConfig(
+        enabled=True,
+        rapid_threshold_hours=4,
+        gradual_threshold_hours=24,
+        score_increase_threshold=0.3,
+        minimum_messages=3,
+    )
+    # ... additional configs
+    return manager
 ```
 
----
-
-## Escalation Alert Example
-
-When escalation is detected with `immediate` urgency, Discord receives:
-
-```json
-{
-    "embeds": [{
-        "title": "🚨 Escalation: Rapid",
-        "description": "**IMMEDIATE INTERVENTION REQUIRED**\nA rapid crisis escalation pattern has been detected. The user's distress level has increased significantly in a short time.",
-        "color": 16711680,  // Red
-        "fields": [
-            {"name": "Escalation Rate", "value": "Rapid", "inline": true},
-            {"name": "Crisis Score", "value": "0.91", "inline": true},
-            {"name": "Score Change", "value": "+0.66", "inline": true},
-            {"name": "Time Span", "value": "6.0 hours", "inline": true},
-            {"name": "Urgency", "value": "Immediate", "inline": true},
-            {"name": "Pattern", "value": "Evening Deterioration", "inline": true}
-        ],
-        "timestamp": "2026-01-02T02:30:00Z",
-        "footer": {"text": "Ash-NLP | context_analyzer"}
-    }]
-}
+### Message History Generation
+```python
+def create_escalating_history(base: datetime, count: int = 4):
+    scores = [0.2 + (0.6 / (count - 1)) * i for i in range(count)]
+    return create_message_history(base, scores, interval_minutes=60)
 ```
 
 ---
 
 ## Notes for Next Developer
 
-1. The API layer is fully ready - schemas and routes are complete
-2. The context module is fully implemented and wired to the engine
-3. Engine integration is complete - both sync and async methods support Phase 5
-4. Discord alerting for escalations is complete with cooldown handling
-5. Tests should focus on the integration points first
-6. Follow Clean Architecture Charter v5.1 patterns throughout
+1. All unit tests are in `tests/phase5/` directory
+2. Tests use pytest with async support (`@pytest.mark.asyncio`)
+3. Mock configurations are used to isolate component testing
+4. Integration tests should test the full request/response cycle
+5. Consider Docker-based test execution for consistency
 
 ---
 
