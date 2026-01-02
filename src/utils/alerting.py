@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-6-4.0-3
+FILE VERSION: v5.0-6-4.0-4
 LAST MODIFIED: 2026-01-02
-PHASE: Phase 6 - Sprint 4 (FE-002, FE-008: Enhanced Conflict Alerts)
+PHASE: Phase 6 - Sprint 4 (FE-002, FE-008, FE-011: Enhanced Conflict Alerts)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -52,7 +52,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 # Module version
-__version__ = "v5.0-6-4.0-3"
+__version__ = "v5.0-6-4.0-4"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -527,6 +527,10 @@ class DiscordAlerter:
         self.webhook_url = webhook_url
         self.throttle = throttle or ThrottleConfig()
         self.service_name = service_name
+        
+        # FE-011: Store original user intent for enabled state
+        # This allows us to respect explicit disable even in testing mode
+        self._user_requested_enabled = enabled
 
         # Phase 6 FE-009: Testing mode detection
         # Auto-detect from environment if not explicitly set
@@ -1082,6 +1086,11 @@ class DiscordAlerter:
         Returns:
             True if alert sent successfully
         """
+        # FE-011: If user explicitly requested disabled, always return False
+        if not self._user_requested_enabled:
+            logger.debug(f"Escalation alert skipped (user disabled): {escalation_rate}")
+            return False
+
         # Phase 6 FE-009: Check testing mode first (before enabled check)
         # In testing mode, enabled is False but we still want to track alerts
         if not self._testing_mode and not self.enabled:
@@ -1189,6 +1198,10 @@ class DiscordAlerter:
         Returns:
             True if alert sent successfully
         """
+        # FE-011: If user explicitly requested disabled, always return False
+        if not self._user_requested_enabled:
+            return False
+
         # Phase 6 FE-009: Check testing mode first (before enabled check)
         if not self._testing_mode and not self.enabled:
             return False

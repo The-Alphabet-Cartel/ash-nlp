@@ -10,8 +10,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Consensus Algorithms for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.0-4-1.1-2
-LAST MODIFIED: 2026-01-01
+FILE VERSION: v5.0-4-1.1-3
+LAST MODIFIED: 2026-01-02
 PHASE: Phase 4 Step 1 - Consensus Algorithms
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -41,7 +41,7 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.0-4-1.1-2"
+__version__ = "v5.0-4-1.1-3"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -535,7 +535,12 @@ def conflict_aware_consensus(
         crisis_score = mean_score
 
     # Determine agreement level
-    if variance < 0.05:
+    # FE-011 Fix: If has_conflict is True (variance > disagreement_threshold),
+    # the agreement_level should reflect that as SIGNIFICANT_DISAGREEMENT for consistency
+    if has_conflict:
+        # Conflict detected means significant disagreement, regardless of absolute variance
+        agreement_level = AgreementLevel.SIGNIFICANT_DISAGREEMENT
+    elif variance < 0.05:
         agreement_level = AgreementLevel.STRONG_AGREEMENT
     elif variance < 0.15:
         agreement_level = AgreementLevel.MODERATE_AGREEMENT
