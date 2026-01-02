@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.0-5-2.0-1
+FILE VERSION: v5.0-6-4.0-1
 LAST MODIFIED: 2026-01-02
-PHASE: Phase 5 - Context History Analysis
+PHASE: Phase 6 - Sprint 4 (FE-002, FE-004)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -52,6 +52,7 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from src.models import ModelResult
@@ -115,10 +116,55 @@ if TYPE_CHECKING:
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-5-2.0-1"
+__version__ = "v5.0-6-4.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# FE-004: Warmup Result Dataclass
+# =============================================================================
+
+
+@dataclass
+class WarmupResult:
+    """
+    Result of engine warmup operation (FE-004).
+    
+    Tracks warmup success, timing, and per-model latencies.
+    
+    Attributes:
+        success: Whether warmup completed successfully
+        total_latency_ms: Total warmup time in milliseconds
+        per_model_latency_ms: Per-model latency breakdown
+        models_warmed: List of models that were warmed up
+        error: Error message if warmup failed
+        timestamp: When warmup was performed
+    """
+    success: bool
+    total_latency_ms: float
+    per_model_latency_ms: Dict[str, float] = field(default_factory=dict)
+    models_warmed: List[str] = field(default_factory=list)
+    error: Optional[str] = None
+    timestamp: Optional[datetime] = None
+    
+    def __post_init__(self):
+        if self.timestamp is None:
+            self.timestamp = datetime.utcnow()
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "success": self.success,
+            "total_latency_ms": round(self.total_latency_ms, 2),
+            "per_model_latency_ms": {
+                k: round(v, 2) for k, v in self.per_model_latency_ms.items()
+            },
+            "models_warmed": self.models_warmed,
+            "error": self.error,
+            "timestamp": self.timestamp.isoformat() if self.timestamp else None,
+        }
 
 
 # =============================================================================
@@ -1192,20 +1238,23 @@ class EnsembleDecisionEngine:
 
         logger.info("✅ Decision Engine shutdown complete")
 
-    def warmup(self, sample_text: str = "Hello, how are you today?") -> bool:
+    def warmup(self, sample_text: str = "Hello, how are you today?") -> WarmupResult:
         """
-        Warm up the engine with a sample analysis.
+        Warm up the engine with a sample analysis (FE-004 Enhanced).
 
         Phase 3.7.1: Model warmup on startup.
+        Phase 6 FE-004: Enhanced with WarmupResult tracking.
+        
         Note: Alerting is disabled during warmup to prevent spurious notifications.
 
         Args:
             sample_text: Text to use for warmup
 
         Returns:
-            True if warmup succeeded
+            WarmupResult with detailed timing and status information
         """
         logger.info("🔥 Warming up Decision Engine...")
+        start_time = time.perf_counter()
 
         # Temporarily disable alerting during warmup
         original_alerter = None
@@ -1215,25 +1264,67 @@ class EnsembleDecisionEngine:
 
         try:
             # Run warmup analysis (bypass cache, no explanations)
-            result = self.analyze(sample_text, use_cache=False, include_explanation=False)
+            # Use sequential inference to get accurate per-model timing
+            results, per_model_latency = self._run_sequential_inference_with_timing(sample_text)
+            
+            total_latency_ms = (time.perf_counter() - start_time) * 1000
+            models_warmed = list(results.keys())
 
-            if result.crisis_score >= 0:  # Valid result
-                logger.info(
-                    f"✅ Engine warmed up (latency: {result.processing_time_ms:.1f}ms)"
+            if "bart" in results and results["bart"] is not None:
+                warmup_result = WarmupResult(
+                    success=True,
+                    total_latency_ms=total_latency_ms,
+                    per_model_latency_ms=per_model_latency,
+                    models_warmed=models_warmed,
                 )
-                return True
+                
+                # Store warmup result for status reporting
+                self._warmup_result = warmup_result
+                
+                logger.info(
+                    f"✅ Engine warmed up (total: {total_latency_ms:.1f}ms, "
+                    f"models: {len(models_warmed)})"
+                )
+                for model, latency in per_model_latency.items():
+                    logger.debug(f"   {model}: {latency:.1f}ms")
+                    
+                return warmup_result
             else:
+                warmup_result = WarmupResult(
+                    success=False,
+                    total_latency_ms=total_latency_ms,
+                    per_model_latency_ms=per_model_latency,
+                    models_warmed=models_warmed,
+                    error="BART model did not return valid result",
+                )
+                self._warmup_result = warmup_result
                 logger.warning("⚠️ Warmup returned invalid result")
-                return False
+                return warmup_result
 
         except Exception as e:
+            total_latency_ms = (time.perf_counter() - start_time) * 1000
+            warmup_result = WarmupResult(
+                success=False,
+                total_latency_ms=total_latency_ms,
+                error=str(e),
+            )
+            self._warmup_result = warmup_result
             logger.error(f"❌ Warmup failed: {e}")
-            return False
+            return warmup_result
 
         finally:
             # Restore alerter after warmup
             if self.conflict_resolver and original_alerter is not None:
                 self.conflict_resolver._alerter = original_alerter
+
+    def get_warmup_result(self) -> Optional[WarmupResult]:
+        """
+        Get the last warmup result (FE-004).
+        
+        Returns:
+            WarmupResult from last warmup, or None if never warmed up
+        """
+        return getattr(self, '_warmup_result', None)
 
     def set_alerter(self, alerter: "DiscordAlerter") -> None:
         """
@@ -1533,4 +1624,5 @@ __all__ = [
     "create_decision_engine",
     "CrisisAssessment",
     "RecommendedAction",
+    "WarmupResult",  # FE-004
 ]

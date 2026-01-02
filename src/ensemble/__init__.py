@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Package for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-1.0-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - Ensemble Coordinator Enhancement
+FILE VERSION: v5.0-6-4.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 4 (FE-004: Enhanced Warmup)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -64,7 +64,7 @@ PHASE 4 USAGE (Enhanced):
 """
 
 # Module version
-__version__ = "v5.0-4-1.0-1"
+__version__ = "v5.0-6-4.0-1"
 
 # =============================================================================
 # Decision Engine (Main Interface)
@@ -75,6 +75,7 @@ from .decision_engine import (
     create_decision_engine,
     CrisisAssessment,
     RecommendedAction,
+    WarmupResult,  # FE-004
 )
 
 # =============================================================================
@@ -213,6 +214,7 @@ __all__ = [
     "create_decision_engine",
     "CrisisAssessment",
     "RecommendedAction",
+    "WarmupResult",  # FE-004
     
     # Model Loading
     "ModelLoader",

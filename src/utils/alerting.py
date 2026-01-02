@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-6-1.0-1
+FILE VERSION: v5.0-6-4.0-2
 LAST MODIFIED: 2026-01-02
-PHASE: Phase 6 - Enhancements (FE-009: Test Mode Webhook Suppression)
+PHASE: Phase 6 - Sprint 4 (FE-002, FE-008: Enhanced Conflict Alerts)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -52,13 +52,277 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 # Module version
-__version__ = "v5.0-5-5.6-1"
+__version__ = "v5.0-6-4.0-2"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
 # User-Agent for Discord webhook requests
 USER_AGENT = "Ash-NLP/5.0 (Discord Webhook; +https://github.com/the-alphabet-cartel/ash-nlp)"
+
+
+# =============================================================================
+# FE-002: Discord Message Length Limits
+# =============================================================================
+
+# Discord API limits (https://discord.com/developers/docs/resources/message)
+DISCORD_LIMITS = {
+    "message_content": 2000,      # Message content (non-embed)
+    "embed_title": 256,            # Embed title
+    "embed_description": 4096,     # Embed description
+    "embed_field_name": 256,       # Field name
+    "embed_field_value": 1024,     # Field value
+    "embed_footer_text": 2048,     # Footer text
+    "embed_author_name": 256,      # Author name
+    "embed_total": 6000,           # Total characters in embed
+    "embeds_per_message": 10,      # Max embeds per message
+}
+
+
+def truncate_text(text: str, max_length: int, suffix: str = "...") -> str:
+    """
+    Truncate text to max length with suffix (FE-002).
+    
+    Args:
+        text: Text to truncate
+        max_length: Maximum allowed length
+        suffix: Suffix to append when truncated (default: "...")
+        
+    Returns:
+        Truncated text with suffix if needed
+    """
+    if not text or len(text) <= max_length:
+        return text
+    
+    # Leave room for suffix
+    truncate_at = max_length - len(suffix)
+    if truncate_at <= 0:
+        return suffix[:max_length]
+    
+    return text[:truncate_at] + suffix
+
+
+def truncate_at_boundary(text: str, max_length: int, suffix: str = "...") -> str:
+    """
+    Truncate text at word/sentence boundary (FE-002).
+    
+    Prefers to break at sentence end, then word boundary.
+    
+    Args:
+        text: Text to truncate
+        max_length: Maximum allowed length
+        suffix: Suffix to append when truncated
+        
+    Returns:
+        Truncated text at natural boundary
+    """
+    if not text or len(text) <= max_length:
+        return text
+    
+    truncate_at = max_length - len(suffix)
+    if truncate_at <= 0:
+        return suffix[:max_length]
+    
+    # Get the truncated portion
+    truncated = text[:truncate_at]
+    
+    # Try to find last sentence boundary
+    for delimiter in ['. ', '! ', '? ', '.\n', '!\n', '?\n']:
+        last_pos = truncated.rfind(delimiter)
+        if last_pos > truncate_at // 2:  # Only if in latter half
+            return truncated[:last_pos + 1] + suffix
+    
+    # Try to find last word boundary
+    last_space = truncated.rfind(' ')
+    if last_space > truncate_at // 2:
+        return truncated[:last_space] + suffix
+    
+    # Fall back to hard truncation
+    return truncated + suffix
+
+
+def calculate_embed_size(embed: Dict[str, Any]) -> int:
+    """
+    Calculate total character count of a Discord embed (FE-002).
+    
+    Args:
+        embed: Discord embed dictionary
+        
+    Returns:
+        Total character count
+    """
+    total = 0
+    
+    total += len(embed.get("title", ""))
+    total += len(embed.get("description", ""))
+    
+    if "footer" in embed:
+        total += len(embed["footer"].get("text", ""))
+    
+    if "author" in embed:
+        total += len(embed["author"].get("name", ""))
+    
+    for field in embed.get("fields", []):
+        total += len(field.get("name", ""))
+        total += len(field.get("value", ""))
+    
+    return total
+
+
+def validate_embed_size(embed: Dict[str, Any]) -> tuple:
+    """
+    Validate embed against Discord limits (FE-002).
+    
+    Args:
+        embed: Discord embed dictionary
+        
+    Returns:
+        Tuple of (is_valid, total_size, issues)
+    """
+    issues = []
+    
+    # Check individual field limits
+    if len(embed.get("title", "")) > DISCORD_LIMITS["embed_title"]:
+        issues.append(f"Title exceeds {DISCORD_LIMITS['embed_title']} chars")
+    
+    if len(embed.get("description", "")) > DISCORD_LIMITS["embed_description"]:
+        issues.append(f"Description exceeds {DISCORD_LIMITS['embed_description']} chars")
+    
+    if "footer" in embed:
+        if len(embed["footer"].get("text", "")) > DISCORD_LIMITS["embed_footer_text"]:
+            issues.append(f"Footer exceeds {DISCORD_LIMITS['embed_footer_text']} chars")
+    
+    for i, field in enumerate(embed.get("fields", [])):
+        if len(field.get("name", "")) > DISCORD_LIMITS["embed_field_name"]:
+            issues.append(f"Field {i} name exceeds {DISCORD_LIMITS['embed_field_name']} chars")
+        if len(field.get("value", "")) > DISCORD_LIMITS["embed_field_value"]:
+            issues.append(f"Field {i} value exceeds {DISCORD_LIMITS['embed_field_value']} chars")
+    
+    # Check total size
+    total_size = calculate_embed_size(embed)
+    if total_size > DISCORD_LIMITS["embed_total"]:
+        issues.append(f"Total embed size {total_size} exceeds {DISCORD_LIMITS['embed_total']} chars")
+    
+    return len(issues) == 0, total_size, issues
+
+
+# =============================================================================
+# FE-008: ASCII Disagreement Chart for Conflict Alerts
+# =============================================================================
+
+# Default conflict alert threshold (variance above this triggers alert)
+DEFAULT_CONFLICT_ALERT_THRESHOLD = 0.15
+
+
+def generate_disagreement_chart(
+    model_scores: Dict[str, float],
+    bar_width: int = 20,
+    show_labels: bool = True,
+) -> str:
+    """
+    Generate ASCII bar chart showing model score disagreement (FE-008).
+    
+    Creates a visual representation of how models disagree on crisis scores.
+    
+    Args:
+        model_scores: Dict mapping model name to crisis score (0.0-1.0)
+        bar_width: Width of the bar chart in characters
+        show_labels: Whether to show score labels on bars
+        
+    Returns:
+        ASCII chart string for Discord embed
+        
+    Example output:
+        ```
+        Model Scores:
+        bart      ████████████████████ 0.85
+        sentiment ████████████░░░░░░░░ 0.60
+        irony     ██████░░░░░░░░░░░░░░ 0.25
+        emotions  ████████████████░░░░ 0.78
+        Range: 0.60 | Variance: 0.048
+        ```
+    """
+    if not model_scores:
+        return "No model scores available"
+    
+    lines = ["```"]
+    lines.append("Model Scores:")
+    
+    # Find the longest model name for alignment
+    max_name_len = max(len(name) for name in model_scores.keys())
+    
+    for model, score in model_scores.items():
+        # Clamp score to 0-1 range
+        score = max(0.0, min(1.0, score))
+        
+        # Calculate filled/empty portions
+        filled = int(score * bar_width)
+        empty = bar_width - filled
+        
+        # Build the bar
+        bar = "█" * filled + "░" * empty
+        
+        # Format the line
+        model_padded = model.ljust(max_name_len)
+        if show_labels:
+            line = f"{model_padded} {bar} {score:.2f}"
+        else:
+            line = f"{model_padded} {bar}"
+        
+        lines.append(line)
+    
+    # Calculate statistics
+    scores = list(model_scores.values())
+    min_score = min(scores)
+    max_score = max(scores)
+    score_range = max_score - min_score
+    mean_score = sum(scores) / len(scores)
+    variance = sum((s - mean_score) ** 2 for s in scores) / len(scores)
+    
+    # Add summary line
+    lines.append(f"Range: {score_range:.2f} | Var: {variance:.3f}")
+    lines.append("```")
+    
+    return "\n".join(lines)
+
+
+def format_conflict_summary(
+    conflict_type: str,
+    model_scores: Dict[str, float],
+    resolution_strategy: Optional[str] = None,
+    final_score: Optional[float] = None,
+) -> str:
+    """
+    Format a conflict summary with ASCII chart for Discord (FE-008).
+    
+    Args:
+        conflict_type: Type of conflict detected
+        model_scores: Dict mapping model name to crisis score
+        resolution_strategy: Strategy used to resolve (optional)
+        final_score: Final resolved score (optional)
+        
+    Returns:
+        Formatted summary string with ASCII chart
+    """
+    parts = []
+    
+    # Add header
+    parts.append(f"**Conflict Type:** {conflict_type.replace('_', ' ').title()}")
+    parts.append("")
+    
+    # Add ASCII chart
+    chart = generate_disagreement_chart(model_scores)
+    parts.append(chart)
+    
+    # Add resolution info if available
+    if resolution_strategy or final_score is not None:
+        parts.append("")
+        if resolution_strategy:
+            parts.append(f"**Resolution:** {resolution_strategy.title()}")
+        if final_score is not None:
+            parts.append(f"**Final Score:** {final_score:.3f}")
+    
+    return "\n".join(parts)
 
 
 # =============================================================================
@@ -124,26 +388,58 @@ class Alert:
 
     def to_discord_embed(self) -> Dict[str, Any]:
         """
-        Convert to Discord embed format.
+        Convert to Discord embed format with FE-002 length validation.
 
         Returns:
-            Discord embed dictionary
+            Discord embed dictionary with all fields properly truncated
         """
+        # FE-002: Truncate title to Discord limit
+        title = f"{self.severity.emoji} {self.title}"
+        title = truncate_text(title, DISCORD_LIMITS["embed_title"])
+        
+        # FE-002: Truncate description at natural boundary
+        description = truncate_at_boundary(
+            self.description, 
+            DISCORD_LIMITS["embed_description"]
+        )
+        
         embed = {
-            "title": f"{self.severity.emoji} {self.title}",
-            "description": self.description,
+            "title": title,
+            "description": description,
             "color": self.severity.color,
             "timestamp": self.timestamp.isoformat() + "Z",
             "footer": {
-                "text": f"Ash-NLP | {self.source}",
+                "text": truncate_text(
+                    f"Ash-NLP | {self.source}",
+                    DISCORD_LIMITS["embed_footer_text"]
+                ),
             },
         }
 
         if self.fields:
             embed["fields"] = [
-                {"name": k, "value": str(v)[:1024], "inline": True}  # Discord limit
+                {
+                    "name": truncate_text(k, DISCORD_LIMITS["embed_field_name"]),
+                    "value": truncate_text(str(v), DISCORD_LIMITS["embed_field_value"]),
+                    "inline": True,
+                }
                 for k, v in self.fields.items()
             ]
+        
+        # FE-002: Validate total embed size and log if issues found
+        is_valid, total_size, issues = validate_embed_size(embed)
+        if not is_valid:
+            logger.warning(
+                f"FE-002: Embed validation issues: {issues}. "
+                f"Total size: {total_size}/{DISCORD_LIMITS['embed_total']}"
+            )
+            # If still too large, aggressively truncate description
+            if total_size > DISCORD_LIMITS["embed_total"]:
+                overage = total_size - DISCORD_LIMITS["embed_total"] + 100  # buffer
+                new_max = len(description) - overage
+                if new_max > 100:
+                    embed["description"] = truncate_at_boundary(description, new_max)
+                    logger.debug(f"FE-002: Description truncated to fit embed limit")
 
         return embed
 
@@ -213,6 +509,7 @@ class DiscordAlerter:
         conflict_cooldown_seconds: float = 60.0,  # Phase 4
         escalation_cooldown_seconds: float = 300.0,  # Phase 5
         testing_mode: Optional[bool] = None,  # Phase 6 FE-009
+        conflict_alert_threshold: float = DEFAULT_CONFLICT_ALERT_THRESHOLD,  # Phase 6 FE-008
     ):
         """
         Initialize the Discord alerter.
@@ -225,6 +522,7 @@ class DiscordAlerter:
             conflict_cooldown_seconds: Cooldown between conflict alerts (Phase 4)
             escalation_cooldown_seconds: Cooldown between escalation alerts (Phase 5)
             testing_mode: Suppress real webhook calls (auto-detects from NLP_ENVIRONMENT)
+            conflict_alert_threshold: Variance threshold to trigger conflict alerts (FE-008)
         """
         self.webhook_url = webhook_url
         self.throttle = throttle or ThrottleConfig()
@@ -253,6 +551,7 @@ class DiscordAlerter:
         # Phase 4: Conflict alert cooldown
         self._conflict_cooldown_seconds = conflict_cooldown_seconds
         self._last_conflict_alert = 0.0
+        self._conflict_alert_threshold = conflict_alert_threshold  # FE-008
 
         # Phase 5: Escalation alert cooldown
         self._escalation_cooldown_seconds = escalation_cooldown_seconds
@@ -1182,4 +1481,14 @@ __all__ = [
     "get_alerter",
     "set_alerter",
     "send_alert",
+    # FE-002: Discord limits and truncation
+    "DISCORD_LIMITS",
+    "truncate_text",
+    "truncate_at_boundary",
+    "calculate_embed_size",
+    "validate_embed_size",
+    # FE-008: Conflict alert enhancements
+    "DEFAULT_CONFLICT_ALERT_THRESHOLD",
+    "generate_disagreement_chart",
+    "format_conflict_summary",
 ]

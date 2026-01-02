@@ -1,8 +1,9 @@
 # Phase 6: Future Enhancements
 
-**FILE VERSION**: v5.0.3  
+**FILE VERSION**: v5.0.5  
 **CREATED**: 2026-01-02  
 **UPDATED**: 2026-01-02  
+**STATUS**: ✅ PHASE 6 COMPLETE  
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
 **Community**: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -49,7 +50,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Low  
 **Category**: Alerting  
-**Status**: Planned
+**Status**: ✅ COMPLETED (Sprint 4)
 
 **Description**: Discord has a 2000 character limit for messages. Long explanations or conflict summaries could exceed this limit.
 
@@ -58,8 +59,20 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Split long messages into multiple embeds
 - Add character count validation before sending
 
-**Files Affected**:
-- `src/alerting/discord_alerter.py`
+**Implementation (Sprint 4)**:
+- Added `DISCORD_LIMITS` constant dict with all official Discord API limits
+- Added `truncate_text()` for simple truncation with suffix
+- Added `truncate_at_boundary()` for smart truncation at sentence/word boundaries
+- Added `calculate_embed_size()` to count total embed characters
+- Added `validate_embed_size()` to check against Discord limits
+- Updated `Alert.to_discord_embed()` to truncate all fields before sending
+- Aggressive description truncation if total exceeds 6000 chars
+- Version: v5.0-6-4.0-2
+
+**Files Modified**:
+- `src/utils/alerting.py` → v5.0-6-4.0-2
+- `src/utils/__init__.py` → v5.0-6-4.0-1
+- `tests/phase6/test_sprint4.py` (new)
 
 ---
 
@@ -99,7 +112,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Low  
 **Category**: Performance  
-**Status**: Planned
+**Status**: ✅ COMPLETED (Sprint 4)
 
 **Description**: First request after container start has higher latency due to model loading.
 
@@ -108,9 +121,20 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Run dummy inference during initialization
 - Add health check that waits for warm-up
 
-**Files Affected**:
-- `src/api/app.py`
-- `src/ensemble/model_loader.py`
+**Implementation (Sprint 4)**:
+- Note: Warmup already existed since Phase 3.7.1, enhanced with detailed tracking
+- Added `WarmupResult` dataclass with success, timing, per-model latency, models_warmed
+- Updated `warmup()` method to return `WarmupResult` instead of bool
+- Added `get_warmup_result()` method to retrieve last warmup result
+- Sequential inference used during warmup for accurate per-model timing
+- Updated `app.py` startup to use enhanced warmup result
+- Version: v5.0-6-4.0-1
+
+**Files Modified**:
+- `src/ensemble/decision_engine.py` → v5.0-6-4.0-1
+- `src/ensemble/__init__.py` → v5.0-6-4.0-1
+- `src/api/app.py` → v5.0-6-4.0-1
+- `tests/phase6/test_sprint4.py` (new)
 
 ---
 
@@ -151,7 +175,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: High  
 **Category**: Machine Learning  
-**Status**: Research
+**Status**: 🔮 DEFERRED TO v5.1
 
 **Description**: System could learn from past escalation patterns to improve prediction accuracy.
 
@@ -159,6 +183,9 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Store anonymized escalation sequences
 - Train lightweight pattern recognition model
 - Use historical data to improve confidence scores
+
+**Deferral Reason (2026-01-02)**:
+Deferred to v5.1 to allow stabilization of the current v5.0 system across the Ash ecosystem before adding complex ML learning features. This ensures the foundation is solid before expanding functionality.
 
 **Files Affected**:
 - New module: `src/learning/`
@@ -204,7 +231,7 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 **Priority**: Low  
 **Category**: Alerting  
-**Status**: Planned
+**Status**: ✅ COMPLETED (Sprint 4)
 
 **Description**: Conflict detection could trigger specialized Discord alerts with detailed model disagreement information.
 
@@ -213,9 +240,18 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Include visual disagreement chart (ASCII or image)
 - Add configurable conflict alert threshold
 
-**Files Affected**:
-- `src/alerting/discord_alerter.py`
-- `src/ensemble/conflict_detector.py`
+**Implementation (Sprint 4)**:
+- Added `DEFAULT_CONFLICT_ALERT_THRESHOLD` constant (0.15)
+- Added `generate_disagreement_chart()` for ASCII bar chart visualization of model scores
+- Added `format_conflict_summary()` for formatted conflict reports with ASCII chart
+- Added `conflict_alert_threshold` parameter to `DiscordAlerter.__init__()`
+- ASCII chart shows model names, filled/empty bars, scores, range, and variance
+- Version: v5.0-6-4.0-2
+
+**Files Modified**:
+- `src/utils/alerting.py` → v5.0-6-4.0-2
+- `src/utils/__init__.py` → v5.0-6-4.0-1
+- `tests/phase6/test_sprint4.py` (new)
 
 ---
 
@@ -348,9 +384,9 @@ This document tracks future enhancements identified during Phase 5 development. 
 
 | Priority | Tickets | Focus Area | Status |
 |----------|---------|------------|--------|
-| **High** | FE-006, ~~FE-009~~ | ML Learning, ~~Test Isolation~~ | FE-009 ✅ |
+| **High** | ~~FE-006~~, ~~FE-009~~ | ~~ML Learning~~, ~~Test Isolation~~ | FE-006 → v5.1, FE-009 ✅ |
 | **Medium** | ~~FE-001~~, ~~FE-003~~, ~~FE-005~~, ~~FE-007~~ | ~~Accuracy~~, ~~Robustness~~ | All ✅ |
-| **Low** | FE-002, FE-004, FE-008, ~~FE-010~~, ~~FE-011~~, ~~FE-012~~ | Polish, ~~Test Fixes~~ | FE-010/011/012 ✅ |
+| **Low** | ~~FE-002~~, ~~FE-004~~, ~~FE-008~~, ~~FE-010~~, ~~FE-011~~, ~~FE-012~~ | ~~Polish~~, ~~Test Fixes~~ | All ✅ |
 
 ---
 
@@ -390,8 +426,8 @@ This document tracks future enhancements identified during Phase 5 development. 
 1. ~~**Sprint 1**: FE-009 (test isolation) + FE-010/011/012 (fix skipped tests)~~ ✅ COMPLETED
 2. ~~**Sprint 2**: FE-001 (timezone) + FE-003 (token truncation)~~ ✅ COMPLETED
 3. ~~**Sprint 3**: FE-005 (per-severity thresholds) + FE-007 (investigation)~~ ✅ COMPLETED
-4. **Sprint 4**: FE-006 (historical learning) - larger effort
-5. **Sprint 5**: FE-002, FE-004, FE-008 (polish items)
+4. ~~**Sprint 4**: FE-002, FE-004, FE-008 (polish items)~~ ✅ COMPLETED
+5. ~~**Sprint 5**: FE-006 (historical learning)~~ 🔮 DEFERRED TO v5.1
 
 ### Sprint 2 Completed (2026-01-02)
 
@@ -431,6 +467,73 @@ This document tracks future enhancements identified during Phase 5 development. 
 - Tests for per-severity thresholds
 - Tests for history validation edge cases
 - Integration tests for Sprint 3 features
+
+### Sprint 4 Completed (2026-01-02)
+
+✅ **FE-002**: Discord Message Length Validation
+- Added `DISCORD_LIMITS` constant dict with all official Discord API limits
+- `truncate_text()` for simple truncation with suffix
+- `truncate_at_boundary()` for smart truncation at sentence/word boundaries
+- `calculate_embed_size()` and `validate_embed_size()` for embed validation
+- `Alert.to_discord_embed()` now truncates all fields before sending
+
+✅ **FE-004**: Model Warm-up Enhancement
+- Note: Warmup already existed since Phase 3.7.1, enhanced with detailed tracking
+- Added `WarmupResult` dataclass with success, timing, per-model latency
+- Updated `warmup()` to return `WarmupResult` instead of bool
+- Added `get_warmup_result()` method to retrieve last warmup result
+- Sequential inference during warmup for accurate per-model timing
+
+✅ **FE-008**: Enhanced Conflict Alerts
+- Added `DEFAULT_CONFLICT_ALERT_THRESHOLD` constant (0.15)
+- `generate_disagreement_chart()` for ASCII bar chart visualization
+- `format_conflict_summary()` for formatted conflict reports with ASCII chart
+- Added `conflict_alert_threshold` parameter to `DiscordAlerter`
+
+**New Test File**: `tests/phase6/test_sprint4.py`
+- Tests for Discord limits and truncation (FE-002)
+- Tests for WarmupResult dataclass (FE-004)
+- Tests for ASCII chart and conflict threshold (FE-008)
+
+---
+
+## 🎉 Phase 6 Complete!
+
+**Completion Date**: 2026-01-02
+
+### Summary
+
+Phase 6 successfully delivered 11 enhancement tickets across 4 sprints:
+
+| Sprint | Tickets | Focus |
+|--------|---------|-------|
+| Sprint 1 | FE-009, FE-010, FE-011, FE-012 | Test isolation & fixes |
+| Sprint 2 | FE-001, FE-003 | Timezone support & token truncation |
+| Sprint 3 | FE-005, FE-007 | Per-severity thresholds & history validation |
+| Sprint 4 | FE-002, FE-004, FE-008 | Discord limits, warmup tracking, conflict alerts |
+
+### Deferred to v5.1
+
+- **FE-006**: Historical Pattern Learning - deferred to allow ecosystem stabilization
+
+### Key Achievements
+
+- ✅ **435/435 tests passing** (0 skipped)
+- ✅ User timezone support for accurate late-night detection
+- ✅ Smart text truncation preserving sentence boundaries
+- ✅ Per-severity escalation thresholds with presets
+- ✅ Comprehensive history validation utilities
+- ✅ Discord message length validation and truncation
+- ✅ Enhanced model warm-up with detailed timing
+- ✅ ASCII disagreement charts for conflict alerts
+- ✅ Test webhook suppression in testing mode
+
+### Next Steps
+
+1. Deploy v5.0 to production
+2. Monitor system stability across Ash ecosystem
+3. Gather community feedback
+4. Plan v5.1 with FE-006 (Historical Pattern Learning)
 
 ---
 

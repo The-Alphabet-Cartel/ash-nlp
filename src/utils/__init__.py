@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Utilities Package for Ash-NLP Service
 ---
-FILE VERSION: v5.0-6-3.0-1
+FILE VERSION: v5.0-6-4.0-1
 LAST MODIFIED: 2026-01-02
-PHASE: Phase 6 - Sprint 3 (FE-005, FE-007)
+PHASE: Phase 6 - Sprint 4 (FE-002, FE-004, FE-008)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -28,7 +28,7 @@ PACKAGE CONTENTS:
 - history_debug.py: History validation and debugging utilities (FE-007)
 """
 
-__version__ = "v5.0-6-3.0-1"
+__version__ = "v5.0-6-4.0-1"
 
 # Retry utilities
 from src.utils.retry import (
@@ -62,6 +62,16 @@ from src.utils.alerting import (
     create_discord_alerter,
     get_alerter,
     set_alerter,
+    # FE-002: Discord limits and truncation
+    DISCORD_LIMITS,
+    truncate_text,
+    truncate_at_boundary,
+    calculate_embed_size,
+    validate_embed_size,
+    # FE-008: Conflict alert enhancements
+    DEFAULT_CONFLICT_ALERT_THRESHOLD,
+    generate_disagreement_chart,
+    format_conflict_summary,
 )
 
 # Logging
@@ -148,6 +158,16 @@ __all__ = [
     "create_discord_alerter",
     "get_alerter",
     "set_alerter",
+    # FE-002: Discord limits and truncation
+    "DISCORD_LIMITS",
+    "truncate_text",
+    "truncate_at_boundary",
+    "calculate_embed_size",
+    "validate_embed_size",
+    # FE-008: Conflict alert enhancements
+    "DEFAULT_CONFLICT_ALERT_THRESHOLD",
+    "generate_disagreement_chart",
+    "format_conflict_summary",
     # Logging
     "JSONFormatter",
     "HumanFormatter",

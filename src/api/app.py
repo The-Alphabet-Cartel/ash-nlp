@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 FastAPI Application Factory for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-5.3-1
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - API Enhancements
+FILE VERSION: v5.0-6-4.0-1
+LAST MODIFIED: 2026-01-02
+PHASE: Phase 6 - Sprint 4 (FE-004: Enhanced Warmup)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -53,7 +53,7 @@ from .routes import analysis_router, health_router, models_router, config_router
 from .middleware import setup_middleware
 
 # Module version
-__version__ = "v5.0-4-5.3-1"
+__version__ = "v5.0-6-4.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -152,12 +152,12 @@ async def lifespan(app: FastAPI):
                     source="startup",
                 )
 
-        # Warmup engine (Phase 3.7.1)
+        # Warmup engine (Phase 3.7.1, Enhanced in FE-004)
         logger.info("🔥 Warming up engine...")
-        warmup_success = engine.warmup()
+        warmup_result = engine.warmup()
         
-        if not warmup_success:
-            logger.warning("⚠️ Engine warmup failed")
+        if not warmup_result.success:
+            logger.warning(f"⚠️ Engine warmup failed: {warmup_result.error}")
 
         # Store in app state
         app.state.engine = engine
