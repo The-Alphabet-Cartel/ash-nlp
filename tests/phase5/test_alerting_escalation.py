@@ -40,6 +40,7 @@ def alerter_with_webhook():
         webhook_url="https://discord.com/api/webhooks/test/token",
         enabled=True,
         escalation_cooldown_seconds=60.0,
+        testing_mode=False,  # Explicitly disable to test real webhook flow with mocks
     )
 
 
@@ -59,6 +60,7 @@ def alerter_short_cooldown():
         webhook_url="https://discord.com/api/webhooks/test/token",
         enabled=True,
         escalation_cooldown_seconds=0.1,  # 100ms
+        testing_mode=False,  # Explicitly disable to test real webhook flow with mocks
     )
 
 

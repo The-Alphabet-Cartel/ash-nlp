@@ -325,10 +325,14 @@ class TestTemporalIntegration:
         late_night = datetime(2026, 1, 1, 23, 30, 0)
         history = create_stable_history(late_night, count=3)
         
+        # Use explicit current_timestamp at late night to ensure detection
+        current_timestamp = late_night + timedelta(hours=2)  # 1:30 AM
+        
         result = context_analyzer.analyze(
             current_message="Can't sleep",
             current_score=0.5,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         assert result.temporal.late_night_risk

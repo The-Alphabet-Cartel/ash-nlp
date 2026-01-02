@@ -356,10 +356,14 @@ class TestContextAnalyzerIntegration:
         """Test analysis during late night hours."""
         history = create_stable_history(late_night_timestamp, count=3)
         
+        # Use explicit current_timestamp at late night to ensure detection
+        current_timestamp = late_night_timestamp + timedelta(hours=3)  # 2:30 AM
+        
         result = context_analyzer.analyze(
             current_message="Can't sleep again",
             current_score=0.5,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         # Should detect late night risk
@@ -570,10 +574,14 @@ class TestContextAnalyzerCombinedFactors:
         """Test combined escalation and late night risk."""
         history = create_escalating_history(late_night_timestamp, count=4)
         
+        # Use explicit current_timestamp at late night to ensure detection
+        current_timestamp = late_night_timestamp + timedelta(hours=4)  # ~3:30 AM
+        
         result = context_analyzer.analyze(
             current_message="I can't sleep and can't stop thinking",
             current_score=0.85,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         # Both factors should be detected

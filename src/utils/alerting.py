@@ -10,7 +10,7 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Discord Alerting Service for Ash-NLP
 ---
-FILE VERSION: v5.0-6-4.0-2
+FILE VERSION: v5.0-6-4.0-3
 LAST MODIFIED: 2026-01-02
 PHASE: Phase 6 - Sprint 4 (FE-002, FE-008: Enhanced Conflict Alerts)
 CLEAN ARCHITECTURE: v5.1 Compliant
@@ -52,7 +52,7 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 # Module version
-__version__ = "v5.0-6-4.0-2"
+__version__ = "v5.0-6-4.0-3"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -913,11 +913,12 @@ class DiscordAlerter:
         Returns:
             True if alert sent successfully
         """
-        if not self.enabled:
+        # Phase 6 FE-009: Check testing mode first (before enabled check)
+        if not self._testing_mode and not self.enabled:
             logger.debug(f"Conflict alert skipped (disabled): {conflict_type}")
             return False
 
-        # Check conflict-specific cooldown
+        # Check conflict-specific cooldown (applies in both modes)
         if self._should_throttle_conflict():
             logger.debug(f"Conflict alert on cooldown: {conflict_type}")
             return False
@@ -1002,7 +1003,8 @@ class DiscordAlerter:
         Returns:
             True if alert sent successfully
         """
-        if not self.enabled:
+        # Phase 6 FE-009: Check testing mode first (before enabled check)
+        if not self._testing_mode and not self.enabled:
             return False
 
         if self._should_throttle_conflict():
@@ -1080,11 +1082,13 @@ class DiscordAlerter:
         Returns:
             True if alert sent successfully
         """
-        if not self.enabled:
+        # Phase 6 FE-009: Check testing mode first (before enabled check)
+        # In testing mode, enabled is False but we still want to track alerts
+        if not self._testing_mode and not self.enabled:
             logger.debug(f"Escalation alert skipped (disabled): {escalation_rate}")
             return False
 
-        # Check escalation-specific cooldown
+        # Check escalation-specific cooldown (applies in both modes)
         if self._should_throttle_escalation():
             logger.debug(f"Escalation alert on cooldown: {escalation_rate}")
             return False
@@ -1185,7 +1189,8 @@ class DiscordAlerter:
         Returns:
             True if alert sent successfully
         """
-        if not self.enabled:
+        # Phase 6 FE-009: Check testing mode first (before enabled check)
+        if not self._testing_mode and not self.enabled:
             return False
 
         if self._should_throttle_escalation():
