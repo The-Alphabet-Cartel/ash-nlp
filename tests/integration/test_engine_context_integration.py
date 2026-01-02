@@ -303,10 +303,14 @@ class TestContextAnalyzerIntegration:
         """Test analysis with stable history."""
         history = create_stable_history(base_timestamp, count=4)
         
+        # Use explicit current_timestamp to avoid late night detection from utcnow()
+        current_timestamp = base_timestamp + timedelta(hours=5)
+        
         result = context_analyzer.analyze(
             current_message="Just checking in again",
             current_score=0.35,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         # Should not detect escalation
@@ -316,7 +320,7 @@ class TestContextAnalyzerIntegration:
         # Should detect stable trend
         assert result.trend.direction == "stable"
         
-        # Low/no urgency
+        # Low/no urgency (no late night boost since we're at 7 PM)
         assert result.intervention.urgency in [
             InterventionUrgency.NONE,
             InterventionUrgency.LOW,
@@ -370,10 +374,15 @@ class TestContextAnalyzerIntegration:
         """Test analysis with rapid posting pattern."""
         history = create_rapid_posting_history(base_timestamp, count=6)
         
+        # Use explicit current_timestamp shortly after last history message
+        # to ensure rapid posting is detected (5 min intervals * 6 messages = 25 min)
+        current_timestamp = base_timestamp + timedelta(minutes=30)
+        
         result = context_analyzer.analyze(
             current_message="I keep coming back here",
             current_score=0.6,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         # Should detect rapid posting
@@ -387,10 +396,14 @@ class TestContextAnalyzerIntegration:
         """Test analysis on weekend."""
         history = create_stable_history(weekend_timestamp, count=3, score=0.5)
         
+        # Use explicit current_timestamp on weekend to ensure weekend detection
+        current_timestamp = weekend_timestamp + timedelta(hours=4)
+        
         result = context_analyzer.analyze(
             current_message="Weekends are hard",
             current_score=0.6,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         # Should detect weekend
@@ -590,13 +603,17 @@ class TestContextAnalyzerCombinedFactors:
                 crisis_score=0.3 + (0.1 * i),  # 0.3 to 0.8
             ))
         
+        # Use explicit current_timestamp shortly after last history message
+        current_timestamp = base_timestamp + timedelta(minutes=35)
+        
         result = context_analyzer.analyze(
             current_message="I need help now",
             current_score=0.9,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
-        # Both factors should be detected
+        # Should detect rapid posting (messages every 5 min)
         assert result.temporal.rapid_posting
         # May or may not detect escalation depending on thresholds
     
@@ -610,15 +627,20 @@ class TestContextAnalyzerCombinedFactors:
         
         history = create_escalating_history(saturday_night, count=4)
         
+        # Use explicit current_timestamp on Saturday night
+        current_timestamp = saturday_night + timedelta(hours=1)  # 12:30 AM Sunday
+        
         result = context_analyzer.analyze(
             current_message="Nobody is around and I can't take it",
             current_score=0.9,
             message_history=history,
+            current_timestamp=current_timestamp,
         )
         
         # All factors should compound
         assert result.escalation.detected
         assert result.temporal.late_night_risk
+        # Weekend check: Sunday 12:30 AM is still weekend
         assert result.temporal.is_weekend
         
         # Maximum urgency expected
