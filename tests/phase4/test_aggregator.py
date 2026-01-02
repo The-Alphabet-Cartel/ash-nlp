@@ -104,10 +104,11 @@ def low_crisis_signals() -> Dict[str, Any]:
             "metadata": {"positive": 0.70},
         },
         "irony": {
-            "crisis_signal": 0.90,
+            # Low crisis signal - non-ironic safe message
+            "crisis_signal": 0.10,
             "label": "not_ironic",
-            "raw_score": 0.90,
-            "score": 0.90,
+            "raw_score": 0.10,
+            "score": 0.10,
             "metadata": {},
         },
         "emotions": {
