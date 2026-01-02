@@ -20,9 +20,6 @@
 #   # Rebuild and start
 #   docker-compose up -d --build
 #
-#   # Start CPU-only version
-#   docker-compose --profile cpu up -d
-#
 # SECRETS:
 #   Secrets are stored in ./secrets/ directory:
 #   - ./secrets/huggingface - HuggingFace API token
@@ -49,7 +46,7 @@ services:
         APP_USER: nlp
         APP_UID: 1001
         APP_GID: 1001
-    image: ash-nlp:v5.0
+    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
 
     # GPU Support (requires NVIDIA Container Toolkit)
     deploy:
@@ -70,57 +67,15 @@ services:
       - discord_alert_webhook
 
     # Environment variables
-    environment:
-      # Application settings
-      - NLP_ENVIRONMENT=production
-      - NLP_API_HOST=0.0.0.0
-      - NLP_API_PORT=30880
-      - NLP_API_WORKERS=1
-      - NLP_API_TIMEOUT=30
-      - NLP_LOG_LEVEL=INFO
-
-      # Model settings
-      - NLP_MODELS_DEVICE=auto
-      - NLP_MODELS_WARMUP_ENABLED=true
-      - NLP_MODELS_MAX_CONCURRENT=4
-
-      # Model weights
-      - NLP_MODEL_BART_WEIGHT=0.50
-      - NLP_MODEL_SENTIMENT_WEIGHT=0.25
-      - NLP_MODEL_IRONY_WEIGHT=0.15
-      - NLP_MODEL_EMOTIONS_WEIGHT=0.10
-
-      # Thresholds
-      - NLP_THRESHOLD_CRITICAL=0.85
-      - NLP_THRESHOLD_HIGH=0.70
-      - NLP_THRESHOLD_MEDIUM=0.50
-      - NLP_THRESHOLD_LOW=0.30
-
-      # Performance
-      - NLP_PERFORMANCE_CACHE_ENABLED=true
-      - NLP_PERFORMANCE_CACHE_TTL=300
-      - NLP_PERFORMANCE_ASYNC_INFERENCE=true
-
-      # Alerting
-      - NLP_ALERTING_ENABLED=true
-
-      # Logging
-      - NLP_LOG_FORMAT=human  # human or json
-
-      # HuggingFace cache
-      - HF_HOME=/app/models
-      - TRANSFORMERS_OFFLINE=0
+    env_file:
+      - .env
 
     # Volume mounts
     volumes:
-      # Configuration (read-only)
-      - ./config:/app/config:ro
-
       # Model cache (persistent)
       - ash-nlp-models:/app/models
-
       # Logs (optional)
-      - ash-nlp-logs:/app/logs
+      - ./logs:/app/logs
 
     # Health check
     healthcheck:
@@ -150,66 +105,6 @@ services:
       - "com.alphabetcartel.version=5.0.0"
       - "com.alphabetcartel.description=Crisis Detection Backend"
 
-  # ===========================================================================
-  # Ash-NLP Service (CPU-only) - Alternative profile
-  # ===========================================================================
-  ash-nlp-cpu:
-    container_name: ash-nlp-cpu
-    profiles:
-      - cpu
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: runtime-cpu
-    image: ash-nlp:v5.0-cpu
-
-    ports:
-      - "30880:30880"
-
-    # Docker Secrets
-    secrets:
-      - huggingface
-      - discord_alert_webhook
-
-    environment:
-      - NLP_ENVIRONMENT=production
-      - NLP_API_HOST=0.0.0.0
-      - NLP_API_PORT=30880
-      - NLP_API_WORKERS=1
-      - NLP_LOG_LEVEL=INFO
-      - NLP_LOG_FORMAT=human
-      - NLP_ALERTING_ENABLED=true
-      - NLP_MODELS_DEVICE=cpu
-      - NLP_MODELS_WARMUP_ENABLED=true
-      - HF_HOME=/app/models
-
-    volumes:
-      - ./config:/app/config:ro
-      - ash-nlp-models:/app/models
-      - ash-nlp-logs:/app/logs
-
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:30880/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 180s # Longer for CPU
-
-    restart: unless-stopped
-
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "5"
-
-    networks:
-      - ash-network
-
-    labels:
-      - "com.alphabetcartel.service=ash-nlp-cpu"
-      - "com.alphabetcartel.version=5.0.0"
-
 # =============================================================================
 # Secrets
 # =============================================================================
@@ -234,9 +129,4 @@ volumes:
   # Persistent model cache
   ash-nlp-models:
     name: ash-nlp-models
-    driver: local
-
-  # Log storage
-  ash-nlp-logs:
-    name: ash-nlp-logs
     driver: local
