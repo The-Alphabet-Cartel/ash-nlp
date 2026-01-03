@@ -1,8 +1,8 @@
 # Ash-NLP v5.0 Production Deployment Guide
 
-**FILE VERSION**: v5.0-3-6.1-1  
-**LAST MODIFIED**: 2026-01-01  
-**PHASE**: Phase 3 Complete - Production Deployment  
+**FILE VERSION**: v5.0-7-1.7-1  
+**LAST MODIFIED**: 2025-01-02  
+**PHASE**: Phase 7 - Runtime Model Initialization  
 **CLEAN ARCHITECTURE**: v5.1 Compliant  
 
 **Repository**: https://github.com/the-alphabet-cartel/ash-nlp  
@@ -12,7 +12,28 @@
 
 ## Overview
 
-This document covers the production deployment of Ash-NLP v5.0, including configuration requirements, GPU memory management, and Docker Secrets integration.
+This document covers the production deployment of Ash-NLP v5.0, including configuration requirements, GPU memory management, Docker Secrets integration, and runtime model initialization.
+
+### Runtime Model Initialization (Phase 7)
+
+As of Phase 7, models are downloaded at container startup rather than build time. This provides:
+
+| Benefit | Description |
+|---------|-------------|
+| **Smaller Images** | ~500MB vs ~4GB with pre-baked models |
+| **Faster CI/CD** | GitHub Actions builds complete in seconds |
+| **Quick Pulls** | `docker pull` completes rapidly |
+| **Version Checking** | HuggingFace automatically verifies cached models |
+| **Persistent Cache** | Volume mount preserves models across rebuilds |
+
+**Startup Timeline:**
+
+| Scenario | Time | What Happens |
+|----------|------|--------------|
+| First startup | 5-15 min | Downloads all 4 models (~3GB) |
+| Normal restart | ~30 sec | Verifies cache, uses cached models |
+| Model updated on HF | 1-5 min | Downloads only changed model |
+| Offline mode | ~10 sec | Uses cache without verification |
 
 ## System Requirements
 
@@ -175,7 +196,31 @@ cp .env.template .env
 docker compose up -d --build
 
 # Watch startup (first run downloads ~3GB of models)
+# This takes 5-15 minutes on first run!
 docker compose logs -f ash-nlp
+```
+
+**First Startup Log Output:**
+```
+ash-nlp  | 🚀 Ash-NLP Container Entrypoint
+ash-nlp  |    Version: v5.0-7-1.2-1
+ash-nlp  | 
+ash-nlp  | ============================================================
+ash-nlp  |   Phase 1: Model Initialization
+ash-nlp  | ============================================================
+ash-nlp  | 📥 bart: Initializing facebook/bart-large-mnli...
+ash-nlp  |    └─ BART Zero-Shot Crisis Classifier (PRIMARY)
+ash-nlp  | ✅ bart: Ready (45.2s)
+ash-nlp  | 📥 sentiment: Initializing cardiffnlp/twitter-roberta-base-sentiment-latest...
+ash-nlp  |    └─ Cardiff Sentiment Analyzer (SECONDARY)
+ash-nlp  | ✅ sentiment: Ready (12.3s)
+ash-nlp  | ...
+ash-nlp  | ✅ Model initialization complete
+ash-nlp  | 
+ash-nlp  | ============================================================
+ash-nlp  |   Phase 2: Starting Server
+ash-nlp  | ============================================================
+ash-nlp  | 📡 Starting server at http://0.0.0.0:30880
 ```
 
 ### Rebuilding After Changes
@@ -191,9 +236,28 @@ docker compose logs -f ash-nlp
 
 ```bash
 docker compose down
-docker volume rm ash-nlp-models
+
+# Remove local cache directory contents
+rm -rf ./models-cache/*
+
+# Keep the .gitkeep file
+touch ./models-cache/.gitkeep
+
 docker compose up -d
-# Models will re-download on first startup
+# Models will re-download on startup (5-15 minutes)
+docker compose logs -f ash-nlp
+```
+
+### Forcing Model Re-download
+
+If you need to force a fresh download (e.g., after a model update on HuggingFace):
+
+```bash
+docker compose down
+rm -rf ./models-cache/*
+touch ./models-cache/.gitkeep
+docker compose up -d
+docker compose logs -f ash-nlp
 ```
 
 ### Checking GPU Usage
@@ -299,7 +363,7 @@ After successful deployment:
 |--------|----------------|
 | GPU Memory | ~3.3GB (27% of 12GB) |
 | Startup Time | 30-60 seconds (cached models) |
-| First Startup | 5-15 minutes (model download) |
+| First Startup | 5-15 minutes (runtime model download) |
 | Inference Time | ~150-200ms per message |
 | Health Status | `healthy`, `ready: true` |
 | Models Loaded | 4/4 |
