@@ -57,7 +57,8 @@ services:
 
     # Network
     networks:
-      - ash-network
+      ash-network:
+        ipv4_address: 172.20.0.10
 
     # GPU Support (requires NVIDIA Container Toolkit)
     deploy:
