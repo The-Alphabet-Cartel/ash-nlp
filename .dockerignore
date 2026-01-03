@@ -1,8 +1,8 @@
 # ============================================================================
 # Ash-NLP v5.0 Docker Ignore
 # ============================================================================
-# FILE VERSION: v5.0-3-5.5-5
-# LAST MODIFIED: 2025-12-31
+# FILE VERSION: v5.0-7-1.6-1
+# LAST MODIFIED: 2025-01-02
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 # ============================================================================
 
@@ -126,9 +126,10 @@ docker-compose*.yml
 .dockerignore
 
 # =============================================================================
-# Models (download at runtime or use volumes)
+# Models (download at runtime, cached via volume mount)
 # =============================================================================
 models/
+models-cache/
 *.pt
 *.bin
 *.safetensors
