@@ -28,6 +28,15 @@ Models now download at container startup instead of build time, enabling smaller
 
 ### Infrastructure Changes
 
+- **GitHub Actions Workflow** (`.github/workflows/ash-build.yml` v5.0-7-1.8-1)
+  - Added Docker Buildx for better build performance
+  - Added GitHub Actions cache (`cache-from`/`cache-to`) for layer caching
+  - Added disk space cleanup step (removes unused tools)
+  - Explicitly targets `runtime` stage (GPU image)
+  - Added 30-minute timeout
+  - Only pushes on main/master (not PRs)
+  - Added build summary output
+
 - **Dockerfile** (v5.0-7-1.3-1)
   - Removed build-time model download script
   - Uses new Python entrypoint
