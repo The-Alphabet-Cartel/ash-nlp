@@ -7,6 +7,63 @@ All notable changes to Ash-NLP will be documented in this file.
 
 ---
 
+## [5.0.8] - 2025-01-02
+
+### 🚀 Phase 7 - Runtime Model Initialization
+
+Models now download at container startup instead of build time, enabling smaller Docker images and faster CI/CD.
+
+### New Features
+
+- **Runtime Model Initialization** (`src/startup/model_initializer.py` v5.0-7-1.1-1)
+  - Downloads HuggingFace models at container startup
+  - Leverages HF caching to skip downloads when models already cached
+  - Automatic version checking for model updates
+  - Graceful fallback to lazy loading if initialization fails
+
+- **Python Entrypoint** (`entrypoint.py` v5.0-7-1.2-1)
+  - Pure Python entrypoint (no bash scripting)
+  - Two-phase startup: model initialization → server start
+  - Follows project's "No Bash Scripting" philosophy
+
+### Infrastructure Changes
+
+- **Dockerfile** (v5.0-7-1.3-1)
+  - Removed build-time model download script
+  - Uses new Python entrypoint
+  - Image size reduced from ~4GB to ~500MB
+
+- **docker-compose.yml** (v5.0-7-1.4-1)
+  - Updated documentation for runtime model caching
+  - Volume mount documentation improved
+
+- **.gitignore** (v5.0-7-1.5-1)
+  - Added `models-cache/*` with `!models-cache/.gitkeep` exception
+  - Ensures empty folder commits but models don't
+
+- **.dockerignore** (v5.0-7-1.6-1)
+  - Added `models-cache/` to prevent local models in image
+
+### Benefits
+
+| Benefit | Before | After |
+|---------|--------|-------|
+| Docker image size | ~4GB | ~500MB |
+| GitHub Actions build | 10-15 min | 1-2 min |
+| `docker pull` time | 5-10 min | <1 min |
+| First startup | Instant | 5-15 min |
+| Subsequent startup | ~30 sec | ~30 sec |
+
+### Startup Timeline
+
+| Scenario | Time |
+|----------|------|
+| First startup | 5-15 min (downloads ~3GB) |
+| Normal restart | ~30 sec (uses cache) |
+| Model updated on HF | 1-5 min (downloads changes) |
+
+---
+
 ## [5.0.7] - 2026-01-02
 
 ### 🐛 FE-011 Bug Fixes - Final Test Stabilization
