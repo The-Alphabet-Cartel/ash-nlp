@@ -29,7 +29,7 @@
 FROM python:3.11-slim-bookworm AS builder
 
 # Build arguments
-ARG HUGGINGFACE_HUB_CACHE=/app/models
+ARG HUGGINGFACE_HUB_CACHE=/app/models-cache
 ARG PIP_NO_CACHE_DIR=1
 ARG PIP_DISABLE_PIP_VERSION_CHECK=1
 
@@ -62,7 +62,7 @@ import os
 import sys
 
 # Set cache directory
-cache_dir = os.environ.get("HUGGINGFACE_HUB_CACHE", "/app/models")
+cache_dir = os.environ.get("HUGGINGFACE_HUB_CACHE", "/app/models-cache")
 os.makedirs(cache_dir, exist_ok=True)
 
 print(f"Downloading models to {cache_dir}...")
@@ -147,7 +147,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NLP_MODELS_DEVICE=auto \
     NLP_MODELS_WARMUP_ENABLED=true \
     # HuggingFace cache
-    HF_HOME=/app/models \
+    HF_HOME=/app/models-cache \
     # CUDA
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility
@@ -170,7 +170,7 @@ RUN groupadd --gid ${APP_GID} ${APP_USER} \
     && useradd --uid ${APP_UID} --gid ${APP_GID} --shell /bin/bash --create-home ${APP_USER}
 
 # Create app directories
-RUN mkdir -p /app/config /app/models /app/logs \
+RUN mkdir -p /app/config /app/models-cache /app/logs \
     && chown -R ${APP_USER}:${APP_USER} /app
 
 # Set working directory
@@ -180,7 +180,7 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/dist-packages
 
 # Copy pre-downloaded models from builder (if downloaded)
-# COPY --from=builder --chown=${APP_USER}:${APP_USER} /app/models /app/models
+COPY --from=builder --chown=${APP_USER}:${APP_USER} /app/models-cache /app/models-cache
 
 # Copy application code
 COPY --chown=${APP_USER}:${APP_USER} . /app/
@@ -235,7 +235,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NLP_LOG_LEVEL=INFO \
     NLP_MODELS_DEVICE=cpu \
     NLP_MODELS_WARMUP_ENABLED=true \
-    HF_HOME=/app/models
+    HF_HOME=/app/models-cache
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -248,7 +248,7 @@ RUN groupadd --gid ${APP_GID} ${APP_USER} \
     && useradd --uid ${APP_UID} --gid ${APP_GID} --shell /bin/bash --create-home ${APP_USER}
 
 # Create app directories
-RUN mkdir -p /app/config /app/models /app/logs \
+RUN mkdir -p /app/config /app/models-cache /app/logs \
     && chown -R ${APP_USER}:${APP_USER} /app
 
 WORKDIR /app
