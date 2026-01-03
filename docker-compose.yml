@@ -37,6 +37,7 @@ services:
   # Ash-NLP Service (GPU)
   # ===========================================================================
   ash-nlp:
+    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
     container_name: ash-nlp
     build:
       context: .
@@ -46,7 +47,13 @@ services:
         APP_USER: nlp
         APP_UID: 1001
         APP_GID: 1001
-    image: ghcr.io/the-alphabet-cartel/ash-nlp:latest
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Network
+    networks:
+      - ash-network
 
     # GPU Support (requires NVIDIA Container Toolkit)
     deploy:
@@ -57,6 +64,17 @@ services:
               count: 1
               capabilities: [gpu]
 
+    # Environment variables
+    env_file:
+      - .env
+
+    # Volume mounts
+    volumes:
+      # Model cache (persistent)
+      - ./models-cache:/app/models
+      # Logs (optional)
+      - ./logs:/app/logs
+
     # Port mapping
     ports:
       - "30880:30880"
@@ -66,17 +84,6 @@ services:
       - huggingface
       - discord_alert_webhook
 
-    # Environment variables
-    env_file:
-      - .env
-
-    # Volume mounts
-    volumes:
-      # Model cache (persistent)
-      - ash-nlp-models:/app/models
-      # Logs (optional)
-      - ./logs:/app/logs
-
     # Health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:30880/health"]
@@ -85,9 +92,6 @@ services:
       retries: 3
       start_period: 120s
 
-    # Restart policy
-    restart: unless-stopped
-
     # Logging configuration
     logging:
       driver: "json-file"
@@ -95,15 +99,15 @@ services:
         max-size: "50m"
         max-file: "5"
 
-    # Network
-    networks:
-      - ash-network
-
     # Labels for organization
     labels:
       - "com.alphabetcartel.service=ash-nlp"
       - "com.alphabetcartel.version=5.0.0"
       - "com.alphabetcartel.description=Crisis Detection Backend"
+
+# =============================================================================
+# Volumes
+# =============================================================================
 
 # =============================================================================
 # Secrets
@@ -121,12 +125,3 @@ networks:
   ash-network:
     name: ash-network
     driver: bridge
-
-# =============================================================================
-# Volumes
-# =============================================================================
-volumes:
-  # Persistent model cache
-  ash-nlp-models:
-    name: ash-nlp-models
-    driver: local
