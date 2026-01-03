@@ -87,8 +87,8 @@ services:
 
     # Docker Secrets
     secrets:
-      - huggingface
-      - discord_alert_webhook
+      - discord_alert_token
+      - huggingface_token
 
     # Health check
     healthcheck:
@@ -119,10 +119,12 @@ services:
 # Secrets
 # =============================================================================
 secrets:
-  huggingface:
-    file: ./secrets/huggingface
-  discord_alert_webhook:
-    file: ./secrets/discord_alert_webhook
+  discord_alert_token:
+    file: ./secrets/discord_alert_token
+  huggingface_token:
+    file: ./secrets/huggingface_token
+  webhook_token:
+    file: ./secrets/webhook_token
 
 # =============================================================================
 # Networks
