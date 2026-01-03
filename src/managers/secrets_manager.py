@@ -28,10 +28,12 @@ DOCKER SECRETS LOCATIONS:
 - Development (Local): ./secrets/<secret_name>
 
 SUPPORTED SECRETS:
-- huggingface: HuggingFace API token for model downloads
-- discord_alert_webhook: Discord webhook URL for system alerts
-- discord_token: Discord bot token (future use)
-- webhook_secret: Webhook signing secret (future use)
+- claude_api_token: Claude API key for Claude AI access
+- huggingface_token: HuggingFace API token for model downloads
+- discord_alert_token: Discord webhook URL for system alerts
+- discord_bot_token: Discord bot token
+- webhook_token: Webhook signing secret
+- redis_token: Redis password for secure connections
 """
 
 import logging
@@ -57,12 +59,13 @@ LOCAL_SECRETS_PATH = Path("secrets")
 
 # Known secret names and their descriptions
 KNOWN_SECRETS = {
-    "huggingface": "HuggingFace API token for authenticated model downloads",
-    "discord_alert_webhook": "Discord webhook URL for system alerts",
-    "discord_token": "Discord bot token (future use)",
-    "webhook_secret": "Webhook signing secret (future use)",
+    "claude_api_token": "Claude API key for Claude AI access",
+    "huggingface_token": "HuggingFace API token for authenticated model downloads",
+    "discord_alert_token": "Discord webhook URL for system alerts",
+    "discord_bot_token": "Discord bot token",
+    "webhook_token": "Webhook signing secret",
+    "redis_token": "Redis password for secure connections",
 }
-
 
 # =============================================================================
 # Secrets Manager Class
@@ -250,6 +253,101 @@ class SecretsManager:
             token = os.environ.get("HF_TOKEN")
         if token is None:
             token = os.environ.get("HUGGING_FACE_HUB_TOKEN")
+
+        return token
+
+    def get_claude_api_token(self) -> Optional[str]:
+        """
+        Get Claude API token.
+
+        Also checks CLAUDE_API_TOKEN environment variable as fallback
+        (standard Claude environment variable).
+
+        Returns:
+            Claude API token or None
+        """
+        # Try our secrets system first
+        token = self.get("claude_api_token")
+
+        # Fallback to standard Claude env vars
+        if token is None:
+            token = os.environ.get("CLAUDE_API_TOKEN")
+
+        return token
+
+    def get_discord_alert_token(self) -> Optional[str]:
+        """
+        Get Discord alert token.
+
+        Also checks DISCORD_ALERT_TOKEN environment variable as fallback
+        (standard Discord environment variable).
+
+        Returns:
+            Discord alert token or None
+        """
+        # Try our secrets system first
+        token = self.get("discord_alert_token")
+
+        # Fallback to standard Discord env vars
+        if token is None:
+            token = os.environ.get("DISCORD_ALERT_TOKEN")
+
+        return token
+
+    def get_discord_bot_token(self) -> Optional[str]:
+        """
+        Get Discord bot token.
+
+        Also checks DISCORD_BOT_TOKEN environment variable as fallback
+        (standard Discord environment variable).
+
+        Returns:
+            Discord bot token or None
+        """
+        # Try our secrets system first
+        token = self.get("discord_bot_token")
+
+        # Fallback to standard Discord env vars
+        if token is None:
+            token = os.environ.get("DISCORD_BOT_TOKEN")
+
+        return token
+
+    def get_redis_token(self) -> Optional[str]:
+        """
+        Get Redis Token.
+
+        Also checks REDIS_TOKEN environment variable as fallback
+        (standard Redis environment variable).
+
+        Returns:
+            Redis Token or None
+        """
+        # Try our secrets system first
+        token = self.get("redis_token")
+
+        # Fallback to standard Redis env vars
+        if token is None:
+            token = os.environ.get("REDIS_TOKEN")
+
+        return token
+
+    def get_webhook_token(self) -> Optional[str]:
+        """
+        Get Webhook Token.
+
+        Also checks WEBHOOK_TOKEN environment variable as fallback
+        (standard Webhook environment variable).
+
+        Returns:
+            Webhook Token or None
+        """
+        # Try our secrets system first
+        token = self.get("webhook_token")
+
+        # Fallback to standard Webhook env vars
+        if token is None:
+            token = os.environ.get("WEBHOOK_TOKEN")
 
         return token
 
