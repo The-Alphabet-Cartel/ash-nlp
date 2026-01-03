@@ -71,7 +71,7 @@ services:
     # Volume mounts
     volumes:
       # Model cache (persistent)
-      - ./models-cache:/app/models
+      - ./models-cache:/app/models-cache
       # Logs (optional)
       - ./logs:/app/logs
 
