@@ -1,7 +1,8 @@
 # ============================================================================
 # Ash-NLP v5.0 Git Ignore
 # ============================================================================
-# FILE VERSION: v5.0-3-5.5-4
+# FILE VERSION: v5.0-7-1.5-1
+# LAST MODIFIED: 2025-01-02
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 # ============================================================================
 
@@ -86,6 +87,8 @@ coverage.xml
 # Models (downloaded at runtime)
 # =============================================================================
 /models/
+models-cache/*
+!models-cache/.gitkeep
 *.pt
 *.bin
 *.safetensors
