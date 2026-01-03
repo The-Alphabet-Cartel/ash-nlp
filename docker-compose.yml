@@ -58,7 +58,7 @@ services:
     # Network
     networks:
       ash-network:
-        ipv4_address: 172.20.0.10
+        ipv4_address: 10.20.60.10
 
     # GPU Support (requires NVIDIA Container Toolkit)
     deploy:
@@ -134,4 +134,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/24
+        - subnet: 10.20.60.0/24
