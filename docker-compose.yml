@@ -1,8 +1,8 @@
 # ============================================================================
 # Ash-NLP v5.0 Docker Compose Configuration
 # ============================================================================
-# FILE VERSION: v5.0-7-1.4-1
-# LAST MODIFIED: 2025-01-02
+# FILE VERSION: v5.0-8-1.3-1
+# LAST MODIFIED: 2026-01-05
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
@@ -20,6 +20,19 @@
 #   # Rebuild and start
 #   docker-compose up -d --build
 #
+# PUID/PGID:
+#   Set PUID and PGID in your .env file to match the owner of your
+#   mounted volumes. This ensures the container can read/write files
+#   with the correct permissions.
+#
+#   Example (find your UID/GID):
+#     id $(whoami)
+#     # uid=1000(username) gid=1000(username) ...
+#
+#   Then in .env:
+#     PUID=1000
+#     PGID=1000
+#
 # SECRETS:
 #   Secrets are stored in ./secrets/ directory:
 #   - ./secrets/huggingface - HuggingFace API token
@@ -35,6 +48,25 @@
 #   Subsequent startups verify cache and start quickly (~30 sec)
 #
 # ============================================================================
+### Common Variables ###
+x-common: &common
+  networks:
+    - ash-network
+  restart: unless-stopped
+
+### Common Environmental Variables ###
+x-env: &env
+  PGID: 1001
+  PUID: 1001
+  TZ: America/Los_Angeles
+
+### Healthchecks ###
+x-health: &health
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 120s
+  start_interval: 30s
 
 services:
   # ===========================================================================
@@ -47,17 +79,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runtime
-      args:
-        APP_USER: nlp
-        APP_UID: 1001
-        APP_GID: 1001
-
-    # Restart policy
-    restart: unless-stopped
-
-    # Network
-    networks:
-      - ash-network
+    <<: *common
 
     # GPU Support (requires NVIDIA Container Toolkit)
     deploy:
@@ -69,6 +91,8 @@ services:
               capabilities: [gpu]
 
     # Environment variables
+    environment:
+      <<: *env
     env_file:
       - .env
 
@@ -92,11 +116,8 @@ services:
 
     # Health check
     healthcheck:
+      <<: *health
       test: ["CMD", "curl", "-f", "http://localhost:30880/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
 
     # Logging configuration
     logging:
@@ -110,10 +131,6 @@ services:
       - "com.alphabetcartel.service=ash-nlp"
       - "com.alphabetcartel.version=5.0.0"
       - "com.alphabetcartel.description=Crisis Detection Backend"
-
-# =============================================================================
-# Volumes
-# =============================================================================
 
 # =============================================================================
 # Secrets
