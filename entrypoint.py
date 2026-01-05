@@ -1,35 +1,44 @@
 #!/usr/bin/env python3
 """
-Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Classification
-******************  CORE SYSTEM VISION (Never to be violated):  ****************
-Ash-NLP is a CRISIS DETECTION BACKEND that:
-1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
-3. ENSEMBLE: Combines weighted model outputs through decision engine
-4. PURPOSE: Detect crisis messages in Discord community communications
-********************************************************************************
+============================================================================
+Ash-NLP: Crisis Detection NLP Server
+The Alphabet Cartel - https://discord.gg/alphabetcartel | alphabetcartel.org
+============================================================================
+
+MISSION - NEVER TO BE VIOLATED:
+    Analyze  → Process messages through multi-model ensemble classification
+    Detect   → Identify crisis signals with weighted consensus algorithms
+    Explain  → Provide human-readable explanations for all decisions
+    Protect  → Safeguard our LGBTQIA+ community through accurate detection
+
+============================================================================
 Docker Entrypoint for Ash-NLP Service
 ---
-FILE VERSION: v5.0-7-1.2-1
-LAST MODIFIED: 2025-01-02
-PHASE: Phase 7 Step 1.2 - Runtime Model Initialization
+FILE VERSION: v5.0-8-1.1-1
+LAST MODIFIED: 2026-01-05
+PHASE: Phase 8 Step 1.1 - PUID/PGID Support in Entrypoint
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
+============================================================================
 DESCRIPTION:
     Python-based Docker entrypoint that:
-    1. Initializes/downloads HuggingFace models at startup
-    2. Starts the FastAPI server via uvicorn
+    1. Sets up user/group based on PUID/PGID environment variables
+    2. Fixes ownership of application directories
+    3. Initializes/downloads HuggingFace models at startup
+    4. Drops privileges to the configured user
+    5. Starts the FastAPI server via uvicorn
 
     This approach follows the project's "No Bash Scripting" philosophy
-    while enabling runtime model caching.
+    while enabling LinuxServer.io-style user configuration.
 
 USAGE:
     # Called automatically by Docker
     # Or manually:
     python entrypoint.py
+
+    # With custom PUID/PGID:
+    PUID=1000 PGID=1000 python entrypoint.py
 """
 
 import logging
@@ -38,7 +47,7 @@ import subprocess
 import sys
 
 # Module version
-__version__ = "v5.0-7-1.2-1"
+__version__ = "v5.0-8-1.1-1"
 
 # Configure logging
 logging.basicConfig(
@@ -50,6 +59,27 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def run_user_setup() -> tuple:
+    """
+    Run the user/permissions setup phase.
+
+    Returns:
+        Tuple of (puid, pgid) that were configured
+    """
+    try:
+        from src.startup.user_setup import setup_user_and_permissions
+
+        return setup_user_and_permissions()
+    except ImportError as e:
+        logger.warning(f"⚠️  Could not import user_setup module: {e}")
+        logger.warning("   Continuing with current user")
+        return os.getuid(), os.getgid()
+    except Exception as e:
+        logger.warning(f"⚠️  User setup error: {e}")
+        logger.warning("   Continuing with current user")
+        return os.getuid(), os.getgid()
+
+
 def run_model_initialization() -> bool:
     """
     Run the model initialization module.
@@ -58,7 +88,7 @@ def run_model_initialization() -> bool:
         True if initialization succeeded
     """
     logger.info("=" * 60)
-    logger.info("  Phase 1: Model Initialization")
+    logger.info("  Phase 2: Model Initialization")
     logger.info("=" * 60)
 
     try:
@@ -85,6 +115,30 @@ def run_model_initialization() -> bool:
         return False
 
 
+def drop_to_user(puid: int, pgid: int) -> None:
+    """
+    Drop privileges to the specified user/group.
+
+    Args:
+        puid: User ID to switch to
+        pgid: Group ID to switch to
+    """
+    try:
+        from src.startup.user_setup import drop_privileges, is_root
+
+        if is_root():
+            logger.info("")
+            logger.info("=" * 60)
+            logger.info("  Phase 3: Dropping Privileges")
+            logger.info("=" * 60)
+            drop_privileges(puid, pgid)
+            logger.info("")
+    except ImportError:
+        logger.debug("user_setup module not available, skipping privilege drop")
+    except Exception as e:
+        logger.warning(f"⚠️  Could not drop privileges: {e}")
+
+
 def start_server() -> int:
     """
     Start the uvicorn server.
@@ -94,7 +148,7 @@ def start_server() -> int:
     """
     logger.info("")
     logger.info("=" * 60)
-    logger.info("  Phase 2: Starting Server")
+    logger.info("  Phase 4: Starting Server")
     logger.info("=" * 60)
 
     # Get configuration from environment
@@ -106,17 +160,23 @@ def start_server() -> int:
     logger.info(f"📡 Starting server at http://{host}:{port}")
     logger.info(f"👷 Workers: {workers}")
     logger.info(f"📝 Log level: {log_level}")
+    logger.info(f"🔑 Running as UID={os.getuid()}, GID={os.getgid()}")
     logger.info("")
 
     # Build uvicorn command
     cmd = [
         sys.executable,  # Use same Python interpreter
-        "-m", "uvicorn",
+        "-m",
+        "uvicorn",
         "src.api.app:app",
-        "--host", host,
-        "--port", port,
-        "--workers", workers,
-        "--log-level", log_level,
+        "--host",
+        host,
+        "--port",
+        port,
+        "--workers",
+        workers,
+        "--log-level",
+        log_level,
     ]
 
     # Execute uvicorn (replaces this process)
@@ -134,7 +194,11 @@ def main() -> int:
     """
     Main entrypoint function.
 
-    Runs model initialization then starts the server.
+    Runs:
+    1. User setup (PUID/PGID configuration)
+    2. Model initialization
+    3. Privilege drop
+    4. Server startup
 
     Returns:
         Exit code
@@ -144,10 +208,16 @@ def main() -> int:
     logger.info(f"   Version: {__version__}")
     logger.info("")
 
-    # Phase 1: Initialize models (non-blocking on failure)
+    # Phase 1: Setup user and permissions (runs as root if available)
+    puid, pgid = run_user_setup()
+
+    # Phase 2: Initialize models (still as root to ensure cache writes work)
     run_model_initialization()
 
-    # Phase 2: Start server
+    # Phase 3: Drop privileges to configured user
+    drop_to_user(puid, pgid)
+
+    # Phase 4: Start server
     return start_server()
 
 
