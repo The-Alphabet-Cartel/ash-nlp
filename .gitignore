@@ -12,7 +12,7 @@
 /docs/.obsidian
 /docs/standards
 /docs/v*
-/tests
+/tests/
 
 # =============================================================================
 # Secrets - CRITICAL: Never commit secrets!
