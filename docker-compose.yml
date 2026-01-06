@@ -102,7 +102,7 @@ services:
       # First startup: 5-15 min (downloads ~3GB of models)
       # Subsequent: ~30 sec (uses cached models)
       - ./models-cache:/app/models-cache
-      # Logs (optional)
+      # Logs
       - ./logs:/app/logs
 
     # Port mapping
