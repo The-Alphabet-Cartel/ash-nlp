@@ -60,11 +60,12 @@ LOCAL_SECRETS_PATH = Path("secrets")
 # Known secret names and their descriptions
 KNOWN_SECRETS = {
     "claude_api_token": "Claude API key for Claude AI access",
-    "huggingface_token": "HuggingFace API token for authenticated model downloads",
     "discord_alert_token": "Discord webhook URL for system alerts",
     "discord_bot_token": "Discord bot token",
-    "webhook_token": "Webhook signing secret",
+    "huggingface_token": "HuggingFace API token for authenticated model downloads",
+    "postgres_token": "PostgreSQL password for secure connections",
     "redis_token": "Redis password for secure connections",
+    "webhook_token": "Webhook signing secret",
 }
 
 # =============================================================================
@@ -235,27 +236,6 @@ class SecretsManager:
         """
         return f"NLP_SECRET_{secret_name.upper()}"
 
-    def get_huggingface_token(self) -> Optional[str]:
-        """
-        Get HuggingFace API token.
-
-        Also checks HF_TOKEN environment variable as fallback
-        (standard HuggingFace environment variable).
-
-        Returns:
-            HuggingFace token or None
-        """
-        # Try our secrets system first
-        token = self.get("huggingface")
-
-        # Fallback to standard HuggingFace env vars
-        if token is None:
-            token = os.environ.get("HF_TOKEN")
-        if token is None:
-            token = os.environ.get("HUGGING_FACE_HUB_TOKEN")
-
-        return token
-
     def get_claude_api_token(self) -> Optional[str]:
         """
         Get Claude API token.
@@ -310,6 +290,46 @@ class SecretsManager:
         # Fallback to standard Discord env vars
         if token is None:
             token = os.environ.get("DISCORD_BOT_TOKEN")
+
+        return token
+
+    def get_huggingface_token(self) -> Optional[str]:
+        """
+        Get HuggingFace API token.
+
+        Also checks HF_TOKEN environment variable as fallback
+        (standard HuggingFace environment variable).
+
+        Returns:
+            HuggingFace token or None
+        """
+        # Try our secrets system first
+        token = self.get("huggingface")
+
+        # Fallback to standard HuggingFace env vars
+        if token is None:
+            token = os.environ.get("HF_TOKEN")
+        if token is None:
+            token = os.environ.get("HUGGING_FACE_HUB_TOKEN")
+
+        return token
+
+    def get_postgres_token(self) -> Optional[str]:
+        """
+        Get Postgres Token.
+
+        Also checks POSTGRES_TOKEN environment variable as fallback
+        (standard Postgres environment variable).
+
+        Returns:
+            Postgres Token or None
+        """
+        # Try our secrets system first
+        token = self.get("postgres_token")
+
+        # Fallback to standard Postgres env vars
+        if token is None:
+            token = os.environ.get("POSTGRES_TOKEN")
 
         return token
 
