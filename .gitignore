@@ -12,6 +12,7 @@
 .editorconfig
 docs/.obsidian
 docs/standards
+docs/api
 docs/v*
 tests/
 
