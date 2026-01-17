@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Secrets Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-5.5-2
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 3 - Production Integration
+FILE VERSION: v5.0-4-1.0-1
+LAST MODIFIED: 2026-01-17
+PHASE: Phase 4 - Alerting Integration
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -28,12 +28,9 @@ DOCKER SECRETS LOCATIONS:
 - Development (Local): ./secrets/<secret_name>
 
 SUPPORTED SECRETS:
-- claude_api_token: Claude API key for Claude AI access
 - huggingface_token: HuggingFace API token for model downloads
-- discord_alert_token: Discord webhook URL for system alerts
-- discord_bot_token: Discord bot token
+- ash_nlp_discord_alert_token: Discord webhook URL for Ash-NLP alerts
 - webhook_token: Webhook signing secret
-- redis_token: Redis password for secure connections
 """
 
 import logging
@@ -59,12 +56,8 @@ LOCAL_SECRETS_PATH = Path("secrets")
 
 # Known secret names and their descriptions
 KNOWN_SECRETS = {
-    "claude_api_token": "Claude API key for Claude AI access",
-    "discord_alert_token": "Discord webhook URL for system alerts",
-    "discord_bot_token": "Discord bot token",
+    "ash_nlp_discord_alert_token": "Discord webhook URL for Ash-NLP alerts",
     "huggingface_token": "HuggingFace API token for authenticated model downloads",
-    "postgres_token": "PostgreSQL password for secure connections",
-    "redis_token": "Redis password for secure connections",
     "webhook_token": "Webhook signing secret",
 }
 
@@ -257,18 +250,24 @@ class SecretsManager:
 
     def get_discord_alert_token(self) -> Optional[str]:
         """
-        Get Discord alert token.
+        Get Discord alert webhook token for Ash-NLP.
 
-        Also checks DISCORD_ALERT_TOKEN environment variable as fallback
-        (standard Discord environment variable).
+        Uses the module-specific secret name `ash_nlp_discord_alert_token`.
+        Also checks ASH_NLP_DISCORD_ALERT_TOKEN environment variable as fallback.
 
         Returns:
-            Discord alert token or None
+            Discord alert webhook URL or None
         """
-        # Try our secrets system first
-        token = self.get("discord_alert_token")
+        # Try our secrets system first (new module-specific name)
+        token = self.get("ash_nlp_discord_alert_token")
 
-        # Fallback to standard Discord env vars
+        # Fallback to environment variable
+        if token is None:
+            token = os.environ.get("ASH_NLP_DISCORD_ALERT_TOKEN")
+
+        # Legacy fallback (deprecated - will be removed)
+        if token is None:
+            token = self.get("discord_alert_token")
         if token is None:
             token = os.environ.get("DISCORD_ALERT_TOKEN")
 
