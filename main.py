@@ -11,9 +11,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Main Entry Point for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.4-6
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.4 - API Layer
+FILE VERSION: v5.0-6-1.0-2
+LAST MODIFIED: 2026-01-17
+PHASE: Phase 6 - Logging Colorization Enforcement
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -47,7 +47,7 @@ import sys
 import uvicorn
 
 # Module version
-__version__ = "v5.0-3-4.4-6"
+__version__ = "v5.0-6-1.0-2"
 
 # Default configuration
 DEFAULT_HOST = "0.0.0.0"
@@ -55,34 +55,39 @@ DEFAULT_PORT = 30880
 DEFAULT_WORKERS = 1
 DEFAULT_ENVIRONMENT = "production"
 DEFAULT_LOG_LEVEL = "INFO"
+DEFAULT_LOG_FORMAT = "human"
+
+# Global logging manager instance (initialized in main)
+_logging_manager = None
 
 
-def setup_logging(log_level: str = "INFO") -> None:
+def get_logging_manager():
+    """Get the global logging manager instance."""
+    return _logging_manager
+
+
+def setup_logging(log_level: str = "INFO", log_format: str = "human") -> None:
     """
-    Configure logging for the application.
+    Configure logging using Charter v5.2 compliant LoggingConfigManager.
 
     Args:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR)
+        log_format: Log format ('human' for colorized, 'json' for structured)
     """
-    # Convert string to logging level
-    numeric_level = getattr(logging, log_level.upper(), logging.INFO)
+    global _logging_manager
 
-    # Configure root logger
-    logging.basicConfig(
-        level=numeric_level,
-        format="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        stream=sys.stdout,
+    # Import and create the logging manager
+    from src.managers.logging_config_manager import create_logging_config_manager
+
+    _logging_manager = create_logging_config_manager(
+        log_level=log_level,
+        log_format=log_format,
+        app_name="ash-nlp",
     )
 
-    # Reduce noise from third-party libraries
-    logging.getLogger("uvicorn").setLevel(logging.WARNING)
-    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
-    logging.getLogger("transformers").setLevel(logging.WARNING)
-    logging.getLogger("torch").setLevel(logging.WARNING)
-
-    logger = logging.getLogger(__name__)
-    logger.info(f"Logging configured at {log_level} level")
+    logger = _logging_manager.get_logger("main")
+    logger.info(f"Logging configured at {log_level} level ({log_format} format)")
+    logger.success("Charter v5.2 colorized logging active")
 
 
 def parse_args() -> argparse.Namespace:
@@ -147,6 +152,14 @@ Environment Variables:
     )
 
     parser.add_argument(
+        "--log-format",
+        type=str,
+        default=os.getenv("NLP_LOG_FORMAT", DEFAULT_LOG_FORMAT),
+        choices=["human", "json"],
+        help=f"Log format (default: {DEFAULT_LOG_FORMAT})",
+    )
+
+    parser.add_argument(
         "--reload",
         action="store_true",
         help="Enable auto-reload (development only)",
@@ -168,10 +181,10 @@ def main() -> None:
     # Parse arguments
     args = parse_args()
 
-    # Setup logging
-    setup_logging(args.log_level)
+    # Setup logging with Charter v5.2 colorization
+    setup_logging(args.log_level, args.log_format)
 
-    logger = logging.getLogger(__name__)
+    logger = _logging_manager.get_logger("main")
 
     # Print startup banner
     logger.info("=" * 60)
