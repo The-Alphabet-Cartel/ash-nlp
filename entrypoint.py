@@ -47,15 +47,77 @@ import subprocess
 import sys
 
 # Module version
-__version__ = "v5.0-8-1.1-1"
+__version__ = "v5.0-8-1.2-1"
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    stream=sys.stdout,
-)
+
+# =============================================================================
+# Charter v5.2 Colorized Logging for Entrypoint
+# =============================================================================
+class Colors:
+    """ANSI escape codes for Charter v5.2 compliant colorization."""
+    RESET = "\033[0m"
+    DIM = "\033[2m"
+    CRITICAL = "\033[1;91m"  # Bright Red Bold
+    ERROR = "\033[91m"        # Bright Red
+    WARNING = "\033[93m"      # Bright Yellow
+    INFO = "\033[96m"         # Bright Cyan
+    DEBUG = "\033[90m"        # Gray
+    SUCCESS = "\033[92m"      # Bright Green
+    TIMESTAMP = "\033[90m"    # Gray
+
+
+class ColorizedFormatter(logging.Formatter):
+    """Charter v5.2 compliant colorized formatter for entrypoint logging."""
+
+    LEVEL_COLORS = {
+        logging.CRITICAL: Colors.CRITICAL,
+        logging.ERROR: Colors.ERROR,
+        logging.WARNING: Colors.WARNING,
+        logging.INFO: Colors.INFO,
+        logging.DEBUG: Colors.DEBUG,
+    }
+
+    def __init__(self, use_colors: bool = True):
+        super().__init__(datefmt="%Y-%m-%d %H:%M:%S")
+        self.use_colors = use_colors
+
+    def format(self, record: logging.LogRecord) -> str:
+        from datetime import datetime
+        timestamp = datetime.fromtimestamp(record.created).strftime(self.datefmt)
+        level_name = record.levelname.ljust(8)
+        message = record.getMessage()
+
+        if self.use_colors:
+            level_color = self.LEVEL_COLORS.get(record.levelno, Colors.RESET)
+            return (
+                f"{Colors.TIMESTAMP}[{timestamp}]{Colors.RESET} "
+                f"{level_color}{level_name}{Colors.RESET} "
+                f"{Colors.DIM}|{Colors.RESET} "
+                f"{level_color}{message}{Colors.RESET}"
+            )
+        else:
+            return f"[{timestamp}] {level_name} | {message}"
+
+
+def _configure_logging() -> None:
+    """Configure colorized logging for the entrypoint."""
+    # Check for forced color output (useful for Docker containers)
+    force_color = os.environ.get("FORCE_COLOR", "").lower() in ("1", "true", "yes")
+    use_colors = force_color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+
+    # Create and configure handler
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(ColorizedFormatter(use_colors=use_colors))
+
+    # Configure root logger for entrypoint
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.handlers.clear()
+    root_logger.addHandler(handler)
+
+
+# Initialize logging
+_configure_logging()
 logger = logging.getLogger(__name__)
 
 

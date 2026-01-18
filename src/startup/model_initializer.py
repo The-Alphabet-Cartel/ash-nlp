@@ -54,16 +54,22 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 # Module version
-__version__ = "v5.0-7-1.1-1"
+__version__ = "v5.0-7-1.2-1"
 
-# Configure logging for standalone execution
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)-8s | %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    stream=sys.stdout,
-)
+# Get logger - inherits configuration from entrypoint when imported,
+# or uses fallback for standalone execution
 logger = logging.getLogger(__name__)
+
+# Only configure if running standalone (not imported by entrypoint)
+if not logging.getLogger().handlers:
+    # Fallback for standalone execution: python -m src.startup.model_initializer
+    # When imported by entrypoint.py, root logger is already configured with colors
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)-8s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        stream=sys.stdout,
+    )
 
 
 # =============================================================================
