@@ -349,10 +349,16 @@ Ash-NLP uses a multi-model ensemble for crisis detection:
     # Setup Custom Middleware
     # =========================================================================
 
+    # Get bypass key from secrets (for internal tools like Ash-Thrash)
+    from src.managers import get_secrets_manager
+    secrets = get_secrets_manager()
+    bypass_key = secrets.get("ash_internal_bypass_key")
+
     setup_middleware(
         app=app,
         enable_rate_limiting=enable_rate_limiting,
         requests_per_minute=requests_per_minute,
+        rate_limit_bypass_key=bypass_key,
     )
 
     # =========================================================================

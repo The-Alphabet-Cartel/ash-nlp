@@ -297,18 +297,28 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     Attributes:
         requests_per_minute: Max requests per minute per client
         enabled: Whether rate limiting is active
+        bypass_key: Optional secret key to bypass rate limiting (for internal tools)
     """
+
+    # Header name for internal bypass key
+    BYPASS_HEADER = "X-Ash-Internal-Key"
 
     def __init__(
         self,
         app: FastAPI,
         requests_per_minute: int = 60,
         enabled: bool = True,
+        bypass_key: Optional[str] = None,
     ):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
         self.enabled = enabled
+        self.bypass_key = bypass_key
         self._request_counts: Dict[str, list] = {}
+
+        # Log bypass key status (without revealing the key)
+        if self.bypass_key:
+            logger.info("🔑 Rate limit bypass key configured for internal tools")
 
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         if not self.enabled:
@@ -317,6 +327,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Skip rate limiting for health checks
         if request.url.path in {"/health", "/healthz", "/ready"}:
             return await call_next(request)
+
+        # Skip rate limiting for internal tools with valid bypass key
+        if self.bypass_key:
+            provided_key = request.headers.get(self.BYPASS_HEADER)
+            if provided_key and provided_key == self.bypass_key:
+                logger.debug("🔓 Rate limit bypassed for internal tool")
+                return await call_next(request)
 
         client_id = self._get_client_id(request)
 
@@ -404,6 +421,7 @@ def setup_middleware(
     app: FastAPI,
     enable_rate_limiting: bool = True,
     requests_per_minute: int = 60,
+    rate_limit_bypass_key: Optional[str] = None,
 ) -> None:
     """
     Setup all middleware for the FastAPI application.
@@ -414,6 +432,7 @@ def setup_middleware(
         app: FastAPI application instance
         enable_rate_limiting: Whether to enable rate limiting
         requests_per_minute: Rate limit threshold
+        rate_limit_bypass_key: Optional secret key to bypass rate limiting (for internal tools)
     """
     # Add middleware in reverse execution order
     # (last added = first executed)
@@ -430,6 +449,7 @@ def setup_middleware(
             RateLimitMiddleware,
             requests_per_minute=requests_per_minute,
             enabled=True,
+            bypass_key=rate_limit_bypass_key,
         )
 
     # 4. Request ID (innermost - generates ID first)
@@ -438,7 +458,8 @@ def setup_middleware(
     logger.info(
         f"🔧 Middleware configured "
         f"(rate_limiting={enable_rate_limiting}, "
-        f"rpm={requests_per_minute})"
+        f"rpm={requests_per_minute}, "
+        f"bypass_key={'configured' if rate_limit_bypass_key else 'none'})"
     )
 
 

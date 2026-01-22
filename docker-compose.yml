@@ -113,6 +113,7 @@ services:
 
     # Docker Secrets
     secrets:
+      - ash_internal_bypass_key
       - ash_nlp_discord_alert_token
       - huggingface_token
 
@@ -138,6 +139,8 @@ services:
 # Secrets
 # =============================================================================
 secrets:
+  ash_internal_bypass_key:
+    file: ./secrets/ash_internal_bypass_key
   ash_nlp_discord_alert_token:
     file: ./secrets/ash_nlp_discord_alert_token
   huggingface_token:
