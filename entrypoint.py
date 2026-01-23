@@ -14,8 +14,8 @@ MISSION - NEVER TO BE VIOLATED:
 ============================================================================
 Docker Entrypoint for Ash-NLP Service
 ---
-FILE VERSION: v5.0-8-1.1-1
-LAST MODIFIED: 2026-01-05
+FILE VERSION: v5.0-8-1.2-1
+LAST MODIFIED: 2026-01-22
 PHASE: Phase 8 Step 1.1 - PUID/PGID Support in Entrypoint
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -119,6 +119,34 @@ def _configure_logging() -> None:
 # Initialize logging
 _configure_logging()
 logger = logging.getLogger(__name__)
+
+
+def print_startup_banner() -> None:
+    """Print the ASCII art startup banner."""
+    # Check for color support
+    force_color = os.environ.get("FORCE_COLOR", "").lower() in ("1", "true", "yes")
+    use_colors = force_color or (hasattr(sys.stdout, "isatty") and sys.stdout.isatty())
+    
+    banner = """
+╔═══════════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                       ║
+║              █████╗ ███████╗██╗  ██╗      ███╗   ██╗██╗     ██████╗               ║
+║             ██╔══██╗██╔════╝██║  ██║      ████╗  ██║██║     ██╔══██╗              ║
+║             ███████║███████╗███████║█████╗██╔██╗ ██║██║     ██████╔╝              ║
+║             ██╔══██║╚════██║██╔══██║╚════╝██║╚██╗██║██║     ██╔═══╝               ║
+║             ██║  ██║███████║██║  ██║      ██║ ╚████║███████╗██║                  ║
+║             ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝      ╚═╝  ╚═══╝╚══════╝╚═╝                  ║
+║                                                                                       ║
+║                          Crisis Detection NLP Server v5.0                             ║
+║                                                                                       ║
+║                   The Alphabet Cartel - https://discord.gg/alphabetcartel             ║
+║                                                                                       ║
+╚═══════════════════════════════════════════════════════════════════════════════════════╝
+"""
+    if use_colors:
+        print(f"{Colors.INFO}{banner}{Colors.RESET}")
+    else:
+        print(banner)
 
 
 def run_user_setup() -> tuple:
@@ -265,6 +293,9 @@ def main() -> int:
     Returns:
         Exit code
     """
+    # Print startup banner first
+    print_startup_banner()
+    
     logger.info("")
     logger.info("🚀 Ash-NLP Container Entrypoint")
     logger.info(f"   Version: {__version__}")
