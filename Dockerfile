@@ -73,6 +73,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # =============================================================================
 FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS runtime
 
+# Default user/group IDs (can be overridden at runtime via PUID/PGID)
+ARG DEFAULT_UID=1000
+ARG DEFAULT_GID=1000
+
 # Labels
 LABEL maintainer="The Alphabet Cartel <dev@alphabetcartel.org>"
 LABEL org.opencontainers.image.title="Ash-NLP"
@@ -81,10 +85,6 @@ LABEL org.opencontainers.image.version="5.0.0"
 LABEL org.opencontainers.image.vendor="The Alphabet Cartel"
 LABEL org.opencontainers.image.url="https://github.com/the-alphabet-cartel/ash-nlp"
 LABEL org.opencontainers.image.source="https://github.com/the-alphabet-cartel/ash-nlp"
-
-# Default PUID/PGID (can be overridden at runtime)
-ENV PUID=1001 \
-    PGID=1001
 
 # Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -103,7 +103,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     HF_HOME=/app/models-cache \
     # CUDA
     NVIDIA_VISIBLE_DEVICES=all \
-    NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+    # Default PUID/PGID (LinuxServer.io style)
+    PUID=${DEFAULT_UID} \
+    PGID=${DEFAULT_GID}
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
