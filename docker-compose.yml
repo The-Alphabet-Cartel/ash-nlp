@@ -94,6 +94,9 @@ services:
     # Environment variables
     environment:
       <<: *env
+      # GPU
+      NVIDIA_VISIBLE_DEVICES: all
+
     env_file:
       - .env
 
