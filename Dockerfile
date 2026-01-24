@@ -71,14 +71,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 # =============================================================================
 # Stage 2: Runtime (CUDA)
 # =============================================================================
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04 AS runtime
+FROM python:3.11-slim-bookworm AS runtime
 
 # Default user/group IDs (can be overridden at runtime via PUID/PGID)
 ARG DEFAULT_UID=1000
 ARG DEFAULT_GID=1000
 
 # Labels
-LABEL maintainer="The Alphabet Cartel <dev@alphabetcartel.org>"
+LABEL maintainer="PapaBearDoes <github.com/PapaBearDoes>"
 LABEL org.opencontainers.image.title="Ash-NLP"
 LABEL org.opencontainers.image.description="Crisis Detection Backend for The Alphabet Cartel Discord Community"
 LABEL org.opencontainers.image.version="5.0.0"
