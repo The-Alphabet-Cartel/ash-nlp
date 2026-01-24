@@ -57,10 +57,10 @@ __version__ = "v5.0-8-1.0-1"
 logger = logging.getLogger(__name__)
 
 # Default values (matching Dockerfile defaults)
-DEFAULT_PUID = 1001
-DEFAULT_PGID = 1001
-DEFAULT_USERNAME = "nlp"
-DEFAULT_GROUPNAME = "nlp"
+DEFAULT_PUID = 1000
+DEFAULT_PGID = 1000
+DEFAULT_USERNAME = "ash-nlp"
+DEFAULT_GROUPNAME = "ash-nlp"
 
 # Application directories that need correct ownership
 APP_DIRECTORIES = [
