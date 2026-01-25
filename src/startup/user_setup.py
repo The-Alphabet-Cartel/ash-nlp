@@ -196,6 +196,7 @@ def create_user(uid: int, gid: int, username: str = DEFAULT_USERNAME) -> bool:
         result = subprocess.run(
             [
                 "useradd",
+                "-o",
                 "--uid",
                 str(uid),
                 "--gid",
