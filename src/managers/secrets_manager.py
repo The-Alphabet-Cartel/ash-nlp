@@ -302,8 +302,8 @@ class SecretsManager:
         Returns:
             HuggingFace token or None
         """
-        # Try our secrets system first
-        token = self.get("huggingface")
+        # Try our secrets system first (matches docker-compose secret name)
+        token = self.get("huggingface_token")
 
         # Fallback to standard HuggingFace env vars
         if token is None:
@@ -393,7 +393,7 @@ class SecretsManager:
             return True
 
         # Check HuggingFace-specific env vars
-        if secret_name == "huggingface":
+        if secret_name == "huggingface_token":
             if os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN"):
                 return True
 
