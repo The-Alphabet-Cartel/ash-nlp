@@ -156,7 +156,7 @@ def create_group(gid: int, groupname: str = DEFAULT_GROUPNAME) -> bool:
         import subprocess
 
         result = subprocess.run(
-            ["groupadd", "--gid", str(gid), groupname], capture_output=True, text=True
+            ["groupadd", "-o", "--gid", str(gid), groupname], capture_output=True, text=True
         )
         if result.returncode == 0:
             logger.info(f"   ✅ Created group '{groupname}' with GID {gid}")
