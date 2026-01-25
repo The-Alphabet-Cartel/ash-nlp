@@ -36,7 +36,7 @@
 # =============================================================================
 # Stage 1: Builder
 # =============================================================================
-FROM python:3.11-slim AS builder
+FROM python:3.12-slim AS builder
 
 # Build arguments
 ARG HUGGINGFACE_HUB_CACHE=/app/models-cache
@@ -71,7 +71,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # =============================================================================
 # Stage 2: Runtime (CUDA)
 # =============================================================================
-FROM python:3.11-slim AS runtime
+FROM python:3.12-slim AS runtime
 
 # Default user/group IDs (can be overridden at runtime via PUID/PGID)
 ARG DEFAULT_UID=1000
@@ -123,7 +123,7 @@ RUN mkdir -p /app/config /app/models-cache /app/logs
 WORKDIR /app
 
 # Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
 # Copy application code
 COPY . /app/
