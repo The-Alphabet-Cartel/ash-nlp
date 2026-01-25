@@ -1,8 +1,8 @@
 # ============================================================================
 # Ash-NLP v5.0 Production Dockerfile
 # ============================================================================
-# FILE VERSION: v5.0-8-1.2-1
-# LAST MODIFIED: 2026-01-05
+# FILE VERSION: v5.0-8-1.3-1
+# LAST MODIFIED: 2026-01-25
 # Repository: https://github.com/the-alphabet-cartel/ash-nlp
 # Community: The Alphabet Cartel - https://discord.gg/alphabetcartel
 # ============================================================================
@@ -108,16 +108,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PUID=${DEFAULT_UID} \
     PGID=${DEFAULT_GID}
 
-# Install runtime dependencies
+# Install runtime dependencies (Python 3.11 already provided by base image)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3.11-venv \
-    python3-pip \
     curl \
     tini \
     tzdata \
-    && ln -sf /usr/bin/python3.11 /usr/bin/python \
-    && ln -sf /usr/bin/python3.11 /usr/bin/python3 \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
