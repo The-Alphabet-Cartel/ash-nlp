@@ -27,7 +27,7 @@
 #   Models cache to /app/models-cache (mount as volume for persistence).
 #
 # PUID/PGID:
-#   Container supports LinuxServer.io-style PUID/PGID environment variables
+#   Container supports PUID/PGID environment variables
 #   for runtime user configuration. The entrypoint creates the user and
 #   fixes permissions before dropping privileges.
 #
@@ -111,7 +111,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     # CUDA
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility \
-    # Default PUID/PGID (LinuxServer.io style)
+    # Default PUID/PGID
     PUID=${DEFAULT_UID} \
     PGID=${DEFAULT_GID}
 
