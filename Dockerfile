@@ -115,7 +115,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PUID=${DEFAULT_UID} \
     PGID=${DEFAULT_GID}
 
-# Install runtime dependencies (Python 3.11 already provided by base image)
+# Install runtime dependencies (Python 3.12 already provided by base image)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     tini \
@@ -131,9 +131,6 @@ WORKDIR ${APP_HOME}
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
-
-# Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
 # Copy application code
 COPY . ${APP_HOME}/
