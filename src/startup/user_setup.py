@@ -12,7 +12,7 @@ MISSION - NEVER TO BE VIOLATED:
     Protect  → Safeguard our LGBTQIA+ community through accurate detection
 
 ============================================================================
-Runtime User Setup for LinuxServer.io-style PUID/PGID Support
+Runtime User Setup for PUID/PGID Support
 ---
 FILE VERSION: v5.0-8-1.0-1
 LAST MODIFIED: 2026-01-05
@@ -22,7 +22,7 @@ Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 ============================================================================
 DESCRIPTION:
-    Handles runtime user/group setup similar to LinuxServer.io containers.
+    Handles runtime user/group setup.
     Reads PUID and PGID from environment variables and:
     1. Creates/modifies the application user with specified UID
     2. Creates/modifies the application group with specified GID
@@ -156,7 +156,9 @@ def create_group(gid: int, groupname: str = DEFAULT_GROUPNAME) -> bool:
         import subprocess
 
         result = subprocess.run(
-            ["groupadd", "-o", "--gid", str(gid), groupname], capture_output=True, text=True
+            ["groupadd", "-o", "--gid", str(gid), groupname],
+            capture_output=True,
+            text=True,
         )
         if result.returncode == 0:
             logger.info(f"   ✅ Created group '{groupname}' with GID {gid}")
