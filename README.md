@@ -65,10 +65,10 @@ git clone https://github.com/the-alphabet-cartel/ash-nlp.git
 cd ash-nlp
 
 # Start with Docker Compose (GPU)
-docker-compose up -d
+docker compose up -d
 
 # Or CPU-only
-docker-compose --profile cpu up -d
+docker compose --profile cpu up -d
 ```
 
 ### Verify Installation
@@ -226,16 +226,16 @@ docker run -p 30880:30880 ash-nlp:v5.0-cpu
 
 ```bash
 # Start (GPU)
-docker-compose up -d
+docker compose up -d
 
 # Start (CPU)
-docker-compose --profile cpu up -d
+docker compose --profile cpu up -d
 
 # View logs
-docker-compose logs -f ash-nlp
+docker compose logs -f ash-nlp
 
 # Stop
-docker-compose down
+docker compose down
 ```
 
 ---

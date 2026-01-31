@@ -9,16 +9,16 @@
 #
 # USAGE:
 #   # Start services
-#   docker-compose up -d
+#   docker compose up -d
 #
 #   # View logs
-#   docker-compose logs -f ash-nlp
+#   docker compose logs -f ash-nlp
 #
 #   # Stop services
-#   docker-compose down
+#   docker compose down
 #
 #   # Rebuild and start
-#   docker-compose up -d --build
+#   docker compose up -d --build
 #
 # PUID/PGID:
 #   Set PUID and PGID in your .env file to match the owner of your
@@ -96,7 +96,6 @@ services:
       <<: *env
       # GPU
       NVIDIA_VISIBLE_DEVICES: all
-
     env_file:
       - .env
 
@@ -108,6 +107,8 @@ services:
       - ./models-cache:/app/models-cache
       # Logs
       - ./logs:/app/logs
+      # Tests (Dev only)
+      - ./tests:/app/tests
 
     # Port mapping
     ports:
@@ -133,9 +134,9 @@ services:
 
     # Labels for organization
     labels:
-      - "com.alphabetcartel.service=ash-nlp"
-      - "com.alphabetcartel.version=5.0.0"
-      - "com.alphabetcartel.description=Crisis Detection Backend"
+      - "net.alphabetcartel.service=ash-nlp"
+      - "net.alphabetcartel.version=5.0.0"
+      - "net.alphabetcartel.description=Crisis Detection Backend"
 
 # =============================================================================
 # Secrets

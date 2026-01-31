@@ -14,8 +14,8 @@
 #   # Run with GPU support and custom PUID/PGID
 #   docker run --gpus all -e PUID=1000 -e PGID=1000 -p 30880:30880 ash-nlp:v5.0
 #
-#   # Run with docker-compose (recommended)
-#   docker-compose up -d
+#   # Run with docker compose (recommended)
+#   docker compose up -d
 #
 # MULTI-STAGE BUILD:
 #   Stage 1 (builder): Install dependencies

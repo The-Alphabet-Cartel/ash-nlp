@@ -273,22 +273,22 @@ class SecretsManager:
 
         return token
 
-    def get_discord_bot_token(self) -> Optional[str]:
+    def get_ash_bot_token(self) -> Optional[str]:
         """
         Get Discord bot token.
 
-        Also checks DISCORD_BOT_TOKEN environment variable as fallback
+        Also checks ASH_BOT_TOKEN environment variable as fallback
         (standard Discord environment variable).
 
         Returns:
             Discord bot token or None
         """
         # Try our secrets system first
-        token = self.get("discord_bot_token")
+        token = self.get("ash_bot_token")
 
         # Fallback to standard Discord env vars
         if token is None:
-            token = os.environ.get("DISCORD_BOT_TOKEN")
+            token = os.environ.get("ASH_BOT_TOKEN")
 
         return token
 
