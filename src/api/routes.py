@@ -68,6 +68,8 @@ from .schemas import (
     ModelStatusResponse,
     ModelSignalResponse,
     ErrorResponse,
+    # Phase 3 Vigil Response schemas
+    VigilStatusResponse,
     # Phase 4 Response schemas
     ExplanationResponse,
     ConflictAnalysisResponse,
@@ -822,6 +824,29 @@ async def get_status(
             conflicts_detected=status_data.get("stats", {}).get("conflicts_detected", 0),
         )
 
+    # Build Phase 3 Vigil status
+    vigil_status = None
+    vigil_data = status_data.get("vigil")
+    if vigil_data and vigil_data.get("enabled", False):
+        # Extract circuit breaker state from client_health
+        client_health = vigil_data.get("client_health", {})
+        circuit_breaker = client_health.get("circuit_breaker", {})
+        circuit_state = circuit_breaker.get("state", "unknown")
+        
+        # Determine if Vigil is healthy (circuit closed and client enabled)
+        is_healthy = (
+            vigil_data.get("client_enabled", False) and
+            circuit_state == "closed"
+        )
+        
+        vigil_status = VigilStatusResponse(
+            enabled=vigil_data.get("enabled", False),
+            healthy=is_healthy,
+            circuit_state=circuit_state,
+            calls=status_data.get("stats", {}).get("vigil_calls", 0),
+            amplifications=status_data.get("stats", {}).get("vigil_amplifications", 0),
+        )
+
     return StatusResponse(
         service="ash-nlp",
         version=__version__,
@@ -837,6 +862,7 @@ async def get_status(
             "thresholds": status_data.get("thresholds", {}),
             "async_inference": status_data.get("async_inference", True),
         },
+        vigil=vigil_status,
         phase4=phase4_status,
         timestamp=datetime.utcnow(),
     )
