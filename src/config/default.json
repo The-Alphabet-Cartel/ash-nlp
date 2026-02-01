@@ -1,9 +1,9 @@
 {
 	"_metadata": {
-		"file_version": "v5.0-6-2.0-1",
-		"last_modified": "2026-01-02",
+		"file_version": "v5.0-3-2.0-1",
+		"last_modified": "2026-01-27",
 		"clean_architecture": "Compliant",
-		"description": "Ash-NLP v5.0 Default Configuration - Crisis Detection Ensemble",
+		"description": "Ash-NLP v5.0 Default Configuration - Crisis Detection Ensemble with Vigil Integration",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
 		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
 	},
@@ -434,6 +434,152 @@
 			"safe_labels": {
 				"type": "list",
 				"required": true
+			}
+		}
+	},
+
+	"vigil": {
+		"description": "Ash-Vigil integration configuration - specialized mental health risk detection on Bacchus",
+		"enabled": "${NLP_VIGIL_ENABLED}",
+		"host": "${NLP_VIGIL_HOST}",
+		"port": "${NLP_VIGIL_PORT}",
+		"timeout_ms": "${NLP_VIGIL_TIMEOUT}",
+		"retry_attempts": "${NLP_VIGIL_RETRIES}",
+		"circuit_breaker": {
+			"failure_threshold": "${NLP_VIGIL_CB_FAILURE_THRESHOLD}",
+			"recovery_timeout_seconds": "${NLP_VIGIL_CB_RECOVERY_SECONDS}"
+		},
+		"defaults": {
+			"enabled": true,
+			"host": "10.20.30.14",
+			"port": 30882,
+			"timeout_ms": 500,
+			"retry_attempts": 1,
+			"circuit_breaker": {
+				"failure_threshold": 3,
+				"recovery_timeout_seconds": 30
+			}
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": false
+			},
+			"host": {
+				"type": "string",
+				"required": true
+			},
+			"port": {
+				"type": "integer",
+				"range": [1, 65535],
+				"required": true
+			},
+			"timeout_ms": {
+				"type": "integer",
+				"range": [100, 5000],
+				"required": false
+			},
+			"retry_attempts": {
+				"type": "integer",
+				"range": [0, 5],
+				"required": false
+			}
+		}
+	},
+
+	"vigil_amplification": {
+		"description": "Vigil risk amplification configuration - controls when and how Vigil boosts base scores",
+		"enabled": "${NLP_VIGIL_AMPLIFICATION_ENABLED}",
+		"score_cap": "${NLP_VIGIL_SCORE_CAP}",
+		"skip_threshold": "${NLP_VIGIL_SKIP_THRESHOLD}",
+		"amplify_medium": "${NLP_VIGIL_AMPLIFY_MEDIUM}",
+		"vigil_thresholds": {
+			"description": "Vigil risk score thresholds that trigger different amplification levels",
+			"critical": "${NLP_VIGIL_THRESHOLD_CRITICAL}",
+			"high": "${NLP_VIGIL_THRESHOLD_HIGH}",
+			"moderate": "${NLP_VIGIL_THRESHOLD_MODERATE}"
+		},
+		"boosts": {
+			"description": "Score adjustments applied based on Vigil risk detection",
+			"critical_boost": "${NLP_VIGIL_BOOST_CRITICAL}",
+			"critical_minimum": "${NLP_VIGIL_BOOST_CRITICAL_MIN}",
+			"high_multiplier": "${NLP_VIGIL_BOOST_HIGH_MULT}",
+			"moderate_multiplier": "${NLP_VIGIL_BOOST_MOD_MULT}"
+		},
+		"defaults": {
+			"enabled": true,
+			"score_cap": 1.0,
+			"skip_threshold": 0.7,
+			"amplify_medium": true,
+			"vigil_thresholds": {
+				"critical": 0.8,
+				"high": 0.6,
+				"moderate": 0.4
+			},
+			"boosts": {
+				"critical_boost": 0.35,
+				"critical_minimum": 0.55,
+				"high_multiplier": 0.3,
+				"moderate_multiplier": 0.1
+			}
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": false
+			},
+			"score_cap": {
+				"type": "float",
+				"range": [0.9, 1.0],
+				"required": false
+			},
+			"skip_threshold": {
+				"type": "float",
+				"range": [0.5, 0.9],
+				"required": false
+			},
+			"amplify_medium": {
+				"type": "boolean",
+				"required": false
+			},
+			"vigil_thresholds": {
+				"critical": {
+					"type": "float",
+					"range": [0.6, 1.0],
+					"required": false
+				},
+				"high": {
+					"type": "float",
+					"range": [0.4, 0.9],
+					"required": false
+				},
+				"moderate": {
+					"type": "float",
+					"range": [0.2, 0.7],
+					"required": false
+				}
+			},
+			"boosts": {
+				"critical_boost": {
+					"type": "float",
+					"range": [0.1, 0.5],
+					"required": false
+				},
+				"critical_minimum": {
+					"type": "float",
+					"range": [0.4, 0.7],
+					"required": false
+				},
+				"high_multiplier": {
+					"type": "float",
+					"range": [0.1, 0.5],
+					"required": false
+				},
+				"moderate_multiplier": {
+					"type": "float",
+					"range": [0.05, 0.3],
+					"required": false
+				}
 			}
 		}
 	}

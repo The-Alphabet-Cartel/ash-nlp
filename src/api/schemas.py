@@ -10,10 +10,10 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 API Schemas for Ash-NLP Service
 ---
-FILE VERSION: v5.0-6-2.0-1
-LAST MODIFIED: 2026-01-02
-PHASE: Phase 6 - Sprint 2 (FE-001: Timezone Support)
-CLEAN ARCHITECTURE: v5.1 Compliant
+FILE VERSION: v5.0-3-5.0-1
+LAST MODIFIED: 2026-01-27
+PHASE: Phase 3 - Ash-Vigil Integration
+CLEAN ARCHITECTURE: v5.2.3 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -22,6 +22,13 @@ RESPONSIBILITIES:
 - Define response schemas for consistent API output
 - Provide OpenAPI documentation through model configs
 - Handle field validation and serialization
+
+PHASE 3 VIGIL ENHANCEMENTS:
+- Vigil status enum for tracking integration status
+- Vigil response schema with risk detection details
+- requires_review flag in analysis response
+- Vigil configuration response schemas
+- Health endpoint includes Vigil status
 
 PHASE 4 ENHANCEMENTS:
 - Consensus algorithm selection in requests
@@ -47,7 +54,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 
 # Module version
-__version__ = "v5.0-6-2.0-1"
+__version__ = "v5.0-3-5.0-1"
 
 
 # =============================================================================
@@ -82,6 +89,38 @@ class HealthStatus(str, Enum):
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
+
+
+# =============================================================================
+# Phase 3 Vigil Enums
+# =============================================================================
+
+
+class VigilStatus(str, Enum):
+    """
+    Status of Vigil integration for a request (Phase 3 Vigil).
+    
+    Indicates what happened with the Ash-Vigil integration
+    for each analysis request.
+    """
+
+    USED = "used"
+    """Vigil was called successfully and result was incorporated."""
+    
+    SKIPPED = "skipped"
+    """Base score already high enough, Vigil call not needed."""
+    
+    UNAVAILABLE = "unavailable"
+    """Network error or Vigil returned an error."""
+    
+    TIMEOUT = "timeout"
+    """Vigil call exceeded the configured timeout."""
+    
+    CIRCUIT_OPEN = "circuit_open"
+    """Circuit breaker tripped due to repeated failures."""
+    
+    DISABLED = "disabled"
+    """Vigil integration is disabled in configuration."""
 
 
 # =============================================================================
@@ -383,6 +422,83 @@ class BatchAnalyzeRequest(BaseModel):
         if not validated:
             raise ValueError("At least one non-empty message required")
         return validated
+
+
+# =============================================================================
+# Phase 3 Vigil Response Components
+# =============================================================================
+
+
+class VigilResponse(BaseModel):
+    """
+    Vigil integration details in analysis response (Phase 3 Vigil).
+    
+    Provides complete visibility into what happened with the 
+    Ash-Vigil integration for each analysis request.
+    
+    Attributes:
+        status: What happened with Vigil (used, skipped, unavailable, etc.)
+        risk_score: Risk score from Vigil if available (0.0-1.0)
+        risk_label: Risk classification label from Vigil
+        amplification_applied: Whether Vigil boosted the base score
+        base_score: Pre-amplification ensemble score (for transparency)
+        amplified_score: Post-amplification score (before irony dampening)
+    """
+
+    status: VigilStatus = Field(
+        description="What happened with Vigil integration",
+    )
+    risk_score: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Risk score from Vigil (0-1) if called successfully",
+    )
+    risk_label: Optional[str] = Field(
+        default=None,
+        description="Risk classification label from Vigil",
+    )
+    amplification_applied: bool = Field(
+        default=False,
+        description="Whether Vigil amplification was applied to base score",
+    )
+    base_score: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Pre-amplification ensemble score (for debugging/transparency)",
+    )
+    amplified_score: Optional[float] = Field(
+        default=None,
+        ge=0.0,
+        le=1.0,
+        description="Post-amplification score before irony dampening",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "status": "used",
+                    "risk_score": 0.72,
+                    "risk_label": "moderate_risk",
+                    "amplification_applied": True,
+                    "base_score": 0.35,
+                    "amplified_score": 0.57,
+                },
+                {
+                    "status": "skipped",
+                    "amplification_applied": False,
+                    "base_score": 0.78,
+                },
+                {
+                    "status": "circuit_open",
+                    "amplification_applied": False,
+                    "base_score": 0.42,
+                },
+            ]
+        }
+    }
 
 
 # =============================================================================
@@ -744,7 +860,7 @@ class AnalyzeResponse(BaseModel):
     Response schema for message analysis.
 
     This is the primary output format for crisis detection results.
-    Includes Phase 4 enhanced fields.
+    Includes Phase 3 Vigil, Phase 4, and Phase 5 enhanced fields.
     """
 
     crisis_detected: bool = Field(description="Whether a crisis was detected")
@@ -782,6 +898,16 @@ class AnalyzeResponse(BaseModel):
         default_factory=datetime.utcnow, description="Response timestamp (UTC)"
     )
     
+    # Phase 3 Vigil Enhanced Fields
+    vigil: Optional[VigilResponse] = Field(
+        default=None,
+        description="Ash-Vigil integration details (Phase 3 Vigil)",
+    )
+    requires_review: bool = Field(
+        default=False,
+        description="Whether CRT human review is recommended (Phase 3 Vigil)",
+    )
+    
     # Phase 4 Enhanced Fields
     explanation: Optional[ExplanationResponse] = Field(
         default=None,
@@ -811,6 +937,7 @@ class AnalyzeResponse(BaseModel):
                     "confidence": 0.87,
                     "crisis_score": 0.78,
                     "requires_intervention": True,
+                    "requires_review": True,
                     "recommended_action": "priority_response",
                     "signals": {
                         "bart": {
@@ -829,6 +956,14 @@ class AnalyzeResponse(BaseModel):
                     "is_degraded": False,
                     "request_id": "req_abc123",
                     "timestamp": "2025-12-31T12:00:00Z",
+                    "vigil": {
+                        "status": "used",
+                        "risk_score": 0.72,
+                        "risk_label": "moderate_risk",
+                        "amplification_applied": True,
+                        "base_score": 0.45,
+                        "amplified_score": 0.67,
+                    },
                     "explanation": {
                         "verbosity": "standard",
                         "decision_summary": "HIGH CONCERN: Crisis indicators detected with 87% confidence.",
@@ -857,6 +992,14 @@ class BatchAnalyzeResponseItem(BaseModel):
     severity: SeverityLevel
     crisis_score: float
     requires_intervention: bool
+    requires_review: bool = Field(
+        default=False,
+        description="Whether CRT review recommended (Phase 3 Vigil)",
+    )
+    vigil_status: Optional[VigilStatus] = Field(
+        default=None,
+        description="Vigil integration status (Phase 3 Vigil)",
+    )
     explanation_summary: Optional[str] = Field(
         default=None,
         description="Brief explanation (if requested)",
@@ -870,10 +1013,168 @@ class BatchAnalyzeResponse(BaseModel):
     crisis_count: int = Field(description="Number with crisis detected")
     critical_count: int = Field(description="Number at critical severity")
     high_count: int = Field(description="Number at high severity")
+    review_count: int = Field(
+        default=0,
+        description="Number requiring CRT review (Phase 3 Vigil)",
+    )
     results: List[BatchAnalyzeResponseItem] = Field(description="Individual results")
     processing_time_ms: float = Field(description="Total processing time")
     request_id: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
+# =============================================================================
+# Phase 3 Vigil Configuration Schemas
+# =============================================================================
+
+
+class VigilAmplificationConfigResponse(BaseModel):
+    """
+    Vigil amplification configuration (Phase 3 Vigil).
+    
+    Shows the current amplification settings that control
+    when and how much Vigil boosts ensemble scores.
+    """
+
+    enabled: bool = Field(description="Whether amplification is enabled")
+    score_cap: float = Field(description="Hard cap for amplified scores (default: 1.0)")
+    skip_threshold: float = Field(
+        description="Base score at which Vigil is skipped (default: 0.70)"
+    )
+    amplify_medium: bool = Field(
+        description="Whether to amplify MEDIUM severity scores"
+    )
+    vigil_thresholds: Dict[str, float] = Field(
+        description="Vigil risk score thresholds (critical, high, moderate)"
+    )
+    boosts: Dict[str, float] = Field(
+        description="Boost values (critical_boost, critical_minimum, high_multiplier, moderate_multiplier)"
+    )
+
+
+class VigilClientConfigResponse(BaseModel):
+    """
+    Vigil client configuration (Phase 3 Vigil).
+    
+    Shows the client connection settings for Ash-Vigil.
+    """
+
+    enabled: bool = Field(description="Whether Vigil client is enabled")
+    host: str = Field(description="Vigil server host")
+    port: int = Field(description="Vigil server port")
+    timeout_ms: int = Field(description="Request timeout in milliseconds")
+    retry_attempts: int = Field(description="Number of retry attempts")
+
+
+class VigilCircuitBreakerResponse(BaseModel):
+    """
+    Vigil circuit breaker status (Phase 3 Vigil).
+    
+    Shows the current state of the circuit breaker for
+    fault tolerance monitoring.
+    """
+
+    state: str = Field(description="Circuit state: closed, open, half_open")
+    consecutive_failures: int = Field(description="Current failure count")
+    failure_threshold: int = Field(description="Failures before circuit opens")
+    recovery_timeout_seconds: int = Field(description="Seconds before recovery attempt")
+    total_failures: int = Field(description="Total failures since startup")
+    total_successes: int = Field(description="Total successes since startup")
+
+
+class VigilStatsResponse(BaseModel):
+    """
+    Vigil usage statistics (Phase 3 Vigil).
+    
+    Shows Vigil integration performance metrics.
+    """
+
+    calls: int = Field(description="Total Vigil API calls")
+    amplifications: int = Field(description="Times amplification was applied")
+    amplification_rate: float = Field(
+        description="Percentage of calls that resulted in amplification"
+    )
+    average_latency_ms: Optional[float] = Field(
+        default=None,
+        description="Average call latency in milliseconds",
+    )
+    success_rate: Optional[float] = Field(
+        default=None,
+        description="Percentage of successful calls",
+    )
+
+
+class VigilConfigResponse(BaseModel):
+    """
+    Complete Vigil configuration response (Phase 3 Vigil).
+    
+    Returns all Vigil-related configuration and status.
+    """
+
+    enabled: bool = Field(description="Whether Vigil integration is enabled")
+    client: Optional[VigilClientConfigResponse] = Field(
+        default=None,
+        description="Client connection configuration",
+    )
+    amplification: VigilAmplificationConfigResponse = Field(
+        description="Amplification configuration",
+    )
+    circuit_breaker: Optional[VigilCircuitBreakerResponse] = Field(
+        default=None,
+        description="Circuit breaker status",
+    )
+    stats: VigilStatsResponse = Field(
+        description="Usage statistics",
+    )
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "enabled": True,
+                    "client": {
+                        "enabled": True,
+                        "host": "10.20.30.14",
+                        "port": 30882,
+                        "timeout_ms": 500,
+                        "retry_attempts": 1,
+                    },
+                    "amplification": {
+                        "enabled": True,
+                        "score_cap": 1.0,
+                        "skip_threshold": 0.70,
+                        "amplify_medium": True,
+                        "vigil_thresholds": {
+                            "critical": 0.8,
+                            "high": 0.6,
+                            "moderate": 0.4,
+                        },
+                        "boosts": {
+                            "critical_boost": 0.35,
+                            "critical_minimum": 0.55,
+                            "high_multiplier": 0.3,
+                            "moderate_multiplier": 0.1,
+                        },
+                    },
+                    "circuit_breaker": {
+                        "state": "closed",
+                        "consecutive_failures": 0,
+                        "failure_threshold": 3,
+                        "recovery_timeout_seconds": 30,
+                        "total_failures": 2,
+                        "total_successes": 1523,
+                    },
+                    "stats": {
+                        "calls": 1525,
+                        "amplifications": 312,
+                        "amplification_rate": 0.2046,
+                        "average_latency_ms": 28.5,
+                        "success_rate": 0.9987,
+                    },
+                }
+            ]
+        }
+    }
 
 
 # =============================================================================
@@ -1105,6 +1406,23 @@ class Phase4StatusResponse(BaseModel):
     )
 
 
+class VigilStatusResponse(BaseModel):
+    """
+    Vigil component status (Phase 3 Vigil).
+    
+    Used in health and status endpoints.
+    """
+
+    enabled: bool = Field(description="Whether Vigil integration is enabled")
+    healthy: bool = Field(description="Whether Vigil is currently healthy")
+    circuit_state: str = Field(
+        default="unknown",
+        description="Circuit breaker state: closed, open, half_open",
+    )
+    calls: int = Field(default=0, description="Total Vigil calls")
+    amplifications: int = Field(default=0, description="Total amplifications applied")
+
+
 class HealthResponse(BaseModel):
     """
     Health check response schema.
@@ -1121,9 +1439,22 @@ class HealthResponse(BaseModel):
         default=None, description="Service uptime in seconds"
     )
     version: str = Field(description="Service version")
+    # Phase 3 Vigil fields
+    vigil_enabled: bool = Field(
+        default=False,
+        description="Whether Vigil integration is enabled (Phase 3 Vigil)",
+    )
+    vigil_healthy: bool = Field(
+        default=False,
+        description="Whether Vigil is currently healthy (Phase 3 Vigil)",
+    )
     phase4_enabled: bool = Field(
         default=True,
         description="Whether Phase 4 features are enabled",
+    )
+    phase5_enabled: bool = Field(
+        default=True,
+        description="Whether Phase 5 features are enabled",
     )
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
@@ -1138,7 +1469,10 @@ class HealthResponse(BaseModel):
                     "total_models": 4,
                     "uptime_seconds": 3600.5,
                     "version": "v5.0.0",
+                    "vigil_enabled": True,
+                    "vigil_healthy": True,
                     "phase4_enabled": True,
+                    "phase5_enabled": True,
                     "timestamp": "2025-12-31T12:00:00Z",
                 }
             ]
@@ -1163,6 +1497,11 @@ class StatusResponse(BaseModel):
     models: List[ModelStatusResponse] = Field(description="Model statuses")
     stats: Dict[str, Any] = Field(description="Service statistics")
     config: Dict[str, Any] = Field(description="Active configuration")
+    # Phase 3 Vigil status
+    vigil: Optional[VigilStatusResponse] = Field(
+        default=None,
+        description="Vigil component status (Phase 3 Vigil)",
+    )
     phase4: Optional[Phase4StatusResponse] = Field(
         default=None,
         description="Phase 4 component status",
@@ -1241,6 +1580,14 @@ class CrisisAlertPayload(BaseModel):
     confidence: float
     recommended_action: RecommendedAction
     message_preview: str = Field(description="First 100 chars of message (for context)")
+    requires_review: bool = Field(
+        default=False,
+        description="Whether CRT review is recommended (Phase 3 Vigil)",
+    )
+    vigil_status: Optional[VigilStatus] = Field(
+        default=None,
+        description="Vigil integration status (Phase 3 Vigil)",
+    )
     user_id: Optional[str] = None
     channel_id: Optional[str] = None
     request_id: str
@@ -1310,6 +1657,29 @@ class EscalationAlertPayload(BaseModel):
         return v
 
 
+class VigilUnavailableAlertPayload(BaseModel):
+    """
+    Payload for Vigil unavailability alert webhooks (Phase 3 Vigil).
+
+    Sent to Discord when Vigil becomes unavailable or circuit opens.
+    """
+
+    alert_type: str = Field(default="vigil_unavailable")
+    vigil_status: VigilStatus = Field(description="Current Vigil status")
+    circuit_state: str = Field(description="Circuit breaker state")
+    consecutive_failures: int = Field(description="Number of consecutive failures")
+    last_error: Optional[str] = Field(
+        default=None,
+        description="Last error message",
+    )
+    recovery_in_seconds: Optional[int] = Field(
+        default=None,
+        description="Seconds until recovery attempt",
+    )
+    request_id: Optional[str] = None
+    timestamp: datetime = Field(default_factory=datetime.utcnow)
+
+
 # =============================================================================
 # Export public interface
 # =============================================================================
@@ -1319,6 +1689,8 @@ __all__ = [
     "SeverityLevel",
     "RecommendedAction",
     "HealthStatus",
+    # Phase 3 Vigil Enums
+    "VigilStatus",
     # Phase 4 Enums
     "ConsensusAlgorithm",
     "ResolutionStrategy",
@@ -1347,6 +1719,14 @@ __all__ = [
     "ModelStatusResponse",
     "ErrorResponse",
     "ErrorDetail",
+    # Phase 3 Vigil Response components
+    "VigilResponse",
+    "VigilConfigResponse",
+    "VigilAmplificationConfigResponse",
+    "VigilClientConfigResponse",
+    "VigilCircuitBreakerResponse",
+    "VigilStatsResponse",
+    "VigilStatusResponse",
     # Phase 4 Response components
     "ExplanationResponse",
     "ConflictAnalysisResponse",
@@ -1370,4 +1750,5 @@ __all__ = [
     "CrisisAlertPayload",
     "ConflictAlertPayload",
     "EscalationAlertPayload",
+    "VigilUnavailableAlertPayload",
 ]

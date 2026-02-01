@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-4.1-3
-LAST MODIFIED: 2026-01-01
-PHASE: Phase 4 - Ensemble Coordinator Enhancement
+FILE VERSION: v5.0-4-4.2-1
+LAST MODIFIED: 2026-01-31
+PHASE: Phase 3.8 - Ash-NLP Deployment
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -41,7 +41,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Module version
-__version__ = "v5.0-4-4.1-3"
+__version__ = "v5.0-4-4.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -371,7 +371,7 @@ class ConfigManager:
         Apply environment variable overrides to configuration.
 
         Scans configuration for ${ENV_VAR} patterns and replaces
-        with actual environment variable values.
+        with actual environment variable values. Handles nested dictionaries.
         """
         override_count = 0
 
@@ -383,6 +383,7 @@ class ConfigManager:
                 if key in ("defaults", "validation", "description"):
                     continue
 
+                # Handle top-level string env vars
                 if (
                     isinstance(value, str)
                     and value.startswith("${")
@@ -402,8 +403,75 @@ class ConfigManager:
                             f"  ENV override: {env_var} -> {section}.{key} = {converted_value}"
                         )
 
+                # Handle nested dictionaries (like vigil_thresholds, boosts)
+                elif isinstance(value, dict):
+                    nested_overrides = self._apply_nested_env_overrides(
+                        value, section, key
+                    )
+                    override_count += nested_overrides
+
         if override_count > 0:
             logger.info(f"🔧 Applied {override_count} environment variable overrides")
+
+    def _apply_nested_env_overrides(
+        self, nested_dict: Dict[str, Any], section: str, parent_key: str
+    ) -> int:
+        """
+        Apply environment variable overrides to a nested dictionary.
+
+        Args:
+            nested_dict: The nested dictionary to process
+            section: Parent section name (for validation lookup)
+            parent_key: Parent key name (for validation lookup)
+
+        Returns:
+            Number of overrides applied
+        """
+        override_count = 0
+        defaults = self._raw_config.get(section, {}).get("defaults", {})
+        nested_defaults = defaults.get(parent_key, {})
+        nested_validation = (
+            self._raw_config.get(section, {})
+            .get("validation", {})
+            .get(parent_key, {})
+        )
+
+        for nested_key, nested_value in nested_dict.items():
+            # Skip description keys
+            if nested_key == "description":
+                continue
+
+            if (
+                isinstance(nested_value, str)
+                and nested_value.startswith("${")
+                and nested_value.endswith("}")
+            ):
+                env_var = nested_value[2:-1]
+                env_value = os.environ.get(env_var)
+
+                if env_value is not None:
+                    # Get expected type from nested validation or infer from defaults
+                    expected_type = "string"
+                    if nested_validation and nested_key in nested_validation:
+                        expected_type = nested_validation[nested_key].get("type", "string")
+                    elif nested_defaults and nested_key in nested_defaults:
+                        # Infer type from default value
+                        default_val = nested_defaults[nested_key]
+                        if isinstance(default_val, bool):
+                            expected_type = "boolean"
+                        elif isinstance(default_val, int):
+                            expected_type = "integer"
+                        elif isinstance(default_val, float):
+                            expected_type = "float"
+
+                    converted_value = self._convert_type(env_value, expected_type)
+                    nested_dict[nested_key] = converted_value
+                    override_count += 1
+                    logger.debug(
+                        f"  ENV override: {env_var} -> {section}.{parent_key}.{nested_key} = {converted_value}"
+                    )
+
+        return override_count
 
     def _get_expected_type(self, section: str, key: str) -> str:
         """
@@ -460,6 +528,8 @@ class ConfigManager:
         2. Fall back to defaults if not set
         3. Validate against schema
         4. Use default on validation failure
+        
+        Handles nested dictionaries (like vigil_thresholds, boosts) properly.
         """
         self._resolved_config = {}
 
@@ -474,6 +544,14 @@ class ConfigManager:
             for key, default_value in defaults.items():
                 # Get current value (may be env override or default reference)
                 current_value = section_config.get(key)
+
+                # Handle nested dictionaries (like vigil_thresholds, boosts)
+                if isinstance(default_value, dict) and isinstance(current_value, dict):
+                    resolved_nested = self._resolve_nested_config(
+                        current_value, default_value, validation.get(key, {})
+                    )
+                    self._resolved_config[section][key] = resolved_nested
+                    continue
 
                 # If still a ${VAR} reference, use default
                 if isinstance(current_value, str) and current_value.startswith("${"):
@@ -505,6 +583,52 @@ class ConfigManager:
             )
             for error in self._validation_errors:
                 logger.warning(f"  - {error}")
+
+    def _resolve_nested_config(
+        self,
+        current_nested: Dict[str, Any],
+        default_nested: Dict[str, Any],
+        nested_validation: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Resolve a nested configuration dictionary.
+
+        Args:
+            current_nested: Current values (may include resolved env vars)
+            default_nested: Default values from JSON
+            nested_validation: Validation schema for nested keys
+
+        Returns:
+            Resolved nested dictionary with validated values
+        """
+        resolved = {}
+
+        for key, default_value in default_nested.items():
+            current_value = current_nested.get(key)
+
+            # If still a ${VAR} reference (env var not set), use default
+            if isinstance(current_value, str) and current_value.startswith("${"):
+                current_value = default_value
+
+            # If None or not set, use default
+            if current_value is None:
+                current_value = default_value
+
+            # Validate if validation exists for this nested key
+            if nested_validation and key in nested_validation:
+                key_validation = nested_validation[key]
+                is_valid, validated_value = self._validate_value(
+                    current_value, key_validation, default_value
+                )
+                if not is_valid:
+                    logger.debug(
+                        f"Nested validation failed for {key}: {current_value}, using default"
+                    )
+                current_value = validated_value
+
+            resolved[key] = current_value
+
+        return resolved
 
     def _validate_value(
         self, value: Any, validation: Dict[str, Any], default: Any
