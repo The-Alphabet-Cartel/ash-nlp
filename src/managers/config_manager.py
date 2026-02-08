@@ -10,8 +10,8 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.0-4-4.2-1
-LAST MODIFIED: 2026-01-31
+FILE VERSION: v5.1-3.5-4.2-1
+LAST MODIFIED: 2026-02-08
 PHASE: Phase 3.8 - Ash-NLP Deployment
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
@@ -41,7 +41,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Module version
-__version__ = "v5.0-4-4.2-1"
+__version__ = "v5.1-3.5-4.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -645,6 +645,10 @@ class ConfigManager:
             Tuple of (is_valid, validated_or_default_value)
         """
         expected_type = validation.get("type", "string")
+
+        # Allow None for non-required fields (e.g., Phase 3 zero-shot label placeholders)
+        if value is None and not validation.get("required", True):
+            return True, value
 
         # Type check
         type_valid = self._check_type(value, expected_type)
