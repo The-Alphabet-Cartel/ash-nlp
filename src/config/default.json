@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.0-3-2.0-1",
-		"last_modified": "2026-01-27",
+		"file_version": "v5.1-3-3.2-1",
+		"last_modified": "2026-02-07",
 		"clean_architecture": "Compliant",
 		"description": "Ash-NLP v5.0 Default Configuration - Crisis Detection Ensemble with Vigil Integration",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -148,18 +148,24 @@
 	},
 
 	"model_sentiment": {
-		"description": "Cardiff Sentiment Analyzer - SECONDARY MODEL (Weight: 0.25)",
+		"description": "Sentiment Analyzer - SECONDARY MODEL (Weight: 0.25)",
 		"model_id": "${NLP_MODEL_SENTIMENT_ID}",
 		"weight": "${NLP_MODEL_SENTIMENT_WEIGHT}",
 		"enabled": "${NLP_MODEL_SENTIMENT_ENABLED}",
 		"task": "text-classification",
 		"role": "secondary",
+		"candidate_labels": "${NLP_SENTIMENT_CANDIDATE_LABELS}",
+		"hypothesis_template": "${NLP_SENTIMENT_HYPOTHESIS_TEMPLATE}",
+		"label_signal_mapping": "${NLP_SENTIMENT_LABEL_SIGNAL_MAPPING}",
 		"defaults": {
 			"model_id": "cardiffnlp/twitter-roberta-base-sentiment-latest",
 			"weight": 0.25,
 			"enabled": true,
 			"task": "text-classification",
-			"role": "secondary"
+			"role": "secondary",
+			"candidate_labels": null,
+			"hypothesis_template": null,
+			"label_signal_mapping": null
 		},
 		"validation": {
 			"model_id": {
@@ -184,6 +190,18 @@
 				"type": "string",
 				"allowed_values": ["primary", "secondary", "tertiary", "supplementary"],
 				"required": true
+			},
+			"candidate_labels": {
+				"type": "list",
+				"required": false
+			},
+			"hypothesis_template": {
+				"type": "string",
+				"required": false
+			},
+			"label_signal_mapping": {
+				"type": "dict",
+				"required": false
 			}
 		}
 	},
@@ -230,18 +248,24 @@
 	},
 
 	"model_emotions": {
-		"description": "RoBERTa Emotions Classifier - SUPPLEMENTARY MODEL (Weight: 0.10)",
+		"description": "Emotions Classifier - SUPPLEMENTARY MODEL (Weight: 0.10)",
 		"model_id": "${NLP_MODEL_EMOTIONS_ID}",
 		"weight": "${NLP_MODEL_EMOTIONS_WEIGHT}",
 		"enabled": "${NLP_MODEL_EMOTIONS_ENABLED}",
 		"task": "text-classification",
 		"role": "supplementary",
+		"candidate_labels": "${NLP_EMOTIONS_CANDIDATE_LABELS}",
+		"hypothesis_template": "${NLP_EMOTIONS_HYPOTHESIS_TEMPLATE}",
+		"label_signal_mapping": "${NLP_EMOTIONS_LABEL_SIGNAL_MAPPING}",
 		"defaults": {
 			"model_id": "SamLowe/roberta-base-go_emotions",
 			"weight": 0.1,
 			"enabled": true,
 			"task": "text-classification",
-			"role": "supplementary"
+			"role": "supplementary",
+			"candidate_labels": null,
+			"hypothesis_template": null,
+			"label_signal_mapping": null
 		},
 		"validation": {
 			"model_id": {
@@ -266,6 +290,18 @@
 				"type": "string",
 				"allowed_values": ["primary", "secondary", "tertiary", "supplementary"],
 				"required": true
+			},
+			"candidate_labels": {
+				"type": "list",
+				"required": false
+			},
+			"hypothesis_template": {
+				"type": "string",
+				"required": false
+			},
+			"label_signal_mapping": {
+				"type": "dict",
+				"required": false
 			}
 		}
 	},

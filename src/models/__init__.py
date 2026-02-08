@@ -10,10 +10,10 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Models Package for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-4.2-6
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.2 - Model Wrapper Package
-CLEAN ARCHITECTURE: v5.1 Compliant
+FILE VERSION: v5.1-3-3.2-1
+LAST MODIFIED: 2026-02-07
+PHASE: Phase 3 - Base Model Zero-Shot Abstraction
+CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
 
@@ -44,7 +44,7 @@ USAGE:
 """
 
 # Module version
-__version__ = "v5.0-3-4.2-6"
+__version__ = "v5.1-3-3.2-1"
 
 # =============================================================================
 # Base Classes and Data Types
@@ -57,6 +57,12 @@ from .base import (
     ModelRole,
     ModelTask,
 )
+
+# =============================================================================
+# Zero-Shot Abstraction Layer (Phase 3 - v5.1 Migration)
+# =============================================================================
+
+from .zero_shot_base import ZeroShotModelWrapper
 
 # =============================================================================
 # Model Wrappers and Factory Functions
@@ -160,6 +166,7 @@ __all__ = [
     "__version__",
     # Base classes and types
     "BaseModelWrapper",
+    "ZeroShotModelWrapper",
     "ModelResult",
     "ModelInfo",
     "ModelRole",
