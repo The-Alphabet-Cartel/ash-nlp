@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.1-3.5-4.2-1
+FILE VERSION: v5.1-3.5-3.1-1
 LAST MODIFIED: 2026-02-08
-PHASE: Phase 3.8 - Ash-NLP Deployment
+PHASE: Phase 3.5 - Label & Classification Config Extraction
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -31,6 +31,15 @@ PHASE 4 ADDITIONS:
 - get_conflict_resolution_config() - Conflict resolution settings
 - get_conflict_alerting_config() - Discord alerting settings
 - get_explainability_config() - Explainability settings
+
+PHASE 3.5 ADDITIONS:
+- _load_labels_configuration() - Load labels_config.json
+- _load_classification_configuration() - Load classification_config.json
+- get_sentiment_labels() - Sentiment zero-shot label config
+- get_emotions_labels() - Emotions zero-shot label config
+- get_irony_gate_config() - Irony gate configuration
+- get_crisis_labels() updated to read from labels_config
+- get_thresholds() updated to read from classification_config
 """
 
 import json
@@ -41,7 +50,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Module version
-__version__ = "v5.1-3.5-4.2-1"
+__version__ = "v5.1-3.5-3.1-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -71,6 +80,10 @@ class ConfigManager:
     
     # Phase 4: Consensus configuration file
     CONSENSUS_CONFIG = "consensus_config.json"
+    
+    # Phase 3.5: Labels and classification configuration files
+    LABELS_CONFIG = "labels_config.json"
+    CLASSIFICATION_CONFIG = "classification_config.json"
 
     def __init__(
         self,
@@ -110,12 +123,20 @@ class ConfigManager:
         
         # Phase 4: Consensus configuration storage
         self._consensus_config: Dict[str, Any] = {}
+        
+        # Phase 3.5: Labels and classification configuration storage
+        self._labels_config: Dict[str, Any] = {}
+        self._classification_config: Dict[str, Any] = {}
 
         # Load and resolve configuration
         self._load_configuration()
         
         # Phase 4: Load consensus configuration
         self._load_consensus_configuration()
+        
+        # Phase 3.5: Load labels and classification configuration
+        self._load_labels_configuration()
+        self._load_classification_configuration()
 
         logger.info(
             f"✅ ConfigManager v{__version__} initialized "
@@ -309,6 +330,116 @@ class ConfigManager:
                 "verbosity": "standard",
                 "include_model_details": True,
                 "include_recommendations": True,
+            },
+        }
+
+    # =========================================================================
+    # Phase 3.5: Labels & Classification Configuration Loading
+    # =========================================================================
+
+    def _load_labels_configuration(self) -> None:
+        """
+        Load Phase 3.5 labels configuration from labels_config.json.
+        
+        This handles all label definitions: BART crisis labels,
+        sentiment zero-shot labels, and emotions zero-shot labels.
+        """
+        labels_path = self.config_dir / self.LABELS_CONFIG
+        
+        if labels_path.exists():
+            raw_labels = self._load_json_file(labels_path)
+            if raw_labels:
+                self._labels_config = self._resolve_consensus_config(raw_labels)
+                logger.info("📝 Loaded Phase 3.5 labels configuration")
+            else:
+                logger.warning("⚠️ Failed to parse labels_config.json, using defaults")
+                self._labels_config = self._get_labels_defaults()
+        else:
+            logger.debug(f"No labels config found: {labels_path}, using defaults")
+            self._labels_config = self._get_labels_defaults()
+
+    def _load_classification_configuration(self) -> None:
+        """
+        Load Phase 3.5 classification configuration from classification_config.json.
+        
+        This handles thresholds and irony gate settings.
+        """
+        classification_path = self.config_dir / self.CLASSIFICATION_CONFIG
+        
+        if classification_path.exists():
+            raw_classification = self._load_json_file(classification_path)
+            if raw_classification:
+                self._classification_config = self._resolve_consensus_config(raw_classification)
+                logger.info("📝 Loaded Phase 3.5 classification configuration")
+            else:
+                logger.warning("⚠️ Failed to parse classification_config.json, using defaults")
+                self._classification_config = self._get_classification_defaults()
+        else:
+            logger.debug(f"No classification config found: {classification_path}, using defaults")
+            self._classification_config = self._get_classification_defaults()
+
+    def _get_labels_defaults(self) -> Dict[str, Any]:
+        """
+        Return default labels configuration if file not found.
+        
+        Returns:
+            Default labels configuration (Rule #5 - operational continuity)
+        """
+        return {
+            "crisis_labels": {
+                "primary_labels": [
+                    "suicide ideation",
+                    "self-harm",
+                    "domestic violence",
+                    "panic attack",
+                    "severe depression",
+                    "substance abuse crisis",
+                ],
+                "secondary_labels": [
+                    "emotional distress",
+                    "anxiety",
+                    "grief",
+                    "relationship crisis",
+                    "identity crisis",
+                    "isolation",
+                ],
+                "safe_labels": [
+                    "casual conversation",
+                    "positive sharing",
+                    "seeking information",
+                    "general discussion",
+                ],
+            },
+            "sentiment_labels": {
+                "candidate_labels": None,
+                "hypothesis_template": None,
+                "label_signal_mapping": None,
+            },
+            "emotions_labels": {
+                "candidate_labels": None,
+                "hypothesis_template": None,
+                "label_signal_mapping": None,
+            },
+        }
+
+    def _get_classification_defaults(self) -> Dict[str, Any]:
+        """
+        Return default classification configuration if file not found.
+        
+        Returns:
+            Default classification configuration (Rule #5 - operational continuity)
+        """
+        return {
+            "thresholds": {
+                "critical": 0.85,
+                "high": 0.7,
+                "medium": 0.5,
+                "low": 0.3,
+            },
+            "irony_gate": {
+                "enabled": False,
+                "confidence_threshold": 0.80,
+                "reduction_factor": 0.70,
             },
         }
 
@@ -827,11 +958,21 @@ class ConfigManager:
     def get_thresholds(self) -> Dict[str, float]:
         """
         Get crisis severity thresholds.
+        
+        Phase 3.5: Now reads from classification_config.json instead of default.json.
+        Method signature unchanged for backward compatibility.
 
         Returns:
             Dictionary with critical, high, medium, low thresholds
         """
-        return self.get_section("thresholds")
+        thresholds = self._classification_config.get("thresholds", {})
+        if not thresholds:
+            # Fallback to resolved_config for backward compatibility during transition
+            thresholds = self.get_section("thresholds")
+        if not thresholds:
+            # Emergency fallback
+            thresholds = self._get_classification_defaults()["thresholds"]
+        return thresholds
 
     def get_logging_config(self) -> Dict[str, Any]:
         """
@@ -854,11 +995,68 @@ class ConfigManager:
     def get_crisis_labels(self) -> Dict[str, List[str]]:
         """
         Get crisis classification labels for BART.
+        
+        Phase 3.5: Now reads from labels_config.json instead of default.json.
+        Method signature unchanged for backward compatibility.
 
         Returns:
             Dictionary with primary_labels, secondary_labels, safe_labels
         """
-        return self.get_section("crisis_labels")
+        crisis_labels = self._labels_config.get("crisis_labels", {})
+        if not crisis_labels:
+            # Fallback to resolved_config for backward compatibility during transition
+            crisis_labels = self.get_section("crisis_labels")
+        if not crisis_labels:
+            # Emergency fallback
+            crisis_labels = self._get_labels_defaults()["crisis_labels"]
+        return crisis_labels
+
+    def get_sentiment_labels(self) -> Dict[str, Any]:
+        """
+        Get sentiment zero-shot candidate labels configuration.
+        
+        Phase 3.5: Returns sentiment label config from labels_config.json.
+        During Phase 3.5 these will be null defaults.
+        Phase 4 will populate with actual distress severity labels.
+
+        Returns:
+            Dictionary with candidate_labels, hypothesis_template, label_signal_mapping
+        """
+        sentiment = self._labels_config.get("sentiment_labels", {})
+        if not sentiment:
+            sentiment = self._get_labels_defaults()["sentiment_labels"]
+        return sentiment
+
+    def get_emotions_labels(self) -> Dict[str, Any]:
+        """
+        Get emotions zero-shot candidate labels configuration.
+        
+        Phase 3.5: Returns emotions label config from labels_config.json.
+        During Phase 3.5 these will be null defaults.
+        Phase 5 will populate with actual emotional state labels.
+
+        Returns:
+            Dictionary with candidate_labels, hypothesis_template, label_signal_mapping
+        """
+        emotions = self._labels_config.get("emotions_labels", {})
+        if not emotions:
+            emotions = self._get_labels_defaults()["emotions_labels"]
+        return emotions
+
+    def get_irony_gate_config(self) -> Dict[str, Any]:
+        """
+        Get irony gate configuration.
+        
+        Phase 3.5: Returns irony gate config from classification_config.json.
+        Disabled by default (enabled=false). Phase 6 will activate this.
+
+        Returns:
+            Dictionary with enabled, confidence_threshold, reduction_factor
+        """
+        irony_gate = self._classification_config.get("irony_gate", {})
+        if not irony_gate:
+            irony_gate = self._get_classification_defaults()["irony_gate"]
+        return irony_gate
 
     def get_model_weights(self) -> Dict[str, float]:
         """

@@ -1,0 +1,126 @@
+{
+	"_metadata": {
+		"file_version": "v5.1-3.5-3.1-1",
+		"last_modified": "2026-02-08",
+		"clean_architecture": "Compliant",
+		"description": "Label definitions for all models - crisis labels, candidate labels, and signal mappings",
+		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
+		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
+	},
+
+	"crisis_labels": {
+		"description": "Crisis classification labels for BART zero-shot classifier (PRIMARY model)",
+		"primary_labels": [
+			"suicide ideation",
+			"self-harm",
+			"domestic violence",
+			"panic attack",
+			"severe depression",
+			"substance abuse crisis"
+		],
+		"secondary_labels": [
+			"emotional distress",
+			"anxiety",
+			"grief",
+			"relationship crisis",
+			"identity crisis",
+			"isolation"
+		],
+		"safe_labels": [
+			"casual conversation",
+			"positive sharing",
+			"seeking information",
+			"general discussion"
+		],
+		"defaults": {
+			"primary_labels": [
+				"suicide ideation",
+				"self-harm",
+				"domestic violence",
+				"panic attack",
+				"severe depression",
+				"substance abuse crisis"
+			],
+			"secondary_labels": [
+				"emotional distress",
+				"anxiety",
+				"grief",
+				"relationship crisis",
+				"identity crisis",
+				"isolation"
+			],
+			"safe_labels": [
+				"casual conversation",
+				"positive sharing",
+				"seeking information",
+				"general discussion"
+			]
+		},
+		"validation": {
+			"primary_labels": {
+				"type": "list",
+				"required": true
+			},
+			"secondary_labels": {
+				"type": "list",
+				"required": true
+			},
+			"safe_labels": {
+				"type": "list",
+				"required": true
+			}
+		}
+	},
+
+	"sentiment_labels": {
+		"description": "Distress severity labels for Sentiment zero-shot classifier (Phase 4)",
+		"candidate_labels": "${NLP_SENTIMENT_CANDIDATE_LABELS}",
+		"hypothesis_template": "${NLP_SENTIMENT_HYPOTHESIS_TEMPLATE}",
+		"label_signal_mapping": "${NLP_SENTIMENT_LABEL_SIGNAL_MAPPING}",
+		"defaults": {
+			"candidate_labels": null,
+			"hypothesis_template": null,
+			"label_signal_mapping": null
+		},
+		"validation": {
+			"candidate_labels": {
+				"type": "list",
+				"required": false
+			},
+			"hypothesis_template": {
+				"type": "string",
+				"required": false
+			},
+			"label_signal_mapping": {
+				"type": "dict",
+				"required": false
+			}
+		}
+	},
+
+	"emotions_labels": {
+		"description": "Emotional state labels for Emotions zero-shot classifier (Phase 5)",
+		"candidate_labels": "${NLP_EMOTIONS_CANDIDATE_LABELS}",
+		"hypothesis_template": "${NLP_EMOTIONS_HYPOTHESIS_TEMPLATE}",
+		"label_signal_mapping": "${NLP_EMOTIONS_LABEL_SIGNAL_MAPPING}",
+		"defaults": {
+			"candidate_labels": null,
+			"hypothesis_template": null,
+			"label_signal_mapping": null
+		},
+		"validation": {
+			"candidate_labels": {
+				"type": "list",
+				"required": false
+			},
+			"hypothesis_template": {
+				"type": "string",
+				"required": false
+			},
+			"label_signal_mapping": {
+				"type": "dict",
+				"required": false
+			}
+		}
+	}
+}

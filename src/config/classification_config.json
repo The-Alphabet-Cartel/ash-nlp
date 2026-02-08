@@ -1,0 +1,74 @@
+{
+	"_metadata": {
+		"file_version": "v5.1-3.5-3.1-1",
+		"last_modified": "2026-02-08",
+		"clean_architecture": "Compliant",
+		"description": "Classification behavior configuration - thresholds, irony gate, and scoring behavior",
+		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
+		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
+	},
+
+	"thresholds": {
+		"description": "Crisis severity threshold mappings for ensemble scoring",
+		"critical": "${NLP_THRESHOLD_CRITICAL}",
+		"high": "${NLP_THRESHOLD_HIGH}",
+		"medium": "${NLP_THRESHOLD_MEDIUM}",
+		"low": "${NLP_THRESHOLD_LOW}",
+		"defaults": {
+			"critical": 0.85,
+			"high": 0.7,
+			"medium": 0.5,
+			"low": 0.3
+		},
+		"validation": {
+			"critical": {
+				"type": "float",
+				"range": [0.7, 0.99],
+				"required": true
+			},
+			"high": {
+				"type": "float",
+				"range": [0.5, 0.9],
+				"required": true
+			},
+			"medium": {
+				"type": "float",
+				"range": [0.3, 0.7],
+				"required": true
+			},
+			"low": {
+				"type": "float",
+				"range": [0.1, 0.5],
+				"required": true
+			}
+		}
+	},
+
+	"irony_gate": {
+		"description": "Irony gatekeeper configuration (Phase 6 - stubbed for future use)",
+		"enabled": "${NLP_IRONY_GATE_ENABLED}",
+		"confidence_threshold": "${NLP_IRONY_GATE_THRESHOLD}",
+		"reduction_factor": "${NLP_IRONY_GATE_REDUCTION}",
+		"defaults": {
+			"enabled": false,
+			"confidence_threshold": 0.80,
+			"reduction_factor": 0.70
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": false
+			},
+			"confidence_threshold": {
+				"type": "float",
+				"range": [0.5, 0.99],
+				"required": false
+			},
+			"reduction_factor": {
+				"type": "float",
+				"range": [0.1, 1.0],
+				"required": false
+			}
+		}
+	}
+}
