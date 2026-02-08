@@ -129,9 +129,9 @@ class SentimentZeroShotAnalyzer(ZeroShotModelWrapper):
             label_signal_mapping: Maps label strings to crisis signal values (0.0-1.0).
                                   Falls back to DEFAULT_LABEL_SIGNAL_MAPPING if not provided.
         """
-        # Use defaults if not provided
-        labels = candidate_labels if candidate_labels else DEFAULT_CANDIDATE_LABELS.copy()
-        mapping = label_signal_mapping if label_signal_mapping else DEFAULT_LABEL_SIGNAL_MAPPING.copy()
+        # Use defaults if not provided (None means "use defaults", [] is an explicit error)
+        labels = candidate_labels if candidate_labels is not None else DEFAULT_CANDIDATE_LABELS.copy()
+        mapping = label_signal_mapping if label_signal_mapping is not None else DEFAULT_LABEL_SIGNAL_MAPPING.copy()
 
         super().__init__(
             model_id=model_id,

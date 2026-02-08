@@ -22,9 +22,9 @@ Reference implementation: BARTCrisisClassifier (src/models/bart_classifier.py)
 Note: BART is NOT refactored to use this class — it predates this abstraction
 and has unique crisis-label boosting logic that would add risk without benefit.
 ----------------------------------------------------------------------------
-FILE VERSION: v5.1-3-3.1-1
-LAST MODIFIED: 2026-02-07
-PHASE: Phase 3 - Base Model Zero-Shot Abstraction
+FILE VERSION: v5.1-4-4.0-1
+LAST MODIFIED: 2026-02-08
+PHASE: Phase 4 - Sentiment Zero-Shot Migration (truncation fix)
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 ============================================================================
@@ -42,7 +42,7 @@ from .base import (
 )
 
 # Module version
-__version__ = "v5.1-3-3.1-1"
+__version__ = "v5.1-4-4.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -221,7 +221,15 @@ class ZeroShotModelWrapper(BaseModelWrapper):
                 task="zero-shot-classification",
                 model=self.model_id,
                 device=device_id,
+                truncation=True,
+                max_length=self.max_tokens,
             )
+
+            # Ensure tokenizer has an explicit max_length to suppress
+            # "no predefined maximum length" warnings during inference
+            if hasattr(model, "tokenizer") and model.tokenizer is not None:
+                if not hasattr(model.tokenizer, "model_max_length") or model.tokenizer.model_max_length > 1e9:
+                    model.tokenizer.model_max_length = self.max_tokens
 
             return model
 
@@ -263,6 +271,8 @@ class ZeroShotModelWrapper(BaseModelWrapper):
         # Build inference kwargs
         inference_kwargs = {
             "candidate_labels": self._candidate_labels,
+            "truncation": True,
+            "max_length": self.max_tokens,
         }
 
         # Add hypothesis template if configured

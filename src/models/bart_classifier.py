@@ -155,6 +155,8 @@ class BARTCrisisClassifier(BaseModelWrapper):
                 task="zero-shot-classification",
                 model=self.model_id,
                 device=device_id,
+                truncation=True,
+                max_length=self.max_tokens,
             )
 
             return model
@@ -194,7 +196,12 @@ class BARTCrisisClassifier(BaseModelWrapper):
 
         # Run inference
         result = self._pipeline(
-            text, candidate_labels=candidate_labels, multi_label=multi_label, **kwargs
+            text,
+            candidate_labels=candidate_labels,
+            multi_label=multi_label,
+            truncation=True,
+            max_length=self.max_tokens,
+            **kwargs,
         )
 
         return result
