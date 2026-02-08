@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.0-3-4.3-2
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.3 - Ensemble Weighted Scoring
+FILE VERSION: v5.1-4-4.4-1
+LAST MODIFIED: 2026-02-08
+PHASE: Phase 4 - Sentiment Zero-Shot Migration (scoring update)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.0-3-4.3-2"
+__version__ = "v5.1-4-4.4-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -325,7 +325,13 @@ class WeightedScorer:
         """
         Extract crisis signal from sentiment result.
 
-        Negative sentiment correlates with distress.
+        v5.1: Reads pre-computed crisis_signal from ModelResult.metadata.
+        The SentimentZeroShotAnalyzer computes this during _process_output()
+        using its label-to-signal mapping.
+
+        Backward compatibility: Falls back to legacy pos/neg/neutral heuristic
+        if metadata["crisis_signal"] is not present (e.g., during rollback to
+        v5.0 Cardiff model).
 
         Args:
             result: ModelResult from sentiment analyzer
@@ -344,12 +350,29 @@ class WeightedScorer:
                 metadata={"error": result.error},
             )
 
-        # Get negative sentiment score
+        # v5.1: Read pre-computed crisis signal from zero-shot model
+        if "crisis_signal" in result.metadata:
+            crisis_signal = result.metadata["crisis_signal"]
+            crisis_signal = max(0.0, min(1.0, crisis_signal))
+
+            weight = self.weights.get("sentiment", 0.25)
+
+            return ModelSignal(
+                model_name="sentiment",
+                raw_score=result.score,
+                crisis_signal=crisis_signal,
+                weight=weight,
+                weighted_score=crisis_signal * weight,
+                label=result.label,
+                metadata=result.all_scores,
+            )
+
+        # v5.0 fallback: Legacy pos/neg/neutral heuristic
+        # Supports rollback to Cardiff text-classification model
         negative_score = result.all_scores.get("negative", 0.0)
         neutral_score = result.all_scores.get("neutral", 0.0)
         positive_score = result.all_scores.get("positive", 0.0)
 
-        # Crisis signal: high negative + some neutral, minus positive
         crisis_signal = (
             negative_score * 1.0 + neutral_score * 0.2 - positive_score * 0.3
         )
@@ -368,6 +391,7 @@ class WeightedScorer:
                 "negative": negative_score,
                 "neutral": neutral_score,
                 "positive": positive_score,
+                "legacy_fallback": True,
             },
         )
 

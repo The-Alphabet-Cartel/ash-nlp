@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Abstract Base Model Class for Ash-NLP Service
 ---
-FILE VERSION: v5.0-6-2.0-1
-LAST MODIFIED: 2026-01-02
-PHASE: Phase 6 - Sprint 2 (FE-003: Token Truncation)
+FILE VERSION: v5.1-4-4.0-1
+LAST MODIFIED: 2026-02-08
+PHASE: Phase 4 - Sentiment Zero-Shot Migration (ModelResult metadata field)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -34,7 +34,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from enum import Enum
 
 # Module version
-__version__ = "v5.0-6-2.0-1"
+__version__ = "v5.1-4-4.0-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -79,6 +79,7 @@ class ModelResult:
         success: Whether inference succeeded
         error: Error message if inference failed
         raw_output: Original model output (for debugging)
+        metadata: Additional model-specific data (e.g., pre-computed crisis_signal)
     """
 
     label: str
@@ -90,6 +91,7 @@ class ModelResult:
     success: bool = True
     error: Optional[str] = None
     raw_output: Optional[Any] = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -102,6 +104,7 @@ class ModelResult:
             "model_role": self.model_role.value,
             "success": self.success,
             "error": self.error,
+            "metadata": self.metadata,
         }
 
     @classmethod

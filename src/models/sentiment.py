@@ -1,91 +1,107 @@
 """
-Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Classification
-******************  CORE SYSTEM VISION (Never to be violated):  ****************
-Ash-NLP is a CRISIS DETECTION BACKEND that:
-1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
-3. ENSEMBLE: Combines weighted model outputs through decision engine
-4. PURPOSE: Detect crisis messages in Discord community communications
-********************************************************************************
-Cardiff Sentiment Analyzer for Ash-NLP Service
----
-FILE VERSION: v5.0-3-4.2-3
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.2 - Model Wrapper Implementation
-CLEAN ARCHITECTURE: v5.1 Compliant
+============================================================================
+Ash-NLP: Crisis Detection NLP Server
+The Alphabet Cartel - https://discord.gg/alphabetcartel | alphabetcartel.org
+============================================================================
+
+MISSION - NEVER TO BE VIOLATED:
+    Analyze  → Process messages through multi-model ensemble classification
+    Detect   → Identify crisis signals with weighted consensus algorithms
+    Explain  → Provide human-readable explanations for all decisions
+    Protect  → Safeguard our LGBTQIA+ community through accurate detection
+
+============================================================================
+DeBERTa Zero-Shot Sentiment Analyzer - Distress Severity Classification
+----------------------------------------------------------------------------
+Replaces the Cardiff text-classification sentiment model with a DeBERTa
+zero-shot classifier using distress-severity candidate labels. Instead of
+generic pos/neg/neutral categories, this model answers: "What is the
+distress severity level of this message?" using natural language labels.
+
+Model: MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli
+Role: SECONDARY (weight: 0.25)
+Task: zero-shot-classification
+Migration: Phase 4 (v5.1) - Cardiff text-classification → DeBERTa zero-shot
+Previous: cardiffnlp/twitter-roberta-base-sentiment-latest (pos/neg/neutral)
+Current:  MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli (distress severity labels)
+----------------------------------------------------------------------------
+FILE VERSION: v5.1-4-4.3-1
+LAST MODIFIED: 2026-02-08
+PHASE: Phase 4 - Sentiment Zero-Shot Migration
+CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
-Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-RESPONSIBILITIES:
-- Wrap cardiffnlp/twitter-roberta-base-sentiment-latest for sentiment analysis
-- Detect positive, negative, or neutral sentiment
-- Provide emotional context signal for ensemble decision
-- Support crisis detection through negative sentiment correlation
-
-MODEL DETAILS:
-- HuggingFace ID: cardiffnlp/twitter-roberta-base-sentiment-latest
-- Task: text-classification
-- Role: SECONDARY (weight: 0.25)
-- Labels: positive, negative, neutral
-- Phase 2 Crisis Accuracy: 89.09%
+============================================================================
 """
 
 import logging
 from typing import Any, Dict, List, Optional
 
 from .base import (
-    BaseModelWrapper,
     ModelResult,
     ModelRole,
-    ModelTask,
 )
+from .zero_shot_base import ZeroShotModelWrapper
 
 # Module version
-__version__ = "v5.0-3-4.2-3"
+__version__ = "v5.1-4-4.3-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-# Sentiment labels (fixed by model)
-SENTIMENT_LABELS = ["positive", "negative", "neutral"]
+# =============================================================================
+# Default Labels and Mapping
+# =============================================================================
 
-# Label mapping (model outputs may use different formats)
-LABEL_MAPPING = {
-    "LABEL_0": "negative",
-    "LABEL_1": "neutral",
-    "LABEL_2": "positive",
-    # Direct labels (some model versions)
-    "negative": "negative",
-    "neutral": "neutral",
-    "positive": "positive",
+# Distress severity labels - answer: "What is the distress severity level?"
+DEFAULT_CANDIDATE_LABELS = [
+    "person expressing deep hopelessness or despair",
+    "person experiencing acute emotional distress",
+    "person venting frustration but coping",
+    "person describing a difficult situation calmly",
+    "person sharing positive news or celebration",
+    "casual negative mood with no distress",
+    "neutral informational statement",
+]
+
+# Maps each label to a crisis signal strength (0.0-1.0)
+DEFAULT_LABEL_SIGNAL_MAPPING = {
+    "person expressing deep hopelessness or despair": 0.95,
+    "person experiencing acute emotional distress": 0.80,
+    "person venting frustration but coping": 0.30,
+    "person describing a difficult situation calmly": 0.15,
+    "person sharing positive news or celebration": 0.0,
+    "casual negative mood with no distress": 0.15,
+    "neutral informational statement": 0.0,
 }
 
-
-class SentimentAnalyzer(BaseModelWrapper):
+class SentimentZeroShotAnalyzer(ZeroShotModelWrapper):
     """
-    Cardiff Sentiment Analyzer - SECONDARY MODEL.
+    DeBERTa Zero-Shot Sentiment Analyzer — SECONDARY MODEL.
 
-    Uses cardiffnlp/twitter-roberta-base-sentiment-latest for
-    sentiment classification (positive, negative, neutral).
+    Uses MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli for distress-severity
+    classification using natural language labels. Each label describes a
+    distress level rather than a generic sentiment category, giving the
+    ensemble a much more useful signal for crisis detection.
 
-    In the crisis detection context, negative sentiment often
-    correlates with distress, but is not definitive on its own.
+    Role: SECONDARY (weight: 0.25)
+    Task: zero-shot-classification
+    Question answered: "What is the distress severity level?"
 
-    Features:
-    - Twitter-trained model (good for casual text)
-    - Three-class sentiment (pos/neg/neutral)
-    - Crisis correlation scoring
-    - Label normalization
+    Key difference from v5.0 SentimentAnalyzer:
+    - v5.0: Cardiff outputs pos/neg/neutral → heuristic mapping to crisis signal
+    - v5.1: DeBERTa outputs distress-severity scores → direct label-to-signal mapping
 
-    Clean Architecture v5.1 Compliance:
-    - Factory function: create_sentiment_analyzer()
-    - Configuration via ConfigManager
-    - Standardized ModelResult output
+    The crisis_signal is pre-computed during _process_output() and stored in
+    ModelResult.metadata["crisis_signal"] for the WeightedScorer to consume.
+
+    Clean Architecture Compliance:
+    - Factory function: create_sentiment_analyzer() (Rule #1)
+    - Configuration via ConfigManager (Rule #4)
+    - Resilient error handling with graceful fallbacks (Rule #5)
+    - Labels configurable via labels_config.json + env overrides (Rule #4)
     """
 
-    # Default model configuration
-    DEFAULT_MODEL_ID = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+    DEFAULT_MODEL_ID = "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
     DEFAULT_WEIGHT = 0.25
 
     def __init__(
@@ -94,127 +110,94 @@ class SentimentAnalyzer(BaseModelWrapper):
         weight: float = DEFAULT_WEIGHT,
         device: str = "auto",
         enabled: bool = True,
+        candidate_labels: Optional[List[str]] = None,
+        hypothesis_template: Optional[str] = None,
+        label_signal_mapping: Optional[Dict[str, float]] = None,
     ):
         """
-        Initialize Sentiment Analyzer.
+        Initialize DeBERTa Zero-Shot Sentiment Analyzer.
 
         Args:
             model_id: HuggingFace model identifier
             weight: Weight in ensemble scoring (default: 0.25)
             device: Device to run on (auto, cuda, cpu)
             enabled: Whether this model is enabled
+            candidate_labels: Distress severity labels for zero-shot classification.
+                              Falls back to DEFAULT_CANDIDATE_LABELS if not provided.
+            hypothesis_template: Optional NLI hypothesis template.
+                                 If None, HuggingFace default is used.
+            label_signal_mapping: Maps label strings to crisis signal values (0.0-1.0).
+                                  Falls back to DEFAULT_LABEL_SIGNAL_MAPPING if not provided.
         """
+        # Use defaults if not provided
+        labels = candidate_labels if candidate_labels else DEFAULT_CANDIDATE_LABELS.copy()
+        mapping = label_signal_mapping if label_signal_mapping else DEFAULT_LABEL_SIGNAL_MAPPING.copy()
+
         super().__init__(
             model_id=model_id,
             name="sentiment",
-            task=ModelTask.TEXT_CLASSIFICATION,
             role=ModelRole.SECONDARY,
+            candidate_labels=labels,
             weight=weight,
             device=device,
             enabled=enabled,
+            hypothesis_template=hypothesis_template,
+            label_signal_mapping=mapping,
         )
 
-        logger.info(f"😊 Sentiment Analyzer initialized (weight: {self.weight})")
+        logger.info(
+            f"😊 Sentiment Zero-Shot Analyzer initialized "
+            f"(model: {self.model_id}, weight: {self.weight}, "
+            f"labels: {len(self._candidate_labels)})"
+        )
 
-    def _load_model(self) -> Any:
-        """
-        Load sentiment classification pipeline.
-
-        Returns:
-            HuggingFace pipeline for text-classification
-
-        Raises:
-            RuntimeError: If loading fails
-        """
-        try:
-            from transformers import pipeline
-
-            device_id = self._determine_device()
-
-            logger.debug(
-                f"Loading sentiment pipeline: {self.model_id} (device: {device_id})"
-            )
-
-            model = pipeline(
-                task="text-classification",
-                model=self.model_id,
-                device=device_id,
-                top_k=None,  # Return all label scores
-            )
-
-            return model
-
-        except ImportError as e:
-            raise RuntimeError(
-                "transformers library not installed. "
-                "Install with: pip install transformers torch"
-            ) from e
-        except Exception as e:
-            raise RuntimeError(f"Failed to load sentiment model: {e}") from e
-
-    def _run_inference(self, text: str, **kwargs) -> Any:
-        """
-        Run sentiment classification.
-
-        Args:
-            text: Input text to analyze
-            **kwargs: Additional arguments (unused)
-
-        Returns:
-            Raw pipeline output with label scores
-        """
-        if self._pipeline is None:
-            raise RuntimeError("Model not loaded")
-
-        # Run inference
-        result = self._pipeline(text)
-
-        return result
+    # =========================================================================
+    # Abstract Method Implementation
+    # =========================================================================
 
     def _process_output(self, raw_output: Any, latency_ms: float) -> ModelResult:
         """
-        Process sentiment output into standardized ModelResult.
+        Process zero-shot output into standardized ModelResult.
 
-        Sentiment pipeline returns:
-        [
-            {'label': 'LABEL_2', 'score': 0.95},  # positive
-            {'label': 'LABEL_1', 'score': 0.03},  # neutral
-            {'label': 'LABEL_0', 'score': 0.02},  # negative
-        ]
+        Zero-shot pipeline returns:
+        {
+            'sequence': 'input text',
+            'labels': ['label1', 'label2', ...],  # Sorted by score descending
+            'scores': [0.78, 0.15, ...]            # Corresponding scores
+        }
+
+        This method:
+        1. Builds all_scores dict from labels + scores
+        2. Identifies the top-scoring label
+        3. Computes a weighted crisis_signal using label_signal_mapping
+        4. Stores crisis_signal in metadata for the WeightedScorer
 
         Args:
-            raw_output: Raw pipeline output
-            latency_ms: Inference latency
+            raw_output: Raw pipeline output (labels + scores)
+            latency_ms: Inference latency in milliseconds
 
         Returns:
-            Standardized ModelResult
+            Standardized ModelResult with crisis_signal in metadata
         """
         try:
-            # Handle list output (top_k=None returns list)
-            if isinstance(raw_output, list) and len(raw_output) > 0:
-                # Could be list of dicts or list of lists
-                if isinstance(raw_output[0], list):
-                    # Nested list - take first
-                    scores_list = raw_output[0]
-                else:
-                    scores_list = raw_output
-            else:
-                scores_list = []
+            labels = raw_output.get("labels", [])
+            scores = raw_output.get("scores", [])
 
-            # Build all_scores with normalized labels
+            # Build all_scores dictionary
             all_scores = {}
-            for item in scores_list:
-                raw_label = item.get("label", "unknown")
-                normalized_label = self._normalize_label(raw_label)
-                all_scores[normalized_label] = float(item.get("score", 0.0))
+            for label, score in zip(labels, scores):
+                all_scores[label] = float(score)
 
-            # Get primary prediction (highest score)
-            if all_scores:
-                primary_label = max(all_scores, key=all_scores.get)
-                primary_score = all_scores[primary_label]
+            # Primary prediction (highest scoring label)
+            if labels and scores:
+                primary_label = labels[0]  # Already sorted descending
+                primary_score = float(scores[0])
             else:
-                primary_label = "neutral"
+                primary_label = "unknown"
                 primary_score = 0.0
+
+            # Compute crisis signal from label-to-signal mapping
+            crisis_signal = self._compute_crisis_signal(all_scores)
 
             return ModelResult(
                 label=primary_label,
@@ -225,10 +208,15 @@ class SentimentAnalyzer(BaseModelWrapper):
                 model_role=self.role,
                 success=True,
                 raw_output=raw_output,
+                metadata={
+                    "crisis_signal": crisis_signal,
+                    "model_type": "zero-shot-sentiment",
+                    "label_count": len(labels),
+                },
             )
 
         except Exception as e:
-            logger.error(f"Error processing sentiment output: {e}")
+            logger.error(f"Error processing sentiment zero-shot output: {e}")
             return ModelResult.create_error(
                 model_name=self.name,
                 model_role=self.role,
@@ -237,82 +225,46 @@ class SentimentAnalyzer(BaseModelWrapper):
             )
 
     # =========================================================================
-    # Sentiment-Specific Methods
+    # Crisis Signal Computation
     # =========================================================================
 
-    def _normalize_label(self, label: str) -> str:
+    def _compute_crisis_signal(self, all_scores: Dict[str, float]) -> float:
         """
-        Normalize model label to standard format.
+        Compute a weighted crisis signal from zero-shot label scores.
+
+        For each label, multiplies the model's confidence score by the
+        configured signal weight from label_signal_mapping, then sums.
+        This produces a single 0.0-1.0 value representing distress severity.
+
+        Example:
+            scores = {"deep hopelessness": 0.78, "venting but coping": 0.15, ...}
+            mapping = {"deep hopelessness": 0.95, "venting but coping": 0.30, ...}
+            signal = (0.78 * 0.95) + (0.15 * 0.30) + ... = 0.786
 
         Args:
-            label: Raw label from model
+            all_scores: Dictionary of label → model confidence score
 
         Returns:
-            Normalized label (positive, negative, neutral)
+            Crisis signal strength (0.0 - 1.0)
         """
-        return LABEL_MAPPING.get(label, label.lower())
-
-    def is_negative(self, result: ModelResult) -> bool:
-        """
-        Check if sentiment is negative.
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            True if primary sentiment is negative
-        """
-        return result.success and result.label == "negative"
-
-    def is_positive(self, result: ModelResult) -> bool:
-        """
-        Check if sentiment is positive.
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            True if primary sentiment is positive
-        """
-        return result.success and result.label == "positive"
-
-    def is_neutral(self, result: ModelResult) -> bool:
-        """
-        Check if sentiment is neutral.
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            True if primary sentiment is neutral
-        """
-        return result.success and result.label == "neutral"
-
-    def get_negative_score(self, result: ModelResult) -> float:
-        """
-        Get the negative sentiment score.
-
-        Useful for crisis correlation - higher negative
-        score may indicate distress.
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            Negative sentiment score (0.0 - 1.0)
-        """
-        if not result.success:
+        if not all_scores or self._label_signal_mapping is None:
             return 0.0
-        return result.all_scores.get("negative", 0.0)
+
+        crisis_signal = 0.0
+        for label, confidence in all_scores.items():
+            signal_weight = self._label_signal_mapping.get(label, 0.0)
+            crisis_signal += confidence * signal_weight
+
+        # Clamp to valid range
+        return max(0.0, min(1.0, crisis_signal))
 
     def get_crisis_signal(self, result: ModelResult) -> float:
         """
-        Calculate crisis signal from sentiment.
+        Get the pre-computed crisis signal from a ModelResult.
 
-        Maps sentiment to crisis correlation:
-        - Negative sentiment → higher crisis signal
-        - Neutral sentiment → moderate signal
-        - Positive sentiment → lower signal
+        The crisis signal is computed during _process_output() and stored
+        in result.metadata["crisis_signal"]. This method provides a clean
+        interface for external consumers (e.g., WeightedScorer).
 
         Args:
             result: ModelResult from analyze()
@@ -322,20 +274,51 @@ class SentimentAnalyzer(BaseModelWrapper):
         """
         if not result.success:
             return 0.0
+        return result.metadata.get("crisis_signal", 0.0)
 
-        # Weight negative heavily, neutral moderately, positive low
-        negative = result.all_scores.get("negative", 0.0)
-        neutral = result.all_scores.get("neutral", 0.0)
-        positive = result.all_scores.get("positive", 0.0)
+    # =========================================================================
+    # Sentiment-Specific Convenience Methods
+    # =========================================================================
 
-        # Crisis signal formula:
-        # High negative = high signal
-        # Neutral has some weight (could mask distress)
-        # Positive reduces signal
-        signal = (negative * 1.0) + (neutral * 0.3) - (positive * 0.5)
+    def get_top_distress_label(self, result: ModelResult) -> str:
+        """
+        Get the highest-scoring distress label from the result.
 
-        # Clamp to 0.0 - 1.0
-        return max(0.0, min(1.0, signal))
+        Args:
+            result: ModelResult from analyze()
+
+        Returns:
+            The primary (highest confidence) label string
+        """
+        if not result.success:
+            return "unknown"
+        return result.label
+
+    def is_high_distress(self, result: ModelResult, threshold: float = 0.60) -> bool:
+        """
+        Check if the crisis signal indicates high distress.
+
+        Args:
+            result: ModelResult from analyze()
+            threshold: Signal threshold for "high distress" (default: 0.60)
+
+        Returns:
+            True if crisis signal exceeds threshold
+        """
+        return self.get_crisis_signal(result) >= threshold
+
+    def is_low_distress(self, result: ModelResult, threshold: float = 0.20) -> bool:
+        """
+        Check if the crisis signal indicates low/no distress.
+
+        Args:
+            result: ModelResult from analyze()
+            threshold: Signal threshold below which distress is considered low
+
+        Returns:
+            True if crisis signal is below threshold
+        """
+        return self.get_crisis_signal(result) < threshold
 
 
 # =============================================================================
@@ -346,59 +329,91 @@ class SentimentAnalyzer(BaseModelWrapper):
 def create_sentiment_analyzer(
     config: Optional[Dict[str, Any]] = None,
     config_manager: Optional[Any] = None,
-) -> SentimentAnalyzer:
+) -> SentimentZeroShotAnalyzer:
     """
-    Factory function for Sentiment Analyzer.
+    Factory function for Sentiment Zero-Shot Analyzer.
 
-    Creates a configured sentiment analyzer using either:
+    Creates a configured DeBERTa zero-shot sentiment analyzer using either:
+    - ConfigManager instance (loads from default.json + labels_config.json)
     - Direct config dictionary
-    - ConfigManager instance
     - Default values
+
+    Same external signature as v5.0 factory function — drop-in replacement.
 
     Args:
         config: Direct configuration dictionary
         config_manager: ConfigManager instance for loading config
 
     Returns:
-        Configured SentimentAnalyzer instance
+        Configured SentimentZeroShotAnalyzer instance
 
     Example:
         >>> analyzer = create_sentiment_analyzer()
         >>> analyzer = create_sentiment_analyzer(config_manager=config)
-        >>> result = analyzer.analyze("I'm feeling really down today")
+        >>> result = analyzer.analyze("I feel completely hopeless")
+        >>> signal = analyzer.get_crisis_signal(result)
     """
     # Build configuration from various sources
     model_config = {}
+    labels = None
+    hypothesis_template = None
+    label_signal_mapping = None
 
     # Priority 1: ConfigManager
     if config_manager is not None:
+        # Model identity config from default.json
         sentiment_config = config_manager.get_model_config("sentiment")
         if sentiment_config:
             model_config = {
                 "model_id": sentiment_config.get(
-                    "model_id", SentimentAnalyzer.DEFAULT_MODEL_ID
+                    "model_id", SentimentZeroShotAnalyzer.DEFAULT_MODEL_ID
                 ),
                 "weight": sentiment_config.get(
-                    "weight", SentimentAnalyzer.DEFAULT_WEIGHT
+                    "weight", SentimentZeroShotAnalyzer.DEFAULT_WEIGHT
                 ),
                 "enabled": sentiment_config.get("enabled", True),
             }
 
-        # Get device from general model config
+        # Device from general model config
         models_config = config_manager.get_section("models")
         if models_config:
             model_config["device"] = models_config.get("device", "auto")
 
+        # Label config from labels_config.json (Phase 3.5)
+        sentiment_labels = config_manager.get_sentiment_labels()
+        if sentiment_labels:
+            raw_labels = sentiment_labels.get("candidate_labels")
+            if raw_labels and isinstance(raw_labels, list):
+                labels = raw_labels
+
+            raw_template = sentiment_labels.get("hypothesis_template")
+            if raw_template and isinstance(raw_template, str):
+                hypothesis_template = raw_template
+
+            raw_mapping = sentiment_labels.get("label_signal_mapping")
+            if raw_mapping and isinstance(raw_mapping, dict):
+                label_signal_mapping = raw_mapping
+
     # Priority 2: Direct config dict
     if config:
         model_config.update(config)
+        # Allow labels/mapping in direct config too
+        if "candidate_labels" in config:
+            labels = config["candidate_labels"]
+        if "hypothesis_template" in config:
+            hypothesis_template = config["hypothesis_template"]
+        if "label_signal_mapping" in config:
+            label_signal_mapping = config["label_signal_mapping"]
 
     # Create analyzer with merged config
-    return SentimentAnalyzer(
-        model_id=model_config.get("model_id", SentimentAnalyzer.DEFAULT_MODEL_ID),
-        weight=model_config.get("weight", SentimentAnalyzer.DEFAULT_WEIGHT),
+    return SentimentZeroShotAnalyzer(
+        model_id=model_config.get("model_id", SentimentZeroShotAnalyzer.DEFAULT_MODEL_ID),
+        weight=model_config.get("weight", SentimentZeroShotAnalyzer.DEFAULT_WEIGHT),
         device=model_config.get("device", "auto"),
         enabled=model_config.get("enabled", True),
+        candidate_labels=labels,
+        hypothesis_template=hypothesis_template,
+        label_signal_mapping=label_signal_mapping,
     )
 
 
@@ -407,7 +422,8 @@ def create_sentiment_analyzer(
 # =============================================================================
 
 __all__ = [
-    "SentimentAnalyzer",
+    "SentimentZeroShotAnalyzer",
     "create_sentiment_analyzer",
-    "SENTIMENT_LABELS",
+    "DEFAULT_CANDIDATE_LABELS",
+    "DEFAULT_LABEL_SIGNAL_MAPPING",
 ]

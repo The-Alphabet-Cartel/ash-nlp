@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Models Package for Ash-NLP Service
 ---
-FILE VERSION: v5.1-3-3.2-1
-LAST MODIFIED: 2026-02-07
-PHASE: Phase 3 - Base Model Zero-Shot Abstraction
+FILE VERSION: v5.1-4-4.5-1
+LAST MODIFIED: 2026-02-08
+PHASE: Phase 4 - Sentiment Zero-Shot Migration
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -21,7 +21,7 @@ This package contains all model wrappers for the Ash-NLP ensemble:
 
 MODELS:
 - BART Crisis Classifier (PRIMARY, weight 0.50)
-- Cardiff Sentiment Analyzer (SECONDARY, weight 0.25)
+- DeBERTa Sentiment Zero-Shot Analyzer (SECONDARY, weight 0.25) [Phase 4 - v5.1]
 - Cardiff Irony Detector (TERTIARY, weight 0.15)
 - RoBERTa Emotions Classifier (SUPPLEMENTARY, weight 0.10)
 
@@ -44,7 +44,7 @@ USAGE:
 """
 
 # Module version
-__version__ = "v5.1-3-3.2-1"
+__version__ = "v5.1-4-4.5-1"
 
 # =============================================================================
 # Base Classes and Data Types
@@ -75,11 +75,13 @@ from .bart_classifier import (
     DEFAULT_CRISIS_LABELS,
 )
 
-# Cardiff Sentiment Analyzer - SECONDARY (weight 0.25)
+# DeBERTa Sentiment Zero-Shot Analyzer - SECONDARY (weight 0.25)
+# Phase 4: Migrated from Cardiff text-classification to DeBERTa zero-shot
 from .sentiment import (
-    SentimentAnalyzer,
+    SentimentZeroShotAnalyzer,
     create_sentiment_analyzer,
-    SENTIMENT_LABELS,
+    DEFAULT_CANDIDATE_LABELS,
+    DEFAULT_LABEL_SIGNAL_MAPPING,
 )
 
 # Cardiff Irony Detector - TERTIARY (weight 0.15)
@@ -116,7 +118,7 @@ MODEL_FACTORIES = {
 MODEL_CLASSES = {
     "bart": BARTCrisisClassifier,
     "bart_crisis": BARTCrisisClassifier,
-    "sentiment": SentimentAnalyzer,
+    "sentiment": SentimentZeroShotAnalyzer,
     "irony": IronyDetector,
     "emotions": EmotionsClassifier,
 }
@@ -175,10 +177,11 @@ __all__ = [
     "BARTCrisisClassifier",
     "create_bart_classifier",
     "DEFAULT_CRISIS_LABELS",
-    # Sentiment Analyzer
-    "SentimentAnalyzer",
+    # Sentiment Zero-Shot Analyzer (Phase 4)
+    "SentimentZeroShotAnalyzer",
     "create_sentiment_analyzer",
-    "SENTIMENT_LABELS",
+    "DEFAULT_CANDIDATE_LABELS",
+    "DEFAULT_LABEL_SIGNAL_MAPPING",
     # Irony Detector
     "IronyDetector",
     "create_irony_detector",

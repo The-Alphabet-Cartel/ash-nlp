@@ -1,6 +1,6 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-3.5-3.1-1",
+		"file_version": "v5.1-4-4.1-1",
 		"last_modified": "2026-02-08",
 		"clean_architecture": "Compliant",
 		"description": "Label definitions for all models - crisis labels, candidate labels, and signal mappings",
@@ -73,19 +73,35 @@
 	},
 
 	"sentiment_labels": {
-		"description": "Distress severity labels for Sentiment zero-shot classifier (Phase 4)",
+		"description": "Distress severity labels for Sentiment zero-shot classifier (DeBERTa) - SECONDARY model",
 		"candidate_labels": "${NLP_SENTIMENT_CANDIDATE_LABELS}",
 		"hypothesis_template": "${NLP_SENTIMENT_HYPOTHESIS_TEMPLATE}",
 		"label_signal_mapping": "${NLP_SENTIMENT_LABEL_SIGNAL_MAPPING}",
 		"defaults": {
-			"candidate_labels": null,
+			"candidate_labels": [
+				"person expressing deep hopelessness or despair",
+				"person experiencing acute emotional distress",
+				"person venting frustration but coping",
+				"person describing a difficult situation calmly",
+				"person sharing positive news or celebration",
+				"casual negative mood with no distress",
+				"neutral informational statement"
+			],
 			"hypothesis_template": null,
-			"label_signal_mapping": null
+			"label_signal_mapping": {
+				"person expressing deep hopelessness or despair": 0.95,
+				"person experiencing acute emotional distress": 0.80,
+				"person venting frustration but coping": 0.30,
+				"person describing a difficult situation calmly": 0.15,
+				"person sharing positive news or celebration": 0.0,
+				"casual negative mood with no distress": 0.15,
+				"neutral informational statement": 0.0
+			}
 		},
 		"validation": {
 			"candidate_labels": {
 				"type": "list",
-				"required": false
+				"required": true
 			},
 			"hypothesis_template": {
 				"type": "string",
@@ -93,7 +109,7 @@
 			},
 			"label_signal_mapping": {
 				"type": "dict",
-				"required": false
+				"required": true
 			}
 		}
 	},
