@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.1-3.5-3.1-1
-LAST MODIFIED: 2026-02-08
-PHASE: Phase 3.5 - Label & Classification Config Extraction
+FILE VERSION: v5.1-4.5-4.5.1-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 4.5 - BART Label Optimization
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -40,6 +40,10 @@ PHASE 3.5 ADDITIONS:
 - get_irony_gate_config() - Irony gate configuration
 - get_crisis_labels() updated to read from labels_config
 - get_thresholds() updated to read from classification_config
+
+PHASE 4.5 ADDITIONS:
+- get_crisis_labels() returns flat candidate_labels + label_signal_mapping structure
+- _get_labels_defaults() crisis_labels updated to descriptive NLI-optimized labels
 """
 
 import json
@@ -50,7 +54,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Module version
-__version__ = "v5.1-3.5-3.1-1"
+__version__ = "v5.1-4.5-4.5.1-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -381,34 +385,52 @@ class ConfigManager:
     def _get_labels_defaults(self) -> Dict[str, Any]:
         """
         Return default labels configuration if file not found.
-        
+
+        Phase 4.5: crisis_labels updated to flat candidate_labels + label_signal_mapping
+        structure matching the sentiment pattern.
+
         Returns:
             Default labels configuration (Rule #5 - operational continuity)
         """
         return {
             "crisis_labels": {
-                "primary_labels": [
-                    "suicide ideation",
-                    "self-harm",
-                    "domestic violence",
-                    "panic attack",
-                    "severe depression",
-                    "substance abuse crisis",
+                "candidate_labels": [
+                    "person expressing suicidal thoughts or intent to end their life",
+                    "person describing self-harm or intent to hurt themselves",
+                    "person experiencing or describing domestic violence or abuse",
+                    "person having a panic attack or acute mental health emergency",
+                    "person experiencing severe depression with loss of functioning",
+                    "person in a substance abuse crisis or dangerous intoxication",
+                    "person in significant emotional distress needing support",
+                    "person experiencing overwhelming anxiety or fear",
+                    "person processing intense grief or devastating loss",
+                    "person going through a painful relationship breakdown or betrayal",
+                    "person struggling with identity, belonging, or self-acceptance",
+                    "person experiencing deep loneliness or social isolation",
+                    "person having a casual everyday conversation with no distress",
+                    "person sharing good news, achievements, or positive experiences",
+                    "person asking a factual question or seeking information",
+                    "person discussing a topic, opinion, or interest casually",
                 ],
-                "secondary_labels": [
-                    "emotional distress",
-                    "anxiety",
-                    "grief",
-                    "relationship crisis",
-                    "identity crisis",
-                    "isolation",
-                ],
-                "safe_labels": [
-                    "casual conversation",
-                    "positive sharing",
-                    "seeking information",
-                    "general discussion",
-                ],
+                "hypothesis_template": None,
+                "label_signal_mapping": {
+                    "person expressing suicidal thoughts or intent to end their life": 1.00,
+                    "person describing self-harm or intent to hurt themselves": 0.95,
+                    "person experiencing or describing domestic violence or abuse": 0.95,
+                    "person having a panic attack or acute mental health emergency": 0.85,
+                    "person experiencing severe depression with loss of functioning": 0.85,
+                    "person in a substance abuse crisis or dangerous intoxication": 0.85,
+                    "person in significant emotional distress needing support": 0.65,
+                    "person experiencing overwhelming anxiety or fear": 0.55,
+                    "person processing intense grief or devastating loss": 0.55,
+                    "person going through a painful relationship breakdown or betrayal": 0.50,
+                    "person struggling with identity, belonging, or self-acceptance": 0.50,
+                    "person experiencing deep loneliness or social isolation": 0.50,
+                    "person having a casual everyday conversation with no distress": 0.00,
+                    "person sharing good news, achievements, or positive experiences": 0.00,
+                    "person asking a factual question or seeking information": 0.00,
+                    "person discussing a topic, opinion, or interest casually": 0.00,
+                },
             },
             "sentiment_labels": {
                 "candidate_labels": None,
@@ -992,15 +1014,16 @@ class ConfigManager:
         """
         return self.get_section("performance")
 
-    def get_crisis_labels(self) -> Dict[str, List[str]]:
+    def get_crisis_labels(self) -> Dict[str, Any]:
         """
         Get crisis classification labels for BART.
-        
-        Phase 3.5: Now reads from labels_config.json instead of default.json.
-        Method signature unchanged for backward compatibility.
+
+        Phase 4.5: Returns flat candidate_labels + label_signal_mapping structure
+        matching the Phase 4 sentiment pattern. Replaces the old three-tier
+        primary_labels/secondary_labels/safe_labels format.
 
         Returns:
-            Dictionary with primary_labels, secondary_labels, safe_labels
+            Dictionary with candidate_labels, hypothesis_template, label_signal_mapping
         """
         crisis_labels = self._labels_config.get("crisis_labels", {})
         if not crisis_labels:

@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-4-4.4-1
-LAST MODIFIED: 2026-02-08
-PHASE: Phase 4 - Sentiment Zero-Shot Migration (scoring update)
+FILE VERSION: v5.1-4.5-4.5.3-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 4.5 - BART Label Optimization (scoring update)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.1-4-4.4-1"
+__version__ = "v5.1-4.5-4.5.3-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -211,18 +211,9 @@ class WeightedScorer:
         "low": 0.30,
     }
 
-    # Crisis labels from BART that indicate high severity
-    CRITICAL_LABELS = {
-        "suicide ideation",
-        "self-harm",
-        "domestic violence",
-    }
-
-    HIGH_SEVERITY_LABELS = {
-        "panic attack",
-        "severe depression",
-        "substance abuse crisis",
-    }
+    # Phase 4.5: Critical signal threshold for crisis override
+    # Labels with signal >= this threshold trigger critical severity override
+    CRITICAL_SIGNAL_THRESHOLD = 0.90
 
     def __init__(
         self,
@@ -267,8 +258,13 @@ class WeightedScorer:
         """
         Extract crisis signal from BART result.
 
-        BART is the primary model - its score is used directly
-        but boosted for critical labels.
+        v5.1 Phase 4.5: Reads pre-computed crisis_signal from ModelResult.metadata.
+        The BARTCrisisClassifier computes this during _process_output() using its
+        label-to-signal mapping — same pattern as sentiment.
+
+        Backward compatibility: Falls back to legacy tier-boosting heuristic
+        if metadata["crisis_signal"] is not present (e.g., during rollback to
+        v5.0 BART classifier).
 
         Args:
             result: ModelResult from BART classifier
@@ -287,26 +283,40 @@ class WeightedScorer:
                 metadata={"error": result.error},
             )
 
-        # Base signal is the confidence score
+        # v5.1 Phase 4.5: Read pre-computed crisis signal from zero-shot model
+        if "crisis_signal" in result.metadata:
+            crisis_signal = result.metadata["crisis_signal"]
+            crisis_signal = max(0.0, min(1.0, crisis_signal))
+
+            weight = self.weights.get("bart", 0.50)
+
+            return ModelSignal(
+                model_name="bart",
+                raw_score=result.score,
+                crisis_signal=crisis_signal,
+                weight=weight,
+                weighted_score=crisis_signal * weight,
+                label=result.label,
+                metadata=result.all_scores,
+            )
+
+        # v5.0 fallback: Legacy tier-boosting heuristic
+        # Supports rollback to v5.0 BART classifier extending BaseModelWrapper
+        logger.debug("BART result missing crisis_signal metadata, using legacy fallback")
+
         crisis_signal = result.score
-
-        # Boost for critical labels
         label_lower = result.label.lower()
-        if label_lower in self.CRITICAL_LABELS:
-            # Ensure critical labels get high score
-            crisis_signal = max(crisis_signal, 0.90)
-        elif label_lower in self.HIGH_SEVERITY_LABELS:
-            crisis_signal = max(crisis_signal, 0.75)
 
-        # Check if it's a safe label
-        safe_labels = {
-            "casual conversation",
-            "positive sharing",
-            "seeking information",
-            "general discussion",
-        }
-        if label_lower in safe_labels:
-            # Invert for safe labels
+        # Legacy hardcoded label sets for backward compatibility only
+        legacy_critical = {"suicide ideation", "self-harm", "domestic violence"}
+        legacy_high = {"panic attack", "severe depression", "substance abuse crisis"}
+        legacy_safe = {"casual conversation", "positive sharing", "seeking information", "general discussion"}
+
+        if label_lower in legacy_critical:
+            crisis_signal = max(crisis_signal, 0.90)
+        elif label_lower in legacy_high:
+            crisis_signal = max(crisis_signal, 0.75)
+        elif label_lower in legacy_safe:
             crisis_signal = 1.0 - result.score
 
         weight = self.weights.get("bart", 0.50)
@@ -318,7 +328,7 @@ class WeightedScorer:
             weight=weight,
             weighted_score=crisis_signal * weight,
             label=result.label,
-            metadata={"all_scores": result.all_scores},
+            metadata={"all_scores": result.all_scores, "legacy_fallback": True},
         )
 
     def extract_sentiment_signal(self, result: ModelResult) -> ModelSignal:
@@ -580,10 +590,11 @@ class WeightedScorer:
         # Determine severity
         severity = CrisisSeverity.from_score(final_score, self.thresholds)
 
-        # Check for critical label override
+        # Check for critical signal override
+        # Phase 4.5: Uses signal threshold instead of label membership
         if "bart" in signals:
-            bart_label = signals["bart"].label.lower()
-            if bart_label in self.CRITICAL_LABELS and final_score >= 0.5:
+            bart_signal = signals["bart"].crisis_signal
+            if bart_signal >= self.CRITICAL_SIGNAL_THRESHOLD and final_score >= 0.5:
                 severity = CrisisSeverity.CRITICAL
 
         # Determine if crisis detected and intervention needed

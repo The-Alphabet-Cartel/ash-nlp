@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Models Package for Ash-NLP Service
 ---
-FILE VERSION: v5.1-4-4.5-1
-LAST MODIFIED: 2026-02-08
-PHASE: Phase 4 - Sentiment Zero-Shot Migration
+FILE VERSION: v5.1-4.5-4.5.2-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 4.5 - BART Label Optimization
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -20,7 +20,7 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 This package contains all model wrappers for the Ash-NLP ensemble:
 
 MODELS:
-- BART Crisis Classifier (PRIMARY, weight 0.50)
+- BART Crisis Classifier (PRIMARY, weight 0.50) [Phase 4.5 - v5.1 ZeroShotModelWrapper]
 - DeBERTa Sentiment Zero-Shot Analyzer (SECONDARY, weight 0.25) [Phase 4 - v5.1]
 - Cardiff Irony Detector (TERTIARY, weight 0.15)
 - RoBERTa Emotions Classifier (SUPPLEMENTARY, weight 0.10)
@@ -44,7 +44,7 @@ USAGE:
 """
 
 # Module version
-__version__ = "v5.1-4-4.5-1"
+__version__ = "v5.1-4.5-4.5.2-1"
 
 # =============================================================================
 # Base Classes and Data Types
@@ -69,10 +69,13 @@ from .zero_shot_base import ZeroShotModelWrapper
 # =============================================================================
 
 # BART Crisis Classifier - PRIMARY (weight 0.50)
+# Phase 4.5: Migrated to ZeroShotModelWrapper with descriptive NLI labels
 from .bart_classifier import (
     BARTCrisisClassifier,
     create_bart_classifier,
     DEFAULT_CRISIS_LABELS,
+    DEFAULT_LABEL_SIGNAL_MAPPING as BART_DEFAULT_LABEL_SIGNAL_MAPPING,
+    CRITICAL_SIGNAL_THRESHOLD,
 )
 
 # DeBERTa Sentiment Zero-Shot Analyzer - SECONDARY (weight 0.25)
@@ -173,10 +176,12 @@ __all__ = [
     "ModelInfo",
     "ModelRole",
     "ModelTask",
-    # BART Crisis Classifier
+    # BART Crisis Classifier (Phase 4.5)
     "BARTCrisisClassifier",
     "create_bart_classifier",
     "DEFAULT_CRISIS_LABELS",
+    "BART_DEFAULT_LABEL_SIGNAL_MAPPING",
+    "CRITICAL_SIGNAL_THRESHOLD",
     # Sentiment Zero-Shot Analyzer (Phase 4)
     "SentimentZeroShotAnalyzer",
     "create_sentiment_analyzer",

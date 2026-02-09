@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-4-4.1-1",
-		"last_modified": "2026-02-08",
+		"file_version": "v5.1-4.5-4.5.1-1",
+		"last_modified": "2026-02-09",
 		"clean_architecture": "Compliant",
 		"description": "Label definitions for all models - crisis labels, candidate labels, and signal mappings",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -9,64 +9,60 @@
 	},
 
 	"crisis_labels": {
-		"description": "Crisis classification labels for BART zero-shot classifier (PRIMARY model)",
-		"primary_labels": [
-			"suicide ideation",
-			"self-harm",
-			"domestic violence",
-			"panic attack",
-			"severe depression",
-			"substance abuse crisis"
-		],
-		"secondary_labels": [
-			"emotional distress",
-			"anxiety",
-			"grief",
-			"relationship crisis",
-			"identity crisis",
-			"isolation"
-		],
-		"safe_labels": [
-			"casual conversation",
-			"positive sharing",
-			"seeking information",
-			"general discussion"
-		],
+		"description": "Crisis classification labels for BART zero-shot classifier (PRIMARY model, weight 0.50). Phase 4.5: Migrated from short categorical labels to descriptive NLI-optimized labels with configurable signal mapping.",
+		"candidate_labels": "${NLP_CRISIS_CANDIDATE_LABELS}",
+		"hypothesis_template": "${NLP_CRISIS_HYPOTHESIS_TEMPLATE}",
+		"label_signal_mapping": "${NLP_CRISIS_LABEL_SIGNAL_MAPPING}",
 		"defaults": {
-			"primary_labels": [
-				"suicide ideation",
-				"self-harm",
-				"domestic violence",
-				"panic attack",
-				"severe depression",
-				"substance abuse crisis"
+			"candidate_labels": [
+				"person expressing suicidal thoughts or intent to end their life",
+				"person describing self-harm or intent to hurt themselves",
+				"person experiencing or describing domestic violence or abuse",
+				"person having a panic attack or acute mental health emergency",
+				"person experiencing severe depression with loss of functioning",
+				"person in a substance abuse crisis or dangerous intoxication",
+				"person in significant emotional distress needing support",
+				"person experiencing overwhelming anxiety or fear",
+				"person processing intense grief or devastating loss",
+				"person going through a painful relationship breakdown or betrayal",
+				"person struggling with identity, belonging, or self-acceptance",
+				"person experiencing deep loneliness or social isolation",
+				"person having a casual everyday conversation with no distress",
+				"person sharing good news, achievements, or positive experiences",
+				"person asking a factual question or seeking information",
+				"person discussing a topic, opinion, or interest casually"
 			],
-			"secondary_labels": [
-				"emotional distress",
-				"anxiety",
-				"grief",
-				"relationship crisis",
-				"identity crisis",
-				"isolation"
-			],
-			"safe_labels": [
-				"casual conversation",
-				"positive sharing",
-				"seeking information",
-				"general discussion"
-			]
+			"hypothesis_template": null,
+			"label_signal_mapping": {
+				"person expressing suicidal thoughts or intent to end their life": 1.00,
+				"person describing self-harm or intent to hurt themselves": 0.95,
+				"person experiencing or describing domestic violence or abuse": 0.95,
+				"person having a panic attack or acute mental health emergency": 0.85,
+				"person experiencing severe depression with loss of functioning": 0.85,
+				"person in a substance abuse crisis or dangerous intoxication": 0.85,
+				"person in significant emotional distress needing support": 0.65,
+				"person experiencing overwhelming anxiety or fear": 0.55,
+				"person processing intense grief or devastating loss": 0.55,
+				"person going through a painful relationship breakdown or betrayal": 0.50,
+				"person struggling with identity, belonging, or self-acceptance": 0.50,
+				"person experiencing deep loneliness or social isolation": 0.50,
+				"person having a casual everyday conversation with no distress": 0.00,
+				"person sharing good news, achievements, or positive experiences": 0.00,
+				"person asking a factual question or seeking information": 0.00,
+				"person discussing a topic, opinion, or interest casually": 0.00
+			}
 		},
 		"validation": {
-			"primary_labels": {
+			"candidate_labels": {
 				"type": "list",
 				"required": true
 			},
-			"secondary_labels": {
-				"type": "list",
-				"required": true
+			"hypothesis_template": {
+				"type": "string",
+				"required": false
 			},
-			"safe_labels": {
-				"type": "list",
+			"label_signal_mapping": {
+				"type": "dict",
 				"required": true
 			}
 		}
