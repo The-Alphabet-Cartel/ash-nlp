@@ -1,158 +1,121 @@
 """
-Ash-NLP: Crisis Detection Backend for The Alphabet Cartel Discord Community
-CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Classification
-******************  CORE SYSTEM VISION (Never to be violated):  ****************
-Ash-NLP is a CRISIS DETECTION BACKEND that:
-1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
-3. ENSEMBLE: Combines weighted model outputs through decision engine
-4. PURPOSE: Detect crisis messages in Discord community communications
-********************************************************************************
-RoBERTa Emotions Classifier for Ash-NLP Service
----
-FILE VERSION: v5.0-3-4.2-5
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.2 - Model Wrapper Implementation
-CLEAN ARCHITECTURE: v5.1 Compliant
+============================================================================
+Ash-NLP: Crisis Detection NLP Server
+The Alphabet Cartel - https://discord.gg/alphabetcartel | alphabetcartel.org
+============================================================================
+
+MISSION - NEVER TO BE VIOLATED:
+    Analyze  → Process messages through multi-model ensemble classification
+    Detect   → Identify crisis signals with weighted consensus algorithms
+    Explain  → Provide human-readable explanations for all decisions
+    Protect  → Safeguard our LGBTQIA+ community through accurate detection
+
+============================================================================
+DeBERTa Zero-Shot Emotions Analyzer - Emotional State Classification
+----------------------------------------------------------------------------
+Replaces the RoBERTa text-classification emotions model with a DeBERTa
+zero-shot classifier using emotional-state candidate labels. Instead of
+28 GoEmotions labels with heuristic crisis mapping, this model answers:
+"What is the person's emotional state?" using natural language labels.
+
+Model: MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli
+Role: SUPPLEMENTARY (weight: 0.10)
+Task: zero-shot-classification
+Migration: Phase 5 (v5.1) - RoBERTa text-classification → DeBERTa zero-shot
+Previous: SamLowe/roberta-base-go_emotions (28 GoEmotions labels)
+Current:  MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli (emotional state labels)
+
+NOTE: Uses the SAME base model as SentimentZeroShotAnalyzer but with
+DIFFERENT candidate labels. These are independent pipeline instances
+answering different questions:
+  - Sentiment: "What is the distress severity level?"
+  - Emotions:  "What is the person's emotional state?"
+----------------------------------------------------------------------------
+FILE VERSION: v5.1-5-5.1-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 5 - Emotions Zero-Shot Migration
+CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
-Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
-
-RESPONSIBILITIES:
-- Wrap SamLowe/roberta-base-go_emotions for emotion classification
-- Detect fine-grained emotions using 28 GoEmotions labels
-- Provide supplementary emotional signals for ensemble decision
-- Map emotions to crisis relevance scoring
-
-MODEL DETAILS:
-- HuggingFace ID: SamLowe/roberta-base-go_emotions
-- Task: text-classification
-- Role: SUPPLEMENTARY (weight: 0.10)
-- Labels: 28 GoEmotions labels
-- Phase 2 Crisis Accuracy: 49.09% (emotions are nuanced/overlapping)
-
-GOEMOTION LABELS (28 total):
-Positive: admiration, amusement, approval, caring, desire, excitement,
-          gratitude, joy, love, optimism, pride, relief
-Negative: anger, annoyance, disappointment, disapproval, disgust,
-          embarrassment, fear, grief, nervousness, remorse, sadness
-Ambiguous: confusion, curiosity, realization, surprise
-Neutral: neutral
+============================================================================
 """
 
 import logging
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 from .base import (
-    BaseModelWrapper,
     ModelResult,
     ModelRole,
-    ModelTask,
 )
+from .zero_shot_base import ZeroShotModelWrapper
 
 # Module version
-__version__ = "v5.0-3-4.2-5"
+__version__ = "v5.1-5-5.1-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-# GoEmotions 28 labels
-GOEMOTION_LABELS = [
-    # Positive emotions
-    "admiration",
-    "amusement",
-    "approval",
-    "caring",
-    "desire",
-    "excitement",
-    "gratitude",
-    "joy",
-    "love",
-    "optimism",
-    "pride",
-    "relief",
-    # Negative emotions
-    "anger",
-    "annoyance",
-    "disappointment",
-    "disapproval",
-    "disgust",
-    "embarrassment",
-    "fear",
-    "grief",
-    "nervousness",
-    "remorse",
-    "sadness",
-    # Ambiguous emotions
-    "confusion",
-    "curiosity",
-    "realization",
-    "surprise",
-    # Neutral
-    "neutral",
+# =============================================================================
+# Default Labels and Mapping
+# =============================================================================
+
+# Emotional state labels - answer: "What is the person's emotional state?"
+DEFAULT_EMOTIONS_CANDIDATE_LABELS = [
+    "person feeling trapped or helpless with no way out",
+    "person experiencing grief or devastating loss",
+    "person feeling rejected or abandoned by loved ones",
+    "person experiencing fear or panic",
+    "person feeling anger without crisis intent",
+    "person expressing joy or excitement",
+    "person in calm or neutral emotional state",
+    "person using humor to cope with difficulty",
 ]
 
-# Emotion categories for crisis assessment
-CRISIS_EMOTIONS: Set[str] = {
-    "grief",
-    "sadness",
-    "fear",
-    "nervousness",
-    "remorse",
-    "anger",
-    "disappointment",
-    "disgust",
-    "embarrassment",
-}
-
-POSITIVE_EMOTIONS: Set[str] = {
-    "joy",
-    "love",
-    "gratitude",
-    "relief",
-    "optimism",
-    "admiration",
-    "amusement",
-    "approval",
-    "caring",
-    "excitement",
-    "pride",
-    "desire",
-}
-
-NEUTRAL_EMOTIONS: Set[str] = {
-    "neutral",
-    "confusion",
-    "curiosity",
-    "realization",
-    "surprise",
+# Maps each label to a crisis signal strength (0.0-1.0)
+DEFAULT_EMOTIONS_LABEL_SIGNAL_MAPPING = {
+    "person feeling trapped or helpless with no way out": 0.95,
+    "person experiencing grief or devastating loss": 0.85,
+    "person experiencing fear or panic": 0.80,
+    "person feeling rejected or abandoned by loved ones": 0.75,
+    "person feeling anger without crisis intent": 0.20,
+    "person using humor to cope with difficulty": 0.10,
+    "person expressing joy or excitement": 0.0,
+    "person in calm or neutral emotional state": 0.0,
 }
 
 
-class EmotionsClassifier(BaseModelWrapper):
+class EmotionsZeroShotAnalyzer(ZeroShotModelWrapper):
     """
-    RoBERTa Emotions Classifier - SUPPLEMENTARY MODEL.
+    DeBERTa Zero-Shot Emotions Analyzer — SUPPLEMENTARY MODEL.
 
-    Uses SamLowe/roberta-base-go_emotions for fine-grained
-    emotion classification using 28 GoEmotions labels.
+    Uses MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli for emotional
+    state classification using natural language labels. Each label
+    describes an emotional state rather than a generic emotion category,
+    giving the ensemble a complementary signal to the Sentiment model's
+    distress-severity assessment.
 
-    This model provides supplementary signals about emotional state.
-    While it has lower accuracy than other models (emotions overlap),
-    it adds valuable nuance to the ensemble decision.
+    Role: SUPPLEMENTARY (weight: 0.10)
+    Task: zero-shot-classification
+    Question answered: "What is the person's emotional state?"
 
-    Features:
-    - 28 fine-grained emotion labels
-    - Crisis-relevant emotion scoring
-    - Multi-label support (multiple emotions possible)
-    - Emotion category aggregation
+    Key difference from v5.0 EmotionsClassifier:
+    - v5.0: RoBERTa outputs 28 GoEmotions labels → heuristic aggregation
+    - v5.1: DeBERTa outputs emotional-state scores → direct label-to-signal mapping
 
-    Clean Architecture v5.1 Compliance:
-    - Factory function: create_emotions_classifier()
-    - Configuration via ConfigManager
-    - Standardized ModelResult output
+    Key difference from SentimentZeroShotAnalyzer:
+    - Sentiment: "How severe is the distress?" (severity gradient)
+    - Emotions:  "What emotional state are they in?" (type/nature of experience)
+
+    The crisis_signal is pre-computed during _process_output() and stored in
+    ModelResult.metadata["crisis_signal"] for the WeightedScorer to consume.
+
+    Clean Architecture Compliance:
+    - Factory function: create_emotions_classifier() (Rule #1)
+    - Configuration via ConfigManager (Rule #4)
+    - Resilient error handling with graceful fallbacks (Rule #5)
+    - Labels configurable via labels_config.json + env overrides (Rule #4)
     """
 
-    # Default model configuration
-    DEFAULT_MODEL_ID = "SamLowe/roberta-base-go_emotions"
+    DEFAULT_MODEL_ID = "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli"
     DEFAULT_WEIGHT = 0.10
 
     def __init__(
@@ -161,128 +124,102 @@ class EmotionsClassifier(BaseModelWrapper):
         weight: float = DEFAULT_WEIGHT,
         device: str = "auto",
         enabled: bool = True,
+        candidate_labels: Optional[List[str]] = None,
+        hypothesis_template: Optional[str] = None,
+        label_signal_mapping: Optional[Dict[str, float]] = None,
     ):
         """
-        Initialize Emotions Classifier.
+        Initialize DeBERTa Zero-Shot Emotions Analyzer.
 
         Args:
             model_id: HuggingFace model identifier
             weight: Weight in ensemble scoring (default: 0.10)
             device: Device to run on (auto, cuda, cpu)
             enabled: Whether this model is enabled
+            candidate_labels: Emotional state labels for zero-shot classification.
+                              Falls back to DEFAULT_EMOTIONS_CANDIDATE_LABELS if not provided.
+            hypothesis_template: Optional NLI hypothesis template.
+                                 If None, HuggingFace default is used.
+            label_signal_mapping: Maps label strings to crisis signal values (0.0-1.0).
+                                  Falls back to DEFAULT_EMOTIONS_LABEL_SIGNAL_MAPPING if not provided.
         """
+        # Use defaults if not provided (None means "use defaults", [] is an explicit error)
+        labels = (
+            candidate_labels
+            if candidate_labels is not None
+            else DEFAULT_EMOTIONS_CANDIDATE_LABELS.copy()
+        )
+        mapping = (
+            label_signal_mapping
+            if label_signal_mapping is not None
+            else DEFAULT_EMOTIONS_LABEL_SIGNAL_MAPPING.copy()
+        )
+
         super().__init__(
             model_id=model_id,
             name="emotions",
-            task=ModelTask.TEXT_CLASSIFICATION,
             role=ModelRole.SUPPLEMENTARY,
+            candidate_labels=labels,
             weight=weight,
             device=device,
             enabled=enabled,
+            hypothesis_template=hypothesis_template,
+            label_signal_mapping=mapping,
         )
 
-        logger.info(f"💭 Emotions Classifier initialized (weight: {self.weight})")
+        logger.info(
+            f"💭 Emotions Zero-Shot Analyzer initialized "
+            f"(model: {self.model_id}, weight: {self.weight}, "
+            f"labels: {len(self._candidate_labels)})"
+        )
 
-    def _load_model(self) -> Any:
-        """
-        Load emotions classification pipeline.
-
-        Returns:
-            HuggingFace pipeline for text-classification
-
-        Raises:
-            RuntimeError: If loading fails
-        """
-        try:
-            from transformers import pipeline
-
-            device_id = self._determine_device()
-
-            logger.debug(
-                f"Loading emotions pipeline: {self.model_id} (device: {device_id})"
-            )
-
-            model = pipeline(
-                task="text-classification",
-                model=self.model_id,
-                device=device_id,
-                top_k=None,  # Return all label scores
-            )
-
-            return model
-
-        except ImportError as e:
-            raise RuntimeError(
-                "transformers library not installed. "
-                "Install with: pip install transformers torch"
-            ) from e
-        except Exception as e:
-            raise RuntimeError(f"Failed to load emotions model: {e}") from e
-
-    def _run_inference(self, text: str, **kwargs) -> Any:
-        """
-        Run emotions classification.
-
-        Args:
-            text: Input text to analyze
-            **kwargs: Additional arguments (unused)
-
-        Returns:
-            Raw pipeline output with label scores
-        """
-        if self._pipeline is None:
-            raise RuntimeError("Model not loaded")
-
-        # Run inference
-        result = self._pipeline(text)
-
-        return result
+    # =========================================================================
+    # Abstract Method Implementation
+    # =========================================================================
 
     def _process_output(self, raw_output: Any, latency_ms: float) -> ModelResult:
         """
-        Process emotions output into standardized ModelResult.
+        Process zero-shot output into standardized ModelResult.
 
-        Emotions pipeline returns all 28 labels with scores:
-        [
-            {'label': 'neutral', 'score': 0.45},
-            {'label': 'sadness', 'score': 0.25},
-            {'label': 'grief', 'score': 0.15},
-            ...
-        ]
+        Zero-shot pipeline returns:
+        {
+            'sequence': 'input text',
+            'labels': ['label1', 'label2', ...],  # Sorted by score descending
+            'scores': [0.78, 0.15, ...]            # Corresponding scores
+        }
+
+        This method:
+        1. Builds all_scores dict from labels + scores
+        2. Identifies the top-scoring label
+        3. Computes a weighted crisis_signal using label_signal_mapping
+        4. Stores crisis_signal in metadata for the WeightedScorer
 
         Args:
-            raw_output: Raw pipeline output
-            latency_ms: Inference latency
+            raw_output: Raw pipeline output (labels + scores)
+            latency_ms: Inference latency in milliseconds
 
         Returns:
-            Standardized ModelResult
+            Standardized ModelResult with crisis_signal in metadata
         """
         try:
-            # Handle list output (top_k=None returns list)
-            if isinstance(raw_output, list) and len(raw_output) > 0:
-                # Could be list of dicts or list of lists
-                if isinstance(raw_output[0], list):
-                    # Nested list - take first
-                    scores_list = raw_output[0]
-                else:
-                    scores_list = raw_output
-            else:
-                scores_list = []
+            labels = raw_output.get("labels", [])
+            scores = raw_output.get("scores", [])
 
             # Build all_scores dictionary
             all_scores = {}
-            for item in scores_list:
-                label = item.get("label", "unknown").lower()
-                score = float(item.get("score", 0.0))
-                all_scores[label] = score
+            for label, score in zip(labels, scores):
+                all_scores[label] = float(score)
 
-            # Get primary prediction (highest score)
-            if all_scores:
-                primary_label = max(all_scores, key=all_scores.get)
-                primary_score = all_scores[primary_label]
+            # Primary prediction (highest scoring label)
+            if labels and scores:
+                primary_label = labels[0]  # Already sorted descending
+                primary_score = float(scores[0])
             else:
-                primary_label = "neutral"
+                primary_label = "unknown"
                 primary_score = 0.0
+
+            # Compute crisis signal from label-to-signal mapping
+            crisis_signal = self._compute_crisis_signal(all_scores)
 
             return ModelResult(
                 label=primary_label,
@@ -293,10 +230,15 @@ class EmotionsClassifier(BaseModelWrapper):
                 model_role=self.role,
                 success=True,
                 raw_output=raw_output,
+                metadata={
+                    "crisis_signal": crisis_signal,
+                    "model_type": "zero-shot-emotions",
+                    "label_count": len(labels),
+                },
             )
 
         except Exception as e:
-            logger.error(f"Error processing emotions output: {e}")
+            logger.error(f"Error processing emotions zero-shot output: {e}")
             return ModelResult.create_error(
                 model_name=self.name,
                 model_role=self.role,
@@ -305,137 +247,46 @@ class EmotionsClassifier(BaseModelWrapper):
             )
 
     # =========================================================================
-    # Emotions-Specific Methods
+    # Crisis Signal Computation
     # =========================================================================
 
-    def is_crisis_emotion(self, emotion: str) -> bool:
+    def _compute_crisis_signal(self, all_scores: Dict[str, float]) -> float:
         """
-        Check if an emotion indicates potential crisis.
+        Compute a weighted crisis signal from zero-shot label scores.
+
+        For each label, multiplies the model's confidence score by the
+        configured signal weight from label_signal_mapping, then sums.
+        This produces a single 0.0-1.0 value representing emotional crisis risk.
+
+        Example:
+            scores = {"trapped or helpless": 0.72, "calm or neutral": 0.18, ...}
+            mapping = {"trapped or helpless": 0.95, "calm or neutral": 0.0, ...}
+            signal = (0.72 * 0.95) + (0.18 * 0.0) + ... = 0.684
 
         Args:
-            emotion: Emotion label to check
+            all_scores: Dictionary of label → model confidence score
 
         Returns:
-            True if emotion is crisis-relevant
+            Crisis signal strength (0.0 - 1.0)
         """
-        return emotion.lower() in CRISIS_EMOTIONS
-
-    def is_positive_emotion(self, emotion: str) -> bool:
-        """
-        Check if an emotion is positive.
-
-        Args:
-            emotion: Emotion label to check
-
-        Returns:
-            True if emotion is positive
-        """
-        return emotion.lower() in POSITIVE_EMOTIONS
-
-    def get_top_emotions(
-        self, result: ModelResult, n: int = 3, threshold: float = 0.1
-    ) -> List[tuple[str, float]]:
-        """
-        Get top N emotions above threshold.
-
-        Args:
-            result: ModelResult from analyze()
-            n: Number of top emotions to return
-            threshold: Minimum score threshold
-
-        Returns:
-            List of (emotion, score) tuples sorted by score
-        """
-        if not result.success or not result.all_scores:
-            return []
-
-        # Filter and sort
-        filtered = [
-            (emotion, score)
-            for emotion, score in result.all_scores.items()
-            if score >= threshold
-        ]
-        sorted_emotions = sorted(filtered, key=lambda x: x[1], reverse=True)
-
-        return sorted_emotions[:n]
-
-    def get_crisis_emotion_score(self, result: ModelResult) -> float:
-        """
-        Calculate aggregate score for crisis-relevant emotions.
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            Sum of crisis emotion scores (0.0 - 1.0+)
-        """
-        if not result.success or not result.all_scores:
+        if not all_scores or self._label_signal_mapping is None:
             return 0.0
 
-        return sum(
-            score
-            for emotion, score in result.all_scores.items()
-            if emotion in CRISIS_EMOTIONS
-        )
+        crisis_signal = 0.0
+        for label, confidence in all_scores.items():
+            signal_weight = self._label_signal_mapping.get(label, 0.0)
+            crisis_signal += confidence * signal_weight
 
-    def get_positive_emotion_score(self, result: ModelResult) -> float:
-        """
-        Calculate aggregate score for positive emotions.
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            Sum of positive emotion scores (0.0 - 1.0+)
-        """
-        if not result.success or not result.all_scores:
-            return 0.0
-
-        return sum(
-            score
-            for emotion, score in result.all_scores.items()
-            if emotion in POSITIVE_EMOTIONS
-        )
-
-    def get_emotion_balance(self, result: ModelResult) -> float:
-        """
-        Calculate emotional balance score.
-
-        Returns:
-        - Negative values = crisis emotions dominant
-        - Positive values = positive emotions dominant
-        - Zero = balanced/neutral
-
-        Args:
-            result: ModelResult from analyze()
-
-        Returns:
-            Balance score (-1.0 to 1.0)
-        """
-        if not result.success:
-            return 0.0
-
-        crisis_score = self.get_crisis_emotion_score(result)
-        positive_score = self.get_positive_emotion_score(result)
-
-        total = crisis_score + positive_score
-        if total == 0:
-            return 0.0
-
-        # Normalize to -1.0 to 1.0 range
-        # negative = crisis dominant, positive = positive dominant
-        balance = (positive_score - crisis_score) / total
-
-        return balance
+        # Clamp to valid range
+        return max(0.0, min(1.0, crisis_signal))
 
     def get_crisis_signal(self, result: ModelResult) -> float:
         """
-        Calculate crisis signal strength from emotions.
+        Get the pre-computed crisis signal from a ModelResult.
 
-        Maps emotional state to crisis relevance:
-        - High crisis emotions → higher signal
-        - High positive emotions → lower signal
-        - Specific severe emotions (grief, fear) boosted
+        The crisis signal is computed during _process_output() and stored
+        in result.metadata["crisis_signal"]. This method provides a clean
+        interface for external consumers (e.g., WeightedScorer).
 
         Args:
             result: ModelResult from analyze()
@@ -443,62 +294,53 @@ class EmotionsClassifier(BaseModelWrapper):
         Returns:
             Crisis signal strength (0.0 - 1.0)
         """
-        if not result.success or not result.all_scores:
+        if not result.success:
             return 0.0
+        return result.metadata.get("crisis_signal", 0.0)
 
-        scores = result.all_scores
+    # =========================================================================
+    # Emotions-Specific Convenience Methods
+    # =========================================================================
 
-        # Base crisis signal from crisis emotions
-        crisis_base = sum(scores.get(emotion, 0.0) for emotion in CRISIS_EMOTIONS)
-
-        # Boost for severe emotions
-        severe_boost = (
-            scores.get("grief", 0.0) * 0.3
-            + scores.get("fear", 0.0) * 0.2
-            + scores.get("sadness", 0.0) * 0.2
-            + scores.get("remorse", 0.0) * 0.1
-        )
-
-        # Reduction from positive emotions
-        positive_reduction = sum(
-            scores.get(emotion, 0.0) * 0.3 for emotion in POSITIVE_EMOTIONS
-        )
-
-        # Calculate final signal
-        signal = crisis_base + severe_boost - positive_reduction
-
-        # Clamp to 0.0 - 1.0
-        return max(0.0, min(1.0, signal))
-
-    def detect_grief(self, result: ModelResult, threshold: float = 0.3) -> bool:
+    def get_top_emotional_state(self, result: ModelResult) -> str:
         """
-        Detect if grief emotion is significant.
+        Get the highest-scoring emotional state label from the result.
 
         Args:
             result: ModelResult from analyze()
-            threshold: Score threshold for detection
 
         Returns:
-            True if grief score exceeds threshold
+            The primary (highest confidence) label string
         """
         if not result.success:
-            return False
-        return result.all_scores.get("grief", 0.0) >= threshold
+            return "unknown"
+        return result.label
 
-    def detect_fear(self, result: ModelResult, threshold: float = 0.3) -> bool:
+    def is_crisis_emotion(self, result: ModelResult, threshold: float = 0.60) -> bool:
         """
-        Detect if fear emotion is significant.
+        Check if the crisis signal indicates a crisis-level emotional state.
 
         Args:
             result: ModelResult from analyze()
-            threshold: Score threshold for detection
+            threshold: Signal threshold for "crisis emotion" (default: 0.60)
 
         Returns:
-            True if fear score exceeds threshold
+            True if crisis signal exceeds threshold
         """
-        if not result.success:
-            return False
-        return result.all_scores.get("fear", 0.0) >= threshold
+        return self.get_crisis_signal(result) >= threshold
+
+    def is_safe_emotion(self, result: ModelResult, threshold: float = 0.20) -> bool:
+        """
+        Check if the crisis signal indicates a safe/neutral emotional state.
+
+        Args:
+            result: ModelResult from analyze()
+            threshold: Signal threshold below which emotion is considered safe
+
+        Returns:
+            True if crisis signal is below threshold
+        """
+        return self.get_crisis_signal(result) < threshold
 
 
 # =============================================================================
@@ -509,59 +351,93 @@ class EmotionsClassifier(BaseModelWrapper):
 def create_emotions_classifier(
     config: Optional[Dict[str, Any]] = None,
     config_manager: Optional[Any] = None,
-) -> EmotionsClassifier:
+) -> EmotionsZeroShotAnalyzer:
     """
-    Factory function for Emotions Classifier.
+    Factory function for Emotions Zero-Shot Analyzer.
 
-    Creates a configured emotions classifier using either:
+    Creates a configured DeBERTa zero-shot emotions analyzer using either:
+    - ConfigManager instance (loads from default.json + labels_config.json)
     - Direct config dictionary
-    - ConfigManager instance
     - Default values
+
+    Same external signature as v5.0 factory function — drop-in replacement.
 
     Args:
         config: Direct configuration dictionary
         config_manager: ConfigManager instance for loading config
 
     Returns:
-        Configured EmotionsClassifier instance
+        Configured EmotionsZeroShotAnalyzer instance
 
     Example:
-        >>> classifier = create_emotions_classifier()
-        >>> classifier = create_emotions_classifier(config_manager=config)
-        >>> result = classifier.analyze("I miss them so much")
+        >>> analyzer = create_emotions_classifier()
+        >>> analyzer = create_emotions_classifier(config_manager=config)
+        >>> result = analyzer.analyze("I feel completely trapped")
+        >>> signal = analyzer.get_crisis_signal(result)
     """
     # Build configuration from various sources
     model_config = {}
+    labels = None
+    hypothesis_template = None
+    label_signal_mapping = None
 
     # Priority 1: ConfigManager
     if config_manager is not None:
+        # Model identity config from default.json
         emotions_config = config_manager.get_model_config("emotions")
         if emotions_config:
             model_config = {
                 "model_id": emotions_config.get(
-                    "model_id", EmotionsClassifier.DEFAULT_MODEL_ID
+                    "model_id", EmotionsZeroShotAnalyzer.DEFAULT_MODEL_ID
                 ),
                 "weight": emotions_config.get(
-                    "weight", EmotionsClassifier.DEFAULT_WEIGHT
+                    "weight", EmotionsZeroShotAnalyzer.DEFAULT_WEIGHT
                 ),
                 "enabled": emotions_config.get("enabled", True),
             }
 
-        # Get device from general model config
+        # Device from general model config
         models_config = config_manager.get_section("models")
         if models_config:
             model_config["device"] = models_config.get("device", "auto")
 
+        # Label config from labels_config.json (Phase 3.5)
+        emotions_labels = config_manager.get_emotions_labels()
+        if emotions_labels:
+            raw_labels = emotions_labels.get("candidate_labels")
+            if raw_labels and isinstance(raw_labels, list):
+                labels = raw_labels
+
+            raw_template = emotions_labels.get("hypothesis_template")
+            if raw_template and isinstance(raw_template, str):
+                hypothesis_template = raw_template
+
+            raw_mapping = emotions_labels.get("label_signal_mapping")
+            if raw_mapping and isinstance(raw_mapping, dict):
+                label_signal_mapping = raw_mapping
+
     # Priority 2: Direct config dict
     if config:
         model_config.update(config)
+        # Allow labels/mapping in direct config too
+        if "candidate_labels" in config:
+            labels = config["candidate_labels"]
+        if "hypothesis_template" in config:
+            hypothesis_template = config["hypothesis_template"]
+        if "label_signal_mapping" in config:
+            label_signal_mapping = config["label_signal_mapping"]
 
-    # Create classifier with merged config
-    return EmotionsClassifier(
-        model_id=model_config.get("model_id", EmotionsClassifier.DEFAULT_MODEL_ID),
-        weight=model_config.get("weight", EmotionsClassifier.DEFAULT_WEIGHT),
+    # Create analyzer with merged config
+    return EmotionsZeroShotAnalyzer(
+        model_id=model_config.get(
+            "model_id", EmotionsZeroShotAnalyzer.DEFAULT_MODEL_ID
+        ),
+        weight=model_config.get("weight", EmotionsZeroShotAnalyzer.DEFAULT_WEIGHT),
         device=model_config.get("device", "auto"),
         enabled=model_config.get("enabled", True),
+        candidate_labels=labels,
+        hypothesis_template=hypothesis_template,
+        label_signal_mapping=label_signal_mapping,
     )
 
 
@@ -570,10 +446,8 @@ def create_emotions_classifier(
 # =============================================================================
 
 __all__ = [
-    "EmotionsClassifier",
+    "EmotionsZeroShotAnalyzer",
     "create_emotions_classifier",
-    "GOEMOTION_LABELS",
-    "CRISIS_EMOTIONS",
-    "POSITIVE_EMOTIONS",
-    "NEUTRAL_EMOTIONS",
+    "DEFAULT_EMOTIONS_CANDIDATE_LABELS",
+    "DEFAULT_EMOTIONS_LABEL_SIGNAL_MAPPING",
 ]

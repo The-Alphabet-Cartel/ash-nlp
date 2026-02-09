@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Models Package for Ash-NLP Service
 ---
-FILE VERSION: v5.1-4.5-4.5.2-1
+FILE VERSION: v5.1-5-5.5-1
 LAST MODIFIED: 2026-02-09
-PHASE: Phase 4.5 - BART Label Optimization
+PHASE: Phase 5 - Emotions Zero-Shot Migration
 CLEAN ARCHITECTURE: Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -23,7 +23,7 @@ MODELS:
 - BART Crisis Classifier (PRIMARY, weight 0.50) [Phase 4.5 - v5.1 ZeroShotModelWrapper]
 - DeBERTa Sentiment Zero-Shot Analyzer (SECONDARY, weight 0.25) [Phase 4 - v5.1]
 - Cardiff Irony Detector (TERTIARY, weight 0.15)
-- RoBERTa Emotions Classifier (SUPPLEMENTARY, weight 0.10)
+- DeBERTa Emotions Zero-Shot Analyzer (SUPPLEMENTARY, weight 0.10) [Phase 5 - v5.1]
 
 USAGE:
     from src.models import (
@@ -44,7 +44,7 @@ USAGE:
 """
 
 # Module version
-__version__ = "v5.1-4.5-4.5.2-1"
+__version__ = "v5.1-5-5.5-1"
 
 # =============================================================================
 # Base Classes and Data Types
@@ -94,14 +94,13 @@ from .irony import (
     IRONY_LABELS,
 )
 
-# RoBERTa Emotions Classifier - SUPPLEMENTARY (weight 0.10)
+# DeBERTa Emotions Zero-Shot Analyzer - SUPPLEMENTARY (weight 0.10)
+# Phase 5: Migrated from RoBERTa text-classification to DeBERTa zero-shot
 from .emotions import (
-    EmotionsClassifier,
+    EmotionsZeroShotAnalyzer,
     create_emotions_classifier,
-    GOEMOTION_LABELS,
-    CRISIS_EMOTIONS,
-    POSITIVE_EMOTIONS,
-    NEUTRAL_EMOTIONS,
+    DEFAULT_EMOTIONS_CANDIDATE_LABELS,
+    DEFAULT_EMOTIONS_LABEL_SIGNAL_MAPPING,
 )
 
 # =============================================================================
@@ -123,7 +122,7 @@ MODEL_CLASSES = {
     "bart_crisis": BARTCrisisClassifier,
     "sentiment": SentimentZeroShotAnalyzer,
     "irony": IronyDetector,
-    "emotions": EmotionsClassifier,
+    "emotions": EmotionsZeroShotAnalyzer,
 }
 
 # Default model weights
@@ -191,13 +190,11 @@ __all__ = [
     "IronyDetector",
     "create_irony_detector",
     "IRONY_LABELS",
-    # Emotions Classifier
-    "EmotionsClassifier",
+    # Emotions Zero-Shot Analyzer (Phase 5)
+    "EmotionsZeroShotAnalyzer",
     "create_emotions_classifier",
-    "GOEMOTION_LABELS",
-    "CRISIS_EMOTIONS",
-    "POSITIVE_EMOTIONS",
-    "NEUTRAL_EMOTIONS",
+    "DEFAULT_EMOTIONS_CANDIDATE_LABELS",
+    "DEFAULT_EMOTIONS_LABEL_SIGNAL_MAPPING",
     # Convenience functions
     "create_model",
     "MODEL_FACTORIES",

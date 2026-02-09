@@ -1,6 +1,6 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-4.5-4.5.1-1",
+		"file_version": "v5.1-5-5.3-1",
 		"last_modified": "2026-02-09",
 		"clean_architecture": "Compliant",
 		"description": "Label definitions for all models - crisis labels, candidate labels, and signal mappings",
@@ -111,19 +111,37 @@
 	},
 
 	"emotions_labels": {
-		"description": "Emotional state labels for Emotions zero-shot classifier (Phase 5)",
+		"description": "Emotional state labels for Emotions zero-shot classifier (DeBERTa) - SUPPLEMENTARY model (Phase 5). Answers: What is the person's emotional state? Distinct from sentiment distress-severity labels.",
 		"candidate_labels": "${NLP_EMOTIONS_CANDIDATE_LABELS}",
 		"hypothesis_template": "${NLP_EMOTIONS_HYPOTHESIS_TEMPLATE}",
 		"label_signal_mapping": "${NLP_EMOTIONS_LABEL_SIGNAL_MAPPING}",
 		"defaults": {
-			"candidate_labels": null,
+			"candidate_labels": [
+				"person feeling trapped or helpless with no way out",
+				"person experiencing grief or devastating loss",
+				"person feeling rejected or abandoned by loved ones",
+				"person experiencing fear or panic",
+				"person feeling anger without crisis intent",
+				"person expressing joy or excitement",
+				"person in calm or neutral emotional state",
+				"person using humor to cope with difficulty"
+			],
 			"hypothesis_template": null,
-			"label_signal_mapping": null
+			"label_signal_mapping": {
+				"person feeling trapped or helpless with no way out": 0.95,
+				"person experiencing grief or devastating loss": 0.85,
+				"person experiencing fear or panic": 0.80,
+				"person feeling rejected or abandoned by loved ones": 0.75,
+				"person feeling anger without crisis intent": 0.20,
+				"person using humor to cope with difficulty": 0.10,
+				"person expressing joy or excitement": 0.0,
+				"person in calm or neutral emotional state": 0.0
+			}
 		},
 		"validation": {
 			"candidate_labels": {
 				"type": "list",
-				"required": false
+				"required": true
 			},
 			"hypothesis_template": {
 				"type": "string",
@@ -131,7 +149,7 @@
 			},
 			"label_signal_mapping": {
 				"type": "dict",
-				"required": false
+				"required": true
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-4-4.2-1",
-		"last_modified": "2026-02-08",
+		"file_version": "v5.1-5-5.4-1",
+		"last_modified": "2026-02-09",
 		"clean_architecture": "Compliant",
 		"description": "Ash-NLP v5.1 Default Configuration - Server, model identity, logging, and integration settings",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -230,17 +230,17 @@
 	},
 
 	"model_emotions": {
-		"description": "Emotions Classifier - SUPPLEMENTARY MODEL (Weight: 0.10)",
+		"description": "DeBERTa Zero-Shot Emotions Analyzer - SUPPLEMENTARY MODEL (Weight: 0.10) - Emotional state classification (Phase 5)",
 		"model_id": "${NLP_MODEL_EMOTIONS_ID}",
 		"weight": "${NLP_MODEL_EMOTIONS_WEIGHT}",
 		"enabled": "${NLP_MODEL_EMOTIONS_ENABLED}",
-		"task": "text-classification",
+		"task": "zero-shot-classification",
 		"role": "supplementary",
 		"defaults": {
-			"model_id": "SamLowe/roberta-base-go_emotions",
+			"model_id": "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
 			"weight": 0.1,
 			"enabled": true,
-			"task": "text-classification",
+			"task": "zero-shot-classification",
 			"role": "supplementary"
 		},
 		"validation": {

@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Model Initializer for Ash-NLP Service
 ---
-FILE VERSION: v5.0-7-1.1-1
-LAST MODIFIED: 2025-01-02
-PHASE: Phase 7 Step 1.1 - Runtime Model Initialization
+FILE VERSION: v5.1-5-5.5-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 5 - Emotions Zero-Shot Migration (startup label update)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -101,9 +101,9 @@ MODEL_CONFIGS: List[ModelConfig] = [
         name="sentiment",
         env_id="NLP_MODEL_SENTIMENT_ID",
         env_enabled="NLP_MODEL_SENTIMENT_ENABLED",
-        default_id="cardiffnlp/twitter-roberta-base-sentiment-latest",
-        pipeline_task="text-classification",
-        description="Cardiff Sentiment Analyzer (SECONDARY)",
+        default_id="MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
+        pipeline_task="zero-shot-classification",
+        description="DeBERTa Zero-Shot Sentiment Analyzer (SECONDARY)",
     ),
     ModelConfig(
         name="irony",
@@ -117,9 +117,9 @@ MODEL_CONFIGS: List[ModelConfig] = [
         name="emotions",
         env_id="NLP_MODEL_EMOTIONS_ID",
         env_enabled="NLP_MODEL_EMOTIONS_ENABLED",
-        default_id="SamLowe/roberta-base-go_emotions",
-        pipeline_task="text-classification",
-        description="RoBERTa Emotions Classifier (SUPPLEMENTARY)",
+        default_id="MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
+        pipeline_task="zero-shot-classification",
+        description="DeBERTa Zero-Shot Emotions Analyzer (SUPPLEMENTARY)",
     ),
 ]
 

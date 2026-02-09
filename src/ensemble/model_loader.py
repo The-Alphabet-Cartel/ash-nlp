@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Model Loader for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.0-3-4.3-1
-LAST MODIFIED: 2025-12-31
-PHASE: Phase 3 Step 4.3 - Ensemble Model Loading
+FILE VERSION: v5.1-5-5.5-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 5 - Emotions Zero-Shot Migration (docstring update)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -66,10 +66,10 @@ class ModelLoader:
     Model Loader for Ash-NLP Ensemble.
 
     Manages the lifecycle of all models in the ensemble:
-    - BART Crisis Classifier (PRIMARY)
-    - Cardiff Sentiment Analyzer (SECONDARY)
+    - BART Zero-Shot Crisis Classifier (PRIMARY)
+    - DeBERTa Zero-Shot Sentiment Analyzer (SECONDARY)
     - Cardiff Irony Detector (TERTIARY)
-    - RoBERTa Emotions Classifier (SUPPLEMENTARY)
+    - DeBERTa Zero-Shot Emotions Analyzer (SUPPLEMENTARY)
 
     Features:
     - Lazy loading (models load on first access)

@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-4.5-4.5.3-1
+FILE VERSION: v5.1-5-5.2-1
 LAST MODIFIED: 2026-02-09
-PHASE: Phase 4.5 - BART Label Optimization (scoring update)
+PHASE: Phase 5 - Emotions Zero-Shot Migration (scoring update)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.1-4.5-4.5.3-1"
+__version__ = "v5.1-5-5.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -456,7 +456,13 @@ class WeightedScorer:
         """
         Extract crisis signal from emotions result.
 
-        Certain emotions (grief, fear, sadness) indicate crisis.
+        v5.1 Phase 5: Reads pre-computed crisis_signal from ModelResult.metadata.
+        The EmotionsZeroShotAnalyzer computes this during _process_output()
+        using its label-to-signal mapping — same pattern as sentiment and BART.
+
+        Backward compatibility: Falls back to legacy GoEmotions heuristic
+        if metadata["crisis_signal"] is not present (e.g., during rollback to
+        v5.0 RoBERTa model).
 
         Args:
             result: ModelResult from emotions classifier
@@ -475,36 +481,43 @@ class WeightedScorer:
                 metadata={"error": result.error},
             )
 
+        # v5.1 Phase 5: Read pre-computed crisis signal from zero-shot model
+        if "crisis_signal" in result.metadata:
+            crisis_signal = result.metadata["crisis_signal"]
+            crisis_signal = max(0.0, min(1.0, crisis_signal))
+
+            weight = self.weights.get("emotions", 0.10)
+
+            return ModelSignal(
+                model_name="emotions",
+                raw_score=result.score,
+                crisis_signal=crisis_signal,
+                weight=weight,
+                weighted_score=crisis_signal * weight,
+                label=result.label,
+                metadata=result.all_scores,
+            )
+
+        # v5.0 fallback: Legacy GoEmotions heuristic
+        # Supports rollback to RoBERTa text-classification model
+        logger.debug("Emotions result missing crisis_signal metadata, using legacy fallback")
+
         scores = result.all_scores
 
-        # Crisis-indicating emotions
+        # Legacy hardcoded emotion mappings for backward compatibility only
         crisis_emotions = {
-            "grief": 1.0,
-            "sadness": 0.9,
-            "fear": 0.9,
-            "nervousness": 0.7,
-            "remorse": 0.8,
-            "anger": 0.6,
-            "disappointment": 0.5,
-            "disgust": 0.5,
+            "grief": 1.0, "sadness": 0.9, "fear": 0.9,
+            "nervousness": 0.7, "remorse": 0.8, "anger": 0.6,
+            "disappointment": 0.5, "disgust": 0.5,
         }
-
-        # Positive emotions (reduce signal)
         positive_emotions = {
-            "joy": -0.8,
-            "love": -0.7,
-            "gratitude": -0.6,
-            "relief": -0.5,
-            "optimism": -0.6,
-            "amusement": -0.5,
+            "joy": -0.8, "love": -0.7, "gratitude": -0.6,
+            "relief": -0.5, "optimism": -0.6, "amusement": -0.5,
         }
 
-        # Calculate weighted emotion signal
         crisis_signal = 0.0
-
         for emotion, multiplier in crisis_emotions.items():
             crisis_signal += scores.get(emotion, 0.0) * multiplier
-
         for emotion, multiplier in positive_emotions.items():
             crisis_signal += scores.get(emotion, 0.0) * multiplier
 
@@ -512,7 +525,6 @@ class WeightedScorer:
 
         weight = self.weights.get("emotions", 0.10)
 
-        # Get top emotions for metadata
         top_emotions = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
 
         return ModelSignal(
@@ -522,7 +534,7 @@ class WeightedScorer:
             weight=weight,
             weighted_score=crisis_signal * weight,
             label=result.label,
-            metadata={"top_emotions": dict(top_emotions)},
+            metadata={"top_emotions": dict(top_emotions), "legacy_fallback": True},
         )
 
     # =========================================================================
