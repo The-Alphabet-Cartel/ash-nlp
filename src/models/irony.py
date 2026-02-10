@@ -93,7 +93,7 @@ class IronyDetector(BaseModelWrapper):
 
     # Default model configuration
     DEFAULT_MODEL_ID = "cardiffnlp/twitter-roberta-base-irony"
-    DEFAULT_WEIGHT = 0.15
+    DEFAULT_WEIGHT = 0.0  # Phase 6.3: Gatekeeper — not in additive scoring
 
     def __init__(
         self,
@@ -107,7 +107,7 @@ class IronyDetector(BaseModelWrapper):
 
         Args:
             model_id: HuggingFace model identifier
-            weight: Weight in ensemble scoring (default: 0.15)
+            weight: Weight (0.0 — gatekeeper, not used in additive scoring)
             device: Device to run on (auto, cuda, cpu)
             enabled: Whether this model is enabled
         """

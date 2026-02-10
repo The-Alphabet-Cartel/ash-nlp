@@ -185,10 +185,10 @@ def get_start_time(request: Request) -> float:
     Analyze a text message for crisis signals using the multi-model ensemble.
 
     The ensemble combines:
-    - BART Zero-Shot Classification (primary, weight 0.50)
-    - Cardiff Sentiment Analysis (secondary, weight 0.25)
-    - Cardiff Irony Detection (tertiary, weight 0.15)
-    - RoBERTa Emotions Classification (supplementary, weight 0.10)
+    - BART Zero-Shot Classification (primary, weight 0.65)
+    - DeBERTa Sentiment Zero-Shot Analyzer (secondary, weight 0.25)
+    - Cardiff Irony Detection (gatekeeper — post-scoring, not additive)
+    - DeBERTa Emotions Zero-Shot Analyzer (supplementary, weight 0.10)
 
     **Phase 4 Features:**
     - Multiple consensus algorithms (weighted_voting, majority_voting, unanimous, conflict_aware)

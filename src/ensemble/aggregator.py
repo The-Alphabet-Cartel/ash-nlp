@@ -347,10 +347,10 @@ class ResultAggregator:
             include_legacy_format: Include backward-compatible fields
         """
         self.thresholds = thresholds or self.DEFAULT_THRESHOLDS.copy()
+        # Phase 6.3: Only additive models — irony is a post-scoring gatekeeper
         self.weights = weights or {
-            "bart": 0.50,
+            "bart": 0.65,
             "sentiment": 0.25,
-            "irony": 0.15,
             "emotions": 0.10,
         }
         self.include_legacy_format = include_legacy_format
@@ -625,10 +625,10 @@ def create_result_aggregator(
         >>> result = aggregator.aggregate(signals, consensus, conflicts, ...)
     """
     final_thresholds = ResultAggregator.DEFAULT_THRESHOLDS.copy()
+    # Phase 6.3: Only additive models — irony is a post-scoring gatekeeper
     final_weights = {
-        "bart": 0.50,
+        "bart": 0.65,
         "sentiment": 0.25,
-        "irony": 0.15,
         "emotions": 0.10,
     }
 

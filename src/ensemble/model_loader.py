@@ -451,15 +451,18 @@ class ModelLoader:
 
     def get_model_weights(self) -> Dict[str, float]:
         """
-        Get weights for all loaded models.
+        Get weights for additive scoring models.
+
+        Phase 6.3: Only returns models with non-zero weights.
+        Gatekeeper models (e.g., irony) are excluded.
 
         Returns:
-            Dictionary of model_name -> weight
+            Dictionary of model_name -> weight for additive models
         """
         return {
             name: model.weight
             for name, model in self._models.items()
-            if model.is_enabled()
+            if model.is_enabled() and model.weight > 0.0
         }
 
     def is_ready(self) -> bool:

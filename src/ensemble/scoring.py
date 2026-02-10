@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-6-6.2-1
-LAST MODIFIED: 2026-02-09
-PHASE: Phase 6 - Irony Gatekeeper Refactor (scoring update)
+FILE VERSION: v5.1-6-6.3-1
+LAST MODIFIED: 2026-02-10
+PHASE: Phase 6.3 - Ensemble Weight Rebalancing
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.1-6-6.2-1"
+__version__ = "v5.1-6-6.3-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -195,11 +195,13 @@ class WeightedScorer:
     - Configuration via ConfigManager
     """
 
-    # Default weights (must sum to ~1.0, irony is modifier not additive)
+    # Default weights for additive models (must sum to 1.0)
+    # Phase 6.3: Irony is a post-scoring gatekeeper applied in DecisionEngine,
+    # NOT an additive ensemble contributor. It has no weight here.
+    # BART weight increased from 0.50 to 0.65 with the freed capacity.
     DEFAULT_WEIGHTS = {
-        "bart": 0.50,
+        "bart": 0.65,
         "sentiment": 0.25,
-        "irony": 0.15,  # Used as modifier weight, not additive
         "emotions": 0.10,
     }
 
@@ -224,7 +226,8 @@ class WeightedScorer:
         Initialize WeightedScorer.
 
         Args:
-            weights: Model weights (bart, sentiment, irony, emotions)
+            weights: Additive model weights (bart, sentiment, emotions).
+                     Irony is NOT included — it's a post-scoring gatekeeper.
             thresholds: Severity thresholds (critical, high, medium, low)
         """
         self.weights = weights or self.DEFAULT_WEIGHTS.copy()
@@ -236,21 +239,19 @@ class WeightedScorer:
         logger.info(f"📊 WeightedScorer initialized (weights: {self.weights})")
 
     def _validate_weights(self) -> None:
-        """Validate that weights are sensible."""
-        # Phase 6: With irony as gatekeeper (not additive), all three
-        # additive models (bart + sentiment + emotions) should sum to ~0.85.
-        # Note: irony weight is still in config for backward compat but
-        # is not used in scoring. Future Step 6.3 will rebalance to 1.0.
+        """Validate that additive weights are sensible."""
+        # Phase 6.3: With irony as gatekeeper (weight 0.00), the three
+        # additive models (bart + sentiment + emotions) should sum to ~1.0.
         additive_weights = (
             self.weights.get("bart", 0)
             + self.weights.get("sentiment", 0)
             + self.weights.get("emotions", 0)
         )
 
-        if abs(additive_weights - 0.85) > 0.2:
+        if abs(additive_weights - 1.0) > 0.1:
             logger.warning(
                 f"⚠️ Additive weights sum to {additive_weights:.2f}, "
-                f"expected ~0.85 (bart + sentiment + emotions)"
+                f"expected ~1.0 (bart + sentiment + emotions)"
             )
 
     # =========================================================================
@@ -410,16 +411,18 @@ class WeightedScorer:
 
     def extract_irony_signal(self, result: ModelResult) -> ModelSignal:
         """
-        Extract dampening factor from irony result.
+        Extract irony detection signal for the IronyGate gatekeeper.
 
-        Irony REDUCES crisis signals to prevent false positives
-        from sarcastic messages.
+        Phase 6.3: Irony is no longer an additive scorer — it's a
+        post-scoring gatekeeper in DecisionEngine. This method extracts
+        the irony confidence into a ModelSignal so the IronyGate can
+        consume it. The weight is always 0.0 (not in additive weights).
 
         Args:
             result: ModelResult from irony detector
 
         Returns:
-            ModelSignal with dampening factor
+            ModelSignal with irony metadata for the gatekeeper
         """
         if not result.success:
             # No dampening if model fails
@@ -427,7 +430,7 @@ class WeightedScorer:
                 model_name="irony",
                 raw_score=1.0,
                 crisis_signal=1.0,  # 1.0 = no dampening
-                weight=self.weights.get("irony", 0.15),
+                weight=0.0,  # Gatekeeper — not in additive scoring
                 weighted_score=1.0,
                 label="error",
                 metadata={"error": result.error, "dampening": 1.0},
@@ -435,7 +438,7 @@ class WeightedScorer:
 
         irony_score = result.all_scores.get("irony", 0.0)
 
-        # Calculate dampening factor
+        # Calculate dampening factor (consumed by IronyGate via metadata)
         # High irony → low dampening factor → reduced crisis score
         # irony_score = 0.0 → dampening = 1.0 (no reduction)
         # irony_score = 1.0 → dampening = 0.1 (90% reduction)
@@ -445,8 +448,8 @@ class WeightedScorer:
         return ModelSignal(
             model_name="irony",
             raw_score=result.score,
-            crisis_signal=dampening,  # Used as multiplier
-            weight=self.weights.get("irony", 0.15),
+            crisis_signal=dampening,  # Used as multiplier by gatekeeper
+            weight=0.0,  # Gatekeeper — not in additive scoring
             weighted_score=dampening,
             label=result.label,
             metadata={
@@ -587,9 +590,12 @@ class WeightedScorer:
                 base_score += signal.weighted_score
                 total_weight += signal.weight
 
-        # Normalize if not all models available
-        if total_weight > 0 and total_weight < 0.85:
-            base_score = base_score / total_weight * 0.85
+        # Normalize if not all additive models available
+        # Phase 6.3: Additive weights now sum to 1.0. When a model is
+        # disabled or missing, normalize so partial coverage produces
+        # comparable scores to the full ensemble.
+        if total_weight > 0 and total_weight < 0.9:
+            base_score = base_score / total_weight
 
         # Phase 6: Irony dampening REMOVED from scorer.
         # Irony is now a post-scoring gatekeeper applied in DecisionEngine

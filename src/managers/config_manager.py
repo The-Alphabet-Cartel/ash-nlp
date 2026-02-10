@@ -1083,21 +1083,29 @@ class ConfigManager:
 
     def get_model_weights(self) -> Dict[str, float]:
         """
-        Get ensemble model weights.
+        Get ensemble model weights for additive scoring models.
+
+        Phase 6.3: Only returns models with non-zero weights. Gatekeeper
+        models (e.g., irony) have no weight and are excluded.
 
         Returns:
-            Dictionary of model_name -> weight for enabled models
+            Dictionary of model_name -> weight for additive scoring models
         """
         weights = {}
 
         for name, config in self.get_all_model_configs().items():
-            weights[name] = config.get("weight", 0.0)
+            weight = config.get("weight", 0.0)
+            if weight > 0.0:
+                weights[name] = weight
 
         return weights
 
     def validate_weights_sum(self) -> tuple[bool, float]:
         """
-        Validate that model weights sum to 1.0.
+        Validate that additive model weights sum to 1.0.
+
+        Phase 6.3: Only validates additive models (non-zero weight).
+        Gatekeeper models are excluded from this check.
 
         Returns:
             Tuple of (is_valid, total_weight)
@@ -1109,7 +1117,10 @@ class ConfigManager:
         is_valid = abs(total - 1.0) < 0.001
 
         if not is_valid:
-            logger.warning(f"⚠️ Model weights sum to {total:.3f}, expected 1.0")
+            logger.warning(
+                f"⚠️ Additive model weights sum to {total:.3f}, expected 1.0. "
+                f"Models: {weights}"
+            )
 
         return is_valid, total
 

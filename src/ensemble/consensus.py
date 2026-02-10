@@ -693,11 +693,10 @@ class ConsensusSelector:
         """
         self.default_algorithm = default_algorithm
         
-        # Default weights - ensure all are floats
+        # Phase 6.3: Only additive models — irony is a post-scoring gatekeeper
         default_weights = {
-            "bart": 0.50,
+            "bart": 0.65,
             "sentiment": 0.25,
-            "irony": 0.15,
             "emotions": 0.10,
         }
         if weights:
@@ -861,10 +860,10 @@ def create_consensus_selector(
     """
     # Default values
     final_algorithm = ConsensusAlgorithm.WEIGHTED_VOTING
+    # Phase 6.3: Only additive models — irony is a post-scoring gatekeeper
     final_weights = {
-        "bart": 0.50,
+        "bart": 0.65,
         "sentiment": 0.25,
-        "irony": 0.15,
         "emotions": 0.10,
     }
     final_thresholds = {

@@ -568,10 +568,10 @@ def create_fallback_strategy(
             base_weights = config_manager.get_model_weights()
 
         if not base_weights:
+            # Phase 6.3: Only additive models — irony is a gatekeeper
             base_weights = {
-                "bart": 0.50,
+                "bart": 0.65,
                 "sentiment": 0.25,
-                "irony": 0.15,
                 "emotions": 0.10,
             }
 

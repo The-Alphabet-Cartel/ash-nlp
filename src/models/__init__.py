@@ -20,9 +20,9 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 This package contains all model wrappers for the Ash-NLP ensemble:
 
 MODELS:
-- BART Crisis Classifier (PRIMARY, weight 0.50) [Phase 4.5 - v5.1 ZeroShotModelWrapper]
+- BART Zero-Shot Crisis Classifier (PRIMARY, weight 0.65) [Phase 4.5 - v5.1 ZeroShotModelWrapper]
 - DeBERTa Sentiment Zero-Shot Analyzer (SECONDARY, weight 0.25) [Phase 4 - v5.1]
-- Cardiff Irony Detector (TERTIARY, weight 0.15)
+- Cardiff Irony Detector (GATEKEEPER, post-scoring) [Phase 6 - v5.1]
 - DeBERTa Emotions Zero-Shot Analyzer (SUPPLEMENTARY, weight 0.10) [Phase 5 - v5.1]
 
 USAGE:
