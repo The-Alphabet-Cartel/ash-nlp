@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.0-3-8.0-5
-LAST MODIFIED: 2026-01-31
-PHASE: Phase 3.8 - Ash-NLP Deployment
+FILE VERSION: v5.1-6-6.2-1
+LAST MODIFIED: 2026-02-09
+PHASE: Phase 6 - Irony Gatekeeper Refactor
 CLEAN ARCHITECTURE: v5.2.3 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -146,7 +146,7 @@ if TYPE_CHECKING:
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.0-3-8.0-6"
+__version__ = "v5.1-6-6.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -284,6 +284,9 @@ class CrisisAssessment:
 
         # Phase 5 Enhanced Fields
         context_analysis: Context history analysis result (Phase 5)
+
+        # Phase 6 Enhanced Fields
+        irony_gate_result: Irony gatekeeper result (Phase 6)
     """
 
     crisis_detected: bool
@@ -312,6 +315,9 @@ class CrisisAssessment:
 
     # Phase 5 Enhanced Fields
     context_analysis: Optional[ContextAnalysisResult] = None
+
+    # Phase 6 Enhanced Fields
+    irony_gate_result: Optional[IronyGateResult] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""
@@ -345,6 +351,10 @@ class CrisisAssessment:
         # Include Phase 5 fields if present
         if self.context_analysis:
             result["context_analysis"] = self.context_analysis.to_dict()
+
+        # Include Phase 6 fields if present
+        if self.irony_gate_result:
+            result["irony_gate"] = self.irony_gate_result.to_dict()
 
         return result
 
@@ -408,6 +418,233 @@ class RecommendedAction:
 
 
 # =============================================================================
+# Phase 6: Irony Gatekeeper
+# =============================================================================
+
+
+@dataclass
+class IronyGateResult:
+    """
+    Result of irony gatekeeper application.
+
+    Attributes:
+        triggered: Whether the gate fired (irony confidence >= threshold)
+        original_score: Score before gate application
+        gated_score: Score after gate application
+        irony_confidence: Irony model confidence (0.0-1.0)
+        threshold: Threshold that was used
+        reduction_factor: Reduction factor that was applied
+    """
+
+    triggered: bool
+    original_score: float
+    gated_score: float
+    irony_confidence: float
+    threshold: float
+    reduction_factor: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for API response."""
+        return {
+            "triggered": self.triggered,
+            "original_score": round(self.original_score, 4),
+            "gated_score": round(self.gated_score, 4),
+            "irony_confidence": round(self.irony_confidence, 4),
+            "threshold": self.threshold,
+            "reduction_factor": self.reduction_factor,
+        }
+
+
+class IronyGate:
+    """
+    Irony Gatekeeper - Post-Scoring Score Reducer.
+
+    Phase 6 refactor: Replaces the v5.0 irony dampening (continuous
+    multiplicative factor) with a threshold-gated reducer.
+
+    Key behavioral differences from v5.0:
+    - Only fires when irony confidence EXCEEDS a configurable threshold
+    - When NOT triggered: ZERO effect on scoring (true pass-through)
+    - When triggered: score multiplied by configurable reduction_factor
+    - Applied AFTER Vigil amplification, BEFORE final severity mapping
+
+    This fixes the critical v5.0 issue where genuine crisis statements
+    (e.g., "I want to jump off this bridge") were being dampened by
+    low-confidence irony scores (e.g., irony=0.15 → dampening=0.865),
+    pulling them below the HIGH severity threshold.
+
+    Configuration: classification_config.json → irony_gate section
+    Environment: NLP_IRONY_GATE_ENABLED, NLP_IRONY_GATE_THRESHOLD,
+                 NLP_IRONY_GATE_REDUCTION
+
+    Clean Architecture v5.2.3 Compliance:
+    - Factory function: create_irony_gate()
+    - Configuration via ConfigManager
+    - Resilient error handling (Rule #5)
+    """
+
+    DEFAULT_THRESHOLD = 0.80
+    DEFAULT_REDUCTION_FACTOR = 0.70
+
+    def __init__(
+        self,
+        enabled: bool = True,
+        threshold: float = 0.80,
+        reduction_factor: float = 0.70,
+    ):
+        """
+        Initialize IronyGate.
+
+        Args:
+            enabled: Whether the gate is active
+            threshold: Irony confidence threshold to trigger (0.0-1.0)
+            reduction_factor: Score multiplier when triggered (0.0-1.0)
+        """
+        self.enabled = enabled
+        self.threshold = max(0.0, min(1.0, threshold))
+        self.reduction_factor = max(0.1, min(1.0, reduction_factor))
+
+        logger.info(
+            f"🚪 IronyGate initialized "
+            f"(enabled={enabled}, threshold={self.threshold}, "
+            f"reduction_factor={self.reduction_factor})"
+        )
+
+    def apply(
+        self,
+        score: float,
+        irony_signal: Optional["ModelSignal"] = None,
+    ) -> IronyGateResult:
+        """
+        Apply irony gatekeeper to a crisis score.
+
+        Args:
+            score: Pre-gate crisis score (after Vigil amplification)
+            irony_signal: ModelSignal from irony detector (from scorer)
+
+        Returns:
+            IronyGateResult with gated score and metadata
+        """
+        # Gate disabled - pass through
+        if not self.enabled:
+            return IronyGateResult(
+                triggered=False,
+                original_score=score,
+                gated_score=score,
+                irony_confidence=0.0,
+                threshold=self.threshold,
+                reduction_factor=self.reduction_factor,
+            )
+
+        # No irony signal available - pass through
+        if irony_signal is None:
+            return IronyGateResult(
+                triggered=False,
+                original_score=score,
+                gated_score=score,
+                irony_confidence=0.0,
+                threshold=self.threshold,
+                reduction_factor=self.reduction_factor,
+            )
+
+        # Extract irony confidence from the signal metadata
+        irony_confidence = irony_signal.metadata.get("irony_score", 0.0)
+
+        # Gate check: does irony confidence meet or exceed threshold?
+        if irony_confidence >= self.threshold:
+            # Triggered: reduce score
+            gated_score = score * self.reduction_factor
+            gated_score = max(0.0, min(1.0, gated_score))
+
+            logger.info(
+                f"🚪 IronyGate TRIGGERED: score {score:.3f} → {gated_score:.3f} "
+                f"(irony={irony_confidence:.3f} >= threshold={self.threshold})"
+            )
+
+            return IronyGateResult(
+                triggered=True,
+                original_score=score,
+                gated_score=gated_score,
+                irony_confidence=irony_confidence,
+                threshold=self.threshold,
+                reduction_factor=self.reduction_factor,
+            )
+        else:
+            # Not triggered: pass through unchanged
+            logger.debug(
+                f"🚪 IronyGate pass-through: irony={irony_confidence:.3f} "
+                f"< threshold={self.threshold}"
+            )
+
+            return IronyGateResult(
+                triggered=False,
+                original_score=score,
+                gated_score=score,
+                irony_confidence=irony_confidence,
+                threshold=self.threshold,
+                reduction_factor=self.reduction_factor,
+            )
+
+
+def create_irony_gate(
+    config_manager: Optional["ConfigManager"] = None,
+    enabled: Optional[bool] = None,
+    threshold: Optional[float] = None,
+    reduction_factor: Optional[float] = None,
+) -> IronyGate:
+    """
+    Factory function for IronyGate.
+
+    Creates a configured IronyGate using ConfigManager settings.
+
+    Args:
+        config_manager: Configuration manager instance
+        enabled: Override enabled flag (optional)
+        threshold: Override threshold (optional)
+        reduction_factor: Override reduction factor (optional)
+
+    Returns:
+        Configured IronyGate instance
+
+    Example:
+        >>> gate = create_irony_gate(config_manager=config)
+        >>> result = gate.apply(score=0.75, irony_signal=irony_signal)
+    """
+    gate_enabled = True
+    gate_threshold = IronyGate.DEFAULT_THRESHOLD
+    gate_reduction = IronyGate.DEFAULT_REDUCTION_FACTOR
+
+    # Load from config manager
+    if config_manager is not None:
+        try:
+            gate_config = config_manager.get_irony_gate_config()
+            if gate_config:
+                gate_enabled = bool(gate_config.get("enabled", True))
+                gate_threshold = float(
+                    gate_config.get("confidence_threshold", IronyGate.DEFAULT_THRESHOLD)
+                )
+                gate_reduction = float(
+                    gate_config.get("reduction_factor", IronyGate.DEFAULT_REDUCTION_FACTOR)
+                )
+        except Exception as e:
+            logger.warning(f"⚠️ Error loading irony gate config, using defaults: {e}")
+
+    # Apply explicit overrides
+    if enabled is not None:
+        gate_enabled = enabled
+    if threshold is not None:
+        gate_threshold = threshold
+    if reduction_factor is not None:
+        gate_reduction = reduction_factor
+
+    return IronyGate(
+        enabled=gate_enabled,
+        threshold=gate_threshold,
+        reduction_factor=gate_reduction,
+    )
+
+
+# =============================================================================
 # Ensemble Decision Engine
 # =============================================================================
 
@@ -427,7 +664,6 @@ class EnsembleDecisionEngine:
     Phase 3 Vigil Integration:
     - Calls Ash-Vigil for specialized mental health risk detection
     - Amplifies base scores when Vigil detects subtle crisis signals
-    - Applies irony dampening AFTER Vigil amplification
     - Sets requires_review for HIGH/CRITICAL or Vigil unavailable
 
     Phase 4 Enhancements:
@@ -440,6 +676,12 @@ class EnsembleDecisionEngine:
     - Context history analysis integration
     - Escalation, temporal, and trend detection
     - Intervention urgency recommendations
+
+    Phase 6 Enhancements:
+    - Irony gatekeeper replaces continuous dampening
+    - IronyGate applied AFTER Vigil amplification, BEFORE final severity
+    - Only fires when irony confidence >= configurable threshold
+    - Zero effect when irony not detected (true pass-through)
 
     This is the main interface for the API to call.
 
@@ -502,6 +744,8 @@ class EnsembleDecisionEngine:
         # Phase 5 components
         context_analyzer: Optional[ContextAnalyzer] = None,
         phase5_enabled: bool = True,
+        # Phase 6 components
+        irony_gate: Optional[IronyGate] = None,
     ):
         """
         Initialize Ensemble Decision Engine.
@@ -533,6 +777,9 @@ class EnsembleDecisionEngine:
             # Phase 5 components
             context_analyzer: Context history analyzer component
             phase5_enabled: Enable Phase 5 features (default: True)
+
+            # Phase 6 components
+            irony_gate: Pre-configured IronyGate (optional, auto-created from config)
         """
         self.config_manager = config_manager
         self.async_inference = async_inference
@@ -644,6 +891,14 @@ class EnsembleDecisionEngine:
         else:
             self.context_analyzer = None
 
+        # =====================================================================
+        # Initialize Phase 6 components
+        # =====================================================================
+
+        self.irony_gate = irony_gate or create_irony_gate(
+            config_manager=config_manager
+        )
+
         # Performance tracking
         self._total_requests: int = 0
         self._total_latency_ms: float = 0.0
@@ -652,6 +907,7 @@ class EnsembleDecisionEngine:
         self._conflicts_detected: int = 0
         self._vigil_calls: int = 0
         self._vigil_amplifications: int = 0
+        self._irony_gate_triggers: int = 0
 
         # Thread pool for parallel inference
         self._executor: Optional[ThreadPoolExecutor] = None
@@ -1059,12 +1315,11 @@ class EnsembleDecisionEngine:
             )
 
             # =================================================================
-            # Phase 3 Vigil: Apply amplification BEFORE irony dampening
+            # Phase 3 Vigil: Apply amplification BEFORE irony gate
             # =================================================================
 
-            # Get base score (before irony dampening was applied by scorer)
+            # Get base score (Phase 6: irony_dampening is always 1.0 from scorer)
             base_score = ensemble_score.base_score
-            irony_dampening = ensemble_score.irony_dampening
 
             # Determine preliminary severity from base score
             preliminary_severity = CrisisSeverity.from_score(
@@ -1086,9 +1341,19 @@ class EnsembleDecisionEngine:
                     base_score=base_score,
                 )
 
-            # Apply irony dampening AFTER Vigil amplification
-            final_score = amplified_score * irony_dampening
-            final_score = max(0.0, min(1.0, final_score))
+            # =================================================================
+            # Phase 6: Apply Irony Gatekeeper AFTER Vigil amplification
+            # =================================================================
+
+            irony_signal = ensemble_score.signals.get("irony")
+            irony_gate_result = self.irony_gate.apply(
+                score=amplified_score,
+                irony_signal=irony_signal,
+            )
+            final_score = irony_gate_result.gated_score
+
+            if irony_gate_result.triggered:
+                self._irony_gate_triggers += 1
 
             # Recalculate final severity
             final_severity = CrisisSeverity.from_score(
@@ -1270,6 +1535,7 @@ class EnsembleDecisionEngine:
                 aggregated_result=aggregated_result,
                 explanation=explanation,
                 context_analysis_result=context_analysis_result,
+                irony_gate_result=irony_gate_result,
             )
 
             # Store in cache (Phase 3.7.4)
@@ -1368,11 +1634,10 @@ class EnsembleDecisionEngine:
             )
 
             # =================================================================
-            # Phase 3 Vigil: Apply amplification BEFORE irony dampening
+            # Phase 3 Vigil: Apply amplification BEFORE irony gate
             # =================================================================
 
             base_score = ensemble_score.base_score
-            irony_dampening = ensemble_score.irony_dampening
 
             preliminary_severity = CrisisSeverity.from_score(
                 base_score, self.scorer.get_thresholds()
@@ -1393,9 +1658,19 @@ class EnsembleDecisionEngine:
                     base_score=base_score,
                 )
 
-            # Apply irony dampening AFTER Vigil amplification
-            final_score = amplified_score * irony_dampening
-            final_score = max(0.0, min(1.0, final_score))
+            # =================================================================
+            # Phase 6: Apply Irony Gatekeeper AFTER Vigil amplification
+            # =================================================================
+
+            irony_signal = ensemble_score.signals.get("irony")
+            irony_gate_result = self.irony_gate.apply(
+                score=amplified_score,
+                irony_signal=irony_signal,
+            )
+            final_score = irony_gate_result.gated_score
+
+            if irony_gate_result.triggered:
+                self._irony_gate_triggers += 1
 
             # Recalculate final severity
             final_severity = CrisisSeverity.from_score(
@@ -1572,7 +1847,9 @@ class EnsembleDecisionEngine:
                 aggregated_result=aggregated_result,
                 explanation=explanation,
                 context_analysis_result=context_analysis_result,
+                irony_gate_result=irony_gate_result,
             )
+
 
             # Store in cache
             if use_cache and self._cache is not None and self.cache_enabled:
@@ -1746,9 +2023,10 @@ class EnsembleDecisionEngine:
         aggregated_result: Optional[AggregatedResult] = None,
         explanation: Optional[Explanation] = None,
         context_analysis_result: Optional[ContextAnalysisResult] = None,
+        irony_gate_result: Optional[IronyGateResult] = None,
     ) -> CrisisAssessment:
         """
-        Build CrisisAssessment with Phase 3 Vigil, Phase 4, and Phase 5 enhancements.
+        Build CrisisAssessment with Phase 3 Vigil, Phase 4, Phase 5, and Phase 6 enhancements.
 
         Args:
             ensemble_score: Calculated ensemble score (with Vigil-amplified crisis_score)
@@ -1763,9 +2041,10 @@ class EnsembleDecisionEngine:
             aggregated_result: Phase 4 aggregated result
             explanation: Phase 4 explanation
             context_analysis_result: Phase 5 context analysis result
+            irony_gate_result: Phase 6 irony gatekeeper result
 
         Returns:
-            Complete CrisisAssessment with Phase 3 Vigil, Phase 4, and Phase 5 data
+            Complete CrisisAssessment with all phase data
         """
         # Use resolved score if available, otherwise ensemble score
         final_crisis_score = ensemble_score.crisis_score
@@ -1818,6 +2097,8 @@ class EnsembleDecisionEngine:
             aggregated_result=aggregated_result,
             # Phase 5 fields
             context_analysis=context_analysis_result,
+            # Phase 6 fields
+            irony_gate_result=irony_gate_result,
         )
 
         return assessment

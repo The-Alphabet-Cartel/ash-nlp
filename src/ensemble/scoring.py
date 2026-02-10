@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-5-5.2-1
+FILE VERSION: v5.1-6-6.2-1
 LAST MODIFIED: 2026-02-09
-PHASE: Phase 5 - Emotions Zero-Shot Migration (scoring update)
+PHASE: Phase 6 - Irony Gatekeeper Refactor (scoring update)
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.1-5-5.2-1"
+__version__ = "v5.1-6-6.2-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -237,14 +237,17 @@ class WeightedScorer:
 
     def _validate_weights(self) -> None:
         """Validate that weights are sensible."""
-        # Additive weights (excluding irony which is a modifier)
+        # Phase 6: With irony as gatekeeper (not additive), all three
+        # additive models (bart + sentiment + emotions) should sum to ~0.85.
+        # Note: irony weight is still in config for backward compat but
+        # is not used in scoring. Future Step 6.3 will rebalance to 1.0.
         additive_weights = (
             self.weights.get("bart", 0)
             + self.weights.get("sentiment", 0)
             + self.weights.get("emotions", 0)
         )
 
-        if abs(additive_weights - 0.85) > 0.1:
+        if abs(additive_weights - 0.85) > 0.2:
             logger.warning(
                 f"⚠️ Additive weights sum to {additive_weights:.2f}, "
                 f"expected ~0.85 (bart + sentiment + emotions)"
@@ -588,12 +591,14 @@ class WeightedScorer:
         if total_weight > 0 and total_weight < 0.85:
             base_score = base_score / total_weight * 0.85
 
-        # Apply irony dampening
+        # Phase 6: Irony dampening REMOVED from scorer.
+        # Irony is now a post-scoring gatekeeper applied in DecisionEngine
+        # after Vigil amplification. The irony signal is still extracted above
+        # and included in signals dict for the gatekeeper to consume.
+        # irony_dampening field is kept at 1.0 for backward compatibility.
         irony_dampening = 1.0
-        if "irony" in signals:
-            irony_dampening = signals["irony"].crisis_signal
 
-        final_score = base_score * irony_dampening
+        final_score = base_score
         final_score = max(0.0, min(1.0, final_score))
 
         # Calculate confidence based on model agreement
