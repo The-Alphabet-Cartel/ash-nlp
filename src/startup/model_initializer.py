@@ -106,20 +106,20 @@ MODEL_CONFIGS: List[ModelConfig] = [
         description="DeBERTa Zero-Shot Sentiment Analyzer (SECONDARY)",
     ),
     ModelConfig(
-        name="irony",
-        env_id="NLP_MODEL_IRONY_ID",
-        env_enabled="NLP_MODEL_IRONY_ENABLED",
-        default_id="cardiffnlp/twitter-roberta-base-irony",
-        pipeline_task="text-classification",
-        description="Cardiff Irony Detector (TERTIARY)",
-    ),
-    ModelConfig(
         name="emotions",
         env_id="NLP_MODEL_EMOTIONS_ID",
         env_enabled="NLP_MODEL_EMOTIONS_ENABLED",
         default_id="MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
         pipeline_task="zero-shot-classification",
         description="DeBERTa Zero-Shot Emotions Analyzer (SUPPLEMENTARY)",
+    ),
+    ModelConfig(
+        name="irony",
+        env_id="NLP_MODEL_IRONY_ID",
+        env_enabled="NLP_MODEL_IRONY_ENABLED",
+        default_id="cardiffnlp/twitter-roberta-base-irony",
+        pipeline_task="text-classification",
+        description="Cardiff Irony Detector (GATEKEEPER)",
     ),
 ]
 

@@ -50,8 +50,9 @@ class ModelRole(Enum):
 
     PRIMARY = "primary"
     SECONDARY = "secondary"
-    TERTIARY = "tertiary"
+    TERTIARY = "tertiary"  # Legacy, kept for backward compat
     SUPPLEMENTARY = "supplementary"
+    GATEKEEPER = "gatekeeper"  # Phase 6: Post-scoring gate models
 
 
 class ModelTask(Enum):

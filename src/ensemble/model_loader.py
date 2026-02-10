@@ -49,8 +49,8 @@ __version__ = "v5.0-3-4.3-1"
 # Initialize logger
 logger = logging.getLogger(__name__)
 
-# Model names in load order (primary first)
-MODEL_NAMES = ["bart", "sentiment", "irony", "emotions"]
+# Model names in load order (primary first, gatekeeper last)
+MODEL_NAMES = ["bart", "sentiment", "emotions", "irony"]
 
 # Factory function mapping
 MODEL_FACTORIES = {

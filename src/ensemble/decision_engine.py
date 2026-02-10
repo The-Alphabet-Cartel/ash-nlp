@@ -317,7 +317,7 @@ class CrisisAssessment:
     context_analysis: Optional[ContextAnalysisResult] = None
 
     # Phase 6 Enhanced Fields
-    irony_gate_result: Optional[IronyGateResult] = None
+    irony_gate_result: Optional["IronyGateResult"] = None
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""

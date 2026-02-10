@@ -115,7 +115,7 @@ class IronyDetector(BaseModelWrapper):
             model_id=model_id,
             name="irony",
             task=ModelTask.TEXT_CLASSIFICATION,
-            role=ModelRole.TERTIARY,
+            role=ModelRole.GATEKEEPER,
             weight=weight,
             device=device,
             enabled=enabled,
