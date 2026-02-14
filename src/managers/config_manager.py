@@ -463,6 +463,10 @@ class ConfigManager:
                 "confidence_threshold": 0.80,
                 "reduction_factor": 0.70,
             },
+            "confidence_weighting": {
+                "enabled": True,
+                "blend": 0.5,
+            },
         }
 
     def _load_json_file(self, path: Path) -> Dict[str, Any]:
@@ -1123,6 +1127,42 @@ class ConfigManager:
             )
 
         return is_valid, total
+
+    # =========================================================================
+    # PHASE 6.2.5: Confidence Weighting Configuration
+    # =========================================================================
+
+    def get_confidence_weighting(self) -> Dict[str, Any]:
+        """
+        Get confidence-weighted scoring configuration.
+
+        Phase 6.2.5: Scales model influence by their classification confidence.
+        When enabled, high-confidence models get more say in the ensemble
+        and uncertain models get less.
+
+        Returns:
+            Dictionary with enabled (bool) and blend (float 0.0-1.0)
+        """
+        cw_config = self._classification_config.get("confidence_weighting", {})
+
+        if not cw_config:
+            return {"enabled": True, "blend": 0.5}
+
+        # Resolve defaults section if present
+        defaults = cw_config.get("defaults", {})
+
+        enabled = cw_config.get("enabled", defaults.get("enabled", True))
+        if isinstance(enabled, str):
+            enabled = enabled.lower() in ("true", "1", "yes")
+
+        blend = cw_config.get("blend", defaults.get("blend", 0.5))
+        try:
+            blend = float(blend)
+            blend = max(0.0, min(1.0, blend))
+        except (ValueError, TypeError):
+            blend = 0.5
+
+        return {"enabled": bool(enabled), "blend": blend}
 
     # =========================================================================
     # PHASE 4: Consensus Configuration Getters

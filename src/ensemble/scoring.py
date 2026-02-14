@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-6-6.3-1
-LAST MODIFIED: 2026-02-10
-PHASE: Phase 6.3 - Ensemble Weight Rebalancing
+FILE VERSION: v5.1-6-6.2.5-1
+LAST MODIFIED: 2026-02-14
+PHASE: Phase 6.2.5 - Confidence-Weighted Ensemble Scoring
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -217,10 +217,19 @@ class WeightedScorer:
     # Labels with signal >= this threshold trigger critical severity override
     CRITICAL_SIGNAL_THRESHOLD = 0.90
 
+    # Phase 6.2.5: Default confidence weighting configuration
+    # Scales model influence by their classification confidence.
+    # blend=0.0 → pure fixed weights, blend=1.0 → full confidence weighting
+    DEFAULT_CONFIDENCE_WEIGHTING = {
+        "enabled": True,
+        "blend": 0.5,
+    }
+
     def __init__(
         self,
         weights: Optional[Dict[str, float]] = None,
         thresholds: Optional[Dict[str, float]] = None,
+        confidence_weighting: Optional[Dict[str, Any]] = None,
     ):
         """
         Initialize WeightedScorer.
@@ -229,14 +238,21 @@ class WeightedScorer:
             weights: Additive model weights (bart, sentiment, emotions).
                      Irony is NOT included — it's a post-scoring gatekeeper.
             thresholds: Severity thresholds (critical, high, medium, low)
+            confidence_weighting: Confidence-weighted scoring config (enabled, blend)
         """
         self.weights = weights or self.DEFAULT_WEIGHTS.copy()
         self.thresholds = thresholds or self.DEFAULT_THRESHOLDS.copy()
+        self._confidence_weighting = confidence_weighting or self.DEFAULT_CONFIDENCE_WEIGHTING.copy()
 
         # Validate weights
         self._validate_weights()
 
-        logger.info(f"📊 WeightedScorer initialized (weights: {self.weights})")
+        logger.info(
+            f"📊 WeightedScorer initialized "
+            f"(weights: {self.weights}, "
+            f"confidence_weighting: enabled={self._confidence_weighting['enabled']}, "
+            f"blend={self._confidence_weighting['blend']})"
+        )
 
     def _validate_weights(self) -> None:
         """Validate that additive weights are sensible."""
@@ -585,10 +601,42 @@ class WeightedScorer:
         base_score = 0.0
         total_weight = 0.0
 
-        for name, signal in signals.items():
-            if name != "irony":  # Irony is a modifier, not additive
-                base_score += signal.weighted_score
-                total_weight += signal.weight
+        cw = self._confidence_weighting
+        if cw["enabled"]:
+            # Phase 6.2.5: Confidence-weighted scoring
+            # Scale each model's effective weight by its own confidence (raw_score).
+            # The blend factor controls how much confidence affects weighting:
+            #   blend=0.0 → pure fixed weights, blend=1.0 → full confidence scaling
+            blend = cw["blend"]
+
+            effective_weights: Dict[str, float] = {}
+            for name, signal in signals.items():
+                if name != "irony":
+                    confidence_factor = (1.0 - blend) + (blend * signal.raw_score)
+                    effective_weights[name] = signal.weight * confidence_factor
+
+            # Normalize so effective weights preserve the total weight budget
+            total_effective = sum(effective_weights.values())
+            total_base = sum(
+                signal.weight for name, signal in signals.items() if name != "irony"
+            )
+
+            if total_effective > 0:
+                scale = total_base / total_effective
+            else:
+                scale = 1.0
+
+            for name, signal in signals.items():
+                if name != "irony":
+                    scaled_weight = effective_weights[name] * scale
+                    base_score += signal.crisis_signal * scaled_weight
+                    total_weight += signal.weight
+        else:
+            # Original fixed-weight behavior
+            for name, signal in signals.items():
+                if name != "irony":  # Irony is a modifier, not additive
+                    base_score += signal.weighted_score
+                    total_weight += signal.weight
 
         # Normalize if not all additive models available
         # Phase 6.3: Additive weights now sum to 1.0. When a model is
@@ -717,6 +765,7 @@ def create_weighted_scorer(
     config_manager: Optional["ConfigManager"] = None,
     weights: Optional[Dict[str, float]] = None,
     thresholds: Optional[Dict[str, float]] = None,
+    confidence_weighting: Optional[Dict[str, Any]] = None,
 ) -> WeightedScorer:
     """
     Factory function for WeightedScorer.
@@ -727,6 +776,7 @@ def create_weighted_scorer(
         config_manager: Configuration manager instance
         weights: Override weights (optional)
         thresholds: Override thresholds (optional)
+        confidence_weighting: Override confidence weighting config (optional)
 
     Returns:
         Configured WeightedScorer instance
@@ -737,6 +787,7 @@ def create_weighted_scorer(
     """
     final_weights = WeightedScorer.DEFAULT_WEIGHTS.copy()
     final_thresholds = WeightedScorer.DEFAULT_THRESHOLDS.copy()
+    final_cw = WeightedScorer.DEFAULT_CONFIDENCE_WEIGHTING.copy()
 
     # Load from config manager
     if config_manager is not None:
@@ -750,6 +801,11 @@ def create_weighted_scorer(
         if config_thresholds:
             final_thresholds.update(config_thresholds)
 
+        # Get confidence weighting config (Phase 6.2.5)
+        config_cw = config_manager.get_confidence_weighting()
+        if config_cw:
+            final_cw.update(config_cw)
+
     # Apply explicit overrides
     if weights:
         final_weights.update(weights)
@@ -757,9 +813,13 @@ def create_weighted_scorer(
     if thresholds:
         final_thresholds.update(thresholds)
 
+    if confidence_weighting:
+        final_cw.update(confidence_weighting)
+
     return WeightedScorer(
         weights=final_weights,
         thresholds=final_thresholds,
+        confidence_weighting=final_cw,
     )
 
 
