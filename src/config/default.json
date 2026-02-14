@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-6-6.3-1",
-		"last_modified": "2026-02-10",
+		"file_version": "v5.1-6-6.4-1",
+		"last_modified": "2026-02-14",
 		"clean_architecture": "Compliant",
 		"description": "Ash-NLP v5.1 Default Configuration - Server, model identity, logging, and integration settings",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -386,6 +386,12 @@
 		"score_cap": "${NLP_VIGIL_SCORE_CAP}",
 		"skip_threshold": "${NLP_VIGIL_SKIP_THRESHOLD}",
 		"amplify_medium": "${NLP_VIGIL_AMPLIFY_MEDIUM}",
+		"confidence_skip": {
+			"description": "BART confidence-based Vigil skip - bypasses Vigil when BART is highly confident",
+			"enabled": "${NLP_VIGIL_CONFIDENCE_SKIP_ENABLED}",
+			"crisis_threshold": "${NLP_VIGIL_CONFIDENCE_SKIP_CRISIS}",
+			"safe_threshold": "${NLP_VIGIL_CONFIDENCE_SKIP_SAFE}"
+		},
 		"vigil_thresholds": {
 			"description": "Vigil risk score thresholds that trigger different amplification levels",
 			"critical": "${NLP_VIGIL_THRESHOLD_CRITICAL}",
@@ -404,6 +410,11 @@
 			"score_cap": 1.0,
 			"skip_threshold": 0.7,
 			"amplify_medium": true,
+			"confidence_skip": {
+				"enabled": true,
+				"crisis_threshold": 0.85,
+				"safe_threshold": 0.90
+			},
 			"vigil_thresholds": {
 				"critical": 0.8,
 				"high": 0.6,
@@ -434,6 +445,22 @@
 			"amplify_medium": {
 				"type": "boolean",
 				"required": false
+			},
+			"confidence_skip": {
+				"enabled": {
+					"type": "boolean",
+					"required": false
+				},
+				"crisis_threshold": {
+					"type": "float",
+					"range": [0.7, 0.99],
+					"required": false
+				},
+				"safe_threshold": {
+					"type": "float",
+					"range": [0.7, 0.99],
+					"required": false
+				}
 			},
 			"vigil_thresholds": {
 				"critical": {

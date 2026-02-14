@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.1-6-6.2-1
-LAST MODIFIED: 2026-02-09
-PHASE: Phase 6 - Irony Gatekeeper Refactor
+FILE VERSION: v5.1-6-6.4-1
+LAST MODIFIED: 2026-02-14
+PHASE: Phase 6 - Confidence-Based Vigil Skip
 CLEAN ARCHITECTURE: v5.2.3 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -38,7 +38,9 @@ PROCESSING FLOW (Phase 3 Vigil):
 1. Run 4-model ensemble → base score (no irony dampening yet)
 2. Determine preliminary severity from base score
 3. Decision Gate: Should we call Vigil?
-   - If base_score >= skip_threshold → Skip Vigil
+   - If base_score >= skip_threshold → Skip Vigil (score-based)
+   - If BART confidence >= crisis_threshold AND crisis label → Skip Vigil (confident crisis)
+   - If BART confidence >= safe_threshold AND safe label → Skip Vigil (confident safe)
    - If MEDIUM severity and amplify_medium=false → Skip Vigil
    - Otherwise → Call Vigil
 4. Apply Vigil amplification (cap at 1.0)
@@ -85,6 +87,7 @@ from .scoring import (
     create_weighted_scorer,
     EnsembleScore,
     CrisisSeverity,
+    ModelSignal,
 )
 from .fallback import (
     FallbackStrategy,
@@ -706,6 +709,11 @@ class EnsembleDecisionEngine:
         "score_cap": 1.0,
         "skip_threshold": 0.70,
         "amplify_medium": True,
+        "confidence_skip": {
+            "enabled": True,
+            "crisis_threshold": 0.85,
+            "safe_threshold": 0.90,
+        },
         "vigil_thresholds": {
             "critical": 0.8,
             "high": 0.6,
@@ -907,6 +915,7 @@ class EnsembleDecisionEngine:
         self._conflicts_detected: int = 0
         self._vigil_calls: int = 0
         self._vigil_amplifications: int = 0
+        self._vigil_confidence_skips: int = 0
         self._irony_gate_triggers: int = 0
 
         # Thread pool for parallel inference
@@ -973,6 +982,16 @@ class EnsembleDecisionEngine:
                 if val is not None:
                     self._vigil_amplification_config["amplify_medium"] = bool(val)
 
+            # Load confidence_skip config - ConfigManager resolves env var overrides
+            confidence_skip = vigil_amp_config.get("confidence_skip")
+            logger.debug(f"confidence_skip from config: {confidence_skip}")
+            if confidence_skip is not None and isinstance(confidence_skip, dict):
+                self._vigil_amplification_config["confidence_skip"] = {
+                    "enabled": bool(confidence_skip.get("enabled", True)),
+                    "crisis_threshold": float(confidence_skip.get("crisis_threshold") or 0.85),
+                    "safe_threshold": float(confidence_skip.get("safe_threshold") or 0.90),
+                }
+
             # Load nested thresholds - ConfigManager resolves these with env var overrides
             thresholds = vigil_amp_config.get("vigil_thresholds")
             logger.debug(f"vigil_thresholds from config: {thresholds}")
@@ -997,7 +1016,8 @@ class EnsembleDecisionEngine:
             logger.info(
                 f"✅ Loaded Vigil amplification config: "
                 f"skip_threshold={self._vigil_amplification_config['skip_threshold']}, "
-                f"amplify_medium={self._vigil_amplification_config['amplify_medium']}"
+                f"amplify_medium={self._vigil_amplification_config['amplify_medium']}, "
+                f"confidence_skip={self._vigil_amplification_config['confidence_skip']}"
             )
 
         except Exception as e:
@@ -1017,12 +1037,14 @@ class EnsembleDecisionEngine:
         base_score: float,
         base_severity: CrisisSeverity,
         text: str,
+        bart_signal: Optional[ModelSignal] = None,
     ) -> Tuple[float, VigilResponse]:
         """
         Apply Ash-Vigil risk amplification to base ensemble score.
 
         Vigil acts as a SOFT amplifier:
         - Only called when base score is below skip_threshold
+        - Skipped when BART is highly confident (crisis or safe)
         - Boosts scores when Vigil detects risk that base models missed
         - Respects amplify_medium toggle for MEDIUM severity
         - Hard caps at score_cap (1.0)
@@ -1032,6 +1054,7 @@ class EnsembleDecisionEngine:
             base_score: Pre-irony-dampening ensemble score
             base_severity: Preliminary severity from base score
             text: Original message text
+            bart_signal: BART model signal for confidence-based skip (optional)
 
         Returns:
             Tuple of (amplified_score, VigilResponse)
@@ -1062,7 +1085,49 @@ class EnsembleDecisionEngine:
             )
 
         # =====================================================================
-        # Gate 3: Is this MEDIUM severity and amplify_medium is disabled?
+        # Gate 3: BART confidence-based skip (Phase 6.4)
+        # If BART is highly confident in its classification, skip Vigil.
+        # - High crisis confidence: BART already detected crisis, no need
+        #   for Vigil to confirm (saves ~200ms network round-trip)
+        # - High safe confidence: BART is sure this is safe, Vigil would
+        #   just agree (prevents unnecessary Vigil calls on safe content)
+        # =====================================================================
+        cs_config = config["confidence_skip"]
+        if cs_config["enabled"] and bart_signal is not None:
+            crisis_signal = bart_signal.crisis_signal
+            crisis_threshold = cs_config["crisis_threshold"]
+            safe_threshold = cs_config["safe_threshold"]
+
+            # Confident crisis: BART crisis_signal is very high
+            if crisis_signal >= crisis_threshold:
+                self._vigil_confidence_skips += 1
+                logger.debug(
+                    f"Skipping Vigil: BART confident crisis "
+                    f"(crisis_signal={crisis_signal:.3f} >= {crisis_threshold}, "
+                    f"label={bart_signal.label})"
+                )
+                return base_score, VigilResponse(
+                    status=VigilStatus.SKIPPED,
+                    base_score=base_score,
+                )
+
+            # Confident safe: BART crisis_signal is very low
+            # (1.0 - safe_threshold) gives us the low-end cutoff
+            safe_cutoff = 1.0 - safe_threshold
+            if crisis_signal <= safe_cutoff:
+                self._vigil_confidence_skips += 1
+                logger.debug(
+                    f"Skipping Vigil: BART confident safe "
+                    f"(crisis_signal={crisis_signal:.3f} <= {safe_cutoff:.3f}, "
+                    f"label={bart_signal.label})"
+                )
+                return base_score, VigilResponse(
+                    status=VigilStatus.SKIPPED,
+                    base_score=base_score,
+                )
+
+        # =====================================================================
+        # Gate 4: Is this MEDIUM severity and amplify_medium is disabled?
         # =====================================================================
         if base_severity == CrisisSeverity.MEDIUM and not config["amplify_medium"]:
             logger.debug("Skipping Vigil: MEDIUM severity and amplify_medium=false")
@@ -1072,7 +1137,7 @@ class EnsembleDecisionEngine:
             )
 
         # =====================================================================
-        # Gate 4: Is Vigil client available?
+        # Gate 5: Is Vigil client available?
         # =====================================================================
         if not self._vigil_client or not self._vigil_client.enabled:
             logger.debug("Vigil client not available or disabled")
@@ -1169,6 +1234,7 @@ class EnsembleDecisionEngine:
         base_score: float,
         base_severity: CrisisSeverity,
         text: str,
+        bart_signal: Optional[ModelSignal] = None,
     ) -> Tuple[float, VigilResponse]:
         """
         Synchronous wrapper for Vigil amplification.
@@ -1179,6 +1245,7 @@ class EnsembleDecisionEngine:
             base_score: Pre-irony-dampening ensemble score
             base_severity: Preliminary severity from base score
             text: Original message text
+            bart_signal: BART model signal for confidence-based skip (optional)
 
         Returns:
             Tuple of (amplified_score, VigilResponse)
@@ -1194,13 +1261,15 @@ class EnsembleDecisionEngine:
                     future = pool.submit(
                         asyncio.run,
                         self._apply_vigil_amplification(
-                            base_score, base_severity, text
+                            base_score, base_severity, text, bart_signal
                         ),
                     )
                     return future.result(timeout=2.0)
             else:
                 return loop.run_until_complete(
-                    self._apply_vigil_amplification(base_score, base_severity, text)
+                    self._apply_vigil_amplification(
+                        base_score, base_severity, text, bart_signal
+                    )
                 )
         except Exception as e:
             logger.warning(f"Sync Vigil amplification failed: {e}")
@@ -1329,10 +1398,12 @@ class EnsembleDecisionEngine:
             # Apply Vigil amplification (sync version)
             vigil_response: VigilResponse
             if self.vigil_enabled:
+                bart_signal = ensemble_score.signals.get("bart")
                 amplified_score, vigil_response = self._apply_vigil_amplification_sync(
                     base_score=base_score,
                     base_severity=preliminary_severity,
                     text=message,
+                    bart_signal=bart_signal,
                 )
             else:
                 amplified_score = base_score
@@ -1646,10 +1717,12 @@ class EnsembleDecisionEngine:
             # Apply Vigil amplification (async version)
             vigil_response: VigilResponse
             if self.vigil_enabled:
+                bart_signal = ensemble_score.signals.get("bart")
                 amplified_score, vigil_response = await self._apply_vigil_amplification(
                     base_score=base_score,
                     base_severity=preliminary_severity,
                     text=message,
+                    bart_signal=bart_signal,
                 )
             else:
                 amplified_score = base_score
@@ -2454,6 +2527,7 @@ class EnsembleDecisionEngine:
                 "average_latency_ms": round(avg_latency, 2),
                 "vigil_calls": self._vigil_calls,
                 "vigil_amplifications": self._vigil_amplifications,
+                "vigil_confidence_skips": self._vigil_confidence_skips,
             },
             "models": self.model_loader.get_status(),
             "weights": self.scorer.get_weights(),
