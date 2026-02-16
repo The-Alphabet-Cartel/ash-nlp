@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Ensemble Package for Ash-NLP Service
 ---
-FILE VERSION: v5.1-6-6.2-1
-LAST MODIFIED: 2026-02-09
-PHASE: Phase 6 - Irony Gatekeeper Refactor
+FILE VERSION: v5.1-6-6.4.3-1
+LAST MODIFIED: 2026-02-15
+PHASE: Phase 6 - Step 6.4.3 Decision Engine Decomposition
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -64,7 +64,21 @@ PHASE 4 USAGE (Enhanced):
 """
 
 # Module version
-__version__ = "v5.1-6-6.2-1"
+__version__ = "v5.1-6-6.4.3-1"
+
+# =============================================================================
+# Data Models (extracted from decision_engine in Step 6.4.3)
+# =============================================================================
+
+from .data_models import (
+    WarmupResult,
+    VigilResponse,
+    CrisisAssessment,
+    RecommendedAction,
+    IronyGateResult,
+    IronyGate,
+    create_irony_gate,
+)
 
 # =============================================================================
 # Decision Engine (Main Interface)
@@ -73,13 +87,6 @@ __version__ = "v5.1-6-6.2-1"
 from .decision_engine import (
     EnsembleDecisionEngine,
     create_decision_engine,
-    CrisisAssessment,
-    RecommendedAction,
-    WarmupResult,  # FE-004
-    # Phase 6
-    IronyGate,
-    IronyGateResult,
-    create_irony_gate,
 )
 
 # =============================================================================

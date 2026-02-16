@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-5-5.3-1",
-		"last_modified": "2026-02-09",
+		"file_version": "v5.1-6-6.4-6",
+		"last_modified": "2026-02-15",
 		"clean_architecture": "Compliant",
 		"description": "Label definitions for all models - crisis labels, candidate labels, and signal mappings",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -9,7 +9,7 @@
 	},
 
 	"crisis_labels": {
-		"description": "Crisis classification labels for BART zero-shot classifier (PRIMARY model, weight 0.50). Phase 4.5: Migrated from short categorical labels to descriptive NLI-optimized labels with configurable signal mapping.",
+		"description": "Crisis classification labels for BART zero-shot classifier (PRIMARY model, weight 0.65). Phase 6.4 Iteration 3: Added burden/perceived-burden crisis label targeting 0% accuracy subcategory.",
 		"candidate_labels": "${NLP_CRISIS_CANDIDATE_LABELS}",
 		"hypothesis_template": "${NLP_CRISIS_HYPOTHESIS_TEMPLATE}",
 		"label_signal_mapping": "${NLP_CRISIS_LABEL_SIGNAL_MAPPING}",
@@ -27,10 +27,15 @@
 				"person going through a painful relationship breakdown or betrayal",
 				"person struggling with identity, belonging, or self-acceptance",
 				"person experiencing deep loneliness or social isolation",
+				"person facing rejection, homelessness, or discrimination due to their sexual orientation or gender identity",
+				"person being denied essential healthcare or shelter because of who they are",
+				"person expressing that others would be better off without them or that they are a burden",
 				"person having a casual everyday conversation with no distress",
 				"person sharing good news, achievements, or positive experiences",
 				"person asking a factual question or seeking information",
-				"person discussing a topic, opinion, or interest casually"
+				"person discussing a topic, opinion, or interest casually",
+				"person using dramatic or exaggerated language for humor or emphasis, not actual distress",
+				"person discussing frustration with a game, entertainment, or everyday inconvenience"
 			],
 			"hypothesis_template": null,
 			"label_signal_mapping": {
@@ -46,10 +51,15 @@
 				"person going through a painful relationship breakdown or betrayal": 0.50,
 				"person struggling with identity, belonging, or self-acceptance": 0.50,
 				"person experiencing deep loneliness or social isolation": 0.50,
+				"person facing rejection, homelessness, or discrimination due to their sexual orientation or gender identity": 0.80,
+				"person being denied essential healthcare or shelter because of who they are": 0.85,
+				"person expressing that others would be better off without them or that they are a burden": 0.95,
 				"person having a casual everyday conversation with no distress": 0.00,
 				"person sharing good news, achievements, or positive experiences": 0.00,
 				"person asking a factual question or seeking information": 0.00,
-				"person discussing a topic, opinion, or interest casually": 0.00
+				"person discussing a topic, opinion, or interest casually": 0.00,
+				"person using dramatic or exaggerated language for humor or emphasis, not actual distress": 0.00,
+				"person discussing frustration with a game, entertainment, or everyday inconvenience": 0.00
 			}
 		},
 		"validation": {
@@ -69,7 +79,7 @@
 	},
 
 	"sentiment_labels": {
-		"description": "Distress severity labels for Sentiment zero-shot classifier (DeBERTa) - SECONDARY model",
+		"description": "Distress severity labels for Sentiment zero-shot classifier (DeBERTa) - SECONDARY model. Phase 6.4 Iteration 1: Added identity-based crisis label and broadened safe frustration label.",
 		"candidate_labels": "${NLP_SENTIMENT_CANDIDATE_LABELS}",
 		"hypothesis_template": "${NLP_SENTIMENT_HYPOTHESIS_TEMPLATE}",
 		"label_signal_mapping": "${NLP_SENTIMENT_LABEL_SIGNAL_MAPPING}",
@@ -77,20 +87,22 @@
 			"candidate_labels": [
 				"person expressing deep hopelessness or despair",
 				"person experiencing acute emotional distress",
+				"person in crisis due to identity-based rejection or discrimination",
 				"person venting frustration but coping",
 				"person describing a difficult situation calmly",
 				"person sharing positive news or celebration",
-				"casual negative mood with no distress",
+				"casual negative mood, everyday complaint, or entertainment frustration with no real distress",
 				"neutral informational statement"
 			],
 			"hypothesis_template": null,
 			"label_signal_mapping": {
 				"person expressing deep hopelessness or despair": 0.95,
 				"person experiencing acute emotional distress": 0.80,
+				"person in crisis due to identity-based rejection or discrimination": 0.90,
 				"person venting frustration but coping": 0.30,
 				"person describing a difficult situation calmly": 0.15,
 				"person sharing positive news or celebration": 0.0,
-				"casual negative mood with no distress": 0.15,
+				"casual negative mood, everyday complaint, or entertainment frustration with no real distress": 0.10,
 				"neutral informational statement": 0.0
 			}
 		},
@@ -111,7 +123,7 @@
 	},
 
 	"emotions_labels": {
-		"description": "Emotional state labels for Emotions zero-shot classifier (DeBERTa) - SUPPLEMENTARY model (Phase 5). Answers: What is the person's emotional state? Distinct from sentiment distress-severity labels.",
+		"description": "Emotional state labels for Emotions zero-shot classifier (DeBERTa) - SUPPLEMENTARY model (Phase 5). Phase 6.4 Iteration 1: Added identity-targeted safety label and broadened humor/exaggeration label. Answers: What is the person's emotional state? Distinct from sentiment distress-severity labels.",
 		"candidate_labels": "${NLP_EMOTIONS_CANDIDATE_LABELS}",
 		"hypothesis_template": "${NLP_EMOTIONS_HYPOTHESIS_TEMPLATE}",
 		"label_signal_mapping": "${NLP_EMOTIONS_LABEL_SIGNAL_MAPPING}",
@@ -121,10 +133,11 @@
 				"person experiencing grief or devastating loss",
 				"person feeling rejected or abandoned by loved ones",
 				"person experiencing fear or panic",
+				"person feeling unsafe or targeted because of their identity",
 				"person feeling anger without crisis intent",
 				"person expressing joy or excitement",
 				"person in calm or neutral emotional state",
-				"person using humor to cope with difficulty"
+				"person using humor, sarcasm, or exaggeration to cope with or express mild frustration"
 			],
 			"hypothesis_template": null,
 			"label_signal_mapping": {
@@ -132,8 +145,9 @@
 				"person experiencing grief or devastating loss": 0.85,
 				"person experiencing fear or panic": 0.80,
 				"person feeling rejected or abandoned by loved ones": 0.75,
+				"person feeling unsafe or targeted because of their identity": 0.85,
 				"person feeling anger without crisis intent": 0.20,
-				"person using humor to cope with difficulty": 0.10,
+				"person using humor, sarcasm, or exaggeration to cope with or express mild frustration": 0.05,
 				"person expressing joy or excitement": 0.0,
 				"person in calm or neutral emotional state": 0.0
 			}
