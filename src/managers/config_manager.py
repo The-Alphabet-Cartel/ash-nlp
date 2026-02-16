@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.1-4.5-4.5.1-1
-LAST MODIFIED: 2026-02-09
-PHASE: Phase 4.5 - BART Label Optimization
+FILE VERSION: v5.1-6-6.4.3-1
+LAST MODIFIED: 2026-02-15
+PHASE: Phase 6 - Step 6.4.3 Consensus Escalation
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -466,6 +466,13 @@ class ConfigManager:
             "confidence_weighting": {
                 "enabled": True,
                 "blend": 0.5,
+            },
+            "consensus_escalation": {
+                "enabled": True,
+                "disagreement_threshold": 0.50,
+                "consensus_minimum_score": 0.60,
+                "drop_levels": 1,
+                "set_requires_review": True,
             },
         }
 
@@ -1163,6 +1170,87 @@ class ConfigManager:
             blend = 0.5
 
         return {"enabled": bool(enabled), "blend": blend}
+
+    # =========================================================================
+    # PHASE 6.4.3: Consensus Escalation Configuration
+    # =========================================================================
+
+    def get_consensus_escalation_config(self) -> Dict[str, Any]:
+        """
+        Get consensus disagreement escalation configuration.
+
+        Phase 6.4.3: When the consensus score significantly exceeds the
+        pipeline score, a severity floor is applied to catch implicit crisis
+        language that BART missed but contextual models detected.
+
+        Returns:
+            Dictionary with:
+            - enabled: bool (master toggle)
+            - disagreement_threshold: float (minimum gap to trigger)
+            - consensus_minimum_score: float (consensus must be at least this)
+            - drop_levels: int (severity levels below consensus for floor)
+            - set_requires_review: bool (flag escalated messages for CRT)
+        """
+        ce_config = self._classification_config.get("consensus_escalation", {})
+
+        if not ce_config:
+            return self._get_classification_defaults()["consensus_escalation"]
+
+        # Resolve defaults section if present
+        defaults = ce_config.get("defaults", {})
+
+        # Enabled
+        enabled = ce_config.get("enabled", defaults.get("enabled", True))
+        if isinstance(enabled, str):
+            enabled = enabled.lower() in ("true", "1", "yes")
+
+        # Disagreement threshold
+        disagreement_threshold = ce_config.get(
+            "disagreement_threshold",
+            defaults.get("disagreement_threshold", 0.50),
+        )
+        try:
+            disagreement_threshold = float(disagreement_threshold)
+            disagreement_threshold = max(0.1, min(0.9, disagreement_threshold))
+        except (ValueError, TypeError):
+            disagreement_threshold = 0.50
+
+        # Consensus minimum score
+        consensus_minimum_score = ce_config.get(
+            "consensus_minimum_score",
+            defaults.get("consensus_minimum_score", 0.60),
+        )
+        try:
+            consensus_minimum_score = float(consensus_minimum_score)
+            consensus_minimum_score = max(0.3, min(0.95, consensus_minimum_score))
+        except (ValueError, TypeError):
+            consensus_minimum_score = 0.60
+
+        # Drop levels
+        drop_levels = ce_config.get(
+            "drop_levels", defaults.get("drop_levels", 1)
+        )
+        try:
+            drop_levels = int(drop_levels)
+            drop_levels = max(0, min(3, drop_levels))
+        except (ValueError, TypeError):
+            drop_levels = 1
+
+        # Set requires_review
+        set_requires_review = ce_config.get(
+            "set_requires_review",
+            defaults.get("set_requires_review", True),
+        )
+        if isinstance(set_requires_review, str):
+            set_requires_review = set_requires_review.lower() in ("true", "1", "yes")
+
+        return {
+            "enabled": bool(enabled),
+            "disagreement_threshold": disagreement_threshold,
+            "consensus_minimum_score": consensus_minimum_score,
+            "drop_levels": drop_levels,
+            "set_requires_review": bool(set_requires_review),
+        }
 
     # =========================================================================
     # PHASE 4: Consensus Configuration Getters

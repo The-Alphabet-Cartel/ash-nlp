@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-6-6.2.5-1",
-		"last_modified": "2026-02-14",
+		"file_version": "v5.1-6-6.4.3-1",
+		"last_modified": "2026-02-15",
 		"clean_architecture": "Compliant",
 		"description": "Classification behavior configuration - thresholds, irony gate, and scoring behavior",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -88,6 +88,47 @@
 			"blend": {
 				"type": "float",
 				"range": [0.0, 1.0],
+				"required": false
+			}
+		}
+	},
+
+	"consensus_escalation": {
+		"description": "Consensus disagreement severity floor (Step 6.4.3) - when consensus score significantly exceeds pipeline score, applies a severity floor to catch implicit crisis language that BART missed but contextual models detected",
+		"enabled": "${NLP_CONSENSUS_ESCALATION_ENABLED}",
+		"disagreement_threshold": "${NLP_CONSENSUS_ESCALATION_DISAGREEMENT_THRESHOLD}",
+		"consensus_minimum_score": "${NLP_CONSENSUS_ESCALATION_MINIMUM_SCORE}",
+		"drop_levels": "${NLP_CONSENSUS_ESCALATION_DROP_LEVELS}",
+		"set_requires_review": "${NLP_CONSENSUS_ESCALATION_SET_REQUIRES_REVIEW}",
+		"defaults": {
+			"enabled": true,
+			"disagreement_threshold": 0.50,
+			"consensus_minimum_score": 0.60,
+			"drop_levels": 1,
+			"set_requires_review": true
+		},
+		"validation": {
+			"enabled": {
+				"type": "boolean",
+				"required": false
+			},
+			"disagreement_threshold": {
+				"type": "float",
+				"range": [0.1, 0.9],
+				"required": false
+			},
+			"consensus_minimum_score": {
+				"type": "float",
+				"range": [0.3, 0.95],
+				"required": false
+			},
+			"drop_levels": {
+				"type": "integer",
+				"range": [0, 3],
+				"required": false
+			},
+			"set_requires_review": {
+				"type": "boolean",
 				"required": false
 			}
 		}
