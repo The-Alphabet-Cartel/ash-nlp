@@ -180,6 +180,12 @@ from .inference import (
     run_async_parallel_inference,
 )
 
+from .consensus_escalation import (
+    ConsensusEscalation,
+    ConsensusEscalationResult,
+    create_consensus_escalation,
+)
+
 
 # =============================================================================
 # Ensemble Decision Engine
@@ -366,16 +372,15 @@ class EnsembleDecisionEngine:
         # =====================================================================
 
         if phase4_enabled:
-            # v5.1-6-6.4-2: Consensus selector and conflict resolver DISABLED.
-            # The v5.1 zero-shot ensemble already produces a single weighted
-            # score through the ensemble → Vigil → irony gate pipeline.
-            # Running a separate consensus/resolution pass on the raw per-model
-            # signals was overriding the correctly-calculated final score,
-            # causing score↔severity mismatches (e.g., crisis_score=0.84
-            # mapped to severity="safe"). Conflict detection is retained for
-            # informational/explainability purposes only — it no longer
-            # modifies scores.
-            self.consensus_selector = None
+            # v5.1-6-6.4.3: Consensus selector RE-ENABLED as READ-ONLY.
+            # The consensus score is used by ConsensusEscalation as a
+            # safety net — it never overrides the pipeline score, only
+            # provides a severity floor when significant disagreement
+            # is detected. Conflict resolver remains DISABLED.
+            self.consensus_selector = (
+                consensus_selector
+                or create_consensus_selector(config_manager=config_manager)
+            )
             self.conflict_resolver = None
 
             self.conflict_detector = conflict_detector or create_conflict_detector(
@@ -391,13 +396,22 @@ class EnsembleDecisionEngine:
                 or create_explainability_generator(config_manager=config_manager)
             )
 
-            logger.info("✨ Phase 4 components initialized (consensus/resolution disabled in v5.1)")
+            # Step 6.4.3: Consensus Escalation (severity floor safety net)
+            self.consensus_escalation = create_consensus_escalation(
+                config_manager=config_manager,
+            )
+
+            logger.info(
+                "✨ Phase 4 components initialized "
+                "(consensus=read-only for escalation, resolution=disabled)"
+            )
         else:
             self.consensus_selector = None
             self.conflict_detector = None
             self.conflict_resolver = None
             self.result_aggregator = None
             self.explainability_generator = None
+            self.consensus_escalation = None
 
         # =====================================================================
         # Initialize Phase 5 components
@@ -429,6 +443,7 @@ class EnsembleDecisionEngine:
         self._vigil_amplifications: int = 0
         self._vigil_confidence_skips: int = 0
         self._irony_gate_triggers: int = 0
+        self._consensus_escalations: int = 0
 
         # Thread pool for parallel inference
         self._executor: Optional[ThreadPoolExecutor] = None
@@ -567,7 +582,61 @@ class EnsembleDecisionEngine:
             if irony_gate_result.triggered:
                 self._irony_gate_triggers += 1
 
-            # Recalculate final severity
+            # Pipeline score/severity (pre-escalation)
+            pipeline_score = final_score
+            pipeline_severity = CrisisSeverity.from_score(
+                pipeline_score, self.scorer.get_thresholds()
+            )
+
+            # =================================================================
+            # Step 6.4.3: Consensus Disagreement Escalation (severity floor)
+            # =================================================================
+
+            consensus_escalation_result: Optional[ConsensusEscalationResult] = None
+            consensus_result_from_escalation: Optional[ConsensusResult] = None
+
+            if (
+                self.phase4_enabled
+                and self.consensus_selector is not None
+                and self.consensus_escalation is not None
+            ):
+                try:
+                    # Extract per-model crisis signals for consensus vote
+                    crisis_scores_for_consensus = {
+                        name: signal.crisis_signal
+                        for name, signal in ensemble_score.signals.items()
+                    }
+
+                    # Run consensus algorithm (read-only — score not used directly)
+                    consensus_run_result = self.consensus_selector.select_and_run(
+                        crisis_scores=crisis_scores_for_consensus,
+                    )
+
+                    if consensus_run_result is not None:
+                        # Store for Phase 4 aggregation
+                        consensus_result_from_escalation = consensus_run_result
+
+                        # Apply severity floor
+                        consensus_escalation_result = self.consensus_escalation.apply_floor(
+                            pipeline_score=pipeline_score,
+                            pipeline_severity=pipeline_severity,
+                            consensus_score=consensus_run_result.crisis_score,
+                            thresholds=self.scorer.get_thresholds(),
+                        )
+
+                        if consensus_escalation_result.triggered:
+                            # Floor was applied — update final score/severity
+                            final_score = consensus_escalation_result.final_score
+                            self._consensus_escalations += 1
+                            logger.info(
+                                f"🛡️ Consensus escalation applied: "
+                                f"{pipeline_score:.3f} → {final_score:.3f}"
+                            )
+
+                except Exception as e:
+                    logger.warning(f"⚠️ Consensus escalation failed (non-fatal): {e}")
+
+            # Recalculate final severity (may have been updated by escalation)
             final_severity = CrisisSeverity.from_score(
                 final_score, self.scorer.get_thresholds()
             )
@@ -576,6 +645,15 @@ class EnsembleDecisionEngine:
             requires_review = determine_requires_review(
                 final_severity, vigil_response
             )
+
+            # Step 6.4.3: Escalation also sets requires_review
+            if (
+                consensus_escalation_result is not None
+                and consensus_escalation_result.triggered
+                and self.consensus_escalation is not None
+                and self.consensus_escalation.set_requires_review
+            ):
+                requires_review = True
 
             # Update ensemble_score with our recalculated values
             # (We override the scorer's irony-dampened value with our Vigil-amplified one)
@@ -623,8 +701,9 @@ class EnsembleDecisionEngine:
                     for name, signal in ensemble_score.signals.items()
                 }
 
-                # v5.1-6-6.4-2: Consensus algorithm DISABLED — ensemble
-                # weighted scoring is the single source of truth for scores.
+                # v5.1-6-6.4.3: Consensus was already run in the escalation
+                # block above. Use the stored result for aggregation.
+                consensus_result = consensus_result_from_escalation
 
                 # Run conflict detection (informational only — does not modify scores)
                 if self.conflict_detector:
@@ -725,6 +804,7 @@ class EnsembleDecisionEngine:
                 explanation=explanation,
                 context_analysis_result=context_analysis_result,
                 irony_gate_result=irony_gate_result,
+                consensus_escalation_result=consensus_escalation_result,
             )
 
             # Store in cache (Phase 3.7.4)
@@ -873,7 +953,56 @@ class EnsembleDecisionEngine:
             if irony_gate_result.triggered:
                 self._irony_gate_triggers += 1
 
-            # Recalculate final severity
+            # Pipeline score/severity (pre-escalation)
+            pipeline_score = final_score
+            pipeline_severity = CrisisSeverity.from_score(
+                pipeline_score, self.scorer.get_thresholds()
+            )
+
+            # =================================================================
+            # Step 6.4.3: Consensus Disagreement Escalation (severity floor)
+            # =================================================================
+
+            consensus_escalation_result: Optional[ConsensusEscalationResult] = None
+            consensus_result_from_escalation: Optional[ConsensusResult] = None
+
+            if (
+                self.phase4_enabled
+                and self.consensus_selector is not None
+                and self.consensus_escalation is not None
+            ):
+                try:
+                    crisis_scores_for_consensus = {
+                        name: signal.crisis_signal
+                        for name, signal in ensemble_score.signals.items()
+                    }
+
+                    consensus_run_result = self.consensus_selector.select_and_run(
+                        crisis_scores=crisis_scores_for_consensus,
+                    )
+
+                    if consensus_run_result is not None:
+                        consensus_result_from_escalation = consensus_run_result
+
+                        consensus_escalation_result = self.consensus_escalation.apply_floor(
+                            pipeline_score=pipeline_score,
+                            pipeline_severity=pipeline_severity,
+                            consensus_score=consensus_run_result.crisis_score,
+                            thresholds=self.scorer.get_thresholds(),
+                        )
+
+                        if consensus_escalation_result.triggered:
+                            final_score = consensus_escalation_result.final_score
+                            self._consensus_escalations += 1
+                            logger.info(
+                                f"🛡️ Consensus escalation applied: "
+                                f"{pipeline_score:.3f} → {final_score:.3f}"
+                            )
+
+                except Exception as e:
+                    logger.warning(f"⚠️ Consensus escalation failed (non-fatal): {e}")
+
+            # Recalculate final severity (may have been updated by escalation)
             final_severity = CrisisSeverity.from_score(
                 final_score, self.scorer.get_thresholds()
             )
@@ -882,6 +1011,15 @@ class EnsembleDecisionEngine:
             requires_review = determine_requires_review(
                 final_severity, vigil_response
             )
+
+            # Step 6.4.3: Escalation also sets requires_review
+            if (
+                consensus_escalation_result is not None
+                and consensus_escalation_result.triggered
+                and self.consensus_escalation is not None
+                and self.consensus_escalation.set_requires_review
+            ):
+                requires_review = True
 
             # Update ensemble_score
             ensemble_score.crisis_score = final_score
@@ -927,7 +1065,9 @@ class EnsembleDecisionEngine:
                     for name, signal in ensemble_score.signals.items()
                 }
 
-                # v5.1-6-6.4-2: Consensus algorithm DISABLED (async path).
+                # v5.1-6-6.4.3: Consensus was already run in the escalation
+                # block above. Use the stored result for aggregation.
+                consensus_result = consensus_result_from_escalation
 
                 # Run conflict detection (informational only — does not modify scores)
                 if self.conflict_detector:
@@ -1027,6 +1167,7 @@ class EnsembleDecisionEngine:
                 explanation=explanation,
                 context_analysis_result=context_analysis_result,
                 irony_gate_result=irony_gate_result,
+                consensus_escalation_result=consensus_escalation_result,
             )
 
 
@@ -1109,6 +1250,7 @@ class EnsembleDecisionEngine:
         explanation: Optional[Explanation] = None,
         context_analysis_result: Optional[ContextAnalysisResult] = None,
         irony_gate_result: Optional[IronyGateResult] = None,
+        consensus_escalation_result: Optional[ConsensusEscalationResult] = None,
     ) -> CrisisAssessment:
         """
         Build CrisisAssessment with Phase 3 Vigil, Phase 4, Phase 5, and Phase 6 enhancements.
@@ -1186,6 +1328,8 @@ class EnsembleDecisionEngine:
             context_analysis=context_analysis_result,
             # Phase 6 fields
             irony_gate_result=irony_gate_result,
+            # Step 6.4.3 fields
+            consensus_escalation_result=consensus_escalation_result,
         )
 
         return assessment
@@ -1542,6 +1686,7 @@ class EnsembleDecisionEngine:
                 "vigil_calls": self._vigil_calls,
                 "vigil_amplifications": self._vigil_amplifications,
                 "vigil_confidence_skips": self._vigil_confidence_skips,
+                "consensus_escalations": self._consensus_escalations,
             },
             "models": self.model_loader.get_status(),
             "weights": self.scorer.get_weights(),

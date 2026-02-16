@@ -255,6 +255,9 @@ class CrisisAssessment:
     # Phase 6 Enhanced Fields
     irony_gate_result: Optional[IronyGateResult] = None
 
+    # Step 6.4.3 Enhanced Fields
+    consensus_escalation_result: Optional[Any] = None  # ConsensusEscalationResult
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""
         result = {
@@ -291,6 +294,10 @@ class CrisisAssessment:
         # Include Phase 6 fields if present
         if self.irony_gate_result:
             result["irony_gate"] = self.irony_gate_result.to_dict()
+
+        # Include Step 6.4.3 fields if present
+        if self.consensus_escalation_result:
+            result["consensus_escalation"] = self.consensus_escalation_result.to_dict()
 
         return result
 

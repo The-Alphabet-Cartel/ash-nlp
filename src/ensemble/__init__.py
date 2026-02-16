@@ -81,6 +81,16 @@ from .data_models import (
 )
 
 # =============================================================================
+# Consensus Escalation (Step 6.4.3)
+# =============================================================================
+
+from .consensus_escalation import (
+    ConsensusEscalation,
+    ConsensusEscalationResult,
+    create_consensus_escalation,
+)
+
+# =============================================================================
 # Decision Engine (Main Interface)
 # =============================================================================
 
@@ -302,4 +312,9 @@ __all__ = [
     "IronyGate",
     "IronyGateResult",
     "create_irony_gate",
+
+    # Consensus Escalation (Step 6.4.3)
+    "ConsensusEscalation",
+    "ConsensusEscalationResult",
+    "create_consensus_escalation",
 ]
