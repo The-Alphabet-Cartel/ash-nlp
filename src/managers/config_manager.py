@@ -469,8 +469,8 @@ class ConfigManager:
             },
             "consensus_escalation": {
                 "enabled": True,
-                "disagreement_threshold": 0.50,
-                "consensus_minimum_score": 0.60,
+                "disagreement_threshold": 0.15,
+                "consensus_minimum_score": 0.40,
                 "drop_levels": 1,
                 "set_requires_review": True,
             },
@@ -1207,24 +1207,24 @@ class ConfigManager:
         # Disagreement threshold
         disagreement_threshold = ce_config.get(
             "disagreement_threshold",
-            defaults.get("disagreement_threshold", 0.50),
+            defaults.get("disagreement_threshold", 0.15),
         )
         try:
             disagreement_threshold = float(disagreement_threshold)
             disagreement_threshold = max(0.1, min(0.9, disagreement_threshold))
         except (ValueError, TypeError):
-            disagreement_threshold = 0.50
+            disagreement_threshold = 0.15
 
         # Consensus minimum score
         consensus_minimum_score = ce_config.get(
             "consensus_minimum_score",
-            defaults.get("consensus_minimum_score", 0.60),
+            defaults.get("consensus_minimum_score", 0.40),
         )
         try:
             consensus_minimum_score = float(consensus_minimum_score)
             consensus_minimum_score = max(0.3, min(0.95, consensus_minimum_score))
         except (ValueError, TypeError):
-            consensus_minimum_score = 0.60
+            consensus_minimum_score = 0.40
 
         # Drop levels
         drop_levels = ce_config.get(

@@ -161,8 +161,8 @@ class ConsensusEscalation:
     def __init__(
         self,
         enabled: bool = True,
-        disagreement_threshold: float = 0.50,
-        consensus_minimum_score: float = 0.60,
+        disagreement_threshold: float = 0.15,
+        consensus_minimum_score: float = 0.40,
         drop_levels: int = 1,
         set_requires_review: bool = True,
         severity_thresholds: Optional[Dict[CrisisSeverity, float]] = None,
@@ -412,8 +412,8 @@ def create_consensus_escalation(
         ... )
     """
     ce_enabled = True
-    ce_disagreement = 0.50
-    ce_minimum = 0.60
+    ce_disagreement = 0.15
+    ce_minimum = 0.40
     ce_drop = 1
     ce_review = True
 
@@ -423,8 +423,8 @@ def create_consensus_escalation(
             ce_config = config_manager.get_consensus_escalation_config()
             if ce_config:
                 ce_enabled = ce_config.get("enabled", True)
-                ce_disagreement = ce_config.get("disagreement_threshold", 0.50)
-                ce_minimum = ce_config.get("consensus_minimum_score", 0.60)
+                ce_disagreement = ce_config.get("disagreement_threshold", 0.15)
+                ce_minimum = ce_config.get("consensus_minimum_score", 0.40)
                 ce_drop = ce_config.get("drop_levels", 1)
                 ce_review = ce_config.get("set_requires_review", True)
         except Exception as e:

@@ -102,9 +102,9 @@
 		"set_requires_review": "${NLP_CONSENSUS_ESCALATION_SET_REQUIRES_REVIEW}",
 		"defaults": {
 			"enabled": true,
-			"disagreement_threshold": 0.50,
-			"consensus_minimum_score": 0.60,
-			"drop_levels": 1,
+			"disagreement_threshold": 0.15,
+			"consensus_minimum_score": 0.40,
+			"drop_levels": 0,
 			"set_requires_review": true
 		},
 		"validation": {

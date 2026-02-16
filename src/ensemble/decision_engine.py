@@ -146,7 +146,7 @@ if TYPE_CHECKING:
     from src.utils.alerting import DiscordAlerter
 
 # Module version
-__version__ = "v5.1-6-6.2-1"
+__version__ = "v5.1-6-6.4.3-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -609,7 +609,7 @@ class EnsembleDecisionEngine:
 
                     # Run consensus algorithm (read-only — score not used directly)
                     consensus_run_result = self.consensus_selector.select_and_run(
-                        crisis_scores=crisis_scores_for_consensus,
+                        model_signals=crisis_scores_for_consensus,
                     )
 
                     if consensus_run_result is not None:
@@ -978,7 +978,7 @@ class EnsembleDecisionEngine:
                     }
 
                     consensus_run_result = self.consensus_selector.select_and_run(
-                        crisis_scores=crisis_scores_for_consensus,
+                        model_signals=crisis_scores_for_consensus,
                     )
 
                     if consensus_run_result is not None:
