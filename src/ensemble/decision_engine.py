@@ -174,6 +174,12 @@ from .vigil_amplification import (
     determine_requires_review,
 )
 
+from .inference import (
+    run_sequential_inference,
+    run_parallel_inference,
+    run_async_parallel_inference,
+)
+
 
 # =============================================================================
 # Ensemble Decision Engine
@@ -1061,122 +1067,28 @@ class EnsembleDecisionEngine:
             )
 
     # =========================================================================
-    # Inference Methods with Timing
+    # Inference Methods (delegated to inference.py in Step 6.4.3)
     # =========================================================================
 
     def _run_sequential_inference_with_timing(
         self, message: str
     ) -> tuple[Dict[str, Optional[ModelResult]], Dict[str, float]]:
         """Run sequential inference with per-model timing."""
-        results: Dict[str, Optional[ModelResult]] = {}
-        latencies: Dict[str, float] = {}
-        model_names = ["bart", "sentiment", "irony", "emotions"]
-
-        for model_name in model_names:
-            if self.fallback.can_call_model(model_name):
-                model_start = time.perf_counter()
-                try:
-                    model = self.model_loader.get_model(model_name)
-                    if model:
-                        results[model_name] = model.analyze(message)
-                        self.fallback.handle_model_success(model_name)
-                except Exception as e:
-                    self.fallback.handle_model_failure(model_name, str(e))
-                finally:
-                    latencies[model_name] = (time.perf_counter() - model_start) * 1000
-
-        return results, latencies
+        return run_sequential_inference(message, self.model_loader, self.fallback)
 
     def _run_parallel_inference_with_timing(
         self, message: str
     ) -> tuple[Dict[str, Optional[ModelResult]], Dict[str, float]]:
         """Run parallel inference with per-model timing."""
-        results: Dict[str, Optional[ModelResult]] = {}
-        latencies: Dict[str, float] = {}
-
-        def run_model(model_name: str) -> tuple:
-            if not self.fallback.can_call_model(model_name):
-                return (model_name, None, 0.0)
-
-            model_start = time.perf_counter()
-            try:
-                model = self.model_loader.get_model(model_name)
-                if model:
-                    result = model.analyze(message)
-                    self.fallback.handle_model_success(model_name)
-                    latency = (time.perf_counter() - model_start) * 1000
-                    return (model_name, result, latency)
-                return (model_name, None, 0.0)
-            except Exception as e:
-                self.fallback.handle_model_failure(model_name, str(e))
-                latency = (time.perf_counter() - model_start) * 1000
-                return (model_name, None, latency)
-
-        model_names = ["bart", "sentiment", "irony", "emotions"]
-
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = {executor.submit(run_model, name): name for name in model_names}
-
-            for future in futures:
-                model_name = futures[future]
-                try:
-                    name, result, latency = future.result(timeout=30)
-                    if result:
-                        results[name] = result
-                    latencies[name] = latency
-                except Exception as e:
-                    logger.error(f"Parallel inference failed for {model_name}: {e}")
-
-        return results, latencies
+        return run_parallel_inference(message, self.model_loader, self.fallback)
 
     async def _run_async_parallel_inference_with_timing(
         self, message: str
     ) -> tuple[Dict[str, Optional[ModelResult]], Dict[str, float]]:
         """Run async parallel inference with per-model timing."""
-        loop = asyncio.get_event_loop()
-
-        async def run_model_async(model_name: str) -> tuple:
-            if not self.fallback.can_call_model(model_name):
-                return (model_name, None, 0.0)
-
-            model_start = time.perf_counter()
-            try:
-                model = self.model_loader.get_model(model_name)
-                if model:
-                    result = await loop.run_in_executor(
-                        self._executor,
-                        model.analyze,
-                        message,
-                    )
-                    self.fallback.handle_model_success(model_name)
-                    latency = (time.perf_counter() - model_start) * 1000
-                    return (model_name, result, latency)
-                return (model_name, None, 0.0)
-            except Exception as e:
-                self.fallback.handle_model_failure(model_name, str(e))
-                logger.warning(f"Model {model_name} failed: {e}")
-                latency = (time.perf_counter() - model_start) * 1000
-                return (model_name, None, latency)
-
-        model_names = ["bart", "sentiment", "irony", "emotions"]
-        tasks = [run_model_async(name) for name in model_names]
-
-        results_list = await asyncio.gather(*tasks, return_exceptions=True)
-
-        results: Dict[str, Optional[ModelResult]] = {}
-        latencies: Dict[str, float] = {}
-
-        for item in results_list:
-            if isinstance(item, Exception):
-                logger.error(f"Async inference exception: {item}")
-                continue
-            if isinstance(item, tuple) and len(item) == 3:
-                model_name, result, latency = item
-                if result is not None:
-                    results[model_name] = result
-                latencies[model_name] = latency
-
-        return results, latencies
+        return await run_async_parallel_inference(
+            message, self.model_loader, self.fallback, self._executor
+        )
 
     # =========================================================================
     # Assessment Building
