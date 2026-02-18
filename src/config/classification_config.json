@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-6-6.4.3-1",
-		"last_modified": "2026-02-15",
+		"file_version": "v5.1-6-6.5-1",
+		"last_modified": "2026-02-17",
 		"clean_architecture": "Compliant",
 		"description": "Classification behavior configuration - thresholds, irony gate, and scoring behavior",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -9,14 +9,14 @@
 	},
 
 	"thresholds": {
-		"description": "Crisis severity threshold mappings for ensemble scoring",
+		"description": "Crisis severity threshold mappings for ensemble scoring. Step 6.5: HIGH lowered from 0.70 to 0.65 based on score distribution analysis showing 14-15 definite_high failures in the 0.65-0.70 band.",
 		"critical": "${NLP_THRESHOLD_CRITICAL}",
 		"high": "${NLP_THRESHOLD_HIGH}",
 		"medium": "${NLP_THRESHOLD_MEDIUM}",
 		"low": "${NLP_THRESHOLD_LOW}",
 		"defaults": {
 			"critical": 0.85,
-			"high": 0.7,
+			"high": 0.65,
 			"medium": 0.5,
 			"low": 0.3
 		},
