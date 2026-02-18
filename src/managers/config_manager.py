@@ -10,9 +10,9 @@ Ash-NLP is a CRISIS DETECTION BACKEND that:
 ********************************************************************************
 Configuration Manager for Ash-NLP Service
 ---
-FILE VERSION: v5.1-6-6.4.3-1
-LAST MODIFIED: 2026-02-15
-PHASE: Phase 6 - Step 6.4.3 Consensus Escalation
+FILE VERSION: v5.1-7-7.1-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Step 7.1 Figurative Language Gate Config
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -442,6 +442,15 @@ class ConfigManager:
                 "hypothesis_template": None,
                 "label_signal_mapping": None,
             },
+            "figurative_labels": {
+                "candidate_labels": [
+                    "this text uses literal language to describe a real situation",
+                    "this text uses exaggeration or hyperbole for emphasis or humor",
+                    "this text uses sarcasm or irony to express the opposite of what is meant",
+                    "this text uses violent or death-related metaphors in a casual or playful context",
+                ],
+                "hypothesis_template": None,
+            },
         }
 
     def _get_classification_defaults(self) -> Dict[str, Any]:
@@ -458,10 +467,11 @@ class ConfigManager:
                 "medium": 0.5,
                 "low": 0.3,
             },
-            "irony_gate": {
-                "enabled": False,
-                "confidence_threshold": 0.80,
-                "reduction_factor": 0.70,
+            "figurative_gate": {
+                "enabled": True,
+                "confidence_threshold": 0.75,
+                "reduction_factor": 0.60,
+                "skip_below": 0.30,
             },
             "confidence_weighting": {
                 "enabled": True,
@@ -1077,20 +1087,45 @@ class ConfigManager:
             emotions = self._get_labels_defaults()["emotions_labels"]
         return emotions
 
-    def get_irony_gate_config(self) -> Dict[str, Any]:
+    def get_figurative_labels(self) -> Dict[str, Any]:
         """
-        Get irony gate configuration.
-        
-        Phase 3.5: Returns irony gate config from classification_config.json.
-        Disabled by default (enabled=false). Phase 6 will activate this.
+        Get figurative language zero-shot candidate labels configuration.
+
+        Phase 7: Returns figurative language labels from labels_config.json.
+        Used by the Figurative Language Gate for detecting non-literal speech.
 
         Returns:
-            Dictionary with enabled, confidence_threshold, reduction_factor
+            Dictionary with candidate_labels, hypothesis_template
         """
-        irony_gate = self._classification_config.get("irony_gate", {})
-        if not irony_gate:
-            irony_gate = self._get_classification_defaults()["irony_gate"]
-        return irony_gate
+        figurative = self._labels_config.get("figurative_labels", {})
+        if not figurative:
+            figurative = self._get_labels_defaults()["figurative_labels"]
+        return figurative
+
+    def get_figurative_gate_config(self) -> Dict[str, Any]:
+        """
+        Get figurative language gate configuration.
+
+        Phase 7: Returns figurative gate config from classification_config.json.
+        Replaces Phase 6 irony gate with zero-shot figurative language detection.
+
+        Returns:
+            Dictionary with enabled, confidence_threshold, reduction_factor, skip_below
+        """
+        figurative_gate = self._classification_config.get("figurative_gate", {})
+        if not figurative_gate:
+            figurative_gate = self._get_classification_defaults()["figurative_gate"]
+        return figurative_gate
+
+    def get_irony_gate_config(self) -> Dict[str, Any]:
+        """
+        DEPRECATED — Phase 7 replaced irony gate with figurative language gate.
+        Delegates to get_figurative_gate_config() for backward compatibility.
+
+        Returns:
+            Dictionary with figurative gate config (backward-compatible keys)
+        """
+        return self.get_figurative_gate_config()
 
     def get_model_weights(self) -> Dict[str, float]:
         """

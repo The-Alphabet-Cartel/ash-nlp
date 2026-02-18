@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-6-6.4-7",
-		"last_modified": "2026-02-17",
+		"file_version": "v5.1-7-7.1-1",
+		"last_modified": "2026-02-18",
 		"clean_architecture": "Compliant",
 		"description": "Label definitions for all models - crisis labels, candidate labels, and signal mappings",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -156,6 +156,31 @@
 			"label_signal_mapping": {
 				"type": "dict",
 				"required": true
+			}
+		}
+	},
+
+	"figurative_labels": {
+		"description": "Figurative language labels for the post-scoring Figurative Language Gate (Phase 7). Replaces Cardiff binary irony detection with zero-shot figurative language classification using DeBERTa. Detects hyperbole, sarcasm, gaming death metaphors, and other non-literal speech patterns to reduce false-positive crisis scores. Gate position: after Vigil amplification, before severity mapping.",
+		"candidate_labels": "${NLP_FIGURATIVE_CANDIDATE_LABELS}",
+		"hypothesis_template": "${NLP_FIGURATIVE_HYPOTHESIS_TEMPLATE}",
+		"defaults": {
+			"candidate_labels": [
+				"this text uses literal language to describe a real situation",
+				"this text uses exaggeration or hyperbole for emphasis or humor",
+				"this text uses sarcasm or irony to express the opposite of what is meant",
+				"this text uses violent or death-related metaphors in a casual or playful context"
+			],
+			"hypothesis_template": null
+		},
+		"validation": {
+			"candidate_labels": {
+				"type": "list",
+				"required": true
+			},
+			"hypothesis_template": {
+				"type": "string",
+				"required": false
 			}
 		}
 	}

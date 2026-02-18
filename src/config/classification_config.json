@@ -1,9 +1,9 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-6-6.5-1",
-		"last_modified": "2026-02-17",
+		"file_version": "v5.1-7-7.1-1",
+		"last_modified": "2026-02-18",
 		"clean_architecture": "Compliant",
-		"description": "Classification behavior configuration - thresholds, irony gate, and scoring behavior",
+		"description": "Classification behavior configuration - thresholds, figurative language gate, and scoring behavior",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
 		"community": "The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org"
 	},
@@ -44,15 +44,17 @@
 		}
 	},
 
-	"irony_gate": {
-		"description": "Irony gatekeeper configuration (Phase 6 - threshold-gated score reducer)",
-		"enabled": "${NLP_IRONY_GATE_ENABLED}",
-		"confidence_threshold": "${NLP_IRONY_GATE_THRESHOLD}",
-		"reduction_factor": "${NLP_IRONY_GATE_REDUCTION}",
+	"figurative_gate": {
+		"description": "Figurative Language Gate configuration (Phase 7 - replaces Phase 6 irony gatekeeper). Zero-shot classifier that detects non-literal speech patterns (hyperbole, sarcasm, gaming death metaphors) and applies post-processing score reduction to prevent false-positive crisis classifications. Uses DeBERTa-v3-base-mnli (same model as Sentiment-ZS and Emotions-ZS).",
+		"enabled": "${NLP_FIGURATIVE_GATE_ENABLED}",
+		"confidence_threshold": "${NLP_FIGURATIVE_GATE_THRESHOLD}",
+		"reduction_factor": "${NLP_FIGURATIVE_GATE_REDUCTION}",
+		"skip_below": "${NLP_FIGURATIVE_GATE_SKIP_BELOW}",
 		"defaults": {
 			"enabled": true,
-			"confidence_threshold": 0.80,
-			"reduction_factor": 0.70
+			"confidence_threshold": 0.75,
+			"reduction_factor": 0.60,
+			"skip_below": 0.30
 		},
 		"validation": {
 			"enabled": {
@@ -67,6 +69,11 @@
 			"reduction_factor": {
 				"type": "float",
 				"range": [0.1, 1.0],
+				"required": false
+			},
+			"skip_below": {
+				"type": "float",
+				"range": [0.0, 0.5],
 				"required": false
 			}
 		}
