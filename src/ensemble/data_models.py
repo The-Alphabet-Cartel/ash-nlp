@@ -18,12 +18,12 @@ Shared dataclasses and result types used across the ensemble pipeline:
 - VigilResponse: Vigil integration response details
 - CrisisAssessment: Primary analysis output
 - RecommendedAction: Severity-to-action mapping
-- IronyGateResult: Irony gatekeeper result
-- IronyGate: Irony gatekeeper implementation + factory
+- FigurativeGateResult: Figurative language gate result (Phase 7)
+- FigurativeGate: Figurative language gate implementation + factory (Phase 7)
 ----------------------------------------------------------------------------
-FILE VERSION: v5.1-6-6.4.3-1
-LAST MODIFIED: 2026-02-15
-PHASE: Phase 6 - Step 6.4.3 Decision Engine Decomposition
+FILE VERSION: v5.1-7-7.3-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Step 7.3 Figurative Language Gate
 CLEAN ARCHITECTURE: v5.2.3 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 ============================================================================
@@ -36,7 +36,7 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from src.clients.vigil_client import VigilStatus
 
-from .scoring import CrisisSeverity, ModelSignal
+from .scoring import CrisisSeverity
 from .aggregator import AggregatedResult
 
 if TYPE_CHECKING:
@@ -144,41 +144,58 @@ class VigilResponse:
 
 
 # =============================================================================
-# Phase 6: Irony Gatekeeper Result
+# Phase 7: Figurative Language Gate Result
 # =============================================================================
 
 
 @dataclass
-class IronyGateResult:
+class FigurativeGateResult:
     """
-    Result of irony gatekeeper application.
+    Result of figurative language gate application.
+
+    Phase 7: Replaces IronyGateResult. Contains richer metadata about
+    what type of figurative language was detected and the gate decision.
 
     Attributes:
-        triggered: Whether the gate fired (irony confidence >= threshold)
+        triggered: Whether the gate fired (figurative confidence >= threshold)
+        skipped: Whether the gate was skipped (score below skip_below)
         original_score: Score before gate application
         gated_score: Score after gate application
-        irony_confidence: Irony model confidence (0.0-1.0)
+        figurative_confidence: Combined figurative confidence (1.0 - literal) (0.0-1.0)
+        top_figurative_label: Highest-scoring figurative label (or None if literal)
+        top_figurative_score: Score of the top figurative label
+        literal_confidence: Confidence in literal classification
         threshold: Threshold that was used
         reduction_factor: Reduction factor that was applied
     """
 
     triggered: bool
+    skipped: bool
     original_score: float
     gated_score: float
-    irony_confidence: float
+    figurative_confidence: float
+    top_figurative_label: Optional[str]
+    top_figurative_score: float
+    literal_confidence: float
     threshold: float
     reduction_factor: float
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for API response."""
-        return {
+        result = {
             "triggered": self.triggered,
+            "skipped": self.skipped,
             "original_score": round(self.original_score, 4),
             "gated_score": round(self.gated_score, 4),
-            "irony_confidence": round(self.irony_confidence, 4),
+            "figurative_confidence": round(self.figurative_confidence, 4),
+            "literal_confidence": round(self.literal_confidence, 4),
             "threshold": self.threshold,
             "reduction_factor": self.reduction_factor,
         }
+        if self.top_figurative_label:
+            result["top_figurative_label"] = self.top_figurative_label
+            result["top_figurative_score"] = round(self.top_figurative_score, 4)
+        return result
 
 
 # =============================================================================
@@ -221,8 +238,8 @@ class CrisisAssessment:
         # Phase 5 Enhanced Fields
         context_analysis: Context history analysis result (Phase 5)
 
-        # Phase 6 Enhanced Fields
-        irony_gate_result: Irony gatekeeper result (Phase 6)
+        # Phase 7 Enhanced Fields
+        figurative_gate_result: Figurative language gate result (Phase 7)
     """
 
     crisis_detected: bool
@@ -252,8 +269,8 @@ class CrisisAssessment:
     # Phase 5 Enhanced Fields
     context_analysis: Optional["ContextAnalysisResult"] = None
 
-    # Phase 6 Enhanced Fields
-    irony_gate_result: Optional[IronyGateResult] = None
+    # Phase 7 Enhanced Fields (replaces Phase 6 irony_gate_result)
+    figurative_gate_result: Optional[FigurativeGateResult] = None
 
     # Step 6.4.3 Enhanced Fields
     consensus_escalation_result: Optional[Any] = None  # ConsensusEscalationResult
@@ -291,9 +308,9 @@ class CrisisAssessment:
         if self.context_analysis:
             result["context_analysis"] = self.context_analysis.to_dict()
 
-        # Include Phase 6 fields if present
-        if self.irony_gate_result:
-            result["irony_gate"] = self.irony_gate_result.to_dict()
+        # Include Phase 7 fields if present
+        if self.figurative_gate_result:
+            result["figurative_gate"] = self.figurative_gate_result.to_dict()
 
         # Include Step 6.4.3 fields if present
         if self.consensus_escalation_result:
@@ -302,12 +319,12 @@ class CrisisAssessment:
         return result
 
     def to_enhanced_dict(self) -> Dict[str, Any]:
-        """Convert to full enhanced dictionary with all Phase 4 data.
+        """Convert to full enhanced dictionary with all Phase 4+ data.
 
-        v5.1-6-6.4-2: Always use to_dict() as the base response. The
+        v5.1-7-7.3: Always use to_dict() as the base response. The
         aggregated_result is included as a nested field by to_dict() but
         no longer overrides the top-level crisis_score/severity, which
-        must come from the ensemble → Vigil → irony gate pipeline.
+        must come from the ensemble → Vigil → figurative gate pipeline.
         """
         return self.to_dict()
 
@@ -365,183 +382,206 @@ class RecommendedAction:
 
 
 # =============================================================================
-# Phase 6: Irony Gatekeeper
+# Phase 7: Figurative Language Gate
 # =============================================================================
 
 
-class IronyGate:
+class FigurativeGate:
     """
-    Irony Gatekeeper - Post-Scoring Score Reducer.
+    Figurative Language Gate - Post-Scoring Score Reducer.
 
-    Phase 6 refactor: Replaces the v5.0 irony dampening (continuous
-    multiplicative factor) with a threshold-gated reducer.
+    Phase 7: Replaces the Phase 6 IronyGate with a broader figurative
+    language gate that uses zero-shot classification to detect non-literal
+    speech patterns (hyperbole, sarcasm, irony, gaming death metaphors).
 
-    Key behavioral differences from v5.0:
-    - Only fires when irony confidence EXCEEDS a configurable threshold
+    Key behavioral differences from Phase 6 IronyGate:
+    - Uses DeBERTa zero-shot classification instead of Cardiff binary irony
+    - Detects multiple figurative language types, not just irony
+    - Runs the figurative classifier directly (not a pre-computed signal)
+    - Includes skip_below threshold to avoid running on low-scoring messages
     - When NOT triggered: ZERO effect on scoring (true pass-through)
     - When triggered: score multiplied by configurable reduction_factor
     - Applied AFTER Vigil amplification, BEFORE final severity mapping
 
-    This fixes the critical v5.0 issue where genuine crisis statements
-    (e.g., "I want to jump off this bridge") were being dampened by
-    low-confidence irony scores (e.g., irony=0.15 → dampening=0.865),
-    pulling them below the HIGH severity threshold.
-
-    Configuration: classification_config.json → irony_gate section
-    Environment: NLP_IRONY_GATE_ENABLED, NLP_IRONY_GATE_THRESHOLD,
-                 NLP_IRONY_GATE_REDUCTION
+    Configuration: classification_config.json → figurative_gate section
+    Environment: NLP_FIGURATIVE_GATE_ENABLED, NLP_FIGURATIVE_GATE_THRESHOLD,
+                 NLP_FIGURATIVE_GATE_REDUCTION, NLP_FIGURATIVE_GATE_SKIP_BELOW
 
     Clean Architecture v5.2.3 Compliance:
-    - Factory function: create_irony_gate()
+    - Factory function: create_figurative_gate()
     - Configuration via ConfigManager
     - Resilient error handling (Rule #5)
     """
 
-    DEFAULT_THRESHOLD = 0.80
-    DEFAULT_REDUCTION_FACTOR = 0.70
+    DEFAULT_THRESHOLD = 0.75
+    DEFAULT_REDUCTION_FACTOR = 0.60
+    DEFAULT_SKIP_BELOW = 0.30
 
     def __init__(
         self,
         enabled: bool = True,
-        threshold: float = 0.80,
-        reduction_factor: float = 0.70,
+        threshold: float = DEFAULT_THRESHOLD,
+        reduction_factor: float = DEFAULT_REDUCTION_FACTOR,
+        skip_below: float = DEFAULT_SKIP_BELOW,
     ):
-        """
-        Initialize IronyGate.
-
-        Args:
-            enabled: Whether the gate is active
-            threshold: Irony confidence threshold to trigger (0.0-1.0)
-            reduction_factor: Score multiplier when triggered (0.0-1.0)
-        """
         self.enabled = enabled
         self.threshold = max(0.0, min(1.0, threshold))
         self.reduction_factor = max(0.1, min(1.0, reduction_factor))
+        self.skip_below = max(0.0, min(1.0, skip_below))
 
         logger.info(
-            f"🚪 IronyGate initialized "
+            f"🎭 FigurativeGate initialized "
             f"(enabled={enabled}, threshold={self.threshold}, "
-            f"reduction_factor={self.reduction_factor})"
+            f"reduction={self.reduction_factor}, skip_below={self.skip_below})"
         )
 
     def apply(
         self,
         score: float,
-        irony_signal: Optional[ModelSignal] = None,
-    ) -> IronyGateResult:
+        figurative_result: Optional[Any] = None,
+    ) -> FigurativeGateResult:
         """
-        Apply irony gatekeeper to a crisis score.
+        Apply figurative language gate to a crisis score.
 
         Args:
             score: Pre-gate crisis score (after Vigil amplification)
-            irony_signal: ModelSignal from irony detector (from scorer)
+            figurative_result: ModelResult from FigurativeLanguageClassifier
 
         Returns:
-            IronyGateResult with gated score and metadata
+            FigurativeGateResult with gated score and metadata
         """
-        # Gate disabled - pass through
+        _pass_through = FigurativeGateResult(
+            triggered=False,
+            skipped=False,
+            original_score=score,
+            gated_score=score,
+            figurative_confidence=0.0,
+            top_figurative_label=None,
+            top_figurative_score=0.0,
+            literal_confidence=1.0,
+            threshold=self.threshold,
+            reduction_factor=self.reduction_factor,
+        )
+
+        # Gate disabled — pass through
         if not self.enabled:
-            return IronyGateResult(
-                triggered=False,
-                original_score=score,
-                gated_score=score,
-                irony_confidence=0.0,
-                threshold=self.threshold,
-                reduction_factor=self.reduction_factor,
+            _pass_through.skipped = True
+            return _pass_through
+
+        # Score below skip threshold — don't waste inference
+        if score < self.skip_below:
+            _pass_through.skipped = True
+            logger.debug(
+                f"🎭 FigurativeGate skipped: score {score:.3f} "
+                f"< skip_below {self.skip_below}"
             )
+            return _pass_through
 
-        # No irony signal available - pass through
-        if irony_signal is None:
-            return IronyGateResult(
-                triggered=False,
-                original_score=score,
-                gated_score=score,
-                irony_confidence=0.0,
-                threshold=self.threshold,
-                reduction_factor=self.reduction_factor,
-            )
+        # No figurative result available — pass through
+        if figurative_result is None or not figurative_result.success:
+            logger.debug("🎭 FigurativeGate pass-through: no figurative result")
+            return _pass_through
 
-        # Extract irony confidence from the signal metadata
-        irony_confidence = irony_signal.metadata.get("irony_score", 0.0)
+        # Extract figurative metadata from the classifier result
+        metadata = figurative_result.metadata or {}
+        figurative_confidence = metadata.get("figurative_confidence", 0.0)
+        literal_confidence = metadata.get("literal_confidence", 1.0)
+        top_figurative_label = metadata.get("top_figurative_label")
+        top_figurative_score = metadata.get("top_figurative_score", 0.0)
 
-        # Gate check: does irony confidence meet or exceed threshold?
-        if irony_confidence >= self.threshold:
+        # Gate check: does figurative confidence meet or exceed threshold?
+        if figurative_confidence >= self.threshold:
             # Triggered: reduce score
             gated_score = score * self.reduction_factor
             gated_score = max(0.0, min(1.0, gated_score))
 
             logger.info(
-                f"🚪 IronyGate TRIGGERED: score {score:.3f} → {gated_score:.3f} "
-                f"(irony={irony_confidence:.3f} >= threshold={self.threshold})"
+                f"🎭 FigurativeGate TRIGGERED: score {score:.3f} → {gated_score:.3f} "
+                f"(figurative={figurative_confidence:.3f} >= threshold={self.threshold}, "
+                f"label='{top_figurative_label}')"
             )
 
-            return IronyGateResult(
+            return FigurativeGateResult(
                 triggered=True,
+                skipped=False,
                 original_score=score,
                 gated_score=gated_score,
-                irony_confidence=irony_confidence,
+                figurative_confidence=figurative_confidence,
+                top_figurative_label=top_figurative_label,
+                top_figurative_score=top_figurative_score,
+                literal_confidence=literal_confidence,
                 threshold=self.threshold,
                 reduction_factor=self.reduction_factor,
             )
         else:
             # Not triggered: pass through unchanged
             logger.debug(
-                f"🚪 IronyGate pass-through: irony={irony_confidence:.3f} "
+                f"🎭 FigurativeGate pass-through: figurative={figurative_confidence:.3f} "
                 f"< threshold={self.threshold}"
             )
 
-            return IronyGateResult(
+            return FigurativeGateResult(
                 triggered=False,
+                skipped=False,
                 original_score=score,
                 gated_score=score,
-                irony_confidence=irony_confidence,
+                figurative_confidence=figurative_confidence,
+                top_figurative_label=top_figurative_label,
+                top_figurative_score=top_figurative_score,
+                literal_confidence=literal_confidence,
                 threshold=self.threshold,
                 reduction_factor=self.reduction_factor,
             )
 
 
-def create_irony_gate(
+def create_figurative_gate(
     config_manager: Optional["ConfigManager"] = None,
     enabled: Optional[bool] = None,
     threshold: Optional[float] = None,
     reduction_factor: Optional[float] = None,
-) -> IronyGate:
+    skip_below: Optional[float] = None,
+) -> FigurativeGate:
     """
-    Factory function for IronyGate.
+    Factory function for FigurativeGate.
 
-    Creates a configured IronyGate using ConfigManager settings.
+    Creates a configured FigurativeGate using ConfigManager settings.
 
     Args:
         config_manager: Configuration manager instance
         enabled: Override enabled flag (optional)
         threshold: Override threshold (optional)
         reduction_factor: Override reduction factor (optional)
+        skip_below: Override skip_below threshold (optional)
 
     Returns:
-        Configured IronyGate instance
+        Configured FigurativeGate instance
 
     Example:
-        >>> gate = create_irony_gate(config_manager=config)
-        >>> result = gate.apply(score=0.75, irony_signal=irony_signal)
+        >>> gate = create_figurative_gate(config_manager=config)
+        >>> result = gate.apply(score=0.75, figurative_result=fig_result)
     """
     gate_enabled = True
-    gate_threshold = IronyGate.DEFAULT_THRESHOLD
-    gate_reduction = IronyGate.DEFAULT_REDUCTION_FACTOR
+    gate_threshold = FigurativeGate.DEFAULT_THRESHOLD
+    gate_reduction = FigurativeGate.DEFAULT_REDUCTION_FACTOR
+    gate_skip_below = FigurativeGate.DEFAULT_SKIP_BELOW
 
     # Load from config manager
     if config_manager is not None:
         try:
-            gate_config = config_manager.get_irony_gate_config()
+            gate_config = config_manager.get_figurative_gate_config()
             if gate_config:
                 gate_enabled = bool(gate_config.get("enabled", True))
                 gate_threshold = float(
-                    gate_config.get("confidence_threshold", IronyGate.DEFAULT_THRESHOLD)
+                    gate_config.get("confidence_threshold", FigurativeGate.DEFAULT_THRESHOLD)
                 )
                 gate_reduction = float(
-                    gate_config.get("reduction_factor", IronyGate.DEFAULT_REDUCTION_FACTOR)
+                    gate_config.get("reduction_factor", FigurativeGate.DEFAULT_REDUCTION_FACTOR)
+                )
+                gate_skip_below = float(
+                    gate_config.get("skip_below", FigurativeGate.DEFAULT_SKIP_BELOW)
                 )
         except Exception as e:
-            logger.warning(f"⚠️ Error loading irony gate config, using defaults: {e}")
+            logger.warning(f"⚠️ Error loading figurative gate config, using defaults: {e}")
 
     # Apply explicit overrides
     if enabled is not None:
@@ -550,11 +590,14 @@ def create_irony_gate(
         gate_threshold = threshold
     if reduction_factor is not None:
         gate_reduction = reduction_factor
+    if skip_below is not None:
+        gate_skip_below = skip_below
 
-    return IronyGate(
+    return FigurativeGate(
         enabled=gate_enabled,
         threshold=gate_threshold,
         reduction_factor=gate_reduction,
+        skip_below=gate_skip_below,
     )
 
 
@@ -567,7 +610,7 @@ __all__ = [
     "VigilResponse",
     "CrisisAssessment",
     "RecommendedAction",
-    "IronyGateResult",
-    "IronyGate",
-    "create_irony_gate",
+    "FigurativeGateResult",
+    "FigurativeGate",
+    "create_figurative_gate",
 ]
