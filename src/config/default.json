@@ -1,7 +1,7 @@
 {
 	"_metadata": {
-		"file_version": "v5.1-6-6.4-1",
-		"last_modified": "2026-02-14",
+		"file_version": "v5.1-7-7.2-1",
+		"last_modified": "2026-02-18",
 		"clean_architecture": "Compliant",
 		"description": "Ash-NLP v5.1 Default Configuration - Server, model identity, logging, and integration settings",
 		"repository": "https://github.com/the-alphabet-cartel/ash-nlp",
@@ -188,16 +188,16 @@
 		}
 	},
 
-	"model_irony": {
-		"description": "Cardiff Irony Detector - GATEKEEPER MODEL (post-scoring gatekeeper, not additive)",
-		"model_id": "${NLP_MODEL_IRONY_ID}",
-		"enabled": "${NLP_IRONY_GATE_ENABLED}",
-		"task": "text-classification",
+	"model_figurative": {
+		"description": "DeBERTa Zero-Shot Figurative Language Classifier - GATEKEEPER MODEL (Phase 7 - replaces Cardiff irony detector)",
+		"model_id": "${NLP_MODEL_FIGURATIVE_ID}",
+		"enabled": "${NLP_FIGURATIVE_GATE_ENABLED}",
+		"task": "zero-shot-classification",
 		"role": "gatekeeper",
 		"defaults": {
-			"model_id": "cardiffnlp/twitter-roberta-base-irony",
+			"model_id": "MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
 			"enabled": true,
-			"task": "text-classification",
+			"task": "zero-shot-classification",
 			"role": "gatekeeper"
 		},
 		"validation": {
