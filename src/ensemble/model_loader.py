@@ -4,15 +4,15 @@ CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Cla
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+2. CONTEXTUAL: Enhances with sentiment, figurative language, and emotion model signals
 3. ENSEMBLE: Combines weighted model outputs through decision engine
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 Model Loader for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-5-5.5-1
-LAST MODIFIED: 2026-02-09
-PHASE: Phase 5 - Emotions Zero-Shot Migration (docstring update)
+FILE VERSION: v5.1-7-7.4-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Step 7.4 Figurative Language Gate Pipeline Integration
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -36,7 +36,7 @@ from src.models import (
     ModelInfo,
     create_bart_classifier,
     create_sentiment_analyzer,
-    create_irony_detector,
+    create_figurative_classifier,
     create_emotions_classifier,
 )
 
@@ -44,20 +44,20 @@ if TYPE_CHECKING:
     from src.managers.config_manager import ConfigManager
 
 # Module version
-__version__ = "v5.0-3-4.3-1"
+__version__ = "v5.1-7-7.4-1"
 
 # Initialize logger
 logger = logging.getLogger(__name__)
 
 # Model names in load order (primary first, gatekeeper last)
-MODEL_NAMES = ["bart", "sentiment", "emotions", "irony"]
+MODEL_NAMES = ["bart", "sentiment", "emotions", "figurative"]
 
 # Factory function mapping
 MODEL_FACTORIES = {
     "bart": create_bart_classifier,
     "sentiment": create_sentiment_analyzer,
-    "irony": create_irony_detector,
     "emotions": create_emotions_classifier,
+    "figurative": create_figurative_classifier,
 }
 
 
@@ -68,8 +68,8 @@ class ModelLoader:
     Manages the lifecycle of all models in the ensemble:
     - BART Zero-Shot Crisis Classifier (PRIMARY)
     - DeBERTa Zero-Shot Sentiment Analyzer (SECONDARY)
-    - Cardiff Irony Detector (TERTIARY)
     - DeBERTa Zero-Shot Emotions Analyzer (SUPPLEMENTARY)
+    - DeBERTa Zero-Shot Figurative Language Classifier (GATEKEEPER)
 
     Features:
     - Lazy loading (models load on first access)
@@ -129,7 +129,7 @@ class ModelLoader:
         Load a single model by name.
 
         Args:
-            model_name: Name of model to load (bart, sentiment, irony, emotions)
+            model_name: Name of model to load (bart, sentiment, emotions, figurative)
 
         Returns:
             Loaded model wrapper or None if loading fails
@@ -296,9 +296,9 @@ class ModelLoader:
         """Get sentiment analyzer."""
         return self.get_model("sentiment")
 
-    def get_irony(self):
-        """Get irony detector."""
-        return self.get_model("irony")
+    def get_figurative(self):
+        """Get figurative language classifier."""
+        return self.get_model("figurative")
 
     def get_emotions(self):
         """Get emotions classifier."""
@@ -454,7 +454,7 @@ class ModelLoader:
         Get weights for additive scoring models.
 
         Phase 6.3: Only returns models with non-zero weights.
-        Gatekeeper models (e.g., irony) are excluded.
+        Gatekeeper models (e.g., figurative) are excluded.
 
         Returns:
             Dictionary of model_name -> weight for additive models

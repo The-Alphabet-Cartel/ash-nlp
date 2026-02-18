@@ -952,7 +952,7 @@ class AnalyzeResponse(BaseModel):
                         },
                     },
                     "processing_time_ms": 145.32,
-                    "models_used": ["bart", "sentiment", "irony", "emotions"],
+                    "models_used": ["bart", "sentiment", "emotions", "figurative"],
                     "is_degraded": False,
                     "request_id": "req_abc123",
                     "timestamp": "2025-12-31T12:00:00Z",

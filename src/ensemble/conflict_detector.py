@@ -157,9 +157,12 @@ class ModelSignals:
         sentiment_score: Sentiment crisis signal
         sentiment_label: Sentiment label (positive/negative/neutral)
         sentiment_all_scores: All sentiment scores
-        irony_score: Irony dampening factor
-        irony_detected: Whether irony was detected
-        irony_confidence: Irony detection confidence
+        irony_score: Irony dampening factor (DEPRECATED Phase 7)
+        irony_detected: Whether irony was detected (DEPRECATED Phase 7)
+        irony_confidence: Irony detection confidence (DEPRECATED Phase 7)
+        figurative_detected: Whether figurative language was detected (Phase 7)
+        figurative_confidence: Figurative detection confidence (Phase 7)
+        figurative_label: Top figurative label (Phase 7)
         emotions_score: Emotions crisis signal
         emotions_top: Top detected emotions
         emotions_all_scores: All emotion scores
@@ -175,10 +178,15 @@ class ModelSignals:
     sentiment_label: str = ""
     sentiment_all_scores: Dict[str, float] = field(default_factory=dict)
 
-    # Irony signals
+    # Irony signals (DEPRECATED Phase 7 - kept for backward compatibility)
     irony_score: float = 1.0  # 1.0 = no irony (dampening factor)
     irony_detected: bool = False
     irony_confidence: float = 0.0
+
+    # Figurative language signals (Phase 7)
+    figurative_detected: bool = False
+    figurative_confidence: float = 0.0
+    figurative_label: str = ""
 
     # Emotions signals
     emotions_score: float = 0.0
@@ -214,12 +222,20 @@ class ModelSignals:
             instance.sentiment_label = sentiment.get("label", "")
             instance.sentiment_all_scores = sentiment.get("metadata", {})
 
-        # Extract irony
+        # Extract irony (DEPRECATED Phase 7 - kept for backward compatibility)
         if "irony" in signals:
             irony = signals["irony"]
             instance.irony_score = irony.get("crisis_signal", 1.0)
             instance.irony_detected = irony.get("metadata", {}).get("irony_score", 0.0) > 0.5
             instance.irony_confidence = irony.get("metadata", {}).get("irony_score", 0.0)
+
+        # Extract figurative language (Phase 7)
+        if "figurative" in signals:
+            figurative = signals["figurative"]
+            metadata = figurative.get("metadata", {})
+            instance.figurative_detected = metadata.get("is_figurative", False)
+            instance.figurative_confidence = metadata.get("figurative_confidence", 0.0)
+            instance.figurative_label = metadata.get("top_figurative_label", "")
 
         # Extract emotions
         if "emotions" in signals:
@@ -445,25 +461,29 @@ class ConflictDetector:
         positive_score = signals.sentiment_all_scores.get("positive", 0.0)
         is_positive = positive_score > 0.5 or signals.sentiment_label.lower() == "positive"
 
-        # Check if irony detected
+        # Check if figurative language or irony detected (Phase 7: prefer figurative)
+        figurative_detected = signals.figurative_confidence > self.irony_detection_threshold
         irony_detected = signals.irony_confidence > self.irony_detection_threshold
+        nonliteral_detected = figurative_detected or irony_detected
+        nonliteral_confidence = max(signals.figurative_confidence, signals.irony_confidence)
 
-        if not (is_positive and irony_detected):
+        if not (is_positive and nonliteral_detected):
             return None
 
         return DetectedConflict(
             conflict_type=ConflictType.IRONY_SENTIMENT_CONFLICT,
             severity=ConflictSeverity.MEDIUM,
             description=(
-                f"Positive sentiment ({positive_score:.2f}) detected with irony "
-                f"({signals.irony_confidence:.2f}) - possible sarcasm masking distress"
+                f"Positive sentiment ({positive_score:.2f}) detected with figurative language "
+                f"({nonliteral_confidence:.2f}) - possible sarcasm masking distress"
             ),
-            involved_models=["sentiment", "irony"],
+            involved_models=["sentiment", "figurative"],
             details={
                 "positive_score": positive_score,
+                "figurative_confidence": signals.figurative_confidence,
                 "irony_confidence": signals.irony_confidence,
                 "sentiment_label": signals.sentiment_label,
-                "irony_detected": irony_detected,
+                "nonliteral_detected": nonliteral_detected,
             },
         )
 
@@ -485,9 +505,9 @@ class ConflictDetector:
         Returns:
             DetectedConflict if found, None otherwise
         """
-        # Calculate average crisis score (excluding irony)
+        # Calculate average crisis score (excluding gatekeepers)
         relevant_scores = [
-            s for name, s in crisis_scores.items() if name != "irony"
+            s for name, s in crisis_scores.items() if name not in ("irony", "figurative")
         ]
         if not relevant_scores:
             return None

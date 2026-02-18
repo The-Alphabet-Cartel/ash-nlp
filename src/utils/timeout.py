@@ -416,7 +416,7 @@ def get_recommended_timeout(model_name: str) -> float:
         "bart": 30.0,  # BART is largest, needs more time
         "bart_crisis": 30.0,
         "sentiment": 10.0,  # Smaller models
-        "irony": 10.0,
+        "figurative": 10.0,  # Same model as sentiment/emotions
         "emotions": 15.0,  # Medium size
         "default": 30.0,
     }

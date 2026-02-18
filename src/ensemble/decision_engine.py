@@ -4,15 +4,15 @@ CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Cla
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+2. CONTEXTUAL: Enhances with sentiment, figurative language, and emotion model signals
 3. ENSEMBLE: Combines weighted model outputs through decision engine
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 Ensemble Decision Engine for Ash-NLP Service
 ---
-FILE VERSION: v5.1-6-6.4.3-1
-LAST MODIFIED: 2026-02-15
-PHASE: Phase 6 - Step 6.4.3 Decision Engine Decomposition
+FILE VERSION: v5.1-7-7.4-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Step 7.4 Figurative Language Gate Pipeline Integration
 CLEAN ARCHITECTURE: v5.2.3 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -34,8 +34,8 @@ PHASE 3 VIGIL INTEGRATION:
 - Graceful fallback when Vigil unavailable
 - requires_review flag for HIGH/CRITICAL or Vigil unavailable
 
-PROCESSING FLOW (Phase 3 Vigil):
-1. Run 4-model ensemble → base score (no irony dampening yet)
+PROCESSING FLOW (Phase 7):
+1. Run 4-model ensemble → base score (additive: BART + sentiment + emotions)
 2. Determine preliminary severity from base score
 3. Decision Gate: Should we call Vigil?
    - If base_score >= skip_threshold → Skip Vigil (score-based)
@@ -44,7 +44,7 @@ PROCESSING FLOW (Phase 3 Vigil):
    - If MEDIUM severity and amplify_medium=false → Skip Vigil
    - Otherwise → Call Vigil
 4. Apply Vigil amplification (cap at 1.0)
-5. Apply irony dampening (FINAL step)
+5. Apply figurative language gate (Phase 7 — reduces score for hyperbole/sarcasm/gaming)
 6. Determine final severity, set requires_review for HIGH/CRITICAL
 7. Return response with vigil field
 
@@ -161,9 +161,9 @@ from .data_models import (
     VigilResponse,
     CrisisAssessment,
     RecommendedAction,
-    IronyGateResult,
-    IronyGate,
-    create_irony_gate,
+    FigurativeGateResult,
+    FigurativeGate,
+    create_figurative_gate,
 )
 
 from .vigil_amplification import (
@@ -220,11 +220,12 @@ class EnsembleDecisionEngine:
     - Escalation, temporal, and trend detection
     - Intervention urgency recommendations
 
-    Phase 6 Enhancements:
-    - Irony gatekeeper replaces continuous dampening
-    - IronyGate applied AFTER Vigil amplification, BEFORE final severity
-    - Only fires when irony confidence >= configurable threshold
-    - Zero effect when irony not detected (true pass-through)
+    Phase 7 Enhancements:
+    - Figurative language gate replaces irony gatekeeper
+    - FigurativeGate applied AFTER Vigil amplification, BEFORE final severity
+    - Detects hyperbole, sarcasm, gaming death metaphors via zero-shot
+    - Only fires when figurative confidence >= configurable threshold
+    - Zero effect when figurative language not detected (true pass-through)
 
     This is the main interface for the API to call.
 
@@ -265,8 +266,8 @@ class EnsembleDecisionEngine:
         # Phase 5 components
         context_analyzer: Optional[ContextAnalyzer] = None,
         phase5_enabled: bool = True,
-        # Phase 6 components
-        irony_gate: Optional[IronyGate] = None,
+        # Phase 7 components
+        figurative_gate: Optional[FigurativeGate] = None,
     ):
         """
         Initialize Ensemble Decision Engine.
@@ -299,8 +300,8 @@ class EnsembleDecisionEngine:
             context_analyzer: Context history analyzer component
             phase5_enabled: Enable Phase 5 features (default: True)
 
-            # Phase 6 components
-            irony_gate: Pre-configured IronyGate (optional, auto-created from config)
+            # Phase 7 components
+            figurative_gate: Pre-configured FigurativeGate (optional, auto-created from config)
         """
         self.config_manager = config_manager
         self.async_inference = async_inference
@@ -426,10 +427,10 @@ class EnsembleDecisionEngine:
             self.context_analyzer = None
 
         # =====================================================================
-        # Initialize Phase 6 components
+        # Initialize Phase 7 components
         # =====================================================================
 
-        self.irony_gate = irony_gate or create_irony_gate(
+        self.figurative_gate = figurative_gate or create_figurative_gate(
             config_manager=config_manager
         )
 
@@ -442,7 +443,7 @@ class EnsembleDecisionEngine:
         self._vigil_calls: int = 0
         self._vigil_amplifications: int = 0
         self._vigil_confidence_skips: int = 0
-        self._irony_gate_triggers: int = 0
+        self._figurative_gate_triggers: int = 0
         self._consensus_escalations: int = 0
 
         # Thread pool for parallel inference
@@ -520,20 +521,18 @@ class EnsembleDecisionEngine:
                     message
                 )
 
-            # Calculate ensemble score (Phase 3 scoring)
-            # This gives us base_score (before irony) and irony_dampening factor
+            # Calculate ensemble score (Phase 7: no irony_result, figurative is gatekeeper)
             ensemble_score = self.scorer.calculate_score(
                 bart_result=results.get("bart"),
                 sentiment_result=results.get("sentiment"),
-                irony_result=results.get("irony"),
                 emotions_result=results.get("emotions"),
             )
 
             # =================================================================
-            # Phase 3 Vigil: Apply amplification BEFORE irony gate
+            # Phase 3 Vigil: Apply amplification BEFORE figurative gate
             # =================================================================
 
-            # Get base score (Phase 6: irony_dampening is always 1.0 from scorer)
+            # Get base score (Phase 7: clean base score, no irony dampening)
             base_score = ensemble_score.base_score
 
             # Determine preliminary severity from base score
@@ -569,18 +568,18 @@ class EnsembleDecisionEngine:
                 )
 
             # =================================================================
-            # Phase 6: Apply Irony Gatekeeper AFTER Vigil amplification
+            # Phase 7: Apply Figurative Gate AFTER Vigil amplification
             # =================================================================
 
-            irony_signal = ensemble_score.signals.get("irony")
-            irony_gate_result = self.irony_gate.apply(
+            figurative_result = results.get("figurative")
+            figurative_gate_result = self.figurative_gate.apply(
                 score=amplified_score,
-                irony_signal=irony_signal,
+                figurative_result=figurative_result,
             )
-            final_score = irony_gate_result.gated_score
+            final_score = figurative_gate_result.gated_score
 
-            if irony_gate_result.triggered:
-                self._irony_gate_triggers += 1
+            if figurative_gate_result.triggered:
+                self._figurative_gate_triggers += 1
 
             # Pipeline score/severity (pre-escalation)
             pipeline_score = final_score
@@ -656,7 +655,7 @@ class EnsembleDecisionEngine:
                 requires_review = True
 
             # Update ensemble_score with our recalculated values
-            # (We override the scorer's irony-dampened value with our Vigil-amplified one)
+            # (Override scorer's base value with Vigil-amplified → figurative-gated score)
             ensemble_score.crisis_score = final_score
             ensemble_score.severity = final_severity
             ensemble_score.crisis_detected = final_severity in (
@@ -803,7 +802,7 @@ class EnsembleDecisionEngine:
                 aggregated_result=aggregated_result,
                 explanation=explanation,
                 context_analysis_result=context_analysis_result,
-                irony_gate_result=irony_gate_result,
+                figurative_gate_result=figurative_gate_result,
                 consensus_escalation_result=consensus_escalation_result,
             )
 
@@ -894,16 +893,15 @@ class EnsembleDecisionEngine:
                 per_model_latency,
             ) = await self._run_async_parallel_inference_with_timing(message)
 
-            # Calculate ensemble score
+            # Calculate ensemble score (Phase 7: no irony_result, figurative is gatekeeper)
             ensemble_score = self.scorer.calculate_score(
                 bart_result=results.get("bart"),
                 sentiment_result=results.get("sentiment"),
-                irony_result=results.get("irony"),
                 emotions_result=results.get("emotions"),
             )
 
             # =================================================================
-            # Phase 3 Vigil: Apply amplification BEFORE irony gate
+            # Phase 3 Vigil: Apply amplification BEFORE figurative gate
             # =================================================================
 
             base_score = ensemble_score.base_score
@@ -940,18 +938,18 @@ class EnsembleDecisionEngine:
                 )
 
             # =================================================================
-            # Phase 6: Apply Irony Gatekeeper AFTER Vigil amplification
+            # Phase 7: Apply Figurative Gate AFTER Vigil amplification
             # =================================================================
 
-            irony_signal = ensemble_score.signals.get("irony")
-            irony_gate_result = self.irony_gate.apply(
+            figurative_result = results.get("figurative")
+            figurative_gate_result = self.figurative_gate.apply(
                 score=amplified_score,
-                irony_signal=irony_signal,
+                figurative_result=figurative_result,
             )
-            final_score = irony_gate_result.gated_score
+            final_score = figurative_gate_result.gated_score
 
-            if irony_gate_result.triggered:
-                self._irony_gate_triggers += 1
+            if figurative_gate_result.triggered:
+                self._figurative_gate_triggers += 1
 
             # Pipeline score/severity (pre-escalation)
             pipeline_score = final_score
@@ -1166,7 +1164,7 @@ class EnsembleDecisionEngine:
                 aggregated_result=aggregated_result,
                 explanation=explanation,
                 context_analysis_result=context_analysis_result,
-                irony_gate_result=irony_gate_result,
+                figurative_gate_result=figurative_gate_result,
                 consensus_escalation_result=consensus_escalation_result,
             )
 
@@ -1249,11 +1247,11 @@ class EnsembleDecisionEngine:
         aggregated_result: Optional[AggregatedResult] = None,
         explanation: Optional[Explanation] = None,
         context_analysis_result: Optional[ContextAnalysisResult] = None,
-        irony_gate_result: Optional[IronyGateResult] = None,
+        figurative_gate_result: Optional[FigurativeGateResult] = None,
         consensus_escalation_result: Optional[ConsensusEscalationResult] = None,
     ) -> CrisisAssessment:
         """
-        Build CrisisAssessment with Phase 3 Vigil, Phase 4, Phase 5, and Phase 6 enhancements.
+        Build CrisisAssessment with Phase 3 Vigil, Phase 4, Phase 5, and Phase 7 enhancements.
 
         Args:
             ensemble_score: Calculated ensemble score (with Vigil-amplified crisis_score)
@@ -1268,14 +1266,14 @@ class EnsembleDecisionEngine:
             aggregated_result: Phase 4 aggregated result
             explanation: Phase 4 explanation
             context_analysis_result: Phase 5 context analysis result
-            irony_gate_result: Phase 6 irony gatekeeper result
+            figurative_gate_result: Phase 7 figurative language gate result
 
         Returns:
             Complete CrisisAssessment with all phase data
         """
-        # v5.1-6-6.4-2: Always use ensemble pipeline score. The resolved_score
+        # v5.1-7-7.4: Always use ensemble pipeline score. The resolved_score
         # from Phase 4 conflict resolution is no longer used because the v5.1
-        # ensemble → Vigil → irony gate pipeline already produces the
+        # ensemble → Vigil → figurative gate pipeline already produces the
         # authoritative final score. Consensus/resolution score overrides
         # were causing score↔severity mismatches.
         final_crisis_score = ensemble_score.crisis_score
@@ -1326,8 +1324,8 @@ class EnsembleDecisionEngine:
             aggregated_result=aggregated_result,
             # Phase 5 fields
             context_analysis=context_analysis_result,
-            # Phase 6 fields
-            irony_gate_result=irony_gate_result,
+            # Phase 7 fields
+            figurative_gate_result=figurative_gate_result,
             # Step 6.4.3 fields
             consensus_escalation_result=consensus_escalation_result,
         )

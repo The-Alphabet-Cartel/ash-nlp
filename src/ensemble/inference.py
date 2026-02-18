@@ -19,8 +19,8 @@ Standalone functions for running model inference with timing:
 - run_async_parallel_inference: asyncio.gather parallel execution
 ----------------------------------------------------------------------------
 FILE VERSION: v5.1-6-6.4.3-1
-LAST MODIFIED: 2026-02-15
-PHASE: Phase 6 - Step 6.4.3 Decision Engine Decomposition
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Figurative Language Gate
 CLEAN ARCHITECTURE: v5.2.3 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 ============================================================================
@@ -70,7 +70,7 @@ def run_sequential_inference(
     """
     results: Dict[str, Optional[ModelResult]] = {}
     latencies: Dict[str, float] = {}
-    model_names = ["bart", "sentiment", "irony", "emotions"]
+    model_names = ["bart", "sentiment", "emotions", "figurative"]
 
     for model_name in model_names:
         if fallback.can_call_model(model_name):
@@ -133,7 +133,7 @@ def run_parallel_inference(
             latency = (time.perf_counter() - model_start) * 1000
             return (model_name, None, latency)
 
-    model_names = ["bart", "sentiment", "irony", "emotions"]
+    model_names = ["bart", "sentiment", "emotions", "figurative"]
 
     with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {executor.submit(run_model, name): name for name in model_names}
@@ -203,7 +203,7 @@ async def run_async_parallel_inference(
             latency = (time.perf_counter() - model_start) * 1000
             return (model_name, None, latency)
 
-    model_names = ["bart", "sentiment", "irony", "emotions"]
+    model_names = ["bart", "sentiment", "emotions", "figurative"]
     tasks = [run_model_async(name) for name in model_names]
 
     results_list = await asyncio.gather(*tasks, return_exceptions=True)

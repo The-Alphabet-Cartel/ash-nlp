@@ -4,15 +4,15 @@ CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Cla
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+2. CONTEXTUAL: Enhances with sentiment, figurative language, and emotion model signals
 3. ENSEMBLE: Combines weighted model outputs through decision engine
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 Weighted Scoring System for Ash-NLP Ensemble Service
 ---
-FILE VERSION: v5.1-6-6.2.5-1
-LAST MODIFIED: 2026-02-14
-PHASE: Phase 6.2.5 - Confidence-Weighted Ensemble Scoring
+FILE VERSION: v5.1-7-7.4-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Step 7.4 Figurative Language Gate Pipeline Integration
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -20,7 +20,6 @@ Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alp
 RESPONSIBILITIES:
 - Implement weighted ensemble scoring algorithm
 - Combine model outputs using configured weights
-- Apply irony dampening to reduce false positives
 - Calculate final crisis score and confidence
 - Map scores to severity levels
 
@@ -28,9 +27,10 @@ ALGORITHM:
 1. Extract crisis signals from each model
 2. Apply model weights to signals
 3. Calculate base weighted score
-4. Apply irony dampening factor
+4. Apply confidence weighting (Phase 6.2.5)
 5. Calculate confidence from model agreement
 6. Map final score to severity level
+Note: Figurative language gate applied post-scoring by decision engine (Phase 7)
 """
 
 import logging
@@ -139,8 +139,7 @@ class EnsembleScore:
         confidence: Confidence in the assessment (0.0 - 1.0)
         severity: Mapped severity level
         signals: Individual model signals
-        irony_dampening: Irony dampening factor applied
-        base_score: Score before irony dampening
+        base_score: Pre-gate weighted score (before figurative gate)
         crisis_detected: Whether crisis threshold was met
         requires_intervention: Whether immediate action needed
     """
@@ -149,7 +148,6 @@ class EnsembleScore:
     confidence: float
     severity: CrisisSeverity
     signals: Dict[str, ModelSignal]
-    irony_dampening: float
     base_score: float
     crisis_detected: bool
     requires_intervention: bool
@@ -162,7 +160,6 @@ class EnsembleScore:
             "severity": self.severity.value,
             "crisis_detected": self.crisis_detected,
             "requires_intervention": self.requires_intervention,
-            "irony_dampening": self.irony_dampening,
             "base_score": self.base_score,
             "signals": {
                 name: signal.to_dict() for name, signal in self.signals.items()
@@ -186,9 +183,10 @@ class WeightedScorer:
     1. Extract crisis signal from each model
     2. Apply model weights
     3. Calculate weighted base score
-    4. Apply irony dampening
+    4. Apply confidence weighting (Phase 6.2.5)
     5. Calculate confidence from agreement
     6. Map to severity level
+    Note: Figurative language gate applied post-scoring by decision engine (Phase 7)
 
     Clean Architecture v5.1 Compliance:
     - Factory function: create_weighted_scorer()
@@ -196,8 +194,9 @@ class WeightedScorer:
     """
 
     # Default weights for additive models (must sum to 1.0)
-    # Phase 6.3: Irony is a post-scoring gatekeeper applied in DecisionEngine,
-    # NOT an additive ensemble contributor. It has no weight here.
+    # Phase 6.3: Gatekeeper models (irony → figurative in Phase 7) are
+    # post-scoring gates applied in DecisionEngine, NOT additive ensemble
+    # contributors. They have no weight here.
     # BART weight increased from 0.50 to 0.65 with the freed capacity.
     DEFAULT_WEIGHTS = {
         "bart": 0.65,
@@ -236,7 +235,7 @@ class WeightedScorer:
 
         Args:
             weights: Additive model weights (bart, sentiment, emotions).
-                     Irony is NOT included — it's a post-scoring gatekeeper.
+                     Figurative is NOT included — it's a post-scoring gatekeeper.
             thresholds: Severity thresholds (critical, high, medium, low)
             confidence_weighting: Confidence-weighted scoring config (enabled, blend)
         """
@@ -256,7 +255,7 @@ class WeightedScorer:
 
     def _validate_weights(self) -> None:
         """Validate that additive weights are sensible."""
-        # Phase 6.3: With irony as gatekeeper (weight 0.00), the three
+        # Phase 6.3: With gatekeeper models having weight 0.00, the three
         # additive models (bart + sentiment + emotions) should sum to ~1.0.
         additive_weights = (
             self.weights.get("bart", 0)
@@ -425,55 +424,6 @@ class WeightedScorer:
             },
         )
 
-    def extract_irony_signal(self, result: ModelResult) -> ModelSignal:
-        """
-        Extract irony detection signal for the IronyGate gatekeeper.
-
-        Phase 6.3: Irony is no longer an additive scorer — it's a
-        post-scoring gatekeeper in DecisionEngine. This method extracts
-        the irony confidence into a ModelSignal so the IronyGate can
-        consume it. The weight is always 0.0 (not in additive weights).
-
-        Args:
-            result: ModelResult from irony detector
-
-        Returns:
-            ModelSignal with irony metadata for the gatekeeper
-        """
-        if not result.success:
-            # No dampening if model fails
-            return ModelSignal(
-                model_name="irony",
-                raw_score=1.0,
-                crisis_signal=1.0,  # 1.0 = no dampening
-                weight=0.0,  # Gatekeeper — not in additive scoring
-                weighted_score=1.0,
-                label="error",
-                metadata={"error": result.error, "dampening": 1.0},
-            )
-
-        irony_score = result.all_scores.get("irony", 0.0)
-
-        # Calculate dampening factor (consumed by IronyGate via metadata)
-        # High irony → low dampening factor → reduced crisis score
-        # irony_score = 0.0 → dampening = 1.0 (no reduction)
-        # irony_score = 1.0 → dampening = 0.1 (90% reduction)
-        dampening = 1.0 - (irony_score * 0.9)
-        dampening = max(0.1, dampening)  # Never fully eliminate
-
-        return ModelSignal(
-            model_name="irony",
-            raw_score=result.score,
-            crisis_signal=dampening,  # Used as multiplier by gatekeeper
-            weight=0.0,  # Gatekeeper — not in additive scoring
-            weighted_score=dampening,
-            label=result.label,
-            metadata={
-                "irony_score": irony_score,
-                "dampening_factor": dampening,
-            },
-        )
-
     def extract_emotions_signal(self, result: ModelResult) -> ModelSignal:
         """
         Extract crisis signal from emotions result.
@@ -567,16 +517,17 @@ class WeightedScorer:
         self,
         bart_result: Optional[ModelResult] = None,
         sentiment_result: Optional[ModelResult] = None,
-        irony_result: Optional[ModelResult] = None,
         emotions_result: Optional[ModelResult] = None,
     ) -> EnsembleScore:
         """
         Calculate final ensemble crisis score.
 
+        Phase 7: irony_result removed. Figurative language gate is applied
+        post-scoring by the decision engine, not during score calculation.
+
         Args:
             bart_result: Result from BART classifier
             sentiment_result: Result from sentiment analyzer
-            irony_result: Result from irony detector
             emotions_result: Result from emotions classifier
 
         Returns:
@@ -591,13 +542,10 @@ class WeightedScorer:
         if sentiment_result:
             signals["sentiment"] = self.extract_sentiment_signal(sentiment_result)
 
-        if irony_result:
-            signals["irony"] = self.extract_irony_signal(irony_result)
-
         if emotions_result:
             signals["emotions"] = self.extract_emotions_signal(emotions_result)
 
-        # Calculate base weighted score (without irony)
+        # Calculate base weighted score (additive models only)
         base_score = 0.0
         total_weight = 0.0
 
@@ -611,15 +559,12 @@ class WeightedScorer:
 
             effective_weights: Dict[str, float] = {}
             for name, signal in signals.items():
-                if name != "irony":
-                    confidence_factor = (1.0 - blend) + (blend * signal.raw_score)
-                    effective_weights[name] = signal.weight * confidence_factor
+                confidence_factor = (1.0 - blend) + (blend * signal.raw_score)
+                effective_weights[name] = signal.weight * confidence_factor
 
             # Normalize so effective weights preserve the total weight budget
             total_effective = sum(effective_weights.values())
-            total_base = sum(
-                signal.weight for name, signal in signals.items() if name != "irony"
-            )
+            total_base = sum(signal.weight for signal in signals.values())
 
             if total_effective > 0:
                 scale = total_base / total_effective
@@ -627,30 +572,21 @@ class WeightedScorer:
                 scale = 1.0
 
             for name, signal in signals.items():
-                if name != "irony":
-                    scaled_weight = effective_weights[name] * scale
-                    base_score += signal.crisis_signal * scaled_weight
-                    total_weight += signal.weight
+                scaled_weight = effective_weights[name] * scale
+                base_score += signal.crisis_signal * scaled_weight
+                total_weight += signal.weight
         else:
             # Original fixed-weight behavior
             for name, signal in signals.items():
-                if name != "irony":  # Irony is a modifier, not additive
-                    base_score += signal.weighted_score
-                    total_weight += signal.weight
+                base_score += signal.weighted_score
+                total_weight += signal.weight
 
         # Normalize if not all additive models available
-        # Phase 6.3: Additive weights now sum to 1.0. When a model is
+        # Phase 6.3: Additive weights sum to 1.0. When a model is
         # disabled or missing, normalize so partial coverage produces
         # comparable scores to the full ensemble.
         if total_weight > 0 and total_weight < 0.9:
             base_score = base_score / total_weight
-
-        # Phase 6: Irony dampening REMOVED from scorer.
-        # Irony is now a post-scoring gatekeeper applied in DecisionEngine
-        # after Vigil amplification. The irony signal is still extracted above
-        # and included in signals dict for the gatekeeper to consume.
-        # irony_dampening field is kept at 1.0 for backward compatibility.
-        irony_dampening = 1.0
 
         final_score = base_score
         final_score = max(0.0, min(1.0, final_score))
@@ -685,7 +621,6 @@ class WeightedScorer:
             confidence=confidence,
             severity=severity,
             signals=signals,
-            irony_dampening=irony_dampening,
             base_score=base_score,
             crisis_detected=crisis_detected,
             requires_intervention=requires_intervention,
@@ -706,9 +641,9 @@ class WeightedScorer:
         if not signals:
             return 0.0
 
-        # Get crisis signals (excluding irony which is different)
+        # Get crisis signals from all additive models
         crisis_signals = [
-            s.crisis_signal for name, s in signals.items() if name != "irony"
+            s.crisis_signal for s in signals.values()
         ]
 
         if not crisis_signals:

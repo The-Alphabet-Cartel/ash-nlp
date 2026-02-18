@@ -989,7 +989,7 @@ class ConfigManager:
             Dictionary of model_name -> config for enabled models
         """
         models = {}
-        model_names = ["bart", "sentiment", "irony", "emotions"]
+        model_names = ["bart", "sentiment", "emotions", "figurative"]
 
         for name in model_names:
             config = self.get_model_config(name)

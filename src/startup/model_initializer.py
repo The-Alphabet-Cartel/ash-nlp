@@ -4,15 +4,15 @@ CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Cla
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+2. CONTEXTUAL: Enhances with sentiment, figurative language, and emotion model signals
 3. ENSEMBLE: Combines weighted model outputs through decision engine
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 Model Initializer for Ash-NLP Service
 ---
-FILE VERSION: v5.1-5-5.5-1
-LAST MODIFIED: 2026-02-09
-PHASE: Phase 5 - Emotions Zero-Shot Migration (startup label update)
+FILE VERSION: v5.1-7-7.4-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Figurative Language Gate
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -40,8 +40,10 @@ ENVIRONMENT VARIABLES (reuses existing):
     NLP_MODEL_BART_ENABLED   - Enable BART (default: true)
     NLP_MODEL_SENTIMENT_ID   - Sentiment model ID
     NLP_MODEL_SENTIMENT_ENABLED - Enable Sentiment (default: true)
-    NLP_MODEL_IRONY_ID       - Irony model ID
-    NLP_MODEL_IRONY_ENABLED  - Enable Irony (default: true)
+    NLP_MODEL_IRONY_ID       - Irony model ID (DEPRECATED - Phase 7)
+    NLP_MODEL_IRONY_ENABLED  - Enable Irony (DEPRECATED - Phase 7)
+    NLP_MODEL_FIGURATIVE_ID  - Figurative language model ID
+    NLP_FIGURATIVE_GATE_ENABLED - Enable Figurative gate (default: true)
     NLP_MODEL_EMOTIONS_ID    - Emotions model ID
     NLP_MODEL_EMOTIONS_ENABLED - Enable Emotions (default: true)
 """
@@ -114,12 +116,12 @@ MODEL_CONFIGS: List[ModelConfig] = [
         description="DeBERTa Zero-Shot Emotions Analyzer (SUPPLEMENTARY)",
     ),
     ModelConfig(
-        name="irony",
-        env_id="NLP_MODEL_IRONY_ID",
-        env_enabled="NLP_MODEL_IRONY_ENABLED",
-        default_id="cardiffnlp/twitter-roberta-base-irony",
-        pipeline_task="text-classification",
-        description="Cardiff Irony Detector (GATEKEEPER)",
+        name="figurative",
+        env_id="NLP_MODEL_FIGURATIVE_ID",
+        env_enabled="NLP_FIGURATIVE_GATE_ENABLED",
+        default_id="MoritzLaurer/DeBERTa-v3-base-mnli-fever-anli",
+        pipeline_task="zero-shot-classification",
+        description="DeBERTa Zero-Shot Figurative Language Classifier (GATEKEEPER)",
     ),
 ]
 

@@ -4,15 +4,15 @@ CORE PRINCIPLE: Multi-Model Ensemble → Weighted Decision Engine → Crisis Cla
 ******************  CORE SYSTEM VISION (Never to be violated):  ****************
 Ash-NLP is a CRISIS DETECTION BACKEND that:
 1. PRIMARY: Uses BART Zero-Shot Classification for semantic crisis detection
-2. CONTEXTUAL: Enhances with sentiment, irony, and emotion model signals
+2. CONTEXTUAL: Enhances with sentiment, figurative language, and emotion model signals
 3. ENSEMBLE: Combines weighted model outputs through decision engine
 4. PURPOSE: Detect crisis messages in Discord community communications
 ********************************************************************************
 Ensemble Package for Ash-NLP Service
 ---
-FILE VERSION: v5.1-6-6.4.3-1
-LAST MODIFIED: 2026-02-15
-PHASE: Phase 6 - Step 6.4.3 Decision Engine Decomposition
+FILE VERSION: v5.1-7-7.4-1
+LAST MODIFIED: 2026-02-18
+PHASE: Phase 7 - Figurative Language Gate
 CLEAN ARCHITECTURE: v5.1 Compliant
 Repository: https://github.com/the-alphabet-cartel/ash-nlp
 Community: The Alphabet Cartel - https://discord.gg/alphabetcartel | https://alphabetcartel.org
@@ -64,7 +64,7 @@ PHASE 4 USAGE (Enhanced):
 """
 
 # Module version
-__version__ = "v5.1-6-6.4.3-1"
+__version__ = "v5.1-7-7.4-1"
 
 # =============================================================================
 # Data Models (extracted from decision_engine in Step 6.4.3)
@@ -75,9 +75,9 @@ from .data_models import (
     VigilResponse,
     CrisisAssessment,
     RecommendedAction,
-    IronyGateResult,
-    IronyGate,
-    create_irony_gate,
+    FigurativeGateResult,
+    FigurativeGate,
+    create_figurative_gate,
 )
 
 # =============================================================================
@@ -305,13 +305,13 @@ __all__ = [
     "create_explainability_generator",
     
     # =========================================================================
-    # PHASE 6 COMPONENTS
+    # PHASE 7 COMPONENTS
     # =========================================================================
     
-    # Irony Gate
-    "IronyGate",
-    "IronyGateResult",
-    "create_irony_gate",
+    # Figurative Language Gate (replaces Phase 6 Irony Gate)
+    "FigurativeGate",
+    "FigurativeGateResult",
+    "create_figurative_gate",
 
     # Consensus Escalation (Step 6.4.3)
     "ConsensusEscalation",

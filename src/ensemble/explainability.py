@@ -192,7 +192,8 @@ class ExplainabilityGenerator:
     MODEL_DISPLAY_NAMES = {
         "bart": "Crisis Classifier",
         "sentiment": "Sentiment Analyzer",
-        "irony": "Irony Detector",
+        "irony": "Irony Detector",  # Deprecated (Phase 7), kept for backward compat
+        "figurative": "Figurative Language Detector",
         "emotions": "Emotion Detector",
     }
 
@@ -506,8 +507,18 @@ class ExplainabilityGenerator:
             else:
                 return f"Neutral or positive sentiment ({confidence_pct}%)"
 
+        elif model_name == "figurative":
+            # Figurative language detection (Phase 7)
+            is_figurative = model_result.metadata.get("is_figurative", False) if hasattr(model_result, 'metadata') else False
+            figurative_confidence = model_result.metadata.get("figurative_confidence", 0.0) if hasattr(model_result, 'metadata') else 0.0
+            top_label = model_result.metadata.get("top_figurative_label", "") if hasattr(model_result, 'metadata') else ""
+            if is_figurative and figurative_confidence > 0.5:
+                return f"Figurative language detected ({confidence_pct}%) - likely non-literal expression"
+            else:
+                return f"Literal language detected ({confidence_pct}%) - message appears sincere"
+
         elif model_name == "irony":
-            # Irony score is inverted (high = no irony)
+            # DEPRECATED (Phase 7) - kept for backward compatibility
             irony_detected = model_result.crisis_signal < 0.5
             if irony_detected:
                 return "Sarcasm/irony detected - may be masking true feelings"
