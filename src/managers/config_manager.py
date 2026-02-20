@@ -469,9 +469,9 @@ class ConfigManager:
             },
             "figurative_gate": {
                 "enabled": True,
-                "confidence_threshold": 0.75,
-                "reduction_factor": 0.60,
-                "skip_below": 0.30,
+                "confidence_threshold": 0.90,
+                "reduction_factor": 0.75,
+                "skip_below": 0.50,
             },
             "confidence_weighting": {
                 "enabled": True,

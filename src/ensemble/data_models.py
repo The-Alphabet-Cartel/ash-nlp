@@ -413,9 +413,9 @@ class FigurativeGate:
     - Resilient error handling (Rule #5)
     """
 
-    DEFAULT_THRESHOLD = 0.75
-    DEFAULT_REDUCTION_FACTOR = 0.60
-    DEFAULT_SKIP_BELOW = 0.30
+    DEFAULT_THRESHOLD = 0.90
+    DEFAULT_REDUCTION_FACTOR = 0.75
+    DEFAULT_SKIP_BELOW = 0.50
 
     def __init__(
         self,
